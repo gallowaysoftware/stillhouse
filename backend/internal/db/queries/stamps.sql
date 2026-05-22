@@ -53,3 +53,12 @@ SELECT jurisdiction,
 FROM excise_stamp_orders
 GROUP BY jurisdiction
 ORDER BY jurisdiction;
+
+-- name: Bottling30DayRatePerJurisdiction :many
+-- Daily bottling rate per jurisdiction over the past 30 days. Used by the
+-- dashboard to convert on-hand stamp counts into a "days of stock" estimate.
+SELECT destination_jurisdiction AS jurisdiction,
+       (SUM(bottle_count)::double precision / 30.0)::double precision AS bottles_per_day_30d
+FROM bottling_runs
+WHERE bottling_date >= (CURRENT_DATE - INTERVAL '30 days')
+GROUP BY destination_jurisdiction;

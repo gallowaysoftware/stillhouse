@@ -76,7 +76,7 @@ export function HomePage() {
 
       <ReadyToDumpCallout barrels={barrels.data?.barrels ?? []} />
       <B266DueCallout periodEnd={end} hasBottling={hasBottling} />
-      <StampLowStockCallout summaries={stamps.data?.summaries ?? []} threshold={1000} />
+      <StampLowStockCallout summaries={stamps.data?.summaries ?? []} />
 
       {!completedAll && allLoaded && (
         <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
@@ -228,19 +228,26 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
   );
 }
 
-function StampLowStockCallout({ summaries, threshold }: { summaries: { jurisdiction: string; totalOnHand: number }[]; threshold: number }) {
-  const low = summaries.filter((s) => s.totalOnHand > 0 && s.totalOnHand < threshold);
-  if (low.length === 0) return null;
+function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string; totalOnHand: number; bottlesPerDay30d: number }[] }) {
+  // "Days of stock" = on-hand / 30-day bottling rate. Tighter signal than a
+  // static threshold — a 500-stamp safety net is plenty for a quiet province
+  // and dangerously low for a busy one.
+  const WARN_DAYS = 14;
+  const flagged = summaries
+    .filter((s) => s.totalOnHand > 0 && s.bottlesPerDay30d > 0)
+    .map((s) => ({ ...s, daysLeft: s.totalOnHand / s.bottlesPerDay30d }))
+    .filter((s) => s.daysLeft < WARN_DAYS);
+  if (flagged.length === 0) return null;
   return (
     <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
       <p className="text-sm text-amber-900">
-        <span className="font-semibold">Low stamp inventory:</span>{" "}
-        {low.map((s, i) => (
+        <span className="font-semibold">Stamps running low:</span>{" "}
+        {flagged.map((s, i) => (
           <span key={s.jurisdiction}>
             {i > 0 && ", "}
-            {s.jurisdiction} ({s.totalOnHand.toLocaleString()})
+            {s.jurisdiction} (~{Math.floor(s.daysLeft)} day{Math.floor(s.daysLeft) === 1 ? "" : "s"} left at current bottling rate)
           </span>
-        ))} — under {threshold.toLocaleString()} on hand. CRA orders take weeks; place an order now.{" "}
+        ))}. CRA orders take weeks — place a replenishment order now.{" "}
         <Link to="/stamps" className="underline">Open stamps →</Link>
       </p>
     </section>

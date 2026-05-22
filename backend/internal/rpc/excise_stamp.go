@@ -198,6 +198,7 @@ func (s *ExciseStampService) ListStampOrders(
 	var (
 		orders    []sqlcgen.ExciseStampOrder
 		summaries []sqlcgen.SumStampInventoryRow
+		rates     []sqlcgen.Bottling30DayRatePerJurisdictionRow
 	)
 	err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
@@ -206,6 +207,10 @@ func (s *ExciseStampService) ListStampOrders(
 			return e
 		}
 		summaries, e = q.SumStampInventory(ctx)
+		if e != nil {
+			return e
+		}
+		rates, e = q.Bottling30DayRatePerJurisdiction(ctx)
 		return e
 	})
 	if err != nil {
@@ -219,13 +224,18 @@ func (s *ExciseStampService) ListStampOrders(
 	for _, o := range orders {
 		out.Orders = append(out.Orders, stampOrderToProto(o))
 	}
+	rateByJ := make(map[string]float64, len(rates))
+	for _, r := range rates {
+		rateByJ[r.Jurisdiction] = r.BottlesPerDay30d
+	}
 	for _, s := range summaries {
 		out.Summaries = append(out.Summaries, &stillhousev1.ExciseStampJurisdictionSummary{
-			Jurisdiction:  s.Jurisdiction,
-			TotalReceived: s.TotalReceived,
-			TotalApplied:  s.TotalApplied,
-			TotalVoided:   s.TotalVoided,
-			TotalOnHand:   s.TotalOnHand,
+			Jurisdiction:     s.Jurisdiction,
+			TotalReceived:    s.TotalReceived,
+			TotalApplied:     s.TotalApplied,
+			TotalVoided:      s.TotalVoided,
+			TotalOnHand:      s.TotalOnHand,
+			BottlesPerDay_30D: rateByJ[s.Jurisdiction],
 		})
 	}
 	return connect.NewResponse(out), nil

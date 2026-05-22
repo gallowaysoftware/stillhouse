@@ -243,14 +243,15 @@ func (x *ExciseStampOrder) GetUpdatedAt() *timestamppb.Timestamp {
 }
 
 type ExciseStampJurisdictionSummary struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Jurisdiction  string                 `protobuf:"bytes,1,opt,name=jurisdiction,proto3" json:"jurisdiction,omitempty"`
-	TotalReceived int32                  `protobuf:"varint,2,opt,name=total_received,json=totalReceived,proto3" json:"total_received,omitempty"`
-	TotalApplied  int32                  `protobuf:"varint,3,opt,name=total_applied,json=totalApplied,proto3" json:"total_applied,omitempty"`
-	TotalVoided   int32                  `protobuf:"varint,4,opt,name=total_voided,json=totalVoided,proto3" json:"total_voided,omitempty"`
-	TotalOnHand   int32                  `protobuf:"varint,5,opt,name=total_on_hand,json=totalOnHand,proto3" json:"total_on_hand,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Jurisdiction      string                 `protobuf:"bytes,1,opt,name=jurisdiction,proto3" json:"jurisdiction,omitempty"`
+	TotalReceived     int32                  `protobuf:"varint,2,opt,name=total_received,json=totalReceived,proto3" json:"total_received,omitempty"`
+	TotalApplied      int32                  `protobuf:"varint,3,opt,name=total_applied,json=totalApplied,proto3" json:"total_applied,omitempty"`
+	TotalVoided       int32                  `protobuf:"varint,4,opt,name=total_voided,json=totalVoided,proto3" json:"total_voided,omitempty"`
+	TotalOnHand       int32                  `protobuf:"varint,5,opt,name=total_on_hand,json=totalOnHand,proto3" json:"total_on_hand,omitempty"`
+	BottlesPerDay_30D float64                `protobuf:"fixed64,6,opt,name=bottles_per_day_30d,json=bottlesPerDay30d,proto3" json:"bottles_per_day_30d,omitempty"` // bottling rate over past 30 days
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *ExciseStampJurisdictionSummary) Reset() {
@@ -314,6 +315,13 @@ func (x *ExciseStampJurisdictionSummary) GetTotalVoided() int32 {
 func (x *ExciseStampJurisdictionSummary) GetTotalOnHand() int32 {
 	if x != nil {
 		return x.TotalOnHand
+	}
+	return 0
+}
+
+func (x *ExciseStampJurisdictionSummary) GetBottlesPerDay_30D() float64 {
+	if x != nil {
+		return x.BottlesPerDay_30D
 	}
 	return 0
 }
@@ -769,13 +777,14 @@ const file_stillhouse_v1_excise_stamp_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd7\x01\n" +
+	"updated_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x86\x02\n" +
 	"\x1eExciseStampJurisdictionSummary\x12\"\n" +
 	"\fjurisdiction\x18\x01 \x01(\tR\fjurisdiction\x12%\n" +
 	"\x0etotal_received\x18\x02 \x01(\x05R\rtotalReceived\x12#\n" +
 	"\rtotal_applied\x18\x03 \x01(\x05R\ftotalApplied\x12!\n" +
 	"\ftotal_voided\x18\x04 \x01(\x05R\vtotalVoided\x12\"\n" +
-	"\rtotal_on_hand\x18\x05 \x01(\x05R\vtotalOnHand\"~\n" +
+	"\rtotal_on_hand\x18\x05 \x01(\x05R\vtotalOnHand\x12-\n" +
+	"\x13bottles_per_day_30d\x18\x06 \x01(\x01R\x10bottlesPerDay30d\"~\n" +
 	"\x17CreateStampOrderRequest\x12\"\n" +
 	"\fjurisdiction\x18\x01 \x01(\tR\fjurisdiction\x12)\n" +
 	"\x10quantity_ordered\x18\x02 \x01(\x05R\x0fquantityOrdered\x12\x14\n" +

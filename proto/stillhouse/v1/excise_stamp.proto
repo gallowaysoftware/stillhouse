@@ -39,6 +39,7 @@ message ExciseStampJurisdictionSummary {
   int32  total_applied = 3;
   int32  total_voided = 4;
   int32  total_on_hand = 5;
+  double bottles_per_day_30d = 6;       // bottling rate over past 30 days
 }
 
 // --- requests ---

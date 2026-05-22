@@ -21,6 +21,9 @@ type Querier interface {
 	// For a barrel_dump-tagged bulk_movement, return the barrel + its fill
 	// history (so we can include the original distillation behind the fill).
 	BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID) ([]BarrelDumpsForContainerFillRow, error)
+	// Daily bottling rate per jurisdiction over the past 30 days. Used by the
+	// dashboard to convert on-hand stamp counts into a "days of stock" estimate.
+	Bottling30DayRatePerJurisdiction(ctx context.Context) ([]Bottling30DayRatePerJurisdictionRow, error)
 	// Given a bottling run, return the bulk_movements that fed into its source
 	// container in the 365 days leading up to the bottling date. Most useful
 	// when the source container is a blend tank or spirit receiver that

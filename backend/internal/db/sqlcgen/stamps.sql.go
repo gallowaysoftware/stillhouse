@@ -12,6 +12,41 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const bottling30DayRatePerJurisdiction = `-- name: Bottling30DayRatePerJurisdiction :many
+SELECT destination_jurisdiction AS jurisdiction,
+       (SUM(bottle_count)::double precision / 30.0)::double precision AS bottles_per_day_30d
+FROM bottling_runs
+WHERE bottling_date >= (CURRENT_DATE - INTERVAL '30 days')
+GROUP BY destination_jurisdiction
+`
+
+type Bottling30DayRatePerJurisdictionRow struct {
+	Jurisdiction     string  `json:"jurisdiction"`
+	BottlesPerDay30d float64 `json:"bottles_per_day_30d"`
+}
+
+// Daily bottling rate per jurisdiction over the past 30 days. Used by the
+// dashboard to convert on-hand stamp counts into a "days of stock" estimate.
+func (q *Queries) Bottling30DayRatePerJurisdiction(ctx context.Context) ([]Bottling30DayRatePerJurisdictionRow, error) {
+	rows, err := q.db.Query(ctx, bottling30DayRatePerJurisdiction)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Bottling30DayRatePerJurisdictionRow{}
+	for rows.Next() {
+		var i Bottling30DayRatePerJurisdictionRow
+		if err := rows.Scan(&i.Jurisdiction, &i.BottlesPerDay30d); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createStampOrder = `-- name: CreateStampOrder :one
 INSERT INTO excise_stamp_orders (
     tenant_id, jurisdiction, quantity_ordered, notes
