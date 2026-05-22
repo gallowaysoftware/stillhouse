@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
@@ -115,7 +116,20 @@ func (s *RemovalService) CreateRemoval(
 			ID:             piID,
 			BottlesOnHand:  in.GetBottlesRemoved(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "removal", removal.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"removal_no":      removal.RemovalNo,
+				"product_name":    product.Name,
+				"lot_code":        pkg.LotCode,
+				"jurisdiction":    pkg.Jurisdiction,
+				"bottles":         removal.BottlesRemoved,
+				"total_laa":       removal.TotalLaa,
+				"duty_cad":        removal.DutyAmountCad,
+				"destination":     removal.DestinationName,
+			})
 	})
 	if err != nil {
 		var connectErr *connect.Error

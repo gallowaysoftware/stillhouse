@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
@@ -120,7 +121,15 @@ func (s *B266Service) SubmitB266(
 			Snapshot:    snapshot,
 			SubmittedBy: uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "b266_period", id.String(),
+			sqlcgen.AuditActionSign, map[string]any{
+				"period_start":     existing.PeriodStart.Time.Format("2006-01-02"),
+				"period_end":       existing.PeriodEnd.Time.Format("2006-01-02"),
+				"duty_payable_cad": report.DutyPayableCad,
+			})
 	})
 	if err != nil {
 		var connectErr *connect.Error

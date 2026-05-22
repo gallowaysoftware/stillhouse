@@ -6,8 +6,8 @@
 // @generated from file stillhouse/v1/audit.proto (package stillhouse.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenEnum, GenFile, GenMessage } from "@bufbuild/protobuf/codegenv2";
-import { enumDesc, fileDesc, messageDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/audit.proto.
  */
 export const file_stillhouse_v1_audit: GenFile = /*@__PURE__*/
-  fileDesc("ChlzdGlsbGhvdXNlL3YxL2F1ZGl0LnByb3RvEg1zdGlsbGhvdXNlLnYxItcBCgpBdWRpdEV2ZW50EgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEhMKC2VudGl0eV90eXBlGAQgASgJEhEKCWVudGl0eV9pZBgFIAEoCRIqCgZhY3Rpb24YBiABKA4yGi5zdGlsbGhvdXNlLnYxLkF1ZGl0QWN0aW9uEi8KC29jY3VycmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxwYXlsb2FkX2pzb24YCCABKAwqvgEKC0F1ZGl0QWN0aW9uEhwKGEFVRElUX0FDVElPTl9VTlNQRUNJRklFRBAAEhcKE0FVRElUX0FDVElPTl9DUkVBVEUQARIXChNBVURJVF9BQ1RJT05fVVBEQVRFEAISFwoTQVVESVRfQUNUSU9OX0RFTEVURRADEhUKEUFVRElUX0FDVElPTl9TSUdOEAQSFgoSQVVESVRfQUNUSU9OX0xPR0lOEAUSFwoTQVVESVRfQUNUSU9OX0xPR09VVBAGYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChlzdGlsbGhvdXNlL3YxL2F1ZGl0LnByb3RvEg1zdGlsbGhvdXNlLnYxIoYCCgpBdWRpdEV2ZW50EgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIPCgd1c2VyX2lkGAMgASgJEhIKCnVzZXJfZW1haWwYBCABKAkSGQoRdXNlcl9kaXNwbGF5X25hbWUYBSABKAkSEwoLZW50aXR5X3R5cGUYBiABKAkSEQoJZW50aXR5X2lkGAcgASgJEioKBmFjdGlvbhgIIAEoDjIaLnN0aWxsaG91c2UudjEuQXVkaXRBY3Rpb24SLwoLb2NjdXJyZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhQKDHBheWxvYWRfanNvbhgKIAEoDCJMChZMaXN0QXVkaXRFdmVudHNSZXF1ZXN0EhMKC2VudGl0eV90eXBlGAEgASgJEg0KBWxpbWl0GAIgASgFEg4KBm9mZnNldBgDIAEoBSJZChdMaXN0QXVkaXRFdmVudHNSZXNwb25zZRIpCgZldmVudHMYASADKAsyGS5zdGlsbGhvdXNlLnYxLkF1ZGl0RXZlbnQSEwoLdG90YWxfY291bnQYAiABKAMqvgEKC0F1ZGl0QWN0aW9uEhwKGEFVRElUX0FDVElPTl9VTlNQRUNJRklFRBAAEhcKE0FVRElUX0FDVElPTl9DUkVBVEUQARIXChNBVURJVF9BQ1RJT05fVVBEQVRFEAISFwoTQVVESVRfQUNUSU9OX0RFTEVURRADEhUKEUFVRElUX0FDVElPTl9TSUdOEAQSFgoSQVVESVRfQUNUSU9OX0xPR0lOEAUSFwoTQVVESVRfQUNUSU9OX0xPR09VVBAGMnAKDEF1ZGl0U2VydmljZRJgCg9MaXN0QXVkaXRFdmVudHMSJS5zdGlsbGhvdXNlLnYxLkxpc3RBdWRpdEV2ZW50c1JlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkxpc3RBdWRpdEV2ZW50c1Jlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.AuditEvent
@@ -33,38 +33,44 @@ export type AuditEvent = Message<"stillhouse.v1.AuditEvent"> & {
   tenantId: string;
 
   /**
-   * nullable in DB; empty string here when system-generated
+   * empty when system-generated
    *
    * @generated from field: string user_id = 3;
    */
   userId: string;
 
   /**
-   * e.g., "tenant", "user", "bulk_movement"
-   *
-   * @generated from field: string entity_type = 4;
+   * @generated from field: string user_email = 4;
+   */
+  userEmail: string;
+
+  /**
+   * @generated from field: string user_display_name = 5;
+   */
+  userDisplayName: string;
+
+  /**
+   * @generated from field: string entity_type = 6;
    */
   entityType: string;
 
   /**
-   * @generated from field: string entity_id = 5;
+   * @generated from field: string entity_id = 7;
    */
   entityId: string;
 
   /**
-   * @generated from field: stillhouse.v1.AuditAction action = 6;
+   * @generated from field: stillhouse.v1.AuditAction action = 8;
    */
   action: AuditAction;
 
   /**
-   * @generated from field: google.protobuf.Timestamp occurred_at = 7;
+   * @generated from field: google.protobuf.Timestamp occurred_at = 9;
    */
   occurredAt?: Timestamp | undefined;
 
   /**
-   * JSON-encoded change payload (before/after where applicable)
-   *
-   * @generated from field: bytes payload_json = 8;
+   * @generated from field: bytes payload_json = 10;
    */
   payloadJson: Uint8Array;
 };
@@ -75,6 +81,59 @@ export type AuditEvent = Message<"stillhouse.v1.AuditEvent"> & {
  */
 export const AuditEventSchema: GenMessage<AuditEvent> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_audit, 0);
+
+/**
+ * @generated from message stillhouse.v1.ListAuditEventsRequest
+ */
+export type ListAuditEventsRequest = Message<"stillhouse.v1.ListAuditEventsRequest"> & {
+  /**
+   * optional filter
+   *
+   * @generated from field: string entity_type = 1;
+   */
+  entityType: string;
+
+  /**
+   * default 100, max 1000
+   *
+   * @generated from field: int32 limit = 2;
+   */
+  limit: number;
+
+  /**
+   * @generated from field: int32 offset = 3;
+   */
+  offset: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListAuditEventsRequest.
+ * Use `create(ListAuditEventsRequestSchema)` to create a new message.
+ */
+export const ListAuditEventsRequestSchema: GenMessage<ListAuditEventsRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_audit, 1);
+
+/**
+ * @generated from message stillhouse.v1.ListAuditEventsResponse
+ */
+export type ListAuditEventsResponse = Message<"stillhouse.v1.ListAuditEventsResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.AuditEvent events = 1;
+   */
+  events: AuditEvent[];
+
+  /**
+   * @generated from field: int64 total_count = 2;
+   */
+  totalCount: bigint;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListAuditEventsResponse.
+ * Use `create(ListAuditEventsResponseSchema)` to create a new message.
+ */
+export const ListAuditEventsResponseSchema: GenMessage<ListAuditEventsResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_audit, 2);
 
 /**
  * @generated from enum stillhouse.v1.AuditAction
@@ -121,4 +180,19 @@ export enum AuditAction {
  */
 export const AuditActionSchema: GenEnum<AuditAction> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_audit, 0);
+
+/**
+ * @generated from service stillhouse.v1.AuditService
+ */
+export const AuditService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.AuditService.ListAuditEvents
+   */
+  listAuditEvents: {
+    methodKind: "unary";
+    input: typeof ListAuditEventsRequestSchema;
+    output: typeof ListAuditEventsResponseSchema;
+  },
+}> = /*@__PURE__*/
+  serviceDesc(file_stillhouse_v1_audit, 0);
 

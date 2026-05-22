@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -385,11 +386,22 @@ func (s *DistillationService) RecordProductionGauge(
 		}
 
 		// 4. Advance the run's status.
-		_, e = q.UpdateDistillationStatus(ctx, sqlcgen.UpdateDistillationStatusParams{
+		if _, e = q.UpdateDistillationStatus(ctx, sqlcgen.UpdateDistillationStatusParams{
 			ID:     runID,
 			Status: sqlcgen.DistillationStatusGauged,
-		})
-		return e
+		}); e != nil {
+			return e
+		}
+
+		// 5. Audit log — sign by the gauger.
+		return audit.Write(ctx, q, u.TenantID, u.ID, "production_gauge", gauge.ID.String(),
+			sqlcgen.AuditActionSign, map[string]any{
+				"distillation_run_id": runID.String(),
+				"destination":         updated.Name,
+				"volume_l":            volume,
+				"abv_pct":             abv,
+				"laa":                 laa,
+			})
 	})
 	if err != nil {
 		var connectErr *connect.Error

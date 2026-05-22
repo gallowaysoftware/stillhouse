@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -222,6 +223,21 @@ func (s *BottlingService) CreateBottlingRun(
 			return e
 		}
 		productOut = product
+
+		// 9. Audit log.
+		if e := audit.Write(ctx, q, u.TenantID, u.ID, "bottling_run", run.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"run_no":        run.RunNo,
+				"product_id":    productID.String(),
+				"product_name":  product.Name,
+				"jurisdiction":  in.GetDestinationJurisdiction(),
+				"bottle_count":  in.GetBottleCount(),
+				"lot_code":      in.GetLotCode(),
+				"tank_laa":      laa,
+				"source_id":     sourceID.String(),
+			}); e != nil {
+			return e
+		}
 		return nil
 	})
 	if err != nil {

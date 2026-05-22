@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
+import { AuditPage } from "./pages/AuditPage";
 import { B266Page } from "./pages/B266Page";
 import { BarrelDetailPage } from "./pages/BarrelDetailPage";
 import { BarrelsPage } from "./pages/BarrelsPage";
@@ -49,6 +50,7 @@ export function App() {
       <Route path="/bottling" element={<Guarded><BottlingPage /></Guarded>} />
       <Route path="/removals" element={<Guarded><RemovalsPage /></Guarded>} />
       <Route path="/b266" element={<Guarded><B266Page /></Guarded>} />
+      <Route path="/audit" element={<Guarded><AuditPage /></Guarded>} />
     </Routes>
   );
 }

@@ -88,17 +88,19 @@ func (AuditAction) EnumDescriptor() ([]byte, []int) {
 }
 
 type AuditEvent struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	TenantId      string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`             // nullable in DB; empty string here when system-generated
-	EntityType    string                 `protobuf:"bytes,4,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"` // e.g., "tenant", "user", "bulk_movement"
-	EntityId      string                 `protobuf:"bytes,5,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
-	Action        AuditAction            `protobuf:"varint,6,opt,name=action,proto3,enum=stillhouse.v1.AuditAction" json:"action,omitempty"`
-	OccurredAt    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
-	PayloadJson   []byte                 `protobuf:"bytes,8,opt,name=payload_json,json=payloadJson,proto3" json:"payload_json,omitempty"` // JSON-encoded change payload (before/after where applicable)
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId        string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	UserId          string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // empty when system-generated
+	UserEmail       string                 `protobuf:"bytes,4,opt,name=user_email,json=userEmail,proto3" json:"user_email,omitempty"`
+	UserDisplayName string                 `protobuf:"bytes,5,opt,name=user_display_name,json=userDisplayName,proto3" json:"user_display_name,omitempty"`
+	EntityType      string                 `protobuf:"bytes,6,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"`
+	EntityId        string                 `protobuf:"bytes,7,opt,name=entity_id,json=entityId,proto3" json:"entity_id,omitempty"`
+	Action          AuditAction            `protobuf:"varint,8,opt,name=action,proto3,enum=stillhouse.v1.AuditAction" json:"action,omitempty"`
+	OccurredAt      *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	PayloadJson     []byte                 `protobuf:"bytes,10,opt,name=payload_json,json=payloadJson,proto3" json:"payload_json,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *AuditEvent) Reset() {
@@ -152,6 +154,20 @@ func (x *AuditEvent) GetUserId() string {
 	return ""
 }
 
+func (x *AuditEvent) GetUserEmail() string {
+	if x != nil {
+		return x.UserEmail
+	}
+	return ""
+}
+
+func (x *AuditEvent) GetUserDisplayName() string {
+	if x != nil {
+		return x.UserDisplayName
+	}
+	return ""
+}
+
 func (x *AuditEvent) GetEntityType() string {
 	if x != nil {
 		return x.EntityType
@@ -187,23 +203,148 @@ func (x *AuditEvent) GetPayloadJson() []byte {
 	return nil
 }
 
+type ListAuditEventsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EntityType    string                 `protobuf:"bytes,1,opt,name=entity_type,json=entityType,proto3" json:"entity_type,omitempty"` // optional filter
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`                            // default 100, max 1000
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAuditEventsRequest) Reset() {
+	*x = ListAuditEventsRequest{}
+	mi := &file_stillhouse_v1_audit_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAuditEventsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAuditEventsRequest) ProtoMessage() {}
+
+func (x *ListAuditEventsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_audit_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAuditEventsRequest.ProtoReflect.Descriptor instead.
+func (*ListAuditEventsRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_audit_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListAuditEventsRequest) GetEntityType() string {
+	if x != nil {
+		return x.EntityType
+	}
+	return ""
+}
+
+func (x *ListAuditEventsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListAuditEventsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type ListAuditEventsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Events        []*AuditEvent          `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
+	TotalCount    int64                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListAuditEventsResponse) Reset() {
+	*x = ListAuditEventsResponse{}
+	mi := &file_stillhouse_v1_audit_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListAuditEventsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListAuditEventsResponse) ProtoMessage() {}
+
+func (x *ListAuditEventsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_audit_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListAuditEventsResponse.ProtoReflect.Descriptor instead.
+func (*ListAuditEventsResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_audit_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ListAuditEventsResponse) GetEvents() []*AuditEvent {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
+func (x *ListAuditEventsResponse) GetTotalCount() int64 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
+}
+
 var File_stillhouse_v1_audit_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_audit_proto_rawDesc = "" +
 	"\n" +
-	"\x19stillhouse/v1/audit.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa4\x02\n" +
+	"\x19stillhouse/v1/audit.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xef\x02\n" +
 	"\n" +
 	"AuditEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x1f\n" +
-	"\ventity_type\x18\x04 \x01(\tR\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x1d\n" +
+	"\n" +
+	"user_email\x18\x04 \x01(\tR\tuserEmail\x12*\n" +
+	"\x11user_display_name\x18\x05 \x01(\tR\x0fuserDisplayName\x12\x1f\n" +
+	"\ventity_type\x18\x06 \x01(\tR\n" +
 	"entityType\x12\x1b\n" +
-	"\tentity_id\x18\x05 \x01(\tR\bentityId\x122\n" +
-	"\x06action\x18\x06 \x01(\x0e2\x1a.stillhouse.v1.AuditActionR\x06action\x12;\n" +
-	"\voccurred_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"\tentity_id\x18\a \x01(\tR\bentityId\x122\n" +
+	"\x06action\x18\b \x01(\x0e2\x1a.stillhouse.v1.AuditActionR\x06action\x12;\n" +
+	"\voccurred_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"occurredAt\x12!\n" +
-	"\fpayload_json\x18\b \x01(\fR\vpayloadJson*\xbe\x01\n" +
+	"\fpayload_json\x18\n" +
+	" \x01(\fR\vpayloadJson\"g\n" +
+	"\x16ListAuditEventsRequest\x12\x1f\n" +
+	"\ventity_type\x18\x01 \x01(\tR\n" +
+	"entityType\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"m\n" +
+	"\x17ListAuditEventsResponse\x121\n" +
+	"\x06events\x18\x01 \x03(\v2\x19.stillhouse.v1.AuditEventR\x06events\x12\x1f\n" +
+	"\vtotal_count\x18\x02 \x01(\x03R\n" +
+	"totalCount*\xbe\x01\n" +
 	"\vAuditAction\x12\x1c\n" +
 	"\x18AUDIT_ACTION_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13AUDIT_ACTION_CREATE\x10\x01\x12\x17\n" +
@@ -211,7 +352,9 @@ const file_stillhouse_v1_audit_proto_rawDesc = "" +
 	"\x13AUDIT_ACTION_DELETE\x10\x03\x12\x15\n" +
 	"\x11AUDIT_ACTION_SIGN\x10\x04\x12\x16\n" +
 	"\x12AUDIT_ACTION_LOGIN\x10\x05\x12\x17\n" +
-	"\x13AUDIT_ACTION_LOGOUT\x10\x06B\xce\x01\n" +
+	"\x13AUDIT_ACTION_LOGOUT\x10\x062p\n" +
+	"\fAuditService\x12`\n" +
+	"\x0fListAuditEvents\x12%.stillhouse.v1.ListAuditEventsRequest\x1a&.stillhouse.v1.ListAuditEventsResponseB\xce\x01\n" +
 	"\x11com.stillhouse.v1B\n" +
 	"AuditProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
@@ -228,20 +371,25 @@ func file_stillhouse_v1_audit_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_audit_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_audit_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_stillhouse_v1_audit_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_stillhouse_v1_audit_proto_goTypes = []any{
-	(AuditAction)(0),              // 0: stillhouse.v1.AuditAction
-	(*AuditEvent)(nil),            // 1: stillhouse.v1.AuditEvent
-	(*timestamppb.Timestamp)(nil), // 2: google.protobuf.Timestamp
+	(AuditAction)(0),                // 0: stillhouse.v1.AuditAction
+	(*AuditEvent)(nil),              // 1: stillhouse.v1.AuditEvent
+	(*ListAuditEventsRequest)(nil),  // 2: stillhouse.v1.ListAuditEventsRequest
+	(*ListAuditEventsResponse)(nil), // 3: stillhouse.v1.ListAuditEventsResponse
+	(*timestamppb.Timestamp)(nil),   // 4: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_audit_proto_depIdxs = []int32{
 	0, // 0: stillhouse.v1.AuditEvent.action:type_name -> stillhouse.v1.AuditAction
-	2, // 1: stillhouse.v1.AuditEvent.occurred_at:type_name -> google.protobuf.Timestamp
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	4, // 1: stillhouse.v1.AuditEvent.occurred_at:type_name -> google.protobuf.Timestamp
+	1, // 2: stillhouse.v1.ListAuditEventsResponse.events:type_name -> stillhouse.v1.AuditEvent
+	2, // 3: stillhouse.v1.AuditService.ListAuditEvents:input_type -> stillhouse.v1.ListAuditEventsRequest
+	3, // 4: stillhouse.v1.AuditService.ListAuditEvents:output_type -> stillhouse.v1.ListAuditEventsResponse
+	4, // [4:5] is the sub-list for method output_type
+	3, // [3:4] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_audit_proto_init() }
@@ -255,9 +403,9 @@ func file_stillhouse_v1_audit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_audit_proto_rawDesc), len(file_stillhouse_v1_audit_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   1,
+			NumMessages:   3,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_stillhouse_v1_audit_proto_goTypes,
 		DependencyIndexes: file_stillhouse_v1_audit_proto_depIdxs,

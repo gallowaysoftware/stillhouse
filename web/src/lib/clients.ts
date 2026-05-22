@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 
+import { AuditService } from "@/gen/stillhouse/v1/audit_pb";
 import { AuthService } from "@/gen/stillhouse/v1/auth_pb";
 import { B266Service } from "@/gen/stillhouse/v1/b266_pb";
 import { BarrelService } from "@/gen/stillhouse/v1/barrel_pb";
@@ -33,3 +34,4 @@ export const exciseStampClient = createClient(ExciseStampService, transport);
 export const bottlingClient = createClient(BottlingService, transport);
 export const removalClient = createClient(RemovalService, transport);
 export const b266Client = createClient(B266Service, transport);
+export const auditClient = createClient(AuditService, transport);
