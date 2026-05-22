@@ -42,7 +42,7 @@ jobs:
           fi
 
   backend:
-    name: backend / build + vet + test
+    name: backend / build + vet + unit test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,10 +52,45 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: go vet
         run: cd backend && go vet ./...
-      - name: go test
+      - name: go test (unit)
         run: cd backend && go test ./...
       - name: go build
         run: cd backend && go build ./...
+
+  backend-integration:
+    name: backend / integration (RLS isolation)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: stillhouse
+          POSTGRES_USER: stillhouse
+          POSTGRES_PASSWORD: stillhouse
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U stillhouse"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: backend/go.sum
+      - name: Install golang-migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+      - name: Apply migrations (creates stillhouse_app role too)
+        env:
+          PG_DSN: postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable
+        run: migrate -path backend/internal/db/migrations -database "$PG_DSN" up
+      - name: Run integration tests
+        env:
+          STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN: postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable
+          STILLHOUSE_INTEGRATION_TEST_DSN: postgres://stillhouse_app:stillhouse_app@localhost:5432/stillhouse?sslmode=disable
+        run: cd backend && go test -v -run TestRLSIsolation ./internal/tenantdb/
 
   web:
     name: web / typecheck + build
