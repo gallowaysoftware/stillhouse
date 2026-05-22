@@ -113,7 +113,27 @@ export function RecipeDetailPage() {
               )}
             </div>
             <button
-              onClick={() => setShowEditor((s) => !s)}
+              onClick={() => {
+                if (!showEditor && recipe.data.currentVersion) {
+                  const cv = recipe.data.currentVersion;
+                  setMashEff(String(cv.mashEfficiencyPct));
+                  setFermentEff(String(cv.fermentEfficiencyPct));
+                  setDistillEff(String(cv.distillationRecoveryPct));
+                  setWaterL(cv.targetWaterLSet ? String(cv.targetWaterL) : "");
+                  setVersionNotes("");
+                  setRows(
+                    cv.ingredients.length > 0
+                      ? cv.ingredients.map((ing) => ({
+                          materialId: ing.materialId,
+                          quantity: String(ing.quantity),
+                          uom: ing.uom,
+                          notes: ing.notes,
+                        }))
+                      : [{ materialId: "", quantity: "", uom: "kg", notes: "" }],
+                  );
+                }
+                setShowEditor((s) => !s);
+              }}
               className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
             >
               {showEditor
