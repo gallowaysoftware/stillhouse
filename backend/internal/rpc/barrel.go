@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -314,7 +315,16 @@ func (s *BarrelService) FillBarrel(
 			}
 			attrs.FillDate = fillDate
 		}
-		return nil
+		return audit.Write(ctx, q, u.TenantID, u.ID, "barrel", barrelID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":     "fill",
+				"barrel":    barrelContainer.Name,
+				"source_id": sourceID.String(),
+				"volume_l":  in.GetVolumeL(),
+				"abv_pct":   in.GetAbvPct(),
+				"laa":       laa,
+				"fill_date": attrs.FillDate.Time.Format("2006-01-02"),
+			})
 	})
 	if err != nil {
 		var connectErr *connect.Error
@@ -454,7 +464,16 @@ func (s *BarrelService) DumpBarrel(
 		}
 		attrs.FillDate = pgtype.Date{Valid: false}
 		attrs.DaysAgedAtDump = pgtype.Int4{Int32: daysAged, Valid: true}
-		return nil
+		return audit.Write(ctx, q, u.TenantID, u.ID, "barrel", barrelID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":          "dump",
+				"barrel":         barrelContainer.Name,
+				"destination_id": destID.String(),
+				"volume_l":       in.GetVolumeL(),
+				"abv_pct":        in.GetAbvPct(),
+				"laa":            laa,
+				"days_aged":      daysAged,
+			})
 	})
 	if err != nil {
 		var connectErr *connect.Error
@@ -572,7 +591,18 @@ func (s *BarrelService) RegaugeBarrel(
 		}
 
 		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "barrel", barrelID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":        "regauge",
+				"barrel":       barrelContainer.Name,
+				"new_volume_l": in.GetNewVolumeL(),
+				"new_abv_pct":  in.GetNewAbvPct(),
+				"new_laa":      newLAA,
+				"lost_laa":     lostLAA,
+			})
 	})
 	if err != nil {
 		var connectErr *connect.Error
