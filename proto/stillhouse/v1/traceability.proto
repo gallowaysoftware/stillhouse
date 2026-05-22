@@ -1,0 +1,35 @@
+// Bottling-lot traceability — walk the chain from a packaged lot
+// backward through bottling, the source container's recent feeds,
+// barrels, distillations, fermentations, mashes, and the recipe used.
+// Read-only; assembles existing tables.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message TraceabilityNode {
+  // Free-form kind so the tree can be rendered generically.
+  // Values: bottling_run | bulk_movement | barrel | distillation_run |
+  //         fermentation_run | mash_run | recipe_version
+  string kind = 1;
+  string id = 2;
+  // One-line headline rendered as the node title.
+  string headline = 3;
+  // Optional secondary line for context (date, LAA, etc.).
+  string detail = 4;
+  google.protobuf.Timestamp occurred_at = 5;
+}
+
+message TraceBottlingRunRequest { string bottling_run_id = 1; }
+message TraceBottlingRunResponse {
+  string bottling_run_id = 1;
+  string lot_code = 2;
+  // Flattened tree, deepest-first. The caller renders with indentation
+  // based on a depth field embedded in the headline (e.g., "↳ Barrel A").
+  repeated TraceabilityNode nodes = 3;
+}
+
+service TraceabilityService {
+  rpc TraceBottlingRun(TraceBottlingRunRequest) returns (TraceBottlingRunResponse);
+}

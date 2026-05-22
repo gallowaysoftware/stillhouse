@@ -16,6 +16,7 @@ import { ProductService } from "@/gen/stillhouse/v1/product_pb";
 import { RecipeService } from "@/gen/stillhouse/v1/recipe_pb";
 import { RemovalService } from "@/gen/stillhouse/v1/removal_pb";
 import { TenantService } from "@/gen/stillhouse/v1/tenant_pb";
+import { TraceabilityService } from "@/gen/stillhouse/v1/traceability_pb";
 import { UserService } from "@/gen/stillhouse/v1/user_pb";
 
 import { transport } from "./transport";
@@ -37,3 +38,4 @@ export const removalClient = createClient(RemovalService, transport);
 export const b266Client = createClient(B266Service, transport);
 export const auditClient = createClient(AuditService, transport);
 export const pricingClient = createClient(PricingService, transport);
+export const traceabilityClient = createClient(TraceabilityService, transport);

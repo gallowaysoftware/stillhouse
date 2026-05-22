@@ -18,6 +18,14 @@ type Querier interface {
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
+	// For a barrel_dump-tagged bulk_movement, return the barrel + its fill
+	// history (so we can include the original distillation behind the fill).
+	BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID) ([]BarrelDumpsForContainerFillRow, error)
+	// Given a bottling run, return the bulk_movements that fed into its source
+	// container in the 365 days leading up to the bottling date. Most useful
+	// when the source container is a blend tank or spirit receiver that
+	// collected from multiple barrels/distillations.
+	BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChainFeedsParams) ([]BottlingRunChainFeedsRow, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountTenants(ctx context.Context) (int64, error)
 	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
@@ -39,6 +47,10 @@ type Querier interface {
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
+	// Pull the distillation run + first ferment + first mash + recipe behind
+	// a production_gauge bulk_movement. Returns the "earliest origin" row;
+	// real chains may fan out and require iterating per-charge.
+	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) (DistillationChainFromGaugeRow, error)
 	GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByDatesParams) (B266Period, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
