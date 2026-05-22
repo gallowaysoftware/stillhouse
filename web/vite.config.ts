@@ -19,6 +19,7 @@ export default defineConfig({
     proxy: {
       "/stillhouse.v1.": { target: BACKEND, changeOrigin: false },
       "/healthz": { target: BACKEND, changeOrigin: false },
+      "/export": { target: BACKEND, changeOrigin: false },
     },
   },
 });

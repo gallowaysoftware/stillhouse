@@ -46,6 +46,12 @@ export function AuditPage() {
             className="w-64 rounded border border-stone-300 px-3 py-2 text-sm"
           />
         </div>
+        <a
+          href={`/export/audit.csv${entityType ? `?entity_type=${encodeURIComponent(entityType)}` : ""}`}
+          className="rounded border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
+        >
+          Export CSV
+        </a>
         <p className="text-xs text-stone-500">
           {data && <>{data.totalCount.toString()} total events</>}
         </p>
