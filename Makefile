@@ -93,9 +93,15 @@ build-web: ## Build the web frontend (output: web/dist).
 build-backend: ## Build the Go server (output: backend/bin/server).
 	cd backend && go build -o bin/server ./cmd/server
 
-test: ## Run all tests.
+test: ## Run all unit tests.
 	cd backend && go test ./...
 	cd web && npm test --if-present
+
+test-integration: ## Run integration tests against the local Postgres (requires dev-up).
+	cd backend && \
+	    STILLHOUSE_INTEGRATION_TEST_DSN="$(PG_APP_DSN)" \
+	    STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN="$(PG_ADMIN_DSN)" \
+	    go test -v -tags integration ./...
 
 lint: ## Run linters.
 	cd backend && go vet ./...
