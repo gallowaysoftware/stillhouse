@@ -304,6 +304,8 @@ export function RecipeDetailPage() {
           ) : (
             <p className="text-stone-500">No version yet. Click <b>Add first version</b>.</p>
           )}
+
+          <VersionHistory recipeId={id} currentVersionId={recipe.data.recipe.currentVersionId} />
         </>
       )}
     </Shell>
@@ -315,6 +317,56 @@ export function RecipeDetailPage() {
   function removeRow(idx: number) {
     setRows((rs) => (rs.length === 1 ? rs : rs.filter((_, i) => i !== idx)));
   }
+}
+
+function VersionHistory({ recipeId, currentVersionId }: { recipeId: string; currentVersionId: string }) {
+  const versions = useQuery({
+    queryKey: ["listRecipeVersions", recipeId],
+    queryFn: () => recipeClient.listRecipeVersions({ recipeId }),
+  });
+  if (versions.isLoading) return null;
+  const list = versions.data?.versions ?? [];
+  if (list.length <= 1) return null;
+  return (
+    <section className="mt-8">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Version history</h2>
+      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
+        <table className="min-w-full divide-y divide-stone-200 text-sm">
+          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+            <tr>
+              <th className="px-4 py-2">Version</th>
+              <th className="px-4 py-2">Saved</th>
+              <th className="px-4 py-2 text-right">Mash %</th>
+              <th className="px-4 py-2 text-right">Ferment %</th>
+              <th className="px-4 py-2 text-right">Distill %</th>
+              <th className="px-4 py-2 text-right">Target water (L)</th>
+              <th className="px-4 py-2">Notes</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {list.map((v) => (
+              <tr key={v.id} className={v.id === currentVersionId ? "bg-emerald-50" : ""}>
+                <td className="px-4 py-2 font-medium text-stone-900">
+                  v{v.versionNo}
+                  {v.id === currentVersionId && (
+                    <span className="ml-2 rounded bg-emerald-200 px-2 py-0.5 text-xs text-emerald-800">current</span>
+                  )}
+                </td>
+                <td className="px-4 py-2 text-stone-600">
+                  {v.createdAt ? new Date(Number(v.createdAt.seconds) * 1000).toLocaleString() : ""}
+                </td>
+                <td className="px-4 py-2 text-right text-stone-600">{(v.mashEfficiencyPct * 100).toFixed(1)}%</td>
+                <td className="px-4 py-2 text-right text-stone-600">{(v.fermentEfficiencyPct * 100).toFixed(1)}%</td>
+                <td className="px-4 py-2 text-right text-stone-600">{(v.distillationRecoveryPct * 100).toFixed(1)}%</td>
+                <td className="px-4 py-2 text-right text-stone-600">{v.targetWaterLSet ? v.targetWaterL.toFixed(0) : "—"}</td>
+                <td className="px-4 py-2 text-stone-600">{v.notes}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
 }
 
 function Field({
