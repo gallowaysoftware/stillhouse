@@ -90,6 +90,7 @@ type Querier interface {
 	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
 	ListStampOrdersWithAvailable(ctx context.Context, jurisdiction string) ([]ListStampOrdersWithAvailableRow, error)
+	ListUsersForTenant(ctx context.Context, tenantID uuid.UUID) ([]User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)

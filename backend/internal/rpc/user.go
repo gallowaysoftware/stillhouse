@@ -2,11 +2,15 @@ package rpc
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"errors"
 	"log/slog"
 
 	"connectrpc.com/connect"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/auth"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 )
@@ -37,4 +41,99 @@ func (s *UserService) GetMe(
 		User:   userToProto(u),
 		Tenant: tenantToProto(t),
 	}), nil
+}
+
+// CreateUser is owner-only. The server generates a random initial password
+// and returns it in plaintext exactly once — the calling owner must deliver
+// it to the new user through a secure channel; it is not stored anywhere.
+func (s *UserService) CreateUser(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.CreateUserRequest],
+) (*connect.Response[stillhousev1.CreateUserResponse], error) {
+	caller, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	if caller.Role != sqlcgen.UserRoleOwner {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("only owners can create users"))
+	}
+	in := req.Msg
+	if in.GetEmail() == "" || in.GetDisplayName() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("email and display_name are required"))
+	}
+	role, err := userRoleToDB(in.GetRole())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	pw := generateInitialPassword()
+	hash, err := auth.HashPassword(pw)
+	if err != nil {
+		s.logger.Error("CreateUser: hash", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+
+	created, err := s.q.CreateUser(ctx, sqlcgen.CreateUserParams{
+		TenantID:     caller.TenantID,
+		Email:        in.GetEmail(),
+		PasswordHash: hash,
+		DisplayName:  in.GetDisplayName(),
+		Role:         role,
+	})
+	if err != nil {
+		s.logger.Error("CreateUser", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if err := audit.Write(ctx, s.q, caller.TenantID, caller.ID, "user", created.ID.String(),
+		sqlcgen.AuditActionCreate, map[string]any{
+			"email": created.Email, "role": string(created.Role), "display_name": created.DisplayName,
+		}); err != nil {
+		s.logger.Warn("CreateUser: audit", "err", err)
+	}
+	return connect.NewResponse(&stillhousev1.CreateUserResponse{
+		User:            userToProto(created),
+		InitialPassword: pw,
+	}), nil
+}
+
+func (s *UserService) ListUsers(
+	ctx context.Context,
+	_ *connect.Request[stillhousev1.ListUsersRequest],
+) (*connect.Response[stillhousev1.ListUsersResponse], error) {
+	caller, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	rows, err := s.q.ListUsersForTenant(ctx, caller.TenantID)
+	if err != nil {
+		s.logger.Error("ListUsers", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	out := make([]*stillhousev1.User, 0, len(rows))
+	for _, u := range rows {
+		out = append(out, userToProto(u))
+	}
+	return connect.NewResponse(&stillhousev1.ListUsersResponse{Users: out}), nil
+}
+
+func generateInitialPassword() string {
+	b := make([]byte, 18)
+	if _, err := rand.Read(b); err != nil {
+		// Fallback so we never return an empty password; entropy collapse
+		// here would be a major system issue we'd see elsewhere.
+		return "stillhouse-temporary-please-change"
+	}
+	return base64.RawURLEncoding.EncodeToString(b)
+}
+
+func userRoleToDB(r stillhousev1.UserRole) (sqlcgen.UserRole, error) {
+	switch r {
+	case stillhousev1.UserRole_USER_ROLE_OWNER:
+		return sqlcgen.UserRoleOwner, nil
+	case stillhousev1.UserRole_USER_ROLE_OPERATOR, stillhousev1.UserRole_USER_ROLE_UNSPECIFIED:
+		return sqlcgen.UserRoleOperator, nil
+	case stillhousev1.UserRole_USER_ROLE_VIEWER:
+		return sqlcgen.UserRoleViewer, nil
+	}
+	return "", errors.New("invalid user role")
 }
