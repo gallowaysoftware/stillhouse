@@ -36,6 +36,9 @@ const (
 	// RecipeServiceCreateRecipeProcedure is the fully-qualified name of the RecipeService's
 	// CreateRecipe RPC.
 	RecipeServiceCreateRecipeProcedure = "/stillhouse.v1.RecipeService/CreateRecipe"
+	// RecipeServiceDuplicateRecipeProcedure is the fully-qualified name of the RecipeService's
+	// DuplicateRecipe RPC.
+	RecipeServiceDuplicateRecipeProcedure = "/stillhouse.v1.RecipeService/DuplicateRecipe"
 	// RecipeServiceListRecipesProcedure is the fully-qualified name of the RecipeService's ListRecipes
 	// RPC.
 	RecipeServiceListRecipesProcedure = "/stillhouse.v1.RecipeService/ListRecipes"
@@ -55,6 +58,7 @@ const (
 // RecipeServiceClient is a client for the stillhouse.v1.RecipeService service.
 type RecipeServiceClient interface {
 	CreateRecipe(context.Context, *connect.Request[v1.CreateRecipeRequest]) (*connect.Response[v1.CreateRecipeResponse], error)
+	DuplicateRecipe(context.Context, *connect.Request[v1.DuplicateRecipeRequest]) (*connect.Response[v1.DuplicateRecipeResponse], error)
 	ListRecipes(context.Context, *connect.Request[v1.ListRecipesRequest]) (*connect.Response[v1.ListRecipesResponse], error)
 	GetRecipe(context.Context, *connect.Request[v1.GetRecipeRequest]) (*connect.Response[v1.GetRecipeResponse], error)
 	ArchiveRecipe(context.Context, *connect.Request[v1.ArchiveRecipeRequest]) (*connect.Response[v1.ArchiveRecipeResponse], error)
@@ -77,6 +81,12 @@ func NewRecipeServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			httpClient,
 			baseURL+RecipeServiceCreateRecipeProcedure,
 			connect.WithSchema(recipeServiceMethods.ByName("CreateRecipe")),
+			connect.WithClientOptions(opts...),
+		),
+		duplicateRecipe: connect.NewClient[v1.DuplicateRecipeRequest, v1.DuplicateRecipeResponse](
+			httpClient,
+			baseURL+RecipeServiceDuplicateRecipeProcedure,
+			connect.WithSchema(recipeServiceMethods.ByName("DuplicateRecipe")),
 			connect.WithClientOptions(opts...),
 		),
 		listRecipes: connect.NewClient[v1.ListRecipesRequest, v1.ListRecipesResponse](
@@ -115,6 +125,7 @@ func NewRecipeServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 // recipeServiceClient implements RecipeServiceClient.
 type recipeServiceClient struct {
 	createRecipe       *connect.Client[v1.CreateRecipeRequest, v1.CreateRecipeResponse]
+	duplicateRecipe    *connect.Client[v1.DuplicateRecipeRequest, v1.DuplicateRecipeResponse]
 	listRecipes        *connect.Client[v1.ListRecipesRequest, v1.ListRecipesResponse]
 	getRecipe          *connect.Client[v1.GetRecipeRequest, v1.GetRecipeResponse]
 	archiveRecipe      *connect.Client[v1.ArchiveRecipeRequest, v1.ArchiveRecipeResponse]
@@ -125,6 +136,11 @@ type recipeServiceClient struct {
 // CreateRecipe calls stillhouse.v1.RecipeService.CreateRecipe.
 func (c *recipeServiceClient) CreateRecipe(ctx context.Context, req *connect.Request[v1.CreateRecipeRequest]) (*connect.Response[v1.CreateRecipeResponse], error) {
 	return c.createRecipe.CallUnary(ctx, req)
+}
+
+// DuplicateRecipe calls stillhouse.v1.RecipeService.DuplicateRecipe.
+func (c *recipeServiceClient) DuplicateRecipe(ctx context.Context, req *connect.Request[v1.DuplicateRecipeRequest]) (*connect.Response[v1.DuplicateRecipeResponse], error) {
+	return c.duplicateRecipe.CallUnary(ctx, req)
 }
 
 // ListRecipes calls stillhouse.v1.RecipeService.ListRecipes.
@@ -155,6 +171,7 @@ func (c *recipeServiceClient) ListRecipeVersions(ctx context.Context, req *conne
 // RecipeServiceHandler is an implementation of the stillhouse.v1.RecipeService service.
 type RecipeServiceHandler interface {
 	CreateRecipe(context.Context, *connect.Request[v1.CreateRecipeRequest]) (*connect.Response[v1.CreateRecipeResponse], error)
+	DuplicateRecipe(context.Context, *connect.Request[v1.DuplicateRecipeRequest]) (*connect.Response[v1.DuplicateRecipeResponse], error)
 	ListRecipes(context.Context, *connect.Request[v1.ListRecipesRequest]) (*connect.Response[v1.ListRecipesResponse], error)
 	GetRecipe(context.Context, *connect.Request[v1.GetRecipeRequest]) (*connect.Response[v1.GetRecipeResponse], error)
 	ArchiveRecipe(context.Context, *connect.Request[v1.ArchiveRecipeRequest]) (*connect.Response[v1.ArchiveRecipeResponse], error)
@@ -173,6 +190,12 @@ func NewRecipeServiceHandler(svc RecipeServiceHandler, opts ...connect.HandlerOp
 		RecipeServiceCreateRecipeProcedure,
 		svc.CreateRecipe,
 		connect.WithSchema(recipeServiceMethods.ByName("CreateRecipe")),
+		connect.WithHandlerOptions(opts...),
+	)
+	recipeServiceDuplicateRecipeHandler := connect.NewUnaryHandler(
+		RecipeServiceDuplicateRecipeProcedure,
+		svc.DuplicateRecipe,
+		connect.WithSchema(recipeServiceMethods.ByName("DuplicateRecipe")),
 		connect.WithHandlerOptions(opts...),
 	)
 	recipeServiceListRecipesHandler := connect.NewUnaryHandler(
@@ -209,6 +232,8 @@ func NewRecipeServiceHandler(svc RecipeServiceHandler, opts ...connect.HandlerOp
 		switch r.URL.Path {
 		case RecipeServiceCreateRecipeProcedure:
 			recipeServiceCreateRecipeHandler.ServeHTTP(w, r)
+		case RecipeServiceDuplicateRecipeProcedure:
+			recipeServiceDuplicateRecipeHandler.ServeHTTP(w, r)
 		case RecipeServiceListRecipesProcedure:
 			recipeServiceListRecipesHandler.ServeHTTP(w, r)
 		case RecipeServiceGetRecipeProcedure:
@@ -230,6 +255,10 @@ type UnimplementedRecipeServiceHandler struct{}
 
 func (UnimplementedRecipeServiceHandler) CreateRecipe(context.Context, *connect.Request[v1.CreateRecipeRequest]) (*connect.Response[v1.CreateRecipeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RecipeService.CreateRecipe is not implemented"))
+}
+
+func (UnimplementedRecipeServiceHandler) DuplicateRecipe(context.Context, *connect.Request[v1.DuplicateRecipeRequest]) (*connect.Response[v1.DuplicateRecipeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RecipeService.DuplicateRecipe is not implemented"))
 }
 
 func (UnimplementedRecipeServiceHandler) ListRecipes(context.Context, *connect.Request[v1.ListRecipesRequest]) (*connect.Response[v1.ListRecipesResponse], error) {

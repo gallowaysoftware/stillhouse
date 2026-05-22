@@ -130,8 +130,15 @@ message SaveRecipeVersionResponse {
 message ListRecipeVersionsRequest { string recipe_id = 1; }
 message ListRecipeVersionsResponse { repeated RecipeVersion versions = 1; }
 
+message DuplicateRecipeRequest {
+  string source_recipe_id = 1;
+  string new_name = 2;
+}
+message DuplicateRecipeResponse { Recipe recipe = 1; }
+
 service RecipeService {
   rpc CreateRecipe(CreateRecipeRequest) returns (CreateRecipeResponse);
+  rpc DuplicateRecipe(DuplicateRecipeRequest) returns (DuplicateRecipeResponse);
   rpc ListRecipes(ListRecipesRequest) returns (ListRecipesResponse);
   rpc GetRecipe(GetRecipeRequest) returns (GetRecipeResponse);
   rpc ArchiveRecipe(ArchiveRecipeRequest) returns (ArchiveRecipeResponse);

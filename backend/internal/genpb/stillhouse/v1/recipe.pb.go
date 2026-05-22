@@ -1342,6 +1342,102 @@ func (x *ListRecipeVersionsResponse) GetVersions() []*RecipeVersion {
 	return nil
 }
 
+type DuplicateRecipeRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	SourceRecipeId string                 `protobuf:"bytes,1,opt,name=source_recipe_id,json=sourceRecipeId,proto3" json:"source_recipe_id,omitempty"`
+	NewName        string                 `protobuf:"bytes,2,opt,name=new_name,json=newName,proto3" json:"new_name,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *DuplicateRecipeRequest) Reset() {
+	*x = DuplicateRecipeRequest{}
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DuplicateRecipeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DuplicateRecipeRequest) ProtoMessage() {}
+
+func (x *DuplicateRecipeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DuplicateRecipeRequest.ProtoReflect.Descriptor instead.
+func (*DuplicateRecipeRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DuplicateRecipeRequest) GetSourceRecipeId() string {
+	if x != nil {
+		return x.SourceRecipeId
+	}
+	return ""
+}
+
+func (x *DuplicateRecipeRequest) GetNewName() string {
+	if x != nil {
+		return x.NewName
+	}
+	return ""
+}
+
+type DuplicateRecipeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Recipe        *Recipe                `protobuf:"bytes,1,opt,name=recipe,proto3" json:"recipe,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DuplicateRecipeResponse) Reset() {
+	*x = DuplicateRecipeResponse{}
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DuplicateRecipeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DuplicateRecipeResponse) ProtoMessage() {}
+
+func (x *DuplicateRecipeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DuplicateRecipeResponse.ProtoReflect.Descriptor instead.
+func (*DuplicateRecipeResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DuplicateRecipeResponse) GetRecipe() *Recipe {
+	if x != nil {
+		return x.Recipe
+	}
+	return nil
+}
+
 var File_stillhouse_v1_recipe_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_recipe_proto_rawDesc = "" +
@@ -1456,7 +1552,12 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\x19ListRecipeVersionsRequest\x12\x1b\n" +
 	"\trecipe_id\x18\x01 \x01(\tR\brecipeId\"V\n" +
 	"\x1aListRecipeVersionsResponse\x128\n" +
-	"\bversions\x18\x01 \x03(\v2\x1c.stillhouse.v1.RecipeVersionR\bversions*\x87\x02\n" +
+	"\bversions\x18\x01 \x03(\v2\x1c.stillhouse.v1.RecipeVersionR\bversions\"]\n" +
+	"\x16DuplicateRecipeRequest\x12(\n" +
+	"\x10source_recipe_id\x18\x01 \x01(\tR\x0esourceRecipeId\x12\x19\n" +
+	"\bnew_name\x18\x02 \x01(\tR\anewName\"H\n" +
+	"\x17DuplicateRecipeResponse\x12-\n" +
+	"\x06recipe\x18\x01 \x01(\v2\x15.stillhouse.v1.RecipeR\x06recipe*\x87\x02\n" +
 	"\n" +
 	"SpiritKind\x12\x1b\n" +
 	"\x17SPIRIT_KIND_UNSPECIFIED\x10\x00\x12\x16\n" +
@@ -1468,9 +1569,10 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\x0fSPIRIT_KIND_RUM\x10\x06\x12\x16\n" +
 	"\x12SPIRIT_KIND_BRANDY\x10\a\x12\x17\n" +
 	"\x13SPIRIT_KIND_LIQUEUR\x10\b\x12\x15\n" +
-	"\x11SPIRIT_KIND_OTHER\x10\t2\xbd\x04\n" +
+	"\x11SPIRIT_KIND_OTHER\x10\t2\x9f\x05\n" +
 	"\rRecipeService\x12W\n" +
-	"\fCreateRecipe\x12\".stillhouse.v1.CreateRecipeRequest\x1a#.stillhouse.v1.CreateRecipeResponse\x12T\n" +
+	"\fCreateRecipe\x12\".stillhouse.v1.CreateRecipeRequest\x1a#.stillhouse.v1.CreateRecipeResponse\x12`\n" +
+	"\x0fDuplicateRecipe\x12%.stillhouse.v1.DuplicateRecipeRequest\x1a&.stillhouse.v1.DuplicateRecipeResponse\x12T\n" +
 	"\vListRecipes\x12!.stillhouse.v1.ListRecipesRequest\x1a\".stillhouse.v1.ListRecipesResponse\x12N\n" +
 	"\tGetRecipe\x12\x1f.stillhouse.v1.GetRecipeRequest\x1a .stillhouse.v1.GetRecipeResponse\x12Z\n" +
 	"\rArchiveRecipe\x12#.stillhouse.v1.ArchiveRecipeRequest\x1a$.stillhouse.v1.ArchiveRecipeResponse\x12f\n" +
@@ -1491,7 +1593,7 @@ func file_stillhouse_v1_recipe_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_recipe_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_recipe_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_stillhouse_v1_recipe_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_stillhouse_v1_recipe_proto_goTypes = []any{
 	(SpiritKind)(0),                    // 0: stillhouse.v1.SpiritKind
 	(*Recipe)(nil),                     // 1: stillhouse.v1.Recipe
@@ -1512,16 +1614,18 @@ var file_stillhouse_v1_recipe_proto_goTypes = []any{
 	(*SaveRecipeVersionResponse)(nil),  // 16: stillhouse.v1.SaveRecipeVersionResponse
 	(*ListRecipeVersionsRequest)(nil),  // 17: stillhouse.v1.ListRecipeVersionsRequest
 	(*ListRecipeVersionsResponse)(nil), // 18: stillhouse.v1.ListRecipeVersionsResponse
-	(*timestamppb.Timestamp)(nil),      // 19: google.protobuf.Timestamp
-	(MaterialKind)(0),                  // 20: stillhouse.v1.MaterialKind
+	(*DuplicateRecipeRequest)(nil),     // 19: stillhouse.v1.DuplicateRecipeRequest
+	(*DuplicateRecipeResponse)(nil),    // 20: stillhouse.v1.DuplicateRecipeResponse
+	(*timestamppb.Timestamp)(nil),      // 21: google.protobuf.Timestamp
+	(MaterialKind)(0),                  // 22: stillhouse.v1.MaterialKind
 }
 var file_stillhouse_v1_recipe_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.Recipe.spirit_kind:type_name -> stillhouse.v1.SpiritKind
-	19, // 1: stillhouse.v1.Recipe.created_at:type_name -> google.protobuf.Timestamp
-	19, // 2: stillhouse.v1.Recipe.updated_at:type_name -> google.protobuf.Timestamp
-	19, // 3: stillhouse.v1.RecipeVersion.created_at:type_name -> google.protobuf.Timestamp
+	21, // 1: stillhouse.v1.Recipe.created_at:type_name -> google.protobuf.Timestamp
+	21, // 2: stillhouse.v1.Recipe.updated_at:type_name -> google.protobuf.Timestamp
+	21, // 3: stillhouse.v1.RecipeVersion.created_at:type_name -> google.protobuf.Timestamp
 	3,  // 4: stillhouse.v1.RecipeVersion.ingredients:type_name -> stillhouse.v1.RecipeIngredient
-	20, // 5: stillhouse.v1.RecipeIngredient.material_kind:type_name -> stillhouse.v1.MaterialKind
+	22, // 5: stillhouse.v1.RecipeIngredient.material_kind:type_name -> stillhouse.v1.MaterialKind
 	5,  // 6: stillhouse.v1.RecipeProjection.lines:type_name -> stillhouse.v1.RecipeProjectionLine
 	0,  // 7: stillhouse.v1.CreateRecipeRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
 	1,  // 8: stillhouse.v1.CreateRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
@@ -1534,23 +1638,26 @@ var file_stillhouse_v1_recipe_proto_depIdxs = []int32{
 	2,  // 15: stillhouse.v1.SaveRecipeVersionResponse.version:type_name -> stillhouse.v1.RecipeVersion
 	4,  // 16: stillhouse.v1.SaveRecipeVersionResponse.projection:type_name -> stillhouse.v1.RecipeProjection
 	2,  // 17: stillhouse.v1.ListRecipeVersionsResponse.versions:type_name -> stillhouse.v1.RecipeVersion
-	6,  // 18: stillhouse.v1.RecipeService.CreateRecipe:input_type -> stillhouse.v1.CreateRecipeRequest
-	8,  // 19: stillhouse.v1.RecipeService.ListRecipes:input_type -> stillhouse.v1.ListRecipesRequest
-	10, // 20: stillhouse.v1.RecipeService.GetRecipe:input_type -> stillhouse.v1.GetRecipeRequest
-	12, // 21: stillhouse.v1.RecipeService.ArchiveRecipe:input_type -> stillhouse.v1.ArchiveRecipeRequest
-	15, // 22: stillhouse.v1.RecipeService.SaveRecipeVersion:input_type -> stillhouse.v1.SaveRecipeVersionRequest
-	17, // 23: stillhouse.v1.RecipeService.ListRecipeVersions:input_type -> stillhouse.v1.ListRecipeVersionsRequest
-	7,  // 24: stillhouse.v1.RecipeService.CreateRecipe:output_type -> stillhouse.v1.CreateRecipeResponse
-	9,  // 25: stillhouse.v1.RecipeService.ListRecipes:output_type -> stillhouse.v1.ListRecipesResponse
-	11, // 26: stillhouse.v1.RecipeService.GetRecipe:output_type -> stillhouse.v1.GetRecipeResponse
-	13, // 27: stillhouse.v1.RecipeService.ArchiveRecipe:output_type -> stillhouse.v1.ArchiveRecipeResponse
-	16, // 28: stillhouse.v1.RecipeService.SaveRecipeVersion:output_type -> stillhouse.v1.SaveRecipeVersionResponse
-	18, // 29: stillhouse.v1.RecipeService.ListRecipeVersions:output_type -> stillhouse.v1.ListRecipeVersionsResponse
-	24, // [24:30] is the sub-list for method output_type
-	18, // [18:24] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	1,  // 18: stillhouse.v1.DuplicateRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
+	6,  // 19: stillhouse.v1.RecipeService.CreateRecipe:input_type -> stillhouse.v1.CreateRecipeRequest
+	19, // 20: stillhouse.v1.RecipeService.DuplicateRecipe:input_type -> stillhouse.v1.DuplicateRecipeRequest
+	8,  // 21: stillhouse.v1.RecipeService.ListRecipes:input_type -> stillhouse.v1.ListRecipesRequest
+	10, // 22: stillhouse.v1.RecipeService.GetRecipe:input_type -> stillhouse.v1.GetRecipeRequest
+	12, // 23: stillhouse.v1.RecipeService.ArchiveRecipe:input_type -> stillhouse.v1.ArchiveRecipeRequest
+	15, // 24: stillhouse.v1.RecipeService.SaveRecipeVersion:input_type -> stillhouse.v1.SaveRecipeVersionRequest
+	17, // 25: stillhouse.v1.RecipeService.ListRecipeVersions:input_type -> stillhouse.v1.ListRecipeVersionsRequest
+	7,  // 26: stillhouse.v1.RecipeService.CreateRecipe:output_type -> stillhouse.v1.CreateRecipeResponse
+	20, // 27: stillhouse.v1.RecipeService.DuplicateRecipe:output_type -> stillhouse.v1.DuplicateRecipeResponse
+	9,  // 28: stillhouse.v1.RecipeService.ListRecipes:output_type -> stillhouse.v1.ListRecipesResponse
+	11, // 29: stillhouse.v1.RecipeService.GetRecipe:output_type -> stillhouse.v1.GetRecipeResponse
+	13, // 30: stillhouse.v1.RecipeService.ArchiveRecipe:output_type -> stillhouse.v1.ArchiveRecipeResponse
+	16, // 31: stillhouse.v1.RecipeService.SaveRecipeVersion:output_type -> stillhouse.v1.SaveRecipeVersionResponse
+	18, // 32: stillhouse.v1.RecipeService.ListRecipeVersions:output_type -> stillhouse.v1.ListRecipeVersionsResponse
+	26, // [26:33] is the sub-list for method output_type
+	19, // [19:26] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_recipe_proto_init() }
@@ -1565,7 +1672,7 @@ func file_stillhouse_v1_recipe_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_recipe_proto_rawDesc), len(file_stillhouse_v1_recipe_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -7,6 +7,7 @@ import { Shell } from "@/components/Shell";
 import { recipeClient } from "@/lib/clients";
 import {
   CreateRecipeRequestSchema,
+  DuplicateRecipeRequestSchema,
   SpiritKind,
 } from "@/gen/stillhouse/v1/recipe_pb";
 import { create } from "@bufbuild/protobuf";
@@ -40,6 +41,24 @@ export function RecipesPage() {
       setShowForm(false);
     },
   });
+
+  const duplicateRecipe = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof DuplicateRecipeRequestSchema>>) =>
+      recipeClient.duplicateRecipe(msg),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["listRecipes"] }),
+  });
+
+  function onDuplicate(sourceId: string, sourceName: string) {
+    const proposed = `${sourceName} (copy)`;
+    const newName = window.prompt("Name for the duplicate:", proposed);
+    if (!newName || !newName.trim()) return;
+    duplicateRecipe.mutate(
+      create(DuplicateRecipeRequestSchema, {
+        sourceRecipeId: sourceId,
+        newName: newName.trim(),
+      }),
+    );
+  }
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -132,19 +151,20 @@ export function RecipesPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Spirit</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {isLoading && (
               <tr>
-                <td className="px-4 py-3 text-stone-500" colSpan={3}>
+                <td className="px-4 py-3 text-stone-500" colSpan={4}>
                   Loading…
                 </td>
               </tr>
             )}
             {!isLoading && data?.recipes.length === 0 && (
               <tr>
-                <td className="px-4 py-3 text-stone-500" colSpan={3}>
+                <td className="px-4 py-3 text-stone-500" colSpan={4}>
                   No recipes yet. Click <b>New recipe</b> to begin.
                 </td>
               </tr>
@@ -159,6 +179,15 @@ export function RecipesPage() {
                 <td className="px-4 py-3 text-stone-600">{spiritKindLabel(r.spiritKind)}</td>
                 <td className="px-4 py-3 text-stone-600">
                   {r.archived ? "Archived" : r.currentVersionId ? "Versioned" : "No version yet"}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => onDuplicate(r.id, r.name)}
+                    disabled={duplicateRecipe.isPending}
+                    className="text-xs text-stone-600 underline-offset-2 hover:text-stone-900 hover:underline disabled:opacity-50"
+                  >
+                    Duplicate
+                  </button>
                 </td>
               </tr>
             ))}

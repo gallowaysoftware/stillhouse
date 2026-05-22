@@ -315,6 +315,117 @@ func (s *RecipeService) ListRecipeVersions(
 	return connect.NewResponse(&stillhousev1.ListRecipeVersionsResponse{Versions: out}), nil
 }
 
+func (s *RecipeService) DuplicateRecipe(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DuplicateRecipeRequest],
+) (*connect.Response[stillhousev1.DuplicateRecipeResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	sourceID, err := uuid.Parse(req.Msg.GetSourceRecipeId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid source_recipe_id"))
+	}
+	newName := req.Msg.GetNewName()
+	if newName == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("new_name is required"))
+	}
+
+	var newRecipe sqlcgen.Recipe
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		src, e := q.GetRecipe(ctx, sourceID)
+		if e != nil {
+			return e
+		}
+		var dupErr error
+		newRecipe, dupErr = q.CreateRecipe(ctx, sqlcgen.CreateRecipeParams{
+			TenantID:   u.TenantID,
+			Name:       newName,
+			SpiritKind: src.SpiritKind,
+			Notes:      src.Notes,
+		})
+		if dupErr != nil {
+			return dupErr
+		}
+
+		// Carry over the latest version (if any) so the duplicate is
+		// immediately usable — otherwise it'd be a name-only stub.
+		if !src.CurrentVersionID.Valid {
+			return audit.Write(ctx, q, u.TenantID, u.ID, "recipe", newRecipe.ID.String(),
+				sqlcgen.AuditActionCreate, map[string]any{
+					"source_recipe_id": sourceID.String(),
+					"name":             newName,
+					"copied_version":   false,
+				})
+		}
+		srcVersion, e := q.GetRecipeVersion(ctx, src.CurrentVersionID.UUID)
+		if e != nil {
+			return e
+		}
+		srcIngredients, e := q.ListRecipeIngredients(ctx, srcVersion.ID)
+		if e != nil {
+			return e
+		}
+		nextNo, e := q.NextRecipeVersionNo(ctx, newRecipe.ID)
+		if e != nil {
+			return e
+		}
+		newVersion, e := q.CreateRecipeVersion(ctx, sqlcgen.CreateRecipeVersionParams{
+			TenantID:                u.TenantID,
+			RecipeID:                newRecipe.ID,
+			VersionNo:               nextNo,
+			Notes:                   srcVersion.Notes,
+			MashEfficiencyPct:       srcVersion.MashEfficiencyPct,
+			FermentEfficiencyPct:    srcVersion.FermentEfficiencyPct,
+			DistillationRecoveryPct: srcVersion.DistillationRecoveryPct,
+			TargetWaterL:            srcVersion.TargetWaterL,
+		})
+		if e != nil {
+			return e
+		}
+		for _, ing := range srcIngredients {
+			if _, e := q.CreateRecipeIngredient(ctx, sqlcgen.CreateRecipeIngredientParams{
+				TenantID:        u.TenantID,
+				RecipeVersionID: newVersion.ID,
+				MaterialID:      ing.MaterialID,
+				Quantity:        ing.Quantity,
+				Uom:             ing.Uom,
+				Notes:           ing.Notes,
+				SortOrder:       ing.SortOrder,
+			}); e != nil {
+				return e
+			}
+		}
+		if e := q.SetRecipeCurrentVersion(ctx, sqlcgen.SetRecipeCurrentVersionParams{
+			ID:               newRecipe.ID,
+			CurrentVersionID: uuid.NullUUID{UUID: newVersion.ID, Valid: true},
+		}); e != nil {
+			return e
+		}
+		// Re-read so the returned recipe carries the new current_version_id.
+		newRecipe, e = q.GetRecipe(ctx, newRecipe.ID)
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe", newRecipe.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"source_recipe_id": sourceID.String(),
+				"name":             newName,
+				"copied_version":   true,
+				"ingredient_n":     len(srcIngredients),
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("source recipe not found"))
+		}
+		s.logger.Error("DuplicateRecipe", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DuplicateRecipeResponse{Recipe: recipeToProto(newRecipe)}), nil
+}
+
 // --- helpers ---
 
 func validateEfficiency(name string, v float64) error {
