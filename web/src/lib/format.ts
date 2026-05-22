@@ -1,3 +1,5 @@
+import { FermentationStatus } from "@/gen/stillhouse/v1/fermentation_pb";
+import { MashMetricKind, MashStatus } from "@/gen/stillhouse/v1/mash_pb";
 import { MaterialKind } from "@/gen/stillhouse/v1/material_pb";
 import { SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
 
@@ -60,4 +62,41 @@ const spiritKindLabels = new Map<SpiritKind, string>([
 
 export function spiritKindLabel(k: SpiritKind): string {
   return spiritKindLabels.get(k) ?? "Unknown";
+}
+
+const mashStatusLabels = new Map<MashStatus, string>([
+  [MashStatus.PLANNED, "Planned"],
+  [MashStatus.IN_PROGRESS, "In progress"],
+  [MashStatus.FERMENTING, "Fermenting"],
+  [MashStatus.DISTILLED, "Distilled"],
+  [MashStatus.CANCELLED, "Cancelled"],
+]);
+
+export function mashStatusLabel(s: MashStatus): string {
+  return mashStatusLabels.get(s) ?? "Unknown";
+}
+
+const mashMetricKindLabels = new Map<MashMetricKind, string>([
+  [MashMetricKind.ORIGINAL_GRAVITY, "Original gravity"],
+  [MashMetricKind.MASH_PH, "Mash pH"],
+  [MashMetricKind.MASH_TEMP_C, "Mash temp (°C)"],
+  [MashMetricKind.WATER_VOLUME_L, "Water volume (L)"],
+  [MashMetricKind.STRIKE_TEMP_C, "Strike temp (°C)"],
+  [MashMetricKind.OTHER, "Other"],
+]);
+
+export function mashMetricKindLabel(k: MashMetricKind): string {
+  return mashMetricKindLabels.get(k) ?? "Unknown";
+}
+
+const fermentationStatusLabels = new Map<FermentationStatus, string>([
+  [FermentationStatus.PITCHED, "Pitched"],
+  [FermentationStatus.ACTIVE, "Active"],
+  [FermentationStatus.FINISHED, "Finished"],
+  [FermentationStatus.DISTILLED, "Distilled"],
+  [FermentationStatus.CANCELLED, "Cancelled"],
+]);
+
+export function fermentationStatusLabel(s: FermentationStatus): string {
+  return fermentationStatusLabels.get(s) ?? "Unknown";
 }

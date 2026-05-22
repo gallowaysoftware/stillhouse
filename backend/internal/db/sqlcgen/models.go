@@ -58,6 +58,142 @@ func (ns NullAuditAction) Value() (driver.Value, error) {
 	return string(ns.AuditAction), nil
 }
 
+type FermentationStatus string
+
+const (
+	FermentationStatusPitched   FermentationStatus = "pitched"
+	FermentationStatusActive    FermentationStatus = "active"
+	FermentationStatusFinished  FermentationStatus = "finished"
+	FermentationStatusDistilled FermentationStatus = "distilled"
+	FermentationStatusCancelled FermentationStatus = "cancelled"
+)
+
+func (e *FermentationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FermentationStatus(s)
+	case string:
+		*e = FermentationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FermentationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullFermentationStatus struct {
+	FermentationStatus FermentationStatus `json:"fermentation_status"`
+	Valid              bool               `json:"valid"` // Valid is true if FermentationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFermentationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.FermentationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FermentationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFermentationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FermentationStatus), nil
+}
+
+type MashMetricKind string
+
+const (
+	MashMetricKindOriginalGravity MashMetricKind = "original_gravity"
+	MashMetricKindMashPh          MashMetricKind = "mash_ph"
+	MashMetricKindMashTempC       MashMetricKind = "mash_temp_c"
+	MashMetricKindWaterVolumeL    MashMetricKind = "water_volume_l"
+	MashMetricKindStrikeTempC     MashMetricKind = "strike_temp_c"
+	MashMetricKindOther           MashMetricKind = "other"
+)
+
+func (e *MashMetricKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MashMetricKind(s)
+	case string:
+		*e = MashMetricKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MashMetricKind: %T", src)
+	}
+	return nil
+}
+
+type NullMashMetricKind struct {
+	MashMetricKind MashMetricKind `json:"mash_metric_kind"`
+	Valid          bool           `json:"valid"` // Valid is true if MashMetricKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMashMetricKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.MashMetricKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MashMetricKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMashMetricKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MashMetricKind), nil
+}
+
+type MashStatus string
+
+const (
+	MashStatusPlanned    MashStatus = "planned"
+	MashStatusInProgress MashStatus = "in_progress"
+	MashStatusFermenting MashStatus = "fermenting"
+	MashStatusDistilled  MashStatus = "distilled"
+	MashStatusCancelled  MashStatus = "cancelled"
+)
+
+func (e *MashStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MashStatus(s)
+	case string:
+		*e = MashStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MashStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMashStatus struct {
+	MashStatus MashStatus `json:"mash_status"`
+	Valid      bool       `json:"valid"` // Valid is true if MashStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMashStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MashStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MashStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMashStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MashStatus), nil
+}
+
 type MaterialKind string
 
 const (
@@ -207,6 +343,67 @@ type AuditEvent struct {
 	Action     AuditAction        `json:"action"`
 	OccurredAt pgtype.Timestamptz `json:"occurred_at"`
 	Payload    []byte             `json:"payload"`
+}
+
+type FermentationLog struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	FermentationRunID uuid.UUID          `json:"fermentation_run_id"`
+	ObservedAt        pgtype.Timestamptz `json:"observed_at"`
+	SpecificGravity   pgtype.Float8      `json:"specific_gravity"`
+	Ph                pgtype.Float8      `json:"ph"`
+	TemperatureC      pgtype.Float8      `json:"temperature_c"`
+	Notes             string             `json:"notes"`
+}
+
+type FermentationRun struct {
+	ID                 uuid.UUID          `json:"id"`
+	TenantID           uuid.UUID          `json:"tenant_id"`
+	MashRunID          uuid.UUID          `json:"mash_run_id"`
+	FermenterLabel     string             `json:"fermenter_label"`
+	YeastMaterialID    uuid.NullUUID      `json:"yeast_material_id"`
+	YeastNotes         string             `json:"yeast_notes"`
+	PitchAt            pgtype.Timestamptz `json:"pitch_at"`
+	TargetFinalGravity pgtype.Float8      `json:"target_final_gravity"`
+	InitialVolumeL     pgtype.Float8      `json:"initial_volume_l"`
+	Status             FermentationStatus `json:"status"`
+	Notes              string             `json:"notes"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+}
+
+type MashIngredientUsage struct {
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	MashRunID    uuid.UUID          `json:"mash_run_id"`
+	MaterialID   uuid.UUID          `json:"material_id"`
+	QuantityUsed float64            `json:"quantity_used"`
+	Uom          string             `json:"uom"`
+	Notes        string             `json:"notes"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type MashMetric struct {
+	ID         uuid.UUID          `json:"id"`
+	TenantID   uuid.UUID          `json:"tenant_id"`
+	MashRunID  uuid.UUID          `json:"mash_run_id"`
+	Kind       MashMetricKind     `json:"kind"`
+	Value      float64            `json:"value"`
+	Unit       string             `json:"unit"`
+	ObservedAt pgtype.Timestamptz `json:"observed_at"`
+	Notes      string             `json:"notes"`
+}
+
+type MashRun struct {
+	ID              uuid.UUID          `json:"id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	RecipeVersionID uuid.UUID          `json:"recipe_version_id"`
+	MashNo          int32              `json:"mash_no"`
+	MashDate        pgtype.Date        `json:"mash_date"`
+	Status          MashStatus         `json:"status"`
+	Notes           string             `json:"notes"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Material struct {

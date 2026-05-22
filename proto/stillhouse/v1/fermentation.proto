@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum FermentationStatus {
+  FERMENTATION_STATUS_UNSPECIFIED = 0;
+  FERMENTATION_STATUS_PITCHED = 1;
+  FERMENTATION_STATUS_ACTIVE = 2;
+  FERMENTATION_STATUS_FINISHED = 3;
+  FERMENTATION_STATUS_DISTILLED = 4;
+  FERMENTATION_STATUS_CANCELLED = 5;
+}
+
+message FermentationRun {
+  string id = 1;
+  string tenant_id = 2;
+  string mash_run_id = 3;
+  string fermenter_label = 4;
+
+  string yeast_material_id = 5;       // optional UUID; empty if none
+  string yeast_notes = 6;
+
+  google.protobuf.Timestamp pitch_at = 7;
+  double target_final_gravity = 8;
+  bool   target_final_gravity_set = 9;
+  double initial_volume_l = 10;
+  bool   initial_volume_l_set = 11;
+
+  FermentationStatus status = 12;
+  string notes = 13;
+
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+
+  // Denormalized parent info for list views.
+  int32  mash_no = 16;
+  string mash_date = 17;
+  string recipe_name = 18;
+
+  // Child logs, populated by GetFermentationRun.
+  repeated FermentationLog logs = 19;
+
+  // Derived stats from logs, populated by GetFermentationRun.
+  double current_specific_gravity = 20;
+  bool   current_specific_gravity_set = 21;
+  double calculated_abv_pct = 22;            // from OG / latest gravity, ABV ≈ (OG - FG) × 131.25
+  bool   calculated_abv_pct_set = 23;
+}
+
+message FermentationLog {
+  string id = 1;
+  string fermentation_run_id = 2;
+  google.protobuf.Timestamp observed_at = 3;
+  double specific_gravity = 4;
+  bool   specific_gravity_set = 5;
+  double ph = 6;
+  bool   ph_set = 7;
+  double temperature_c = 8;
+  bool   temperature_c_set = 9;
+  string notes = 10;
+}
+
+// ---------------------------------------------------------------------------
+
+message CreateFermentationRunRequest {
+  string mash_run_id = 1;
+  string fermenter_label = 2;
+  string yeast_material_id = 3;
+  string yeast_notes = 4;
+  google.protobuf.Timestamp pitch_at = 5;   // unset = now
+  double target_final_gravity = 6;
+  bool   target_final_gravity_set = 7;
+  double initial_volume_l = 8;
+  bool   initial_volume_l_set = 9;
+  string notes = 10;
+}
+message CreateFermentationRunResponse { FermentationRun run = 1; }
+
+message GetFermentationRunRequest { string id = 1; }
+message GetFermentationRunResponse { FermentationRun run = 1; }
+
+message ListFermentationRunsRequest {
+  FermentationStatus status = 1;            // optional
+  string mash_run_id = 2;                   // optional
+}
+message ListFermentationRunsResponse { repeated FermentationRun runs = 1; }
+
+message UpdateFermentationStatusRequest { string id = 1; FermentationStatus status = 2; }
+message UpdateFermentationStatusResponse { FermentationRun run = 1; }
+
+message AddFermentationLogRequest {
+  string fermentation_run_id = 1;
+  google.protobuf.Timestamp observed_at = 2;   // unset = now
+  double specific_gravity = 3;
+  bool   specific_gravity_set = 4;
+  double ph = 5;
+  bool   ph_set = 6;
+  double temperature_c = 7;
+  bool   temperature_c_set = 8;
+  string notes = 9;
+}
+message AddFermentationLogResponse { FermentationLog log = 1; }
+
+service FermentationService {
+  rpc CreateFermentationRun(CreateFermentationRunRequest) returns (CreateFermentationRunResponse);
+  rpc GetFermentationRun(GetFermentationRunRequest) returns (GetFermentationRunResponse);
+  rpc ListFermentationRuns(ListFermentationRunsRequest) returns (ListFermentationRunsResponse);
+  rpc UpdateFermentationStatus(UpdateFermentationStatusRequest) returns (UpdateFermentationStatusResponse);
+  rpc AddFermentationLog(AddFermentationLogRequest) returns (AddFermentationLogResponse);
+}

@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/material.proto";
+
+enum MashStatus {
+  MASH_STATUS_UNSPECIFIED = 0;
+  MASH_STATUS_PLANNED = 1;
+  MASH_STATUS_IN_PROGRESS = 2;
+  MASH_STATUS_FERMENTING = 3;
+  MASH_STATUS_DISTILLED = 4;
+  MASH_STATUS_CANCELLED = 5;
+}
+
+enum MashMetricKind {
+  MASH_METRIC_KIND_UNSPECIFIED = 0;
+  MASH_METRIC_KIND_ORIGINAL_GRAVITY = 1;
+  MASH_METRIC_KIND_MASH_PH = 2;
+  MASH_METRIC_KIND_MASH_TEMP_C = 3;
+  MASH_METRIC_KIND_WATER_VOLUME_L = 4;
+  MASH_METRIC_KIND_STRIKE_TEMP_C = 5;
+  MASH_METRIC_KIND_OTHER = 6;
+}
+
+message MashRun {
+  string id = 1;
+  string tenant_id = 2;
+  string recipe_version_id = 3;
+  int32  mash_no = 4;
+  string mash_date = 5;            // ISO-8601 date, e.g. "2026-05-22"
+  MashStatus status = 6;
+  string notes = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+
+  // Denormalized for list views.
+  string recipe_name = 10;
+  int32  recipe_version_no = 11;
+
+  // Children, populated by GetMashRun.
+  repeated MashIngredientUsage ingredients = 12;
+  repeated MashMetric metrics = 13;
+}
+
+message MashIngredientUsage {
+  string id = 1;
+  string mash_run_id = 2;
+  string material_id = 3;
+  string material_name = 4;
+  MaterialKind material_kind = 5;
+  double material_extract_pct = 6;
+  bool   material_extract_pct_set = 7;
+  double quantity_used = 8;
+  string uom = 9;
+  string notes = 10;
+  google.protobuf.Timestamp created_at = 11;
+}
+
+message MashMetric {
+  string id = 1;
+  string mash_run_id = 2;
+  MashMetricKind kind = 3;
+  double value = 4;
+  string unit = 5;
+  google.protobuf.Timestamp observed_at = 6;
+  string notes = 7;
+}
+
+// ---------------------------------------------------------------------------
+
+message CreateMashRunRequest {
+  string recipe_version_id = 1;
+  string mash_date = 2;            // ISO date; empty -> today
+  string notes = 3;
+}
+message CreateMashRunResponse { MashRun mash_run = 1; }
+
+message GetMashRunRequest { string id = 1; }
+message GetMashRunResponse { MashRun mash_run = 1; }
+
+message ListMashRunsRequest {
+  string recipe_id = 1;        // optional filter
+  MashStatus status = 2;       // optional; UNSPECIFIED = any
+}
+message ListMashRunsResponse { repeated MashRun mash_runs = 1; }
+
+message UpdateMashStatusRequest { string id = 1; MashStatus status = 2; }
+message UpdateMashStatusResponse { MashRun mash_run = 1; }
+
+message AddMashIngredientRequest {
+  string mash_run_id = 1;
+  string material_id = 2;
+  double quantity_used = 3;
+  string uom = 4;
+  string notes = 5;
+}
+message AddMashIngredientResponse { MashIngredientUsage usage = 1; }
+
+message AddMashMetricRequest {
+  string mash_run_id = 1;
+  MashMetricKind kind = 2;
+  double value = 3;
+  string unit = 4;
+  google.protobuf.Timestamp observed_at = 5;   // unset = now
+  string notes = 6;
+}
+message AddMashMetricResponse { MashMetric metric = 1; }
+
+service MashService {
+  rpc CreateMashRun(CreateMashRunRequest) returns (CreateMashRunResponse);
+  rpc GetMashRun(GetMashRunRequest) returns (GetMashRunResponse);
+  rpc ListMashRuns(ListMashRunsRequest) returns (ListMashRunsResponse);
+  rpc UpdateMashStatus(UpdateMashStatusRequest) returns (UpdateMashStatusResponse);
+  rpc AddMashIngredient(AddMashIngredientRequest) returns (AddMashIngredientResponse);
+  rpc AddMashMetric(AddMashMetricRequest) returns (AddMashMetricResponse);
+}

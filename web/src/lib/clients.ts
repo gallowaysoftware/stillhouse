@@ -1,6 +1,8 @@
 import { createClient } from "@connectrpc/connect";
 
 import { AuthService } from "@/gen/stillhouse/v1/auth_pb";
+import { FermentationService } from "@/gen/stillhouse/v1/fermentation_pb";
+import { MashService } from "@/gen/stillhouse/v1/mash_pb";
 import { MaterialService } from "@/gen/stillhouse/v1/material_pb";
 import { RecipeService } from "@/gen/stillhouse/v1/recipe_pb";
 import { TenantService } from "@/gen/stillhouse/v1/tenant_pb";
@@ -13,3 +15,5 @@ export const tenantClient = createClient(TenantService, transport);
 export const userClient = createClient(UserService, transport);
 export const materialClient = createClient(MaterialService, transport);
 export const recipeClient = createClient(RecipeService, transport);
+export const mashClient = createClient(MashService, transport);
+export const fermentationClient = createClient(FermentationService, transport);
