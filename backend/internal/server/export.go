@@ -42,8 +42,25 @@ func auditExportHandler(sm *scs.SessionManager, tdb *tenantdb.DB, logger *slog.L
 		if t := r.URL.Query().Get("entity_type"); t != "" {
 			entityType = pgtype.Text{String: t, Valid: true}
 		}
+		var fromTS, toTS pgtype.Timestamptz
+		fromStr := r.URL.Query().Get("from")
+		toStr := r.URL.Query().Get("to")
+		if fromStr != "" {
+			if d, err := time.Parse("2006-01-02", fromStr); err == nil {
+				fromTS = pgtype.Timestamptz{Time: d, Valid: true}
+			}
+		}
+		if toStr != "" {
+			if d, err := time.Parse("2006-01-02", toStr); err == nil {
+				// to is inclusive; bump to next-day exclusive bound.
+				toTS = pgtype.Timestamptz{Time: d.AddDate(0, 0, 1), Valid: true}
+			}
+		}
 
 		filename := fmt.Sprintf("stillhouse-audit-%s.csv", time.Now().UTC().Format("2006-01-02"))
+		if fromStr != "" && toStr != "" {
+			filename = fmt.Sprintf("stillhouse-audit-%s-to-%s.csv", fromStr, toStr)
+		}
 		w.Header().Set("Content-Type", "text/csv; charset=utf-8")
 		w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(filename))
 
@@ -62,6 +79,8 @@ func auditExportHandler(sm *scs.SessionManager, tdb *tenantdb.DB, logger *slog.L
 				var e error
 				rows, e = q.ListAuditEvents(c, sqlcgen.ListAuditEventsParams{
 					EntityType: entityType,
+					FromTs:     fromTS,
+					ToTs:       toTS,
 					Limit:      chunk,
 					Offset:     offset,
 				})

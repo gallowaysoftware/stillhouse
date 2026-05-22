@@ -15,8 +15,19 @@ const actionLabels: Record<AuditAction, string> = {
   [AuditAction.LOGOUT]: "Logout",
 };
 
+function buildExportUrl(entityType: string, from: string, to: string): string {
+  const params = new URLSearchParams();
+  if (entityType) params.set("entity_type", entityType);
+  if (from) params.set("from", from);
+  if (to) params.set("to", to);
+  const qs = params.toString();
+  return qs ? `/export/audit.csv?${qs}` : "/export/audit.csv";
+}
+
 export function AuditPage() {
   const [entityType, setEntityType] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const { data, isLoading } = useQuery({
     queryKey: ["listAuditEvents", entityType],
     queryFn: () =>
@@ -46,8 +57,16 @@ export function AuditPage() {
             className="w-64 rounded border border-stone-300 px-3 py-2 text-sm"
           />
         </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">From (export only)</label>
+          <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">To (export only)</label>
+          <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
         <a
-          href={`/export/audit.csv${entityType ? `?entity_type=${encodeURIComponent(entityType)}` : ""}`}
+          href={buildExportUrl(entityType, fromDate, toDate)}
           className="rounded border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
         >
           Export CSV

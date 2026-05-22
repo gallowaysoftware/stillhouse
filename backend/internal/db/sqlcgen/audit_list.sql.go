@@ -15,10 +15,18 @@ import (
 const countAuditEvents = `-- name: CountAuditEvents :one
 SELECT COUNT(*)::bigint AS count FROM audit_events
 WHERE ($1::text IS NULL OR entity_type = $1::text)
+  AND ($2::timestamptz IS NULL OR occurred_at >= $2::timestamptz)
+  AND ($3::timestamptz   IS NULL OR occurred_at <  $3::timestamptz)
 `
 
-func (q *Queries) CountAuditEvents(ctx context.Context, entityType pgtype.Text) (int64, error) {
-	row := q.db.QueryRow(ctx, countAuditEvents, entityType)
+type CountAuditEventsParams struct {
+	EntityType pgtype.Text        `json:"entity_type"`
+	FromTs     pgtype.Timestamptz `json:"from_ts"`
+	ToTs       pgtype.Timestamptz `json:"to_ts"`
+}
+
+func (q *Queries) CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error) {
+	row := q.db.QueryRow(ctx, countAuditEvents, arg.EntityType, arg.FromTs, arg.ToTs)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -31,14 +39,18 @@ SELECT ae.id, ae.tenant_id, ae.user_id, ae.entity_type, ae.entity_id, ae.action,
 FROM audit_events ae
 LEFT JOIN users u ON u.id = ae.user_id
 WHERE ($1::text IS NULL OR ae.entity_type = $1::text)
+  AND ($2::timestamptz IS NULL OR ae.occurred_at >= $2::timestamptz)
+  AND ($3::timestamptz   IS NULL OR ae.occurred_at <  $3::timestamptz)
 ORDER BY ae.occurred_at DESC, ae.id DESC
-LIMIT $3::int OFFSET $2::int
+LIMIT $5::int OFFSET $4::int
 `
 
 type ListAuditEventsParams struct {
-	EntityType pgtype.Text `json:"entity_type"`
-	Offset     int32       `json:"offset"`
-	Limit      int32       `json:"limit"`
+	EntityType pgtype.Text        `json:"entity_type"`
+	FromTs     pgtype.Timestamptz `json:"from_ts"`
+	ToTs       pgtype.Timestamptz `json:"to_ts"`
+	Offset     int32              `json:"offset"`
+	Limit      int32              `json:"limit"`
 }
 
 type ListAuditEventsRow struct {
@@ -55,7 +67,13 @@ type ListAuditEventsRow struct {
 }
 
 func (q *Queries) ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]ListAuditEventsRow, error) {
-	rows, err := q.db.Query(ctx, listAuditEvents, arg.EntityType, arg.Offset, arg.Limit)
+	rows, err := q.db.Query(ctx, listAuditEvents,
+		arg.EntityType,
+		arg.FromTs,
+		arg.ToTs,
+		arg.Offset,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -18,7 +18,7 @@ type Querier interface {
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
-	CountAuditEvents(ctx context.Context, entityType pgtype.Text) (int64, error)
+	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountTenants(ctx context.Context) (int64, error)
 	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
 	CreateBottlingRun(ctx context.Context, arg CreateBottlingRunParams) (BottlingRun, error)

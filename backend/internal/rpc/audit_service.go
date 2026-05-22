@@ -61,7 +61,9 @@ func (s *AuditService) ListAuditEvents(
 		if e != nil {
 			return e
 		}
-		count, e = q.CountAuditEvents(ctx, entityType)
+		count, e = q.CountAuditEvents(ctx, sqlcgen.CountAuditEventsParams{
+			EntityType: entityType,
+		})
 		return e
 	})
 	if err != nil {
