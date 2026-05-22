@@ -188,13 +188,21 @@ func (s *BottlingService) CreateBottlingRun(
 			if take > remaining {
 				take = remaining
 			}
+			serialStart, serialEnd := "", ""
+			if orderRow.SerialStart.Valid {
+				serialStart, serialEnd = computeStampRange(
+					orderRow.SerialStart.String,
+					orderRow.QuantityApplied,
+					take,
+				)
+			}
 			use, e := q.CreateBottlingRunStampUsage(ctx, sqlcgen.CreateBottlingRunStampUsageParams{
 				TenantID:       u.TenantID,
 				BottlingRunID:  run.ID,
 				StampOrderID:   orderRow.ID,
 				BottleCount:    take,
-				SerialStart:    "",
-				SerialEnd:      "",
+				SerialStart:    serialStart,
+				SerialEnd:      serialEnd,
 				Voids:          0,
 			})
 			if e != nil {
