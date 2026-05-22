@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -61,7 +62,15 @@ func (s *MashService) CreateMashRun(
 			Status:          sqlcgen.MashStatusPlanned,
 			Notes:           req.Msg.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "mash_run", created.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"mash_no":           created.MashNo,
+				"recipe_version_id": rvID.String(),
+				"mash_date":         formatDate(created.MashDate),
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -244,7 +253,14 @@ func (s *MashService) UpdateMashStatus(
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		updated, e = q.UpdateMashStatus(ctx, sqlcgen.UpdateMashStatusParams{ID: id, Status: status})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "mash_run", updated.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":  "status_changed",
+				"status": string(status),
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -318,7 +334,14 @@ func (s *MashService) AddMashIngredient(
 				return e
 			}
 		}
-		return nil
+		return audit.Write(ctx, q, u.TenantID, u.ID, "mash_ingredient_usage", inserted.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"mash_run_id":   mashID.String(),
+				"material_id":   matID.String(),
+				"material_lot":  nullUUIDString(lotID),
+				"quantity_used": req.Msg.GetQuantityUsed(),
+				"uom":           req.Msg.GetUom(),
+			})
 	})
 	if err != nil {
 		var ce *connect.Error
@@ -363,7 +386,16 @@ func (s *MashService) AddMashMetric(
 			ObservedAt: observed,
 			Notes:      req.Msg.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "mash_metric", inserted.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"mash_run_id": mashID.String(),
+				"kind":        string(kind),
+				"value":       req.Msg.GetValue(),
+				"unit":        req.Msg.GetUnit(),
+			})
 	})
 	if err != nil {
 		s.logger.Error("AddMashMetric", "err", err)

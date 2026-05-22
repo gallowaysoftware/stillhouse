@@ -248,7 +248,16 @@ func (s *MaterialService) RecordMaterialReceipt(
 			Notes:            in.GetNotes(),
 			UnitCostCad:      optionalFloat(in.GetUnitCostCadSet(), in.GetUnitCostCad()),
 		})
-		return dbErr
+		if dbErr != nil {
+			return dbErr
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "material_lot", lot.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"material_id":       matID.String(),
+				"supplier_lot":      lot.SupplierLot,
+				"quantity_received": lot.QuantityReceived,
+				"unit_cost_cad":     in.GetUnitCostCad(),
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

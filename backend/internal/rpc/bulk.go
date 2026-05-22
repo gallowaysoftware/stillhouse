@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -53,7 +54,15 @@ func (s *BulkService) CreateBulkContainer(
 			Location:  in.GetLocation(),
 			Notes:     in.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_container", c.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"name":     c.Name,
+				"kind":     string(kind),
+				"location": c.Location,
+			})
 	})
 	if err != nil {
 		s.logger.Error("CreateBulkContainer", "err", err)
@@ -89,7 +98,14 @@ func (s *BulkService) UpdateBulkContainer(
 			Location:  req.Msg.GetLocation(),
 			Notes:     req.Msg.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_container", c.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"name":     c.Name,
+				"location": c.Location,
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -117,7 +133,14 @@ func (s *BulkService) SetBulkContainerArchived(
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		c, e = q.SetBulkContainerArchived(ctx, sqlcgen.SetBulkContainerArchivedParams{ID: id, Archived: req.Msg.GetArchived()})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_container", c.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":    "archived_changed",
+				"archived": c.Archived,
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

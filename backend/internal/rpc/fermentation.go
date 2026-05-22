@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -68,7 +69,15 @@ func (s *FermentationService) CreateFermentationRun(
 			Status:              sqlcgen.FermentationStatusPitched,
 			Notes:               in.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "fermentation_run", run.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"mash_run_id":     mashID.String(),
+				"fermenter_label": run.FermenterLabel,
+				"initial_volume":  in.GetInitialVolumeL(),
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -230,7 +239,14 @@ func (s *FermentationService) UpdateFermentationStatus(
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		run, e = q.UpdateFermentationStatus(ctx, sqlcgen.UpdateFermentationStatusParams{ID: id, Status: st})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "fermentation_run", run.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":  "status_changed",
+				"status": string(st),
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -270,7 +286,16 @@ func (s *FermentationService) AddFermentationLog(
 			TemperatureC:      optionalFloat(req.Msg.GetTemperatureCSet(), req.Msg.GetTemperatureC()),
 			Notes:             req.Msg.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "fermentation_log", inserted.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"fermentation_run_id": runID.String(),
+				"sg":                  req.Msg.GetSpecificGravity(),
+				"ph":                  req.Msg.GetPh(),
+				"temp_c":              req.Msg.GetTemperatureC(),
+			})
 	})
 	if err != nil {
 		s.logger.Error("AddFermentationLog", "err", err)
