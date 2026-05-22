@@ -3,25 +3,46 @@
 Open-source distillery management for Canadian craft distillers.
 
 Stillhouse helps a CRA-licensed spirits producer plan recipes, track
-production from grain through bottle, manage province-coded excise stamps, and
-generate the values that go on CRA Form B266 each month — all in one ledger that
-keeps the operational reality and the compliance reality in sync.
+production from grain through bottle, manage province-coded excise stamps,
+and generate the values that go on CRA Form B266 each month — all in one
+ledger that keeps the operational reality and the compliance reality in
+sync.
 
-**Status:** pre-v1, in active development. The v1 goal is to file one real B266
-from Stillhouse for a production month.
+## What's implemented
+
+Each stage below has its own commit with a verified end-to-end smoke test.
+
+| Stage | Feature |
+|------:|---------|
+| 1 | Auth + multi-tenant foundation (one tenant = one CRA spirits licence) |
+| 2 | Materials + versioned recipes + projected-LAA math |
+| 3 | Mash + fermentation operational capture |
+| 4 | Distillation + production gauge → bulk alcohol ledger (the bridge) |
+| 5 | Barrels + maturation clock + Canadian Whisky eligibility |
+| 6 | Products + bottling + province-coded excise stamp lifecycle |
+| 7 | Packaging removals + CRA Form B266 generation |
+| 8 | Audit log for production gauge / bottling / removal / B266 submit |
+| 9 | Live dashboard with LAA + duty rollups |
+| 10 | Non-superuser app role so RLS actually enforces |
+| 11 | Integration test that verifies tenant isolation |
+| 12 | Unit tests for the load-bearing alcohol-math functions |
+| 13 | Audit log extended to barrel fill / dump / regauge |
+
+**v1 milestone:** *file one real B266 from Stillhouse for a production
+month.* Achieved at Stage 7.
 
 ## Architecture
 
-- **Backend** — Go ([backend/](backend/)). Single binary that serves both a
+- **Backend** — Go ([backend/](backend/)). Single binary that serves a
   ConnectRPC API and the embedded web frontend.
-- **Frontend** — React + TypeScript + Vite + Tailwind ([web/](web/)). Talks
-  to the backend over ConnectRPC.
+- **Frontend** — React + TypeScript + Vite + Tailwind ([web/](web/)).
+  Talks to the backend over ConnectRPC (JSON over HTTP).
 - **Schemas** — Protocol Buffers ([proto/](proto/)), compiled with Buf into
   typed Go server stubs and typed TS clients.
-- **Database** — PostgreSQL with row-level security for multi-tenant isolation.
-  Migrations run as a superuser; the application connects as a separate
-  non-super role (`stillhouse_app`) so the RLS policies actually enforce.
-  One tenant = one CRA spirits licence.
+- **Database** — PostgreSQL with row-level security keyed off the
+  per-request `app.current_tenant_id` GUC. Migrations run as a superuser;
+  the application connects as a separate non-super role (`stillhouse_app`)
+  so the RLS policies actually enforce. One tenant = one CRA spirits licence.
 - **License** — AGPL-3.0. Free to self-host. Managed hosting will be a paid
   offering once the project is ready.
 
@@ -31,14 +52,23 @@ from Stillhouse for a production month.
 proto/                Protocol Buffer definitions
 backend/              Go server
   cmd/server/         binary entrypoint
-  internal/auth/      password hashing + sessions
+  cmd/seed/           bootstrap a starter tenant + admin user
+  internal/audit/     audit log writer
+  internal/auth/      Argon2id password hashing
   internal/config/    env config
   internal/db/        pgx pool, migrations, sqlc-generated queries
+  internal/distilling/ projection math (mass → sugar → ethanol → LAA)
+  internal/excise/    Canadian excise duty rates + Owed() helper
   internal/genpb/     generated Go from .proto
   internal/rpc/       ConnectRPC service implementations
-  internal/server/    HTTP server + middleware + static asset embedding
+  internal/server/    HTTP server + session middleware + static embedding
+  internal/tenantdb/  WithTenantTx — opens a tx, sets the tenant GUC,
+                      runs your callback with a tenant-scoped Queries
 web/                  React frontend
   src/gen/            generated TS Connect client from .proto
+  src/pages/          per-route views (Materials, Recipes, Mashes, …,
+                      Bulk, Barrels, Products, Stamps, Bottling,
+                      Removals, B266 returns, Audit log)
 deploy/               Dockerfile + dev compose
 .github/workflows/    CI
 ```
@@ -46,24 +76,34 @@ deploy/               Dockerfile + dev compose
 ## First-time setup
 
 ```sh
-# Install required tools (Go binaries: buf, sqlc, golang-migrate, protoc plugins)
+# Install required tools (Go binaries: buf, sqlc, golang-migrate, protoc plugins).
 make tools
 
-# Start a local Postgres in podman/docker
+# Start a local Postgres in podman/docker.
 make dev-up
 
-# Apply migrations
+# Apply migrations (creates the schema + the stillhouse_app role).
 make migrate-up
 
-# Seed a test tenant + admin user
+# Seed a tenant + admin user. Prints the random password — capture it.
 make seed
 
 # In two terminals:
-make backend-dev      # Go server on :8080
-make web-dev          # Vite dev server on :5173 (proxies API to :8080)
+make backend-dev    # Go server on :8080, connected as stillhouse_app
+make web-dev        # Vite dev server on :5173 (proxies API to :8080)
 ```
 
-Then open http://localhost:5173 and log in with the seeded credentials printed by `make seed`.
+Then open http://localhost:5173 and log in with the seeded credentials.
+
+### Running the integration test
+
+The RLS isolation test exercises two real tenants through both the
+admin pool (to insert fixtures) and the app pool (to verify each
+tenant sees only its own rows). Requires `make dev-up`.
+
+```sh
+make test-integration
+```
 
 ## License
 
