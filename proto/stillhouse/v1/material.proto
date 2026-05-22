@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum MaterialKind {
+  MATERIAL_KIND_UNSPECIFIED = 0;
+  MATERIAL_KIND_GRAIN = 1;
+  MATERIAL_KIND_MALT = 2;
+  MATERIAL_KIND_YEAST = 3;
+  MATERIAL_KIND_WATER = 4;
+  MATERIAL_KIND_NGS = 5;       // neutral grain spirit
+  MATERIAL_KIND_BOTANICAL = 6;
+  MATERIAL_KIND_PACKAGING = 7;
+  MATERIAL_KIND_OTHER = 8;
+}
+
+message Material {
+  string id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  MaterialKind kind = 4;
+  string uom = 5;          // 'kg' | 'L' | 'each' | etc.
+  string supplier = 6;
+  string notes = 7;
+  // Fermentable-source parameters; only meaningful for kind in (GRAIN, MALT).
+  // Both are fractions in [0,1]. Use the optional `_set` flags to disambiguate
+  // "set to zero" from "not provided" on writes.
+  double extract_pct = 8;
+  bool   extract_pct_set = 9;
+  double moisture_pct = 10;
+  bool   moisture_pct_set = 11;
+  bool   archived = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+message MaterialLot {
+  string id = 1;
+  string tenant_id = 2;
+  string material_id = 3;
+  string supplier_lot = 4;
+  double quantity_received = 5;
+  double quantity_on_hand = 6;
+  google.protobuf.Timestamp received_at = 7;
+  string notes = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+// ---------------------------------------------------------------------------
+// RPC payloads
+// ---------------------------------------------------------------------------
+
+message CreateMaterialRequest {
+  string name = 1;
+  MaterialKind kind = 2;
+  string uom = 3;
+  string supplier = 4;
+  string notes = 5;
+  double extract_pct = 6;
+  bool   extract_pct_set = 7;
+  double moisture_pct = 8;
+  bool   moisture_pct_set = 9;
+}
+message CreateMaterialResponse { Material material = 1; }
+
+message UpdateMaterialRequest {
+  string id = 1;
+  string name = 2;
+  string uom = 3;
+  string supplier = 4;
+  string notes = 5;
+  double extract_pct = 6;
+  bool   extract_pct_set = 7;
+  double moisture_pct = 8;
+  bool   moisture_pct_set = 9;
+}
+message UpdateMaterialResponse { Material material = 1; }
+
+message GetMaterialRequest { string id = 1; }
+message GetMaterialResponse { Material material = 1; }
+
+message ListMaterialsRequest {
+  MaterialKind kind = 1;       // optional filter; UNSPECIFIED = any kind
+  bool include_archived = 2;
+}
+message ListMaterialsResponse { repeated Material materials = 1; }
+
+message ArchiveMaterialRequest { string id = 1; bool archived = 2; }
+message ArchiveMaterialResponse { Material material = 1; }
+
+message RecordMaterialReceiptRequest {
+  string material_id = 1;
+  string supplier_lot = 2;
+  double quantity_received = 3;
+  google.protobuf.Timestamp received_at = 4;
+  string notes = 5;
+}
+message RecordMaterialReceiptResponse { MaterialLot lot = 1; }
+
+message ListMaterialLotsRequest {
+  string material_id = 1;      // optional filter
+  bool on_hand_only = 2;
+}
+message ListMaterialLotsResponse { repeated MaterialLot lots = 1; }
+
+service MaterialService {
+  rpc CreateMaterial(CreateMaterialRequest) returns (CreateMaterialResponse);
+  rpc UpdateMaterial(UpdateMaterialRequest) returns (UpdateMaterialResponse);
+  rpc GetMaterial(GetMaterialRequest) returns (GetMaterialResponse);
+  rpc ListMaterials(ListMaterialsRequest) returns (ListMaterialsResponse);
+  rpc ArchiveMaterial(ArchiveMaterialRequest) returns (ArchiveMaterialResponse);
+  rpc RecordMaterialReceipt(RecordMaterialReceiptRequest) returns (RecordMaterialReceiptResponse);
+  rpc ListMaterialLots(ListMaterialLotsRequest) returns (ListMaterialLotsResponse);
+}

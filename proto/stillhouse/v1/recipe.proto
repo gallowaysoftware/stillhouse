@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/material.proto";
+
+enum SpiritKind {
+  SPIRIT_KIND_UNSPECIFIED = 0;
+  SPIRIT_KIND_WHISKY = 1;
+  SPIRIT_KIND_CANADIAN_WHISKY = 2;
+  SPIRIT_KIND_RYE_WHISKY = 3;
+  SPIRIT_KIND_GIN = 4;
+  SPIRIT_KIND_VODKA = 5;
+  SPIRIT_KIND_RUM = 6;
+  SPIRIT_KIND_BRANDY = 7;
+  SPIRIT_KIND_LIQUEUR = 8;
+  SPIRIT_KIND_OTHER = 9;
+}
+
+message Recipe {
+  string id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  SpiritKind spirit_kind = 4;
+  bool archived = 5;
+  string current_version_id = 6;   // empty until first version saved
+  string notes = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message RecipeVersion {
+  string id = 1;
+  string tenant_id = 2;
+  string recipe_id = 3;
+  int32 version_no = 4;
+  string notes = 5;
+  double mash_efficiency_pct = 6;
+  double ferment_efficiency_pct = 7;
+  double distillation_recovery_pct = 8;
+  double target_water_l = 9;
+  bool   target_water_l_set = 10;
+  google.protobuf.Timestamp created_at = 11;
+  repeated RecipeIngredient ingredients = 12;
+}
+
+message RecipeIngredient {
+  string id = 1;
+  string recipe_version_id = 2;
+  string material_id = 3;
+  string material_name = 4;            // denormalized for display
+  MaterialKind material_kind = 5;
+  double material_extract_pct = 6;     // 0 if not set
+  bool   material_extract_pct_set = 7;
+  double quantity = 8;
+  string uom = 9;
+  string notes = 10;
+  int32  sort_order = 11;
+}
+
+// Projection breakdown produced from a RecipeVersion + a per-stage efficiency
+// set. Wash volume/ABV are only populated when target_water_l is set.
+message RecipeProjection {
+  repeated RecipeProjectionLine lines = 1;
+  double total_projected_laa = 2;
+  double projected_wash_volume_l = 3;
+  double projected_wash_abv_pct = 4;
+}
+
+message RecipeProjectionLine {
+  string material_id = 1;
+  string material_name = 2;
+  double quantity = 3;
+  string uom = 4;
+  double fermentable_kg = 5;
+  double extract_freed_kg = 6;
+  double ethanol_mass_kg = 7;
+  double ethanol_volume_l = 8;
+  double projected_laa = 9;
+}
+
+// ---------------------------------------------------------------------------
+// Requests / responses
+// ---------------------------------------------------------------------------
+
+message CreateRecipeRequest {
+  string name = 1;
+  SpiritKind spirit_kind = 2;
+  string notes = 3;
+}
+message CreateRecipeResponse { Recipe recipe = 1; }
+
+message ListRecipesRequest { bool include_archived = 1; }
+message ListRecipesResponse { repeated Recipe recipes = 1; }
+
+message GetRecipeRequest { string id = 1; }
+message GetRecipeResponse {
+  Recipe recipe = 1;
+  RecipeVersion current_version = 2;     // unset if no version yet
+  RecipeProjection projection = 3;       // computed from current_version
+}
+
+message ArchiveRecipeRequest { string id = 1; bool archived = 2; }
+message ArchiveRecipeResponse { Recipe recipe = 1; }
+
+message RecipeIngredientInput {
+  string material_id = 1;
+  double quantity = 2;
+  string uom = 3;
+  string notes = 4;
+  int32  sort_order = 5;
+}
+
+message SaveRecipeVersionRequest {
+  string recipe_id = 1;
+  string notes = 2;
+  double mash_efficiency_pct = 3;
+  double ferment_efficiency_pct = 4;
+  double distillation_recovery_pct = 5;
+  double target_water_l = 6;
+  bool   target_water_l_set = 7;
+  repeated RecipeIngredientInput ingredients = 8;
+}
+message SaveRecipeVersionResponse {
+  RecipeVersion version = 1;
+  RecipeProjection projection = 2;
+}
+
+message ListRecipeVersionsRequest { string recipe_id = 1; }
+message ListRecipeVersionsResponse { repeated RecipeVersion versions = 1; }
+
+service RecipeService {
+  rpc CreateRecipe(CreateRecipeRequest) returns (CreateRecipeResponse);
+  rpc ListRecipes(ListRecipesRequest) returns (ListRecipesResponse);
+  rpc GetRecipe(GetRecipeRequest) returns (GetRecipeResponse);
+  rpc ArchiveRecipe(ArchiveRecipeRequest) returns (ArchiveRecipeResponse);
+  rpc SaveRecipeVersion(SaveRecipeVersionRequest) returns (SaveRecipeVersionResponse);
+  rpc ListRecipeVersions(ListRecipeVersionsRequest) returns (ListRecipeVersionsResponse);
+}

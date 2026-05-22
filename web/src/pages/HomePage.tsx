@@ -1,54 +1,49 @@
-import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
-import { authClient, userClient } from "@/lib/clients";
+import { materialClient, recipeClient, userClient } from "@/lib/clients";
+import { Shell } from "@/components/Shell";
 
 export function HomePage() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  // RequireAuth already fetched this once; useQuery will read from cache.
-  const { data } = useQuery({
-    queryKey: ["getMe"],
-    queryFn: () => userClient.getMe({}),
+  const me = useQuery({ queryKey: ["getMe"], queryFn: () => userClient.getMe({}) });
+  const mats = useQuery({
+    queryKey: ["listMaterials"],
+    queryFn: () => materialClient.listMaterials({}),
   });
-
-  const logout = useMutation({
-    mutationFn: () => authClient.logout({}),
-    onSuccess: () => {
-      queryClient.clear();
-      navigate("/login", { replace: true });
-    },
+  const recs = useQuery({
+    queryKey: ["listRecipes"],
+    queryFn: () => recipeClient.listRecipes({}),
   });
 
   return (
-    <div className="mx-auto max-w-3xl p-8">
-      <header className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-stone-900">Stillhouse</h1>
-        <button
-          onClick={() => logout.mutate()}
-          disabled={logout.isPending}
-          className="text-sm text-stone-600 hover:text-stone-900"
-        >
-          {logout.isPending ? "Signing out…" : "Sign out"}
-        </button>
-      </header>
+    <Shell>
+      <h1 className="mb-1 text-2xl font-semibold">Dashboard</h1>
+      <p className="mb-8 text-sm text-stone-500">
+        Welcome{me.data?.user ? `, ${me.data.user.displayName}` : ""}.
+      </p>
 
-      {data && (
-        <section className="space-y-2 rounded-lg bg-white p-6 shadow">
-          <p className="text-sm text-stone-500">Signed in as</p>
-          <p className="text-lg font-medium text-stone-900">
-            {data.user?.displayName}{" "}
-            <span className="text-sm text-stone-500">({data.user?.email})</span>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <Link
+          to="/materials"
+          className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm hover:border-stone-400"
+        >
+          <p className="text-sm font-medium text-stone-500">Materials</p>
+          <p className="mt-2 text-3xl font-semibold text-stone-900">
+            {mats.data?.materials.length ?? "—"}
           </p>
-          <p className="text-sm text-stone-500">Tenant</p>
-          <p className="text-lg font-medium text-stone-900">{data.tenant?.name}</p>
-          <p className="text-sm text-stone-500">
-            CRA spirits licence: {data.tenant?.craSpiritsLicenceNumber} ·{" "}
-            Jurisdiction: {data.tenant?.defaultJurisdiction}
+          <p className="mt-1 text-sm text-stone-500">grain, malt, water, packaging…</p>
+        </Link>
+        <Link
+          to="/recipes"
+          className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm hover:border-stone-400"
+        >
+          <p className="text-sm font-medium text-stone-500">Recipes</p>
+          <p className="mt-2 text-3xl font-semibold text-stone-900">
+            {recs.data?.recipes.length ?? "—"}
           </p>
-        </section>
-      )}
-    </div>
+          <p className="mt-1 text-sm text-stone-500">mash bills + projected LAA</p>
+        </Link>
+      </div>
+    </Shell>
   );
 }

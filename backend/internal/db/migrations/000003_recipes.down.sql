@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS recipe_ingredients CASCADE;
+ALTER TABLE IF EXISTS recipes DROP CONSTRAINT IF EXISTS recipes_current_version_fk;
+DROP TABLE IF EXISTS recipe_versions CASCADE;
+DROP TABLE IF EXISTS recipes CASCADE;
+DROP TYPE  IF EXISTS spirit_kind;

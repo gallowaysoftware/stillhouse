@@ -17,6 +17,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1connect "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1/stillhousev1connect"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
 type Server struct {
@@ -49,10 +50,13 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	sm.Cookie.Path = "/"
 
 	queries := sqlcgen.New(pool)
+	tdb := tenantdb.New(pool)
 
 	authSvc := rpc.NewAuthService(queries, sm, logger)
 	tenantSvc := rpc.NewTenantService(pool, queries, logger)
 	userSvc := rpc.NewUserService(queries, logger)
+	materialSvc := rpc.NewMaterialService(tdb, logger)
+	recipeSvc := rpc.NewRecipeService(tdb, logger)
 
 	interceptors := connect.WithInterceptors(rpc.NewAuthInterceptor(sm, queries))
 
@@ -60,6 +64,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewAuthServiceHandler(authSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewTenantServiceHandler(tenantSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewUserServiceHandler(userSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewMaterialServiceHandler(materialSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewRecipeServiceHandler(recipeSvc, interceptors))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)

@@ -11,13 +11,33 @@ import (
 )
 
 type Querier interface {
+	ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	CountTenants(ctx context.Context) (int64, error)
+	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
+	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
+	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)
+	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
+	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
+	GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error)
+	GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error)
+	GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
+	ListMaterialLots(ctx context.Context, arg ListMaterialLotsParams) ([]MaterialLot, error)
+	ListMaterials(ctx context.Context, arg ListMaterialsParams) ([]Material, error)
+	ListRecipeIngredients(ctx context.Context, recipeVersionID uuid.UUID) ([]ListRecipeIngredientsRow, error)
+	ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]RecipeVersion, error)
+	ListRecipes(ctx context.Context, includeArchived bool) ([]Recipe, error)
+	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
+	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
+	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
+	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
+	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 }
 
 var _ Querier = (*Queries)(nil)

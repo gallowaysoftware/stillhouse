@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS material_lots CASCADE;
+DROP TABLE IF EXISTS materials CASCADE;
+DROP TYPE  IF EXISTS material_kind;

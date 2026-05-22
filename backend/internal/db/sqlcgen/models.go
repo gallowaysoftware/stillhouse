@@ -58,6 +58,103 @@ func (ns NullAuditAction) Value() (driver.Value, error) {
 	return string(ns.AuditAction), nil
 }
 
+type MaterialKind string
+
+const (
+	MaterialKindGrain     MaterialKind = "grain"
+	MaterialKindMalt      MaterialKind = "malt"
+	MaterialKindYeast     MaterialKind = "yeast"
+	MaterialKindWater     MaterialKind = "water"
+	MaterialKindNgs       MaterialKind = "ngs"
+	MaterialKindBotanical MaterialKind = "botanical"
+	MaterialKindPackaging MaterialKind = "packaging"
+	MaterialKindOther     MaterialKind = "other"
+)
+
+func (e *MaterialKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MaterialKind(s)
+	case string:
+		*e = MaterialKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MaterialKind: %T", src)
+	}
+	return nil
+}
+
+type NullMaterialKind struct {
+	MaterialKind MaterialKind `json:"material_kind"`
+	Valid        bool         `json:"valid"` // Valid is true if MaterialKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMaterialKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.MaterialKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MaterialKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMaterialKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MaterialKind), nil
+}
+
+type SpiritKind string
+
+const (
+	SpiritKindWhisky         SpiritKind = "whisky"
+	SpiritKindCanadianWhisky SpiritKind = "canadian_whisky"
+	SpiritKindRyeWhisky      SpiritKind = "rye_whisky"
+	SpiritKindGin            SpiritKind = "gin"
+	SpiritKindVodka          SpiritKind = "vodka"
+	SpiritKindRum            SpiritKind = "rum"
+	SpiritKindBrandy         SpiritKind = "brandy"
+	SpiritKindLiqueur        SpiritKind = "liqueur"
+	SpiritKindOther          SpiritKind = "other"
+)
+
+func (e *SpiritKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SpiritKind(s)
+	case string:
+		*e = SpiritKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SpiritKind: %T", src)
+	}
+	return nil
+}
+
+type NullSpiritKind struct {
+	SpiritKind SpiritKind `json:"spirit_kind"`
+	Valid      bool       `json:"valid"` // Valid is true if SpiritKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSpiritKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.SpiritKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SpiritKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSpiritKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SpiritKind), nil
+}
+
 type UserRole string
 
 const (
@@ -110,6 +207,70 @@ type AuditEvent struct {
 	Action     AuditAction        `json:"action"`
 	OccurredAt pgtype.Timestamptz `json:"occurred_at"`
 	Payload    []byte             `json:"payload"`
+}
+
+type Material struct {
+	ID          uuid.UUID          `json:"id"`
+	TenantID    uuid.UUID          `json:"tenant_id"`
+	Name        string             `json:"name"`
+	Kind        MaterialKind       `json:"kind"`
+	Uom         string             `json:"uom"`
+	Supplier    string             `json:"supplier"`
+	Notes       string             `json:"notes"`
+	ExtractPct  pgtype.Float8      `json:"extract_pct"`
+	MoisturePct pgtype.Float8      `json:"moisture_pct"`
+	Archived    bool               `json:"archived"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
+type MaterialLot struct {
+	ID               uuid.UUID          `json:"id"`
+	TenantID         uuid.UUID          `json:"tenant_id"`
+	MaterialID       uuid.UUID          `json:"material_id"`
+	SupplierLot      string             `json:"supplier_lot"`
+	QuantityReceived float64            `json:"quantity_received"`
+	QuantityOnHand   float64            `json:"quantity_on_hand"`
+	ReceivedAt       pgtype.Timestamptz `json:"received_at"`
+	Notes            string             `json:"notes"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Recipe struct {
+	ID               uuid.UUID          `json:"id"`
+	TenantID         uuid.UUID          `json:"tenant_id"`
+	Name             string             `json:"name"`
+	SpiritKind       SpiritKind         `json:"spirit_kind"`
+	Archived         bool               `json:"archived"`
+	CurrentVersionID uuid.NullUUID      `json:"current_version_id"`
+	Notes            string             `json:"notes"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type RecipeIngredient struct {
+	ID              uuid.UUID `json:"id"`
+	TenantID        uuid.UUID `json:"tenant_id"`
+	RecipeVersionID uuid.UUID `json:"recipe_version_id"`
+	MaterialID      uuid.UUID `json:"material_id"`
+	Quantity        float64   `json:"quantity"`
+	Uom             string    `json:"uom"`
+	Notes           string    `json:"notes"`
+	SortOrder       int32     `json:"sort_order"`
+}
+
+type RecipeVersion struct {
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	RecipeID                uuid.UUID          `json:"recipe_id"`
+	VersionNo               int32              `json:"version_no"`
+	Notes                   string             `json:"notes"`
+	MashEfficiencyPct       float64            `json:"mash_efficiency_pct"`
+	FermentEfficiencyPct    float64            `json:"ferment_efficiency_pct"`
+	DistillationRecoveryPct float64            `json:"distillation_recovery_pct"`
+	TargetWaterL            pgtype.Float8      `json:"target_water_l"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 }
 
 type Session struct {
