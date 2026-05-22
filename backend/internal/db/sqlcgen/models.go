@@ -966,6 +966,7 @@ type MaterialLot struct {
 	Notes            string             `json:"notes"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	UnitCostCad      pgtype.Float8      `json:"unit_cost_cad"`
 }
 
 type PackagedInventory struct {

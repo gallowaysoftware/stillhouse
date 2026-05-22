@@ -25,6 +25,7 @@ export function MaterialDetailPage() {
   });
   const [supplierLot, setSupplierLot] = useState("");
   const [quantity, setQuantity] = useState("");
+  const [unitCost, setUnitCost] = useState("");
   const [receivedAt, setReceivedAt] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -35,6 +36,7 @@ export function MaterialDetailPage() {
       qc.invalidateQueries({ queryKey: ["listMaterialLots", id] });
       setSupplierLot("");
       setQuantity("");
+      setUnitCost("");
       setNotes("");
     },
   });
@@ -48,6 +50,8 @@ export function MaterialDetailPage() {
         supplierLot,
         quantityReceived: Number(quantity),
         notes,
+        unitCostCad: unitCost ? Number(unitCost) : 0,
+        unitCostCadSet: !!unitCost,
         // receivedAt left unset = server uses time.Now() (Stage 5 fix).
       }),
     );
@@ -113,6 +117,17 @@ export function MaterialDetailPage() {
             />
           </div>
           <div>
+            <label className="mb-1 block text-xs font-medium text-stone-600">Unit cost (CAD/{m.uom}, optional)</label>
+            <input
+              type="number"
+              step="0.001"
+              min="0"
+              value={unitCost}
+              onChange={(e) => setUnitCost(e.target.value)}
+              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
             <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
             <input
               value={notes}
@@ -146,15 +161,16 @@ export function MaterialDetailPage() {
               <th className="px-4 py-3">Supplier lot</th>
               <th className="px-4 py-3 text-right">Received qty</th>
               <th className="px-4 py-3 text-right">On hand</th>
+              <th className="px-4 py-3 text-right">Unit cost (CAD)</th>
               <th className="px-4 py-3">Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {lots.isLoading && (
-              <tr><td colSpan={5} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">Loading…</td></tr>
             )}
             {!lots.isLoading && (lots.data?.lots ?? []).length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-3 text-stone-500">No lots recorded yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No lots recorded yet.</td></tr>
             )}
             {lots.data?.lots.map((l) => (
               <tr key={l.id}>
@@ -164,6 +180,7 @@ export function MaterialDetailPage() {
                 <td className="px-4 py-3 text-stone-600">{l.supplierLot || "—"}</td>
                 <td className="px-4 py-3 text-right text-stone-600">{formatQty(l.quantityReceived)}</td>
                 <td className="px-4 py-3 text-right font-medium text-stone-900">{formatQty(l.quantityOnHand)}</td>
+                <td className="px-4 py-3 text-right text-stone-600">{l.unitCostCadSet ? `$${l.unitCostCad.toFixed(3)}` : "—"}</td>
                 <td className="px-4 py-3 text-stone-600">{l.notes}</td>
               </tr>
             ))}

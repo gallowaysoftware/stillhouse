@@ -33,9 +33,9 @@ UPDATE materials SET archived = FALSE WHERE id = $1 RETURNING *;
 
 -- name: CreateMaterialLot :one
 INSERT INTO material_lots (
-    tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes
+    tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, unit_cost_cad
 ) VALUES (
-    $1, $2, $3, $4, $4, $5, $6
+    $1, $2, $3, $4, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: GetMaterialLot :one

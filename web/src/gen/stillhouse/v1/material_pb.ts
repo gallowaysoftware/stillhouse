@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/material.proto.
  */
 export const file_stillhouse_v1_material: GenFile = /*@__PURE__*/
-  fileDesc("ChxzdGlsbGhvdXNlL3YxL21hdGVyaWFsLnByb3RvEg1zdGlsbGhvdXNlLnYxIuACCghNYXRlcmlhbBIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIpCgRraW5kGAQgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSCwoDdW9tGAUgASgJEhAKCHN1cHBsaWVyGAYgASgJEg0KBW5vdGVzGAcgASgJEhMKC2V4dHJhY3RfcGN0GAggASgBEhcKD2V4dHJhY3RfcGN0X3NldBgJIAEoCBIUCgxtb2lzdHVyZV9wY3QYCiABKAESGAoQbW9pc3R1cmVfcGN0X3NldBgLIAEoCBIQCghhcmNoaXZlZBgMIAEoCBIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKsAgoLTWF0ZXJpYWxMb3QSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhMKC21hdGVyaWFsX2lkGAMgASgJEhQKDHN1cHBsaWVyX2xvdBgEIAEoCRIZChFxdWFudGl0eV9yZWNlaXZlZBgFIAEoARIYChBxdWFudGl0eV9vbl9oYW5kGAYgASgBEi8KC3JlY2VpdmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgIIAEoCRIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLcAQoVQ3JlYXRlTWF0ZXJpYWxSZXF1ZXN0EgwKBG5hbWUYASABKAkSKQoEa2luZBgCIAEoDjIbLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxLaW5kEgsKA3VvbRgDIAEoCRIQCghzdXBwbGllchgEIAEoCRINCgVub3RlcxgFIAEoCRITCgtleHRyYWN0X3BjdBgGIAEoARIXCg9leHRyYWN0X3BjdF9zZXQYByABKAgSFAoMbW9pc3R1cmVfcGN0GAggASgBEhgKEG1vaXN0dXJlX3BjdF9zZXQYCSABKAgiQwoWQ3JlYXRlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwivQEKFVVwZGF0ZU1hdGVyaWFsUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEgsKA3VvbRgDIAEoCRIQCghzdXBwbGllchgEIAEoCRINCgVub3RlcxgFIAEoCRITCgtleHRyYWN0X3BjdBgGIAEoARIXCg9leHRyYWN0X3BjdF9zZXQYByABKAgSFAoMbW9pc3R1cmVfcGN0GAggASgBEhgKEG1vaXN0dXJlX3BjdF9zZXQYCSABKAgiQwoWVXBkYXRlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiIAoSR2V0TWF0ZXJpYWxSZXF1ZXN0EgoKAmlkGAEgASgJIkAKE0dldE1hdGVyaWFsUmVzcG9uc2USKQoIbWF0ZXJpYWwYASABKAsyFy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsIlsKFExpc3RNYXRlcmlhbHNSZXF1ZXN0EikKBGtpbmQYASABKA4yGy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsS2luZBIYChBpbmNsdWRlX2FyY2hpdmVkGAIgASgIIkMKFUxpc3RNYXRlcmlhbHNSZXNwb25zZRIqCgltYXRlcmlhbHMYASADKAsyFy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsIjYKFkFyY2hpdmVNYXRlcmlhbFJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiRAoXQXJjaGl2ZU1hdGVyaWFsUmVzcG9uc2USKQoIbWF0ZXJpYWwYASABKAsyFy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsIqQBChxSZWNvcmRNYXRlcmlhbFJlY2VpcHRSZXF1ZXN0EhMKC21hdGVyaWFsX2lkGAEgASgJEhQKDHN1cHBsaWVyX2xvdBgCIAEoCRIZChFxdWFudGl0eV9yZWNlaXZlZBgDIAEoARIvCgtyZWNlaXZlZF9hdBgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBSABKAkiSAodUmVjb3JkTWF0ZXJpYWxSZWNlaXB0UmVzcG9uc2USJwoDbG90GAEgASgLMhouc3RpbGxob3VzZS52MS5NYXRlcmlhbExvdCJEChdMaXN0TWF0ZXJpYWxMb3RzUmVxdWVzdBITCgttYXRlcmlhbF9pZBgBIAEoCRIUCgxvbl9oYW5kX29ubHkYAiABKAgiRAoYTGlzdE1hdGVyaWFsTG90c1Jlc3BvbnNlEigKBGxvdHMYASADKAsyGi5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsTG90KvoBCgxNYXRlcmlhbEtpbmQSHQoZTUFURVJJQUxfS0lORF9VTlNQRUNJRklFRBAAEhcKE01BVEVSSUFMX0tJTkRfR1JBSU4QARIWChJNQVRFUklBTF9LSU5EX01BTFQQAhIXChNNQVRFUklBTF9LSU5EX1lFQVNUEAMSFwoTTUFURVJJQUxfS0lORF9XQVRFUhAEEhUKEU1BVEVSSUFMX0tJTkRfTkdTEAUSGwoXTUFURVJJQUxfS0lORF9CT1RBTklDQUwQBhIbChdNQVRFUklBTF9LSU5EX1BBQ0tBR0lORxAHEhcKE01BVEVSSUFMX0tJTkRfT1RIRVIQCDK8BQoPTWF0ZXJpYWxTZXJ2aWNlEl0KDkNyZWF0ZU1hdGVyaWFsEiQuc3RpbGxob3VzZS52MS5DcmVhdGVNYXRlcmlhbFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkNyZWF0ZU1hdGVyaWFsUmVzcG9uc2USXQoOVXBkYXRlTWF0ZXJpYWwSJC5zdGlsbGhvdXNlLnYxLlVwZGF0ZU1hdGVyaWFsUmVxdWVzdBolLnN0aWxsaG91c2UudjEuVXBkYXRlTWF0ZXJpYWxSZXNwb25zZRJUCgtHZXRNYXRlcmlhbBIhLnN0aWxsaG91c2UudjEuR2V0TWF0ZXJpYWxSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5HZXRNYXRlcmlhbFJlc3BvbnNlEloKDUxpc3RNYXRlcmlhbHMSIy5zdGlsbGhvdXNlLnYxLkxpc3RNYXRlcmlhbHNSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5MaXN0TWF0ZXJpYWxzUmVzcG9uc2USYAoPQXJjaGl2ZU1hdGVyaWFsEiUuc3RpbGxob3VzZS52MS5BcmNoaXZlTWF0ZXJpYWxSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5BcmNoaXZlTWF0ZXJpYWxSZXNwb25zZRJyChVSZWNvcmRNYXRlcmlhbFJlY2VpcHQSKy5zdGlsbGhvdXNlLnYxLlJlY29yZE1hdGVyaWFsUmVjZWlwdFJlcXVlc3QaLC5zdGlsbGhvdXNlLnYxLlJlY29yZE1hdGVyaWFsUmVjZWlwdFJlc3BvbnNlEmMKEExpc3RNYXRlcmlhbExvdHMSJi5zdGlsbGhvdXNlLnYxLkxpc3RNYXRlcmlhbExvdHNSZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5MaXN0TWF0ZXJpYWxMb3RzUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChxzdGlsbGhvdXNlL3YxL21hdGVyaWFsLnByb3RvEg1zdGlsbGhvdXNlLnYxIuACCghNYXRlcmlhbBIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIpCgRraW5kGAQgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSCwoDdW9tGAUgASgJEhAKCHN1cHBsaWVyGAYgASgJEg0KBW5vdGVzGAcgASgJEhMKC2V4dHJhY3RfcGN0GAggASgBEhcKD2V4dHJhY3RfcGN0X3NldBgJIAEoCBIUCgxtb2lzdHVyZV9wY3QYCiABKAESGAoQbW9pc3R1cmVfcGN0X3NldBgLIAEoCBIQCghhcmNoaXZlZBgMIAEoCBIuCgpjcmVhdGVkX2F0GA0gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLeAgoLTWF0ZXJpYWxMb3QSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhMKC21hdGVyaWFsX2lkGAMgASgJEhQKDHN1cHBsaWVyX2xvdBgEIAEoCRIZChFxdWFudGl0eV9yZWNlaXZlZBgFIAEoARIYChBxdWFudGl0eV9vbl9oYW5kGAYgASgBEi8KC3JlY2VpdmVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgIIAEoCRIuCgpjcmVhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg11bml0X2Nvc3RfY2FkGAsgASgBEhkKEXVuaXRfY29zdF9jYWRfc2V0GAwgASgIItwBChVDcmVhdGVNYXRlcmlhbFJlcXVlc3QSDAoEbmFtZRgBIAEoCRIpCgRraW5kGAIgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSCwoDdW9tGAMgASgJEhAKCHN1cHBsaWVyGAQgASgJEg0KBW5vdGVzGAUgASgJEhMKC2V4dHJhY3RfcGN0GAYgASgBEhcKD2V4dHJhY3RfcGN0X3NldBgHIAEoCBIUCgxtb2lzdHVyZV9wY3QYCCABKAESGAoQbW9pc3R1cmVfcGN0X3NldBgJIAEoCCJDChZDcmVhdGVNYXRlcmlhbFJlc3BvbnNlEikKCG1hdGVyaWFsGAEgASgLMhcuc3RpbGxob3VzZS52MS5NYXRlcmlhbCK9AQoVVXBkYXRlTWF0ZXJpYWxSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSCwoDdW9tGAMgASgJEhAKCHN1cHBsaWVyGAQgASgJEg0KBW5vdGVzGAUgASgJEhMKC2V4dHJhY3RfcGN0GAYgASgBEhcKD2V4dHJhY3RfcGN0X3NldBgHIAEoCBIUCgxtb2lzdHVyZV9wY3QYCCABKAESGAoQbW9pc3R1cmVfcGN0X3NldBgJIAEoCCJDChZVcGRhdGVNYXRlcmlhbFJlc3BvbnNlEikKCG1hdGVyaWFsGAEgASgLMhcuc3RpbGxob3VzZS52MS5NYXRlcmlhbCIgChJHZXRNYXRlcmlhbFJlcXVlc3QSCgoCaWQYASABKAkiQAoTR2V0TWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiWwoUTGlzdE1hdGVyaWFsc1JlcXVlc3QSKQoEa2luZBgBIAEoDjIbLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxLaW5kEhgKEGluY2x1ZGVfYXJjaGl2ZWQYAiABKAgiQwoVTGlzdE1hdGVyaWFsc1Jlc3BvbnNlEioKCW1hdGVyaWFscxgBIAMoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiNgoWQXJjaGl2ZU1hdGVyaWFsUmVxdWVzdBIKCgJpZBgBIAEoCRIQCghhcmNoaXZlZBgCIAEoCCJEChdBcmNoaXZlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwi1gEKHFJlY29yZE1hdGVyaWFsUmVjZWlwdFJlcXVlc3QSEwoLbWF0ZXJpYWxfaWQYASABKAkSFAoMc3VwcGxpZXJfbG90GAIgASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAMgASgBEi8KC3JlY2VpdmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgFIAEoCRIVCg11bml0X2Nvc3RfY2FkGAYgASgBEhkKEXVuaXRfY29zdF9jYWRfc2V0GAcgASgIIkgKHVJlY29yZE1hdGVyaWFsUmVjZWlwdFJlc3BvbnNlEicKA2xvdBgBIAEoCzIaLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxMb3QiRAoXTGlzdE1hdGVyaWFsTG90c1JlcXVlc3QSEwoLbWF0ZXJpYWxfaWQYASABKAkSFAoMb25faGFuZF9vbmx5GAIgASgIIkQKGExpc3RNYXRlcmlhbExvdHNSZXNwb25zZRIoCgRsb3RzGAEgAygLMhouc3RpbGxob3VzZS52MS5NYXRlcmlhbExvdCIxChZCb3R0bGluZ1J1bkNvc3RSZXF1ZXN0EhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCSKUAQoTQm90dGxpbmdSdW5Db3N0TGluZRIVCg1tYXRlcmlhbF9uYW1lGAEgASgJEhQKDHN1cHBsaWVyX2xvdBgCIAEoCRIVCg1xdWFudGl0eV91c2VkGAMgASgBEgsKA3VvbRgEIAEoCRIVCg11bml0X2Nvc3RfY2FkGAUgASgBEhUKDWxpbmVfY29zdF9jYWQYBiABKAEiwgEKF0JvdHRsaW5nUnVuQ29zdFJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIUCgxib3R0bGVfY291bnQYAiABKAUSHwoXdG90YWxfbWF0ZXJpYWxfY29zdF9jYWQYAyABKAESJAocbWF0ZXJpYWxfY29zdF9wZXJfYm90dGxlX2NhZBgEIAEoARIxCgVsaW5lcxgFIAMoCzIiLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0TGluZSr6AQoMTWF0ZXJpYWxLaW5kEh0KGU1BVEVSSUFMX0tJTkRfVU5TUEVDSUZJRUQQABIXChNNQVRFUklBTF9LSU5EX0dSQUlOEAESFgoSTUFURVJJQUxfS0lORF9NQUxUEAISFwoTTUFURVJJQUxfS0lORF9ZRUFTVBADEhcKE01BVEVSSUFMX0tJTkRfV0FURVIQBBIVChFNQVRFUklBTF9LSU5EX05HUxAFEhsKF01BVEVSSUFMX0tJTkRfQk9UQU5JQ0FMEAYSGwoXTUFURVJJQUxfS0lORF9QQUNLQUdJTkcQBxIXChNNQVRFUklBTF9LSU5EX09USEVSEAgyngYKD01hdGVyaWFsU2VydmljZRJdCg5DcmVhdGVNYXRlcmlhbBIkLnN0aWxsaG91c2UudjEuQ3JlYXRlTWF0ZXJpYWxSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5DcmVhdGVNYXRlcmlhbFJlc3BvbnNlEl0KDlVwZGF0ZU1hdGVyaWFsEiQuc3RpbGxob3VzZS52MS5VcGRhdGVNYXRlcmlhbFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLlVwZGF0ZU1hdGVyaWFsUmVzcG9uc2USVAoLR2V0TWF0ZXJpYWwSIS5zdGlsbGhvdXNlLnYxLkdldE1hdGVyaWFsUmVxdWVzdBoiLnN0aWxsaG91c2UudjEuR2V0TWF0ZXJpYWxSZXNwb25zZRJaCg1MaXN0TWF0ZXJpYWxzEiMuc3RpbGxob3VzZS52MS5MaXN0TWF0ZXJpYWxzUmVxdWVzdBokLnN0aWxsaG91c2UudjEuTGlzdE1hdGVyaWFsc1Jlc3BvbnNlEmAKD0FyY2hpdmVNYXRlcmlhbBIlLnN0aWxsaG91c2UudjEuQXJjaGl2ZU1hdGVyaWFsUmVxdWVzdBomLnN0aWxsaG91c2UudjEuQXJjaGl2ZU1hdGVyaWFsUmVzcG9uc2UScgoVUmVjb3JkTWF0ZXJpYWxSZWNlaXB0Eisuc3RpbGxob3VzZS52MS5SZWNvcmRNYXRlcmlhbFJlY2VpcHRSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5SZWNvcmRNYXRlcmlhbFJlY2VpcHRSZXNwb25zZRJjChBMaXN0TWF0ZXJpYWxMb3RzEiYuc3RpbGxob3VzZS52MS5MaXN0TWF0ZXJpYWxMb3RzUmVxdWVzdBonLnN0aWxsaG91c2UudjEuTGlzdE1hdGVyaWFsTG90c1Jlc3BvbnNlEmAKD0JvdHRsaW5nUnVuQ29zdBIlLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0UmVxdWVzdBomLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Material
@@ -155,6 +155,18 @@ export type MaterialLot = Message<"stillhouse.v1.MaterialLot"> & {
    * @generated from field: google.protobuf.Timestamp updated_at = 10;
    */
   updatedAt?: Timestamp | undefined;
+
+  /**
+   * CAD per UOM unit; 0 when not recorded
+   *
+   * @generated from field: double unit_cost_cad = 11;
+   */
+  unitCostCad: number;
+
+  /**
+   * @generated from field: bool unit_cost_cad_set = 12;
+   */
+  unitCostCadSet: boolean;
 };
 
 /**
@@ -454,6 +466,16 @@ export type RecordMaterialReceiptRequest = Message<"stillhouse.v1.RecordMaterial
    * @generated from field: string notes = 5;
    */
   notes: string;
+
+  /**
+   * @generated from field: double unit_cost_cad = 6;
+   */
+  unitCostCad: number;
+
+  /**
+   * @generated from field: bool unit_cost_cad_set = 7;
+   */
+  unitCostCadSet: boolean;
 };
 
 /**
@@ -520,6 +542,106 @@ export type ListMaterialLotsResponse = Message<"stillhouse.v1.ListMaterialLotsRe
  */
 export const ListMaterialLotsResponseSchema: GenMessage<ListMaterialLotsResponse> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_material, 15);
+
+/**
+ * @generated from message stillhouse.v1.BottlingRunCostRequest
+ */
+export type BottlingRunCostRequest = Message<"stillhouse.v1.BottlingRunCostRequest"> & {
+  /**
+   * @generated from field: string bottling_run_id = 1;
+   */
+  bottlingRunId: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.BottlingRunCostRequest.
+ * Use `create(BottlingRunCostRequestSchema)` to create a new message.
+ */
+export const BottlingRunCostRequestSchema: GenMessage<BottlingRunCostRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 16);
+
+/**
+ * @generated from message stillhouse.v1.BottlingRunCostLine
+ */
+export type BottlingRunCostLine = Message<"stillhouse.v1.BottlingRunCostLine"> & {
+  /**
+   * @generated from field: string material_name = 1;
+   */
+  materialName: string;
+
+  /**
+   * @generated from field: string supplier_lot = 2;
+   */
+  supplierLot: string;
+
+  /**
+   * @generated from field: double quantity_used = 3;
+   */
+  quantityUsed: number;
+
+  /**
+   * @generated from field: string uom = 4;
+   */
+  uom: string;
+
+  /**
+   * @generated from field: double unit_cost_cad = 5;
+   */
+  unitCostCad: number;
+
+  /**
+   * @generated from field: double line_cost_cad = 6;
+   */
+  lineCostCad: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.BottlingRunCostLine.
+ * Use `create(BottlingRunCostLineSchema)` to create a new message.
+ */
+export const BottlingRunCostLineSchema: GenMessage<BottlingRunCostLine> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 17);
+
+/**
+ * @generated from message stillhouse.v1.BottlingRunCostResponse
+ */
+export type BottlingRunCostResponse = Message<"stillhouse.v1.BottlingRunCostResponse"> & {
+  /**
+   * @generated from field: string bottling_run_id = 1;
+   */
+  bottlingRunId: string;
+
+  /**
+   * @generated from field: int32 bottle_count = 2;
+   */
+  bottleCount: number;
+
+  /**
+   * @generated from field: double total_material_cost_cad = 3;
+   */
+  totalMaterialCostCad: number;
+
+  /**
+   * @generated from field: double material_cost_per_bottle_cad = 4;
+   */
+  materialCostPerBottleCad: number;
+
+  /**
+   * Lines that contributed to the total. Lines without a recorded
+   * unit_cost_cad surface as line_cost_cad = 0 with unit_cost_cad = 0 so
+   * the caller can warn about missing-price ingredients.
+   *
+   * @generated from field: repeated stillhouse.v1.BottlingRunCostLine lines = 5;
+   */
+  lines: BottlingRunCostLine[];
+};
+
+/**
+ * Describes the message stillhouse.v1.BottlingRunCostResponse.
+ * Use `create(BottlingRunCostResponseSchema)` to create a new message.
+ */
+export const BottlingRunCostResponseSchema: GenMessage<BottlingRunCostResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 18);
 
 /**
  * @generated from enum stillhouse.v1.MaterialKind
@@ -638,6 +760,14 @@ export const MaterialService: GenService<{
     methodKind: "unary";
     input: typeof ListMaterialLotsRequestSchema;
     output: typeof ListMaterialLotsResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.MaterialService.BottlingRunCost
+   */
+  bottlingRunCost: {
+    methodKind: "unary";
+    input: typeof BottlingRunCostRequestSchema;
+    output: typeof BottlingRunCostResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_material, 0);

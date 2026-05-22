@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { Shell } from "@/components/Shell";
-import { bottlingClient, traceabilityClient } from "@/lib/clients";
+import { bottlingClient, materialClient, traceabilityClient } from "@/lib/clients";
 import { formatLAA, formatQty } from "@/lib/format";
 
 export function BottlingRunDetailPage() {
@@ -18,6 +18,11 @@ export function BottlingRunDetailPage() {
     queryKey: ["traceBottlingRun", id],
     queryFn: () => traceabilityClient.traceBottlingRun({ bottlingRunId: id! }),
     enabled: traceOpen && !!id,
+  });
+  const cost = useQuery({
+    queryKey: ["bottlingRunCost", id],
+    queryFn: () => materialClient.bottlingRunCost({ bottlingRunId: id! }),
+    enabled: !!id,
   });
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
@@ -60,6 +65,51 @@ export function BottlingRunDetailPage() {
           {r.bottlingLossL > 0 && <Row k="Bottling loss">{formatQty(r.bottlingLossL)} L</Row>}
         </dl>
       </section>
+
+      {cost.data && cost.data.lines.length > 0 && (
+        <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Material cost</h2>
+          <div className="mb-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <Stat label="Total materials" value={`$${cost.data.totalMaterialCostCad.toFixed(2)}`} />
+            <Stat
+              label="Per bottle"
+              value={`$${cost.data.materialCostPerBottleCad.toFixed(2)}`}
+              highlight
+            />
+          </div>
+          <table className="min-w-full divide-y divide-stone-200 text-sm">
+            <thead className="text-left text-xs uppercase text-stone-500">
+              <tr>
+                <th className="px-3 py-2">Material / Lot</th>
+                <th className="px-3 py-2 text-right">Qty</th>
+                <th className="px-3 py-2 text-right">Unit cost</th>
+                <th className="px-3 py-2 text-right">Line cost</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {cost.data.lines.map((l, i) => (
+                <tr key={`${l.materialName}-${l.supplierLot}-${i}`}>
+                  <td className="px-3 py-2">
+                    <div className="text-stone-900">{l.materialName}</div>
+                    {l.supplierLot && <div className="text-xs text-stone-500">lot {l.supplierLot}</div>}
+                  </td>
+                  <td className="px-3 py-2 text-right text-stone-600">{formatQty(l.quantityUsed)} {l.uom}</td>
+                  <td className="px-3 py-2 text-right text-stone-600">
+                    {l.unitCostCad > 0 ? `$${l.unitCostCad.toFixed(3)}` : <span className="text-amber-700">no price</span>}
+                  </td>
+                  <td className="px-3 py-2 text-right font-medium text-stone-900">
+                    {l.lineCostCad > 0 ? `$${l.lineCostCad.toFixed(2)}` : "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="mt-3 text-xs text-stone-500">
+            Materials only. Doesn't include labour, energy, packaging, excise duty, or overhead.
+            Lines without a recorded unit price are dropped from the per-bottle figure.
+          </p>
+        </section>
+      )}
 
       {traceOpen && (
         <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">

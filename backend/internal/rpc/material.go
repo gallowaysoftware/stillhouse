@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -245,6 +246,7 @@ func (s *MaterialService) RecordMaterialReceipt(
 			QuantityReceived: in.GetQuantityReceived(),
 			ReceivedAt:       received,
 			Notes:            in.GetNotes(),
+			UnitCostCad:      optionalFloat(in.GetUnitCostCadSet(), in.GetUnitCostCad()),
 		})
 		return dbErr
 	})
@@ -294,6 +296,111 @@ func (s *MaterialService) ListMaterialLots(
 	return connect.NewResponse(&stillhousev1.ListMaterialLotsResponse{Lots: out}), nil
 }
 
+// BottlingRunCost walks back from a bottling run to every mash that fed its
+// source container and sums material costs. Uses the same chain-walk as
+// TraceabilityService.TraceBottlingRun (intentionally duplicated rather than
+// shared — cost has different semantics around missing prices and we want
+// the traceability output to stay generic).
+//
+// Limitations:
+//   - Only counts ingredients whose mash entry has a material_lot_id; lot-less
+//     ingredients can't be priced and are dropped.
+//   - Lines without a recorded unit_cost_cad surface as line_cost_cad = 0 with
+//     unit_cost_cad = 0 so the UI can flag missing-price rows.
+//   - Allocates total mash material cost evenly across the bottling run.
+//     A single mash feeding multiple bottling runs (split-bottle case) over-
+//     counts in the first run and under-counts in the second; v2 should track
+//     bottled fraction.
+func (s *MaterialService) BottlingRunCost(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.BottlingRunCostRequest],
+) (*connect.Response[stillhousev1.BottlingRunCostResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	runID, err := uuid.Parse(req.Msg.GetBottlingRunId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid bottling_run_id"))
+	}
+
+	out := &stillhousev1.BottlingRunCostResponse{BottlingRunId: runID.String()}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		run, e := q.GetBottlingRun(ctx, runID)
+		if e != nil {
+			return e
+		}
+		out.BottleCount = run.BottleCount
+
+		feedCutoff := run.BottlingDate.Time.Add(24 * time.Hour)
+		feeds, e := q.BottlingRunChainFeeds(ctx, sqlcgen.BottlingRunChainFeedsParams{
+			DestinationContainerID: uuid.NullUUID{UUID: run.SourceContainerID, Valid: true},
+			OccurredAt:             pgtype.Timestamptz{Time: feedCutoff, Valid: true},
+		})
+		if e != nil {
+			return e
+		}
+
+		// Dedupe mashes across the (potentially multi-feed) chain so a mash
+		// feeding twice doesn't double-count.
+		seen := make(map[string]bool)
+		for _, fd := range feeds {
+			if fd.Reason != sqlcgen.BulkMovementReasonProductionGauge {
+				continue
+			}
+			chain, ce := q.DistillationChainFromGauge(ctx, fd.ID)
+			if errors.Is(ce, pgx.ErrNoRows) {
+				continue
+			}
+			if ce != nil {
+				return ce
+			}
+			if !chain.MashRunID.Valid || seen[chain.MashRunID.UUID.String()] {
+				continue
+			}
+			seen[chain.MashRunID.UUID.String()] = true
+
+			ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
+			if ie != nil {
+				return ie
+			}
+			for _, ing := range ings {
+				if !ing.MaterialLotID.Valid {
+					continue
+				}
+				lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
+				if le != nil {
+					return le
+				}
+				line := &stillhousev1.BottlingRunCostLine{
+					MaterialName: ing.MaterialName,
+					SupplierLot:  ing.SupplierLot.String,
+					QuantityUsed: ing.QuantityUsed,
+					Uom:          ing.Uom,
+				}
+				if lot.UnitCostCad.Valid {
+					line.UnitCostCad = lot.UnitCostCad.Float64
+					line.LineCostCad = ing.QuantityUsed * lot.UnitCostCad.Float64
+					out.TotalMaterialCostCad += line.LineCostCad
+				}
+				out.Lines = append(out.Lines, line)
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("bottling run not found"))
+		}
+		s.logger.Error("BottlingRunCost", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if out.BottleCount > 0 {
+		out.MaterialCostPerBottleCad = out.TotalMaterialCostCad / float64(out.BottleCount)
+	}
+	return connect.NewResponse(out), nil
+}
+
 // --- helpers ---
 
 func optionalFloat(set bool, v float64) pgtype.Float8 {
@@ -328,7 +435,7 @@ func materialToProto(m sqlcgen.Material) *stillhousev1.Material {
 }
 
 func materialLotToProto(l sqlcgen.MaterialLot) *stillhousev1.MaterialLot {
-	return &stillhousev1.MaterialLot{
+	out := &stillhousev1.MaterialLot{
 		Id:               l.ID.String(),
 		TenantId:         l.TenantID.String(),
 		MaterialId:       l.MaterialID.String(),
@@ -340,6 +447,11 @@ func materialLotToProto(l sqlcgen.MaterialLot) *stillhousev1.MaterialLot {
 		CreatedAt:        timestamppb.New(l.CreatedAt.Time),
 		UpdatedAt:        timestamppb.New(l.UpdatedAt.Time),
 	}
+	if l.UnitCostCad.Valid {
+		out.UnitCostCad = l.UnitCostCad.Float64
+		out.UnitCostCadSet = true
+	}
+	return out
 }
 
 func materialKindToDB(k stillhousev1.MaterialKind) (sqlcgen.MaterialKind, error) {

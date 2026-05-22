@@ -252,6 +252,8 @@ type MaterialLot struct {
 	Notes            string                 `protobuf:"bytes,8,opt,name=notes,proto3" json:"notes,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	UnitCostCad      float64                `protobuf:"fixed64,11,opt,name=unit_cost_cad,json=unitCostCad,proto3" json:"unit_cost_cad,omitempty"` // CAD per UOM unit; 0 when not recorded
+	UnitCostCadSet   bool                   `protobuf:"varint,12,opt,name=unit_cost_cad_set,json=unitCostCadSet,proto3" json:"unit_cost_cad_set,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -354,6 +356,20 @@ func (x *MaterialLot) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *MaterialLot) GetUnitCostCad() float64 {
+	if x != nil {
+		return x.UnitCostCad
+	}
+	return 0
+}
+
+func (x *MaterialLot) GetUnitCostCadSet() bool {
+	if x != nil {
+		return x.UnitCostCadSet
+	}
+	return false
 }
 
 type CreateMaterialRequest struct {
@@ -947,6 +963,8 @@ type RecordMaterialReceiptRequest struct {
 	QuantityReceived float64                `protobuf:"fixed64,3,opt,name=quantity_received,json=quantityReceived,proto3" json:"quantity_received,omitempty"`
 	ReceivedAt       *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=received_at,json=receivedAt,proto3" json:"received_at,omitempty"`
 	Notes            string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	UnitCostCad      float64                `protobuf:"fixed64,6,opt,name=unit_cost_cad,json=unitCostCad,proto3" json:"unit_cost_cad,omitempty"`
+	UnitCostCadSet   bool                   `protobuf:"varint,7,opt,name=unit_cost_cad_set,json=unitCostCadSet,proto3" json:"unit_cost_cad_set,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -1014,6 +1032,20 @@ func (x *RecordMaterialReceiptRequest) GetNotes() string {
 		return x.Notes
 	}
 	return ""
+}
+
+func (x *RecordMaterialReceiptRequest) GetUnitCostCad() float64 {
+	if x != nil {
+		return x.UnitCostCad
+	}
+	return 0
+}
+
+func (x *RecordMaterialReceiptRequest) GetUnitCostCadSet() bool {
+	if x != nil {
+		return x.UnitCostCadSet
+	}
+	return false
 }
 
 type RecordMaterialReceiptResponse struct {
@@ -1156,6 +1188,213 @@ func (x *ListMaterialLotsResponse) GetLots() []*MaterialLot {
 	return nil
 }
 
+type BottlingRunCostRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	BottlingRunId string                 `protobuf:"bytes,1,opt,name=bottling_run_id,json=bottlingRunId,proto3" json:"bottling_run_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BottlingRunCostRequest) Reset() {
+	*x = BottlingRunCostRequest{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BottlingRunCostRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BottlingRunCostRequest) ProtoMessage() {}
+
+func (x *BottlingRunCostRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BottlingRunCostRequest.ProtoReflect.Descriptor instead.
+func (*BottlingRunCostRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *BottlingRunCostRequest) GetBottlingRunId() string {
+	if x != nil {
+		return x.BottlingRunId
+	}
+	return ""
+}
+
+type BottlingRunCostLine struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MaterialName  string                 `protobuf:"bytes,1,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"`
+	SupplierLot   string                 `protobuf:"bytes,2,opt,name=supplier_lot,json=supplierLot,proto3" json:"supplier_lot,omitempty"`
+	QuantityUsed  float64                `protobuf:"fixed64,3,opt,name=quantity_used,json=quantityUsed,proto3" json:"quantity_used,omitempty"`
+	Uom           string                 `protobuf:"bytes,4,opt,name=uom,proto3" json:"uom,omitempty"`
+	UnitCostCad   float64                `protobuf:"fixed64,5,opt,name=unit_cost_cad,json=unitCostCad,proto3" json:"unit_cost_cad,omitempty"`
+	LineCostCad   float64                `protobuf:"fixed64,6,opt,name=line_cost_cad,json=lineCostCad,proto3" json:"line_cost_cad,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BottlingRunCostLine) Reset() {
+	*x = BottlingRunCostLine{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BottlingRunCostLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BottlingRunCostLine) ProtoMessage() {}
+
+func (x *BottlingRunCostLine) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BottlingRunCostLine.ProtoReflect.Descriptor instead.
+func (*BottlingRunCostLine) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *BottlingRunCostLine) GetMaterialName() string {
+	if x != nil {
+		return x.MaterialName
+	}
+	return ""
+}
+
+func (x *BottlingRunCostLine) GetSupplierLot() string {
+	if x != nil {
+		return x.SupplierLot
+	}
+	return ""
+}
+
+func (x *BottlingRunCostLine) GetQuantityUsed() float64 {
+	if x != nil {
+		return x.QuantityUsed
+	}
+	return 0
+}
+
+func (x *BottlingRunCostLine) GetUom() string {
+	if x != nil {
+		return x.Uom
+	}
+	return ""
+}
+
+func (x *BottlingRunCostLine) GetUnitCostCad() float64 {
+	if x != nil {
+		return x.UnitCostCad
+	}
+	return 0
+}
+
+func (x *BottlingRunCostLine) GetLineCostCad() float64 {
+	if x != nil {
+		return x.LineCostCad
+	}
+	return 0
+}
+
+type BottlingRunCostResponse struct {
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	BottlingRunId            string                 `protobuf:"bytes,1,opt,name=bottling_run_id,json=bottlingRunId,proto3" json:"bottling_run_id,omitempty"`
+	BottleCount              int32                  `protobuf:"varint,2,opt,name=bottle_count,json=bottleCount,proto3" json:"bottle_count,omitempty"`
+	TotalMaterialCostCad     float64                `protobuf:"fixed64,3,opt,name=total_material_cost_cad,json=totalMaterialCostCad,proto3" json:"total_material_cost_cad,omitempty"`
+	MaterialCostPerBottleCad float64                `protobuf:"fixed64,4,opt,name=material_cost_per_bottle_cad,json=materialCostPerBottleCad,proto3" json:"material_cost_per_bottle_cad,omitempty"`
+	// Lines that contributed to the total. Lines without a recorded
+	// unit_cost_cad surface as line_cost_cad = 0 with unit_cost_cad = 0 so
+	// the caller can warn about missing-price ingredients.
+	Lines         []*BottlingRunCostLine `protobuf:"bytes,5,rep,name=lines,proto3" json:"lines,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BottlingRunCostResponse) Reset() {
+	*x = BottlingRunCostResponse{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BottlingRunCostResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BottlingRunCostResponse) ProtoMessage() {}
+
+func (x *BottlingRunCostResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BottlingRunCostResponse.ProtoReflect.Descriptor instead.
+func (*BottlingRunCostResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *BottlingRunCostResponse) GetBottlingRunId() string {
+	if x != nil {
+		return x.BottlingRunId
+	}
+	return ""
+}
+
+func (x *BottlingRunCostResponse) GetBottleCount() int32 {
+	if x != nil {
+		return x.BottleCount
+	}
+	return 0
+}
+
+func (x *BottlingRunCostResponse) GetTotalMaterialCostCad() float64 {
+	if x != nil {
+		return x.TotalMaterialCostCad
+	}
+	return 0
+}
+
+func (x *BottlingRunCostResponse) GetMaterialCostPerBottleCad() float64 {
+	if x != nil {
+		return x.MaterialCostPerBottleCad
+	}
+	return 0
+}
+
+func (x *BottlingRunCostResponse) GetLines() []*BottlingRunCostLine {
+	if x != nil {
+		return x.Lines
+	}
+	return nil
+}
+
 var File_stillhouse_v1_material_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_material_proto_rawDesc = "" +
@@ -1179,7 +1418,7 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9e\x03\n" +
+	"updated_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xed\x03\n" +
 	"\vMaterialLot\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1f\n" +
@@ -1195,7 +1434,9 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb6\x02\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\"\n" +
+	"\runit_cost_cad\x18\v \x01(\x01R\vunitCostCad\x12)\n" +
+	"\x11unit_cost_cad_set\x18\f \x01(\bR\x0eunitCostCadSet\"\xb6\x02\n" +
 	"\x15CreateMaterialRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
 	"\x04kind\x18\x02 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\x04kind\x12\x10\n" +
@@ -1235,7 +1476,7 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\barchived\x18\x02 \x01(\bR\barchived\"N\n" +
 	"\x17ArchiveMaterialResponse\x123\n" +
-	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"\xe2\x01\n" +
+	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"\xb1\x02\n" +
 	"\x1cRecordMaterialReceiptRequest\x12\x1f\n" +
 	"\vmaterial_id\x18\x01 \x01(\tR\n" +
 	"materialId\x12!\n" +
@@ -1243,7 +1484,9 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x11quantity_received\x18\x03 \x01(\x01R\x10quantityReceived\x12;\n" +
 	"\vreceived_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"receivedAt\x12\x14\n" +
-	"\x05notes\x18\x05 \x01(\tR\x05notes\"M\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\x12\"\n" +
+	"\runit_cost_cad\x18\x06 \x01(\x01R\vunitCostCad\x12)\n" +
+	"\x11unit_cost_cad_set\x18\a \x01(\bR\x0eunitCostCadSet\"M\n" +
 	"\x1dRecordMaterialReceiptResponse\x12,\n" +
 	"\x03lot\x18\x01 \x01(\v2\x1a.stillhouse.v1.MaterialLotR\x03lot\"\\\n" +
 	"\x17ListMaterialLotsRequest\x12\x1f\n" +
@@ -1252,7 +1495,22 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\fon_hand_only\x18\x02 \x01(\bR\n" +
 	"onHandOnly\"J\n" +
 	"\x18ListMaterialLotsResponse\x12.\n" +
-	"\x04lots\x18\x01 \x03(\v2\x1a.stillhouse.v1.MaterialLotR\x04lots*\xfa\x01\n" +
+	"\x04lots\x18\x01 \x03(\v2\x1a.stillhouse.v1.MaterialLotR\x04lots\"@\n" +
+	"\x16BottlingRunCostRequest\x12&\n" +
+	"\x0fbottling_run_id\x18\x01 \x01(\tR\rbottlingRunId\"\xdc\x01\n" +
+	"\x13BottlingRunCostLine\x12#\n" +
+	"\rmaterial_name\x18\x01 \x01(\tR\fmaterialName\x12!\n" +
+	"\fsupplier_lot\x18\x02 \x01(\tR\vsupplierLot\x12#\n" +
+	"\rquantity_used\x18\x03 \x01(\x01R\fquantityUsed\x12\x10\n" +
+	"\x03uom\x18\x04 \x01(\tR\x03uom\x12\"\n" +
+	"\runit_cost_cad\x18\x05 \x01(\x01R\vunitCostCad\x12\"\n" +
+	"\rline_cost_cad\x18\x06 \x01(\x01R\vlineCostCad\"\x95\x02\n" +
+	"\x17BottlingRunCostResponse\x12&\n" +
+	"\x0fbottling_run_id\x18\x01 \x01(\tR\rbottlingRunId\x12!\n" +
+	"\fbottle_count\x18\x02 \x01(\x05R\vbottleCount\x125\n" +
+	"\x17total_material_cost_cad\x18\x03 \x01(\x01R\x14totalMaterialCostCad\x12>\n" +
+	"\x1cmaterial_cost_per_bottle_cad\x18\x04 \x01(\x01R\x18materialCostPerBottleCad\x128\n" +
+	"\x05lines\x18\x05 \x03(\v2\".stillhouse.v1.BottlingRunCostLineR\x05lines*\xfa\x01\n" +
 	"\fMaterialKind\x12\x1d\n" +
 	"\x19MATERIAL_KIND_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13MATERIAL_KIND_GRAIN\x10\x01\x12\x16\n" +
@@ -1262,7 +1520,7 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x11MATERIAL_KIND_NGS\x10\x05\x12\x1b\n" +
 	"\x17MATERIAL_KIND_BOTANICAL\x10\x06\x12\x1b\n" +
 	"\x17MATERIAL_KIND_PACKAGING\x10\a\x12\x17\n" +
-	"\x13MATERIAL_KIND_OTHER\x10\b2\xbc\x05\n" +
+	"\x13MATERIAL_KIND_OTHER\x10\b2\x9e\x06\n" +
 	"\x0fMaterialService\x12]\n" +
 	"\x0eCreateMaterial\x12$.stillhouse.v1.CreateMaterialRequest\x1a%.stillhouse.v1.CreateMaterialResponse\x12]\n" +
 	"\x0eUpdateMaterial\x12$.stillhouse.v1.UpdateMaterialRequest\x1a%.stillhouse.v1.UpdateMaterialResponse\x12T\n" +
@@ -1270,7 +1528,8 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\rListMaterials\x12#.stillhouse.v1.ListMaterialsRequest\x1a$.stillhouse.v1.ListMaterialsResponse\x12`\n" +
 	"\x0fArchiveMaterial\x12%.stillhouse.v1.ArchiveMaterialRequest\x1a&.stillhouse.v1.ArchiveMaterialResponse\x12r\n" +
 	"\x15RecordMaterialReceipt\x12+.stillhouse.v1.RecordMaterialReceiptRequest\x1a,.stillhouse.v1.RecordMaterialReceiptResponse\x12c\n" +
-	"\x10ListMaterialLots\x12&.stillhouse.v1.ListMaterialLotsRequest\x1a'.stillhouse.v1.ListMaterialLotsResponseB\xd1\x01\n" +
+	"\x10ListMaterialLots\x12&.stillhouse.v1.ListMaterialLotsRequest\x1a'.stillhouse.v1.ListMaterialLotsResponse\x12`\n" +
+	"\x0fBottlingRunCost\x12%.stillhouse.v1.BottlingRunCostRequest\x1a&.stillhouse.v1.BottlingRunCostResponseB\xd1\x01\n" +
 	"\x11com.stillhouse.v1B\rMaterialProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1286,7 +1545,7 @@ func file_stillhouse_v1_material_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_material_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
 var file_stillhouse_v1_material_proto_goTypes = []any{
 	(MaterialKind)(0),                     // 0: stillhouse.v1.MaterialKind
 	(*Material)(nil),                      // 1: stillhouse.v1.Material
@@ -1305,15 +1564,18 @@ var file_stillhouse_v1_material_proto_goTypes = []any{
 	(*RecordMaterialReceiptResponse)(nil), // 14: stillhouse.v1.RecordMaterialReceiptResponse
 	(*ListMaterialLotsRequest)(nil),       // 15: stillhouse.v1.ListMaterialLotsRequest
 	(*ListMaterialLotsResponse)(nil),      // 16: stillhouse.v1.ListMaterialLotsResponse
-	(*timestamppb.Timestamp)(nil),         // 17: google.protobuf.Timestamp
+	(*BottlingRunCostRequest)(nil),        // 17: stillhouse.v1.BottlingRunCostRequest
+	(*BottlingRunCostLine)(nil),           // 18: stillhouse.v1.BottlingRunCostLine
+	(*BottlingRunCostResponse)(nil),       // 19: stillhouse.v1.BottlingRunCostResponse
+	(*timestamppb.Timestamp)(nil),         // 20: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.Material.kind:type_name -> stillhouse.v1.MaterialKind
-	17, // 1: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
-	17, // 2: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
-	17, // 3: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
-	17, // 4: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
-	17, // 5: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 1: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
+	20, // 2: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 3: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
+	20, // 4: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
+	20, // 5: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 6: stillhouse.v1.CreateMaterialRequest.kind:type_name -> stillhouse.v1.MaterialKind
 	1,  // 7: stillhouse.v1.CreateMaterialResponse.material:type_name -> stillhouse.v1.Material
 	1,  // 8: stillhouse.v1.UpdateMaterialResponse.material:type_name -> stillhouse.v1.Material
@@ -1321,28 +1583,31 @@ var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 10: stillhouse.v1.ListMaterialsRequest.kind:type_name -> stillhouse.v1.MaterialKind
 	1,  // 11: stillhouse.v1.ListMaterialsResponse.materials:type_name -> stillhouse.v1.Material
 	1,  // 12: stillhouse.v1.ArchiveMaterialResponse.material:type_name -> stillhouse.v1.Material
-	17, // 13: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
+	20, // 13: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
 	2,  // 14: stillhouse.v1.RecordMaterialReceiptResponse.lot:type_name -> stillhouse.v1.MaterialLot
 	2,  // 15: stillhouse.v1.ListMaterialLotsResponse.lots:type_name -> stillhouse.v1.MaterialLot
-	3,  // 16: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
-	5,  // 17: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
-	7,  // 18: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
-	9,  // 19: stillhouse.v1.MaterialService.ListMaterials:input_type -> stillhouse.v1.ListMaterialsRequest
-	11, // 20: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
-	13, // 21: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
-	15, // 22: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
-	4,  // 23: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
-	6,  // 24: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
-	8,  // 25: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
-	10, // 26: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
-	12, // 27: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
-	14, // 28: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
-	16, // 29: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
-	23, // [23:30] is the sub-list for method output_type
-	16, // [16:23] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	18, // 16: stillhouse.v1.BottlingRunCostResponse.lines:type_name -> stillhouse.v1.BottlingRunCostLine
+	3,  // 17: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
+	5,  // 18: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
+	7,  // 19: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
+	9,  // 20: stillhouse.v1.MaterialService.ListMaterials:input_type -> stillhouse.v1.ListMaterialsRequest
+	11, // 21: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
+	13, // 22: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
+	15, // 23: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
+	17, // 24: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
+	4,  // 25: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
+	6,  // 26: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
+	8,  // 27: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
+	10, // 28: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
+	12, // 29: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
+	14, // 30: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
+	16, // 31: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
+	19, // 32: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
+	25, // [25:33] is the sub-list for method output_type
+	17, // [17:25] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_material_proto_init() }
@@ -1356,7 +1621,7 @@ func file_stillhouse_v1_material_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_material_proto_rawDesc), len(file_stillhouse_v1_material_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   16,
+			NumMessages:   19,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

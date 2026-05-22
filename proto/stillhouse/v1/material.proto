@@ -47,6 +47,8 @@ message MaterialLot {
   string notes = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
+  double unit_cost_cad = 11;          // CAD per UOM unit; 0 when not recorded
+  bool   unit_cost_cad_set = 12;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,6 +99,8 @@ message RecordMaterialReceiptRequest {
   double quantity_received = 3;
   google.protobuf.Timestamp received_at = 4;
   string notes = 5;
+  double unit_cost_cad = 6;
+  bool   unit_cost_cad_set = 7;
 }
 message RecordMaterialReceiptResponse { MaterialLot lot = 1; }
 
@@ -106,6 +110,26 @@ message ListMaterialLotsRequest {
 }
 message ListMaterialLotsResponse { repeated MaterialLot lots = 1; }
 
+message BottlingRunCostRequest { string bottling_run_id = 1; }
+message BottlingRunCostLine {
+  string material_name = 1;
+  string supplier_lot = 2;
+  double quantity_used = 3;
+  string uom = 4;
+  double unit_cost_cad = 5;
+  double line_cost_cad = 6;
+}
+message BottlingRunCostResponse {
+  string bottling_run_id = 1;
+  int32  bottle_count = 2;
+  double total_material_cost_cad = 3;
+  double material_cost_per_bottle_cad = 4;
+  // Lines that contributed to the total. Lines without a recorded
+  // unit_cost_cad surface as line_cost_cad = 0 with unit_cost_cad = 0 so
+  // the caller can warn about missing-price ingredients.
+  repeated BottlingRunCostLine lines = 5;
+}
+
 service MaterialService {
   rpc CreateMaterial(CreateMaterialRequest) returns (CreateMaterialResponse);
   rpc UpdateMaterial(UpdateMaterialRequest) returns (UpdateMaterialResponse);
@@ -114,4 +138,5 @@ service MaterialService {
   rpc ArchiveMaterial(ArchiveMaterialRequest) returns (ArchiveMaterialResponse);
   rpc RecordMaterialReceipt(RecordMaterialReceiptRequest) returns (RecordMaterialReceiptResponse);
   rpc ListMaterialLots(ListMaterialLotsRequest) returns (ListMaterialLotsResponse);
+  rpc BottlingRunCost(BottlingRunCostRequest) returns (BottlingRunCostResponse);
 }
