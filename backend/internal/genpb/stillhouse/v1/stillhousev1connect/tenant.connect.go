@@ -41,12 +41,16 @@ const (
 	TenantServiceCreateTenantProcedure = "/stillhouse.v1.TenantService/CreateTenant"
 	// TenantServiceGetTenantProcedure is the fully-qualified name of the TenantService's GetTenant RPC.
 	TenantServiceGetTenantProcedure = "/stillhouse.v1.TenantService/GetTenant"
+	// TenantServiceUpdateTenantProcedure is the fully-qualified name of the TenantService's
+	// UpdateTenant RPC.
+	TenantServiceUpdateTenantProcedure = "/stillhouse.v1.TenantService/UpdateTenant"
 )
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
 type TenantServiceClient interface {
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
+	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
 }
 
 // NewTenantServiceClient constructs a client for the stillhouse.v1.TenantService service. By
@@ -72,6 +76,12 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(tenantServiceMethods.ByName("GetTenant")),
 			connect.WithClientOptions(opts...),
 		),
+		updateTenant: connect.NewClient[v1.UpdateTenantRequest, v1.UpdateTenantResponse](
+			httpClient,
+			baseURL+TenantServiceUpdateTenantProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("UpdateTenant")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -79,6 +89,7 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 type tenantServiceClient struct {
 	createTenant *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
 	getTenant    *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
+	updateTenant *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
 }
 
 // CreateTenant calls stillhouse.v1.TenantService.CreateTenant.
@@ -91,10 +102,16 @@ func (c *tenantServiceClient) GetTenant(ctx context.Context, req *connect.Reques
 	return c.getTenant.CallUnary(ctx, req)
 }
 
+// UpdateTenant calls stillhouse.v1.TenantService.UpdateTenant.
+func (c *tenantServiceClient) UpdateTenant(ctx context.Context, req *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error) {
+	return c.updateTenant.CallUnary(ctx, req)
+}
+
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
+	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
 }
 
 // NewTenantServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -116,12 +133,20 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(tenantServiceMethods.ByName("GetTenant")),
 		connect.WithHandlerOptions(opts...),
 	)
+	tenantServiceUpdateTenantHandler := connect.NewUnaryHandler(
+		TenantServiceUpdateTenantProcedure,
+		svc.UpdateTenant,
+		connect.WithSchema(tenantServiceMethods.ByName("UpdateTenant")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TenantServiceCreateTenantProcedure:
 			tenantServiceCreateTenantHandler.ServeHTTP(w, r)
 		case TenantServiceGetTenantProcedure:
 			tenantServiceGetTenantHandler.ServeHTTP(w, r)
+		case TenantServiceUpdateTenantProcedure:
+			tenantServiceUpdateTenantHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -137,4 +162,8 @@ func (UnimplementedTenantServiceHandler) CreateTenant(context.Context, *connect.
 
 func (UnimplementedTenantServiceHandler) GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.GetTenant is not implemented"))
+}
+
+func (UnimplementedTenantServiceHandler) UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.UpdateTenant is not implemented"))
 }

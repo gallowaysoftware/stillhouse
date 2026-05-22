@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/tenant.proto.
  */
 export const file_stillhouse_v1_tenant: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLtAQoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKuAQoTQ3JlYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEhwKFGRlZmF1bHRfanVyaXNkaWN0aW9uGAMgASgJEhMKC293bmVyX2VtYWlsGAQgASgJEhYKDm93bmVyX3Bhc3N3b3JkGAUgASgJEhoKEm93bmVyX2Rpc3BsYXlfbmFtZRgGIAEoCSI9ChRDcmVhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCISChBHZXRUZW5hbnRSZXF1ZXN0IjoKEUdldFRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50MrgBCg1UZW5hbnRTZXJ2aWNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLtAQoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKuAQoTQ3JlYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEhwKFGRlZmF1bHRfanVyaXNkaWN0aW9uGAMgASgJEhMKC293bmVyX2VtYWlsGAQgASgJEhYKDm93bmVyX3Bhc3N3b3JkGAUgASgJEhoKEm93bmVyX2Rpc3BsYXlfbmFtZRgGIAEoCSI9ChRDcmVhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCISChBHZXRUZW5hbnRSZXF1ZXN0IjoKEUdldFRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudDKRAgoNVGVuYW50U2VydmljZRJXCgxDcmVhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVRlbmFudFJlc3BvbnNlEk4KCUdldFRlbmFudBIfLnN0aWxsaG91c2UudjEuR2V0VGVuYW50UmVxdWVzdBogLnN0aWxsaG91c2UudjEuR2V0VGVuYW50UmVzcG9uc2USVwoMVXBkYXRlVGVuYW50EiIuc3RpbGxob3VzZS52MS5VcGRhdGVUZW5hbnRSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5VcGRhdGVUZW5hbnRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Tenant
@@ -162,6 +162,57 @@ export const GetTenantResponseSchema: GenMessage<GetTenantResponse> = /*@__PURE_
   messageDesc(file_stillhouse_v1_tenant, 4);
 
 /**
+ * @generated from message stillhouse.v1.UpdateTenantRequest
+ */
+export type UpdateTenantRequest = Message<"stillhouse.v1.UpdateTenantRequest"> & {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name: string;
+
+  /**
+   * @generated from field: string cra_spirits_licence_number = 2;
+   */
+  craSpiritsLicenceNumber: string;
+
+  /**
+   * empty = clear
+   *
+   * @generated from field: string excise_warehouse_licence_number = 3;
+   */
+  exciseWarehouseLicenceNumber: string;
+
+  /**
+   * @generated from field: string default_jurisdiction = 4;
+   */
+  defaultJurisdiction: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.UpdateTenantRequest.
+ * Use `create(UpdateTenantRequestSchema)` to create a new message.
+ */
+export const UpdateTenantRequestSchema: GenMessage<UpdateTenantRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 5);
+
+/**
+ * @generated from message stillhouse.v1.UpdateTenantResponse
+ */
+export type UpdateTenantResponse = Message<"stillhouse.v1.UpdateTenantResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.Tenant tenant = 1;
+   */
+  tenant?: Tenant | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.UpdateTenantResponse.
+ * Use `create(UpdateTenantResponseSchema)` to create a new message.
+ */
+export const UpdateTenantResponseSchema: GenMessage<UpdateTenantResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 6);
+
+/**
  * TenantService manages tenant metadata.
  * CreateTenant is the bootstrap operation for a fresh self-hosted install.
  *
@@ -183,6 +234,14 @@ export const TenantService: GenService<{
     methodKind: "unary";
     input: typeof GetTenantRequestSchema;
     output: typeof GetTenantResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.TenantService.UpdateTenant
+   */
+  updateTenant: {
+    methodKind: "unary";
+    input: typeof UpdateTenantRequestSchema;
+    output: typeof UpdateTenantResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_tenant, 0);

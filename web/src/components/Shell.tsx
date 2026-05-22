@@ -20,6 +20,7 @@ const navItems = [
   { to: "/b266", label: "B266 returns" },
   { to: "/audit", label: "Audit log" },
   { to: "/pricing", label: "Provincial pricing" },
+  { to: "/settings", label: "Settings" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {

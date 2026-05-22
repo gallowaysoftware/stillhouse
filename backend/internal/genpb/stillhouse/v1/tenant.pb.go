@@ -326,6 +326,118 @@ func (x *GetTenantResponse) GetTenant() *Tenant {
 	return nil
 }
 
+type UpdateTenantRequest struct {
+	state                        protoimpl.MessageState `protogen:"open.v1"`
+	Name                         string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	CraSpiritsLicenceNumber      string                 `protobuf:"bytes,2,opt,name=cra_spirits_licence_number,json=craSpiritsLicenceNumber,proto3" json:"cra_spirits_licence_number,omitempty"`
+	ExciseWarehouseLicenceNumber string                 `protobuf:"bytes,3,opt,name=excise_warehouse_licence_number,json=exciseWarehouseLicenceNumber,proto3" json:"excise_warehouse_licence_number,omitempty"` // empty = clear
+	DefaultJurisdiction          string                 `protobuf:"bytes,4,opt,name=default_jurisdiction,json=defaultJurisdiction,proto3" json:"default_jurisdiction,omitempty"`
+	unknownFields                protoimpl.UnknownFields
+	sizeCache                    protoimpl.SizeCache
+}
+
+func (x *UpdateTenantRequest) Reset() {
+	*x = UpdateTenantRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateTenantRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateTenantRequest) ProtoMessage() {}
+
+func (x *UpdateTenantRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateTenantRequest.ProtoReflect.Descriptor instead.
+func (*UpdateTenantRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UpdateTenantRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateTenantRequest) GetCraSpiritsLicenceNumber() string {
+	if x != nil {
+		return x.CraSpiritsLicenceNumber
+	}
+	return ""
+}
+
+func (x *UpdateTenantRequest) GetExciseWarehouseLicenceNumber() string {
+	if x != nil {
+		return x.ExciseWarehouseLicenceNumber
+	}
+	return ""
+}
+
+func (x *UpdateTenantRequest) GetDefaultJurisdiction() string {
+	if x != nil {
+		return x.DefaultJurisdiction
+	}
+	return ""
+}
+
+type UpdateTenantResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tenant        *Tenant                `protobuf:"bytes,1,opt,name=tenant,proto3" json:"tenant,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateTenantResponse) Reset() {
+	*x = UpdateTenantResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateTenantResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateTenantResponse) ProtoMessage() {}
+
+func (x *UpdateTenantResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateTenantResponse.ProtoReflect.Descriptor instead.
+func (*UpdateTenantResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateTenantResponse) GetTenant() *Tenant {
+	if x != nil {
+		return x.Tenant
+	}
+	return nil
+}
+
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
@@ -353,10 +465,18 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\x12\n" +
 	"\x10GetTenantRequest\"B\n" +
 	"\x11GetTenantResponse\x12-\n" +
-	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant2\xb8\x01\n" +
+	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\xe0\x01\n" +
+	"\x13UpdateTenantRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
+	"\x1acra_spirits_licence_number\x18\x02 \x01(\tR\x17craSpiritsLicenceNumber\x12E\n" +
+	"\x1fexcise_warehouse_licence_number\x18\x03 \x01(\tR\x1cexciseWarehouseLicenceNumber\x121\n" +
+	"\x14default_jurisdiction\x18\x04 \x01(\tR\x13defaultJurisdiction\"E\n" +
+	"\x14UpdateTenantResponse\x12-\n" +
+	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant2\x91\x02\n" +
 	"\rTenantService\x12W\n" +
 	"\fCreateTenant\x12\".stillhouse.v1.CreateTenantRequest\x1a#.stillhouse.v1.CreateTenantResponse\x12N\n" +
-	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponseB\xcf\x01\n" +
+	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
+	"\fUpdateTenant\x12\".stillhouse.v1.UpdateTenantRequest\x1a#.stillhouse.v1.UpdateTenantResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vTenantProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -371,29 +491,34 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_tenant_proto_rawDescData
 }
 
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(*Tenant)(nil),                // 0: stillhouse.v1.Tenant
 	(*CreateTenantRequest)(nil),   // 1: stillhouse.v1.CreateTenantRequest
 	(*CreateTenantResponse)(nil),  // 2: stillhouse.v1.CreateTenantResponse
 	(*GetTenantRequest)(nil),      // 3: stillhouse.v1.GetTenantRequest
 	(*GetTenantResponse)(nil),     // 4: stillhouse.v1.GetTenantResponse
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*UpdateTenantRequest)(nil),   // 5: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),  // 6: stillhouse.v1.UpdateTenantResponse
+	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	5, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	5, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	7, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	7, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0, // 2: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	0, // 3: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	1, // 4: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	3, // 5: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	2, // 6: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	4, // 7: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	6, // [6:8] is the sub-list for method output_type
-	4, // [4:6] is the sub-list for method input_type
-	4, // [4:4] is the sub-list for extension type_name
-	4, // [4:4] is the sub-list for extension extendee
-	0, // [0:4] is the sub-list for field type_name
+	0, // 4: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	1, // 5: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	3, // 6: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	5, // 7: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	2, // 8: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	4, // 9: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	6, // 10: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	8, // [8:11] is the sub-list for method output_type
+	5, // [5:8] is the sub-list for method input_type
+	5, // [5:5] is the sub-list for extension type_name
+	5, // [5:5] is the sub-list for extension extendee
+	0, // [0:5] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -407,7 +532,7 @@ func file_stillhouse_v1_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

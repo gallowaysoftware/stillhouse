@@ -107,3 +107,36 @@ func (s *TenantService) GetTenant(
 		Tenant: tenantToProto(t),
 	}), nil
 }
+
+func (s *TenantService) UpdateTenant(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.UpdateTenantRequest],
+) (*connect.Response[stillhousev1.UpdateTenantResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	in := req.Msg
+	if in.GetName() == "" || in.GetCraSpiritsLicenceNumber() == "" || in.GetDefaultJurisdiction() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("name, cra_spirits_licence_number, default_jurisdiction are required"))
+	}
+	ewl := pgtype.Text{Valid: false}
+	if v := in.GetExciseWarehouseLicenceNumber(); v != "" {
+		ewl = pgtype.Text{String: v, Valid: true}
+	}
+	t, err := s.q.UpdateTenant(ctx, sqlcgen.UpdateTenantParams{
+		ID:                           u.TenantID,
+		Name:                         in.GetName(),
+		CraSpiritsLicenceNumber:      in.GetCraSpiritsLicenceNumber(),
+		ExciseWarehouseLicenceNumber: ewl,
+		DefaultJurisdiction:          in.GetDefaultJurisdiction(),
+	})
+	if err != nil {
+		s.logger.Error("UpdateTenant", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.UpdateTenantResponse{
+		Tenant: tenantToProto(t),
+	}), nil
+}

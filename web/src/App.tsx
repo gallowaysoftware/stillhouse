@@ -17,11 +17,13 @@ import { MashDetailPage } from "./pages/MashDetailPage";
 import { MashesPage } from "./pages/MashesPage";
 import { MaterialDetailPage } from "./pages/MaterialDetailPage";
 import { MaterialsPage } from "./pages/MaterialsPage";
+import { PricingPage } from "./pages/PricingPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
 import { RemovalsPage } from "./pages/RemovalsPage";
 import { RequireAuth } from "./pages/RequireAuth";
+import { SettingsPage } from "./pages/SettingsPage";
 import { StampsPage } from "./pages/StampsPage";
 
 function Guarded({ children }: { children: React.ReactNode }) {
@@ -53,6 +55,8 @@ export function App() {
       <Route path="/removals" element={<Guarded><RemovalsPage /></Guarded>} />
       <Route path="/b266" element={<Guarded><B266Page /></Guarded>} />
       <Route path="/audit" element={<Guarded><AuditPage /></Guarded>} />
+      <Route path="/pricing" element={<Guarded><PricingPage /></Guarded>} />
+      <Route path="/settings" element={<Guarded><SettingsPage /></Guarded>} />
     </Routes>
   );
 }

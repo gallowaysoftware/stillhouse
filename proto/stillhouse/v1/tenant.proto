@@ -36,9 +36,18 @@ message GetTenantResponse {
   Tenant tenant = 1;
 }
 
+message UpdateTenantRequest {
+  string name = 1;
+  string cra_spirits_licence_number = 2;
+  string excise_warehouse_licence_number = 3;   // empty = clear
+  string default_jurisdiction = 4;
+}
+message UpdateTenantResponse { Tenant tenant = 1; }
+
 // TenantService manages tenant metadata.
 // CreateTenant is the bootstrap operation for a fresh self-hosted install.
 service TenantService {
   rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse);
   rpc GetTenant(GetTenantRequest) returns (GetTenantResponse);
+  rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse);
 }
