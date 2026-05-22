@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
@@ -28,6 +28,7 @@ function lastOfThisMonth(): string {
 }
 
 export function B266Page() {
+  const qc = useQueryClient();
   const periods = useQuery({
     queryKey: ["listB266Periods"],
     queryFn: () => b266Client.listB266Periods({}),
@@ -35,6 +36,16 @@ export function B266Page() {
 
   const [periodStart, setPeriodStart] = useState(firstOfThisMonth());
   const [periodEnd, setPeriodEnd] = useState(lastOfThisMonth());
+  const [openPeriodId, setOpenPeriodId] = useState<string>("");
+
+  const openPeriod = useQuery({
+    queryKey: ["getB266Period", openPeriodId],
+    queryFn: () => b266Client.getB266Period({ id: openPeriodId }),
+    enabled: !!openPeriodId,
+  });
+  // Invalidate qc on submit so the list reflects updated status. (qc unused
+  // until we wire it; kept for future use.)
+  void qc;
 
   const generate = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof GenerateB266RequestSchema>>) =>
@@ -121,7 +132,11 @@ export function B266Page() {
               <tr><td colSpan={3} className="px-4 py-3 text-stone-500">No periods yet.</td></tr>
             )}
             {periods.data?.periods.map((p) => (
-              <tr key={p.id}>
+              <tr
+                key={p.id}
+                className={`cursor-pointer hover:bg-stone-50 ${openPeriodId === p.id ? "bg-stone-50" : ""}`}
+                onClick={() => setOpenPeriodId(openPeriodId === p.id ? "" : p.id)}
+              >
                 <td className="px-4 py-3 font-medium text-stone-900">{p.periodStart} → {p.periodEnd}</td>
                 <td className="px-4 py-3 text-stone-600">{p.status === B266Status.SUBMITTED ? "Submitted" : "Draft"}</td>
                 <td className="px-4 py-3 text-stone-600">
@@ -132,6 +147,31 @@ export function B266Page() {
           </tbody>
         </table>
       </div>
+
+      {openPeriodId && (
+        <section className="mt-6">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">
+            Snapshot · {openPeriod.data?.period?.periodStart} → {openPeriod.data?.period?.periodEnd}
+          </h2>
+          {openPeriod.isLoading && <p className="text-stone-500">Loading…</p>}
+          {openPeriod.data && !openPeriod.data.snapshot && (
+            <p className="text-sm text-stone-500">
+              This period was never submitted — no frozen snapshot exists. Re-generate it above
+              with the same period bounds to recompute.
+            </p>
+          )}
+          {openPeriod.data?.snapshot && (
+            <ReportView
+              report={openPeriod.data.snapshot}
+              period={openPeriod.data.period}
+              onSubmit={() => {}}
+              submitting={false}
+              submitError={null}
+              submittedStatus={openPeriod.data.period?.status}
+            />
+          )}
+        </section>
+      )}
     </Shell>
   );
 }

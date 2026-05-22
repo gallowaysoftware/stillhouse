@@ -78,8 +78,17 @@ message SubmitB266Response {
 message ListB266PeriodsRequest {}
 message ListB266PeriodsResponse { repeated B266Period periods = 1; }
 
+message GetB266PeriodRequest { string id = 1; }
+message GetB266PeriodResponse {
+  B266Period period = 1;
+  // Frozen snapshot from submit time. Unset when status == DRAFT (which
+  // means values were never frozen — re-run GenerateB266 to compute fresh).
+  B266Report snapshot = 2;
+}
+
 service B266Service {
   rpc GenerateB266(GenerateB266Request) returns (GenerateB266Response);
   rpc SubmitB266(SubmitB266Request) returns (SubmitB266Response);
   rpc ListB266Periods(ListB266PeriodsRequest) returns (ListB266PeriodsResponse);
+  rpc GetB266Period(GetB266PeriodRequest) returns (GetB266PeriodResponse);
 }

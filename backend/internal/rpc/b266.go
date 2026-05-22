@@ -148,6 +148,45 @@ func (s *B266Service) SubmitB266(
 	}), nil
 }
 
+func (s *B266Service) GetB266Period(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.GetB266PeriodRequest],
+) (*connect.Response[stillhousev1.GetB266PeriodResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	var period sqlcgen.B266Period
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		period, e = q.GetB266Period(ctx, id)
+		return e
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("period not found"))
+		}
+		s.logger.Error("GetB266Period", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	out := &stillhousev1.GetB266PeriodResponse{
+		Period: b266PeriodToProto(period),
+	}
+	if len(period.Snapshot) > 0 {
+		var snap stillhousev1.B266Report
+		if e := protojson.Unmarshal(period.Snapshot, &snap); e == nil {
+			out.Snapshot = &snap
+		} else {
+			s.logger.Warn("GetB266Period: snapshot unmarshal", "err", e)
+		}
+	}
+	return connect.NewResponse(out), nil
+}
+
 func (s *B266Service) ListB266Periods(
 	ctx context.Context,
 	_ *connect.Request[stillhousev1.ListB266PeriodsRequest],
