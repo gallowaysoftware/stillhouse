@@ -4,10 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
 import { authClient } from "@/lib/clients";
+import { setLang, useLang, useT } from "@/lib/i18n";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const lang = useLang();
+  const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -30,12 +33,34 @@ export function LoginPage() {
         onSubmit={onSubmit}
         className="w-full max-w-sm space-y-4 rounded-lg bg-white p-8 shadow"
       >
-        <h1 className="text-2xl font-semibold text-stone-900">Stillhouse</h1>
-        <p className="text-sm text-stone-500">Sign in to continue.</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-stone-900">Stillhouse</h1>
+            <p className="text-sm text-stone-500">
+              {t("Sign in to continue.", "Connectez-vous pour continuer.")}
+            </p>
+          </div>
+          <div className="flex items-center gap-1 text-xs text-stone-400">
+            <button
+              type="button"
+              className={`rounded px-1.5 py-0.5 ${lang === "en" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+              onClick={() => setLang("en")}
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              className={`rounded px-1.5 py-0.5 ${lang === "fr" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+              onClick={() => setLang("fr")}
+            >
+              FR
+            </button>
+          </div>
+        </div>
 
         <div className="space-y-1">
           <label htmlFor="email" className="block text-sm font-medium text-stone-700">
-            Email
+            {t("Email", "Courriel")}
           </label>
           <input
             id="email"
@@ -50,7 +75,7 @@ export function LoginPage() {
 
         <div className="space-y-1">
           <label htmlFor="password" className="block text-sm font-medium text-stone-700">
-            Password
+            {t("Password", "Mot de passe")}
           </label>
           <input
             id="password"
@@ -76,7 +101,7 @@ export function LoginPage() {
           disabled={login.isPending}
           className="w-full rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
         >
-          {login.isPending ? "Signing in…" : "Sign in"}
+          {login.isPending ? t("Signing in…", "Connexion…") : t("Sign in", "Se connecter")}
         </button>
       </form>
     </div>

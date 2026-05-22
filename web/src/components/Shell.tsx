@@ -3,29 +3,32 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authClient, userClient } from "@/lib/clients";
+import { setLang, useLang, useT } from "@/lib/i18n";
 
-const navItems = [
-  { to: "/", label: "Dashboard" },
-  { to: "/materials", label: "Materials" },
-  { to: "/recipes", label: "Recipes" },
-  { to: "/mashes", label: "Mashes" },
-  { to: "/fermentations", label: "Fermentations" },
-  { to: "/distillations", label: "Distillations" },
-  { to: "/bulk", label: "Bulk inventory" },
-  { to: "/barrels", label: "Barrels" },
-  { to: "/products", label: "Products" },
-  { to: "/stamps", label: "Excise stamps" },
-  { to: "/bottling", label: "Bottling" },
-  { to: "/removals", label: "Removals" },
-  { to: "/b266", label: "B266 returns" },
-  { to: "/audit", label: "Audit log" },
-  { to: "/pricing", label: "Provincial pricing" },
-  { to: "/settings", label: "Settings" },
+const navItemKeys: { to: string; en: string; fr: string }[] = [
+  { to: "/", en: "Dashboard", fr: "Tableau de bord" },
+  { to: "/materials", en: "Materials", fr: "Matières premières" },
+  { to: "/recipes", en: "Recipes", fr: "Recettes" },
+  { to: "/mashes", en: "Mashes", fr: "Brassins" },
+  { to: "/fermentations", en: "Fermentations", fr: "Fermentations" },
+  { to: "/distillations", en: "Distillations", fr: "Distillations" },
+  { to: "/bulk", en: "Bulk inventory", fr: "Inventaire en vrac" },
+  { to: "/barrels", en: "Barrels", fr: "Fûts" },
+  { to: "/products", en: "Products", fr: "Produits" },
+  { to: "/stamps", en: "Excise stamps", fr: "Timbres d'accise" },
+  { to: "/bottling", en: "Bottling", fr: "Embouteillage" },
+  { to: "/removals", en: "Removals", fr: "Sorties" },
+  { to: "/b266", en: "B266 returns", fr: "Déclarations B266" },
+  { to: "/audit", en: "Audit log", fr: "Journal d'audit" },
+  { to: "/pricing", en: "Provincial pricing", fr: "Prix provincial" },
+  { to: "/settings", en: "Settings", fr: "Paramètres" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const lang = useLang();
+  const t = useT();
   const { data } = useQuery({
     queryKey: ["getMe"],
     queryFn: () => userClient.getMe({}),
@@ -52,7 +55,7 @@ export function Shell({ children }: { children: ReactNode }) {
           )}
         </div>
         <nav className="flex-1 overflow-y-auto px-2 py-3">
-          {navItems.map((item) => (
+          {navItemKeys.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -65,7 +68,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 }`
               }
             >
-              {item.label}
+              {t(item.en, item.fr)}
             </NavLink>
           ))}
         </nav>
@@ -76,13 +79,29 @@ export function Shell({ children }: { children: ReactNode }) {
               <p>{data.user.email}</p>
             </>
           )}
-          <button
-            onClick={() => logout.mutate()}
-            className="mt-2 text-stone-500 hover:text-stone-900"
-            disabled={logout.isPending}
-          >
-            {logout.isPending ? "Signing out…" : "Sign out"}
-          </button>
+          <div className="mt-2 flex items-center justify-between">
+            <button
+              onClick={() => logout.mutate()}
+              className="text-stone-500 hover:text-stone-900"
+              disabled={logout.isPending}
+            >
+              {logout.isPending ? t("Signing out…", "Déconnexion…") : t("Sign out", "Déconnexion")}
+            </button>
+            <div className="flex items-center gap-1 text-stone-400">
+              <button
+                className={`rounded px-1.5 py-0.5 ${lang === "en" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+                onClick={() => setLang("en")}
+              >
+                EN
+              </button>
+              <button
+                className={`rounded px-1.5 py-0.5 ${lang === "fr" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+                onClick={() => setLang("fr")}
+              >
+                FR
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
       <main className="flex-1 overflow-x-auto">
