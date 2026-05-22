@@ -774,6 +774,9 @@ type BottlingRun struct {
 	Notes                   string             `json:"notes"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+	VoidedAt                pgtype.Timestamptz `json:"voided_at"`
+	VoidedBy                uuid.NullUUID      `json:"voided_by"`
+	VoidedReason            string             `json:"voided_reason"`
 }
 
 type BottlingRunStampUsage struct {

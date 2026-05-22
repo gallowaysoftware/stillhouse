@@ -37,12 +37,16 @@ WHERE occurred_at >= $1 AND occurred_at < $2
 GROUP BY reason
 ORDER BY reason;
 
+-- SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
+-- packaged_inventory and bulk separately, so they shouldn't count toward
+-- either the packaging or production lines on B266.
 -- name: SumBottlingRunsInPeriod :one
 SELECT COALESCE(SUM(tank_gauge_laa), 0)::double precision AS total_laa,
        COUNT(*)::int AS run_count,
        COALESCE(SUM(bottle_count), 0)::int AS total_bottles
 FROM bottling_runs
-WHERE bottling_date >= $1 AND bottling_date < $2;
+WHERE bottling_date >= $1 AND bottling_date < $2
+  AND voided_at IS NULL;
 
 -- name: SumRemovalsInPeriod :one
 SELECT COALESCE(SUM(total_laa), 0)::double precision      AS total_laa,

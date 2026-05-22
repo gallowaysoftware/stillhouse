@@ -25,6 +25,9 @@ message BottlingRun {
   string notes = 18;
   google.protobuf.Timestamp created_at = 19;
   google.protobuf.Timestamp updated_at = 20;
+  google.protobuf.Timestamp voided_at = 21;
+  string voided_by = 22;
+  string voided_reason = 23;
 
   repeated BottlingRunStampUsage stamp_usage = 30;
 }
@@ -81,9 +84,16 @@ message ListBottlingRunsResponse { repeated BottlingRun runs = 1; }
 message ListPackagedInventoryRequest { bool include_empty = 1; }
 message ListPackagedInventoryResponse { repeated PackagedInventoryRow rows = 1; }
 
+message VoidBottlingRunRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidBottlingRunResponse { BottlingRun run = 1; }
+
 service BottlingService {
   rpc CreateBottlingRun(CreateBottlingRunRequest) returns (CreateBottlingRunResponse);
   rpc GetBottlingRun(GetBottlingRunRequest) returns (GetBottlingRunResponse);
   rpc ListBottlingRuns(ListBottlingRunsRequest) returns (ListBottlingRunsResponse);
   rpc ListPackagedInventory(ListPackagedInventoryRequest) returns (ListPackagedInventoryResponse);
+  rpc VoidBottlingRun(VoidBottlingRunRequest) returns (VoidBottlingRunResponse);
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -354,6 +355,9 @@ func (s *BottlingService) ListBottlingRuns(
 			Notes:                   r.Notes,
 			CreatedAt:               r.CreatedAt,
 			UpdatedAt:               r.UpdatedAt,
+			VoidedAt:                r.VoidedAt,
+			VoidedBy:                r.VoidedBy,
+			VoidedReason:            r.VoidedReason,
 		}
 		out = append(out, bottlingRunToProto(run, sqlcgen.Product{
 			Name:         r.ProductName,
@@ -362,6 +366,152 @@ func (s *BottlingService) ListBottlingRuns(
 		}, nil))
 	}
 	return connect.NewResponse(&stillhousev1.ListBottlingRunsResponse{Runs: out}), nil
+}
+
+func (s *BottlingService) VoidBottlingRun(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.VoidBottlingRunRequest],
+) (*connect.Response[stillhousev1.VoidBottlingRunResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	reason := req.Msg.GetReason()
+	if reason == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required"))
+	}
+
+	var (
+		voided  sqlcgen.BottlingRun
+		product sqlcgen.Product
+	)
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		existing, e := q.GetBottlingRun(ctx, id)
+		if e != nil {
+			return e
+		}
+		if existing.VoidedAt.Valid {
+			return connect.NewError(connect.CodeFailedPrecondition, errors.New("bottling run is already voided"))
+		}
+
+		// 1) Reverse each stamp allocation. If any stamp_order can't be
+		// decremented (shouldn't happen — IncrementApplied at bottling time
+		// guarded against the inverse) we surface a clear error.
+		usage, e := q.ListBottlingRunStampUsage(ctx, id)
+		if e != nil {
+			return e
+		}
+		for _, useRow := range usage {
+			if _, e := q.DecrementStampOrderApplied(ctx, sqlcgen.DecrementStampOrderAppliedParams{
+				ID:              useRow.StampOrderID,
+				QuantityApplied: useRow.BottleCount,
+			}); e != nil {
+				return fmt.Errorf("decrement stamp order %s: %w", useRow.StampOrderID, e)
+			}
+		}
+
+		// 2) Reverse packaged_inventory contribution. If bottles_on_hand is
+		// already short (operator has shipped some bottles) we can't void
+		// without an inconsistency — flag and abort.
+		pkg, e := q.PackagedInventoryByLot(ctx, sqlcgen.PackagedInventoryByLotParams{
+			ProductID:    existing.ProductID,
+			LotCode:      existing.LotCode,
+			Jurisdiction: existing.DestinationJurisdiction,
+		})
+		if e != nil {
+			return e
+		}
+		if pkg.BottlesOnHand < existing.BottleCount {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("only %d of %d bottles remain in packaged inventory — void any removals first",
+					pkg.BottlesOnHand, existing.BottleCount))
+		}
+		if _, e := q.DecrementPackagedInventoryByRun(ctx, sqlcgen.DecrementPackagedInventoryByRunParams{
+			ID:            pkg.ID,
+			BottlesOnHand: existing.BottleCount,
+		}); e != nil {
+			return e
+		}
+
+		// 3) Refund the source bulk container. Reverses tank_gauge_volume/abv/laa
+		// via the same applyDeposit math used at filling time, and writes a
+		// regauge_correction movement so the journal records the inverse.
+		container, e := q.GetBulkContainer(ctx, existing.SourceContainerID)
+		if e != nil {
+			return e
+		}
+		newVol, newABV, newLAA := applyDeposit(
+			container.CurrentVolumeL, container.CurrentAbvPct,
+			existing.TankGaugeVolumeL, existing.TankGaugeAbvPct,
+		)
+		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+			ID:             container.ID,
+			CurrentVolumeL: newVol,
+			CurrentAbvPct:  newABV,
+			CurrentLaa:     newLAA,
+		}); e != nil {
+			return e
+		}
+		if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+			TenantID:               u.TenantID,
+			SourceContainerID:      uuid.NullUUID{Valid: false},
+			DestinationContainerID: uuid.NullUUID{UUID: container.ID, Valid: true},
+			VolumeL:                existing.TankGaugeVolumeL,
+			AbvPct:                 existing.TankGaugeAbvPct,
+			Laa:                    existing.TankGaugeLaa,
+			Reason:                 sqlcgen.BulkMovementReasonRegaugeCorrection,
+			ReferenceType:          "bottling_run_void",
+			ReferenceID:            uuid.NullUUID{UUID: existing.ID, Valid: true},
+			Notes:                  "void of bottling run " + fmt.Sprintf("#%d", existing.RunNo) + ": " + reason,
+			OccurredAt:             pgtype.Timestamptz{Valid: true, Time: time.Now()},
+		}); e != nil {
+			return e
+		}
+
+		// 4) Mark the run voided. Has to be the last step so a failure in any
+		// of the reversals above leaves the run un-voided and the operator can
+		// retry cleanly.
+		voided, e = q.VoidBottlingRun(ctx, sqlcgen.VoidBottlingRunParams{
+			ID:           id,
+			VoidedBy:     uuid.NullUUID{UUID: u.ID, Valid: true},
+			VoidedReason: reason,
+		})
+		if e != nil {
+			return e
+		}
+		product, e = q.GetProduct(ctx, voided.ProductID)
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "bottling_run", voided.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":              "voided",
+				"run_no":             voided.RunNo,
+				"bottle_count":       voided.BottleCount,
+				"tank_gauge_laa":     voided.TankGaugeLaa,
+				"refund_container":   voided.SourceContainerID.String(),
+				"stamp_orders_n":     len(usage),
+				"reason":             reason,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("bottling run not found"))
+		}
+		s.logger.Error("VoidBottlingRun", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.VoidBottlingRunResponse{
+		Run: bottlingRunToProto(voided, product, nil),
+	}), nil
 }
 
 func (s *BottlingService) ListPackagedInventory(
@@ -404,7 +554,7 @@ func (s *BottlingService) ListPackagedInventory(
 // --- converters ---
 
 func bottlingRunToProto(r sqlcgen.BottlingRun, p sqlcgen.Product, _ any) *stillhousev1.BottlingRun {
-	return &stillhousev1.BottlingRun{
+	out := &stillhousev1.BottlingRun{
 		Id:                      r.ID.String(),
 		TenantId:                r.TenantID.String(),
 		RunNo:                   r.RunNo,
@@ -425,7 +575,15 @@ func bottlingRunToProto(r sqlcgen.BottlingRun, p sqlcgen.Product, _ any) *stillh
 		Notes:                   r.Notes,
 		CreatedAt:               timestamppb.New(r.CreatedAt.Time),
 		UpdatedAt:               timestamppb.New(r.UpdatedAt.Time),
+		VoidedReason:            r.VoidedReason,
 	}
+	if r.VoidedAt.Valid {
+		out.VoidedAt = timestamppb.New(r.VoidedAt.Time)
+	}
+	if r.VoidedBy.Valid {
+		out.VoidedBy = r.VoidedBy.UUID.String()
+	}
+	return out
 }
 
 func bottlingRunStampUsageToProto(u sqlcgen.BottlingRunStampUsage, jurisdiction string) *stillhousev1.BottlingRunStampUsage {

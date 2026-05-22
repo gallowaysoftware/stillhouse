@@ -49,7 +49,12 @@ type Querier interface {
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Reverse the upsert that bottling did. We don't delete the row even if it
+	// zeroes out — keeping the row preserves the (product, lot_code, jurisdiction)
+	// key for audit traceability.
+	DecrementPackagedInventoryByRun(ctx context.Context, arg DecrementPackagedInventoryByRunParams) (PackagedInventory, error)
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
+	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	// Pull the distillation run + first ferment + first mash + recipe behind
 	// a production_gauge bulk_movement. Returns the "earliest origin" row;
 	// real chains may fan out and require iterating per-charge.
@@ -113,6 +118,7 @@ type Querier interface {
 	NextMashNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
 	NextRemovalNo(ctx context.Context) (int32, error)
+	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
@@ -121,6 +127,9 @@ type Querier interface {
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
 	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
+	// SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
+	// packaged_inventory and bulk separately, so they shouldn't count toward
+	// either the packaging or production lines on B266.
 	SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error)
 	SumBulkLAA(ctx context.Context) (float64, error)
 	// Aggregation queries for generating B266 sections.
@@ -151,6 +160,7 @@ type Querier interface {
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
+	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error)
 }
 

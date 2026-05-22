@@ -62,3 +62,31 @@ JOIN products p ON p.id = pi.product_id
 WHERE pi.bottles_on_hand > 0
    OR sqlc.arg('include_empty')::boolean
 ORDER BY p.name, pi.jurisdiction, pi.lot_code;
+
+-- name: VoidBottlingRun :one
+UPDATE bottling_runs
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING *;
+
+-- name: DecrementPackagedInventoryByRun :one
+-- Reverse the upsert that bottling did. We don't delete the row even if it
+-- zeroes out — keeping the row preserves the (product, lot_code, jurisdiction)
+-- key for audit traceability.
+UPDATE packaged_inventory
+SET bottles_on_hand  = bottles_on_hand  - $2,
+    bottles_packaged = bottles_packaged - $2
+WHERE id = $1 AND bottles_on_hand >= $2
+RETURNING *;
+
+-- name: PackagedInventoryByLot :one
+SELECT * FROM packaged_inventory
+WHERE product_id = $1 AND lot_code = $2 AND jurisdiction = $3;
+
+-- name: DecrementStampOrderApplied :one
+UPDATE excise_stamp_orders
+SET quantity_applied = quantity_applied - $2
+WHERE id = $1 AND quantity_applied >= $2
+RETURNING *;

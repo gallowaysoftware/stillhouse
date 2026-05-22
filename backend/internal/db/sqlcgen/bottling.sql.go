@@ -20,7 +20,7 @@ INSERT INTO bottling_runs (
     bulk_movement_id, notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-) RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at
+) RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason
 `
 
 type CreateBottlingRunParams struct {
@@ -76,6 +76,9 @@ func (q *Queries) CreateBottlingRun(ctx context.Context, arg CreateBottlingRunPa
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
 	)
 	return i, err
 }
@@ -123,8 +126,78 @@ func (q *Queries) CreateBottlingRunStampUsage(ctx context.Context, arg CreateBot
 	return i, err
 }
 
+const decrementPackagedInventoryByRun = `-- name: DecrementPackagedInventoryByRun :one
+UPDATE packaged_inventory
+SET bottles_on_hand  = bottles_on_hand  - $2,
+    bottles_packaged = bottles_packaged - $2
+WHERE id = $1 AND bottles_on_hand >= $2
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at
+`
+
+type DecrementPackagedInventoryByRunParams struct {
+	ID            uuid.UUID `json:"id"`
+	BottlesOnHand int32     `json:"bottles_on_hand"`
+}
+
+// Reverse the upsert that bottling did. We don't delete the row even if it
+// zeroes out — keeping the row preserves the (product, lot_code, jurisdiction)
+// key for audit traceability.
+func (q *Queries) DecrementPackagedInventoryByRun(ctx context.Context, arg DecrementPackagedInventoryByRunParams) (PackagedInventory, error) {
+	row := q.db.QueryRow(ctx, decrementPackagedInventoryByRun, arg.ID, arg.BottlesOnHand)
+	var i PackagedInventory
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ProductID,
+		&i.LotCode,
+		&i.Jurisdiction,
+		&i.BottlingRunID,
+		&i.BottlesOnHand,
+		&i.BottlesPackaged,
+		&i.BottlesRemoved,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const decrementStampOrderApplied = `-- name: DecrementStampOrderApplied :one
+UPDATE excise_stamp_orders
+SET quantity_applied = quantity_applied - $2
+WHERE id = $1 AND quantity_applied >= $2
+RETURNING id, tenant_id, jurisdiction, ordered_at, quantity_ordered, received_at, serial_start, serial_end, quantity_received, quantity_applied, quantity_voided, status, notes, created_at, updated_at
+`
+
+type DecrementStampOrderAppliedParams struct {
+	ID              uuid.UUID `json:"id"`
+	QuantityApplied int32     `json:"quantity_applied"`
+}
+
+func (q *Queries) DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error) {
+	row := q.db.QueryRow(ctx, decrementStampOrderApplied, arg.ID, arg.QuantityApplied)
+	var i ExciseStampOrder
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Jurisdiction,
+		&i.OrderedAt,
+		&i.QuantityOrdered,
+		&i.ReceivedAt,
+		&i.SerialStart,
+		&i.SerialEnd,
+		&i.QuantityReceived,
+		&i.QuantityApplied,
+		&i.QuantityVoided,
+		&i.Status,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getBottlingRun = `-- name: GetBottlingRun :one
-SELECT id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at FROM bottling_runs WHERE id = $1
+SELECT id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason FROM bottling_runs WHERE id = $1
 `
 
 func (q *Queries) GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error) {
@@ -148,6 +221,9 @@ func (q *Queries) GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
 	)
 	return i, err
 }
@@ -212,7 +288,7 @@ func (q *Queries) ListBottlingRunStampUsage(ctx context.Context, bottlingRunID u
 }
 
 const listBottlingRuns = `-- name: ListBottlingRuns :many
-SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br.destination_jurisdiction, br.bottling_date, br.bottle_count, br.bottling_loss_l, br.lot_code, br.tank_gauge_volume_l, br.tank_gauge_abv_pct, br.tank_gauge_laa, br.bulk_movement_id, br.notes, br.created_at, br.updated_at,
+SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br.destination_jurisdiction, br.bottling_date, br.bottle_count, br.bottling_loss_l, br.lot_code, br.tank_gauge_volume_l, br.tank_gauge_abv_pct, br.tank_gauge_laa, br.bulk_movement_id, br.notes, br.created_at, br.updated_at, br.voided_at, br.voided_by, br.voided_reason,
        p.name AS product_name,
        p.bottle_size_ml AS product_bottle_size_ml,
        p.target_abv_pct AS product_target_abv_pct
@@ -239,6 +315,9 @@ type ListBottlingRunsRow struct {
 	Notes                   string             `json:"notes"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+	VoidedAt                pgtype.Timestamptz `json:"voided_at"`
+	VoidedBy                uuid.NullUUID      `json:"voided_by"`
+	VoidedReason            string             `json:"voided_reason"`
 	ProductName             string             `json:"product_name"`
 	ProductBottleSizeMl     int32              `json:"product_bottle_size_ml"`
 	ProductTargetAbvPct     float64            `json:"product_target_abv_pct"`
@@ -271,6 +350,9 @@ func (q *Queries) ListBottlingRuns(ctx context.Context) ([]ListBottlingRunsRow, 
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.VoidedAt,
+			&i.VoidedBy,
+			&i.VoidedReason,
 			&i.ProductName,
 			&i.ProductBottleSizeMl,
 			&i.ProductTargetAbvPct,
@@ -360,6 +442,36 @@ func (q *Queries) NextBottlingRunNo(ctx context.Context) (int32, error) {
 	return next, err
 }
 
+const packagedInventoryByLot = `-- name: PackagedInventoryByLot :one
+SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at FROM packaged_inventory
+WHERE product_id = $1 AND lot_code = $2 AND jurisdiction = $3
+`
+
+type PackagedInventoryByLotParams struct {
+	ProductID    uuid.UUID `json:"product_id"`
+	LotCode      string    `json:"lot_code"`
+	Jurisdiction string    `json:"jurisdiction"`
+}
+
+func (q *Queries) PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error) {
+	row := q.db.QueryRow(ctx, packagedInventoryByLot, arg.ProductID, arg.LotCode, arg.Jurisdiction)
+	var i PackagedInventory
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ProductID,
+		&i.LotCode,
+		&i.Jurisdiction,
+		&i.BottlingRunID,
+		&i.BottlesOnHand,
+		&i.BottlesPackaged,
+		&i.BottlesRemoved,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const upsertPackagedInventory = `-- name: UpsertPackagedInventory :one
 INSERT INTO packaged_inventory (
     tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
@@ -404,6 +516,49 @@ func (q *Queries) UpsertPackagedInventory(ctx context.Context, arg UpsertPackage
 		&i.BottlesRemoved,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const voidBottlingRun = `-- name: VoidBottlingRun :one
+UPDATE bottling_runs
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason
+`
+
+type VoidBottlingRunParams struct {
+	ID           uuid.UUID     `json:"id"`
+	VoidedBy     uuid.NullUUID `json:"voided_by"`
+	VoidedReason string        `json:"voided_reason"`
+}
+
+func (q *Queries) VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error) {
+	row := q.db.QueryRow(ctx, voidBottlingRun, arg.ID, arg.VoidedBy, arg.VoidedReason)
+	var i BottlingRun
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.RunNo,
+		&i.ProductID,
+		&i.SourceContainerID,
+		&i.DestinationJurisdiction,
+		&i.BottlingDate,
+		&i.BottleCount,
+		&i.BottlingLossL,
+		&i.LotCode,
+		&i.TankGaugeVolumeL,
+		&i.TankGaugeAbvPct,
+		&i.TankGaugeLaa,
+		&i.BulkMovementID,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
 	)
 	return i, err
 }

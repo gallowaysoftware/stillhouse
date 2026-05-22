@@ -47,7 +47,7 @@ var exportTables = []string{
 	"products",
 	"excise_stamp_orders",
 	"bottling_runs",
-	"bottling_run_stamps",
+	"bottling_run_stamp_usage",
 	"packaged_inventory",
 	"packaging_removals",
 	"b266_periods",

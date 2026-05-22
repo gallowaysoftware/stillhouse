@@ -143,6 +143,7 @@ SELECT COALESCE(SUM(tank_gauge_laa), 0)::double precision AS total_laa,
        COALESCE(SUM(bottle_count), 0)::int AS total_bottles
 FROM bottling_runs
 WHERE bottling_date >= $1 AND bottling_date < $2
+  AND voided_at IS NULL
 `
 
 type SumBottlingRunsInPeriodParams struct {
@@ -156,6 +157,9 @@ type SumBottlingRunsInPeriodRow struct {
 	TotalBottles int32   `json:"total_bottles"`
 }
 
+// SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
+// packaged_inventory and bulk separately, so they shouldn't count toward
+// either the packaging or production lines on B266.
 func (q *Queries) SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error) {
 	row := q.db.QueryRow(ctx, sumBottlingRunsInPeriod, arg.BottlingDate, arg.BottlingDate_2)
 	var i SumBottlingRunsInPeriodRow

@@ -11,12 +11,14 @@ import {
   exciseStampClient,
   productClient,
 } from "@/lib/clients";
-import { CreateBottlingRunRequestSchema } from "@/gen/stillhouse/v1/bottling_pb";
+import { CreateBottlingRunRequestSchema, VoidBottlingRunRequestSchema } from "@/gen/stillhouse/v1/bottling_pb";
 import { formatLAA, formatQty } from "@/lib/format";
-import { WriteOnly } from "@/lib/role";
+import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
 export function BottlingPage() {
   const qc = useQueryClient();
+  const role = useCurrentRole();
+  const writeable = canWrite(role);
   const runs = useQuery({
     queryKey: ["listBottlingRuns"],
     queryFn: () => bottlingClient.listBottlingRuns({}),
@@ -84,6 +86,28 @@ export function BottlingPage() {
         notes,
       }),
     );
+  }
+
+  const voidRun = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof VoidBottlingRunRequestSchema>>) =>
+      bottlingClient.voidBottlingRun(msg),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["listBottlingRuns"] });
+      qc.invalidateQueries({ queryKey: ["listPackagedInventory"] });
+      qc.invalidateQueries({ queryKey: ["listBulkContainers"] });
+      qc.invalidateQueries({ queryKey: ["listStampOrders"] });
+    },
+  });
+
+  function onVoidRun(id: string, no: number, bottles: number) {
+    const reason = window.prompt(
+      `Void bottling run #${no}? This will refund ${bottles.toLocaleString()} bottles to inventory, ` +
+        `release the applied stamps, and add the LAA back to the source tank. ` +
+        `Will fail if any of those bottles have already been removed. Reason:`,
+      "recorded in error",
+    );
+    if (!reason || !reason.trim()) return;
+    voidRun.mutate(create(VoidBottlingRunRequestSchema, { id, reason: reason.trim() }));
   }
 
   return (
@@ -199,25 +223,50 @@ export function BottlingPage() {
               <th className="px-4 py-3">Jurisdiction</th>
               <th className="px-4 py-3 text-right">Bottles</th>
               <th className="px-4 py-3 text-right">LAA</th>
+              {writeable && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {runs.data?.runs.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-3 text-stone-500">No runs yet.</td></tr>
+              <tr><td colSpan={writeable ? 8 : 7} className="px-4 py-3 text-stone-500">No runs yet.</td></tr>
             )}
-            {runs.data?.runs.map((r) => (
-              <tr key={r.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">
-                  <Link to={`/bottling/${r.id}`} className="hover:underline">#{r.runNo}</Link>
-                </td>
-                <td className="px-4 py-3 text-stone-600">{r.bottlingDate}</td>
-                <td className="px-4 py-3 text-stone-900">{r.productName}</td>
-                <td className="px-4 py-3 text-stone-600">{r.lotCode}</td>
-                <td className="px-4 py-3 text-stone-600">{r.destinationJurisdiction}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{r.bottleCount.toLocaleString()}</td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">{formatLAA(r.tankGaugeLaa)}</td>
-              </tr>
-            ))}
+            {runs.data?.runs.map((r) => {
+              const voided = !!r.voidedAt;
+              return (
+                <tr key={r.id} className={voided ? "bg-stone-50 text-stone-400" : ""}>
+                  <td className="px-4 py-3 font-medium">
+                    <Link to={`/bottling/${r.id}`} className="hover:underline">#{r.runNo}</Link>
+                    {voided && (
+                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">VOIDED</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{r.bottlingDate}</td>
+                  <td className="px-4 py-3">
+                    {r.productName}
+                    {voided && r.voidedReason && (
+                      <div className="text-xs italic">{r.voidedReason}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{r.lotCode}</td>
+                  <td className="px-4 py-3">{r.destinationJurisdiction}</td>
+                  <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{r.bottleCount.toLocaleString()}</td>
+                  <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-stone-900"}`}>{formatLAA(r.tankGaugeLaa)}</td>
+                  {writeable && (
+                    <td className="px-4 py-3 text-right">
+                      {!voided && (
+                        <button
+                          onClick={() => onVoidRun(r.id, r.runNo, r.bottleCount)}
+                          disabled={voidRun.isPending}
+                          className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                        >
+                          Void
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

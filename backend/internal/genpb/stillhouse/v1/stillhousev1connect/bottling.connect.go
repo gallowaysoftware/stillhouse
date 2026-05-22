@@ -45,6 +45,9 @@ const (
 	// BottlingServiceListPackagedInventoryProcedure is the fully-qualified name of the
 	// BottlingService's ListPackagedInventory RPC.
 	BottlingServiceListPackagedInventoryProcedure = "/stillhouse.v1.BottlingService/ListPackagedInventory"
+	// BottlingServiceVoidBottlingRunProcedure is the fully-qualified name of the BottlingService's
+	// VoidBottlingRun RPC.
+	BottlingServiceVoidBottlingRunProcedure = "/stillhouse.v1.BottlingService/VoidBottlingRun"
 )
 
 // BottlingServiceClient is a client for the stillhouse.v1.BottlingService service.
@@ -53,6 +56,7 @@ type BottlingServiceClient interface {
 	GetBottlingRun(context.Context, *connect.Request[v1.GetBottlingRunRequest]) (*connect.Response[v1.GetBottlingRunResponse], error)
 	ListBottlingRuns(context.Context, *connect.Request[v1.ListBottlingRunsRequest]) (*connect.Response[v1.ListBottlingRunsResponse], error)
 	ListPackagedInventory(context.Context, *connect.Request[v1.ListPackagedInventoryRequest]) (*connect.Response[v1.ListPackagedInventoryResponse], error)
+	VoidBottlingRun(context.Context, *connect.Request[v1.VoidBottlingRunRequest]) (*connect.Response[v1.VoidBottlingRunResponse], error)
 }
 
 // NewBottlingServiceClient constructs a client for the stillhouse.v1.BottlingService service. By
@@ -90,6 +94,12 @@ func NewBottlingServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(bottlingServiceMethods.ByName("ListPackagedInventory")),
 			connect.WithClientOptions(opts...),
 		),
+		voidBottlingRun: connect.NewClient[v1.VoidBottlingRunRequest, v1.VoidBottlingRunResponse](
+			httpClient,
+			baseURL+BottlingServiceVoidBottlingRunProcedure,
+			connect.WithSchema(bottlingServiceMethods.ByName("VoidBottlingRun")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -99,6 +109,7 @@ type bottlingServiceClient struct {
 	getBottlingRun        *connect.Client[v1.GetBottlingRunRequest, v1.GetBottlingRunResponse]
 	listBottlingRuns      *connect.Client[v1.ListBottlingRunsRequest, v1.ListBottlingRunsResponse]
 	listPackagedInventory *connect.Client[v1.ListPackagedInventoryRequest, v1.ListPackagedInventoryResponse]
+	voidBottlingRun       *connect.Client[v1.VoidBottlingRunRequest, v1.VoidBottlingRunResponse]
 }
 
 // CreateBottlingRun calls stillhouse.v1.BottlingService.CreateBottlingRun.
@@ -121,12 +132,18 @@ func (c *bottlingServiceClient) ListPackagedInventory(ctx context.Context, req *
 	return c.listPackagedInventory.CallUnary(ctx, req)
 }
 
+// VoidBottlingRun calls stillhouse.v1.BottlingService.VoidBottlingRun.
+func (c *bottlingServiceClient) VoidBottlingRun(ctx context.Context, req *connect.Request[v1.VoidBottlingRunRequest]) (*connect.Response[v1.VoidBottlingRunResponse], error) {
+	return c.voidBottlingRun.CallUnary(ctx, req)
+}
+
 // BottlingServiceHandler is an implementation of the stillhouse.v1.BottlingService service.
 type BottlingServiceHandler interface {
 	CreateBottlingRun(context.Context, *connect.Request[v1.CreateBottlingRunRequest]) (*connect.Response[v1.CreateBottlingRunResponse], error)
 	GetBottlingRun(context.Context, *connect.Request[v1.GetBottlingRunRequest]) (*connect.Response[v1.GetBottlingRunResponse], error)
 	ListBottlingRuns(context.Context, *connect.Request[v1.ListBottlingRunsRequest]) (*connect.Response[v1.ListBottlingRunsResponse], error)
 	ListPackagedInventory(context.Context, *connect.Request[v1.ListPackagedInventoryRequest]) (*connect.Response[v1.ListPackagedInventoryResponse], error)
+	VoidBottlingRun(context.Context, *connect.Request[v1.VoidBottlingRunRequest]) (*connect.Response[v1.VoidBottlingRunResponse], error)
 }
 
 // NewBottlingServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -160,6 +177,12 @@ func NewBottlingServiceHandler(svc BottlingServiceHandler, opts ...connect.Handl
 		connect.WithSchema(bottlingServiceMethods.ByName("ListPackagedInventory")),
 		connect.WithHandlerOptions(opts...),
 	)
+	bottlingServiceVoidBottlingRunHandler := connect.NewUnaryHandler(
+		BottlingServiceVoidBottlingRunProcedure,
+		svc.VoidBottlingRun,
+		connect.WithSchema(bottlingServiceMethods.ByName("VoidBottlingRun")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.BottlingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BottlingServiceCreateBottlingRunProcedure:
@@ -170,6 +193,8 @@ func NewBottlingServiceHandler(svc BottlingServiceHandler, opts ...connect.Handl
 			bottlingServiceListBottlingRunsHandler.ServeHTTP(w, r)
 		case BottlingServiceListPackagedInventoryProcedure:
 			bottlingServiceListPackagedInventoryHandler.ServeHTTP(w, r)
+		case BottlingServiceVoidBottlingRunProcedure:
+			bottlingServiceVoidBottlingRunHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -193,4 +218,8 @@ func (UnimplementedBottlingServiceHandler) ListBottlingRuns(context.Context, *co
 
 func (UnimplementedBottlingServiceHandler) ListPackagedInventory(context.Context, *connect.Request[v1.ListPackagedInventoryRequest]) (*connect.Response[v1.ListPackagedInventoryResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BottlingService.ListPackagedInventory is not implemented"))
+}
+
+func (UnimplementedBottlingServiceHandler) VoidBottlingRun(context.Context, *connect.Request[v1.VoidBottlingRunRequest]) (*connect.Response[v1.VoidBottlingRunResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BottlingService.VoidBottlingRun is not implemented"))
 }
