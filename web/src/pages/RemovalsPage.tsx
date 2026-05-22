@@ -10,6 +10,7 @@ import {
   RemovalDestinationKind,
 } from "@/gen/stillhouse/v1/removal_pb";
 import { formatLAA, formatQty } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 const destLabel: Record<RemovalDestinationKind, string> = {
   [RemovalDestinationKind.UNSPECIFIED]: "—",
@@ -87,12 +88,14 @@ export function RemovalsPage() {
             ($14.117/LAA for spirits &gt;7%; rate effective April 1, 2026).
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "Record removal"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "Record removal"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

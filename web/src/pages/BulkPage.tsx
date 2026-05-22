@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
 import { bulkClient } from "@/lib/clients";
+import { WriteOnly } from "@/lib/role";
 import {
   BulkContainerKind,
   CreateBulkContainerRequestSchema,
@@ -80,12 +81,14 @@ export function BulkPage() {
             )}
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "Add container"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "Add container"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

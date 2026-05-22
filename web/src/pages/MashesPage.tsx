@@ -8,6 +8,7 @@ import { Shell } from "@/components/Shell";
 import { mashClient, recipeClient } from "@/lib/clients";
 import { CreateMashRunRequestSchema } from "@/gen/stillhouse/v1/mash_pb";
 import { mashStatusLabel } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 export function MashesPage() {
   const qc = useQueryClient();
@@ -49,12 +50,14 @@ export function MashesPage() {
           <h1 className="text-2xl font-semibold">Mashes</h1>
           <p className="text-sm text-stone-500">Mash runs against a recipe version.</p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "New mash"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "New mash"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

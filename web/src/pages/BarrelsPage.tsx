@@ -8,6 +8,7 @@ import { Shell } from "@/components/Shell";
 import { barrelClient } from "@/lib/clients";
 import { CreateBarrelRequestSchema } from "@/gen/stillhouse/v1/barrel_pb";
 import { formatLAA, formatQty } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 export function BarrelsPage() {
   const qc = useQueryClient();
@@ -65,12 +66,14 @@ export function BarrelsPage() {
             ≥3 years in small wood (≤700 L).
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "Add barrel"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "Add barrel"}
+          </button>
+        </WriteOnly>
       </div>
 
       {summary && (

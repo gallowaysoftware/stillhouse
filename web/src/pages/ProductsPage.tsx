@@ -8,6 +8,7 @@ import { productClient } from "@/lib/clients";
 import { CreateProductRequestSchema } from "@/gen/stillhouse/v1/product_pb";
 import { SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
 import { spiritKindLabel } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 const spiritOptions = [
   { v: SpiritKind.CANADIAN_WHISKY, label: "Canadian Whisky" },
@@ -59,12 +60,14 @@ export function ProductsPage() {
           <h1 className="text-2xl font-semibold">Products</h1>
           <p className="text-sm text-stone-500">Finished-product SKUs: name, bottle size, bottle proof.</p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "New product"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "New product"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

@@ -13,6 +13,7 @@ import {
 } from "@/lib/clients";
 import { CreateBottlingRunRequestSchema } from "@/gen/stillhouse/v1/bottling_pb";
 import { formatLAA, formatQty } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 export function BottlingPage() {
   const qc = useQueryClient();
@@ -95,12 +96,14 @@ export function BottlingPage() {
             and produces packaged inventory.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "New bottling run"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "New bottling run"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

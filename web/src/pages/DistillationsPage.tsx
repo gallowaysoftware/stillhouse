@@ -8,6 +8,7 @@ import { Shell } from "@/components/Shell";
 import { distillationClient } from "@/lib/clients";
 import { CreateDistillationRunRequestSchema } from "@/gen/stillhouse/v1/distillation_pb";
 import { distillationStatusLabel } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 export function DistillationsPage() {
   const qc = useQueryClient();
@@ -46,12 +47,14 @@ export function DistillationsPage() {
             Distillation runs. The production gauge on a completed run is what puts new alcohol into the bulk ledger.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "New run"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "New run"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

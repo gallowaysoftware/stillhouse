@@ -5,6 +5,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
 import { exciseStampClient } from "@/lib/clients";
+import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 import {
   CreateStampOrderRequestSchema,
   ExciseStampOrderStatus,
@@ -20,6 +21,8 @@ const statusLabel: Record<ExciseStampOrderStatus, string> = {
 
 export function StampsPage() {
   const qc = useQueryClient();
+  const role = useCurrentRole();
+  const writeable = canWrite(role);
   const list = useQuery({
     queryKey: ["listStampOrders"],
     queryFn: () => exciseStampClient.listStampOrders({}),
@@ -79,12 +82,14 @@ export function StampsPage() {
             Jurisdiction codes use ISO 3166-2 (CA-ON, CA-QC, CA-BC, …).
           </p>
         </div>
-        <button
-          onClick={() => setShowOrderForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showOrderForm ? "Cancel" : "Order stamps"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowOrderForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showOrderForm ? "Cancel" : "Order stamps"}
+          </button>
+        </WriteOnly>
       </div>
 
       {list.data?.summaries && list.data.summaries.length > 0 && (
@@ -171,7 +176,7 @@ export function StampsPage() {
                   {o.serialStart && o.serialEnd ? `${o.serialStart}..${o.serialEnd}` : "—"}
                 </td>
                 <td className="px-4 py-3">
-                  {o.status === ExciseStampOrderStatus.ORDERED && (
+                  {o.status === ExciseStampOrderStatus.ORDERED && writeable && (
                     <button
                       onClick={() => setReceivingId(receivingId === o.id ? null : o.id)}
                       className="text-stone-600 hover:text-stone-900"

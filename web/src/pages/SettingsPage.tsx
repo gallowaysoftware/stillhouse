@@ -96,13 +96,17 @@ export function SettingsPage() {
           <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
         </div>
         <div className="col-span-2 flex items-center gap-3">
-          <button
-            type="submit"
-            disabled={update.isPending}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
-          >
-            {update.isPending ? "Saving…" : "Save changes"}
-          </button>
+          {isOwner ? (
+            <button
+              type="submit"
+              disabled={update.isPending}
+              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+            >
+              {update.isPending ? "Saving…" : "Save changes"}
+            </button>
+          ) : (
+            <span className="text-xs text-stone-500">Owner-only — ask your distillery owner to update these fields.</span>
+          )}
           {saved && <span className="text-sm text-emerald-700">Saved.</span>}
           {update.error && (
             <span className="text-sm text-red-600">

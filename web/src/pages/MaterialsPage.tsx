@@ -11,6 +11,7 @@ import {
 } from "@/gen/stillhouse/v1/material_pb";
 import { create } from "@bufbuild/protobuf";
 import { materialKindLabel } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 const kindOptions: { value: MaterialKind; label: string }[] = [
   { value: MaterialKind.GRAIN, label: "Grain" },
@@ -74,12 +75,14 @@ export function MaterialsPage() {
             so recipes can project alcohol yield.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "Add material"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "Add material"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (

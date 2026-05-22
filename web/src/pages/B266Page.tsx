@@ -12,6 +12,7 @@ import {
   SubmitB266RequestSchema,
 } from "@/gen/stillhouse/v1/b266_pb";
 import { formatLAA, formatQty } from "@/lib/format";
+import { WriteOnly, OwnerOnly } from "@/lib/role";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -92,13 +93,15 @@ export function B266Page() {
           <label className="mb-1 block text-xs font-medium text-stone-600">Period end</label>
           <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required className="rounded border border-stone-300 px-3 py-2 text-sm" />
         </div>
-        <button
-          type="submit"
-          disabled={generate.isPending}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
-        >
-          {generate.isPending ? "Generating…" : "Generate"}
-        </button>
+        <WriteOnly>
+          <button
+            type="submit"
+            disabled={generate.isPending}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          >
+            {generate.isPending ? "Generating…" : "Generate"}
+          </button>
+        </WriteOnly>
         {generate.error && (
           <span className="text-sm text-red-600">
             {generate.error instanceof ConnectError ? generate.error.rawMessage : String(generate.error)}
@@ -220,6 +223,7 @@ function ReportView({
       </Card>
 
       {period && submittedStatus !== B266Status.SUBMITTED && (
+        <OwnerOnly>
         <div className="flex items-center gap-3">
           <button
             onClick={onSubmit}
@@ -237,6 +241,7 @@ function ReportView({
             Marking submitted freezes the values for audit. Make sure you've entered these into the CRA portal first.
           </p>
         </div>
+        </OwnerOnly>
       )}
       {submittedStatus === B266Status.SUBMITTED && (
         <p className="rounded bg-emerald-50 px-4 py-2 text-sm text-emerald-700">This return is submitted; the snapshot is frozen.</p>

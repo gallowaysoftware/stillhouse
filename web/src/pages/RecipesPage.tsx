@@ -12,6 +12,7 @@ import {
 } from "@/gen/stillhouse/v1/recipe_pb";
 import { create } from "@bufbuild/protobuf";
 import { spiritKindLabel } from "@/lib/format";
+import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
 const spiritOptions: { value: SpiritKind; label: string }[] = [
   { value: SpiritKind.CANADIAN_WHISKY, label: "Canadian Whisky" },
@@ -27,6 +28,8 @@ const spiritOptions: { value: SpiritKind; label: string }[] = [
 
 export function RecipesPage() {
   const qc = useQueryClient();
+  const role = useCurrentRole();
+  const writeable = canWrite(role);
   const { data, isLoading } = useQuery({
     queryKey: ["listRecipes"],
     queryFn: () => recipeClient.listRecipes({}),
@@ -81,12 +84,14 @@ export function RecipesPage() {
             Mash bills with versioned process assumptions and projected LAA yield.
           </p>
         </div>
-        <button
-          onClick={() => setShowForm((s) => !s)}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
-        >
-          {showForm ? "Cancel" : "New recipe"}
-        </button>
+        <WriteOnly>
+          <button
+            onClick={() => setShowForm((s) => !s)}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+          >
+            {showForm ? "Cancel" : "New recipe"}
+          </button>
+        </WriteOnly>
       </div>
 
       {showForm && (
@@ -151,20 +156,20 @@ export function RecipesPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Spirit</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              {writeable && <th className="px-4 py-3 text-right">Actions</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {isLoading && (
               <tr>
-                <td className="px-4 py-3 text-stone-500" colSpan={4}>
+                <td className="px-4 py-3 text-stone-500" colSpan={writeable ? 4 : 3}>
                   Loading…
                 </td>
               </tr>
             )}
             {!isLoading && data?.recipes.length === 0 && (
               <tr>
-                <td className="px-4 py-3 text-stone-500" colSpan={4}>
+                <td className="px-4 py-3 text-stone-500" colSpan={writeable ? 4 : 3}>
                   No recipes yet. Click <b>New recipe</b> to begin.
                 </td>
               </tr>
@@ -180,15 +185,17 @@ export function RecipesPage() {
                 <td className="px-4 py-3 text-stone-600">
                   {r.archived ? "Archived" : r.currentVersionId ? "Versioned" : "No version yet"}
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <button
-                    onClick={() => onDuplicate(r.id, r.name)}
-                    disabled={duplicateRecipe.isPending}
-                    className="text-xs text-stone-600 underline-offset-2 hover:text-stone-900 hover:underline disabled:opacity-50"
-                  >
-                    Duplicate
-                  </button>
-                </td>
+                {writeable && (
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => onDuplicate(r.id, r.name)}
+                      disabled={duplicateRecipe.isPending}
+                      className="text-xs text-stone-600 underline-offset-2 hover:text-stone-900 hover:underline disabled:opacity-50"
+                    >
+                      Duplicate
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
