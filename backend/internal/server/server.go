@@ -96,6 +96,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewPricingServiceHandler(pricingSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewTraceabilityServiceHandler(traceabilitySvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
+	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)

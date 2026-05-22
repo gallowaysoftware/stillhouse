@@ -122,6 +122,24 @@ export function SettingsPage() {
         onCreated={() => qc.invalidateQueries({ queryKey: ["listUsers"] })}
       />
 
+      {isOwner && (
+        <section className="mt-10">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Tenant data export</h2>
+          <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+            <p className="mb-3 text-sm text-stone-700">
+              Download a zip containing one CSV per significant table — recipes through B266 history, plus the
+              full audit log. Covers your Excise Act s.206 retention duty and your PIPEDA right-to-data.
+            </p>
+            <a
+              href="/export/tenant.zip"
+              className="inline-block rounded border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
+            >
+              Download tenant export (.zip)
+            </a>
+          </div>
+        </section>
+      )}
+
       <ChangePasswordPanel />
     </Shell>
   );
