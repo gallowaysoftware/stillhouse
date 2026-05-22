@@ -292,6 +292,49 @@ func (ns NullDistillationStatus) Value() (driver.Value, error) {
 	return string(ns.DistillationStatus), nil
 }
 
+type ExciseStampOrderStatus string
+
+const (
+	ExciseStampOrderStatusOrdered  ExciseStampOrderStatus = "ordered"
+	ExciseStampOrderStatusReceived ExciseStampOrderStatus = "received"
+	ExciseStampOrderStatusClosed   ExciseStampOrderStatus = "closed"
+)
+
+func (e *ExciseStampOrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ExciseStampOrderStatus(s)
+	case string:
+		*e = ExciseStampOrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ExciseStampOrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullExciseStampOrderStatus struct {
+	ExciseStampOrderStatus ExciseStampOrderStatus `json:"excise_stamp_order_status"`
+	Valid                  bool                   `json:"valid"` // Valid is true if ExciseStampOrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullExciseStampOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ExciseStampOrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ExciseStampOrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullExciseStampOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ExciseStampOrderStatus), nil
+}
+
 type FermentationStatus string
 
 const (
@@ -611,6 +654,38 @@ type BarrelEvent struct {
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
+type BottlingRun struct {
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	RunNo                   int32              `json:"run_no"`
+	ProductID               uuid.UUID          `json:"product_id"`
+	SourceContainerID       uuid.UUID          `json:"source_container_id"`
+	DestinationJurisdiction string             `json:"destination_jurisdiction"`
+	BottlingDate            pgtype.Date        `json:"bottling_date"`
+	BottleCount             int32              `json:"bottle_count"`
+	BottlingLossL           float64            `json:"bottling_loss_l"`
+	LotCode                 string             `json:"lot_code"`
+	TankGaugeVolumeL        float64            `json:"tank_gauge_volume_l"`
+	TankGaugeAbvPct         float64            `json:"tank_gauge_abv_pct"`
+	TankGaugeLaa            float64            `json:"tank_gauge_laa"`
+	BulkMovementID          uuid.UUID          `json:"bulk_movement_id"`
+	Notes                   string             `json:"notes"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+}
+
+type BottlingRunStampUsage struct {
+	ID            uuid.UUID          `json:"id"`
+	TenantID      uuid.UUID          `json:"tenant_id"`
+	BottlingRunID uuid.UUID          `json:"bottling_run_id"`
+	StampOrderID  uuid.UUID          `json:"stamp_order_id"`
+	BottleCount   int32              `json:"bottle_count"`
+	SerialStart   string             `json:"serial_start"`
+	SerialEnd     string             `json:"serial_end"`
+	Voids         int32              `json:"voids"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
 type BulkContainer struct {
 	ID             uuid.UUID          `json:"id"`
 	TenantID       uuid.UUID          `json:"tenant_id"`
@@ -678,6 +753,24 @@ type DistillationRun struct {
 	Notes      string             `json:"notes"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ExciseStampOrder struct {
+	ID               uuid.UUID              `json:"id"`
+	TenantID         uuid.UUID              `json:"tenant_id"`
+	Jurisdiction     string                 `json:"jurisdiction"`
+	OrderedAt        pgtype.Timestamptz     `json:"ordered_at"`
+	QuantityOrdered  int32                  `json:"quantity_ordered"`
+	ReceivedAt       pgtype.Timestamptz     `json:"received_at"`
+	SerialStart      pgtype.Text            `json:"serial_start"`
+	SerialEnd        pgtype.Text            `json:"serial_end"`
+	QuantityReceived int32                  `json:"quantity_received"`
+	QuantityApplied  int32                  `json:"quantity_applied"`
+	QuantityVoided   int32                  `json:"quantity_voided"`
+	Status           ExciseStampOrderStatus `json:"status"`
+	Notes            string                 `json:"notes"`
+	CreatedAt        pgtype.Timestamptz     `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz     `json:"updated_at"`
 }
 
 type FermentationLog struct {
@@ -767,6 +860,33 @@ type MaterialLot struct {
 	Notes            string             `json:"notes"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PackagedInventory struct {
+	ID              uuid.UUID          `json:"id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	ProductID       uuid.UUID          `json:"product_id"`
+	LotCode         string             `json:"lot_code"`
+	Jurisdiction    string             `json:"jurisdiction"`
+	BottlingRunID   uuid.NullUUID      `json:"bottling_run_id"`
+	BottlesOnHand   int32              `json:"bottles_on_hand"`
+	BottlesPackaged int32              `json:"bottles_packaged"`
+	BottlesRemoved  int32              `json:"bottles_removed"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Product struct {
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	Name         string             `json:"name"`
+	SpiritKind   SpiritKind         `json:"spirit_kind"`
+	BottleSizeMl int32              `json:"bottle_size_ml"`
+	TargetAbvPct float64            `json:"target_abv_pct"`
+	LabelNotes   string             `json:"label_notes"`
+	Archived     bool               `json:"archived"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type ProductionGauge struct {

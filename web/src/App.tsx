@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { BarrelDetailPage } from "./pages/BarrelDetailPage";
 import { BarrelsPage } from "./pages/BarrelsPage";
+import { BottlingPage } from "./pages/BottlingPage";
 import { BulkContainerDetailPage } from "./pages/BulkContainerDetailPage";
 import { BulkPage } from "./pages/BulkPage";
 import { DistillationDetailPage } from "./pages/DistillationDetailPage";
@@ -13,9 +14,11 @@ import { LoginPage } from "./pages/LoginPage";
 import { MashDetailPage } from "./pages/MashDetailPage";
 import { MashesPage } from "./pages/MashesPage";
 import { MaterialsPage } from "./pages/MaterialsPage";
+import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
 import { RequireAuth } from "./pages/RequireAuth";
+import { StampsPage } from "./pages/StampsPage";
 
 function Guarded({ children }: { children: React.ReactNode }) {
   return <RequireAuth>{children}</RequireAuth>;
@@ -39,6 +42,9 @@ export function App() {
       <Route path="/bulk/:id" element={<Guarded><BulkContainerDetailPage /></Guarded>} />
       <Route path="/barrels" element={<Guarded><BarrelsPage /></Guarded>} />
       <Route path="/barrels/:id" element={<Guarded><BarrelDetailPage /></Guarded>} />
+      <Route path="/products" element={<Guarded><ProductsPage /></Guarded>} />
+      <Route path="/stamps" element={<Guarded><StampsPage /></Guarded>} />
+      <Route path="/bottling" element={<Guarded><BottlingPage /></Guarded>} />
     </Routes>
   );
 }

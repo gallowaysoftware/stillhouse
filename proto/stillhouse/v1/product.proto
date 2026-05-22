@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/recipe.proto";
+
+message Product {
+  string id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  SpiritKind spirit_kind = 4;
+  int32  bottle_size_ml = 5;
+  double target_abv_pct = 6;
+  string label_notes = 7;
+  bool   archived = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message CreateProductRequest {
+  string name = 1;
+  SpiritKind spirit_kind = 2;
+  int32  bottle_size_ml = 3;
+  double target_abv_pct = 4;
+  string label_notes = 5;
+}
+message CreateProductResponse { Product product = 1; }
+
+message UpdateProductRequest {
+  string id = 1;
+  string name = 2;
+  SpiritKind spirit_kind = 3;
+  int32  bottle_size_ml = 4;
+  double target_abv_pct = 5;
+  string label_notes = 6;
+}
+message UpdateProductResponse { Product product = 1; }
+
+message ListProductsRequest { bool include_archived = 1; }
+message ListProductsResponse { repeated Product products = 1; }
+
+message GetProductRequest { string id = 1; }
+message GetProductResponse { Product product = 1; }
+
+message SetProductArchivedRequest { string id = 1; bool archived = 2; }
+message SetProductArchivedResponse { Product product = 1; }
+
+service ProductService {
+  rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
+  rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  rpc GetProduct(GetProductRequest) returns (GetProductResponse);
+  rpc SetProductArchived(SetProductArchivedRequest) returns (SetProductArchivedResponse);
+}

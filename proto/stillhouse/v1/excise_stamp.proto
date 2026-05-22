@@ -1,0 +1,72 @@
+// CRA excise stamps. Every bottle of spirits sold to the duty-paid market
+// in Canada must bear a province-coded stamp; Stillhouse tracks orders +
+// applied + on-hand inventory per jurisdiction.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum ExciseStampOrderStatus {
+  EXCISE_STAMP_ORDER_STATUS_UNSPECIFIED = 0;
+  EXCISE_STAMP_ORDER_STATUS_ORDERED = 1;
+  EXCISE_STAMP_ORDER_STATUS_RECEIVED = 2;
+  EXCISE_STAMP_ORDER_STATUS_CLOSED = 3;
+}
+
+message ExciseStampOrder {
+  string id = 1;
+  string tenant_id = 2;
+  string jurisdiction = 3;
+  google.protobuf.Timestamp ordered_at = 4;
+  int32  quantity_ordered = 5;
+  google.protobuf.Timestamp received_at = 6;
+  string serial_start = 7;
+  string serial_end = 8;
+  int32  quantity_received = 9;
+  int32  quantity_applied = 10;
+  int32  quantity_voided = 11;
+  int32  available_count = 12;        // derived: received - applied - voided
+  ExciseStampOrderStatus status = 13;
+  string notes = 14;
+  google.protobuf.Timestamp created_at = 15;
+  google.protobuf.Timestamp updated_at = 16;
+}
+
+message ExciseStampJurisdictionSummary {
+  string jurisdiction = 1;
+  int32  total_received = 2;
+  int32  total_applied = 3;
+  int32  total_voided = 4;
+  int32  total_on_hand = 5;
+}
+
+// --- requests ---
+
+message CreateStampOrderRequest {
+  string jurisdiction = 1;
+  int32  quantity_ordered = 2;
+  string notes = 3;
+}
+message CreateStampOrderResponse { ExciseStampOrder order = 1; }
+
+message ReceiveStampOrderRequest {
+  string id = 1;
+  google.protobuf.Timestamp received_at = 2;
+  int32  quantity_received = 3;
+  string serial_start = 4;
+  string serial_end = 5;
+}
+message ReceiveStampOrderResponse { ExciseStampOrder order = 1; }
+
+message ListStampOrdersRequest { string jurisdiction = 1; }    // optional filter
+message ListStampOrdersResponse {
+  repeated ExciseStampOrder orders = 1;
+  repeated ExciseStampJurisdictionSummary summaries = 2;
+}
+
+service ExciseStampService {
+  rpc CreateStampOrder(CreateStampOrderRequest) returns (CreateStampOrderResponse);
+  rpc ReceiveStampOrder(ReceiveStampOrderRequest) returns (ReceiveStampOrderResponse);
+  rpc ListStampOrders(ListStampOrdersRequest) returns (ListStampOrdersResponse);
+}

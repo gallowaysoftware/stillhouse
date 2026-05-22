@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message BottlingRun {
+  string id = 1;
+  string tenant_id = 2;
+  int32  run_no = 3;
+  string product_id = 4;
+  string product_name = 5;             // denormalized for list views
+  int32  product_bottle_size_ml = 6;
+  double product_target_abv_pct = 7;
+  string source_container_id = 8;
+  string destination_jurisdiction = 9;
+  string bottling_date = 10;           // ISO date
+  int32  bottle_count = 11;
+  double bottling_loss_l = 12;
+  string lot_code = 13;
+  double tank_gauge_volume_l = 14;
+  double tank_gauge_abv_pct = 15;
+  double tank_gauge_laa = 16;
+  string bulk_movement_id = 17;
+  string notes = 18;
+  google.protobuf.Timestamp created_at = 19;
+  google.protobuf.Timestamp updated_at = 20;
+
+  repeated BottlingRunStampUsage stamp_usage = 30;
+}
+
+message BottlingRunStampUsage {
+  string id = 1;
+  string bottling_run_id = 2;
+  string stamp_order_id = 3;
+  string jurisdiction = 4;
+  int32  bottle_count = 5;
+  string serial_start = 6;
+  string serial_end = 7;
+  int32  voids = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message PackagedInventoryRow {
+  string id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  int32  bottle_size_ml = 4;
+  double target_abv_pct = 5;
+  string lot_code = 6;
+  string jurisdiction = 7;
+  int32  bottles_on_hand = 8;
+  int32  bottles_packaged = 9;
+  int32  bottles_removed = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}
+
+// --- requests ---
+
+message CreateBottlingRunRequest {
+  string product_id = 1;
+  string source_container_id = 2;
+  string destination_jurisdiction = 3;
+  string bottling_date = 4;             // ISO; empty = today
+  int32  bottle_count = 5;
+  double bottling_loss_l = 6;
+  string lot_code = 7;
+  string notes = 8;
+}
+message CreateBottlingRunResponse {
+  BottlingRun run = 1;
+  PackagedInventoryRow packaged = 2;
+}
+
+message GetBottlingRunRequest { string id = 1; }
+message GetBottlingRunResponse { BottlingRun run = 1; }
+
+message ListBottlingRunsRequest {}
+message ListBottlingRunsResponse { repeated BottlingRun runs = 1; }
+
+message ListPackagedInventoryRequest { bool include_empty = 1; }
+message ListPackagedInventoryResponse { repeated PackagedInventoryRow rows = 1; }
+
+service BottlingService {
+  rpc CreateBottlingRun(CreateBottlingRunRequest) returns (CreateBottlingRunResponse);
+  rpc GetBottlingRun(GetBottlingRunRequest) returns (GetBottlingRunResponse);
+  rpc ListBottlingRuns(ListBottlingRunsRequest) returns (ListBottlingRunsResponse);
+  rpc ListPackagedInventory(ListPackagedInventoryRequest) returns (ListPackagedInventoryResponse);
+}
