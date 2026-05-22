@@ -76,6 +76,7 @@ export function HomePage() {
 
       <ReadyToDumpCallout barrels={barrels.data?.barrels ?? []} />
       <B266DueCallout periodEnd={end} hasBottling={hasBottling} />
+      <StampLowStockCallout summaries={stamps.data?.summaries ?? []} threshold={1000} />
 
       {!completedAll && allLoaded && (
         <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
@@ -208,14 +209,39 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
   const dueDate = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 2, 0));
   const today = new Date();
   const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (daysToDue < -1) return null; // overdue by more than a day; suppress (separate alert later)
-  const urgent = daysToDue <= 7;
+  const overdue = daysToDue < 0;
+  const urgent = daysToDue <= 7 && !overdue;
+  const colour = overdue
+    ? "border-red-300 bg-red-50 text-red-900"
+    : urgent
+      ? "border-amber-300 bg-amber-50 text-amber-900"
+      : "border-stone-200 bg-white text-stone-700";
   return (
-    <section className={`mb-6 rounded-lg border p-4 ${urgent ? "border-amber-300 bg-amber-50" : "border-stone-200 bg-white"}`}>
-      <p className={`text-sm ${urgent ? "text-amber-900" : "text-stone-700"}`}>
+    <section className={`mb-6 rounded-lg border p-4 ${colour}`}>
+      <p className="text-sm">
+        {overdue && <span className="mr-2 rounded bg-red-700 px-1.5 py-0.5 text-xs font-semibold text-white">OVERDUE</span>}
         <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
-        {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue`}).
+        {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue — file as soon as possible`}).
         {" "}<Link to="/b266" className="underline">Open the return →</Link>
+      </p>
+    </section>
+  );
+}
+
+function StampLowStockCallout({ summaries, threshold }: { summaries: { jurisdiction: string; totalOnHand: number }[]; threshold: number }) {
+  const low = summaries.filter((s) => s.totalOnHand > 0 && s.totalOnHand < threshold);
+  if (low.length === 0) return null;
+  return (
+    <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+      <p className="text-sm text-amber-900">
+        <span className="font-semibold">Low stamp inventory:</span>{" "}
+        {low.map((s, i) => (
+          <span key={s.jurisdiction}>
+            {i > 0 && ", "}
+            {s.jurisdiction} ({s.totalOnHand.toLocaleString()})
+          </span>
+        ))} — under {threshold.toLocaleString()} on hand. CRA orders take weeks; place an order now.{" "}
+        <Link to="/stamps" className="underline">Open stamps →</Link>
       </p>
     </section>
   );
