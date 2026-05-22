@@ -90,7 +90,10 @@ jobs:
         env:
           STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN: postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable
           STILLHOUSE_INTEGRATION_TEST_DSN: postgres://stillhouse_app:stillhouse_app@localhost:5432/stillhouse?sslmode=disable
-        run: cd backend && go test -v -run TestRLSIsolation ./internal/tenantdb/
+        run: |
+          cd backend
+          go test -v -run TestRLSIsolation ./internal/tenantdb/
+          go test -v -run TestB266GenerationEndToEnd ./internal/rpc/
 
   web:
     name: web / typecheck + build
