@@ -5,6 +5,7 @@ import { B266Page } from "./pages/B266Page";
 import { BarrelDetailPage } from "./pages/BarrelDetailPage";
 import { BarrelsPage } from "./pages/BarrelsPage";
 import { BottlingPage } from "./pages/BottlingPage";
+import { BottlingRunDetailPage } from "./pages/BottlingRunDetailPage";
 import { BulkContainerDetailPage } from "./pages/BulkContainerDetailPage";
 import { BulkPage } from "./pages/BulkPage";
 import { DistillationDetailPage } from "./pages/DistillationDetailPage";
@@ -52,6 +53,7 @@ export function App() {
       <Route path="/products" element={<Guarded><ProductsPage /></Guarded>} />
       <Route path="/stamps" element={<Guarded><StampsPage /></Guarded>} />
       <Route path="/bottling" element={<Guarded><BottlingPage /></Guarded>} />
+      <Route path="/bottling/:id" element={<Guarded><BottlingRunDetailPage /></Guarded>} />
       <Route path="/removals" element={<Guarded><RemovalsPage /></Guarded>} />
       <Route path="/b266" element={<Guarded><B266Page /></Guarded>} />
       <Route path="/audit" element={<Guarded><AuditPage /></Guarded>} />

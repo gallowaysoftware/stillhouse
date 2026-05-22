@@ -1,4 +1,5 @@
 import { FormEvent, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
@@ -203,7 +204,9 @@ export function BottlingPage() {
             )}
             {runs.data?.runs.map((r) => (
               <tr key={r.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">#{r.runNo}</td>
+                <td className="px-4 py-3 font-medium text-stone-900">
+                  <Link to={`/bottling/${r.id}`} className="hover:underline">#{r.runNo}</Link>
+                </td>
                 <td className="px-4 py-3 text-stone-600">{r.bottlingDate}</td>
                 <td className="px-4 py-3 text-stone-900">{r.productName}</td>
                 <td className="px-4 py-3 text-stone-600">{r.lotCode}</td>
