@@ -65,6 +65,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	productSvc := rpc.NewProductService(tdb, logger)
 	exciseStampSvc := rpc.NewExciseStampService(tdb, logger)
 	bottlingSvc := rpc.NewBottlingService(tdb, logger)
+	removalSvc := rpc.NewRemovalService(tdb, logger)
+	b266Svc := rpc.NewB266Service(tdb, logger)
 
 	interceptors := connect.WithInterceptors(rpc.NewAuthInterceptor(sm, queries))
 
@@ -82,6 +84,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewProductServiceHandler(productSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewExciseStampServiceHandler(exciseStampSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewBottlingServiceHandler(bottlingSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewRemovalServiceHandler(removalSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewB266ServiceHandler(b266Svc, interceptors))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)

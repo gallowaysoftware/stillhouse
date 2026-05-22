@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
+import { B266Page } from "./pages/B266Page";
 import { BarrelDetailPage } from "./pages/BarrelDetailPage";
 import { BarrelsPage } from "./pages/BarrelsPage";
 import { BottlingPage } from "./pages/BottlingPage";
@@ -17,6 +18,7 @@ import { MaterialsPage } from "./pages/MaterialsPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
+import { RemovalsPage } from "./pages/RemovalsPage";
 import { RequireAuth } from "./pages/RequireAuth";
 import { StampsPage } from "./pages/StampsPage";
 
@@ -45,6 +47,8 @@ export function App() {
       <Route path="/products" element={<Guarded><ProductsPage /></Guarded>} />
       <Route path="/stamps" element={<Guarded><StampsPage /></Guarded>} />
       <Route path="/bottling" element={<Guarded><BottlingPage /></Guarded>} />
+      <Route path="/removals" element={<Guarded><RemovalsPage /></Guarded>} />
+      <Route path="/b266" element={<Guarded><B266Page /></Guarded>} />
     </Routes>
   );
 }

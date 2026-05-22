@@ -58,6 +58,48 @@ func (ns NullAuditAction) Value() (driver.Value, error) {
 	return string(ns.AuditAction), nil
 }
 
+type B266Status string
+
+const (
+	B266StatusDraft     B266Status = "draft"
+	B266StatusSubmitted B266Status = "submitted"
+)
+
+func (e *B266Status) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = B266Status(s)
+	case string:
+		*e = B266Status(s)
+	default:
+		return fmt.Errorf("unsupported scan type for B266Status: %T", src)
+	}
+	return nil
+}
+
+type NullB266Status struct {
+	B266Status B266Status `json:"b266_status"`
+	Valid      bool       `json:"valid"` // Valid is true if B266Status is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullB266Status) Scan(value interface{}) error {
+	if value == nil {
+		ns.B266Status, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.B266Status.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullB266Status) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.B266Status), nil
+}
+
 type BarrelEventKind string
 
 const (
@@ -519,6 +561,52 @@ func (ns NullMaterialKind) Value() (driver.Value, error) {
 	return string(ns.MaterialKind), nil
 }
 
+type RemovalDestinationKind string
+
+const (
+	RemovalDestinationKindDutyPaidCustomer  RemovalDestinationKind = "duty_paid_customer"
+	RemovalDestinationKindExport            RemovalDestinationKind = "export"
+	RemovalDestinationKindSample            RemovalDestinationKind = "sample"
+	RemovalDestinationKindDestroyed         RemovalDestinationKind = "destroyed"
+	RemovalDestinationKindTransferOutInBond RemovalDestinationKind = "transfer_out_in_bond"
+	RemovalDestinationKindOther             RemovalDestinationKind = "other"
+)
+
+func (e *RemovalDestinationKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RemovalDestinationKind(s)
+	case string:
+		*e = RemovalDestinationKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RemovalDestinationKind: %T", src)
+	}
+	return nil
+}
+
+type NullRemovalDestinationKind struct {
+	RemovalDestinationKind RemovalDestinationKind `json:"removal_destination_kind"`
+	Valid                  bool                   `json:"valid"` // Valid is true if RemovalDestinationKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRemovalDestinationKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.RemovalDestinationKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RemovalDestinationKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRemovalDestinationKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RemovalDestinationKind), nil
+}
+
 type SpiritKind string
 
 const (
@@ -620,6 +708,20 @@ type AuditEvent struct {
 	Action     AuditAction        `json:"action"`
 	OccurredAt pgtype.Timestamptz `json:"occurred_at"`
 	Payload    []byte             `json:"payload"`
+}
+
+type B266Period struct {
+	ID          uuid.UUID          `json:"id"`
+	TenantID    uuid.UUID          `json:"tenant_id"`
+	PeriodStart pgtype.Date        `json:"period_start"`
+	PeriodEnd   pgtype.Date        `json:"period_end"`
+	Status      B266Status         `json:"status"`
+	Snapshot    []byte             `json:"snapshot"`
+	SubmittedAt pgtype.Timestamptz `json:"submitted_at"`
+	SubmittedBy uuid.NullUUID      `json:"submitted_by"`
+	Notes       string             `json:"notes"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 type BarrelAttribute struct {
@@ -874,6 +976,26 @@ type PackagedInventory struct {
 	BottlesRemoved  int32              `json:"bottles_removed"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PackagingRemoval struct {
+	ID                  uuid.UUID              `json:"id"`
+	TenantID            uuid.UUID              `json:"tenant_id"`
+	RemovalNo           int32                  `json:"removal_no"`
+	PackagedInventoryID uuid.UUID              `json:"packaged_inventory_id"`
+	RemovalDate         pgtype.Date            `json:"removal_date"`
+	BottlesRemoved      int32                  `json:"bottles_removed"`
+	DestinationKind     RemovalDestinationKind `json:"destination_kind"`
+	DestinationName     string                 `json:"destination_name"`
+	Reference           string                 `json:"reference"`
+	BottleSizeMl        int32                  `json:"bottle_size_ml"`
+	BottleAbvPct        float64                `json:"bottle_abv_pct"`
+	TotalLitres         float64                `json:"total_litres"`
+	TotalLaa            float64                `json:"total_laa"`
+	DutyRatePerLaa      float64                `json:"duty_rate_per_laa"`
+	DutyAmountCad       float64                `json:"duty_amount_cad"`
+	Notes               string                 `json:"notes"`
+	CreatedAt           pgtype.Timestamptz     `json:"created_at"`
 }
 
 type Product struct {

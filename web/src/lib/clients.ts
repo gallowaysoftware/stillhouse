@@ -1,6 +1,7 @@
 import { createClient } from "@connectrpc/connect";
 
 import { AuthService } from "@/gen/stillhouse/v1/auth_pb";
+import { B266Service } from "@/gen/stillhouse/v1/b266_pb";
 import { BarrelService } from "@/gen/stillhouse/v1/barrel_pb";
 import { BottlingService } from "@/gen/stillhouse/v1/bottling_pb";
 import { BulkService } from "@/gen/stillhouse/v1/bulk_pb";
@@ -11,6 +12,7 @@ import { MashService } from "@/gen/stillhouse/v1/mash_pb";
 import { MaterialService } from "@/gen/stillhouse/v1/material_pb";
 import { ProductService } from "@/gen/stillhouse/v1/product_pb";
 import { RecipeService } from "@/gen/stillhouse/v1/recipe_pb";
+import { RemovalService } from "@/gen/stillhouse/v1/removal_pb";
 import { TenantService } from "@/gen/stillhouse/v1/tenant_pb";
 import { UserService } from "@/gen/stillhouse/v1/user_pb";
 
@@ -29,3 +31,5 @@ export const barrelClient = createClient(BarrelService, transport);
 export const productClient = createClient(ProductService, transport);
 export const exciseStampClient = createClient(ExciseStampService, transport);
 export const bottlingClient = createClient(BottlingService, transport);
+export const removalClient = createClient(RemovalService, transport);
+export const b266Client = createClient(B266Service, transport);

@@ -1,0 +1,228 @@
+import { FormEvent, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ConnectError } from "@connectrpc/connect";
+import { create } from "@bufbuild/protobuf";
+
+import { Shell } from "@/components/Shell";
+import { b266Client } from "@/lib/clients";
+import {
+  B266Report,
+  B266Status,
+  GenerateB266RequestSchema,
+  SubmitB266RequestSchema,
+} from "@/gen/stillhouse/v1/b266_pb";
+import { formatLAA, formatQty } from "@/lib/format";
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function firstOfThisMonth(): string {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().slice(0, 10);
+}
+
+function lastOfThisMonth(): string {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
+}
+
+export function B266Page() {
+  const periods = useQuery({
+    queryKey: ["listB266Periods"],
+    queryFn: () => b266Client.listB266Periods({}),
+  });
+
+  const [periodStart, setPeriodStart] = useState(firstOfThisMonth());
+  const [periodEnd, setPeriodEnd] = useState(lastOfThisMonth());
+
+  const generate = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof GenerateB266RequestSchema>>) =>
+      b266Client.generateB266(msg),
+  });
+  const submit = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof SubmitB266RequestSchema>>) =>
+      b266Client.submitB266(msg),
+    onSuccess: () => {
+      periods.refetch();
+    },
+  });
+
+  function generateNow(e: FormEvent) {
+    e.preventDefault();
+    generate.mutate(
+      create(GenerateB266RequestSchema, { periodStart, periodEnd }),
+    );
+  }
+
+  const result = generate.data;
+  const submitted = submit.data;
+
+  return (
+    <Shell>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold">CRA Form B266</h1>
+        <p className="text-sm text-stone-500">
+          Monthly Excise Duty Return — Spirits Licensee. Pick a period, generate the
+          values, copy them into the My Business Account return.
+          Generated today {todayISO()}; rates effective April 1, 2026.
+        </p>
+      </div>
+
+      <form
+        onSubmit={generateNow}
+        className="mb-8 flex flex-wrap items-end gap-3 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+      >
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">Period start</label>
+          <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required className="rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">Period end</label>
+          <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required className="rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <button
+          type="submit"
+          disabled={generate.isPending}
+          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+        >
+          {generate.isPending ? "Generating…" : "Generate"}
+        </button>
+        {generate.error && (
+          <span className="text-sm text-red-600">
+            {generate.error instanceof ConnectError ? generate.error.rawMessage : String(generate.error)}
+          </span>
+        )}
+      </form>
+
+      {result?.report && (
+        <ReportView
+          report={result.report}
+          period={result.period}
+          onSubmit={() => submit.mutate(create(SubmitB266RequestSchema, { periodId: result.period!.id }))}
+          submitting={submit.isPending}
+          submitError={submit.error}
+          submittedStatus={submitted?.period?.status ?? result.period?.status}
+        />
+      )}
+
+      <h2 className="mb-3 mt-10 text-sm font-semibold uppercase text-stone-500">Past returns</h2>
+      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
+        <table className="min-w-full divide-y divide-stone-200 text-sm">
+          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+            <tr>
+              <th className="px-4 py-3">Period</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Submitted</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-100">
+            {periods.data?.periods.length === 0 && (
+              <tr><td colSpan={3} className="px-4 py-3 text-stone-500">No periods yet.</td></tr>
+            )}
+            {periods.data?.periods.map((p) => (
+              <tr key={p.id}>
+                <td className="px-4 py-3 font-medium text-stone-900">{p.periodStart} → {p.periodEnd}</td>
+                <td className="px-4 py-3 text-stone-600">{p.status === B266Status.SUBMITTED ? "Submitted" : "Draft"}</td>
+                <td className="px-4 py-3 text-stone-600">
+                  {p.submittedAt ? new Date(Number(p.submittedAt.seconds) * 1000).toLocaleString() : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Shell>
+  );
+}
+
+function ReportView({
+  report,
+  period,
+  onSubmit,
+  submitting,
+  submitError,
+  submittedStatus,
+}: {
+  report: B266Report;
+  period: { id: string } | undefined;
+  onSubmit: () => void;
+  submitting: boolean;
+  submitError: Error | null;
+  submittedStatus: B266Status | undefined;
+}) {
+  return (
+    <section className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <Card title="Bulk spirits (LAA)">
+          <Row k="Opening on hand" v={formatLAA(report.bulkOpeningLaa)} />
+          <Row k="Production"             v={formatLAA(report.bulkProductionLaa)} />
+          <Row k="Received in bond"       v={formatLAA(report.bulkReceivedInBondLaa)} />
+          <Row k="Blend in"               v={formatLAA(report.bulkBlendInLaa)} />
+          <Row k="Transferred to packaging" v={formatLAA(report.bulkTransferredToPackagingLaa)} dim />
+          <Row k="Transferred out in bond" v={formatLAA(report.bulkTransferredOutInBondLaa)} dim />
+          <Row k="Losses (evap + unaccounted)" v={formatLAA(report.bulkLossesLaa)} dim />
+          <Row k="Destroyed"              v={formatLAA(report.bulkDestroyedLaa)} dim />
+          <Row k="Closing on hand"        v={formatLAA(report.bulkClosingLaa)} bold />
+        </Card>
+        <Card title="Packaged spirits (LAA)">
+          <Row k="Opening on hand"        v={formatLAA(report.packagedOpeningLaa)} />
+          <Row k="Packaged this period"   v={`${formatLAA(report.packagedPackagedLaa)} (${report.packagedPackagedBottles.toLocaleString()} bottles)`} />
+          <Row k="Removed duty-paid"      v={`${formatLAA(report.packagedRemovedDutyPaidLaa)} (${report.packagedRemovedDutyPaidBottles.toLocaleString()} bottles)`} dim />
+          <Row k="Closing on hand"        v={`${formatLAA(report.packagedClosingLaa)} (${report.packagedClosingBottles.toLocaleString()} bottles)`} bold />
+        </Card>
+      </div>
+
+      <Card title="Duty payable">
+        <Row k="Removed LAA (duty-paid)" v={formatLAA(report.packagedRemovedDutyPaidLaa)} />
+        <Row k="Rate (CAD / LAA, >7%)"  v={`$${report.dutyRatePerLaa.toFixed(3)}`} />
+        <Row k="Duty payable (CAD)"     v={`$${formatQty(report.dutyPayableCad)}`} bold highlight />
+      </Card>
+
+      {period && submittedStatus !== B266Status.SUBMITTED && (
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onSubmit}
+            disabled={submitting}
+            className="rounded bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-stone-400"
+          >
+            {submitting ? "Submitting…" : "Mark submitted (freeze snapshot)"}
+          </button>
+          {submitError && (
+            <span className="text-sm text-red-600">
+              {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
+            </span>
+          )}
+          <p className="text-xs text-stone-500">
+            Marking submitted freezes the values for audit. Make sure you've entered these into the CRA portal first.
+          </p>
+        </div>
+      )}
+      {submittedStatus === B266Status.SUBMITTED && (
+        <p className="rounded bg-emerald-50 px-4 py-2 text-sm text-emerald-700">This return is submitted; the snapshot is frozen.</p>
+      )}
+    </section>
+  );
+}
+
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
+      <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
+        <h2 className="text-sm font-semibold uppercase text-stone-500">{title}</h2>
+      </header>
+      <dl className="divide-y divide-stone-100 text-sm">{children}</dl>
+    </div>
+  );
+}
+
+function Row({
+  k, v, bold, dim, highlight,
+}: { k: string; v: string; bold?: boolean; dim?: boolean; highlight?: boolean }) {
+  return (
+    <div className={`flex items-center justify-between px-4 py-2 ${highlight ? "bg-emerald-50" : ""}`}>
+      <dt className={`text-stone-500 ${dim ? "text-stone-400" : ""}`}>{k}</dt>
+      <dd className={`font-mono ${bold ? "font-semibold text-stone-900" : "text-stone-700"} ${highlight ? "text-emerald-700" : ""}`}>{v}</dd>
+    </div>
+  );
+}

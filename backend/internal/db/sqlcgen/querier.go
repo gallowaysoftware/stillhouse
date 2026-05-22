@@ -33,9 +33,13 @@ type Querier interface {
 	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)
 	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
 	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
+	CreateRemoval(ctx context.Context, arg CreateRemovalParams) (PackagingRemoval, error)
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
+	GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
+	GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByDatesParams) (B266Period, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
 	GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error)
 	GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error)
@@ -57,6 +61,7 @@ type Querier interface {
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
 	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
+	ListB266Periods(ctx context.Context) ([]B266Period, error)
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
 	ListBarrels(ctx context.Context, includeArchived bool) ([]ListBarrelsRow, error)
 	ListBottlingRunStampUsage(ctx context.Context, bottlingRunID uuid.UUID) ([]ListBottlingRunStampUsageRow, error)
@@ -80,12 +85,14 @@ type Querier interface {
 	ListRecipeIngredients(ctx context.Context, recipeVersionID uuid.UUID) ([]ListRecipeIngredientsRow, error)
 	ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]RecipeVersion, error)
 	ListRecipes(ctx context.Context, includeArchived bool) ([]Recipe, error)
+	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
 	ListStampOrdersWithAvailable(ctx context.Context, jurisdiction string) ([]ListStampOrdersWithAvailableRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
+	NextRemovalNo(ctx context.Context) (int32, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
@@ -93,7 +100,18 @@ type Querier interface {
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
+	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
+	SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error)
 	SumBulkLAA(ctx context.Context) (float64, error)
+	// Aggregation queries for generating B266 sections.
+	SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error)
+	// LAA on hand right now (we don't have point-in-time snapshots; B266 generated
+	// for a closed period uses current values, which is fine if generated promptly
+	// after period close).
+	SumBulkOnHandAsOfDate(ctx context.Context) (float64, error)
+	// Approximate packaged LAA on hand: bottles × bottle_size × target_abv / 100 / 1000.
+	SumPackagedOnHandLAA(ctx context.Context) (SumPackagedOnHandLAARow, error)
+	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)
 	SumStampInventory(ctx context.Context) ([]SumStampInventoryRow, error)
 	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	UpdateBulkContainer(ctx context.Context, arg UpdateBulkContainerParams) (BulkContainer, error)
@@ -103,6 +121,7 @@ type Querier interface {
 	UpdateMashStatus(ctx context.Context, arg UpdateMashStatusParams) (MashRun, error)
 	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
+	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 }
 

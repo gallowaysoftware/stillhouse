@@ -1,0 +1,85 @@
+// CRA Form B266 (Excise Duty Return — Spirits Licensee). The values in
+// B266Report are what you transcribe into the My Business Account / Web
+// Form Filer return for the period.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum B266Status {
+  B266_STATUS_UNSPECIFIED = 0;
+  B266_STATUS_DRAFT = 1;
+  B266_STATUS_SUBMITTED = 2;
+}
+
+message B266Period {
+  string id = 1;
+  string period_start = 2;       // ISO date
+  string period_end = 3;
+  B266Status status = 4;
+  google.protobuf.Timestamp submitted_at = 5;
+  string submitted_by = 6;
+  string notes = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// B266Report mirrors the lines you'd enter on the CRA form. All amounts
+// in LAA (litres absolute alcohol) unless otherwise noted; duty in CAD.
+message B266Report {
+  string period_start = 1;
+  string period_end = 2;
+
+  // Bulk spirits section (Form lines 1-9 roughly).
+  double bulk_opening_laa = 10;
+  double bulk_production_laa = 11;        // production_gauge movements
+  double bulk_received_in_bond_laa = 12;
+  double bulk_blend_in_laa = 13;
+  double bulk_transferred_to_packaging_laa = 14;
+  double bulk_transferred_out_in_bond_laa = 15;
+  double bulk_losses_laa = 16;            // evaporation + unaccounted
+  double bulk_destroyed_laa = 17;
+  double bulk_closing_laa = 18;
+
+  // Packaged spirits section.
+  double packaged_opening_laa = 30;
+  double packaged_packaged_laa = 31;      // produced by bottling runs
+  int32  packaged_packaged_bottles = 32;
+  double packaged_removed_duty_paid_laa = 33;
+  int32  packaged_removed_duty_paid_bottles = 34;
+  double packaged_closing_laa = 35;
+  int32  packaged_closing_bottles = 36;
+
+  // Duty section.
+  double duty_rate_per_laa = 50;          // current rate (CAD/LAA) >7%
+  double duty_payable_cad = 51;           // sum of removals.duty_amount_cad
+
+  google.protobuf.Timestamp generated_at = 60;
+}
+
+message GenerateB266Request {
+  string period_start = 1;       // ISO date; required
+  string period_end = 2;         // ISO date; required (inclusive)
+}
+message GenerateB266Response {
+  B266Period period = 1;
+  B266Report report = 2;
+}
+
+message SubmitB266Request {
+  string period_id = 1;
+}
+message SubmitB266Response {
+  B266Period period = 1;
+  B266Report snapshot = 2;
+}
+
+message ListB266PeriodsRequest {}
+message ListB266PeriodsResponse { repeated B266Period periods = 1; }
+
+service B266Service {
+  rpc GenerateB266(GenerateB266Request) returns (GenerateB266Response);
+  rpc SubmitB266(SubmitB266Request) returns (SubmitB266Response);
+  rpc ListB266Periods(ListB266PeriodsRequest) returns (ListB266PeriodsResponse);
+}
