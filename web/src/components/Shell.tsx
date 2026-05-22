@@ -13,6 +13,13 @@ const navItems = [
   { to: "/distillations", label: "Distillations" },
   { to: "/bulk", label: "Bulk inventory" },
   { to: "/barrels", label: "Barrels" },
+  { to: "/products", label: "Products" },
+  { to: "/stamps", label: "Excise stamps" },
+  { to: "/bottling", label: "Bottling" },
+  { to: "/removals", label: "Removals" },
+  { to: "/b266", label: "B266 returns" },
+  { to: "/audit", label: "Audit log" },
+  { to: "/pricing", label: "Provincial pricing" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -43,7 +50,7 @@ export function Shell({ children }: { children: ReactNode }) {
             </p>
           )}
         </div>
-        <nav className="flex-1 px-2 py-3">
+        <nav className="flex-1 overflow-y-auto px-2 py-3">
           {navItems.map((item) => (
             <NavLink
               key={item.to}

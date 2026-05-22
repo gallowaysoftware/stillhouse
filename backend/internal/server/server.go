@@ -68,6 +68,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	removalSvc := rpc.NewRemovalService(tdb, logger)
 	b266Svc := rpc.NewB266Service(tdb, logger)
 	auditSvc := rpc.NewAuditService(tdb, logger)
+	pricingSvc := rpc.NewPricingService(tdb, logger)
 
 	interceptors := connect.WithInterceptors(rpc.NewAuthInterceptor(sm, queries))
 
@@ -88,6 +89,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewRemovalServiceHandler(removalSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewB266ServiceHandler(b266Svc, interceptors))
 	mux.Handle(stillhousev1connect.NewAuditServiceHandler(auditSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewPricingServiceHandler(pricingSvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {

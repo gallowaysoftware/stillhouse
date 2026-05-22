@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+message ProvincialPricingBreakdown {
+  string jurisdiction = 1;
+  string name = 2;
+  double fob_cad = 3;
+  double markup_cad = 4;
+  double per_litre_cad = 5;
+  double basic_tax_cad = 6;
+  double federal_excise_cad = 7;
+  double container_deposit_cad = 8;
+  double shelf_before_sales_tax = 9;
+  double on_site_retail_net_cad = 10;
+  string notes = 11;
+}
+
+message ComputeProvincialPricingRequest {
+  string product_id = 1;
+  double fob_cad = 2;
+}
+message ComputeProvincialPricingResponse {
+  repeated ProvincialPricingBreakdown breakdowns = 1;
+  // Echo back the inputs for display.
+  string product_name = 2;
+  int32  bottle_size_ml = 3;
+  double bottle_abv_pct = 4;
+}
+
+service PricingService {
+  rpc ComputeProvincialPricing(ComputeProvincialPricingRequest) returns (ComputeProvincialPricingResponse);
+}
