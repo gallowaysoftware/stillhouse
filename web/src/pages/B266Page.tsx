@@ -5,6 +5,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
 import { b266Client } from "@/lib/clients";
+import { useCurrentUser } from "@/lib/role";
 import {
   B266Report,
   B266Status,
@@ -13,6 +14,7 @@ import {
 } from "@/gen/stillhouse/v1/b266_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 import { WriteOnly, OwnerOnly } from "@/lib/role";
+
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -82,6 +84,7 @@ export function B266Page() {
       </div>
 
       <form
+        data-print-hide
         onSubmit={generateNow}
         className="mb-8 flex flex-wrap items-end gap-3 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
       >
@@ -120,8 +123,8 @@ export function B266Page() {
         />
       )}
 
-      <h2 className="mb-3 mt-10 text-sm font-semibold uppercase text-stone-500">Past returns</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
+      <h2 data-print-hide className="mb-3 mt-10 text-sm font-semibold uppercase text-stone-500">Past returns</h2>
+      <div data-print-hide className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
         <table className="min-w-full divide-y divide-stone-200 text-sm">
           <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
             <tr>
@@ -188,14 +191,28 @@ function ReportView({
   submittedStatus,
 }: {
   report: B266Report;
-  period: { id: string } | undefined;
+  period: { id: string; periodStart?: string; periodEnd?: string; submittedAt?: { seconds: bigint } } | undefined;
   onSubmit: () => void;
   submitting: boolean;
   submitError: Error | null;
   submittedStatus: B266Status | undefined;
 }) {
+  const me = useCurrentUser();
+  const tenantName = me.data?.tenant?.name ?? "";
+  const periodStart = period?.periodStart ?? report.periodStart;
+  const periodEnd = period?.periodEnd ?? report.periodEnd;
   return (
     <section className="space-y-6">
+      <div data-print-only className="border-b border-stone-300 pb-4">
+        <p className="text-xs uppercase text-stone-500">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
+        <h2 className="mt-1 text-xl font-semibold">{tenantName || "Distillery"}</h2>
+        <p className="mt-1 text-sm">
+          Period {periodStart} → {periodEnd}
+          {submittedStatus === B266Status.SUBMITTED
+            ? ` · submitted ${period?.submittedAt ? new Date(Number(period.submittedAt.seconds) * 1000).toLocaleString() : ""}`
+            : ` · DRAFT — printed ${new Date().toLocaleString()}`}
+        </p>
+      </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Bulk spirits (LAA)">
           <Row k="Opening on hand" v={formatLAA(report.bulkOpeningLaa)} />
@@ -222,9 +239,18 @@ function ReportView({
         <Row k="Duty payable (CAD)"     v={`$${formatQty(report.dutyPayableCad)}`} bold highlight />
       </Card>
 
+      <div data-print-hide className="flex items-center gap-3">
+        <button
+          onClick={() => window.print()}
+          className="rounded border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
+        >
+          Print / Save as PDF
+        </button>
+      </div>
+
       {period && submittedStatus !== B266Status.SUBMITTED && (
         <OwnerOnly>
-        <div className="flex items-center gap-3">
+        <div data-print-hide className="flex items-center gap-3">
           <button
             onClick={onSubmit}
             disabled={submitting}

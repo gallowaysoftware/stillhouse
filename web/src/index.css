@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Print rules for the B266 report and other auditable views.
+   Anything tagged data-print-hide (nav, action buttons, generate
+   forms) collapses, and data-print-only (the report header with
+   tenant + period stamping) appears. */
+@media print {
+  [data-print-hide] { display: none !important; }
+  [data-print-only] { display: block !important; }
+  body { background: white; }
+  section, .rounded-lg, table { box-shadow: none !important; border-color: #ccc !important; }
+}
+[data-print-only] { display: none; }

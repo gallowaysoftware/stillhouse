@@ -43,7 +43,7 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-stone-50 text-stone-900">
-      <aside className="flex w-56 flex-col border-r border-stone-200 bg-white">
+      <aside data-print-hide className="flex w-56 flex-col border-r border-stone-200 bg-white">
         <div className="border-b border-stone-200 px-5 py-4">
           <Link to="/" className="text-lg font-semibold tracking-tight">
             Stillhouse
