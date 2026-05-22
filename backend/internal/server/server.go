@@ -59,6 +59,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	recipeSvc := rpc.NewRecipeService(tdb, logger)
 	mashSvc := rpc.NewMashService(tdb, logger)
 	fermentationSvc := rpc.NewFermentationService(tdb, logger)
+	bulkSvc := rpc.NewBulkService(tdb, logger)
+	distillationSvc := rpc.NewDistillationService(tdb, logger)
 
 	interceptors := connect.WithInterceptors(rpc.NewAuthInterceptor(sm, queries))
 
@@ -70,6 +72,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewRecipeServiceHandler(recipeSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewMashServiceHandler(mashSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewFermentationServiceHandler(fermentationSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewBulkServiceHandler(bulkSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewDistillationServiceHandler(distillationSvc, interceptors))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)

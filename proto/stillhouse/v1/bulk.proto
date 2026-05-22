@@ -1,0 +1,126 @@
+// Bulk alcohol ledger. The first BulkMovement for any new alcohol comes from
+// a production gauge (Stage 4) — that's the bridge between operational
+// production records and the compliance spine that eventually feeds B266.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum BulkContainerKind {
+  BULK_CONTAINER_KIND_UNSPECIFIED = 0;
+  BULK_CONTAINER_KIND_SPIRIT_RECEIVER = 1;
+  BULK_CONTAINER_KIND_TANK = 2;
+  BULK_CONTAINER_KIND_IBC = 3;
+  BULK_CONTAINER_KIND_TOTE = 4;
+  BULK_CONTAINER_KIND_BLEND_TANK = 5;
+  BULK_CONTAINER_KIND_BOTTLING_TANK = 6;
+  BULK_CONTAINER_KIND_OTHER = 7;
+}
+
+enum BulkMovementReason {
+  BULK_MOVEMENT_REASON_UNSPECIFIED = 0;
+  BULK_MOVEMENT_REASON_PRODUCTION_GAUGE = 1;
+  BULK_MOVEMENT_REASON_INTER_TANK_TRANSFER = 2;
+  BULK_MOVEMENT_REASON_BLEND = 3;
+  BULK_MOVEMENT_REASON_TRANSFER_IN_BOND = 4;
+  BULK_MOVEMENT_REASON_TRANSFER_OUT_IN_BOND = 5;
+  BULK_MOVEMENT_REASON_TRANSFER_TO_PACKAGING = 6;
+  BULK_MOVEMENT_REASON_LOSS_EVAPORATION = 7;
+  BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED = 8;
+  BULK_MOVEMENT_REASON_REGAUGE_CORRECTION = 9;
+  BULK_MOVEMENT_REASON_DESTRUCTION = 10;
+}
+
+message BulkContainer {
+  string id = 1;
+  string tenant_id = 2;
+  string name = 3;
+  BulkContainerKind kind = 4;
+  double capacity_l = 5;
+  bool   capacity_l_set = 6;
+  string location = 7;
+  string notes = 8;
+  bool   archived = 9;
+
+  // Current running balance.
+  double current_volume_l = 10;
+  double current_abv_pct = 11;
+  bool   current_abv_pct_set = 12;
+  double current_laa = 13;
+
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+}
+
+message BulkMovement {
+  string id = 1;
+  string source_container_id = 2;        // empty if originating event
+  string source_container_name = 3;
+  string destination_container_id = 4;   // empty if loss / transfer-out
+  string destination_container_name = 5;
+  double volume_l = 6;
+  double abv_pct = 7;
+  double laa = 8;
+  BulkMovementReason reason = 9;
+  string reference_type = 10;
+  string reference_id = 11;
+  string notes = 12;
+  google.protobuf.Timestamp occurred_at = 13;
+  google.protobuf.Timestamp created_at = 14;
+}
+
+message BulkSummary {
+  double total_laa = 1;
+  int32  container_count = 2;
+}
+
+// --- requests ---
+
+message CreateBulkContainerRequest {
+  string name = 1;
+  BulkContainerKind kind = 2;
+  double capacity_l = 3;
+  bool   capacity_l_set = 4;
+  string location = 5;
+  string notes = 6;
+}
+message CreateBulkContainerResponse { BulkContainer container = 1; }
+
+message UpdateBulkContainerRequest {
+  string id = 1;
+  string name = 2;
+  BulkContainerKind kind = 3;
+  double capacity_l = 4;
+  bool   capacity_l_set = 5;
+  string location = 6;
+  string notes = 7;
+}
+message UpdateBulkContainerResponse { BulkContainer container = 1; }
+
+message SetBulkContainerArchivedRequest { string id = 1; bool archived = 2; }
+message SetBulkContainerArchivedResponse { BulkContainer container = 1; }
+
+message ListBulkContainersRequest { bool include_archived = 1; }
+message ListBulkContainersResponse {
+  repeated BulkContainer containers = 1;
+  BulkSummary summary = 2;
+}
+
+message GetBulkContainerRequest { string id = 1; }
+message GetBulkContainerResponse {
+  BulkContainer container = 1;
+  repeated BulkMovement movements = 2;
+}
+
+message ListRecentBulkMovementsRequest {}
+message ListRecentBulkMovementsResponse { repeated BulkMovement movements = 1; }
+
+service BulkService {
+  rpc CreateBulkContainer(CreateBulkContainerRequest) returns (CreateBulkContainerResponse);
+  rpc UpdateBulkContainer(UpdateBulkContainerRequest) returns (UpdateBulkContainerResponse);
+  rpc SetBulkContainerArchived(SetBulkContainerArchivedRequest) returns (SetBulkContainerArchivedResponse);
+  rpc ListBulkContainers(ListBulkContainersRequest) returns (ListBulkContainersResponse);
+  rpc GetBulkContainer(GetBulkContainerRequest) returns (GetBulkContainerResponse);
+  rpc ListRecentBulkMovements(ListRecentBulkMovementsRequest) returns (ListRecentBulkMovementsResponse);
+}

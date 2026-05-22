@@ -1,0 +1,71 @@
+-- name: CreateBulkContainer :one
+INSERT INTO bulk_containers (
+    tenant_id, name, kind, capacity_l, location, notes
+) VALUES (
+    $1, $2, $3, $4, $5, $6
+) RETURNING *;
+
+-- name: UpdateBulkContainer :one
+UPDATE bulk_containers
+SET name       = $2,
+    kind       = $3,
+    capacity_l = $4,
+    location   = $5,
+    notes      = $6
+WHERE id = $1
+RETURNING *;
+
+-- name: SetBulkContainerArchived :one
+UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING *;
+
+-- name: GetBulkContainer :one
+SELECT * FROM bulk_containers WHERE id = $1;
+
+-- name: ListBulkContainers :many
+SELECT * FROM bulk_containers
+WHERE (sqlc.arg('include_archived')::boolean OR NOT archived)
+ORDER BY archived, name;
+
+-- name: UpdateBulkContainerBalance :one
+UPDATE bulk_containers
+SET current_volume_l = $2,
+    current_abv_pct  = $3,
+    current_laa      = $4
+WHERE id = $1
+RETURNING *;
+
+-- name: InsertBulkMovement :one
+INSERT INTO bulk_movements (
+    tenant_id, source_container_id, destination_container_id,
+    volume_l, abv_pct, laa, reason, reference_type, reference_id,
+    notes, occurred_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) RETURNING *;
+
+-- name: ListBulkMovementsByContainer :many
+SELECT bm.*,
+       src.name AS source_name,
+       dst.name AS destination_name
+FROM bulk_movements bm
+LEFT JOIN bulk_containers src ON src.id = bm.source_container_id
+LEFT JOIN bulk_containers dst ON dst.id = bm.destination_container_id
+WHERE bm.source_container_id = $1
+   OR bm.destination_container_id = $1
+ORDER BY bm.occurred_at DESC
+LIMIT 200;
+
+-- name: ListRecentBulkMovements :many
+SELECT bm.*,
+       src.name AS source_name,
+       dst.name AS destination_name
+FROM bulk_movements bm
+LEFT JOIN bulk_containers src ON src.id = bm.source_container_id
+LEFT JOIN bulk_containers dst ON dst.id = bm.destination_container_id
+ORDER BY bm.occurred_at DESC
+LIMIT 100;
+
+-- name: SumBulkLAA :one
+SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
+FROM bulk_containers
+WHERE NOT archived;

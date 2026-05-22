@@ -1,0 +1,10 @@
+DROP TABLE IF EXISTS production_gauges CASCADE;
+DROP TABLE IF EXISTS distillation_cuts CASCADE;
+DROP TABLE IF EXISTS distillation_charges CASCADE;
+DROP TABLE IF EXISTS distillation_runs CASCADE;
+DROP TABLE IF EXISTS bulk_movements CASCADE;
+DROP TABLE IF EXISTS bulk_containers CASCADE;
+DROP TYPE  IF EXISTS distillation_cut_kind;
+DROP TYPE  IF EXISTS distillation_status;
+DROP TYPE  IF EXISTS bulk_movement_reason;
+DROP TYPE  IF EXISTS bulk_container_kind;

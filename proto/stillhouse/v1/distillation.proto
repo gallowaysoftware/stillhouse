@@ -1,0 +1,147 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/bulk.proto";
+
+enum DistillationStatus {
+  DISTILLATION_STATUS_UNSPECIFIED = 0;
+  DISTILLATION_STATUS_PLANNED = 1;
+  DISTILLATION_STATUS_CHARGING = 2;
+  DISTILLATION_STATUS_DISTILLING = 3;
+  DISTILLATION_STATUS_GAUGED = 4;
+  DISTILLATION_STATUS_CANCELLED = 5;
+}
+
+enum DistillationCutKind {
+  DISTILLATION_CUT_KIND_UNSPECIFIED = 0;
+  DISTILLATION_CUT_KIND_FORESHOTS = 1;
+  DISTILLATION_CUT_KIND_HEADS = 2;
+  DISTILLATION_CUT_KIND_HEARTS = 3;
+  DISTILLATION_CUT_KIND_TAILS = 4;
+  DISTILLATION_CUT_KIND_FEINTS_SAVED = 5;
+}
+
+message DistillationRun {
+  string id = 1;
+  string tenant_id = 2;
+  int32  run_no = 3;
+  string still_label = 4;
+  string run_date = 5;             // ISO date
+  DistillationStatus status = 6;
+  string notes = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+
+  // Children, populated by GetDistillationRun.
+  repeated DistillationCharge charges = 10;
+  repeated DistillationCut cuts = 11;
+  ProductionGauge gauge = 12;       // unset until RecordProductionGauge runs
+  double total_cut_laa = 13;        // computed sum from cuts
+}
+
+message DistillationCharge {
+  string id = 1;
+  string distillation_run_id = 2;
+  string fermentation_run_id = 3;
+  string fermenter_label = 4;
+  int32  mash_no = 5;
+  double volume_charged_l = 6;
+  double abv_pct = 7;
+  double laa = 8;                  // computed in service
+  int32  charge_order = 9;
+  string notes = 10;
+}
+
+message DistillationCut {
+  string id = 1;
+  string distillation_run_id = 2;
+  DistillationCutKind kind = 3;
+  double volume_l = 4;
+  double abv_pct = 5;
+  double laa = 6;
+  int32  cut_order = 7;
+  google.protobuf.Timestamp observed_at = 8;
+  string notes = 9;
+}
+
+message ProductionGauge {
+  string id = 1;
+  string distillation_run_id = 2;
+  string destination_container_id = 3;
+  string destination_container_name = 4;
+  string bulk_movement_id = 5;
+  google.protobuf.Timestamp gauge_date = 6;
+  double volume_l = 7;
+  double abv_pct = 8;
+  double temperature_c = 9;
+  bool   temperature_c_set = 10;
+  double laa = 11;
+  string gauger_user_id = 12;
+  string notes = 13;
+}
+
+// --- requests ---
+
+message CreateDistillationRunRequest {
+  string still_label = 1;
+  string run_date = 2;             // ISO; empty = today
+  string notes = 3;
+}
+message CreateDistillationRunResponse { DistillationRun run = 1; }
+
+message GetDistillationRunRequest { string id = 1; }
+message GetDistillationRunResponse { DistillationRun run = 1; }
+
+message ListDistillationRunsRequest { DistillationStatus status = 1; }
+message ListDistillationRunsResponse { repeated DistillationRun runs = 1; }
+
+message UpdateDistillationStatusRequest { string id = 1; DistillationStatus status = 2; }
+message UpdateDistillationStatusResponse { DistillationRun run = 1; }
+
+message AddDistillationChargeRequest {
+  string distillation_run_id = 1;
+  string fermentation_run_id = 2;
+  double volume_charged_l = 3;
+  double abv_pct = 4;
+  int32  charge_order = 5;
+  string notes = 6;
+}
+message AddDistillationChargeResponse { DistillationCharge charge = 1; }
+
+message AddDistillationCutRequest {
+  string distillation_run_id = 1;
+  DistillationCutKind kind = 2;
+  double volume_l = 3;
+  double abv_pct = 4;
+  int32  cut_order = 5;
+  google.protobuf.Timestamp observed_at = 6;
+  string notes = 7;
+}
+message AddDistillationCutResponse { DistillationCut cut = 1; }
+
+message RecordProductionGaugeRequest {
+  string distillation_run_id = 1;
+  string destination_container_id = 2;
+  google.protobuf.Timestamp gauge_date = 3;
+  double volume_l = 4;
+  double abv_pct = 5;
+  double temperature_c = 6;
+  bool   temperature_c_set = 7;
+  string notes = 8;
+}
+message RecordProductionGaugeResponse {
+  ProductionGauge gauge = 1;
+  BulkContainer destination_container = 2;
+}
+
+service DistillationService {
+  rpc CreateDistillationRun(CreateDistillationRunRequest) returns (CreateDistillationRunResponse);
+  rpc GetDistillationRun(GetDistillationRunRequest) returns (GetDistillationRunResponse);
+  rpc ListDistillationRuns(ListDistillationRunsRequest) returns (ListDistillationRunsResponse);
+  rpc UpdateDistillationStatus(UpdateDistillationStatusRequest) returns (UpdateDistillationStatusResponse);
+  rpc AddDistillationCharge(AddDistillationChargeRequest) returns (AddDistillationChargeResponse);
+  rpc AddDistillationCut(AddDistillationCutRequest) returns (AddDistillationCutResponse);
+  rpc RecordProductionGauge(RecordProductionGaugeRequest) returns (RecordProductionGaugeResponse);
+}

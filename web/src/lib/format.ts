@@ -1,3 +1,11 @@
+import {
+  BulkContainerKind,
+  BulkMovementReason,
+} from "@/gen/stillhouse/v1/bulk_pb";
+import {
+  DistillationCutKind,
+  DistillationStatus,
+} from "@/gen/stillhouse/v1/distillation_pb";
 import { FermentationStatus } from "@/gen/stillhouse/v1/fermentation_pb";
 import { MashMetricKind, MashStatus } from "@/gen/stillhouse/v1/mash_pb";
 import { MaterialKind } from "@/gen/stillhouse/v1/material_pb";
@@ -99,4 +107,59 @@ const fermentationStatusLabels = new Map<FermentationStatus, string>([
 
 export function fermentationStatusLabel(s: FermentationStatus): string {
   return fermentationStatusLabels.get(s) ?? "Unknown";
+}
+
+const bulkContainerKindLabels = new Map<BulkContainerKind, string>([
+  [BulkContainerKind.SPIRIT_RECEIVER, "Spirit receiver"],
+  [BulkContainerKind.TANK, "Tank"],
+  [BulkContainerKind.IBC, "IBC"],
+  [BulkContainerKind.TOTE, "Tote"],
+  [BulkContainerKind.BLEND_TANK, "Blend tank"],
+  [BulkContainerKind.BOTTLING_TANK, "Bottling tank"],
+  [BulkContainerKind.OTHER, "Other"],
+]);
+
+export function bulkContainerKindLabel(k: BulkContainerKind): string {
+  return bulkContainerKindLabels.get(k) ?? "Unknown";
+}
+
+const bulkMovementReasonLabels = new Map<BulkMovementReason, string>([
+  [BulkMovementReason.PRODUCTION_GAUGE, "Production gauge"],
+  [BulkMovementReason.INTER_TANK_TRANSFER, "Inter-tank transfer"],
+  [BulkMovementReason.BLEND, "Blend"],
+  [BulkMovementReason.TRANSFER_IN_BOND, "Transfer in bond"],
+  [BulkMovementReason.TRANSFER_OUT_IN_BOND, "Transfer out (in bond)"],
+  [BulkMovementReason.TRANSFER_TO_PACKAGING, "Transfer to packaging"],
+  [BulkMovementReason.LOSS_EVAPORATION, "Loss (evaporation)"],
+  [BulkMovementReason.LOSS_UNACCOUNTED, "Loss (unaccounted)"],
+  [BulkMovementReason.REGAUGE_CORRECTION, "Regauge correction"],
+  [BulkMovementReason.DESTRUCTION, "Destruction"],
+]);
+
+export function bulkMovementReasonLabel(r: BulkMovementReason): string {
+  return bulkMovementReasonLabels.get(r) ?? "Unknown";
+}
+
+const distillationStatusLabels = new Map<DistillationStatus, string>([
+  [DistillationStatus.PLANNED, "Planned"],
+  [DistillationStatus.CHARGING, "Charging"],
+  [DistillationStatus.DISTILLING, "Distilling"],
+  [DistillationStatus.GAUGED, "Gauged"],
+  [DistillationStatus.CANCELLED, "Cancelled"],
+]);
+
+export function distillationStatusLabel(s: DistillationStatus): string {
+  return distillationStatusLabels.get(s) ?? "Unknown";
+}
+
+const cutKindLabels = new Map<DistillationCutKind, string>([
+  [DistillationCutKind.FORESHOTS, "Foreshots"],
+  [DistillationCutKind.HEADS, "Heads"],
+  [DistillationCutKind.HEARTS, "Hearts"],
+  [DistillationCutKind.TAILS, "Tails"],
+  [DistillationCutKind.FEINTS_SAVED, "Feints (saved)"],
+]);
+
+export function cutKindLabel(k: DistillationCutKind): string {
+  return cutKindLabels.get(k) ?? "Unknown";
 }

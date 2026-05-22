@@ -58,6 +58,193 @@ func (ns NullAuditAction) Value() (driver.Value, error) {
 	return string(ns.AuditAction), nil
 }
 
+type BulkContainerKind string
+
+const (
+	BulkContainerKindSpiritReceiver BulkContainerKind = "spirit_receiver"
+	BulkContainerKindTank           BulkContainerKind = "tank"
+	BulkContainerKindIbc            BulkContainerKind = "ibc"
+	BulkContainerKindTote           BulkContainerKind = "tote"
+	BulkContainerKindBlendTank      BulkContainerKind = "blend_tank"
+	BulkContainerKindBottlingTank   BulkContainerKind = "bottling_tank"
+	BulkContainerKindOther          BulkContainerKind = "other"
+)
+
+func (e *BulkContainerKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BulkContainerKind(s)
+	case string:
+		*e = BulkContainerKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BulkContainerKind: %T", src)
+	}
+	return nil
+}
+
+type NullBulkContainerKind struct {
+	BulkContainerKind BulkContainerKind `json:"bulk_container_kind"`
+	Valid             bool              `json:"valid"` // Valid is true if BulkContainerKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBulkContainerKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.BulkContainerKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BulkContainerKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBulkContainerKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BulkContainerKind), nil
+}
+
+type BulkMovementReason string
+
+const (
+	BulkMovementReasonProductionGauge     BulkMovementReason = "production_gauge"
+	BulkMovementReasonInterTankTransfer   BulkMovementReason = "inter_tank_transfer"
+	BulkMovementReasonBlend               BulkMovementReason = "blend"
+	BulkMovementReasonTransferInBond      BulkMovementReason = "transfer_in_bond"
+	BulkMovementReasonTransferOutInBond   BulkMovementReason = "transfer_out_in_bond"
+	BulkMovementReasonTransferToPackaging BulkMovementReason = "transfer_to_packaging"
+	BulkMovementReasonLossEvaporation     BulkMovementReason = "loss_evaporation"
+	BulkMovementReasonLossUnaccounted     BulkMovementReason = "loss_unaccounted"
+	BulkMovementReasonRegaugeCorrection   BulkMovementReason = "regauge_correction"
+	BulkMovementReasonDestruction         BulkMovementReason = "destruction"
+)
+
+func (e *BulkMovementReason) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BulkMovementReason(s)
+	case string:
+		*e = BulkMovementReason(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BulkMovementReason: %T", src)
+	}
+	return nil
+}
+
+type NullBulkMovementReason struct {
+	BulkMovementReason BulkMovementReason `json:"bulk_movement_reason"`
+	Valid              bool               `json:"valid"` // Valid is true if BulkMovementReason is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBulkMovementReason) Scan(value interface{}) error {
+	if value == nil {
+		ns.BulkMovementReason, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BulkMovementReason.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBulkMovementReason) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BulkMovementReason), nil
+}
+
+type DistillationCutKind string
+
+const (
+	DistillationCutKindForeshots   DistillationCutKind = "foreshots"
+	DistillationCutKindHeads       DistillationCutKind = "heads"
+	DistillationCutKindHearts      DistillationCutKind = "hearts"
+	DistillationCutKindTails       DistillationCutKind = "tails"
+	DistillationCutKindFeintsSaved DistillationCutKind = "feints_saved"
+)
+
+func (e *DistillationCutKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DistillationCutKind(s)
+	case string:
+		*e = DistillationCutKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DistillationCutKind: %T", src)
+	}
+	return nil
+}
+
+type NullDistillationCutKind struct {
+	DistillationCutKind DistillationCutKind `json:"distillation_cut_kind"`
+	Valid               bool                `json:"valid"` // Valid is true if DistillationCutKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDistillationCutKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.DistillationCutKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DistillationCutKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDistillationCutKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DistillationCutKind), nil
+}
+
+type DistillationStatus string
+
+const (
+	DistillationStatusPlanned    DistillationStatus = "planned"
+	DistillationStatusCharging   DistillationStatus = "charging"
+	DistillationStatusDistilling DistillationStatus = "distilling"
+	DistillationStatusGauged     DistillationStatus = "gauged"
+	DistillationStatusCancelled  DistillationStatus = "cancelled"
+)
+
+func (e *DistillationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DistillationStatus(s)
+	case string:
+		*e = DistillationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DistillationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullDistillationStatus struct {
+	DistillationStatus DistillationStatus `json:"distillation_status"`
+	Valid              bool               `json:"valid"` // Valid is true if DistillationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDistillationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.DistillationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DistillationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDistillationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DistillationStatus), nil
+}
+
 type FermentationStatus string
 
 const (
@@ -345,6 +532,75 @@ type AuditEvent struct {
 	Payload    []byte             `json:"payload"`
 }
 
+type BulkContainer struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	Name           string             `json:"name"`
+	Kind           BulkContainerKind  `json:"kind"`
+	CapacityL      pgtype.Float8      `json:"capacity_l"`
+	Location       string             `json:"location"`
+	Notes          string             `json:"notes"`
+	Archived       bool               `json:"archived"`
+	CurrentVolumeL float64            `json:"current_volume_l"`
+	CurrentAbvPct  pgtype.Float8      `json:"current_abv_pct"`
+	CurrentLaa     float64            `json:"current_laa"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type BulkMovement struct {
+	ID                     uuid.UUID          `json:"id"`
+	TenantID               uuid.UUID          `json:"tenant_id"`
+	SourceContainerID      uuid.NullUUID      `json:"source_container_id"`
+	DestinationContainerID uuid.NullUUID      `json:"destination_container_id"`
+	VolumeL                float64            `json:"volume_l"`
+	AbvPct                 float64            `json:"abv_pct"`
+	Laa                    float64            `json:"laa"`
+	Reason                 BulkMovementReason `json:"reason"`
+	ReferenceType          string             `json:"reference_type"`
+	ReferenceID            uuid.NullUUID      `json:"reference_id"`
+	Notes                  string             `json:"notes"`
+	OccurredAt             pgtype.Timestamptz `json:"occurred_at"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+}
+
+type DistillationCharge struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	DistillationRunID uuid.UUID          `json:"distillation_run_id"`
+	FermentationRunID uuid.UUID          `json:"fermentation_run_id"`
+	VolumeChargedL    float64            `json:"volume_charged_l"`
+	AbvPct            float64            `json:"abv_pct"`
+	ChargeOrder       int32              `json:"charge_order"`
+	Notes             string             `json:"notes"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+}
+
+type DistillationCut struct {
+	ID                uuid.UUID           `json:"id"`
+	TenantID          uuid.UUID           `json:"tenant_id"`
+	DistillationRunID uuid.UUID           `json:"distillation_run_id"`
+	Kind              DistillationCutKind `json:"kind"`
+	VolumeL           float64             `json:"volume_l"`
+	AbvPct            float64             `json:"abv_pct"`
+	Laa               pgtype.Float8       `json:"laa"`
+	CutOrder          int32               `json:"cut_order"`
+	ObservedAt        pgtype.Timestamptz  `json:"observed_at"`
+	Notes             string              `json:"notes"`
+}
+
+type DistillationRun struct {
+	ID         uuid.UUID          `json:"id"`
+	TenantID   uuid.UUID          `json:"tenant_id"`
+	RunNo      int32              `json:"run_no"`
+	StillLabel string             `json:"still_label"`
+	RunDate    pgtype.Date        `json:"run_date"`
+	Status     DistillationStatus `json:"status"`
+	Notes      string             `json:"notes"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+}
+
 type FermentationLog struct {
 	ID                uuid.UUID          `json:"id"`
 	TenantID          uuid.UUID          `json:"tenant_id"`
@@ -432,6 +688,22 @@ type MaterialLot struct {
 	Notes            string             `json:"notes"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ProductionGauge struct {
+	ID                     uuid.UUID          `json:"id"`
+	TenantID               uuid.UUID          `json:"tenant_id"`
+	DistillationRunID      uuid.UUID          `json:"distillation_run_id"`
+	DestinationContainerID uuid.UUID          `json:"destination_container_id"`
+	BulkMovementID         uuid.UUID          `json:"bulk_movement_id"`
+	GaugeDate              pgtype.Timestamptz `json:"gauge_date"`
+	VolumeL                float64            `json:"volume_l"`
+	AbvPct                 float64            `json:"abv_pct"`
+	TemperatureC           pgtype.Float8      `json:"temperature_c"`
+	Laa                    pgtype.Float8      `json:"laa"`
+	GaugerUserID           uuid.UUID          `json:"gauger_user_id"`
+	Notes                  string             `json:"notes"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
 }
 
 type Recipe struct {
