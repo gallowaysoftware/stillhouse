@@ -15,6 +15,7 @@ import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
 import { MashDetailPage } from "./pages/MashDetailPage";
 import { MashesPage } from "./pages/MashesPage";
+import { MaterialDetailPage } from "./pages/MaterialDetailPage";
 import { MaterialsPage } from "./pages/MaterialsPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
@@ -33,6 +34,7 @@ export function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/" element={<Guarded><HomePage /></Guarded>} />
       <Route path="/materials" element={<Guarded><MaterialsPage /></Guarded>} />
+      <Route path="/materials/:id" element={<Guarded><MaterialDetailPage /></Guarded>} />
       <Route path="/recipes" element={<Guarded><RecipesPage /></Guarded>} />
       <Route path="/recipes/:id" element={<Guarded><RecipeDetailPage /></Guarded>} />
       <Route path="/mashes" element={<Guarded><MashesPage /></Guarded>} />

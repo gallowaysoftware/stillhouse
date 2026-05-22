@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
@@ -162,7 +163,9 @@ export function MaterialsPage() {
             )}
             {data?.materials.map((m) => (
               <tr key={m.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">{m.name}</td>
+                <td className="px-4 py-3 font-medium text-stone-900">
+                  <Link to={`/materials/${m.id}`} className="hover:underline">{m.name}</Link>
+                </td>
                 <td className="px-4 py-3 text-stone-600">{materialKindLabel(m.kind)}</td>
                 <td className="px-4 py-3 text-stone-600">{m.uom}</td>
                 <td className="px-4 py-3 text-right text-stone-600">
