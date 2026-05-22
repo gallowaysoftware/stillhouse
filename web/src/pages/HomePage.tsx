@@ -74,6 +74,9 @@ export function HomePage() {
           : "Live snapshot of everything Stillhouse is currently tracking."}
       </p>
 
+      <ReadyToDumpCallout barrels={barrels.data?.barrels ?? []} />
+      <B266DueCallout periodEnd={end} hasBottling={hasBottling} />
+
       {!completedAll && allLoaded && (
         <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Getting started</h2>
@@ -181,6 +184,40 @@ export function HomePage() {
         </section>
       )}
     </Shell>
+  );
+}
+
+function ReadyToDumpCallout({ barrels }: { barrels: { id: string; name: string; currentLaa: number; canadianWhiskyEligible: boolean; daysAged: number }[] }) {
+  const ready = barrels.filter((b) => b.currentLaa > 0 && b.canadianWhiskyEligible);
+  if (ready.length === 0) return null;
+  return (
+    <section className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+      <p className="text-sm text-emerald-900">
+        <span className="font-semibold">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
+        and still hold alcohol — ready to dump for bottling.{" "}
+        <Link to="/barrels" className="underline">Open barrels →</Link>
+      </p>
+    </section>
+  );
+}
+
+function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBottling: boolean }) {
+  if (!hasBottling) return null;
+  // B266 is due by the last day of the month following the reporting period.
+  const end = new Date(periodEnd + "T00:00:00Z");
+  const dueDate = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 2, 0));
+  const today = new Date();
+  const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (daysToDue < -1) return null; // overdue by more than a day; suppress (separate alert later)
+  const urgent = daysToDue <= 7;
+  return (
+    <section className={`mb-6 rounded-lg border p-4 ${urgent ? "border-amber-300 bg-amber-50" : "border-stone-200 bg-white"}`}>
+      <p className={`text-sm ${urgent ? "text-amber-900" : "text-stone-700"}`}>
+        <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
+        {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue`}).
+        {" "}<Link to="/b266" className="underline">Open the return →</Link>
+      </p>
+    </section>
   );
 }
 
