@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -55,7 +56,14 @@ func (s *MaterialService) CreateMaterial(
 			ExtractPct:  optionalFloat(in.GetExtractPctSet(), in.GetExtractPct()),
 			MoisturePct: optionalFloat(in.GetMoisturePctSet(), in.GetMoisturePct()),
 		})
-		return dbErr
+		if dbErr != nil {
+			return dbErr
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "material", created.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"name": created.Name, "kind": string(created.Kind), "uom": created.Uom,
+				"supplier": created.Supplier,
+			})
 	})
 	if err != nil {
 		s.logger.Error("CreateMaterial", "err", err)

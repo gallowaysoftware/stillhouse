@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/distilling"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
@@ -257,7 +258,16 @@ func (s *RecipeService) SaveRecipeVersion(
 		}
 		resp.Version = recipeVersionToProto(v, ingredients)
 		resp.Projection = projectRecipeVersion(v, ingredients)
-		return nil
+		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe_version", v.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"recipe_id":      recipeID.String(),
+				"version_no":     v.VersionNo,
+				"mash_eff":       v.MashEfficiencyPct,
+				"ferment_eff":    v.FermentEfficiencyPct,
+				"distill_recov":  v.DistillationRecoveryPct,
+				"total_laa":      resp.Projection.GetTotalProjectedLaa(),
+				"ingredient_n":   len(ingredients),
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {

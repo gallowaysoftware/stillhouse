@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -57,7 +58,16 @@ func (s *ProductService) CreateProduct(
 			TargetAbvPct: in.GetTargetAbvPct(),
 			LabelNotes:   in.GetLabelNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "product", p.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"name":           p.Name,
+				"spirit_kind":    string(p.SpiritKind),
+				"bottle_size_ml": p.BottleSizeMl,
+				"target_abv_pct": p.TargetAbvPct,
+			})
 	})
 	if err != nil {
 		s.logger.Error("CreateProduct", "err", err)

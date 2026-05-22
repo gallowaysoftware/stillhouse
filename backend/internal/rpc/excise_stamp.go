@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
@@ -49,7 +50,14 @@ func (s *ExciseStampService) CreateStampOrder(
 			QuantityOrdered: in.GetQuantityOrdered(),
 			Notes:           in.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "excise_stamp_order", o.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"jurisdiction":     o.Jurisdiction,
+				"quantity_ordered": o.QuantityOrdered,
+			})
 	})
 	if err != nil {
 		s.logger.Error("CreateStampOrder", "err", err)
@@ -89,7 +97,17 @@ func (s *ExciseStampService) ReceiveStampOrder(
 			SerialStart:      pgtype.Text{String: in.GetSerialStart(), Valid: in.GetSerialStart() != ""},
 			SerialEnd:        pgtype.Text{String: in.GetSerialEnd(), Valid: in.GetSerialEnd() != ""},
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "excise_stamp_order", o.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":             "received",
+				"jurisdiction":      o.Jurisdiction,
+				"quantity_received": o.QuantityReceived,
+				"serial_start":      o.SerialStart.String,
+				"serial_end":        o.SerialEnd.String,
+			})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
