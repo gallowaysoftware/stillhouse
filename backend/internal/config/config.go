@@ -11,6 +11,7 @@ type Config struct {
 	Addr        string
 	DatabaseURL string
 	Dev         bool
+	StaticDir   string // optional; if set, the server serves the SPA from this directory
 }
 
 func Load() (*Config, error) {
@@ -18,6 +19,7 @@ func Load() (*Config, error) {
 		Addr:        getenv("STILLHOUSE_ADDR", ":8080"),
 		DatabaseURL: os.Getenv("DATABASE_URL"),
 		Dev:         os.Getenv("STILLHOUSE_DEV") == "1",
+		StaticDir:   os.Getenv("STILLHOUSE_STATIC_DIR"),
 	}
 	if c.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")

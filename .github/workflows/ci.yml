@@ -1,0 +1,72 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  proto:
+    name: proto / lint + codegen drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/buf-action@v1
+        with:
+          setup_only: true
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install Go protoc plugins
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
+      - name: Install web deps (for protoc-gen-es)
+        run: cd web && npm ci
+      - name: Lint .proto
+        run: cd proto && buf lint
+      - name: Regenerate Go code
+        run: cd proto && buf generate --template buf.gen.yaml
+      - name: Regenerate TS code
+        run: cd proto && buf generate --template buf.gen.web.yaml
+      - name: Fail if generated code drifted
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::generated code is out of date — run 'make generate'"
+            git --no-pager diff
+            exit 1
+          fi
+
+  backend:
+    name: backend / build + vet + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+          cache-dependency-path: backend/go.sum
+      - name: go vet
+        run: cd backend && go vet ./...
+      - name: go test
+        run: cd backend && go test ./...
+      - name: go build
+        run: cd backend && go build ./...
+
+  web:
+    name: web / typecheck + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: cd web && npm ci
+      - run: cd web && npm run lint
+      - run: cd web && npm run build

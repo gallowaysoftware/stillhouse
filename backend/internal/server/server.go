@@ -68,6 +68,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("ok"))
 	})
+	if cfg.StaticDir != "" {
+		mux.Handle("/", staticSPAHandler(cfg.StaticDir))
+	}
 
 	httpSrv := &http.Server{
 		Addr:              cfg.Addr,
