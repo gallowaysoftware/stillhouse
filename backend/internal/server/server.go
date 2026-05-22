@@ -71,7 +71,10 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	pricingSvc := rpc.NewPricingService(tdb, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
 
-	interceptors := connect.WithInterceptors(rpc.NewAuthInterceptor(sm, queries))
+	interceptors := connect.WithInterceptors(
+		rpc.NewAuthInterceptor(sm, queries),
+		rpc.NewRoleGateInterceptor(),
+	)
 
 	mux := http.NewServeMux()
 	mux.Handle(stillhousev1connect.NewAuthServiceHandler(authSvc, interceptors))
