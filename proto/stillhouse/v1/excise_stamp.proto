@@ -65,8 +65,16 @@ message ListStampOrdersResponse {
   repeated ExciseStampJurisdictionSummary summaries = 2;
 }
 
+message VoidStampsRequest {
+  string id = 1;
+  int32  quantity = 2;
+  string reason = 3;
+}
+message VoidStampsResponse { ExciseStampOrder order = 1; }
+
 service ExciseStampService {
   rpc CreateStampOrder(CreateStampOrderRequest) returns (CreateStampOrderResponse);
   rpc ReceiveStampOrder(ReceiveStampOrderRequest) returns (ReceiveStampOrderResponse);
   rpc ListStampOrders(ListStampOrdersRequest) returns (ListStampOrdersResponse);
+  rpc VoidStamps(VoidStampsRequest) returns (VoidStampsResponse);
 }

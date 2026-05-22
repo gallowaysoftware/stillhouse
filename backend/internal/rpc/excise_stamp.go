@@ -119,6 +119,70 @@ func (s *ExciseStampService) ReceiveStampOrder(
 	return connect.NewResponse(&stillhousev1.ReceiveStampOrderResponse{Order: stampOrderToProto(o)}), nil
 }
 
+func (s *ExciseStampService) VoidStamps(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.VoidStampsRequest],
+) (*connect.Response[stillhousev1.VoidStampsResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	in := req.Msg
+	id, err := uuid.Parse(in.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	if in.GetQuantity() <= 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("quantity must be > 0"))
+	}
+	if in.GetReason() == "" {
+		// Reason is mandatory — the void is an audit event that needs justification.
+		// "damaged in application", "misprint", etc.
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required"))
+	}
+
+	var o sqlcgen.ExciseStampOrder
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		// Bound-check before mutating — the DB has a CHECK constraint but we
+		// want to return a clean InvalidArgument rather than a 500.
+		existing, e := q.GetStampOrder(ctx, id)
+		if e != nil {
+			return e
+		}
+		available := existing.QuantityReceived - existing.QuantityApplied - existing.QuantityVoided
+		if in.GetQuantity() > available {
+			return connect.NewError(connect.CodeInvalidArgument,
+				errors.New("quantity exceeds available stamps on this order"))
+		}
+		o, e = q.IncrementStampOrderVoided(ctx, sqlcgen.IncrementStampOrderVoidedParams{
+			ID:             id,
+			QuantityVoided: in.GetQuantity(),
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "excise_stamp_order", o.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":        "voided",
+				"jurisdiction": o.Jurisdiction,
+				"quantity":     in.GetQuantity(),
+				"reason":       in.GetReason(),
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("stamp order not found"))
+		}
+		s.logger.Error("VoidStamps", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.VoidStampsResponse{Order: stampOrderToProto(o)}), nil
+}
+
 func (s *ExciseStampService) ListStampOrders(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.ListStampOrdersRequest],

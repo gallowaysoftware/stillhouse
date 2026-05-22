@@ -46,6 +46,9 @@ const (
 	// ExciseStampServiceListStampOrdersProcedure is the fully-qualified name of the
 	// ExciseStampService's ListStampOrders RPC.
 	ExciseStampServiceListStampOrdersProcedure = "/stillhouse.v1.ExciseStampService/ListStampOrders"
+	// ExciseStampServiceVoidStampsProcedure is the fully-qualified name of the ExciseStampService's
+	// VoidStamps RPC.
+	ExciseStampServiceVoidStampsProcedure = "/stillhouse.v1.ExciseStampService/VoidStamps"
 )
 
 // ExciseStampServiceClient is a client for the stillhouse.v1.ExciseStampService service.
@@ -53,6 +56,7 @@ type ExciseStampServiceClient interface {
 	CreateStampOrder(context.Context, *connect.Request[v1.CreateStampOrderRequest]) (*connect.Response[v1.CreateStampOrderResponse], error)
 	ReceiveStampOrder(context.Context, *connect.Request[v1.ReceiveStampOrderRequest]) (*connect.Response[v1.ReceiveStampOrderResponse], error)
 	ListStampOrders(context.Context, *connect.Request[v1.ListStampOrdersRequest]) (*connect.Response[v1.ListStampOrdersResponse], error)
+	VoidStamps(context.Context, *connect.Request[v1.VoidStampsRequest]) (*connect.Response[v1.VoidStampsResponse], error)
 }
 
 // NewExciseStampServiceClient constructs a client for the stillhouse.v1.ExciseStampService service.
@@ -84,6 +88,12 @@ func NewExciseStampServiceClient(httpClient connect.HTTPClient, baseURL string, 
 			connect.WithSchema(exciseStampServiceMethods.ByName("ListStampOrders")),
 			connect.WithClientOptions(opts...),
 		),
+		voidStamps: connect.NewClient[v1.VoidStampsRequest, v1.VoidStampsResponse](
+			httpClient,
+			baseURL+ExciseStampServiceVoidStampsProcedure,
+			connect.WithSchema(exciseStampServiceMethods.ByName("VoidStamps")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -92,6 +102,7 @@ type exciseStampServiceClient struct {
 	createStampOrder  *connect.Client[v1.CreateStampOrderRequest, v1.CreateStampOrderResponse]
 	receiveStampOrder *connect.Client[v1.ReceiveStampOrderRequest, v1.ReceiveStampOrderResponse]
 	listStampOrders   *connect.Client[v1.ListStampOrdersRequest, v1.ListStampOrdersResponse]
+	voidStamps        *connect.Client[v1.VoidStampsRequest, v1.VoidStampsResponse]
 }
 
 // CreateStampOrder calls stillhouse.v1.ExciseStampService.CreateStampOrder.
@@ -109,11 +120,17 @@ func (c *exciseStampServiceClient) ListStampOrders(ctx context.Context, req *con
 	return c.listStampOrders.CallUnary(ctx, req)
 }
 
+// VoidStamps calls stillhouse.v1.ExciseStampService.VoidStamps.
+func (c *exciseStampServiceClient) VoidStamps(ctx context.Context, req *connect.Request[v1.VoidStampsRequest]) (*connect.Response[v1.VoidStampsResponse], error) {
+	return c.voidStamps.CallUnary(ctx, req)
+}
+
 // ExciseStampServiceHandler is an implementation of the stillhouse.v1.ExciseStampService service.
 type ExciseStampServiceHandler interface {
 	CreateStampOrder(context.Context, *connect.Request[v1.CreateStampOrderRequest]) (*connect.Response[v1.CreateStampOrderResponse], error)
 	ReceiveStampOrder(context.Context, *connect.Request[v1.ReceiveStampOrderRequest]) (*connect.Response[v1.ReceiveStampOrderResponse], error)
 	ListStampOrders(context.Context, *connect.Request[v1.ListStampOrdersRequest]) (*connect.Response[v1.ListStampOrdersResponse], error)
+	VoidStamps(context.Context, *connect.Request[v1.VoidStampsRequest]) (*connect.Response[v1.VoidStampsResponse], error)
 }
 
 // NewExciseStampServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -141,6 +158,12 @@ func NewExciseStampServiceHandler(svc ExciseStampServiceHandler, opts ...connect
 		connect.WithSchema(exciseStampServiceMethods.ByName("ListStampOrders")),
 		connect.WithHandlerOptions(opts...),
 	)
+	exciseStampServiceVoidStampsHandler := connect.NewUnaryHandler(
+		ExciseStampServiceVoidStampsProcedure,
+		svc.VoidStamps,
+		connect.WithSchema(exciseStampServiceMethods.ByName("VoidStamps")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.ExciseStampService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ExciseStampServiceCreateStampOrderProcedure:
@@ -149,6 +172,8 @@ func NewExciseStampServiceHandler(svc ExciseStampServiceHandler, opts ...connect
 			exciseStampServiceReceiveStampOrderHandler.ServeHTTP(w, r)
 		case ExciseStampServiceListStampOrdersProcedure:
 			exciseStampServiceListStampOrdersHandler.ServeHTTP(w, r)
+		case ExciseStampServiceVoidStampsProcedure:
+			exciseStampServiceVoidStampsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -168,4 +193,8 @@ func (UnimplementedExciseStampServiceHandler) ReceiveStampOrder(context.Context,
 
 func (UnimplementedExciseStampServiceHandler) ListStampOrders(context.Context, *connect.Request[v1.ListStampOrdersRequest]) (*connect.Response[v1.ListStampOrdersResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ExciseStampService.ListStampOrders is not implemented"))
+}
+
+func (UnimplementedExciseStampServiceHandler) VoidStamps(context.Context, *connect.Request[v1.VoidStampsRequest]) (*connect.Response[v1.VoidStampsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ExciseStampService.VoidStamps is not implemented"))
 }

@@ -10,6 +10,7 @@ import {
   CreateStampOrderRequestSchema,
   ExciseStampOrderStatus,
   ReceiveStampOrderRequestSchema,
+  VoidStampsRequestSchema,
 } from "@/gen/stillhouse/v1/excise_stamp_pb";
 
 const statusLabel: Record<ExciseStampOrderStatus, string> = {
@@ -46,6 +47,24 @@ export function StampsPage() {
       setReceivingId(null);
     },
   });
+  const voidStamps = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof VoidStampsRequestSchema>>) =>
+      exciseStampClient.voidStamps(msg),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["listStampOrders"] }),
+  });
+
+  function onVoid(orderId: string, available: number) {
+    if (available <= 0) return;
+    const qtyRaw = window.prompt(`How many stamps to void? (max ${available})`, "1");
+    if (!qtyRaw) return;
+    const qty = Number(qtyRaw);
+    if (!Number.isFinite(qty) || qty <= 0 || qty > available) return;
+    const reason = window.prompt("Reason (damaged, misprint, misapplied, …):", "damaged in application");
+    if (!reason || !reason.trim()) return;
+    voidStamps.mutate(
+      create(VoidStampsRequestSchema, { id: orderId, quantity: qty, reason: reason.trim() }),
+    );
+  }
 
   function submitOrder(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -175,13 +194,22 @@ export function StampsPage() {
                 <td className="px-4 py-3 text-stone-600">
                   {o.serialStart && o.serialEnd ? `${o.serialStart}..${o.serialEnd}` : "—"}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 space-x-3">
                   {o.status === ExciseStampOrderStatus.ORDERED && writeable && (
                     <button
                       onClick={() => setReceivingId(receivingId === o.id ? null : o.id)}
                       className="text-stone-600 hover:text-stone-900"
                     >
                       {receivingId === o.id ? "Cancel" : "Receive"}
+                    </button>
+                  )}
+                  {o.availableCount > 0 && writeable && (
+                    <button
+                      onClick={() => onVoid(o.id, o.availableCount)}
+                      disabled={voidStamps.isPending}
+                      className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                    >
+                      Void
                     </button>
                   )}
                 </td>

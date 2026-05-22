@@ -638,6 +638,110 @@ func (x *ListStampOrdersResponse) GetSummaries() []*ExciseStampJurisdictionSumma
 	return nil
 }
 
+type VoidStampsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidStampsRequest) Reset() {
+	*x = VoidStampsRequest{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidStampsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidStampsRequest) ProtoMessage() {}
+
+func (x *VoidStampsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidStampsRequest.ProtoReflect.Descriptor instead.
+func (*VoidStampsRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *VoidStampsRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VoidStampsRequest) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *VoidStampsRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type VoidStampsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Order         *ExciseStampOrder      `protobuf:"bytes,1,opt,name=order,proto3" json:"order,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidStampsResponse) Reset() {
+	*x = VoidStampsResponse{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidStampsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidStampsResponse) ProtoMessage() {}
+
+func (x *VoidStampsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidStampsResponse.ProtoReflect.Descriptor instead.
+func (*VoidStampsResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *VoidStampsResponse) GetOrder() *ExciseStampOrder {
+	if x != nil {
+		return x.Order
+	}
+	return nil
+}
+
 var File_stillhouse_v1_excise_stamp_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_excise_stamp_proto_rawDesc = "" +
@@ -692,16 +796,24 @@ const file_stillhouse_v1_excise_stamp_proto_rawDesc = "" +
 	"\fjurisdiction\x18\x01 \x01(\tR\fjurisdiction\"\x9f\x01\n" +
 	"\x17ListStampOrdersResponse\x127\n" +
 	"\x06orders\x18\x01 \x03(\v2\x1f.stillhouse.v1.ExciseStampOrderR\x06orders\x12K\n" +
-	"\tsummaries\x18\x02 \x03(\v2-.stillhouse.v1.ExciseStampJurisdictionSummaryR\tsummaries*\xb8\x01\n" +
+	"\tsummaries\x18\x02 \x03(\v2-.stillhouse.v1.ExciseStampJurisdictionSummaryR\tsummaries\"W\n" +
+	"\x11VoidStampsRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\"K\n" +
+	"\x12VoidStampsResponse\x125\n" +
+	"\x05order\x18\x01 \x01(\v2\x1f.stillhouse.v1.ExciseStampOrderR\x05order*\xb8\x01\n" +
 	"\x16ExciseStampOrderStatus\x12)\n" +
 	"%EXCISE_STAMP_ORDER_STATUS_UNSPECIFIED\x10\x00\x12%\n" +
 	"!EXCISE_STAMP_ORDER_STATUS_ORDERED\x10\x01\x12&\n" +
 	"\"EXCISE_STAMP_ORDER_STATUS_RECEIVED\x10\x02\x12$\n" +
-	" EXCISE_STAMP_ORDER_STATUS_CLOSED\x10\x032\xc3\x02\n" +
+	" EXCISE_STAMP_ORDER_STATUS_CLOSED\x10\x032\x96\x03\n" +
 	"\x12ExciseStampService\x12c\n" +
 	"\x10CreateStampOrder\x12&.stillhouse.v1.CreateStampOrderRequest\x1a'.stillhouse.v1.CreateStampOrderResponse\x12f\n" +
 	"\x11ReceiveStampOrder\x12'.stillhouse.v1.ReceiveStampOrderRequest\x1a(.stillhouse.v1.ReceiveStampOrderResponse\x12`\n" +
-	"\x0fListStampOrders\x12%.stillhouse.v1.ListStampOrdersRequest\x1a&.stillhouse.v1.ListStampOrdersResponseB\xd4\x01\n" +
+	"\x0fListStampOrders\x12%.stillhouse.v1.ListStampOrdersRequest\x1a&.stillhouse.v1.ListStampOrdersResponse\x12Q\n" +
+	"\n" +
+	"VoidStamps\x12 .stillhouse.v1.VoidStampsRequest\x1a!.stillhouse.v1.VoidStampsResponseB\xd4\x01\n" +
 	"\x11com.stillhouse.v1B\x10ExciseStampProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -717,7 +829,7 @@ func file_stillhouse_v1_excise_stamp_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_excise_stamp_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_excise_stamp_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_stillhouse_v1_excise_stamp_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_stillhouse_v1_excise_stamp_proto_goTypes = []any{
 	(ExciseStampOrderStatus)(0),            // 0: stillhouse.v1.ExciseStampOrderStatus
 	(*ExciseStampOrder)(nil),               // 1: stillhouse.v1.ExciseStampOrder
@@ -728,30 +840,35 @@ var file_stillhouse_v1_excise_stamp_proto_goTypes = []any{
 	(*ReceiveStampOrderResponse)(nil),      // 6: stillhouse.v1.ReceiveStampOrderResponse
 	(*ListStampOrdersRequest)(nil),         // 7: stillhouse.v1.ListStampOrdersRequest
 	(*ListStampOrdersResponse)(nil),        // 8: stillhouse.v1.ListStampOrdersResponse
-	(*timestamppb.Timestamp)(nil),          // 9: google.protobuf.Timestamp
+	(*VoidStampsRequest)(nil),              // 9: stillhouse.v1.VoidStampsRequest
+	(*VoidStampsResponse)(nil),             // 10: stillhouse.v1.VoidStampsResponse
+	(*timestamppb.Timestamp)(nil),          // 11: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_excise_stamp_proto_depIdxs = []int32{
-	9,  // 0: stillhouse.v1.ExciseStampOrder.ordered_at:type_name -> google.protobuf.Timestamp
-	9,  // 1: stillhouse.v1.ExciseStampOrder.received_at:type_name -> google.protobuf.Timestamp
+	11, // 0: stillhouse.v1.ExciseStampOrder.ordered_at:type_name -> google.protobuf.Timestamp
+	11, // 1: stillhouse.v1.ExciseStampOrder.received_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.ExciseStampOrder.status:type_name -> stillhouse.v1.ExciseStampOrderStatus
-	9,  // 3: stillhouse.v1.ExciseStampOrder.created_at:type_name -> google.protobuf.Timestamp
-	9,  // 4: stillhouse.v1.ExciseStampOrder.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 3: stillhouse.v1.ExciseStampOrder.created_at:type_name -> google.protobuf.Timestamp
+	11, // 4: stillhouse.v1.ExciseStampOrder.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 5: stillhouse.v1.CreateStampOrderResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
-	9,  // 6: stillhouse.v1.ReceiveStampOrderRequest.received_at:type_name -> google.protobuf.Timestamp
+	11, // 6: stillhouse.v1.ReceiveStampOrderRequest.received_at:type_name -> google.protobuf.Timestamp
 	1,  // 7: stillhouse.v1.ReceiveStampOrderResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
 	1,  // 8: stillhouse.v1.ListStampOrdersResponse.orders:type_name -> stillhouse.v1.ExciseStampOrder
 	2,  // 9: stillhouse.v1.ListStampOrdersResponse.summaries:type_name -> stillhouse.v1.ExciseStampJurisdictionSummary
-	3,  // 10: stillhouse.v1.ExciseStampService.CreateStampOrder:input_type -> stillhouse.v1.CreateStampOrderRequest
-	5,  // 11: stillhouse.v1.ExciseStampService.ReceiveStampOrder:input_type -> stillhouse.v1.ReceiveStampOrderRequest
-	7,  // 12: stillhouse.v1.ExciseStampService.ListStampOrders:input_type -> stillhouse.v1.ListStampOrdersRequest
-	4,  // 13: stillhouse.v1.ExciseStampService.CreateStampOrder:output_type -> stillhouse.v1.CreateStampOrderResponse
-	6,  // 14: stillhouse.v1.ExciseStampService.ReceiveStampOrder:output_type -> stillhouse.v1.ReceiveStampOrderResponse
-	8,  // 15: stillhouse.v1.ExciseStampService.ListStampOrders:output_type -> stillhouse.v1.ListStampOrdersResponse
-	13, // [13:16] is the sub-list for method output_type
-	10, // [10:13] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	1,  // 10: stillhouse.v1.VoidStampsResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
+	3,  // 11: stillhouse.v1.ExciseStampService.CreateStampOrder:input_type -> stillhouse.v1.CreateStampOrderRequest
+	5,  // 12: stillhouse.v1.ExciseStampService.ReceiveStampOrder:input_type -> stillhouse.v1.ReceiveStampOrderRequest
+	7,  // 13: stillhouse.v1.ExciseStampService.ListStampOrders:input_type -> stillhouse.v1.ListStampOrdersRequest
+	9,  // 14: stillhouse.v1.ExciseStampService.VoidStamps:input_type -> stillhouse.v1.VoidStampsRequest
+	4,  // 15: stillhouse.v1.ExciseStampService.CreateStampOrder:output_type -> stillhouse.v1.CreateStampOrderResponse
+	6,  // 16: stillhouse.v1.ExciseStampService.ReceiveStampOrder:output_type -> stillhouse.v1.ReceiveStampOrderResponse
+	8,  // 17: stillhouse.v1.ExciseStampService.ListStampOrders:output_type -> stillhouse.v1.ListStampOrdersResponse
+	10, // 18: stillhouse.v1.ExciseStampService.VoidStamps:output_type -> stillhouse.v1.VoidStampsResponse
+	15, // [15:19] is the sub-list for method output_type
+	11, // [11:15] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_excise_stamp_proto_init() }
@@ -765,7 +882,7 @@ func file_stillhouse_v1_excise_stamp_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_excise_stamp_proto_rawDesc), len(file_stillhouse_v1_excise_stamp_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

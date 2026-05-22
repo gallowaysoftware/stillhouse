@@ -63,6 +63,7 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.ExciseStampService/CreateStampOrder":  roleOperator,
 	"/stillhouse.v1.ExciseStampService/ReceiveStampOrder": roleOperator,
 	"/stillhouse.v1.ExciseStampService/ListStampOrders":   roleViewer,
+	"/stillhouse.v1.ExciseStampService/VoidStamps":        roleOperator,
 
 	// FermentationService
 	"/stillhouse.v1.FermentationService/CreateFermentationRun":  roleOperator,
