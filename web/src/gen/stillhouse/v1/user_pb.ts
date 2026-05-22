@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/user.proto.
  */
 export const file_stillhouse_v1_user: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL3VzZXIucHJvdG8SDXN0aWxsaG91c2UudjEi0QEKBFVzZXISCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg0KBWVtYWlsGAMgASgJEhQKDGRpc3BsYXlfbmFtZRgEIAEoCRIlCgRyb2xlGAUgASgOMhcuc3RpbGxob3VzZS52MS5Vc2VyUm9sZRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIOCgxHZXRNZVJlcXVlc3QiWQoNR2V0TWVSZXNwb25zZRIhCgR1c2VyGAEgASgLMhMuc3RpbGxob3VzZS52MS5Vc2VyEiUKBnRlbmFudBgCIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Il8KEUNyZWF0ZVVzZXJSZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIlCgRyb2xlGAMgASgOMhcuc3RpbGxob3VzZS52MS5Vc2VyUm9sZSJRChJDcmVhdGVVc2VyUmVzcG9uc2USIQoEdXNlchgBIAEoCzITLnN0aWxsaG91c2UudjEuVXNlchIYChBpbml0aWFsX3Bhc3N3b3JkGAIgASgJIhIKEExpc3RVc2Vyc1JlcXVlc3QiNwoRTGlzdFVzZXJzUmVzcG9uc2USIgoFdXNlcnMYASADKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXIqaAoIVXNlclJvbGUSGQoVVVNFUl9ST0xFX1VOU1BFQ0lGSUVEEAASEwoPVVNFUl9ST0xFX09XTkVSEAESFgoSVVNFUl9ST0xFX09QRVJBVE9SEAISFAoQVVNFUl9ST0xFX1ZJRVdFUhADMvQBCgtVc2VyU2VydmljZRJCCgVHZXRNZRIbLnN0aWxsaG91c2UudjEuR2V0TWVSZXF1ZXN0Ghwuc3RpbGxob3VzZS52MS5HZXRNZVJlc3BvbnNlElEKCkNyZWF0ZVVzZXISIC5zdGlsbGhvdXNlLnYxLkNyZWF0ZVVzZXJSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5DcmVhdGVVc2VyUmVzcG9uc2USTgoJTGlzdFVzZXJzEh8uc3RpbGxob3VzZS52MS5MaXN0VXNlcnNSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5MaXN0VXNlcnNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_tenant]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL3VzZXIucHJvdG8SDXN0aWxsaG91c2UudjEi0QEKBFVzZXISCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEg0KBWVtYWlsGAMgASgJEhQKDGRpc3BsYXlfbmFtZRgEIAEoCRIlCgRyb2xlGAUgASgOMhcuc3RpbGxob3VzZS52MS5Vc2VyUm9sZRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIOCgxHZXRNZVJlcXVlc3QiWQoNR2V0TWVSZXNwb25zZRIhCgR1c2VyGAEgASgLMhMuc3RpbGxob3VzZS52MS5Vc2VyEiUKBnRlbmFudBgCIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Il8KEUNyZWF0ZVVzZXJSZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhQKDGRpc3BsYXlfbmFtZRgCIAEoCRIlCgRyb2xlGAMgASgOMhcuc3RpbGxob3VzZS52MS5Vc2VyUm9sZSJRChJDcmVhdGVVc2VyUmVzcG9uc2USIQoEdXNlchgBIAEoCzITLnN0aWxsaG91c2UudjEuVXNlchIYChBpbml0aWFsX3Bhc3N3b3JkGAIgASgJIhIKEExpc3RVc2Vyc1JlcXVlc3QiNwoRTGlzdFVzZXJzUmVzcG9uc2USIgoFdXNlcnMYASADKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXIiSQoXQ2hhbmdlTXlQYXNzd29yZFJlcXVlc3QSGAoQY3VycmVudF9wYXNzd29yZBgBIAEoCRIUCgxuZXdfcGFzc3dvcmQYAiABKAkiGgoYQ2hhbmdlTXlQYXNzd29yZFJlc3BvbnNlKmgKCFVzZXJSb2xlEhkKFVVTRVJfUk9MRV9VTlNQRUNJRklFRBAAEhMKD1VTRVJfUk9MRV9PV05FUhABEhYKElVTRVJfUk9MRV9PUEVSQVRPUhACEhQKEFVTRVJfUk9MRV9WSUVXRVIQAzLZAgoLVXNlclNlcnZpY2USQgoFR2V0TWUSGy5zdGlsbGhvdXNlLnYxLkdldE1lUmVxdWVzdBocLnN0aWxsaG91c2UudjEuR2V0TWVSZXNwb25zZRJRCgpDcmVhdGVVc2VyEiAuc3RpbGxob3VzZS52MS5DcmVhdGVVc2VyUmVxdWVzdBohLnN0aWxsaG91c2UudjEuQ3JlYXRlVXNlclJlc3BvbnNlEk4KCUxpc3RVc2VycxIfLnN0aWxsaG91c2UudjEuTGlzdFVzZXJzUmVxdWVzdBogLnN0aWxsaG91c2UudjEuTGlzdFVzZXJzUmVzcG9uc2USYwoQQ2hhbmdlTXlQYXNzd29yZBImLnN0aWxsaG91c2UudjEuQ2hhbmdlTXlQYXNzd29yZFJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLkNoYW5nZU15UGFzc3dvcmRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_tenant]);
 
 /**
  * @generated from message stillhouse.v1.User
@@ -182,6 +182,41 @@ export const ListUsersResponseSchema: GenMessage<ListUsersResponse> = /*@__PURE_
   messageDesc(file_stillhouse_v1_user, 6);
 
 /**
+ * @generated from message stillhouse.v1.ChangeMyPasswordRequest
+ */
+export type ChangeMyPasswordRequest = Message<"stillhouse.v1.ChangeMyPasswordRequest"> & {
+  /**
+   * @generated from field: string current_password = 1;
+   */
+  currentPassword: string;
+
+  /**
+   * @generated from field: string new_password = 2;
+   */
+  newPassword: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.ChangeMyPasswordRequest.
+ * Use `create(ChangeMyPasswordRequestSchema)` to create a new message.
+ */
+export const ChangeMyPasswordRequestSchema: GenMessage<ChangeMyPasswordRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_user, 7);
+
+/**
+ * @generated from message stillhouse.v1.ChangeMyPasswordResponse
+ */
+export type ChangeMyPasswordResponse = Message<"stillhouse.v1.ChangeMyPasswordResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.ChangeMyPasswordResponse.
+ * Use `create(ChangeMyPasswordResponseSchema)` to create a new message.
+ */
+export const ChangeMyPasswordResponseSchema: GenMessage<ChangeMyPasswordResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_user, 8);
+
+/**
  * @generated from enum stillhouse.v1.UserRole
  */
 export enum UserRole {
@@ -239,6 +274,14 @@ export const UserService: GenService<{
     methodKind: "unary";
     input: typeof ListUsersRequestSchema;
     output: typeof ListUsersResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.UserService.ChangeMyPassword
+   */
+  changeMyPassword: {
+    methodKind: "unary";
+    input: typeof ChangeMyPasswordRequestSchema;
+    output: typeof ChangeMyPasswordResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_user, 0);

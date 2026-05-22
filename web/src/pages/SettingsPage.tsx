@@ -6,7 +6,7 @@ import { create } from "@bufbuild/protobuf";
 import { Shell } from "@/components/Shell";
 import { tenantClient, userClient } from "@/lib/clients";
 import { UpdateTenantRequestSchema } from "@/gen/stillhouse/v1/tenant_pb";
-import { CreateUserRequestSchema, UserRole } from "@/gen/stillhouse/v1/user_pb";
+import { ChangeMyPasswordRequestSchema, CreateUserRequestSchema, UserRole } from "@/gen/stillhouse/v1/user_pb";
 
 const roleLabels: Record<UserRole, string> = {
   [UserRole.UNSPECIFIED]: "—",
@@ -117,7 +117,71 @@ export function SettingsPage() {
         users={users.data?.users ?? []}
         onCreated={() => qc.invalidateQueries({ queryKey: ["listUsers"] })}
       />
+
+      <ChangePasswordPanel />
     </Shell>
+  );
+}
+
+function ChangePasswordPanel() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [done, setDone] = useState(false);
+
+  const change = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof ChangeMyPasswordRequestSchema>>) =>
+      userClient.changeMyPassword(msg),
+    onSuccess: () => {
+      setDone(true);
+      setCurrentPassword(""); setNewPassword(""); setConfirm("");
+      setTimeout(() => setDone(false), 5000);
+    },
+  });
+  const mismatch = newPassword !== "" && newPassword !== confirm;
+  const tooShort = newPassword !== "" && newPassword.length < 12;
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    if (mismatch || tooShort) return;
+    change.mutate(
+      create(ChangeMyPasswordRequestSchema, { currentPassword, newPassword }),
+    );
+  }
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Change my password</h2>
+      <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">Current password</label>
+          <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" autoComplete="current-password" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">New password (12+ chars)</label>
+          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-stone-600">Confirm new password</label>
+          <input value={confirm} onChange={(e) => setConfirm(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+        </div>
+        <div className="col-span-3 flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={change.isPending || mismatch || tooShort}
+            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          >
+            {change.isPending ? "Updating…" : "Update password"}
+          </button>
+          {done && <span className="text-sm text-emerald-700">Password updated.</span>}
+          {mismatch && <span className="text-sm text-red-600">Passwords don't match.</span>}
+          {tooShort && !mismatch && <span className="text-sm text-red-600">Must be at least 12 characters.</span>}
+          {change.error && (
+            <span className="text-sm text-red-600">
+              {change.error instanceof ConnectError ? change.error.rawMessage : String(change.error)}
+            </span>
+          )}
+        </div>
+      </form>
+    </section>
   );
 }
 

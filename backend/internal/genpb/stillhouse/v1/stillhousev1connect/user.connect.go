@@ -39,6 +39,9 @@ const (
 	UserServiceCreateUserProcedure = "/stillhouse.v1.UserService/CreateUser"
 	// UserServiceListUsersProcedure is the fully-qualified name of the UserService's ListUsers RPC.
 	UserServiceListUsersProcedure = "/stillhouse.v1.UserService/ListUsers"
+	// UserServiceChangeMyPasswordProcedure is the fully-qualified name of the UserService's
+	// ChangeMyPassword RPC.
+	UserServiceChangeMyPasswordProcedure = "/stillhouse.v1.UserService/ChangeMyPassword"
 )
 
 // UserServiceClient is a client for the stillhouse.v1.UserService service.
@@ -46,6 +49,7 @@ type UserServiceClient interface {
 	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
 	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
 	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
+	ChangeMyPassword(context.Context, *connect.Request[v1.ChangeMyPasswordRequest]) (*connect.Response[v1.ChangeMyPasswordResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the stillhouse.v1.UserService service. By default,
@@ -77,14 +81,21 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("ListUsers")),
 			connect.WithClientOptions(opts...),
 		),
+		changeMyPassword: connect.NewClient[v1.ChangeMyPasswordRequest, v1.ChangeMyPasswordResponse](
+			httpClient,
+			baseURL+UserServiceChangeMyPasswordProcedure,
+			connect.WithSchema(userServiceMethods.ByName("ChangeMyPassword")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	getMe      *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
-	createUser *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
-	listUsers  *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
+	getMe            *connect.Client[v1.GetMeRequest, v1.GetMeResponse]
+	createUser       *connect.Client[v1.CreateUserRequest, v1.CreateUserResponse]
+	listUsers        *connect.Client[v1.ListUsersRequest, v1.ListUsersResponse]
+	changeMyPassword *connect.Client[v1.ChangeMyPasswordRequest, v1.ChangeMyPasswordResponse]
 }
 
 // GetMe calls stillhouse.v1.UserService.GetMe.
@@ -102,11 +113,17 @@ func (c *userServiceClient) ListUsers(ctx context.Context, req *connect.Request[
 	return c.listUsers.CallUnary(ctx, req)
 }
 
+// ChangeMyPassword calls stillhouse.v1.UserService.ChangeMyPassword.
+func (c *userServiceClient) ChangeMyPassword(ctx context.Context, req *connect.Request[v1.ChangeMyPasswordRequest]) (*connect.Response[v1.ChangeMyPasswordResponse], error) {
+	return c.changeMyPassword.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the stillhouse.v1.UserService service.
 type UserServiceHandler interface {
 	GetMe(context.Context, *connect.Request[v1.GetMeRequest]) (*connect.Response[v1.GetMeResponse], error)
 	CreateUser(context.Context, *connect.Request[v1.CreateUserRequest]) (*connect.Response[v1.CreateUserResponse], error)
 	ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error)
+	ChangeMyPassword(context.Context, *connect.Request[v1.ChangeMyPasswordRequest]) (*connect.Response[v1.ChangeMyPasswordResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -134,6 +151,12 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("ListUsers")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceChangeMyPasswordHandler := connect.NewUnaryHandler(
+		UserServiceChangeMyPasswordProcedure,
+		svc.ChangeMyPassword,
+		connect.WithSchema(userServiceMethods.ByName("ChangeMyPassword")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceGetMeProcedure:
@@ -142,6 +165,8 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 			userServiceCreateUserHandler.ServeHTTP(w, r)
 		case UserServiceListUsersProcedure:
 			userServiceListUsersHandler.ServeHTTP(w, r)
+		case UserServiceChangeMyPasswordProcedure:
+			userServiceChangeMyPasswordHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -161,4 +186,8 @@ func (UnimplementedUserServiceHandler) CreateUser(context.Context, *connect.Requ
 
 func (UnimplementedUserServiceHandler) ListUsers(context.Context, *connect.Request[v1.ListUsersRequest]) (*connect.Response[v1.ListUsersResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.UserService.ListUsers is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) ChangeMyPassword(context.Context, *connect.Request[v1.ChangeMyPasswordRequest]) (*connect.Response[v1.ChangeMyPasswordResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.UserService.ChangeMyPassword is not implemented"))
 }

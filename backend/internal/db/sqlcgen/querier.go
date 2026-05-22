@@ -131,6 +131,7 @@ type Querier interface {
 	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
+	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 }

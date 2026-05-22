@@ -96,6 +96,45 @@ func (s *UserService) CreateUser(
 	}), nil
 }
 
+// ChangeMyPassword updates the calling user's password after verifying
+// the current one. The session stays valid (we don't force re-login).
+func (s *UserService) ChangeMyPassword(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.ChangeMyPasswordRequest],
+) (*connect.Response[stillhousev1.ChangeMyPasswordResponse], error) {
+	caller, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	in := req.Msg
+	if in.GetCurrentPassword() == "" || in.GetNewPassword() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("current_password and new_password are required"))
+	}
+	if len(in.GetNewPassword()) < 12 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("new_password must be at least 12 characters"))
+	}
+	if err := auth.VerifyPassword(in.GetCurrentPassword(), caller.PasswordHash); err != nil {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("current password is incorrect"))
+	}
+	hash, err := auth.HashPassword(in.GetNewPassword())
+	if err != nil {
+		s.logger.Error("ChangeMyPassword: hash", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if _, err := s.q.UpdateUserPassword(ctx, sqlcgen.UpdateUserPasswordParams{
+		ID:           caller.ID,
+		PasswordHash: hash,
+	}); err != nil {
+		s.logger.Error("ChangeMyPassword: update", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if err := audit.Write(ctx, s.q, caller.TenantID, caller.ID, "user", caller.ID.String(),
+		sqlcgen.AuditActionUpdate, map[string]any{"event": "password_changed"}); err != nil {
+		s.logger.Warn("ChangeMyPassword: audit", "err", err)
+	}
+	return connect.NewResponse(&stillhousev1.ChangeMyPasswordResponse{}), nil
+}
+
 func (s *UserService) ListUsers(
 	ctx context.Context,
 	_ *connect.Request[stillhousev1.ListUsersRequest],
