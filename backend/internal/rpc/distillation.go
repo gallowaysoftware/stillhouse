@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
@@ -254,10 +252,7 @@ func (s *DistillationService) AddDistillationCut(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	observed := pgtype.Timestamptz{Valid: true, Time: time.Now()}
-	if t := req.Msg.GetObservedAt().AsTime(); !t.IsZero() {
-		observed.Time = t
-	}
+	observed := timestampOrNow(req.Msg.GetObservedAt())
 	order := req.Msg.GetCutOrder()
 	if order == 0 {
 		order = 1
@@ -317,10 +312,7 @@ func (s *DistillationService) RecordProductionGauge(
 	if in.GetAbvPct() < 0 || in.GetAbvPct() > 100 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("abv_pct must be in [0, 100]"))
 	}
-	gaugeTS := pgtype.Timestamptz{Valid: true, Time: time.Now()}
-	if t := in.GetGaugeDate().AsTime(); !t.IsZero() {
-		gaugeTS.Time = t
-	}
+	gaugeTS := timestampOrNow(in.GetGaugeDate())
 
 	var (
 		gauge   sqlcgen.ProductionGauge

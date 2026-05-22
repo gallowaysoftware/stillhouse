@@ -221,12 +221,7 @@ func (s *MaterialService) RecordMaterialReceipt(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("quantity_received must be > 0"))
 	}
 
-	received := pgtype.Timestamptz{Valid: true}
-	if t := in.GetReceivedAt().AsTime(); !t.IsZero() {
-		received.Time = t
-	} else {
-		received.Valid = false // sqlc will let DB default to NOW()
-	}
+	received := timestampOrNow(in.GetReceivedAt())
 
 	var lot sqlcgen.MaterialLot
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {

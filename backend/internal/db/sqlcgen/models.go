@@ -58,6 +58,52 @@ func (ns NullAuditAction) Value() (driver.Value, error) {
 	return string(ns.AuditAction), nil
 }
 
+type BarrelEventKind string
+
+const (
+	BarrelEventKindFill    BarrelEventKind = "fill"
+	BarrelEventKindRegauge BarrelEventKind = "regauge"
+	BarrelEventKindSample  BarrelEventKind = "sample"
+	BarrelEventKindDump    BarrelEventKind = "dump"
+	BarrelEventKindMove    BarrelEventKind = "move"
+	BarrelEventKindDestroy BarrelEventKind = "destroy"
+)
+
+func (e *BarrelEventKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BarrelEventKind(s)
+	case string:
+		*e = BarrelEventKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BarrelEventKind: %T", src)
+	}
+	return nil
+}
+
+type NullBarrelEventKind struct {
+	BarrelEventKind BarrelEventKind `json:"barrel_event_kind"`
+	Valid           bool            `json:"valid"` // Valid is true if BarrelEventKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBarrelEventKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.BarrelEventKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BarrelEventKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBarrelEventKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BarrelEventKind), nil
+}
+
 type BulkContainerKind string
 
 const (
@@ -68,6 +114,7 @@ const (
 	BulkContainerKindBlendTank      BulkContainerKind = "blend_tank"
 	BulkContainerKindBottlingTank   BulkContainerKind = "bottling_tank"
 	BulkContainerKindOther          BulkContainerKind = "other"
+	BulkContainerKindBarrel         BulkContainerKind = "barrel"
 )
 
 func (e *BulkContainerKind) Scan(src interface{}) error {
@@ -530,6 +577,38 @@ type AuditEvent struct {
 	Action     AuditAction        `json:"action"`
 	OccurredAt pgtype.Timestamptz `json:"occurred_at"`
 	Payload    []byte             `json:"payload"`
+}
+
+type BarrelAttribute struct {
+	ContainerID       uuid.UUID   `json:"container_id"`
+	TenantID          uuid.UUID   `json:"tenant_id"`
+	CooperageSupplier string      `json:"cooperage_supplier"`
+	CharLevel         pgtype.Int4 `json:"char_level"`
+	WoodSpecies       string      `json:"wood_species"`
+	PriorUse          string      `json:"prior_use"`
+	SerialBurnin      string      `json:"serial_burnin"`
+	Rickhouse         string      `json:"rickhouse"`
+	RowPosition       string      `json:"row_position"`
+	LevelPosition     string      `json:"level_position"`
+	ColumnPosition    string      `json:"column_position"`
+	FillDate          pgtype.Date `json:"fill_date"`
+	DaysAgedAtDump    pgtype.Int4 `json:"days_aged_at_dump"`
+}
+
+type BarrelEvent struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	ContainerID    uuid.UUID          `json:"container_id"`
+	Kind           BarrelEventKind    `json:"kind"`
+	EventDate      pgtype.Timestamptz `json:"event_date"`
+	VolumeL        pgtype.Float8      `json:"volume_l"`
+	AbvPct         pgtype.Float8      `json:"abv_pct"`
+	Laa            pgtype.Float8      `json:"laa"`
+	BulkMovementID uuid.NullUUID      `json:"bulk_movement_id"`
+	LocationAfter  string             `json:"location_after"`
+	Notes          string             `json:"notes"`
+	UserID         uuid.NullUUID      `json:"user_id"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 type BulkContainer struct {

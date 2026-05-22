@@ -18,6 +18,7 @@ type Querier interface {
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	CountTenants(ctx context.Context) (int64, error)
+	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
@@ -30,6 +31,7 @@ type Querier interface {
 	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
 	GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
@@ -43,7 +45,10 @@ type Querier interface {
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
+	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
+	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
+	ListBarrels(ctx context.Context, includeArchived bool) ([]ListBarrelsRow, error)
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
@@ -64,6 +69,8 @@ type Querier interface {
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
+	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
+	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error

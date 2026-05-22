@@ -12,6 +12,7 @@ const navItems = [
   { to: "/fermentations", label: "Fermentations" },
   { to: "/distillations", label: "Distillations" },
   { to: "/bulk", label: "Bulk inventory" },
+  { to: "/barrels", label: "Barrels" },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {

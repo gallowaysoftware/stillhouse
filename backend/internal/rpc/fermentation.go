@@ -4,12 +4,10 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
@@ -42,10 +40,7 @@ func (s *FermentationService) CreateFermentationRun(
 	if in.GetFermenterLabel() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("fermenter_label is required"))
 	}
-	pitch := pgtype.Timestamptz{Valid: true, Time: time.Now()}
-	if t := in.GetPitchAt().AsTime(); !t.IsZero() {
-		pitch.Time = t
-	}
+	pitch := timestampOrNow(in.GetPitchAt())
 	var yeastID uuid.NullUUID
 	if s := in.GetYeastMaterialId(); s != "" {
 		id, e := uuid.Parse(s)
@@ -261,10 +256,7 @@ func (s *FermentationService) AddFermentationLog(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid fermentation_run_id"))
 	}
-	observed := pgtype.Timestamptz{Valid: true, Time: time.Now()}
-	if t := req.Msg.GetObservedAt().AsTime(); !t.IsZero() {
-		observed.Time = t
-	}
+	observed := timestampOrNow(req.Msg.GetObservedAt())
 
 	var inserted sqlcgen.FermentationLog
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {

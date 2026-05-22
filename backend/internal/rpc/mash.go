@@ -279,10 +279,7 @@ func (s *MashService) AddMashMetric(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	observed := pgtype.Timestamptz{Valid: true, Time: time.Now()}
-	if t := req.Msg.GetObservedAt().AsTime(); !t.IsZero() {
-		observed.Time = t
-	}
+	observed := timestampOrNow(req.Msg.GetObservedAt())
 
 	var inserted sqlcgen.MashMetric
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {

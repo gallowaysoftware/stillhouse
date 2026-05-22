@@ -1,5 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
+import { BarrelDetailPage } from "./pages/BarrelDetailPage";
+import { BarrelsPage } from "./pages/BarrelsPage";
 import { BulkContainerDetailPage } from "./pages/BulkContainerDetailPage";
 import { BulkPage } from "./pages/BulkPage";
 import { DistillationDetailPage } from "./pages/DistillationDetailPage";
@@ -35,6 +37,8 @@ export function App() {
       <Route path="/distillations/:id" element={<Guarded><DistillationDetailPage /></Guarded>} />
       <Route path="/bulk" element={<Guarded><BulkPage /></Guarded>} />
       <Route path="/bulk/:id" element={<Guarded><BulkContainerDetailPage /></Guarded>} />
+      <Route path="/barrels" element={<Guarded><BarrelsPage /></Guarded>} />
+      <Route path="/barrels/:id" element={<Guarded><BarrelDetailPage /></Guarded>} />
     </Routes>
   );
 }

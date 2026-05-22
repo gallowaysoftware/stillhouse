@@ -3,10 +3,13 @@ package rpc
 import (
 	"context"
 	"errors"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/alexedwards/scs/v2"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 )
@@ -58,4 +61,16 @@ func NewAuthInterceptor(sm *scs.SessionManager, q *sqlcgen.Queries) connect.Unar
 func CurrentUser(ctx context.Context) (sqlcgen.User, bool) {
 	u, ok := ctx.Value(ctxUser).(sqlcgen.User)
 	return u, ok
+}
+
+// timestampOrNow returns ts converted to a Timestamptz when the protobuf
+// Timestamp is actually populated, otherwise the current time. The plain
+// `proto.GetX().AsTime()` pattern is unsafe: when the field is unset
+// (nil pointer), AsTime returns the Unix epoch (1970-01-01), not the Go
+// zero value, so an .IsZero() check passes through bogus 1970 timestamps.
+func timestampOrNow(ts *timestamppb.Timestamp) pgtype.Timestamptz {
+	if ts == nil {
+		return pgtype.Timestamptz{Valid: true, Time: time.Now()}
+	}
+	return pgtype.Timestamptz{Valid: true, Time: ts.AsTime()}
 }

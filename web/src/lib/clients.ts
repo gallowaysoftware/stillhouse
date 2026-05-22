@@ -1,6 +1,7 @@
 import { createClient } from "@connectrpc/connect";
 
 import { AuthService } from "@/gen/stillhouse/v1/auth_pb";
+import { BarrelService } from "@/gen/stillhouse/v1/barrel_pb";
 import { BulkService } from "@/gen/stillhouse/v1/bulk_pb";
 import { DistillationService } from "@/gen/stillhouse/v1/distillation_pb";
 import { FermentationService } from "@/gen/stillhouse/v1/fermentation_pb";
@@ -21,3 +22,4 @@ export const mashClient = createClient(MashService, transport);
 export const fermentationClient = createClient(FermentationService, transport);
 export const bulkClient = createClient(BulkService, transport);
 export const distillationClient = createClient(DistillationService, transport);
+export const barrelClient = createClient(BarrelService, transport);

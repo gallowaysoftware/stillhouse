@@ -1,0 +1,164 @@
+// Barrels are a kind of bulk_container with cooperage attributes and a
+// maturation clock. Fill / dump events flow through the bulk_movements
+// ledger so the alcohol ledger stays unified.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum BarrelEventKind {
+  BARREL_EVENT_KIND_UNSPECIFIED = 0;
+  BARREL_EVENT_KIND_FILL = 1;
+  BARREL_EVENT_KIND_REGAUGE = 2;
+  BARREL_EVENT_KIND_SAMPLE = 3;
+  BARREL_EVENT_KIND_DUMP = 4;
+  BARREL_EVENT_KIND_MOVE = 5;
+  BARREL_EVENT_KIND_DESTROY = 6;
+}
+
+// Barrel is the joined view of a bulk_container (kind=barrel) + barrel_attributes
+// + derived maturation info.
+message Barrel {
+  string id = 1;
+  string name = 2;                    // human-friendly label, often the burnin serial
+  double capacity_l = 3;
+  bool   capacity_l_set = 4;
+  string location = 5;
+  string notes = 6;
+  bool   archived = 7;
+
+  // Running balance.
+  double current_volume_l = 8;
+  double current_abv_pct = 9;
+  bool   current_abv_pct_set = 10;
+  double current_laa = 11;
+
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+
+  // Cooperage attributes.
+  string cooperage_supplier = 20;
+  int32  char_level = 21;
+  bool   char_level_set = 22;
+  string wood_species = 23;
+  string prior_use = 24;               // e.g., 'new', 'ex-bourbon', 'ex-wine'
+  string serial_burnin = 25;
+  string rickhouse = 26;
+  string row_position = 27;
+  string level_position = 28;
+  string column_position = 29;
+
+  // Maturation. fill_date is empty for empty barrels; days_aged is 0 then.
+  string fill_date = 40;               // ISO date (YYYY-MM-DD), empty if empty/dumped
+  int32  days_aged = 41;
+  int32  days_aged_at_dump = 42;
+  bool   days_aged_at_dump_set = 43;
+  // Canadian Whisky eligibility per FDR B.02.020: ≥3 years (1095 days)
+  // aging in small wood (≤700 L). small_wood_eligible considers the capacity.
+  bool   small_wood = 50;
+  bool   canadian_whisky_eligible = 51;
+  int32  days_to_canadian_whisky_eligible = 52;
+}
+
+message BarrelEvent {
+  string id = 1;
+  string container_id = 2;
+  BarrelEventKind kind = 3;
+  google.protobuf.Timestamp event_date = 4;
+  double volume_l = 5;
+  bool   volume_l_set = 6;
+  double abv_pct = 7;
+  bool   abv_pct_set = 8;
+  double laa = 9;
+  bool   laa_set = 10;
+  string bulk_movement_id = 11;        // empty for sample/move
+  string location_after = 12;
+  string notes = 13;
+  string user_id = 14;
+  google.protobuf.Timestamp created_at = 15;
+}
+
+// --- requests ---
+
+message CreateBarrelRequest {
+  string name = 1;
+  double capacity_l = 2;
+  bool   capacity_l_set = 3;
+  string cooperage_supplier = 4;
+  int32  char_level = 5;
+  bool   char_level_set = 6;
+  string wood_species = 7;
+  string prior_use = 8;
+  string serial_burnin = 9;
+  string rickhouse = 10;
+  string row_position = 11;
+  string level_position = 12;
+  string column_position = 13;
+  string location = 14;
+  string notes = 15;
+}
+message CreateBarrelResponse { Barrel barrel = 1; }
+
+message ListBarrelsRequest { bool include_archived = 1; }
+message ListBarrelsResponse {
+  repeated Barrel barrels = 1;
+  int32 total_count = 2;
+  int32 aging_count = 3;
+  int32 eligible_count = 4;
+  double total_laa = 5;
+}
+
+message GetBarrelRequest { string id = 1; }
+message GetBarrelResponse {
+  Barrel barrel = 1;
+  repeated BarrelEvent events = 2;
+}
+
+message FillBarrelRequest {
+  string barrel_id = 1;
+  string source_container_id = 2;
+  double volume_l = 3;
+  double abv_pct = 4;
+  google.protobuf.Timestamp event_date = 5;
+  string notes = 6;
+}
+message FillBarrelResponse {
+  BarrelEvent event = 1;
+  Barrel barrel = 2;
+}
+
+message DumpBarrelRequest {
+  string barrel_id = 1;
+  string destination_container_id = 2;
+  double volume_l = 3;                 // actual measured at dump
+  double abv_pct = 4;                  // actual at dump
+  google.protobuf.Timestamp event_date = 5;
+  string notes = 6;
+}
+message DumpBarrelResponse {
+  BarrelEvent event = 1;
+  Barrel barrel = 2;
+}
+
+message RegaugeBarrelRequest {
+  string barrel_id = 1;
+  double new_volume_l = 2;
+  double new_abv_pct = 3;
+  google.protobuf.Timestamp event_date = 4;
+  string notes = 5;
+}
+message RegaugeBarrelResponse {
+  BarrelEvent event = 1;
+  Barrel barrel = 2;
+  double lost_laa = 3;
+}
+
+service BarrelService {
+  rpc CreateBarrel(CreateBarrelRequest) returns (CreateBarrelResponse);
+  rpc ListBarrels(ListBarrelsRequest) returns (ListBarrelsResponse);
+  rpc GetBarrel(GetBarrelRequest) returns (GetBarrelResponse);
+  rpc FillBarrel(FillBarrelRequest) returns (FillBarrelResponse);
+  rpc DumpBarrel(DumpBarrelRequest) returns (DumpBarrelResponse);
+  rpc RegaugeBarrel(RegaugeBarrelRequest) returns (RegaugeBarrelResponse);
+}
