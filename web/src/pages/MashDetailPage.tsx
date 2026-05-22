@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
 import { fermentationClient, mashClient, materialClient } from "@/lib/clients";
+import type { Material, MaterialLot } from "@/gen/stillhouse/v1/material_pb";
 import {
   AddMashIngredientRequestSchema,
   AddMashMetricRequestSchema,
@@ -149,29 +150,17 @@ export function MashDetailPage() {
         <Panel
           title="Ingredients used"
           right={
-            <InlineForm
-              fields={[
-                {
-                  name: "material_id",
-                  label: "Material",
-                  type: "select",
-                  options: (materials.data?.materials ?? []).map((mat) => ({
-                    value: mat.id,
-                    label: mat.name,
-                  })),
-                  required: true,
-                },
-                { name: "quantity_used", label: "Qty", type: "number", required: true, step: "0.01" },
-                { name: "uom", label: "UoM", type: "text", defaultValue: "kg", required: true },
-              ]}
+            <IngredientForm
+              materials={materials.data?.materials ?? []}
               submitting={addIngredient.isPending}
               error={addIngredient.error}
               onSubmit={(values) =>
                 addIngredient.mutate(
                   create(AddMashIngredientRequestSchema, {
                     mashRunId: m.id,
-                    materialId: values.material_id,
-                    quantityUsed: Number(values.quantity_used),
+                    materialId: values.materialId,
+                    materialLotId: values.materialLotId,
+                    quantityUsed: values.quantityUsed,
                     uom: values.uom,
                   }),
                 )
@@ -182,7 +171,7 @@ export function MashDetailPage() {
           <table className="min-w-full divide-y divide-stone-200 text-sm">
             <thead className="text-left text-xs uppercase text-stone-500">
               <tr>
-                <th className="px-3 py-2">Material</th>
+                <th className="px-3 py-2">Material / Lot</th>
                 <th className="px-3 py-2 text-right">Qty</th>
                 <th className="px-3 py-2">UoM</th>
               </tr>
@@ -197,7 +186,17 @@ export function MashDetailPage() {
               )}
               {m.ingredients.map((ing) => (
                 <tr key={ing.id}>
-                  <td className="px-3 py-2 text-stone-900">{ing.materialName}</td>
+                  <td className="px-3 py-2">
+                    <div className="text-stone-900">{ing.materialName}</div>
+                    {ing.supplierLot && (
+                      <div className="text-xs text-stone-500">
+                        lot {ing.supplierLot}
+                        {ing.lotReceivedAt && (
+                          <> · received {new Date(Number(ing.lotReceivedAt.seconds) * 1000).toLocaleDateString()}</>
+                        )}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-right text-stone-600">{formatQty(ing.quantityUsed)}</td>
                   <td className="px-3 py-2 text-stone-600">{ing.uom}</td>
                 </tr>
@@ -351,6 +350,107 @@ type Field = {
   placeholder?: string;
   options?: { value: string; label: string }[];
 };
+
+function IngredientForm({
+  materials,
+  submitting,
+  error,
+  onSubmit,
+}: {
+  materials: Material[];
+  submitting: boolean;
+  error: Error | null;
+  onSubmit: (v: { materialId: string; materialLotId: string; quantityUsed: number; uom: string }) => void;
+}) {
+  const [materialId, setMaterialId] = useState("");
+  const [materialLotId, setMaterialLotId] = useState("");
+  const [qty, setQty] = useState("");
+  const [uom, setUom] = useState("kg");
+
+  // Pull lots on-hand for the selected material. Disabled until a material
+  // is picked so we don't fire a stray no-filter request.
+  const lots = useQuery({
+    queryKey: ["listMaterialLots", "ingredient", materialId],
+    queryFn: () =>
+      materialClient.listMaterialLots({ materialId, onHandOnly: true }),
+    enabled: !!materialId,
+  });
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    onSubmit({ materialId, materialLotId, quantityUsed: Number(qty), uom });
+    setQty("");
+    setMaterialLotId("");
+  }
+
+  return (
+    <form onSubmit={submit} className="flex items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Material</label>
+        <select
+          required
+          value={materialId}
+          onChange={(e) => { setMaterialId(e.target.value); setMaterialLotId(""); }}
+          className="rounded border border-stone-300 px-2 py-1 text-sm"
+        >
+          <option value="">—</option>
+          {materials.map((mat) => (
+            <option key={mat.id} value={mat.id}>{mat.name}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Lot (optional)</label>
+        <select
+          value={materialLotId}
+          onChange={(e) => setMaterialLotId(e.target.value)}
+          disabled={!materialId || lots.isLoading}
+          className="rounded border border-stone-300 px-2 py-1 text-sm disabled:bg-stone-50"
+        >
+          <option value="">(not tracked)</option>
+          {(lots.data?.lots ?? []).map((l: MaterialLot) => (
+            <option key={l.id} value={l.id}>
+              {l.supplierLot || l.id.slice(0, 6)} · {formatQty(l.quantityOnHand)} on hand
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Qty</label>
+        <input
+          required
+          type="number"
+          step="0.01"
+          value={qty}
+          onChange={(e) => setQty(e.target.value)}
+          className="w-24 rounded border border-stone-300 px-2 py-1 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">UoM</label>
+        <input
+          required
+          type="text"
+          value={uom}
+          onChange={(e) => setUom(e.target.value)}
+          className="w-16 rounded border border-stone-300 px-2 py-1 text-sm"
+        />
+      </div>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+      >
+        {submitting ? "…" : "Add"}
+      </button>
+      {error && (
+        <span className="text-xs text-red-600">
+          {error instanceof ConnectError ? error.rawMessage : String(error)}
+        </span>
+      )}
+    </form>
+  );
+}
 
 function ProjStat({
   label, value, hint, highlight,

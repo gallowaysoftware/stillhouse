@@ -14,19 +14,20 @@ import (
 
 const addMashIngredient = `-- name: AddMashIngredient :one
 INSERT INTO mash_ingredient_usage (
-    tenant_id, mash_run_id, material_id, quantity_used, uom, notes
+    tenant_id, mash_run_id, material_id, material_lot_id, quantity_used, uom, notes
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, mash_run_id, material_id, quantity_used, uom, notes, created_at
+    $1, $2, $3, $4, $5, $6, $7
+) RETURNING id, tenant_id, mash_run_id, material_id, quantity_used, uom, notes, created_at, material_lot_id
 `
 
 type AddMashIngredientParams struct {
-	TenantID     uuid.UUID `json:"tenant_id"`
-	MashRunID    uuid.UUID `json:"mash_run_id"`
-	MaterialID   uuid.UUID `json:"material_id"`
-	QuantityUsed float64   `json:"quantity_used"`
-	Uom          string    `json:"uom"`
-	Notes        string    `json:"notes"`
+	TenantID      uuid.UUID     `json:"tenant_id"`
+	MashRunID     uuid.UUID     `json:"mash_run_id"`
+	MaterialID    uuid.UUID     `json:"material_id"`
+	MaterialLotID uuid.NullUUID `json:"material_lot_id"`
+	QuantityUsed  float64       `json:"quantity_used"`
+	Uom           string        `json:"uom"`
+	Notes         string        `json:"notes"`
 }
 
 func (q *Queries) AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error) {
@@ -34,6 +35,7 @@ func (q *Queries) AddMashIngredient(ctx context.Context, arg AddMashIngredientPa
 		arg.TenantID,
 		arg.MashRunID,
 		arg.MaterialID,
+		arg.MaterialLotID,
 		arg.QuantityUsed,
 		arg.Uom,
 		arg.Notes,
@@ -48,6 +50,7 @@ func (q *Queries) AddMashIngredient(ctx context.Context, arg AddMashIngredientPa
 		&i.Uom,
 		&i.Notes,
 		&i.CreatedAt,
+		&i.MaterialLotID,
 	)
 	return i, err
 }
@@ -135,6 +138,38 @@ func (q *Queries) CreateMashRun(ctx context.Context, arg CreateMashRunParams) (M
 	return i, err
 }
 
+const debitMaterialLot = `-- name: DebitMaterialLot :one
+UPDATE material_lots
+SET quantity_on_hand = quantity_on_hand - $2
+WHERE id = $1 AND quantity_on_hand >= $2
+RETURNING id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at
+`
+
+type DebitMaterialLotParams struct {
+	ID             uuid.UUID `json:"id"`
+	QuantityOnHand float64   `json:"quantity_on_hand"`
+}
+
+// Debit the on-hand quantity of a lot when a mash consumes from it. Returns
+// the updated row so the caller can warn if the lot is now exhausted.
+func (q *Queries) DebitMaterialLot(ctx context.Context, arg DebitMaterialLotParams) (MaterialLot, error) {
+	row := q.db.QueryRow(ctx, debitMaterialLot, arg.ID, arg.QuantityOnHand)
+	var i MaterialLot
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.MaterialID,
+		&i.SupplierLot,
+		&i.QuantityReceived,
+		&i.QuantityOnHand,
+		&i.ReceivedAt,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getMashRun = `-- name: GetMashRun :one
 SELECT id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at FROM mash_runs WHERE id = $1
 `
@@ -157,12 +192,15 @@ func (q *Queries) GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 }
 
 const listMashIngredients = `-- name: ListMashIngredients :many
-SELECT miu.id, miu.tenant_id, miu.mash_run_id, miu.material_id, miu.quantity_used, miu.uom, miu.notes, miu.created_at,
+SELECT miu.id, miu.tenant_id, miu.mash_run_id, miu.material_id, miu.quantity_used, miu.uom, miu.notes, miu.created_at, miu.material_lot_id,
        m.name AS material_name,
        m.kind AS material_kind,
-       m.extract_pct AS material_extract_pct
+       m.extract_pct AS material_extract_pct,
+       ml.supplier_lot AS supplier_lot,
+       ml.received_at  AS lot_received_at
 FROM mash_ingredient_usage miu
-JOIN materials m ON m.id = miu.material_id
+JOIN materials m            ON m.id = miu.material_id
+LEFT JOIN material_lots ml  ON ml.id = miu.material_lot_id
 WHERE miu.mash_run_id = $1
 ORDER BY m.name
 `
@@ -176,9 +214,12 @@ type ListMashIngredientsRow struct {
 	Uom                string             `json:"uom"`
 	Notes              string             `json:"notes"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
+	MaterialLotID      uuid.NullUUID      `json:"material_lot_id"`
 	MaterialName       string             `json:"material_name"`
 	MaterialKind       MaterialKind       `json:"material_kind"`
 	MaterialExtractPct pgtype.Float8      `json:"material_extract_pct"`
+	SupplierLot        pgtype.Text        `json:"supplier_lot"`
+	LotReceivedAt      pgtype.Timestamptz `json:"lot_received_at"`
 }
 
 func (q *Queries) ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error) {
@@ -199,9 +240,12 @@ func (q *Queries) ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) 
 			&i.Uom,
 			&i.Notes,
 			&i.CreatedAt,
+			&i.MaterialLotID,
 			&i.MaterialName,
 			&i.MaterialKind,
 			&i.MaterialExtractPct,
+			&i.SupplierLot,
+			&i.LotReceivedAt,
 		); err != nil {
 			return nil, err
 		}

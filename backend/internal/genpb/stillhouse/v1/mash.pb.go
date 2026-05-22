@@ -322,6 +322,9 @@ type MashIngredientUsage struct {
 	Uom                   string                 `protobuf:"bytes,9,opt,name=uom,proto3" json:"uom,omitempty"`
 	Notes                 string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
 	CreatedAt             *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	MaterialLotId         string                 `protobuf:"bytes,12,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"` // empty when not lot-linked
+	SupplierLot           string                 `protobuf:"bytes,13,opt,name=supplier_lot,json=supplierLot,proto3" json:"supplier_lot,omitempty"`         // denormalized from material_lots
+	LotReceivedAt         *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=lot_received_at,json=lotReceivedAt,proto3" json:"lot_received_at,omitempty"`
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -429,6 +432,27 @@ func (x *MashIngredientUsage) GetNotes() string {
 func (x *MashIngredientUsage) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
+	}
+	return nil
+}
+
+func (x *MashIngredientUsage) GetMaterialLotId() string {
+	if x != nil {
+		return x.MaterialLotId
+	}
+	return ""
+}
+
+func (x *MashIngredientUsage) GetSupplierLot() string {
+	if x != nil {
+		return x.SupplierLot
+	}
+	return ""
+}
+
+func (x *MashIngredientUsage) GetLotReceivedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LotReceivedAt
 	}
 	return nil
 }
@@ -916,6 +940,7 @@ type AddMashIngredientRequest struct {
 	QuantityUsed  float64                `protobuf:"fixed64,3,opt,name=quantity_used,json=quantityUsed,proto3" json:"quantity_used,omitempty"`
 	Uom           string                 `protobuf:"bytes,4,opt,name=uom,proto3" json:"uom,omitempty"`
 	Notes         string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	MaterialLotId string                 `protobuf:"bytes,6,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"` // optional; empty = not lot-linked
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -981,6 +1006,13 @@ func (x *AddMashIngredientRequest) GetUom() string {
 func (x *AddMashIngredientRequest) GetNotes() string {
 	if x != nil {
 		return x.Notes
+	}
+	return ""
+}
+
+func (x *AddMashIngredientRequest) GetMaterialLotId() string {
+	if x != nil {
+		return x.MaterialLotId
 	}
 	return ""
 }
@@ -1181,7 +1213,7 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\vingredients\x18\f \x03(\v2\".stillhouse.v1.MashIngredientUsageR\vingredients\x123\n" +
 	"\ametrics\x18\r \x03(\v2\x19.stillhouse.v1.MashMetricR\ametrics\x12#\n" +
 	"\rprojected_laa\x18\x0e \x01(\x01R\fprojectedLaa\x12.\n" +
-	"\x13actual_captured_laa\x18\x0f \x01(\x01R\x11actualCapturedLaa\"\xc0\x03\n" +
+	"\x13actual_captured_laa\x18\x0f \x01(\x01R\x11actualCapturedLaa\"\xcf\x04\n" +
 	"\x13MashIngredientUsage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
 	"\vmash_run_id\x18\x02 \x01(\tR\tmashRunId\x12\x1f\n" +
@@ -1196,7 +1228,10 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\x05notes\x18\n" +
 	" \x01(\tR\x05notes\x129\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xec\x01\n" +
+	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12&\n" +
+	"\x0fmaterial_lot_id\x18\f \x01(\tR\rmaterialLotId\x12!\n" +
+	"\fsupplier_lot\x18\r \x01(\tR\vsupplierLot\x12B\n" +
+	"\x0flot_received_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\rlotReceivedAt\"\xec\x01\n" +
 	"\n" +
 	"MashMetric\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
@@ -1226,14 +1261,15 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x121\n" +
 	"\x06status\x18\x02 \x01(\x0e2\x19.stillhouse.v1.MashStatusR\x06status\"M\n" +
 	"\x18UpdateMashStatusResponse\x121\n" +
-	"\bmash_run\x18\x01 \x01(\v2\x16.stillhouse.v1.MashRunR\amashRun\"\xa8\x01\n" +
+	"\bmash_run\x18\x01 \x01(\v2\x16.stillhouse.v1.MashRunR\amashRun\"\xd0\x01\n" +
 	"\x18AddMashIngredientRequest\x12\x1e\n" +
 	"\vmash_run_id\x18\x01 \x01(\tR\tmashRunId\x12\x1f\n" +
 	"\vmaterial_id\x18\x02 \x01(\tR\n" +
 	"materialId\x12#\n" +
 	"\rquantity_used\x18\x03 \x01(\x01R\fquantityUsed\x12\x10\n" +
 	"\x03uom\x18\x04 \x01(\tR\x03uom\x12\x14\n" +
-	"\x05notes\x18\x05 \x01(\tR\x05notes\"U\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\x12&\n" +
+	"\x0fmaterial_lot_id\x18\x06 \x01(\tR\rmaterialLotId\"U\n" +
 	"\x19AddMashIngredientResponse\x128\n" +
 	"\x05usage\x18\x01 \x01(\v2\".stillhouse.v1.MashIngredientUsageR\x05usage\"\xe6\x01\n" +
 	"\x14AddMashMetricRequest\x12\x1e\n" +
@@ -1315,35 +1351,36 @@ var file_stillhouse_v1_mash_proto_depIdxs = []int32{
 	4,  // 4: stillhouse.v1.MashRun.metrics:type_name -> stillhouse.v1.MashMetric
 	18, // 5: stillhouse.v1.MashIngredientUsage.material_kind:type_name -> stillhouse.v1.MaterialKind
 	17, // 6: stillhouse.v1.MashIngredientUsage.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 7: stillhouse.v1.MashMetric.kind:type_name -> stillhouse.v1.MashMetricKind
-	17, // 8: stillhouse.v1.MashMetric.observed_at:type_name -> google.protobuf.Timestamp
-	2,  // 9: stillhouse.v1.CreateMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
-	2,  // 10: stillhouse.v1.GetMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
-	0,  // 11: stillhouse.v1.ListMashRunsRequest.status:type_name -> stillhouse.v1.MashStatus
-	2,  // 12: stillhouse.v1.ListMashRunsResponse.mash_runs:type_name -> stillhouse.v1.MashRun
-	0,  // 13: stillhouse.v1.UpdateMashStatusRequest.status:type_name -> stillhouse.v1.MashStatus
-	2,  // 14: stillhouse.v1.UpdateMashStatusResponse.mash_run:type_name -> stillhouse.v1.MashRun
-	3,  // 15: stillhouse.v1.AddMashIngredientResponse.usage:type_name -> stillhouse.v1.MashIngredientUsage
-	1,  // 16: stillhouse.v1.AddMashMetricRequest.kind:type_name -> stillhouse.v1.MashMetricKind
-	17, // 17: stillhouse.v1.AddMashMetricRequest.observed_at:type_name -> google.protobuf.Timestamp
-	4,  // 18: stillhouse.v1.AddMashMetricResponse.metric:type_name -> stillhouse.v1.MashMetric
-	5,  // 19: stillhouse.v1.MashService.CreateMashRun:input_type -> stillhouse.v1.CreateMashRunRequest
-	7,  // 20: stillhouse.v1.MashService.GetMashRun:input_type -> stillhouse.v1.GetMashRunRequest
-	9,  // 21: stillhouse.v1.MashService.ListMashRuns:input_type -> stillhouse.v1.ListMashRunsRequest
-	11, // 22: stillhouse.v1.MashService.UpdateMashStatus:input_type -> stillhouse.v1.UpdateMashStatusRequest
-	13, // 23: stillhouse.v1.MashService.AddMashIngredient:input_type -> stillhouse.v1.AddMashIngredientRequest
-	15, // 24: stillhouse.v1.MashService.AddMashMetric:input_type -> stillhouse.v1.AddMashMetricRequest
-	6,  // 25: stillhouse.v1.MashService.CreateMashRun:output_type -> stillhouse.v1.CreateMashRunResponse
-	8,  // 26: stillhouse.v1.MashService.GetMashRun:output_type -> stillhouse.v1.GetMashRunResponse
-	10, // 27: stillhouse.v1.MashService.ListMashRuns:output_type -> stillhouse.v1.ListMashRunsResponse
-	12, // 28: stillhouse.v1.MashService.UpdateMashStatus:output_type -> stillhouse.v1.UpdateMashStatusResponse
-	14, // 29: stillhouse.v1.MashService.AddMashIngredient:output_type -> stillhouse.v1.AddMashIngredientResponse
-	16, // 30: stillhouse.v1.MashService.AddMashMetric:output_type -> stillhouse.v1.AddMashMetricResponse
-	25, // [25:31] is the sub-list for method output_type
-	19, // [19:25] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	17, // 7: stillhouse.v1.MashIngredientUsage.lot_received_at:type_name -> google.protobuf.Timestamp
+	1,  // 8: stillhouse.v1.MashMetric.kind:type_name -> stillhouse.v1.MashMetricKind
+	17, // 9: stillhouse.v1.MashMetric.observed_at:type_name -> google.protobuf.Timestamp
+	2,  // 10: stillhouse.v1.CreateMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
+	2,  // 11: stillhouse.v1.GetMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
+	0,  // 12: stillhouse.v1.ListMashRunsRequest.status:type_name -> stillhouse.v1.MashStatus
+	2,  // 13: stillhouse.v1.ListMashRunsResponse.mash_runs:type_name -> stillhouse.v1.MashRun
+	0,  // 14: stillhouse.v1.UpdateMashStatusRequest.status:type_name -> stillhouse.v1.MashStatus
+	2,  // 15: stillhouse.v1.UpdateMashStatusResponse.mash_run:type_name -> stillhouse.v1.MashRun
+	3,  // 16: stillhouse.v1.AddMashIngredientResponse.usage:type_name -> stillhouse.v1.MashIngredientUsage
+	1,  // 17: stillhouse.v1.AddMashMetricRequest.kind:type_name -> stillhouse.v1.MashMetricKind
+	17, // 18: stillhouse.v1.AddMashMetricRequest.observed_at:type_name -> google.protobuf.Timestamp
+	4,  // 19: stillhouse.v1.AddMashMetricResponse.metric:type_name -> stillhouse.v1.MashMetric
+	5,  // 20: stillhouse.v1.MashService.CreateMashRun:input_type -> stillhouse.v1.CreateMashRunRequest
+	7,  // 21: stillhouse.v1.MashService.GetMashRun:input_type -> stillhouse.v1.GetMashRunRequest
+	9,  // 22: stillhouse.v1.MashService.ListMashRuns:input_type -> stillhouse.v1.ListMashRunsRequest
+	11, // 23: stillhouse.v1.MashService.UpdateMashStatus:input_type -> stillhouse.v1.UpdateMashStatusRequest
+	13, // 24: stillhouse.v1.MashService.AddMashIngredient:input_type -> stillhouse.v1.AddMashIngredientRequest
+	15, // 25: stillhouse.v1.MashService.AddMashMetric:input_type -> stillhouse.v1.AddMashMetricRequest
+	6,  // 26: stillhouse.v1.MashService.CreateMashRun:output_type -> stillhouse.v1.CreateMashRunResponse
+	8,  // 27: stillhouse.v1.MashService.GetMashRun:output_type -> stillhouse.v1.GetMashRunResponse
+	10, // 28: stillhouse.v1.MashService.ListMashRuns:output_type -> stillhouse.v1.ListMashRunsResponse
+	12, // 29: stillhouse.v1.MashService.UpdateMashStatus:output_type -> stillhouse.v1.UpdateMashStatusResponse
+	14, // 30: stillhouse.v1.MashService.AddMashIngredient:output_type -> stillhouse.v1.AddMashIngredientResponse
+	16, // 31: stillhouse.v1.MashService.AddMashMetric:output_type -> stillhouse.v1.AddMashMetricResponse
+	26, // [26:32] is the sub-list for method output_type
+	20, // [20:26] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_mash_proto_init() }

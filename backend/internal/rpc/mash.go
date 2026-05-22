@@ -280,21 +280,51 @@ func (s *MashService) AddMashIngredient(
 	if req.Msg.GetUom() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("uom is required"))
 	}
+	var lotID uuid.NullUUID
+	if s := req.Msg.GetMaterialLotId(); s != "" {
+		parsed, parseErr := uuid.Parse(s)
+		if parseErr != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid material_lot_id"))
+		}
+		lotID = uuid.NullUUID{UUID: parsed, Valid: true}
+	}
 
 	var inserted sqlcgen.MashIngredientUsage
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		inserted, e = q.AddMashIngredient(ctx, sqlcgen.AddMashIngredientParams{
-			TenantID:     u.TenantID,
-			MashRunID:    mashID,
-			MaterialID:   matID,
-			QuantityUsed: req.Msg.GetQuantityUsed(),
-			Uom:          req.Msg.GetUom(),
-			Notes:        req.Msg.GetNotes(),
+			TenantID:      u.TenantID,
+			MashRunID:     mashID,
+			MaterialID:    matID,
+			MaterialLotID: lotID,
+			QuantityUsed:  req.Msg.GetQuantityUsed(),
+			Uom:           req.Msg.GetUom(),
+			Notes:         req.Msg.GetNotes(),
 		})
-		return e
+		if e != nil {
+			return e
+		}
+		// If a lot was specified, debit its on-hand quantity. Insufficient
+		// stock surfaces as a clean FailedPrecondition rather than a 500.
+		if lotID.Valid {
+			if _, e := q.DebitMaterialLot(ctx, sqlcgen.DebitMaterialLotParams{
+				ID:              lotID.UUID,
+				QuantityOnHand:  req.Msg.GetQuantityUsed(),
+			}); e != nil {
+				if errors.Is(e, pgx.ErrNoRows) {
+					return connect.NewError(connect.CodeFailedPrecondition,
+						errors.New("not enough on-hand stock in that lot"))
+				}
+				return e
+			}
+		}
+		return nil
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		s.logger.Error("AddMashIngredient", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -376,22 +406,29 @@ func mashRunToProto(
 		RecipeVersionNo: versionNo,
 	}
 	for _, ing := range ingredients {
-		out.Ingredients = append(out.Ingredients,
-			mashIngredientUsageToProto(
-				sqlcgen.MashIngredientUsage{
-					ID:           ing.ID,
-					TenantID:     ing.TenantID,
-					MashRunID:    ing.MashRunID,
-					MaterialID:   ing.MaterialID,
-					QuantityUsed: ing.QuantityUsed,
-					Uom:          ing.Uom,
-					Notes:        ing.Notes,
-					CreatedAt:    ing.CreatedAt,
-				},
-				ing.MaterialName,
-				ing.MaterialKind,
-				ing.MaterialExtractPct,
-			))
+		proto := mashIngredientUsageToProto(
+			sqlcgen.MashIngredientUsage{
+				ID:            ing.ID,
+				TenantID:      ing.TenantID,
+				MashRunID:     ing.MashRunID,
+				MaterialID:    ing.MaterialID,
+				MaterialLotID: ing.MaterialLotID,
+				QuantityUsed:  ing.QuantityUsed,
+				Uom:           ing.Uom,
+				Notes:         ing.Notes,
+				CreatedAt:     ing.CreatedAt,
+			},
+			ing.MaterialName,
+			ing.MaterialKind,
+			ing.MaterialExtractPct,
+		)
+		if ing.SupplierLot.Valid {
+			proto.SupplierLot = ing.SupplierLot.String
+		}
+		if ing.LotReceivedAt.Valid {
+			proto.LotReceivedAt = timestamppb.New(ing.LotReceivedAt.Time)
+		}
+		out.Ingredients = append(out.Ingredients, proto)
 	}
 	for _, m := range metrics {
 		out.Metrics = append(out.Metrics, mashMetricToProto(m))
@@ -415,6 +452,9 @@ func mashIngredientUsageToProto(
 		Uom:          u.Uom,
 		Notes:        u.Notes,
 		CreatedAt:    timestamppb.New(u.CreatedAt.Time),
+	}
+	if u.MaterialLotID.Valid {
+		out.MaterialLotId = u.MaterialLotID.UUID.String()
 	}
 	if extract.Valid {
 		out.MaterialExtractPct = extract.Float64

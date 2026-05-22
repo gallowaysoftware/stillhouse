@@ -27,20 +27,31 @@ UPDATE mash_runs SET status = $2 WHERE id = $1 RETURNING *;
 
 -- name: AddMashIngredient :one
 INSERT INTO mash_ingredient_usage (
-    tenant_id, mash_run_id, material_id, quantity_used, uom, notes
+    tenant_id, mash_run_id, material_id, material_lot_id, quantity_used, uom, notes
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5, $6, $7
 ) RETURNING *;
 
 -- name: ListMashIngredients :many
 SELECT miu.*,
        m.name AS material_name,
        m.kind AS material_kind,
-       m.extract_pct AS material_extract_pct
+       m.extract_pct AS material_extract_pct,
+       ml.supplier_lot AS supplier_lot,
+       ml.received_at  AS lot_received_at
 FROM mash_ingredient_usage miu
-JOIN materials m ON m.id = miu.material_id
+JOIN materials m            ON m.id = miu.material_id
+LEFT JOIN material_lots ml  ON ml.id = miu.material_lot_id
 WHERE miu.mash_run_id = $1
 ORDER BY m.name;
+
+-- name: DebitMaterialLot :one
+-- Debit the on-hand quantity of a lot when a mash consumes from it. Returns
+-- the updated row so the caller can warn if the lot is now exhausted.
+UPDATE material_lots
+SET quantity_on_hand = quantity_on_hand - $2
+WHERE id = $1 AND quantity_on_hand >= $2
+RETURNING *;
 
 -- name: AddMashMetric :one
 INSERT INTO mash_metrics (

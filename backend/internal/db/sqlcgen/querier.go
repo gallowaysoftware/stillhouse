@@ -49,6 +49,9 @@ type Querier interface {
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Debit the on-hand quantity of a lot when a mash consumes from it. Returns
+	// the updated row so the caller can warn if the lot is now exhausted.
+	DebitMaterialLot(ctx context.Context, arg DebitMaterialLotParams) (MaterialLot, error)
 	// Reverse the upsert that bottling did. We don't delete the row even if it
 	// zeroes out — keeping the row preserves the (product, lot_code, jurisdiction)
 	// key for audit traceability.

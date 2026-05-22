@@ -67,6 +67,9 @@ message MashIngredientUsage {
   string uom = 9;
   string notes = 10;
   google.protobuf.Timestamp created_at = 11;
+  string material_lot_id = 12;            // empty when not lot-linked
+  string supplier_lot = 13;               // denormalized from material_lots
+  google.protobuf.Timestamp lot_received_at = 14;
 }
 
 message MashMetric {
@@ -106,6 +109,7 @@ message AddMashIngredientRequest {
   double quantity_used = 3;
   string uom = 4;
   string notes = 5;
+  string material_lot_id = 6;            // optional; empty = not lot-linked
 }
 message AddMashIngredientResponse { MashIngredientUsage usage = 1; }
 

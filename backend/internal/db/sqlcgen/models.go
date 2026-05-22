@@ -906,14 +906,15 @@ type FermentationRun struct {
 }
 
 type MashIngredientUsage struct {
-	ID           uuid.UUID          `json:"id"`
-	TenantID     uuid.UUID          `json:"tenant_id"`
-	MashRunID    uuid.UUID          `json:"mash_run_id"`
-	MaterialID   uuid.UUID          `json:"material_id"`
-	QuantityUsed float64            `json:"quantity_used"`
-	Uom          string             `json:"uom"`
-	Notes        string             `json:"notes"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	ID            uuid.UUID          `json:"id"`
+	TenantID      uuid.UUID          `json:"tenant_id"`
+	MashRunID     uuid.UUID          `json:"mash_run_id"`
+	MaterialID    uuid.UUID          `json:"material_id"`
+	QuantityUsed  float64            `json:"quantity_used"`
+	Uom           string             `json:"uom"`
+	Notes         string             `json:"notes"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	MaterialLotID uuid.NullUUID      `json:"material_lot_id"`
 }
 
 type MashMetric struct {
