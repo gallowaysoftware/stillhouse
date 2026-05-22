@@ -82,6 +82,10 @@ export function BarrelsPage() {
         </section>
       )}
 
+      {summary && summary.barrels.length > 0 && (
+        <AgingBuckets barrels={summary.barrels} />
+      )}
+
       {showForm && (
         <form
           onSubmit={submit}
@@ -168,6 +172,46 @@ export function BarrelsPage() {
         </table>
       </div>
     </Shell>
+  );
+}
+
+const buckets = [
+  { label: "0–90 days", min: 1, max: 90 },
+  { label: "90 days–1 yr", min: 91, max: 365 },
+  { label: "1–2 yrs", min: 366, max: 730 },
+  { label: "2–3 yrs", min: 731, max: 1094 },
+  { label: "CW eligible (≥3 yrs, small wood)", min: 1095, max: Infinity },
+];
+
+function AgingBuckets({ barrels }: { barrels: { daysAged: number; currentLaa: number; canadianWhiskyEligible: boolean; smallWood: boolean }[] }) {
+  const stats = buckets.map((b) => {
+    const matching = barrels.filter((br) => {
+      if (br.daysAged < b.min || br.daysAged > b.max) return false;
+      // The "CW eligible" bucket only counts barrels that ARE eligible
+      // (small wood AND aged enough); a non-small-wood barrel ≥3 yrs
+      // counts in 2-3 yrs even when daysAged > 1094.
+      if (b.min >= 1095) return br.canadianWhiskyEligible;
+      return true;
+    });
+    return { ...b, count: matching.length, laa: matching.reduce((s, m) => s + m.currentLaa, 0) };
+  });
+  return (
+    <section className="mb-6 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Aging buckets</h2>
+      <div className="grid grid-cols-5 gap-3">
+        {stats.map((s) => (
+          <div key={s.label} className={`rounded border p-3 ${s.min >= 1095 ? "border-emerald-200 bg-emerald-50" : "border-stone-200"}`}>
+            <p className="text-xs uppercase text-stone-500">{s.label}</p>
+            <p className={`mt-1 text-lg font-semibold ${s.min >= 1095 ? "text-emerald-700" : "text-stone-900"}`}>
+              {s.count}
+              {s.laa > 0 && (
+                <span className="ml-2 text-xs font-normal text-stone-500">{formatLAA(s.laa)} L LAA</span>
+              )}
+            </p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
