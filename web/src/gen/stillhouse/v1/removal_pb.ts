@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/removal.proto.
  */
 export const file_stillhouse_v1_removal: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGlsbGhvdXNlL3YxL3JlbW92YWwucHJvdG8SDXN0aWxsaG91c2UudjEiiwQKEFBhY2thZ2luZ1JlbW92YWwSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhIKCnJlbW92YWxfbm8YAyABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRIQCghsb3RfY29kZRgGIAEoCRIUCgxqdXJpc2RpY3Rpb24YByABKAkSFAoMcmVtb3ZhbF9kYXRlGAggASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgJIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAogASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYCyABKAkSEQoJcmVmZXJlbmNlGAwgASgJEhYKDmJvdHRsZV9zaXplX21sGA0gASgFEhYKDmJvdHRsZV9hYnZfcGN0GA4gASgBEhQKDHRvdGFsX2xpdHJlcxgPIAEoARIRCgl0b3RhbF9sYWEYECABKAESGQoRZHV0eV9yYXRlX3Blcl9sYWEYESABKAESFwoPZHV0eV9hbW91bnRfY2FkGBIgASgBEg0KBW5vdGVzGBMgASgJEi4KCmNyZWF0ZWRfYXQYFCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIuEBChRDcmVhdGVSZW1vdmFsUmVxdWVzdBIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYASABKAkSFAoMcmVtb3ZhbF9kYXRlGAIgASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgDIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAQgASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYBSABKAkSEQoJcmVmZXJlbmNlGAYgASgJEg0KBW5vdGVzGAcgASgJIkkKFUNyZWF0ZVJlbW92YWxSZXNwb25zZRIwCgdyZW1vdmFsGAEgASgLMh8uc3RpbGxob3VzZS52MS5QYWNrYWdpbmdSZW1vdmFsIj8KE0xpc3RSZW1vdmFsc1JlcXVlc3QSFAoMcGVyaW9kX3N0YXJ0GAEgASgJEhIKCnBlcmlvZF9lbmQYAiABKAkiSQoUTGlzdFJlbW92YWxzUmVzcG9uc2USMQoIcmVtb3ZhbHMYASADKAsyHy5zdGlsbGhvdXNlLnYxLlBhY2thZ2luZ1JlbW92YWwqvAIKFlJlbW92YWxEZXN0aW5hdGlvbktpbmQSKAokUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX1VOU1BFQ0lGSUVEEAASLworUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0RVVFlfUEFJRF9DVVNUT01FUhABEiMKH1JFTU9WQUxfREVTVElOQVRJT05fS0lORF9FWFBPUlQQAhIjCh9SRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfU0FNUExFEAMSJgoiUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0RFU1RST1lFRBAEEjEKLVJFTU9WQUxfREVTVElOQVRJT05fS0lORF9UUkFOU0ZFUl9PVVRfSU5fQk9ORBAFEiIKHlJFTU9WQUxfREVTVElOQVRJT05fS0lORF9PVEhFUhAGMsUBCg5SZW1vdmFsU2VydmljZRJaCg1DcmVhdGVSZW1vdmFsEiMuc3RpbGxob3VzZS52MS5DcmVhdGVSZW1vdmFsUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQ3JlYXRlUmVtb3ZhbFJlc3BvbnNlElcKDExpc3RSZW1vdmFscxIiLnN0aWxsaG91c2UudjEuTGlzdFJlbW92YWxzUmVxdWVzdBojLnN0aWxsaG91c2UudjEuTGlzdFJlbW92YWxzUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChtzdGlsbGhvdXNlL3YxL3JlbW92YWwucHJvdG8SDXN0aWxsaG91c2UudjEi5AQKEFBhY2thZ2luZ1JlbW92YWwSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhIKCnJlbW92YWxfbm8YAyABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRIQCghsb3RfY29kZRgGIAEoCRIUCgxqdXJpc2RpY3Rpb24YByABKAkSFAoMcmVtb3ZhbF9kYXRlGAggASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgJIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAogASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYCyABKAkSEQoJcmVmZXJlbmNlGAwgASgJEhYKDmJvdHRsZV9zaXplX21sGA0gASgFEhYKDmJvdHRsZV9hYnZfcGN0GA4gASgBEhQKDHRvdGFsX2xpdHJlcxgPIAEoARIRCgl0b3RhbF9sYWEYECABKAESGQoRZHV0eV9yYXRlX3Blcl9sYWEYESABKAESFwoPZHV0eV9hbW91bnRfY2FkGBIgASgBEg0KBW5vdGVzGBMgASgJEi4KCmNyZWF0ZWRfYXQYFCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi0KCXZvaWRlZF9hdBgVIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEQoJdm9pZGVkX2J5GBYgASgJEhUKDXZvaWRlZF9yZWFzb24YFyABKAki4QEKFENyZWF0ZVJlbW92YWxSZXF1ZXN0Eh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgBIAEoCRIUCgxyZW1vdmFsX2RhdGUYAiABKAkSFwoPYm90dGxlc19yZW1vdmVkGAMgASgFEj8KEGRlc3RpbmF0aW9uX2tpbmQYBCABKA4yJS5zdGlsbGhvdXNlLnYxLlJlbW92YWxEZXN0aW5hdGlvbktpbmQSGAoQZGVzdGluYXRpb25fbmFtZRgFIAEoCRIRCglyZWZlcmVuY2UYBiABKAkSDQoFbm90ZXMYByABKAkiSQoVQ3JlYXRlUmVtb3ZhbFJlc3BvbnNlEjAKB3JlbW92YWwYASABKAsyHy5zdGlsbGhvdXNlLnYxLlBhY2thZ2luZ1JlbW92YWwiPwoTTGlzdFJlbW92YWxzUmVxdWVzdBIUCgxwZXJpb2Rfc3RhcnQYASABKAkSEgoKcGVyaW9kX2VuZBgCIAEoCSJJChRMaXN0UmVtb3ZhbHNSZXNwb25zZRIxCghyZW1vdmFscxgBIAMoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCIwChJWb2lkUmVtb3ZhbFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkcKE1ZvaWRSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCq8AgoWUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIoCiRSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIvCitSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfRFVUWV9QQUlEX0NVU1RPTUVSEAESIwofUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0VYUE9SVBACEiMKH1JFTU9WQUxfREVTVElOQVRJT05fS0lORF9TQU1QTEUQAxImCiJSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfREVTVFJPWUVEEAQSMQotUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX1RSQU5TRkVSX09VVF9JTl9CT05EEAUSIgoeUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX09USEVSEAYymwIKDlJlbW92YWxTZXJ2aWNlEloKDUNyZWF0ZVJlbW92YWwSIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVJlbW92YWxSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5DcmVhdGVSZW1vdmFsUmVzcG9uc2USVwoMTGlzdFJlbW92YWxzEiIuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXNwb25zZRJUCgtWb2lkUmVtb3ZhbBIhLnN0aWxsaG91c2UudjEuVm9pZFJlbW92YWxSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5Wb2lkUmVtb3ZhbFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.PackagingRemoval
@@ -117,6 +117,21 @@ export type PackagingRemoval = Message<"stillhouse.v1.PackagingRemoval"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 20;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp voided_at = 21;
+   */
+  voidedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: string voided_by = 22;
+   */
+  voidedBy: string;
+
+  /**
+   * @generated from field: string voided_reason = 23;
+   */
+  voidedReason: string;
 };
 
 /**
@@ -232,6 +247,45 @@ export const ListRemovalsResponseSchema: GenMessage<ListRemovalsResponse> = /*@_
   messageDesc(file_stillhouse_v1_removal, 4);
 
 /**
+ * @generated from message stillhouse.v1.VoidRemovalRequest
+ */
+export type VoidRemovalRequest = Message<"stillhouse.v1.VoidRemovalRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string reason = 2;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.VoidRemovalRequest.
+ * Use `create(VoidRemovalRequestSchema)` to create a new message.
+ */
+export const VoidRemovalRequestSchema: GenMessage<VoidRemovalRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 5);
+
+/**
+ * @generated from message stillhouse.v1.VoidRemovalResponse
+ */
+export type VoidRemovalResponse = Message<"stillhouse.v1.VoidRemovalResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.PackagingRemoval removal = 1;
+   */
+  removal?: PackagingRemoval | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.VoidRemovalResponse.
+ * Use `create(VoidRemovalResponseSchema)` to create a new message.
+ */
+export const VoidRemovalResponseSchema: GenMessage<VoidRemovalResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 6);
+
+/**
  * @generated from enum stillhouse.v1.RemovalDestinationKind
  */
 export enum RemovalDestinationKind {
@@ -296,6 +350,14 @@ export const RemovalService: GenService<{
     methodKind: "unary";
     input: typeof ListRemovalsRequestSchema;
     output: typeof ListRemovalsResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.RemovalService.VoidRemoval
+   */
+  voidRemoval: {
+    methodKind: "unary";
+    input: typeof VoidRemovalRequestSchema;
+    output: typeof VoidRemovalResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_removal, 0);

@@ -996,6 +996,9 @@ type PackagingRemoval struct {
 	DutyAmountCad       float64                `json:"duty_amount_cad"`
 	Notes               string                 `json:"notes"`
 	CreatedAt           pgtype.Timestamptz     `json:"created_at"`
+	VoidedAt            pgtype.Timestamptz     `json:"voided_at"`
+	VoidedBy            uuid.NullUUID          `json:"voided_by"`
+	VoidedReason        string                 `json:"voided_reason"`
 }
 
 type Product struct {

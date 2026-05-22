@@ -39,12 +39,16 @@ const (
 	// RemovalServiceListRemovalsProcedure is the fully-qualified name of the RemovalService's
 	// ListRemovals RPC.
 	RemovalServiceListRemovalsProcedure = "/stillhouse.v1.RemovalService/ListRemovals"
+	// RemovalServiceVoidRemovalProcedure is the fully-qualified name of the RemovalService's
+	// VoidRemoval RPC.
+	RemovalServiceVoidRemovalProcedure = "/stillhouse.v1.RemovalService/VoidRemoval"
 )
 
 // RemovalServiceClient is a client for the stillhouse.v1.RemovalService service.
 type RemovalServiceClient interface {
 	CreateRemoval(context.Context, *connect.Request[v1.CreateRemovalRequest]) (*connect.Response[v1.CreateRemovalResponse], error)
 	ListRemovals(context.Context, *connect.Request[v1.ListRemovalsRequest]) (*connect.Response[v1.ListRemovalsResponse], error)
+	VoidRemoval(context.Context, *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error)
 }
 
 // NewRemovalServiceClient constructs a client for the stillhouse.v1.RemovalService service. By
@@ -70,6 +74,12 @@ func NewRemovalServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(removalServiceMethods.ByName("ListRemovals")),
 			connect.WithClientOptions(opts...),
 		),
+		voidRemoval: connect.NewClient[v1.VoidRemovalRequest, v1.VoidRemovalResponse](
+			httpClient,
+			baseURL+RemovalServiceVoidRemovalProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("VoidRemoval")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -77,6 +87,7 @@ func NewRemovalServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 type removalServiceClient struct {
 	createRemoval *connect.Client[v1.CreateRemovalRequest, v1.CreateRemovalResponse]
 	listRemovals  *connect.Client[v1.ListRemovalsRequest, v1.ListRemovalsResponse]
+	voidRemoval   *connect.Client[v1.VoidRemovalRequest, v1.VoidRemovalResponse]
 }
 
 // CreateRemoval calls stillhouse.v1.RemovalService.CreateRemoval.
@@ -89,10 +100,16 @@ func (c *removalServiceClient) ListRemovals(ctx context.Context, req *connect.Re
 	return c.listRemovals.CallUnary(ctx, req)
 }
 
+// VoidRemoval calls stillhouse.v1.RemovalService.VoidRemoval.
+func (c *removalServiceClient) VoidRemoval(ctx context.Context, req *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error) {
+	return c.voidRemoval.CallUnary(ctx, req)
+}
+
 // RemovalServiceHandler is an implementation of the stillhouse.v1.RemovalService service.
 type RemovalServiceHandler interface {
 	CreateRemoval(context.Context, *connect.Request[v1.CreateRemovalRequest]) (*connect.Response[v1.CreateRemovalResponse], error)
 	ListRemovals(context.Context, *connect.Request[v1.ListRemovalsRequest]) (*connect.Response[v1.ListRemovalsResponse], error)
+	VoidRemoval(context.Context, *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error)
 }
 
 // NewRemovalServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -114,12 +131,20 @@ func NewRemovalServiceHandler(svc RemovalServiceHandler, opts ...connect.Handler
 		connect.WithSchema(removalServiceMethods.ByName("ListRemovals")),
 		connect.WithHandlerOptions(opts...),
 	)
+	removalServiceVoidRemovalHandler := connect.NewUnaryHandler(
+		RemovalServiceVoidRemovalProcedure,
+		svc.VoidRemoval,
+		connect.WithSchema(removalServiceMethods.ByName("VoidRemoval")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.RemovalService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RemovalServiceCreateRemovalProcedure:
 			removalServiceCreateRemovalHandler.ServeHTTP(w, r)
 		case RemovalServiceListRemovalsProcedure:
 			removalServiceListRemovalsHandler.ServeHTTP(w, r)
+		case RemovalServiceVoidRemovalProcedure:
+			removalServiceVoidRemovalHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -135,4 +160,8 @@ func (UnimplementedRemovalServiceHandler) CreateRemoval(context.Context, *connec
 
 func (UnimplementedRemovalServiceHandler) ListRemovals(context.Context, *connect.Request[v1.ListRemovalsRequest]) (*connect.Response[v1.ListRemovalsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.ListRemovals is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) VoidRemoval(context.Context, *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.VoidRemoval is not implemented"))
 }

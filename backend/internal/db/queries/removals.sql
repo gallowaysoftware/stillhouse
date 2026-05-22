@@ -29,3 +29,21 @@ JOIN products p             ON p.id = pi.product_id
 WHERE (sqlc.narg('period_start')::date IS NULL OR pr.removal_date >= sqlc.narg('period_start')::date)
   AND (sqlc.narg('period_end')::date   IS NULL OR pr.removal_date <= sqlc.narg('period_end')::date)
 ORDER BY pr.removal_date DESC, pr.removal_no DESC;
+
+-- name: GetRemoval :one
+SELECT * FROM packaging_removals WHERE id = $1;
+
+-- name: VoidRemoval :one
+UPDATE packaging_removals
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING *;
+
+-- name: IncrementPackagedOnHand :one
+UPDATE packaged_inventory
+SET bottles_on_hand = bottles_on_hand + $2,
+    bottles_removed = bottles_removed - $2
+WHERE id = $1
+RETURNING *;

@@ -65,10 +65,12 @@ type Querier interface {
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
 	GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error)
 	GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error)
+	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	IncrementPackagedOnHand(ctx context.Context, arg IncrementPackagedOnHandParams) (PackagedInventory, error)
 	IncrementStampOrderApplied(ctx context.Context, arg IncrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	IncrementStampOrderVoided(ctx context.Context, arg IncrementStampOrderVoidedParams) (ExciseStampOrder, error)
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
@@ -146,6 +148,7 @@ type Querier interface {
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
+	VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error)
 }
 
 var _ Querier = (*Queries)(nil)

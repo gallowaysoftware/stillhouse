@@ -35,6 +35,9 @@ message PackagingRemoval {
   double duty_amount_cad = 18;
   string notes = 19;
   google.protobuf.Timestamp created_at = 20;
+  google.protobuf.Timestamp voided_at = 21;
+  string voided_by = 22;
+  string voided_reason = 23;
 }
 
 message CreateRemovalRequest {
@@ -54,7 +57,14 @@ message ListRemovalsRequest {
 }
 message ListRemovalsResponse { repeated PackagingRemoval removals = 1; }
 
+message VoidRemovalRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidRemovalResponse { PackagingRemoval removal = 1; }
+
 service RemovalService {
   rpc CreateRemoval(CreateRemovalRequest) returns (CreateRemovalResponse);
   rpc ListRemovals(ListRemovalsRequest) returns (ListRemovalsResponse);
+  rpc VoidRemoval(VoidRemovalRequest) returns (VoidRemovalResponse);
 }

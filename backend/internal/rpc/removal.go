@@ -147,6 +147,82 @@ func (s *RemovalService) CreateRemoval(
 	return connect.NewResponse(&stillhousev1.CreateRemovalResponse{Removal: out}), nil
 }
 
+func (s *RemovalService) VoidRemoval(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.VoidRemovalRequest],
+) (*connect.Response[stillhousev1.VoidRemovalResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	reason := req.Msg.GetReason()
+	if reason == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required"))
+	}
+
+	var (
+		voided  sqlcgen.PackagingRemoval
+		pkg     sqlcgen.PackagedInventory
+		product sqlcgen.Product
+	)
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		existing, e := q.GetRemoval(ctx, id)
+		if e != nil {
+			return e
+		}
+		if existing.VoidedAt.Valid {
+			return connect.NewError(connect.CodeFailedPrecondition, errors.New("removal is already voided"))
+		}
+		voided, e = q.VoidRemoval(ctx, sqlcgen.VoidRemovalParams{
+			ID:           id,
+			VoidedBy:     uuid.NullUUID{UUID: u.ID, Valid: true},
+			VoidedReason: reason,
+		})
+		if e != nil {
+			return e
+		}
+		// Refund the bottles to packaged_inventory so the on-hand count and the
+		// running bottles_removed counter match physical reality again.
+		pkg, e = q.IncrementPackagedOnHand(ctx, sqlcgen.IncrementPackagedOnHandParams{
+			ID:            existing.PackagedInventoryID,
+			BottlesOnHand: existing.BottlesRemoved,
+		})
+		if e != nil {
+			return e
+		}
+		product, e = q.GetProduct(ctx, pkg.ProductID)
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "removal", voided.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":        "voided",
+				"removal_no":   voided.RemovalNo,
+				"bottles":      voided.BottlesRemoved,
+				"refund_to_pi": existing.PackagedInventoryID.String(),
+				"reason":       reason,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("removal not found"))
+		}
+		s.logger.Error("VoidRemoval", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.VoidRemovalResponse{
+		Removal: packagingRemovalToProto(voided, product, pkg.LotCode, pkg.Jurisdiction),
+	}), nil
+}
+
 func (s *RemovalService) ListRemovals(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.ListRemovalsRequest],
@@ -204,6 +280,9 @@ func (s *RemovalService) ListRemovals(
 			DutyAmountCad:       r.DutyAmountCad,
 			Notes:               r.Notes,
 			CreatedAt:           r.CreatedAt,
+			VoidedAt:            r.VoidedAt,
+			VoidedBy:            r.VoidedBy,
+			VoidedReason:        r.VoidedReason,
 		}
 		out = append(out, packagingRemovalToProto(removal, p, r.LotCode, r.Jurisdiction))
 	}
@@ -213,7 +292,7 @@ func (s *RemovalService) ListRemovals(
 // --- converters ---
 
 func packagingRemovalToProto(r sqlcgen.PackagingRemoval, p sqlcgen.Product, lotCode, jurisdiction string) *stillhousev1.PackagingRemoval {
-	return &stillhousev1.PackagingRemoval{
+	out := &stillhousev1.PackagingRemoval{
 		Id:                  r.ID.String(),
 		TenantId:            r.TenantID.String(),
 		RemovalNo:           r.RemovalNo,
@@ -234,7 +313,15 @@ func packagingRemovalToProto(r sqlcgen.PackagingRemoval, p sqlcgen.Product, lotC
 		DutyAmountCad:       r.DutyAmountCad,
 		Notes:               r.Notes,
 		CreatedAt:           timestamppb.New(r.CreatedAt.Time),
+		VoidedReason:        r.VoidedReason,
 	}
+	if r.VoidedAt.Valid {
+		out.VoidedAt = timestamppb.New(r.VoidedAt.Time)
+	}
+	if r.VoidedBy.Valid {
+		out.VoidedBy = r.VoidedBy.UUID.String()
+	}
+	return out
 }
 
 func removalDestinationKindToDB(k stillhousev1.RemovalDestinationKind) (sqlcgen.RemovalDestinationKind, error) {

@@ -8,9 +8,10 @@ import { bottlingClient, removalClient } from "@/lib/clients";
 import {
   CreateRemovalRequestSchema,
   RemovalDestinationKind,
+  VoidRemovalRequestSchema,
 } from "@/gen/stillhouse/v1/removal_pb";
 import { formatLAA, formatQty } from "@/lib/format";
-import { WriteOnly } from "@/lib/role";
+import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
 const destLabel: Record<RemovalDestinationKind, string> = {
   [RemovalDestinationKind.UNSPECIFIED]: "—",
@@ -33,6 +34,8 @@ const destOptions: RemovalDestinationKind[] = [
 
 export function RemovalsPage() {
   const qc = useQueryClient();
+  const role = useCurrentRole();
+  const writeable = canWrite(role);
   const list = useQuery({
     queryKey: ["listRemovals"],
     queryFn: () => removalClient.listRemovals({}),
@@ -61,6 +64,23 @@ export function RemovalsPage() {
       setReference("");
     },
   });
+  const voidRemoval = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof VoidRemovalRequestSchema>>) =>
+      removalClient.voidRemoval(msg),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["listRemovals"] });
+      qc.invalidateQueries({ queryKey: ["listPackagedInventory"] });
+    },
+  });
+
+  function onVoid(id: string, no: number, bottles: number) {
+    const reason = window.prompt(
+      `Void removal #${no} (${bottles.toLocaleString()} bottles will be refunded to inventory). Reason:`,
+      "recorded in error",
+    );
+    if (!reason || !reason.trim()) return;
+    voidRemoval.mutate(create(VoidRemovalRequestSchema, { id, reason: reason.trim() }));
+  }
 
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -167,24 +187,51 @@ export function RemovalsPage() {
               <th className="px-4 py-3 text-right">Bottles</th>
               <th className="px-4 py-3 text-right">LAA</th>
               <th className="px-4 py-3 text-right">Duty (CAD)</th>
+              {writeable && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {list.data?.removals.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-3 text-stone-500">No removals yet.</td></tr>
+              <tr><td colSpan={writeable ? 9 : 8} className="px-4 py-3 text-stone-500">No removals yet.</td></tr>
             )}
-            {list.data?.removals.map((r) => (
-              <tr key={r.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">#{r.removalNo}</td>
-                <td className="px-4 py-3 text-stone-600">{r.removalDate}</td>
-                <td className="px-4 py-3 text-stone-900">{r.productName} <span className="text-xs text-stone-500">· {r.lotCode}</span></td>
-                <td className="px-4 py-3 text-stone-600">{r.jurisdiction}</td>
-                <td className="px-4 py-3 text-stone-600">{destLabel[r.destinationKind]}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{r.bottlesRemoved.toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{formatLAA(r.totalLaa)}</td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">${formatQty(r.dutyAmountCad)}</td>
-              </tr>
-            ))}
+            {list.data?.removals.map((r) => {
+              const voided = !!r.voidedAt;
+              return (
+                <tr key={r.id} className={voided ? "bg-stone-50 text-stone-400" : ""}>
+                  <td className="px-4 py-3 font-medium">
+                    #{r.removalNo}
+                    {voided && (
+                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">VOIDED</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{r.removalDate}</td>
+                  <td className="px-4 py-3">
+                    {r.productName} <span className="text-xs">· {r.lotCode}</span>
+                    {voided && r.voidedReason && (
+                      <div className="text-xs italic">{r.voidedReason}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{r.jurisdiction}</td>
+                  <td className="px-4 py-3">{destLabel[r.destinationKind]}</td>
+                  <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{r.bottlesRemoved.toLocaleString()}</td>
+                  <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{formatLAA(r.totalLaa)}</td>
+                  <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-stone-900"}`}>${formatQty(r.dutyAmountCad)}</td>
+                  {writeable && (
+                    <td className="px-4 py-3 text-right">
+                      {!voided && (
+                        <button
+                          onClick={() => onVoid(r.id, r.removalNo, r.bottlesRemoved)}
+                          disabled={voidRemoval.isPending}
+                          className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                        >
+                          Void
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

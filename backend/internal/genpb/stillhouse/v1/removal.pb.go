@@ -105,6 +105,9 @@ type PackagingRemoval struct {
 	DutyAmountCad       float64                `protobuf:"fixed64,18,opt,name=duty_amount_cad,json=dutyAmountCad,proto3" json:"duty_amount_cad,omitempty"`
 	Notes               string                 `protobuf:"bytes,19,opt,name=notes,proto3" json:"notes,omitempty"`
 	CreatedAt           *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	VoidedAt            *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
+	VoidedBy            string                 `protobuf:"bytes,22,opt,name=voided_by,json=voidedBy,proto3" json:"voided_by,omitempty"`
+	VoidedReason        string                 `protobuf:"bytes,23,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache
 }
@@ -277,6 +280,27 @@ func (x *PackagingRemoval) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *PackagingRemoval) GetVoidedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.VoidedAt
+	}
+	return nil
+}
+
+func (x *PackagingRemoval) GetVoidedBy() string {
+	if x != nil {
+		return x.VoidedBy
+	}
+	return ""
+}
+
+func (x *PackagingRemoval) GetVoidedReason() string {
+	if x != nil {
+		return x.VoidedReason
+	}
+	return ""
 }
 
 type CreateRemovalRequest struct {
@@ -511,11 +535,107 @@ func (x *ListRemovalsResponse) GetRemovals() []*PackagingRemoval {
 	return nil
 }
 
+type VoidRemovalRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidRemovalRequest) Reset() {
+	*x = VoidRemovalRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidRemovalRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidRemovalRequest) ProtoMessage() {}
+
+func (x *VoidRemovalRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidRemovalRequest.ProtoReflect.Descriptor instead.
+func (*VoidRemovalRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *VoidRemovalRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VoidRemovalRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type VoidRemovalResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Removal       *PackagingRemoval      `protobuf:"bytes,1,opt,name=removal,proto3" json:"removal,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidRemovalResponse) Reset() {
+	*x = VoidRemovalResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidRemovalResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidRemovalResponse) ProtoMessage() {}
+
+func (x *VoidRemovalResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidRemovalResponse.ProtoReflect.Descriptor instead.
+func (*VoidRemovalResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *VoidRemovalResponse) GetRemoval() *PackagingRemoval {
+	if x != nil {
+		return x.Removal
+	}
+	return nil
+}
+
 var File_stillhouse_v1_removal_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\n" +
-	"\x1bstillhouse/v1/removal.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8b\x06\n" +
+	"\x1bstillhouse/v1/removal.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x86\a\n" +
 	"\x10PackagingRemoval\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1d\n" +
@@ -539,7 +659,10 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x0fduty_amount_cad\x18\x12 \x01(\x01R\rdutyAmountCad\x12\x14\n" +
 	"\x05notes\x18\x13 \x01(\tR\x05notes\x129\n" +
 	"\n" +
-	"created_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xc7\x02\n" +
+	"created_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x127\n" +
+	"\tvoided_at\x18\x15 \x01(\v2\x1a.google.protobuf.TimestampR\bvoidedAt\x12\x1b\n" +
+	"\tvoided_by\x18\x16 \x01(\tR\bvoidedBy\x12#\n" +
+	"\rvoided_reason\x18\x17 \x01(\tR\fvoidedReason\"\xc7\x02\n" +
 	"\x14CreateRemovalRequest\x122\n" +
 	"\x15packaged_inventory_id\x18\x01 \x01(\tR\x13packagedInventoryId\x12!\n" +
 	"\fremoval_date\x18\x02 \x01(\tR\vremovalDate\x12'\n" +
@@ -555,7 +678,12 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\n" +
 	"period_end\x18\x02 \x01(\tR\tperiodEnd\"S\n" +
 	"\x14ListRemovalsResponse\x12;\n" +
-	"\bremovals\x18\x01 \x03(\v2\x1f.stillhouse.v1.PackagingRemovalR\bremovals*\xbc\x02\n" +
+	"\bremovals\x18\x01 \x03(\v2\x1f.stillhouse.v1.PackagingRemovalR\bremovals\"<\n" +
+	"\x12VoidRemovalRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"P\n" +
+	"\x13VoidRemovalResponse\x129\n" +
+	"\aremoval\x18\x01 \x01(\v2\x1f.stillhouse.v1.PackagingRemovalR\aremoval*\xbc\x02\n" +
 	"\x16RemovalDestinationKind\x12(\n" +
 	"$REMOVAL_DESTINATION_KIND_UNSPECIFIED\x10\x00\x12/\n" +
 	"+REMOVAL_DESTINATION_KIND_DUTY_PAID_CUSTOMER\x10\x01\x12#\n" +
@@ -563,10 +691,11 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x1fREMOVAL_DESTINATION_KIND_SAMPLE\x10\x03\x12&\n" +
 	"\"REMOVAL_DESTINATION_KIND_DESTROYED\x10\x04\x121\n" +
 	"-REMOVAL_DESTINATION_KIND_TRANSFER_OUT_IN_BOND\x10\x05\x12\"\n" +
-	"\x1eREMOVAL_DESTINATION_KIND_OTHER\x10\x062\xc5\x01\n" +
+	"\x1eREMOVAL_DESTINATION_KIND_OTHER\x10\x062\x9b\x02\n" +
 	"\x0eRemovalService\x12Z\n" +
 	"\rCreateRemoval\x12#.stillhouse.v1.CreateRemovalRequest\x1a$.stillhouse.v1.CreateRemovalResponse\x12W\n" +
-	"\fListRemovals\x12\".stillhouse.v1.ListRemovalsRequest\x1a#.stillhouse.v1.ListRemovalsResponseB\xd0\x01\n" +
+	"\fListRemovals\x12\".stillhouse.v1.ListRemovalsRequest\x1a#.stillhouse.v1.ListRemovalsResponse\x12T\n" +
+	"\vVoidRemoval\x12!.stillhouse.v1.VoidRemovalRequest\x1a\".stillhouse.v1.VoidRemovalResponseB\xd0\x01\n" +
 	"\x11com.stillhouse.v1B\fRemovalProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -582,7 +711,7 @@ func file_stillhouse_v1_removal_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_removal_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_removal_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stillhouse_v1_removal_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_stillhouse_v1_removal_proto_goTypes = []any{
 	(RemovalDestinationKind)(0),   // 0: stillhouse.v1.RemovalDestinationKind
 	(*PackagingRemoval)(nil),      // 1: stillhouse.v1.PackagingRemoval
@@ -590,23 +719,29 @@ var file_stillhouse_v1_removal_proto_goTypes = []any{
 	(*CreateRemovalResponse)(nil), // 3: stillhouse.v1.CreateRemovalResponse
 	(*ListRemovalsRequest)(nil),   // 4: stillhouse.v1.ListRemovalsRequest
 	(*ListRemovalsResponse)(nil),  // 5: stillhouse.v1.ListRemovalsResponse
-	(*timestamppb.Timestamp)(nil), // 6: google.protobuf.Timestamp
+	(*VoidRemovalRequest)(nil),    // 6: stillhouse.v1.VoidRemovalRequest
+	(*VoidRemovalResponse)(nil),   // 7: stillhouse.v1.VoidRemovalResponse
+	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_removal_proto_depIdxs = []int32{
-	0, // 0: stillhouse.v1.PackagingRemoval.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
-	6, // 1: stillhouse.v1.PackagingRemoval.created_at:type_name -> google.protobuf.Timestamp
-	0, // 2: stillhouse.v1.CreateRemovalRequest.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
-	1, // 3: stillhouse.v1.CreateRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
-	1, // 4: stillhouse.v1.ListRemovalsResponse.removals:type_name -> stillhouse.v1.PackagingRemoval
-	2, // 5: stillhouse.v1.RemovalService.CreateRemoval:input_type -> stillhouse.v1.CreateRemovalRequest
-	4, // 6: stillhouse.v1.RemovalService.ListRemovals:input_type -> stillhouse.v1.ListRemovalsRequest
-	3, // 7: stillhouse.v1.RemovalService.CreateRemoval:output_type -> stillhouse.v1.CreateRemovalResponse
-	5, // 8: stillhouse.v1.RemovalService.ListRemovals:output_type -> stillhouse.v1.ListRemovalsResponse
-	7, // [7:9] is the sub-list for method output_type
-	5, // [5:7] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	0,  // 0: stillhouse.v1.PackagingRemoval.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
+	8,  // 1: stillhouse.v1.PackagingRemoval.created_at:type_name -> google.protobuf.Timestamp
+	8,  // 2: stillhouse.v1.PackagingRemoval.voided_at:type_name -> google.protobuf.Timestamp
+	0,  // 3: stillhouse.v1.CreateRemovalRequest.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
+	1,  // 4: stillhouse.v1.CreateRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
+	1,  // 5: stillhouse.v1.ListRemovalsResponse.removals:type_name -> stillhouse.v1.PackagingRemoval
+	1,  // 6: stillhouse.v1.VoidRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
+	2,  // 7: stillhouse.v1.RemovalService.CreateRemoval:input_type -> stillhouse.v1.CreateRemovalRequest
+	4,  // 8: stillhouse.v1.RemovalService.ListRemovals:input_type -> stillhouse.v1.ListRemovalsRequest
+	6,  // 9: stillhouse.v1.RemovalService.VoidRemoval:input_type -> stillhouse.v1.VoidRemovalRequest
+	3,  // 10: stillhouse.v1.RemovalService.CreateRemoval:output_type -> stillhouse.v1.CreateRemovalResponse
+	5,  // 11: stillhouse.v1.RemovalService.ListRemovals:output_type -> stillhouse.v1.ListRemovalsResponse
+	7,  // 12: stillhouse.v1.RemovalService.VoidRemoval:output_type -> stillhouse.v1.VoidRemovalResponse
+	10, // [10:13] is the sub-list for method output_type
+	7,  // [7:10] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_removal_proto_init() }
@@ -620,7 +755,7 @@ func file_stillhouse_v1_removal_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_removal_proto_rawDesc), len(file_stillhouse_v1_removal_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

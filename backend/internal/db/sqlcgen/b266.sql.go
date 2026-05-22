@@ -249,6 +249,7 @@ SELECT COALESCE(SUM(total_laa), 0)::double precision      AS total_laa,
        COUNT(*)::int                                      AS removal_count
 FROM packaging_removals
 WHERE removal_date >= $1 AND removal_date < $2
+  AND voided_at IS NULL
 `
 
 type SumRemovalsInPeriodParams struct {

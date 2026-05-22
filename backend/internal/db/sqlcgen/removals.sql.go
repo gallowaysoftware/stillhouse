@@ -20,7 +20,7 @@ INSERT INTO packaging_removals (
     duty_rate_per_laa, duty_amount_cad, notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
-) RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at
+) RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason
 `
 
 type CreateRemovalParams struct {
@@ -78,6 +78,9 @@ func (q *Queries) CreateRemoval(ctx context.Context, arg CreateRemovalParams) (P
 		&i.DutyAmountCad,
 		&i.Notes,
 		&i.CreatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
 	)
 	return i, err
 }
@@ -114,8 +117,72 @@ func (q *Queries) DecrementPackagedOnHand(ctx context.Context, arg DecrementPack
 	return i, err
 }
 
+const getRemoval = `-- name: GetRemoval :one
+SELECT id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason FROM packaging_removals WHERE id = $1
+`
+
+func (q *Queries) GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error) {
+	row := q.db.QueryRow(ctx, getRemoval, id)
+	var i PackagingRemoval
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.RemovalNo,
+		&i.PackagedInventoryID,
+		&i.RemovalDate,
+		&i.BottlesRemoved,
+		&i.DestinationKind,
+		&i.DestinationName,
+		&i.Reference,
+		&i.BottleSizeMl,
+		&i.BottleAbvPct,
+		&i.TotalLitres,
+		&i.TotalLaa,
+		&i.DutyRatePerLaa,
+		&i.DutyAmountCad,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
+	)
+	return i, err
+}
+
+const incrementPackagedOnHand = `-- name: IncrementPackagedOnHand :one
+UPDATE packaged_inventory
+SET bottles_on_hand = bottles_on_hand + $2,
+    bottles_removed = bottles_removed - $2
+WHERE id = $1
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at
+`
+
+type IncrementPackagedOnHandParams struct {
+	ID            uuid.UUID `json:"id"`
+	BottlesOnHand int32     `json:"bottles_on_hand"`
+}
+
+func (q *Queries) IncrementPackagedOnHand(ctx context.Context, arg IncrementPackagedOnHandParams) (PackagedInventory, error) {
+	row := q.db.QueryRow(ctx, incrementPackagedOnHand, arg.ID, arg.BottlesOnHand)
+	var i PackagedInventory
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ProductID,
+		&i.LotCode,
+		&i.Jurisdiction,
+		&i.BottlingRunID,
+		&i.BottlesOnHand,
+		&i.BottlesPackaged,
+		&i.BottlesRemoved,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listRemovals = `-- name: ListRemovals :many
-SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_date, pr.bottles_removed, pr.destination_kind, pr.destination_name, pr.reference, pr.bottle_size_ml, pr.bottle_abv_pct, pr.total_litres, pr.total_laa, pr.duty_rate_per_laa, pr.duty_amount_cad, pr.notes, pr.created_at,
+SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_date, pr.bottles_removed, pr.destination_kind, pr.destination_name, pr.reference, pr.bottle_size_ml, pr.bottle_abv_pct, pr.total_litres, pr.total_laa, pr.duty_rate_per_laa, pr.duty_amount_cad, pr.notes, pr.created_at, pr.voided_at, pr.voided_by, pr.voided_reason,
        pi.lot_code        AS lot_code,
        pi.jurisdiction    AS jurisdiction,
        p.name             AS product_name
@@ -150,6 +217,9 @@ type ListRemovalsRow struct {
 	DutyAmountCad       float64                `json:"duty_amount_cad"`
 	Notes               string                 `json:"notes"`
 	CreatedAt           pgtype.Timestamptz     `json:"created_at"`
+	VoidedAt            pgtype.Timestamptz     `json:"voided_at"`
+	VoidedBy            uuid.NullUUID          `json:"voided_by"`
+	VoidedReason        string                 `json:"voided_reason"`
 	LotCode             string                 `json:"lot_code"`
 	Jurisdiction        string                 `json:"jurisdiction"`
 	ProductName         string                 `json:"product_name"`
@@ -182,6 +252,9 @@ func (q *Queries) ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]L
 			&i.DutyAmountCad,
 			&i.Notes,
 			&i.CreatedAt,
+			&i.VoidedAt,
+			&i.VoidedBy,
+			&i.VoidedReason,
 			&i.LotCode,
 			&i.Jurisdiction,
 			&i.ProductName,
@@ -205,4 +278,47 @@ func (q *Queries) NextRemovalNo(ctx context.Context) (int32, error) {
 	var next int32
 	err := row.Scan(&next)
 	return next, err
+}
+
+const voidRemoval = `-- name: VoidRemoval :one
+UPDATE packaging_removals
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason
+`
+
+type VoidRemovalParams struct {
+	ID           uuid.UUID     `json:"id"`
+	VoidedBy     uuid.NullUUID `json:"voided_by"`
+	VoidedReason string        `json:"voided_reason"`
+}
+
+func (q *Queries) VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error) {
+	row := q.db.QueryRow(ctx, voidRemoval, arg.ID, arg.VoidedBy, arg.VoidedReason)
+	var i PackagingRemoval
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.RemovalNo,
+		&i.PackagedInventoryID,
+		&i.RemovalDate,
+		&i.BottlesRemoved,
+		&i.DestinationKind,
+		&i.DestinationName,
+		&i.Reference,
+		&i.BottleSizeMl,
+		&i.BottleAbvPct,
+		&i.TotalLitres,
+		&i.TotalLaa,
+		&i.DutyRatePerLaa,
+		&i.DutyAmountCad,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
+	)
+	return i, err
 }
