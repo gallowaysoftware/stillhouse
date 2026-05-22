@@ -1,0 +1,45 @@
+# Go
+/backend/bin/
+*.test
+*.out
+coverage.txt
+
+# Node
+node_modules/
+.pnp/
+.pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Web build output
+/web/dist/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Tooling caches
+.cache/
+.parcel-cache/
+.turbo/
+
+# Local dev DB volume
+/.data/
+
+# Embedded static (built by web build step, embedded into Go binary)
+/backend/internal/server/static/dist/
+
+# Coverage
+*.lcov
+coverage/
