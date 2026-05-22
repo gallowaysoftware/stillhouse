@@ -19,6 +19,8 @@ from Stillhouse for a production month.
 - **Schemas** — Protocol Buffers ([proto/](proto/)), compiled with Buf into
   typed Go server stubs and typed TS clients.
 - **Database** — PostgreSQL with row-level security for multi-tenant isolation.
+  Migrations run as a superuser; the application connects as a separate
+  non-super role (`stillhouse_app`) so the RLS policies actually enforce.
   One tenant = one CRA spirits licence.
 - **License** — AGPL-3.0. Free to self-host. Managed hosting will be a paid
   offering once the project is ready.

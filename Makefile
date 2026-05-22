@@ -6,7 +6,13 @@ SHELL := /usr/bin/env bash
 
 CONTAINER       ?= $(shell command -v podman 2>/dev/null || echo docker)
 COMPOSE         ?= $(CONTAINER) compose -f deploy/compose.yaml
-PG_DSN          ?= postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable
+
+# Two DSNs:
+#   PG_ADMIN_DSN — superuser; runs migrations + seed. Bypasses RLS.
+#   PG_APP_DSN   — non-superuser; the Go server connects with this so the
+#                  tenant-isolation RLS policies actually enforce.
+PG_ADMIN_DSN    ?= postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable
+PG_APP_DSN      ?= postgres://stillhouse_app:stillhouse_app@localhost:5432/stillhouse?sslmode=disable
 MIGRATIONS_DIR  := backend/internal/db/migrations
 
 # ----- Help -------------------------------------------------------------------
@@ -50,11 +56,11 @@ dev-logs: ## Tail dev Postgres logs.
 
 # ----- Migrations -------------------------------------------------------------
 
-migrate-up: ## Apply all pending migrations.
-	migrate -path $(MIGRATIONS_DIR) -database "$(PG_DSN)" up
+migrate-up: ## Apply all pending migrations (runs as superuser).
+	migrate -path $(MIGRATIONS_DIR) -database "$(PG_ADMIN_DSN)" up
 
 migrate-down: ## Roll back the most recent migration.
-	migrate -path $(MIGRATIONS_DIR) -database "$(PG_DSN)" down 1
+	migrate -path $(MIGRATIONS_DIR) -database "$(PG_ADMIN_DSN)" down 1
 
 migrate-new: ## Create a new migration. Usage: make migrate-new NAME=add_thing
 	@test -n "$(NAME)" || (echo "NAME is required (e.g. make migrate-new NAME=add_thing)"; exit 1)
@@ -62,17 +68,17 @@ migrate-new: ## Create a new migration. Usage: make migrate-new NAME=add_thing
 
 migrate-force: ## Force migration version (recovery). Usage: make migrate-force V=1
 	@test -n "$(V)" || (echo "V is required"; exit 1)
-	migrate -path $(MIGRATIONS_DIR) -database "$(PG_DSN)" force $(V)
+	migrate -path $(MIGRATIONS_DIR) -database "$(PG_ADMIN_DSN)" force $(V)
 
 # ----- Seed -------------------------------------------------------------------
 
 seed: ## Seed a test tenant + admin user. Prints generated credentials.
-	cd backend && go run ./cmd/seed
+	cd backend && DATABASE_URL="$(PG_ADMIN_DSN)" go run ./cmd/seed
 
 # ----- Run --------------------------------------------------------------------
 
-backend-dev: ## Run the Go backend with live reload (uses STILLHOUSE_DEV=1).
-	cd backend && STILLHOUSE_DEV=1 DATABASE_URL="$(PG_DSN)" go run ./cmd/server
+backend-dev: ## Run the Go backend (uses PG_APP_DSN so RLS enforces).
+	cd backend && STILLHOUSE_DEV=1 DATABASE_URL="$(PG_APP_DSN)" go run ./cmd/server
 
 web-dev: ## Run the Vite dev server.
 	cd web && npm run dev
