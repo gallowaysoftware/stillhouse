@@ -1,0 +1,44 @@
+// Tenant: one Stillhouse tenant = one distillery operating under a single
+// CRA spirits licence (Excise Act, 2001).
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message Tenant {
+  string id = 1;                                // UUID
+  string name = 2;
+  string cra_spirits_licence_number = 3;
+  string excise_warehouse_licence_number = 4;   // optional; only required if the tenant holds one
+  string default_jurisdiction = 5;              // ISO 3166-2 subdivision (e.g., "CA-ON")
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message CreateTenantRequest {
+  string name = 1;
+  string cra_spirits_licence_number = 2;
+  string default_jurisdiction = 3;
+  // Bootstrap owner account, created in the same transaction.
+  string owner_email = 4;
+  string owner_password = 5;
+  string owner_display_name = 6;
+}
+
+message CreateTenantResponse {
+  Tenant tenant = 1;
+}
+
+message GetTenantRequest {}
+
+message GetTenantResponse {
+  Tenant tenant = 1;
+}
+
+// TenantService manages tenant metadata.
+// CreateTenant is the bootstrap operation for a fresh self-hosted install.
+service TenantService {
+  rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse);
+  rpc GetTenant(GetTenantRequest) returns (GetTenantResponse);
+}

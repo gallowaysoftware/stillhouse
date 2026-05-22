@@ -1,0 +1,15 @@
+# Go codegen. Runs without any web/ dependency.
+# For TS codegen see buf.gen.web.yaml (requires web/node_modules to exist).
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/gallowaysoftware/stillhouse/backend/internal/genpb
+plugins:
+  - local: protoc-gen-go
+    out: ../backend/internal/genpb
+    opt: paths=source_relative
+  - local: protoc-gen-connect-go
+    out: ../backend/internal/genpb
+    opt: paths=source_relative

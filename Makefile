@@ -26,10 +26,13 @@ tools: ## Install required Go-based dev tools (buf, sqlc, migrate, protoc plugin
 
 # ----- Code generation --------------------------------------------------------
 
-generate: buf-generate sqlc-generate ## Run all code generators.
+generate: buf-generate-go buf-generate-web sqlc-generate ## Run all code generators.
 
-buf-generate: ## Generate Go + TS code from .proto definitions.
-	cd proto && buf generate
+buf-generate-go: ## Generate Go code from .proto definitions.
+	cd proto && buf generate --template buf.gen.yaml
+
+buf-generate-web: ## Generate TS code from .proto definitions. Requires `cd web && npm install` first.
+	cd proto && buf generate --template buf.gen.web.yaml
 
 sqlc-generate: ## Generate type-safe Go query code from SQL.
 	cd backend && sqlc generate

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/tenant.proto";
+
+enum UserRole {
+  USER_ROLE_UNSPECIFIED = 0;
+  USER_ROLE_OWNER = 1;
+  USER_ROLE_OPERATOR = 2;
+  USER_ROLE_VIEWER = 3;
+}
+
+message User {
+  string id = 1;
+  string tenant_id = 2;
+  string email = 3;
+  string display_name = 4;
+  UserRole role = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+  Tenant tenant = 2;
+}
+
+service UserService {
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+}

@@ -1,0 +1,29 @@
+// AuditEvent: append-only record of significant actions taken in the system.
+// Backs s.206 (Excise Act, 2001) daily records expectations: every meaningful
+// change is captured with actor, timestamp, and payload.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum AuditAction {
+  AUDIT_ACTION_UNSPECIFIED = 0;
+  AUDIT_ACTION_CREATE = 1;
+  AUDIT_ACTION_UPDATE = 2;
+  AUDIT_ACTION_DELETE = 3;
+  AUDIT_ACTION_SIGN = 4;
+  AUDIT_ACTION_LOGIN = 5;
+  AUDIT_ACTION_LOGOUT = 6;
+}
+
+message AuditEvent {
+  string id = 1;
+  string tenant_id = 2;
+  string user_id = 3;              // nullable in DB; empty string here when system-generated
+  string entity_type = 4;          // e.g., "tenant", "user", "bulk_movement"
+  string entity_id = 5;
+  AuditAction action = 6;
+  google.protobuf.Timestamp occurred_at = 7;
+  bytes payload_json = 8;          // JSON-encoded change payload (before/after where applicable)
+}

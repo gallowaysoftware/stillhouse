@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "stillhouse/v1/tenant.proto";
+import "stillhouse/v1/user.proto";
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  User user = 1;
+  Tenant tenant = 2;
+}
+
+message LogoutRequest {}
+message LogoutResponse {}
+
+service AuthService {
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+}
