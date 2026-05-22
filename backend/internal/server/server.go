@@ -105,7 +105,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 
 	httpSrv := &http.Server{
 		Addr:              cfg.Addr,
-		Handler:           sm.LoadAndSave(mux),
+		Handler:           loggingMiddleware(sm.LoadAndSave(mux), logger),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
