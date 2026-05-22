@@ -73,6 +73,12 @@ export function DistillationDetailPage() {
 
   const r = run.data.run;
 
+  const totalChargeLAA = r.charges.reduce((s, c) => s + c.laa, 0);
+  const totalCutLAA = r.cuts.reduce((s, c) => s + c.laa, 0);
+  const gaugeLAA = r.gauge?.laa ?? 0;
+  const heartsRecoveryPct = totalChargeLAA > 0 ? (gaugeLAA / totalChargeLAA) * 100 : 0;
+  const totalCutRecoveryPct = totalChargeLAA > 0 ? (totalCutLAA / totalChargeLAA) * 100 : 0;
+
   return (
     <Shell>
       <header className="mb-6 flex items-start justify-between">
@@ -90,6 +96,22 @@ export function DistillationDetailPage() {
           </div>
         )}
       </header>
+
+      <section className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <Metric label="Charge LAA in" value={`${formatLAA(totalChargeLAA)} L`} />
+        <Metric label="Cuts LAA total" value={`${formatLAA(totalCutLAA)} L`} />
+        <Metric
+          label="Hearts recovery"
+          value={r.gauge ? `${heartsRecoveryPct.toFixed(1)}%` : "—"}
+          hint={r.gauge ? "gauge ÷ charge" : "no gauge yet"}
+          highlight={!!r.gauge}
+        />
+        <Metric
+          label="Total cut recovery"
+          value={totalChargeLAA > 0 ? `${totalCutRecoveryPct.toFixed(1)}%` : "—"}
+          hint={totalChargeLAA > 0 ? "all cuts ÷ charge" : "no charge yet"}
+        />
+      </section>
 
       <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChargesPanel
@@ -369,6 +391,18 @@ function GaugeForm({
         )}
       </div>
     </form>
+  );
+}
+
+function Metric({
+  label, value, hint, highlight,
+}: { label: string; value: string; hint?: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-lg border bg-white p-4 shadow-sm ${highlight ? "border-emerald-200" : "border-stone-200"}`}>
+      <p className="text-xs uppercase text-stone-500">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
+      {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+    </div>
   );
 }
 
