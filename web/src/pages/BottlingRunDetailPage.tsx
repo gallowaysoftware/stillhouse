@@ -77,9 +77,9 @@ export function BottlingRunDetailPage() {
             </ol>
           )}
           <p className="mt-3 text-xs text-stone-500">
-            Walks bottling → source-container feeds (last year) → production gauges → distillation → fermentation → mash → recipe,
-            and barrel dumps where applicable. Single-charge-per-distillation simplification; multi-charge fans need follow-up
-            per row.
+            Walks bottling → source-container feeds (last year) → production gauges → distillation → fermentation → mash →
+            material lots (when recorded) → recipe, and barrel dumps where applicable. Single-charge-per-distillation
+            simplification; multi-charge fans need follow-up per row.
           </p>
         </section>
       )}

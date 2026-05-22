@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -122,6 +123,30 @@ func (s *TraceabilityService) TraceBottlingRun(
 						Kind: "mash_run", Id: nullUUIDString(chain.MashRunID),
 						Headline: fmt.Sprintf("      ↳ Mash #%d on %s", chain.MashNo.Int32, formatDate(chain.MashDate)),
 					},
+				)
+				// Drop in a material_lot node per lot-linked ingredient on this mash.
+				// This is the link that makes grain→bottle traceability actionable:
+				// "this bottle came from supplier lot X received on Y".
+				if chain.MashRunID.Valid {
+					ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
+					if ie != nil {
+						return ie
+					}
+					for _, ing := range ings {
+						if !ing.MaterialLotID.Valid {
+							continue
+						}
+						resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
+							Kind: "material_lot", Id: ing.MaterialLotID.UUID.String(),
+							Headline: fmt.Sprintf("        ↳ %s: lot %s",
+								ing.MaterialName,
+								ing.SupplierLot.String),
+							Detail: fmt.Sprintf("%s %s used; received %s",
+								formatQtyTrace(ing.QuantityUsed), ing.Uom, formatLotReceived(ing.LotReceivedAt)),
+						})
+					}
+				}
+				resp.Nodes = append(resp.Nodes,
 					&stillhousev1.TraceabilityNode{
 						Kind: "recipe_version", Id: nullUUIDString(chain.RecipeVersionID),
 						Headline: fmt.Sprintf("        ↳ Recipe: %s v%d", chain.RecipeName.String, chain.RecipeVersionNo.Int32),
@@ -152,4 +177,16 @@ func (s *TraceabilityService) TraceBottlingRun(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(resp), nil
+}
+
+func formatQtyTrace(q float64) string {
+	// Trims trailing zeros so "50.00 kg" prints as "50 kg".
+	return strings.TrimRight(strings.TrimRight(fmt.Sprintf("%.2f", q), "0"), ".")
+}
+
+func formatLotReceived(t pgtype.Timestamptz) string {
+	if !t.Valid {
+		return "(unknown date)"
+	}
+	return t.Time.Format("2006-01-02")
 }
