@@ -111,6 +111,12 @@ type Querier interface {
 	// for a closed period uses current values, which is fine if generated promptly
 	// after period close).
 	SumBulkOnHandAsOfDate(ctx context.Context) (float64, error)
+	// Sums production_gauges.laa across every distillation that charged from
+	// any fermentation_run belonging to this mash. Note: if a distillation
+	// mixed charges from multiple mashes, that gauge LAA is over-attributed
+	// here. Acceptable for v1 single-mash-per-distillation operations;
+	// proportional attribution is a future refinement.
+	SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error)
 	// Approximate packaged LAA on hand: bottles × bottle_size × target_abv / 100 / 1000.
 	SumPackagedOnHandLAA(ctx context.Context) (SumPackagedOnHandLAARow, error)
 	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)

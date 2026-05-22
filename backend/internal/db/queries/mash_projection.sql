@@ -1,0 +1,12 @@
+-- name: SumGaugeLAAForMash :one
+-- Sums production_gauges.laa across every distillation that charged from
+-- any fermentation_run belonging to this mash. Note: if a distillation
+-- mixed charges from multiple mashes, that gauge LAA is over-attributed
+-- here. Acceptable for v1 single-mash-per-distillation operations;
+-- proportional attribution is a future refinement.
+SELECT COALESCE(SUM(DISTINCT pg.laa), 0)::double precision AS total_gauge_laa
+FROM production_gauges pg
+JOIN distillation_runs dr ON dr.id = pg.distillation_run_id
+JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
+JOIN fermentation_runs fr ON fr.id = dc.fermentation_run_id
+WHERE fr.mash_run_id = $1;

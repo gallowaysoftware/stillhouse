@@ -16,6 +16,7 @@ import {
 import { CreateFermentationRunRequestSchema } from "@/gen/stillhouse/v1/fermentation_pb";
 import {
   fermentationStatusLabel,
+  formatLAA,
   formatQty,
   mashMetricKindLabel,
   mashStatusLabel,
@@ -122,6 +123,27 @@ export function MashDetailPage() {
       </header>
 
       {m.notes && <p className="mb-6 rounded bg-white p-4 text-sm text-stone-700 shadow-sm">{m.notes}</p>}
+
+      <section className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <ProjStat
+          label="Projected LAA"
+          value={`${formatLAA(m.projectedLaa)} L`}
+          hint="from actual ingredient mass × recipe efficiencies"
+        />
+        <ProjStat
+          label="Actual captured LAA"
+          value={m.actualCapturedLaa > 0 ? `${formatLAA(m.actualCapturedLaa)} L` : "—"}
+          hint={m.actualCapturedLaa > 0 ? "sum of downstream production gauges" : "no distillation gauge yet"}
+        />
+        <ProjStat
+          label="Recovery vs projection"
+          value={m.projectedLaa > 0 && m.actualCapturedLaa > 0
+            ? `${((m.actualCapturedLaa / m.projectedLaa) * 100).toFixed(1)}%`
+            : "—"}
+          hint={m.projectedLaa > 0 && m.actualCapturedLaa > 0 ? "actual ÷ projected" : "needs both numbers"}
+          highlight={m.projectedLaa > 0 && m.actualCapturedLaa > 0}
+        />
+      </section>
 
       <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Panel
@@ -329,6 +351,18 @@ type Field = {
   placeholder?: string;
   options?: { value: string; label: string }[];
 };
+
+function ProjStat({
+  label, value, hint, highlight,
+}: { label: string; value: string; hint?: string; highlight?: boolean }) {
+  return (
+    <div className={`rounded-lg border bg-white p-4 shadow-sm ${highlight ? "border-emerald-200" : "border-stone-200"}`}>
+      <p className="text-xs uppercase text-stone-500">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
+      {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+    </div>
+  );
+}
 
 function InlineForm({
   fields,

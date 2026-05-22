@@ -42,6 +42,17 @@ message MashRun {
   // Children, populated by GetMashRun.
   repeated MashIngredientUsage ingredients = 12;
   repeated MashMetric metrics = 13;
+
+  // Analytics, populated by GetMashRun.
+  // projected_laa = sum(ingredient_used × material.extract × recipe.mash_eff
+  //                     × 0.511 × recipe.ferment_eff / 0.78934 × recipe.distill_recov)
+  // computed from actual ingredient usage using the recipe version's efficiency
+  // parameters. Zero when no fermentable ingredients are recorded yet.
+  double projected_laa = 14;
+  // actual_captured_laa = sum of production_gauge.laa across distillations
+  // that charged from any fermentation_run belonging to this mash. Zero
+  // until the downstream distillation has been gauged.
+  double actual_captured_laa = 15;
 }
 
 message MashIngredientUsage {

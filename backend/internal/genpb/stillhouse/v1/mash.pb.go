@@ -156,10 +156,22 @@ type MashRun struct {
 	RecipeName      string `protobuf:"bytes,10,opt,name=recipe_name,json=recipeName,proto3" json:"recipe_name,omitempty"`
 	RecipeVersionNo int32  `protobuf:"varint,11,opt,name=recipe_version_no,json=recipeVersionNo,proto3" json:"recipe_version_no,omitempty"`
 	// Children, populated by GetMashRun.
-	Ingredients   []*MashIngredientUsage `protobuf:"bytes,12,rep,name=ingredients,proto3" json:"ingredients,omitempty"`
-	Metrics       []*MashMetric          `protobuf:"bytes,13,rep,name=metrics,proto3" json:"metrics,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Ingredients []*MashIngredientUsage `protobuf:"bytes,12,rep,name=ingredients,proto3" json:"ingredients,omitempty"`
+	Metrics     []*MashMetric          `protobuf:"bytes,13,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	// Analytics, populated by GetMashRun.
+	// projected_laa = sum(ingredient_used × material.extract × recipe.mash_eff
+	//
+	//	× 0.511 × recipe.ferment_eff / 0.78934 × recipe.distill_recov)
+	//
+	// computed from actual ingredient usage using the recipe version's efficiency
+	// parameters. Zero when no fermentable ingredients are recorded yet.
+	ProjectedLaa float64 `protobuf:"fixed64,14,opt,name=projected_laa,json=projectedLaa,proto3" json:"projected_laa,omitempty"`
+	// actual_captured_laa = sum of production_gauge.laa across distillations
+	// that charged from any fermentation_run belonging to this mash. Zero
+	// until the downstream distillation has been gauged.
+	ActualCapturedLaa float64 `protobuf:"fixed64,15,opt,name=actual_captured_laa,json=actualCapturedLaa,proto3" json:"actual_captured_laa,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *MashRun) Reset() {
@@ -281,6 +293,20 @@ func (x *MashRun) GetMetrics() []*MashMetric {
 		return x.Metrics
 	}
 	return nil
+}
+
+func (x *MashRun) GetProjectedLaa() float64 {
+	if x != nil {
+		return x.ProjectedLaa
+	}
+	return 0
+}
+
+func (x *MashRun) GetActualCapturedLaa() float64 {
+	if x != nil {
+		return x.ActualCapturedLaa
+	}
+	return 0
 }
 
 type MashIngredientUsage struct {
@@ -1135,7 +1161,7 @@ var File_stillhouse_v1_mash_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/mash.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cstillhouse/v1/material.proto\"\x9f\x04\n" +
+	"\x18stillhouse/v1/mash.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cstillhouse/v1/material.proto\"\xf4\x04\n" +
 	"\aMashRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12*\n" +
@@ -1153,7 +1179,9 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"recipeName\x12*\n" +
 	"\x11recipe_version_no\x18\v \x01(\x05R\x0frecipeVersionNo\x12D\n" +
 	"\vingredients\x18\f \x03(\v2\".stillhouse.v1.MashIngredientUsageR\vingredients\x123\n" +
-	"\ametrics\x18\r \x03(\v2\x19.stillhouse.v1.MashMetricR\ametrics\"\xc0\x03\n" +
+	"\ametrics\x18\r \x03(\v2\x19.stillhouse.v1.MashMetricR\ametrics\x12#\n" +
+	"\rprojected_laa\x18\x0e \x01(\x01R\fprojectedLaa\x12.\n" +
+	"\x13actual_captured_laa\x18\x0f \x01(\x01R\x11actualCapturedLaa\"\xc0\x03\n" +
 	"\x13MashIngredientUsage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
 	"\vmash_run_id\x18\x02 \x01(\tR\tmashRunId\x12\x1f\n" +

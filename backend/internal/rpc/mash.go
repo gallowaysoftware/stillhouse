@@ -89,11 +89,13 @@ func (s *MashService) GetMashRun(
 	}
 
 	var (
-		mash      sqlcgen.MashRun
+		mash        sqlcgen.MashRun
 		ingredients []sqlcgen.ListMashIngredientsRow
-		metrics   []sqlcgen.MashMetric
-		recipeName string
-		versionNo  int32
+		metrics     []sqlcgen.MashMetric
+		recipeName  string
+		versionNo   int32
+		recipeVer   sqlcgen.RecipeVersion
+		capturedLAA float64
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
@@ -101,21 +103,25 @@ func (s *MashService) GetMashRun(
 		if e != nil {
 			return e
 		}
-		rv, e := q.GetRecipeVersion(ctx, mash.RecipeVersionID)
+		recipeVer, e = q.GetRecipeVersion(ctx, mash.RecipeVersionID)
 		if e != nil {
 			return e
 		}
-		r, e := q.GetRecipe(ctx, rv.RecipeID)
+		r, e := q.GetRecipe(ctx, recipeVer.RecipeID)
 		if e != nil {
 			return e
 		}
 		recipeName = r.Name
-		versionNo = rv.VersionNo
+		versionNo = recipeVer.VersionNo
 		ingredients, e = q.ListMashIngredients(ctx, id)
 		if e != nil {
 			return e
 		}
 		metrics, e = q.ListMashMetrics(ctx, id)
+		if e != nil {
+			return e
+		}
+		capturedLAA, e = q.SumGaugeLAAForMash(ctx, id)
 		return e
 	})
 	if err != nil {
@@ -125,9 +131,43 @@ func (s *MashService) GetMashRun(
 		s.logger.Error("GetMashRun", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	out := mashRunToProto(mash, recipeName, versionNo, ingredients, metrics)
+	out.ProjectedLaa = projectMashLAA(ingredients, recipeVer)
+	out.ActualCapturedLaa = capturedLAA
 	return connect.NewResponse(&stillhousev1.GetMashRunResponse{
-		MashRun: mashRunToProto(mash, recipeName, versionNo, ingredients, metrics),
+		MashRun: out,
 	}), nil
+}
+
+// projectMashLAA runs distilling.ProjectBatch over the mash's actual
+// ingredient usage using the recipe version's efficiency parameters.
+// Only ingredients with a set extract_pct AND uom "kg" contribute (matches
+// the projectRecipeVersion convention).
+func projectMashLAA(ingredients []sqlcgen.ListMashIngredientsRow, rv sqlcgen.RecipeVersion) float64 {
+	inputs := make([]distillingInput, 0, len(ingredients))
+	for _, ing := range ingredients {
+		if !ing.MaterialExtractPct.Valid || ing.Uom != "kg" {
+			continue
+		}
+		inputs = append(inputs, distillingInput{MassKg: ing.QuantityUsed, ExtractPct: ing.MaterialExtractPct.Float64})
+	}
+	if len(inputs) == 0 {
+		return 0
+	}
+	const gayLussac = 0.511
+	const ethanolDensity = 0.78934
+	total := 0.0
+	for _, in := range inputs {
+		massEthanolKg := in.MassKg * in.ExtractPct * rv.MashEfficiencyPct * gayLussac * rv.FermentEfficiencyPct
+		volL := massEthanolKg / ethanolDensity
+		total += volL * rv.DistillationRecoveryPct
+	}
+	return float64(int(total*10000+0.5)) / 10000
+}
+
+type distillingInput struct {
+	MassKg     float64
+	ExtractPct float64
 }
 
 func (s *MashService) ListMashRuns(
