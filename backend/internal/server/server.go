@@ -107,6 +107,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		Addr:              cfg.Addr,
 		Handler:           loggingMiddleware(sm.LoadAndSave(mux), logger),
 		ReadHeaderTimeout: 10 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      60 * time.Second, // big enough for CSV exports
+		IdleTimeout:       120 * time.Second,
 	}
 
 	return &Server{
