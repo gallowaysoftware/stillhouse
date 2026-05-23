@@ -1,0 +1,52 @@
+# Production stack — bundles Postgres and the Stillhouse app. Designed for
+# a single-host deploy (Unraid, plain Docker host, etc). Persistent data
+# lives under STILLHOUSE_DATA_DIR; on Unraid set that to a path under
+# /mnt/user/appdata/stillhouse/ in .env.
+#
+# TLS termination is intentionally not handled here — put NPM / Caddy /
+# Traefik in front and point it at the published STILLHOUSE_PORT.
+#
+# All secrets pulled from a sibling .env (see .env.example).
+
+services:
+  postgres:
+    image: docker.io/library/postgres:16
+    container_name: stillhouse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: stillhouse
+      POSTGRES_USER: stillhouse
+      POSTGRES_PASSWORD: ${PG_ADMIN_PASSWORD:?PG_ADMIN_PASSWORD must be set in .env}
+    volumes:
+      - ${STILLHOUSE_DATA_DIR:?STILLHOUSE_DATA_DIR must be set in .env}/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stillhouse -d stillhouse"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    # No published port — only the app container reaches it on the
+    # internal network. Operators wanting psql access can `docker exec`.
+
+  app:
+    image: ${STILLHOUSE_IMAGE:-registry.home.thegalloways.ca/stillhouse:latest}
+    container_name: stillhouse-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Superuser DSN — used at boot for migrations + app-role password rotate.
+      ADMIN_DATABASE_URL: postgres://stillhouse:${PG_ADMIN_PASSWORD}@postgres:5432/stillhouse?sslmode=disable
+      # App-role DSN — what the running server connects with so RLS enforces.
+      DATABASE_URL: postgres://stillhouse_app:${PG_APP_PASSWORD:?PG_APP_PASSWORD must be set in .env}@postgres:5432/stillhouse?sslmode=disable
+      # Rotates stillhouse_app's password from the migration default before
+      # the server switches over to DATABASE_URL.
+      STILLHOUSE_APP_PASSWORD: ${PG_APP_PASSWORD}
+      STILLHOUSE_ADDR: ":8080"
+      STILLHOUSE_STATIC_DIR: /app/static
+    ports:
+      - "${STILLHOUSE_PORT:-8080}:8080"
+    # No app healthcheck — the distroless base image doesn't ship wget or
+    # curl, so the /healthz endpoint can't be probed from inside the
+    # container without a custom shim. NPM in front does its own
+    # upstream probing; that's the operational healthcheck.
