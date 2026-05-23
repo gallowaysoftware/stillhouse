@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
@@ -276,24 +276,22 @@ export function MashDetailPage() {
         <Panel
           title="Fermentations"
           right={
-            <InlineForm
-              fields={[
-                { name: "fermenter_label", label: "Fermenter", type: "text", required: true, placeholder: "Fermenter A" },
-                { name: "initial_volume_l", label: "Volume (L)", type: "number", step: "0.1" },
-              ]}
+            <FermentForm
+              materials={materials.data?.materials ?? []}
               submitting={createFerment.isPending}
               error={createFerment.error}
-              onSubmit={(values) => {
-                const volRaw = values.initial_volume_l?.trim() ?? "";
+              onSubmit={(v) =>
                 createFerment.mutate(
                   create(CreateFermentationRunRequestSchema, {
                     mashRunId: m.id,
-                    fermenterLabel: values.fermenter_label,
-                    initialVolumeL: volRaw ? Number(volRaw) : 0,
-                    initialVolumeLSet: !!volRaw,
+                    fermenterLabel: v.fermenterLabel,
+                    initialVolumeL: v.initialVolumeL,
+                    initialVolumeLSet: v.initialVolumeL > 0,
+                    yeastMaterialId: v.yeastMaterialId,
+                    yeastLotId: v.yeastLotId,
                   }),
-                );
-              }}
+                )
+              }
             />
           }
         >
@@ -350,6 +348,115 @@ type Field = {
   placeholder?: string;
   options?: { value: string; label: string }[];
 };
+
+function FermentForm({
+  materials,
+  submitting,
+  error,
+  onSubmit,
+}: {
+  materials: Material[];
+  submitting: boolean;
+  error: Error | null;
+  onSubmit: (v: { fermenterLabel: string; initialVolumeL: number; yeastMaterialId: string; yeastLotId: string }) => void;
+}) {
+  const [fermenter, setFermenter] = useState("");
+  const [vol, setVol] = useState("");
+  const [yeastMatId, setYeastMatId] = useState("");
+  const [yeastLotId, setYeastLotId] = useState("");
+
+  // Only yeast materials surface in the picker — keeps the list short and
+  // prevents misclicks ("I pitched my grain into the fermenter"). Other
+  // materials like nutrients can still be tracked via mash ingredients.
+  const yeastMaterials = useMemo(
+    () => materials.filter((m) => m.kind === 3 /* YEAST */),
+    [materials],
+  );
+  const yeastLots = useQuery({
+    queryKey: ["listMaterialLots", "yeast", yeastMatId],
+    queryFn: () => materialClient.listMaterialLots({ materialId: yeastMatId, onHandOnly: true }),
+    enabled: !!yeastMatId,
+  });
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    onSubmit({
+      fermenterLabel: fermenter,
+      initialVolumeL: Number(vol || 0),
+      yeastMaterialId: yeastMatId,
+      yeastLotId: yeastLotId,
+    });
+    setFermenter("");
+    setVol("");
+    setYeastLotId("");
+  }
+
+  return (
+    <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Fermenter</label>
+        <input
+          required
+          value={fermenter}
+          onChange={(e) => setFermenter(e.target.value)}
+          placeholder="FV1"
+          className="w-24 rounded border border-stone-300 px-2 py-1 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Vol (L)</label>
+        <input
+          type="number"
+          step="0.1"
+          value={vol}
+          onChange={(e) => setVol(e.target.value)}
+          className="w-20 rounded border border-stone-300 px-2 py-1 text-sm"
+        />
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Yeast</label>
+        <select
+          value={yeastMatId}
+          onChange={(e) => { setYeastMatId(e.target.value); setYeastLotId(""); }}
+          className="rounded border border-stone-300 px-2 py-1 text-sm"
+        >
+          <option value="">(none)</option>
+          {yeastMaterials.map((m) => (
+            <option key={m.id} value={m.id}>{m.name}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-stone-500">Lot</label>
+        <select
+          value={yeastLotId}
+          onChange={(e) => setYeastLotId(e.target.value)}
+          disabled={!yeastMatId || yeastLots.isLoading}
+          className="rounded border border-stone-300 px-2 py-1 text-sm disabled:bg-stone-50"
+        >
+          <option value="">(not tracked)</option>
+          {(yeastLots.data?.lots ?? []).map((l: MaterialLot) => (
+            <option key={l.id} value={l.id}>
+              {l.supplierLot || l.id.slice(0, 6)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+      >
+        {submitting ? "…" : "Pitch"}
+      </button>
+      {error && (
+        <span className="text-xs text-red-600">
+          {error instanceof ConnectError ? error.rawMessage : String(error)}
+        </span>
+      )}
+    </form>
+  );
+}
 
 function IngredientForm({
   materials,
