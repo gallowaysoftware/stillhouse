@@ -8,7 +8,9 @@ import { Shell } from "@/components/Shell";
 import { bulkClient } from "@/lib/clients";
 import { WriteOnly } from "@/lib/role";
 import {
+  BlendSourceInputSchema,
   BulkContainerKind,
+  CreateBlendRequestSchema,
   CreateBulkContainerRequestSchema,
 } from "@/gen/stillhouse/v1/bulk_pb";
 import {
@@ -40,6 +42,7 @@ export function BulkPage() {
   });
 
   const [showForm, setShowForm] = useState(false);
+  const [showBlend, setShowBlend] = useState(false);
   const createContainer = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof CreateBulkContainerRequestSchema>>) =>
       bulkClient.createBulkContainer(msg),
@@ -88,8 +91,19 @@ export function BulkPage() {
           >
             {showForm ? "Cancel" : "Add container"}
           </button>
+          <button
+            onClick={() => setShowBlend((s) => !s)}
+            className="ml-2 rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+          >
+            {showBlend ? "Cancel blend" : "New blend"}
+          </button>
         </WriteOnly>
       </div>
+
+      {showBlend && <BlendForm
+        containers={list.data?.containers ?? []}
+        onDone={() => { setShowBlend(false); qc.invalidateQueries({ queryKey: ["listBulkContainers"] }); }}
+      />}
 
       {showForm && (
         <form
@@ -221,6 +235,104 @@ export function BulkPage() {
         </table>
       </div>
     </Shell>
+  );
+}
+
+// BlendForm — N-source blend into one destination. Surfaces stage 67's
+// CreateBlend RPC. Defaults to 2 sources, can add more rows.
+function BlendForm({
+  containers,
+  onDone,
+}: {
+  containers: { id: string; name: string; currentVolumeL: number; currentAbvPctSet: boolean; currentAbvPct: number; archived: boolean }[];
+}
+  & { onDone: () => void }) {
+  const active = containers.filter((c) => !c.archived);
+  const [destId, setDestId] = useState("");
+  const [rows, setRows] = useState<{ srcId: string; vol: string }[]>([
+    { srcId: "", vol: "" },
+    { srcId: "", vol: "" },
+  ]);
+  const [notes, setNotes] = useState("");
+  const mut = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof CreateBlendRequestSchema>>) =>
+      bulkClient.createBlend(msg),
+    onSuccess: () => onDone(),
+  });
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const sources = rows
+      .filter((r) => r.srcId && r.vol)
+      .map((r) =>
+        create(BlendSourceInputSchema, { sourceContainerId: r.srcId, volumeL: Number(r.vol) }),
+      );
+    mut.mutate(create(CreateBlendRequestSchema, { destinationContainerId: destId, sources, notes }));
+  }
+  return (
+    <form
+      onSubmit={submit}
+      className="mb-6 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+    >
+      <h3 className="mb-3 text-sm font-semibold uppercase text-stone-500">New blend</h3>
+      <div className="mb-3">
+        <label className="mb-1 block text-xs font-medium text-stone-600">Destination</label>
+        <select required value={destId} onChange={(e) => setDestId(e.target.value)}
+          className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+          <option value="">Select destination tank…</option>
+          {active.map((c) => (
+            <option key={c.id} value={c.id}>{c.name} ({formatQty(c.currentVolumeL)} L on hand)</option>
+          ))}
+        </select>
+      </div>
+      <div className="space-y-2">
+        {rows.map((r, i) => (
+          <div key={i} className="flex gap-2">
+            <select
+              required value={r.srcId}
+              onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, srcId: e.target.value } : x))}
+              className="flex-1 rounded border border-stone-300 px-3 py-2 text-sm"
+            >
+              <option value="">Source #{i + 1}…</option>
+              {active.filter((c) => c.id !== destId && c.currentAbvPctSet && c.currentVolumeL > 0).map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({formatQty(c.currentVolumeL)} L @ {c.currentAbvPct.toFixed(1)}%)
+                </option>
+              ))}
+            </select>
+            <input
+              required type="number" step="0.1" min="0.1" placeholder="Vol (L)"
+              value={r.vol}
+              onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, vol: e.target.value } : x))}
+              className="w-32 rounded border border-stone-300 px-3 py-2 text-sm"
+            />
+            {rows.length > 2 && (
+              <button type="button" onClick={() => setRows(rows.filter((_, j) => j !== i))}
+                className="text-xs text-stone-500 hover:text-red-700">×</button>
+            )}
+          </div>
+        ))}
+      </div>
+      <button type="button" onClick={() => setRows([...rows, { srcId: "", vol: "" }])}
+        className="mt-2 text-xs text-stone-600 hover:text-stone-900">+ Add source</button>
+      <div className="mt-3">
+        <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
+        <input value={notes} onChange={(e) => setNotes(e.target.value)}
+          className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+      </div>
+      <div className="mt-3 flex items-center gap-3">
+        <button
+          type="submit" disabled={mut.isPending}
+          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+        >
+          {mut.isPending ? "Blending…" : "Create blend"}
+        </button>
+        {mut.error && (
+          <span className="text-sm text-red-600">
+            {mut.error instanceof ConnectError ? mut.error.rawMessage : String(mut.error)}
+          </span>
+        )}
+      </div>
+    </form>
   );
 }
 
