@@ -11,6 +11,7 @@ import {
   DumpBarrelRequestSchema,
   FillBarrelRequestSchema,
   RegaugeBarrelRequestSchema,
+  VoidBarrelEventRequestSchema,
 } from "@/gen/stillhouse/v1/barrel_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 
@@ -60,6 +61,20 @@ export function BarrelDetailPage() {
       barrelClient.dumpBarrel(msg),
     onSuccess: refresh,
   });
+  const voidEvent = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof VoidBarrelEventRequestSchema>>) =>
+      barrelClient.voidBarrelEvent(msg),
+    onSuccess: refresh,
+  });
+
+  function onVoidEvent(eventId: string, kind: BarrelEventKind) {
+    const reason = window.prompt(
+      `Void this ${eventKindLabels[kind]} event? Reverses the linked bulk movement and recomputes both containers' balances. Regauge events can't be voided — record a new corrective regauge instead.`,
+      "recorded in error",
+    );
+    if (!reason || !reason.trim()) return;
+    voidEvent.mutate(create(VoidBarrelEventRequestSchema, { id: eventId, reason: reason.trim() }));
+  }
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
   if (detail.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
@@ -161,11 +176,12 @@ export function BarrelDetailPage() {
               <th className="px-4 py-3 text-right">ABV</th>
               <th className="px-4 py-3 text-right">LAA</th>
               <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {detail.data.events.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No events yet.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-3 text-stone-500">No events yet.</td></tr>
             )}
             {detail.data.events.map((e) => (
               <tr key={e.id}>
@@ -177,6 +193,17 @@ export function BarrelDetailPage() {
                 <td className="px-4 py-3 text-right text-stone-600">{e.abvPctSet ? `${e.abvPct.toFixed(2)}%` : "—"}</td>
                 <td className="px-4 py-3 text-right text-stone-600">{e.laaSet ? formatLAA(e.laa) : "—"}</td>
                 <td className="px-4 py-3 text-stone-600">{e.notes}</td>
+                <td className="px-4 py-3 text-right">
+                  {e.kind !== BarrelEventKind.REGAUGE && (
+                    <button
+                      onClick={() => onVoidEvent(e.id, e.kind)}
+                      disabled={voidEvent.isPending}
+                      className="text-xs text-stone-500 hover:text-red-700 disabled:opacity-50"
+                    >
+                      Void
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

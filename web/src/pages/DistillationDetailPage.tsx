@@ -9,6 +9,7 @@ import { bulkClient, distillationClient, fermentationClient } from "@/lib/client
 import {
   AddDistillationChargeRequestSchema,
   AddDistillationCutRequestSchema,
+  DeleteDistillationCutRequestSchema,
   DistillationCutKind,
   RecordProductionGaugeRequestSchema,
 } from "@/gen/stillhouse/v1/distillation_pb";
@@ -59,6 +60,11 @@ export function DistillationDetailPage() {
   const addCut = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof AddDistillationCutRequestSchema>>) =>
       distillationClient.addDistillationCut(msg),
+    onSuccess: refresh,
+  });
+  const deleteCut = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof DeleteDistillationCutRequestSchema>>) =>
+      distillationClient.deleteDistillationCut(msg),
     onSuccess: refresh,
   });
   const recordGauge = useMutation({
@@ -126,6 +132,8 @@ export function DistillationDetailPage() {
           onSubmit={(m) => addCut.mutate(m)}
           submitting={addCut.isPending}
           error={addCut.error}
+          onDelete={(id) => deleteCut.mutate(create(DeleteDistillationCutRequestSchema, { id }))}
+          deleting={deleteCut.isPending}
         />
       </section>
 
@@ -244,11 +252,15 @@ function CutsPanel({
   onSubmit,
   submitting,
   error,
+  onDelete,
+  deleting,
 }: {
   run: ReturnType<typeof useDistillationRun>;
   onSubmit: (m: ReturnType<typeof create<typeof AddDistillationCutRequestSchema>>) => void;
   submitting: boolean;
   error: Error | null;
+  onDelete: (id: string) => void;
+  deleting: boolean;
 }) {
   const [kind, setKind] = useState(String(DistillationCutKind.HEARTS));
   const [vol, setVol] = useState("");
@@ -297,11 +309,12 @@ function CutsPanel({
             <th className="px-3 py-2 text-right">Vol (L)</th>
             <th className="px-3 py-2 text-right">ABV</th>
             <th className="px-3 py-2 text-right">LAA</th>
+            <th className="px-3 py-2"></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-stone-100">
           {run.cuts.length === 0 && (
-            <tr><td colSpan={5} className="px-3 py-2 text-stone-500">No cuts yet.</td></tr>
+            <tr><td colSpan={6} className="px-3 py-2 text-stone-500">No cuts yet.</td></tr>
           )}
           {run.cuts.map((c) => (
             <tr key={c.id}>
@@ -310,6 +323,17 @@ function CutsPanel({
               <td className="px-3 py-2 text-right text-stone-600">{formatQty(c.volumeL)}</td>
               <td className="px-3 py-2 text-right text-stone-600">{c.abvPct.toFixed(2)}%</td>
               <td className="px-3 py-2 text-right text-stone-600">{formatLAA(c.laa)}</td>
+              <td className="px-3 py-2 text-right">
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Delete this ${cutKindLabel(c.kind)} cut?`)) onDelete(c.id);
+                  }}
+                  disabled={deleting}
+                  className="text-xs text-stone-500 hover:text-red-700 disabled:opacity-50"
+                >
+                  Delete
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
