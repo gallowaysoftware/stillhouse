@@ -44,3 +44,17 @@ INSERT INTO barrel_events (
 SELECT * FROM barrel_events
 WHERE container_id = $1
 ORDER BY event_date DESC, created_at DESC;
+
+-- name: GetBarrelEvent :one
+SELECT * FROM barrel_events WHERE id = $1;
+
+-- name: GetBulkMovementForBarrelEvent :one
+SELECT * FROM bulk_movements WHERE id = $1;
+
+-- name: VoidBarrelEvent :one
+UPDATE barrel_events
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING *;

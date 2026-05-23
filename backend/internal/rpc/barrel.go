@@ -622,6 +622,140 @@ func (s *BarrelService) RegaugeBarrel(
 	}), nil
 }
 
+// VoidBarrelEvent unwinds a fill or dump event by inverting its linked
+// bulk_movement and updating both container balances. Regauge events are
+// rejected — they store a "snapshot" without preserving the previous
+// state, so a clean undo isn't possible; the operator should record a
+// new corrective regauge instead. Events with no linked bulk_movement
+// (e.g. legacy or 'move' kind) just get marked voided.
+func (s *BarrelService) VoidBarrelEvent(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.VoidBarrelEventRequest],
+) (*connect.Response[stillhousev1.VoidBarrelEventResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	reason := req.Msg.GetReason()
+	if reason == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required"))
+	}
+
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		ev, e := q.GetBarrelEvent(ctx, id)
+		if e != nil {
+			return e
+		}
+		if ev.VoidedAt.Valid {
+			return connect.NewError(connect.CodeFailedPrecondition, errors.New("event is already voided"))
+		}
+		if ev.Kind == sqlcgen.BarrelEventKindRegauge {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("regauge events cannot be voided; record a new corrective regauge instead"))
+		}
+
+		// Reverse the linked bulk_movement, if any. The pattern: swap src/dst,
+		// reapply balances on both sides via applyDeposit / direct subtraction.
+		if ev.BulkMovementID.Valid {
+			mv, me := q.GetBulkMovementForBarrelEvent(ctx, ev.BulkMovementID.UUID)
+			if me != nil {
+				return me
+			}
+			// Destination loses (we're undoing a deposit there)…
+			if mv.DestinationContainerID.Valid {
+				dst, ge := q.GetBulkContainer(ctx, mv.DestinationContainerID.UUID)
+				if ge != nil {
+					return ge
+				}
+				newVol := dst.CurrentVolumeL - mv.VolumeL
+				if newVol < 0 {
+					return connect.NewError(connect.CodeFailedPrecondition,
+						errors.New("destination has been drained below the event volume — void downstream movements first"))
+				}
+				newLAA := dst.CurrentLaa - mv.Laa
+				if newLAA < 0 {
+					newLAA = 0
+				}
+				var newABV pgtype.Float8
+				if newVol > 0 && dst.CurrentAbvPct.Valid {
+					newABV = dst.CurrentAbvPct
+				}
+				if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+					ID: dst.ID, CurrentVolumeL: newVol, CurrentAbvPct: newABV, CurrentLaa: newLAA,
+				}); e != nil {
+					return e
+				}
+			}
+			// …and source regains (we're undoing a withdrawal there).
+			if mv.SourceContainerID.Valid {
+				src, ge := q.GetBulkContainer(ctx, mv.SourceContainerID.UUID)
+				if ge != nil {
+					return ge
+				}
+				newVol, newABV, newLAA := applyDeposit(
+					src.CurrentVolumeL, src.CurrentAbvPct, mv.VolumeL, mv.AbvPct,
+				)
+				if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+					ID: src.ID, CurrentVolumeL: newVol, CurrentAbvPct: newABV, CurrentLaa: newLAA,
+				}); e != nil {
+					return e
+				}
+			}
+			// Audit-friendly offsetting ledger row so the journal stays
+			// reconstructable. Reason regauge_correction matches the pattern
+			// used by other void handlers.
+			swappedSrc := mv.DestinationContainerID
+			swappedDst := mv.SourceContainerID
+			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+				TenantID:               u.TenantID,
+				SourceContainerID:      swappedSrc,
+				DestinationContainerID: swappedDst,
+				VolumeL:                mv.VolumeL,
+				AbvPct:                 mv.AbvPct,
+				Laa:                    mv.Laa,
+				Reason:                 sqlcgen.BulkMovementReasonRegaugeCorrection,
+				ReferenceType:          "barrel_event_void",
+				ReferenceID:            uuid.NullUUID{UUID: id, Valid: true},
+				Notes:                  "void of barrel event " + string(ev.Kind) + ": " + reason,
+				OccurredAt:             pgtype.Timestamptz{Valid: true, Time: time.Now()},
+			}); e != nil {
+				return e
+			}
+		}
+
+		if _, e := q.VoidBarrelEvent(ctx, sqlcgen.VoidBarrelEventParams{
+			ID:           id,
+			VoidedBy:     uuid.NullUUID{UUID: u.ID, Valid: true},
+			VoidedReason: reason,
+		}); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "barrel_event", id.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":        "voided",
+				"kind":         string(ev.Kind),
+				"container_id": ev.ContainerID.String(),
+				"reason":       reason,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("barrel event not found"))
+		}
+		s.logger.Error("VoidBarrelEvent", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.VoidBarrelEventResponse{}), nil
+}
+
 // --- converters ---
 
 func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute) *stillhousev1.Barrel {

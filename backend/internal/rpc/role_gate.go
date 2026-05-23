@@ -35,6 +35,7 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.BarrelService/FillBarrel":   roleOperator,
 	"/stillhouse.v1.BarrelService/DumpBarrel":   roleOperator,
 	"/stillhouse.v1.BarrelService/RegaugeBarrel": roleOperator,
+	"/stillhouse.v1.BarrelService/VoidBarrelEvent": roleOperator,
 
 	// BottlingService
 	"/stillhouse.v1.BottlingService/CreateBottlingRun":    roleOperator,

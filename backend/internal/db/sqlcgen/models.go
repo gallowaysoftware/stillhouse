@@ -754,6 +754,9 @@ type BarrelEvent struct {
 	Notes          string             `json:"notes"`
 	UserID         uuid.NullUUID      `json:"user_id"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	VoidedAt       pgtype.Timestamptz `json:"voided_at"`
+	VoidedBy       uuid.NullUUID      `json:"voided_by"`
+	VoidedReason   string             `json:"voided_reason"`
 }
 
 type BottlingRun struct {

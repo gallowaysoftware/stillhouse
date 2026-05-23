@@ -154,6 +154,12 @@ message RegaugeBarrelResponse {
   double lost_laa = 3;
 }
 
+message VoidBarrelEventRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidBarrelEventResponse {}
+
 service BarrelService {
   rpc CreateBarrel(CreateBarrelRequest) returns (CreateBarrelResponse);
   rpc ListBarrels(ListBarrelsRequest) returns (ListBarrelsResponse);
@@ -161,4 +167,5 @@ service BarrelService {
   rpc FillBarrel(FillBarrelRequest) returns (FillBarrelResponse);
   rpc DumpBarrel(DumpBarrelRequest) returns (DumpBarrelResponse);
   rpc RegaugeBarrel(RegaugeBarrelRequest) returns (RegaugeBarrelResponse);
+  rpc VoidBarrelEvent(VoidBarrelEventRequest) returns (VoidBarrelEventResponse);
 }

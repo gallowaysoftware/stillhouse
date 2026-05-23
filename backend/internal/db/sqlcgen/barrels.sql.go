@@ -93,13 +93,66 @@ func (q *Queries) GetBarrelAttributes(ctx context.Context, containerID uuid.UUID
 	return i, err
 }
 
+const getBarrelEvent = `-- name: GetBarrelEvent :one
+SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason FROM barrel_events WHERE id = $1
+`
+
+func (q *Queries) GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent, error) {
+	row := q.db.QueryRow(ctx, getBarrelEvent, id)
+	var i BarrelEvent
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ContainerID,
+		&i.Kind,
+		&i.EventDate,
+		&i.VolumeL,
+		&i.AbvPct,
+		&i.Laa,
+		&i.BulkMovementID,
+		&i.LocationAfter,
+		&i.Notes,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
+	)
+	return i, err
+}
+
+const getBulkMovementForBarrelEvent = `-- name: GetBulkMovementForBarrelEvent :one
+SELECT id, tenant_id, source_container_id, destination_container_id, volume_l, abv_pct, laa, reason, reference_type, reference_id, notes, occurred_at, created_at FROM bulk_movements WHERE id = $1
+`
+
+func (q *Queries) GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUID) (BulkMovement, error) {
+	row := q.db.QueryRow(ctx, getBulkMovementForBarrelEvent, id)
+	var i BulkMovement
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.SourceContainerID,
+		&i.DestinationContainerID,
+		&i.VolumeL,
+		&i.AbvPct,
+		&i.Laa,
+		&i.Reason,
+		&i.ReferenceType,
+		&i.ReferenceID,
+		&i.Notes,
+		&i.OccurredAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const insertBarrelEvent = `-- name: InsertBarrelEvent :one
 INSERT INTO barrel_events (
     tenant_id, container_id, kind, event_date,
     volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at
+) RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason
 `
 
 type InsertBarrelEventParams struct {
@@ -145,12 +198,15 @@ func (q *Queries) InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventPa
 		&i.Notes,
 		&i.UserID,
 		&i.CreatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
 	)
 	return i, err
 }
 
 const listBarrelEvents = `-- name: ListBarrelEvents :many
-SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at FROM barrel_events
+SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason FROM barrel_events
 WHERE container_id = $1
 ORDER BY event_date DESC, created_at DESC
 `
@@ -178,6 +234,9 @@ func (q *Queries) ListBarrelEvents(ctx context.Context, containerID uuid.UUID) (
 			&i.Notes,
 			&i.UserID,
 			&i.CreatedAt,
+			&i.VoidedAt,
+			&i.VoidedBy,
+			&i.VoidedReason,
 		); err != nil {
 			return nil, err
 		}
@@ -303,4 +362,43 @@ type SetBarrelFillDateParams struct {
 func (q *Queries) SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error {
 	_, err := q.db.Exec(ctx, setBarrelFillDate, arg.ContainerID, arg.FillDate)
 	return err
+}
+
+const voidBarrelEvent = `-- name: VoidBarrelEvent :one
+UPDATE barrel_events
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason
+`
+
+type VoidBarrelEventParams struct {
+	ID           uuid.UUID     `json:"id"`
+	VoidedBy     uuid.NullUUID `json:"voided_by"`
+	VoidedReason string        `json:"voided_reason"`
+}
+
+func (q *Queries) VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error) {
+	row := q.db.QueryRow(ctx, voidBarrelEvent, arg.ID, arg.VoidedBy, arg.VoidedReason)
+	var i BarrelEvent
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ContainerID,
+		&i.Kind,
+		&i.EventDate,
+		&i.VolumeL,
+		&i.AbvPct,
+		&i.Laa,
+		&i.BulkMovementID,
+		&i.LocationAfter,
+		&i.Notes,
+		&i.UserID,
+		&i.CreatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
+	)
+	return i, err
 }

@@ -1350,6 +1350,94 @@ func (x *RegaugeBarrelResponse) GetLostLaa() float64 {
 	return 0
 }
 
+type VoidBarrelEventRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidBarrelEventRequest) Reset() {
+	*x = VoidBarrelEventRequest{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidBarrelEventRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidBarrelEventRequest) ProtoMessage() {}
+
+func (x *VoidBarrelEventRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidBarrelEventRequest.ProtoReflect.Descriptor instead.
+func (*VoidBarrelEventRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *VoidBarrelEventRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VoidBarrelEventRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type VoidBarrelEventResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidBarrelEventResponse) Reset() {
+	*x = VoidBarrelEventResponse{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidBarrelEventResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidBarrelEventResponse) ProtoMessage() {}
+
+func (x *VoidBarrelEventResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidBarrelEventResponse.ProtoReflect.Descriptor instead.
+func (*VoidBarrelEventResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{15}
+}
+
 var File_stillhouse_v1_barrel_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_barrel_proto_rawDesc = "" +
@@ -1482,7 +1570,11 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x15RegaugeBarrelResponse\x120\n" +
 	"\x05event\x18\x01 \x01(\v2\x1a.stillhouse.v1.BarrelEventR\x05event\x12-\n" +
 	"\x06barrel\x18\x02 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\x12\x19\n" +
-	"\blost_laa\x18\x03 \x01(\x01R\alostLaa*\xe4\x01\n" +
+	"\blost_laa\x18\x03 \x01(\x01R\alostLaa\"@\n" +
+	"\x16VoidBarrelEventRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"\x19\n" +
+	"\x17VoidBarrelEventResponse*\xe4\x01\n" +
 	"\x0fBarrelEventKind\x12!\n" +
 	"\x1dBARREL_EVENT_KIND_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16BARREL_EVENT_KIND_FILL\x10\x01\x12\x1d\n" +
@@ -1490,7 +1582,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x18BARREL_EVENT_KIND_SAMPLE\x10\x03\x12\x1a\n" +
 	"\x16BARREL_EVENT_KIND_DUMP\x10\x04\x12\x1a\n" +
 	"\x16BARREL_EVENT_KIND_MOVE\x10\x05\x12\x1d\n" +
-	"\x19BARREL_EVENT_KIND_DESTROY\x10\x062\x90\x04\n" +
+	"\x19BARREL_EVENT_KIND_DESTROY\x10\x062\xf2\x04\n" +
 	"\rBarrelService\x12W\n" +
 	"\fCreateBarrel\x12\".stillhouse.v1.CreateBarrelRequest\x1a#.stillhouse.v1.CreateBarrelResponse\x12T\n" +
 	"\vListBarrels\x12!.stillhouse.v1.ListBarrelsRequest\x1a\".stillhouse.v1.ListBarrelsResponse\x12N\n" +
@@ -1499,7 +1591,8 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"FillBarrel\x12 .stillhouse.v1.FillBarrelRequest\x1a!.stillhouse.v1.FillBarrelResponse\x12Q\n" +
 	"\n" +
 	"DumpBarrel\x12 .stillhouse.v1.DumpBarrelRequest\x1a!.stillhouse.v1.DumpBarrelResponse\x12Z\n" +
-	"\rRegaugeBarrel\x12#.stillhouse.v1.RegaugeBarrelRequest\x1a$.stillhouse.v1.RegaugeBarrelResponseB\xcf\x01\n" +
+	"\rRegaugeBarrel\x12#.stillhouse.v1.RegaugeBarrelRequest\x1a$.stillhouse.v1.RegaugeBarrelResponse\x12`\n" +
+	"\x0fVoidBarrelEvent\x12%.stillhouse.v1.VoidBarrelEventRequest\x1a&.stillhouse.v1.VoidBarrelEventResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vBarrelProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1515,42 +1608,44 @@ func file_stillhouse_v1_barrel_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_barrel_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_barrel_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_stillhouse_v1_barrel_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_stillhouse_v1_barrel_proto_goTypes = []any{
-	(BarrelEventKind)(0),          // 0: stillhouse.v1.BarrelEventKind
-	(*Barrel)(nil),                // 1: stillhouse.v1.Barrel
-	(*BarrelEvent)(nil),           // 2: stillhouse.v1.BarrelEvent
-	(*CreateBarrelRequest)(nil),   // 3: stillhouse.v1.CreateBarrelRequest
-	(*CreateBarrelResponse)(nil),  // 4: stillhouse.v1.CreateBarrelResponse
-	(*ListBarrelsRequest)(nil),    // 5: stillhouse.v1.ListBarrelsRequest
-	(*ListBarrelsResponse)(nil),   // 6: stillhouse.v1.ListBarrelsResponse
-	(*GetBarrelRequest)(nil),      // 7: stillhouse.v1.GetBarrelRequest
-	(*GetBarrelResponse)(nil),     // 8: stillhouse.v1.GetBarrelResponse
-	(*FillBarrelRequest)(nil),     // 9: stillhouse.v1.FillBarrelRequest
-	(*FillBarrelResponse)(nil),    // 10: stillhouse.v1.FillBarrelResponse
-	(*DumpBarrelRequest)(nil),     // 11: stillhouse.v1.DumpBarrelRequest
-	(*DumpBarrelResponse)(nil),    // 12: stillhouse.v1.DumpBarrelResponse
-	(*RegaugeBarrelRequest)(nil),  // 13: stillhouse.v1.RegaugeBarrelRequest
-	(*RegaugeBarrelResponse)(nil), // 14: stillhouse.v1.RegaugeBarrelResponse
-	(*timestamppb.Timestamp)(nil), // 15: google.protobuf.Timestamp
+	(BarrelEventKind)(0),            // 0: stillhouse.v1.BarrelEventKind
+	(*Barrel)(nil),                  // 1: stillhouse.v1.Barrel
+	(*BarrelEvent)(nil),             // 2: stillhouse.v1.BarrelEvent
+	(*CreateBarrelRequest)(nil),     // 3: stillhouse.v1.CreateBarrelRequest
+	(*CreateBarrelResponse)(nil),    // 4: stillhouse.v1.CreateBarrelResponse
+	(*ListBarrelsRequest)(nil),      // 5: stillhouse.v1.ListBarrelsRequest
+	(*ListBarrelsResponse)(nil),     // 6: stillhouse.v1.ListBarrelsResponse
+	(*GetBarrelRequest)(nil),        // 7: stillhouse.v1.GetBarrelRequest
+	(*GetBarrelResponse)(nil),       // 8: stillhouse.v1.GetBarrelResponse
+	(*FillBarrelRequest)(nil),       // 9: stillhouse.v1.FillBarrelRequest
+	(*FillBarrelResponse)(nil),      // 10: stillhouse.v1.FillBarrelResponse
+	(*DumpBarrelRequest)(nil),       // 11: stillhouse.v1.DumpBarrelRequest
+	(*DumpBarrelResponse)(nil),      // 12: stillhouse.v1.DumpBarrelResponse
+	(*RegaugeBarrelRequest)(nil),    // 13: stillhouse.v1.RegaugeBarrelRequest
+	(*RegaugeBarrelResponse)(nil),   // 14: stillhouse.v1.RegaugeBarrelResponse
+	(*VoidBarrelEventRequest)(nil),  // 15: stillhouse.v1.VoidBarrelEventRequest
+	(*VoidBarrelEventResponse)(nil), // 16: stillhouse.v1.VoidBarrelEventResponse
+	(*timestamppb.Timestamp)(nil),   // 17: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
-	15, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
-	15, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
+	17, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
+	17, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
-	15, // 3: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
-	15, // 4: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
+	17, // 3: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
+	17, // 4: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 5: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
 	1,  // 6: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
 	1,  // 7: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
 	2,  // 8: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
-	15, // 9: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	17, // 9: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
 	2,  // 10: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
 	1,  // 11: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	15, // 12: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	17, // 12: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
 	2,  // 13: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
 	1,  // 14: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	15, // 15: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	17, // 15: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
 	2,  // 16: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
 	1,  // 17: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
 	3,  // 18: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
@@ -1559,14 +1654,16 @@ var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
 	9,  // 21: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
 	11, // 22: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
 	13, // 23: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
-	4,  // 24: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
-	6,  // 25: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
-	8,  // 26: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
-	10, // 27: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
-	12, // 28: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
-	14, // 29: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
-	24, // [24:30] is the sub-list for method output_type
-	18, // [18:24] is the sub-list for method input_type
+	15, // 24: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
+	4,  // 25: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
+	6,  // 26: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
+	8,  // 27: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
+	10, // 28: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
+	12, // 29: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
+	14, // 30: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
+	16, // 31: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
+	25, // [25:32] is the sub-list for method output_type
+	18, // [18:25] is the sub-list for method input_type
 	18, // [18:18] is the sub-list for extension type_name
 	18, // [18:18] is the sub-list for extension extendee
 	0,  // [0:18] is the sub-list for field type_name
@@ -1583,7 +1680,7 @@ func file_stillhouse_v1_barrel_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_barrel_proto_rawDesc), len(file_stillhouse_v1_barrel_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
