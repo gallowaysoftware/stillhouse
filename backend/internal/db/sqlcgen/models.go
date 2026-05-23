@@ -912,6 +912,19 @@ type FermentationRun struct {
 	YeastLotID         uuid.NullUUID      `json:"yeast_lot_id"`
 }
 
+type InviteCode struct {
+	Code              string             `json:"code"`
+	CreatedByUserID   uuid.UUID          `json:"created_by_user_id"`
+	CreatedByTenantID uuid.UUID          `json:"created_by_tenant_id"`
+	Note              string             `json:"note"`
+	ExpiresAt         pgtype.Timestamptz `json:"expires_at"`
+	RedeemedAt        pgtype.Timestamptz `json:"redeemed_at"`
+	RedeemedEmail     string             `json:"redeemed_email"`
+	RedeemedTenantID  uuid.NullUUID      `json:"redeemed_tenant_id"`
+	RevokedAt         pgtype.Timestamptz `json:"revoked_at"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+}
+
 type MashIngredientUsage struct {
 	ID            uuid.UUID          `json:"id"`
 	TenantID      uuid.UUID          `json:"tenant_id"`
@@ -1095,12 +1108,13 @@ type Tenant struct {
 }
 
 type User struct {
-	ID           uuid.UUID          `json:"id"`
-	TenantID     uuid.UUID          `json:"tenant_id"`
-	Email        string             `json:"email"`
-	PasswordHash string             `json:"password_hash"`
-	DisplayName  string             `json:"display_name"`
-	Role         UserRole           `json:"role"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID              uuid.UUID          `json:"id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	Email           string             `json:"email"`
+	PasswordHash    string             `json:"password_hash"`
+	DisplayName     string             `json:"display_name"`
+	Role            UserRole           `json:"role"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	EmailVerifiedAt pgtype.Timestamptz `json:"email_verified_at"`
 }

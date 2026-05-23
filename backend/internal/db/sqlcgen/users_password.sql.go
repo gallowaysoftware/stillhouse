@@ -11,8 +11,32 @@ import (
 	"github.com/google/uuid"
 )
 
+const markUserEmailVerified = `-- name: MarkUserEmailVerified :one
+UPDATE users
+SET email_verified_at = NOW()
+WHERE id = $1 AND email_verified_at IS NULL
+RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at
+`
+
+func (q *Queries) MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error) {
+	row := q.db.QueryRow(ctx, markUserEmailVerified, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Email,
+		&i.PasswordHash,
+		&i.DisplayName,
+		&i.Role,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.EmailVerifiedAt,
+	)
+	return i, err
+}
+
 const updateUserPassword = `-- name: UpdateUserPassword :one
-UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at
+UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at
 `
 
 type UpdateUserPasswordParams struct {
@@ -32,6 +56,7 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EmailVerifiedAt,
 	)
 	return i, err
 }

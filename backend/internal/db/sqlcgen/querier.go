@@ -49,6 +49,7 @@ type Querier interface {
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
+	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
@@ -85,6 +86,9 @@ type Querier interface {
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
+	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
+	// expires_at to decide if the code is actually usable.
+	GetInviteCode(ctx context.Context, code string) (InviteCode, error)
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error)
@@ -120,6 +124,7 @@ type Querier interface {
 	ListFermentationLogs(ctx context.Context, fermentationRunID uuid.UUID) ([]FermentationLog, error)
 	ListFermentationRuns(ctx context.Context, status NullFermentationStatus) ([]ListFermentationRunsRow, error)
 	ListFermentationRunsByMash(ctx context.Context, mashRunID uuid.UUID) ([]FermentationRun, error)
+	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
 	ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error)
 	ListMashMetrics(ctx context.Context, mashRunID uuid.UUID) ([]MashMetric, error)
 	ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]ListMashRunsRow, error)
@@ -138,6 +143,7 @@ type Querier interface {
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
 	ListStampOrdersWithAvailable(ctx context.Context, jurisdiction string) ([]ListStampOrdersWithAvailableRow, error)
 	ListUsersForTenant(ctx context.Context, tenantID uuid.UUID) ([]User, error)
+	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)
@@ -145,6 +151,8 @@ type Querier interface {
 	NextRemovalNo(ctx context.Context) (int32, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	RedeemInviteCode(ctx context.Context, arg RedeemInviteCodeParams) (InviteCode, error)
+	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)

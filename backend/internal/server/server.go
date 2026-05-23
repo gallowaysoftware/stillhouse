@@ -70,6 +70,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	auditSvc := rpc.NewAuditService(tdb, logger)
 	pricingSvc := rpc.NewPricingService(tdb, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
+	// mailer nil until stage 79 wires Resend; InviteService tolerates a nil
+	// mailer (welcome email becomes a no-op).
+	inviteSvc := rpc.NewInviteService(queries, tdb, sm, nil, logger)
 
 	interceptors := connect.WithInterceptors(
 		rpc.NewAuthInterceptor(sm, queries),
@@ -95,6 +98,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewAuditServiceHandler(auditSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewPricingServiceHandler(pricingSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewTraceabilityServiceHandler(traceabilitySvc, interceptors))
+	mux.Handle(stillhousev1connect.NewInviteServiceHandler(inviteSvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
 	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {

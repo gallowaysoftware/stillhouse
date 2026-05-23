@@ -43,3 +43,19 @@ func (d *DB) WithTenantTx(
 		return fn(ctx, sqlcgen.New(tx))
 	})
 }
+
+// WithoutTenantTx opens a transaction WITHOUT setting a tenant context.
+// Only safe for cross-tenant or pre-tenant operations: signup (creates the
+// first row in tenants), invite redemption, password reset lookups by
+// email. RLS-protected tables can't be touched from this transaction —
+// the policies refuse without app.current_tenant_id — but the bootstrap
+// tables (tenants, users, invite_codes, password_reset_tokens) are
+// intentionally not RLS-protected and are reachable here.
+func (d *DB) WithoutTenantTx(
+	ctx context.Context,
+	fn func(ctx context.Context, q *sqlcgen.Queries) error,
+) error {
+	return pgx.BeginFunc(ctx, d.Pool, func(tx pgx.Tx) error {
+		return fn(ctx, sqlcgen.New(tx))
+	})
+}

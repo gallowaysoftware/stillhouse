@@ -1,0 +1,58 @@
+// Invite codes are the gate to multi-tenant signup. Owners generate codes
+// from Settings → Invites and hand them to prospective distillery owners
+// out-of-band. Recipients redeem at /signup to create their own tenant.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message InviteCode {
+  string code = 1;
+  string created_by_user_id = 2;
+  string created_by_tenant_id = 3;
+  string note = 4;                              // owner-facing label, e.g. "ACME Distillery"
+  google.protobuf.Timestamp expires_at = 5;     // optional
+  google.protobuf.Timestamp redeemed_at = 6;    // unset until redeemed
+  string redeemed_email = 7;
+  string redeemed_tenant_id = 8;
+  google.protobuf.Timestamp revoked_at = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message CreateInviteCodeRequest {
+  string note = 1;
+  int32  expires_in_days = 2;     // 0 = no expiry
+}
+message CreateInviteCodeResponse { InviteCode invite = 1; }
+
+message ListMyInviteCodesRequest {}
+message ListMyInviteCodesResponse { repeated InviteCode invites = 1; }
+
+message RevokeInviteCodeRequest { string code = 1; }
+message RevokeInviteCodeResponse { InviteCode invite = 1; }
+
+// Public RPC — exchanges an invite code for a brand new tenant + owner user.
+// Always returns 200 with a session cookie set on success. Bad codes get
+// FailedPrecondition with a generic "invalid invite code" message so we
+// don't leak which codes exist.
+message SignupWithInviteRequest {
+  string code = 1;
+  string email = 2;
+  string password = 3;
+  string display_name = 4;             // owner's name on their user record
+  string tenant_name = 5;              // distillery display name
+  string cra_spirits_licence_number = 6;
+  string default_jurisdiction = 7;     // ISO 3166-2, e.g. CA-ON
+}
+message SignupWithInviteResponse {
+  string tenant_id = 1;
+  string user_id = 2;
+}
+
+service InviteService {
+  rpc CreateInviteCode(CreateInviteCodeRequest) returns (CreateInviteCodeResponse);
+  rpc ListMyInviteCodes(ListMyInviteCodesRequest) returns (ListMyInviteCodesResponse);
+  rpc RevokeInviteCode(RevokeInviteCodeRequest) returns (RevokeInviteCodeResponse);
+  rpc SignupWithInvite(SignupWithInviteRequest) returns (SignupWithInviteResponse);
+}

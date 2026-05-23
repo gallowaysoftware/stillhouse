@@ -135,6 +135,12 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.UserService/CreateUser":        roleOwner,
 	"/stillhouse.v1.UserService/ChangeMyPassword":  roleViewer,
 
+	// InviteService — invite management is owner-only; SignupWithInvite is
+	// public (covered by publicProcedures, never reaches this map).
+	"/stillhouse.v1.InviteService/CreateInviteCode":  roleOwner,
+	"/stillhouse.v1.InviteService/ListMyInviteCodes": roleOwner,
+	"/stillhouse.v1.InviteService/RevokeInviteCode":  roleOwner,
+
 	// B266Service — generating a draft is operator-level; signing/submitting
 	// the filing is an owner action.
 	"/stillhouse.v1.B266Service/GenerateB266":   roleOperator,

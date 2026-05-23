@@ -24,9 +24,10 @@ const (
 // because it is the bootstrap RPC for a fresh install; the handler itself
 // rejects calls once any tenant exists.
 var publicProcedures = map[string]bool{
-	"/stillhouse.v1.AuthService/Login":          true,
-	"/stillhouse.v1.AuthService/Logout":         true,
-	"/stillhouse.v1.TenantService/CreateTenant": true,
+	"/stillhouse.v1.AuthService/Login":             true,
+	"/stillhouse.v1.AuthService/Logout":            true,
+	"/stillhouse.v1.TenantService/CreateTenant":    true,
+	"/stillhouse.v1.InviteService/SignupWithInvite": true,
 }
 
 // NewAuthInterceptor returns a Connect unary interceptor that:
