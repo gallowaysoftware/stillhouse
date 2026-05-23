@@ -110,6 +110,18 @@ message ListMaterialLotsRequest {
 }
 message ListMaterialLotsResponse { repeated MaterialLot lots = 1; }
 
+message ProductCostSummaryRequest { string product_id = 1; }
+message ProductCostSummaryResponse {
+  string product_id = 1;
+  int32  run_count = 2;             // non-voided bottling runs covered
+  int32  total_bottles = 3;
+  double total_material_cost_cad = 4;
+  double average_material_cost_per_bottle_cad = 5;
+  // Runs that hit a missing-price ingredient are flagged so the average
+  // doesn't silently understate cost. UI should warn.
+  int32  runs_with_missing_prices = 6;
+}
+
 message BottlingRunCostRequest { string bottling_run_id = 1; }
 message BottlingRunCostLine {
   string material_name = 1;
@@ -139,4 +151,5 @@ service MaterialService {
   rpc RecordMaterialReceipt(RecordMaterialReceiptRequest) returns (RecordMaterialReceiptResponse);
   rpc ListMaterialLots(ListMaterialLotsRequest) returns (ListMaterialLotsResponse);
   rpc BottlingRunCost(BottlingRunCostRequest) returns (BottlingRunCostResponse);
+  rpc ProductCostSummary(ProductCostSummaryRequest) returns (ProductCostSummaryResponse);
 }

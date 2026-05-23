@@ -401,6 +401,49 @@ func (q *Queries) ListBottlingRuns(ctx context.Context, arg ListBottlingRunsPara
 	return items, nil
 }
 
+const listBottlingRunsForProduct = `-- name: ListBottlingRunsForProduct :many
+SELECT id, run_no, source_container_id, bottling_date, bottle_count
+FROM bottling_runs
+WHERE product_id = $1 AND voided_at IS NULL
+ORDER BY bottling_date, run_no
+`
+
+type ListBottlingRunsForProductRow struct {
+	ID                uuid.UUID   `json:"id"`
+	RunNo             int32       `json:"run_no"`
+	SourceContainerID uuid.UUID   `json:"source_container_id"`
+	BottlingDate      pgtype.Date `json:"bottling_date"`
+	BottleCount       int32       `json:"bottle_count"`
+}
+
+// Active (non-voided) bottling runs for a product, oldest first so the
+// cost rollup walks them in chronological order.
+func (q *Queries) ListBottlingRunsForProduct(ctx context.Context, productID uuid.UUID) ([]ListBottlingRunsForProductRow, error) {
+	rows, err := q.db.Query(ctx, listBottlingRunsForProduct, productID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBottlingRunsForProductRow{}
+	for rows.Next() {
+		var i ListBottlingRunsForProductRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.RunNo,
+			&i.SourceContainerID,
+			&i.BottlingDate,
+			&i.BottleCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listPackagedInventory = `-- name: ListPackagedInventory :many
 SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at,
        p.name           AS product_name,

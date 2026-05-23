@@ -410,6 +410,112 @@ func (s *MaterialService) BottlingRunCost(
 	return connect.NewResponse(out), nil
 }
 
+// ProductCostSummary aggregates BottlingRunCost across every non-voided
+// bottling run for a product. Naive N+1 implementation — fine for most
+// craft distilleries (rare to have more than a few dozen runs per SKU);
+// when a tenant grows past that, the right fix is a denormalized
+// per-run cost row updated at bottling time. Intentionally not cached.
+func (s *MaterialService) ProductCostSummary(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.ProductCostSummaryRequest],
+) (*connect.Response[stillhousev1.ProductCostSummaryResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	productID, err := uuid.Parse(req.Msg.GetProductId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid product_id"))
+	}
+
+	out := &stillhousev1.ProductCostSummaryResponse{ProductId: productID.String()}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		runs, e := q.ListBottlingRunsForProduct(ctx, productID)
+		if e != nil {
+			return e
+		}
+		for _, r := range runs {
+			out.RunCount++
+			out.TotalBottles += r.BottleCount
+			cost, missing, ce := computeRunMaterialCost(ctx, q, r.SourceContainerID, r.BottlingDate)
+			if ce != nil {
+				return ce
+			}
+			if missing {
+				out.RunsWithMissingPrices++
+			}
+			out.TotalMaterialCostCad += cost
+		}
+		return nil
+	})
+	if err != nil {
+		s.logger.Error("ProductCostSummary", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if out.TotalBottles > 0 {
+		out.AverageMaterialCostPerBottleCad = out.TotalMaterialCostCad / float64(out.TotalBottles)
+	}
+	return connect.NewResponse(out), nil
+}
+
+// computeRunMaterialCost is the chain walk shared by BottlingRunCost and
+// ProductCostSummary. Returns (cost, anyMissingPrice, err).
+func computeRunMaterialCost(
+	ctx context.Context,
+	q *sqlcgen.Queries,
+	sourceContainerID uuid.UUID,
+	bottlingDate pgtype.Date,
+) (float64, bool, error) {
+	feedCutoff := bottlingDate.Time.Add(24 * time.Hour)
+	feeds, e := q.BottlingRunChainFeeds(ctx, sqlcgen.BottlingRunChainFeedsParams{
+		DestinationContainerID: uuid.NullUUID{UUID: sourceContainerID, Valid: true},
+		OccurredAt:             pgtype.Timestamptz{Time: feedCutoff, Valid: true},
+	})
+	if e != nil {
+		return 0, false, e
+	}
+	var (
+		total   float64
+		missing bool
+		seen    = make(map[string]bool)
+	)
+	for _, fd := range feeds {
+		if fd.Reason != sqlcgen.BulkMovementReasonProductionGauge {
+			continue
+		}
+		chain, ce := q.DistillationChainFromGauge(ctx, fd.ID)
+		if errors.Is(ce, pgx.ErrNoRows) {
+			continue
+		}
+		if ce != nil {
+			return 0, false, ce
+		}
+		if !chain.MashRunID.Valid || seen[chain.MashRunID.UUID.String()] {
+			continue
+		}
+		seen[chain.MashRunID.UUID.String()] = true
+		ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
+		if ie != nil {
+			return 0, false, ie
+		}
+		for _, ing := range ings {
+			if !ing.MaterialLotID.Valid {
+				continue
+			}
+			lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
+			if le != nil {
+				return 0, false, le
+			}
+			if !lot.UnitCostCad.Valid {
+				missing = true
+				continue
+			}
+			total += ing.QuantityUsed * lot.UnitCostCad.Float64
+		}
+	}
+	return total, missing, nil
+}
+
 // --- helpers ---
 
 func optionalFloat(set bool, v float64) pgtype.Float8 {

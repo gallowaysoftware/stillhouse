@@ -57,6 +57,9 @@ const (
 	// MaterialServiceBottlingRunCostProcedure is the fully-qualified name of the MaterialService's
 	// BottlingRunCost RPC.
 	MaterialServiceBottlingRunCostProcedure = "/stillhouse.v1.MaterialService/BottlingRunCost"
+	// MaterialServiceProductCostSummaryProcedure is the fully-qualified name of the MaterialService's
+	// ProductCostSummary RPC.
+	MaterialServiceProductCostSummaryProcedure = "/stillhouse.v1.MaterialService/ProductCostSummary"
 )
 
 // MaterialServiceClient is a client for the stillhouse.v1.MaterialService service.
@@ -69,6 +72,7 @@ type MaterialServiceClient interface {
 	RecordMaterialReceipt(context.Context, *connect.Request[v1.RecordMaterialReceiptRequest]) (*connect.Response[v1.RecordMaterialReceiptResponse], error)
 	ListMaterialLots(context.Context, *connect.Request[v1.ListMaterialLotsRequest]) (*connect.Response[v1.ListMaterialLotsResponse], error)
 	BottlingRunCost(context.Context, *connect.Request[v1.BottlingRunCostRequest]) (*connect.Response[v1.BottlingRunCostResponse], error)
+	ProductCostSummary(context.Context, *connect.Request[v1.ProductCostSummaryRequest]) (*connect.Response[v1.ProductCostSummaryResponse], error)
 }
 
 // NewMaterialServiceClient constructs a client for the stillhouse.v1.MaterialService service. By
@@ -130,6 +134,12 @@ func NewMaterialServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(materialServiceMethods.ByName("BottlingRunCost")),
 			connect.WithClientOptions(opts...),
 		),
+		productCostSummary: connect.NewClient[v1.ProductCostSummaryRequest, v1.ProductCostSummaryResponse](
+			httpClient,
+			baseURL+MaterialServiceProductCostSummaryProcedure,
+			connect.WithSchema(materialServiceMethods.ByName("ProductCostSummary")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -143,6 +153,7 @@ type materialServiceClient struct {
 	recordMaterialReceipt *connect.Client[v1.RecordMaterialReceiptRequest, v1.RecordMaterialReceiptResponse]
 	listMaterialLots      *connect.Client[v1.ListMaterialLotsRequest, v1.ListMaterialLotsResponse]
 	bottlingRunCost       *connect.Client[v1.BottlingRunCostRequest, v1.BottlingRunCostResponse]
+	productCostSummary    *connect.Client[v1.ProductCostSummaryRequest, v1.ProductCostSummaryResponse]
 }
 
 // CreateMaterial calls stillhouse.v1.MaterialService.CreateMaterial.
@@ -185,6 +196,11 @@ func (c *materialServiceClient) BottlingRunCost(ctx context.Context, req *connec
 	return c.bottlingRunCost.CallUnary(ctx, req)
 }
 
+// ProductCostSummary calls stillhouse.v1.MaterialService.ProductCostSummary.
+func (c *materialServiceClient) ProductCostSummary(ctx context.Context, req *connect.Request[v1.ProductCostSummaryRequest]) (*connect.Response[v1.ProductCostSummaryResponse], error) {
+	return c.productCostSummary.CallUnary(ctx, req)
+}
+
 // MaterialServiceHandler is an implementation of the stillhouse.v1.MaterialService service.
 type MaterialServiceHandler interface {
 	CreateMaterial(context.Context, *connect.Request[v1.CreateMaterialRequest]) (*connect.Response[v1.CreateMaterialResponse], error)
@@ -195,6 +211,7 @@ type MaterialServiceHandler interface {
 	RecordMaterialReceipt(context.Context, *connect.Request[v1.RecordMaterialReceiptRequest]) (*connect.Response[v1.RecordMaterialReceiptResponse], error)
 	ListMaterialLots(context.Context, *connect.Request[v1.ListMaterialLotsRequest]) (*connect.Response[v1.ListMaterialLotsResponse], error)
 	BottlingRunCost(context.Context, *connect.Request[v1.BottlingRunCostRequest]) (*connect.Response[v1.BottlingRunCostResponse], error)
+	ProductCostSummary(context.Context, *connect.Request[v1.ProductCostSummaryRequest]) (*connect.Response[v1.ProductCostSummaryResponse], error)
 }
 
 // NewMaterialServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -252,6 +269,12 @@ func NewMaterialServiceHandler(svc MaterialServiceHandler, opts ...connect.Handl
 		connect.WithSchema(materialServiceMethods.ByName("BottlingRunCost")),
 		connect.WithHandlerOptions(opts...),
 	)
+	materialServiceProductCostSummaryHandler := connect.NewUnaryHandler(
+		MaterialServiceProductCostSummaryProcedure,
+		svc.ProductCostSummary,
+		connect.WithSchema(materialServiceMethods.ByName("ProductCostSummary")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.MaterialService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MaterialServiceCreateMaterialProcedure:
@@ -270,6 +293,8 @@ func NewMaterialServiceHandler(svc MaterialServiceHandler, opts ...connect.Handl
 			materialServiceListMaterialLotsHandler.ServeHTTP(w, r)
 		case MaterialServiceBottlingRunCostProcedure:
 			materialServiceBottlingRunCostHandler.ServeHTTP(w, r)
+		case MaterialServiceProductCostSummaryProcedure:
+			materialServiceProductCostSummaryHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -309,4 +334,8 @@ func (UnimplementedMaterialServiceHandler) ListMaterialLots(context.Context, *co
 
 func (UnimplementedMaterialServiceHandler) BottlingRunCost(context.Context, *connect.Request[v1.BottlingRunCostRequest]) (*connect.Response[v1.BottlingRunCostResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MaterialService.BottlingRunCost is not implemented"))
+}
+
+func (UnimplementedMaterialServiceHandler) ProductCostSummary(context.Context, *connect.Request[v1.ProductCostSummaryRequest]) (*connect.Response[v1.ProductCostSummaryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MaterialService.ProductCostSummary is not implemented"))
 }

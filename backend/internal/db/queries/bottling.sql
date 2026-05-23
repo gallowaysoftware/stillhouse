@@ -94,6 +94,14 @@ RETURNING *;
 SELECT * FROM packaged_inventory
 WHERE product_id = $1 AND lot_code = $2 AND jurisdiction = $3;
 
+-- name: ListBottlingRunsForProduct :many
+-- Active (non-voided) bottling runs for a product, oldest first so the
+-- cost rollup walks them in chronological order.
+SELECT id, run_no, source_container_id, bottling_date, bottle_count
+FROM bottling_runs
+WHERE product_id = $1 AND voided_at IS NULL
+ORDER BY bottling_date, run_no;
+
 -- name: DecrementStampOrderApplied :one
 UPDATE excise_stamp_orders
 SET quantity_applied = quantity_applied - $2

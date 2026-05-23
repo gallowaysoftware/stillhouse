@@ -4,7 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
-import { productClient } from "@/lib/clients";
+import { materialClient, productClient } from "@/lib/clients";
 import { CreateProductRequestSchema } from "@/gen/stillhouse/v1/product_pb";
 import { SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
 import { spiritKindLabel } from "@/lib/format";
@@ -109,15 +109,16 @@ export function ProductsPage() {
               <th className="px-4 py-3">Spirit</th>
               <th className="px-4 py-3 text-right">Bottle (mL)</th>
               <th className="px-4 py-3 text-right">Target ABV</th>
+              <th className="px-4 py-3 text-right">Avg cost/bottle</th>
               <th className="px-4 py-3">Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {list.isLoading && (
-              <tr><td colSpan={5} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.products.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-3 text-stone-500">No products yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No products yet.</td></tr>
             )}
             {list.data?.products.map((p) => (
               <tr key={p.id}>
@@ -125,6 +126,7 @@ export function ProductsPage() {
                 <td className="px-4 py-3 text-stone-600">{spiritKindLabel(p.spiritKind)}</td>
                 <td className="px-4 py-3 text-right text-stone-600">{p.bottleSizeMl}</td>
                 <td className="px-4 py-3 text-right text-stone-600">{p.targetAbvPct.toFixed(1)}%</td>
+                <td className="px-4 py-3 text-right text-stone-600"><CostCell productId={p.id} /></td>
                 <td className="px-4 py-3 text-stone-600">{p.labelNotes}</td>
               </tr>
             ))}
@@ -132,6 +134,29 @@ export function ProductsPage() {
         </table>
       </div>
     </Shell>
+  );
+}
+
+function CostCell({ productId }: { productId: string }) {
+  // Lazy-loaded so the products list doesn't fan out into N+1 cost calls
+  // on every render — only fires when the cell mounts. Stays cheap because
+  // useQuery dedupes across re-renders.
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["productCostSummary", productId],
+    queryFn: () => materialClient.productCostSummary({ productId }),
+    enabled: !!productId,
+    staleTime: 60_000,
+  });
+  if (isLoading) return <span className="text-stone-300">…</span>;
+  if (error) return <span className="text-stone-400">—</span>;
+  if (!data || data.totalBottles === 0) return <span className="text-stone-400">—</span>;
+  return (
+    <span title={`${data.runCount} run${data.runCount === 1 ? "" : "s"}, ${data.totalBottles.toLocaleString()} bottles`}>
+      ${data.averageMaterialCostPerBottleCad.toFixed(2)}
+      {data.runsWithMissingPrices > 0 && (
+        <span className="ml-1 text-amber-700" title={`${data.runsWithMissingPrices} runs missing price data`}>*</span>
+      )}
+    </span>
   );
 }
 

@@ -91,6 +91,7 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.MaterialService/RecordMaterialReceipt": roleOperator,
 	"/stillhouse.v1.MaterialService/ListMaterialLots":      roleViewer,
 	"/stillhouse.v1.MaterialService/BottlingRunCost":       roleViewer,
+	"/stillhouse.v1.MaterialService/ProductCostSummary":    roleViewer,
 
 	// PricingService
 	"/stillhouse.v1.PricingService/ComputeProvincialPricing": roleViewer,

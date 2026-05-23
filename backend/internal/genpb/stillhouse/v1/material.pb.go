@@ -1188,6 +1188,136 @@ func (x *ListMaterialLotsResponse) GetLots() []*MaterialLot {
 	return nil
 }
 
+type ProductCostSummaryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductId     string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ProductCostSummaryRequest) Reset() {
+	*x = ProductCostSummaryRequest{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProductCostSummaryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProductCostSummaryRequest) ProtoMessage() {}
+
+func (x *ProductCostSummaryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProductCostSummaryRequest.ProtoReflect.Descriptor instead.
+func (*ProductCostSummaryRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ProductCostSummaryRequest) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+type ProductCostSummaryResponse struct {
+	state                           protoimpl.MessageState `protogen:"open.v1"`
+	ProductId                       string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	RunCount                        int32                  `protobuf:"varint,2,opt,name=run_count,json=runCount,proto3" json:"run_count,omitempty"` // non-voided bottling runs covered
+	TotalBottles                    int32                  `protobuf:"varint,3,opt,name=total_bottles,json=totalBottles,proto3" json:"total_bottles,omitempty"`
+	TotalMaterialCostCad            float64                `protobuf:"fixed64,4,opt,name=total_material_cost_cad,json=totalMaterialCostCad,proto3" json:"total_material_cost_cad,omitempty"`
+	AverageMaterialCostPerBottleCad float64                `protobuf:"fixed64,5,opt,name=average_material_cost_per_bottle_cad,json=averageMaterialCostPerBottleCad,proto3" json:"average_material_cost_per_bottle_cad,omitempty"`
+	// Runs that hit a missing-price ingredient are flagged so the average
+	// doesn't silently understate cost. UI should warn.
+	RunsWithMissingPrices int32 `protobuf:"varint,6,opt,name=runs_with_missing_prices,json=runsWithMissingPrices,proto3" json:"runs_with_missing_prices,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *ProductCostSummaryResponse) Reset() {
+	*x = ProductCostSummaryResponse{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ProductCostSummaryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProductCostSummaryResponse) ProtoMessage() {}
+
+func (x *ProductCostSummaryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProductCostSummaryResponse.ProtoReflect.Descriptor instead.
+func (*ProductCostSummaryResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ProductCostSummaryResponse) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *ProductCostSummaryResponse) GetRunCount() int32 {
+	if x != nil {
+		return x.RunCount
+	}
+	return 0
+}
+
+func (x *ProductCostSummaryResponse) GetTotalBottles() int32 {
+	if x != nil {
+		return x.TotalBottles
+	}
+	return 0
+}
+
+func (x *ProductCostSummaryResponse) GetTotalMaterialCostCad() float64 {
+	if x != nil {
+		return x.TotalMaterialCostCad
+	}
+	return 0
+}
+
+func (x *ProductCostSummaryResponse) GetAverageMaterialCostPerBottleCad() float64 {
+	if x != nil {
+		return x.AverageMaterialCostPerBottleCad
+	}
+	return 0
+}
+
+func (x *ProductCostSummaryResponse) GetRunsWithMissingPrices() int32 {
+	if x != nil {
+		return x.RunsWithMissingPrices
+	}
+	return 0
+}
+
 type BottlingRunCostRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	BottlingRunId string                 `protobuf:"bytes,1,opt,name=bottling_run_id,json=bottlingRunId,proto3" json:"bottling_run_id,omitempty"`
@@ -1197,7 +1327,7 @@ type BottlingRunCostRequest struct {
 
 func (x *BottlingRunCostRequest) Reset() {
 	*x = BottlingRunCostRequest{}
-	mi := &file_stillhouse_v1_material_proto_msgTypes[16]
+	mi := &file_stillhouse_v1_material_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1209,7 +1339,7 @@ func (x *BottlingRunCostRequest) String() string {
 func (*BottlingRunCostRequest) ProtoMessage() {}
 
 func (x *BottlingRunCostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_material_proto_msgTypes[16]
+	mi := &file_stillhouse_v1_material_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1222,7 +1352,7 @@ func (x *BottlingRunCostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BottlingRunCostRequest.ProtoReflect.Descriptor instead.
 func (*BottlingRunCostRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{16}
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *BottlingRunCostRequest) GetBottlingRunId() string {
@@ -1246,7 +1376,7 @@ type BottlingRunCostLine struct {
 
 func (x *BottlingRunCostLine) Reset() {
 	*x = BottlingRunCostLine{}
-	mi := &file_stillhouse_v1_material_proto_msgTypes[17]
+	mi := &file_stillhouse_v1_material_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1258,7 +1388,7 @@ func (x *BottlingRunCostLine) String() string {
 func (*BottlingRunCostLine) ProtoMessage() {}
 
 func (x *BottlingRunCostLine) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_material_proto_msgTypes[17]
+	mi := &file_stillhouse_v1_material_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1271,7 +1401,7 @@ func (x *BottlingRunCostLine) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BottlingRunCostLine.ProtoReflect.Descriptor instead.
 func (*BottlingRunCostLine) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{17}
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *BottlingRunCostLine) GetMaterialName() string {
@@ -1332,7 +1462,7 @@ type BottlingRunCostResponse struct {
 
 func (x *BottlingRunCostResponse) Reset() {
 	*x = BottlingRunCostResponse{}
-	mi := &file_stillhouse_v1_material_proto_msgTypes[18]
+	mi := &file_stillhouse_v1_material_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1344,7 +1474,7 @@ func (x *BottlingRunCostResponse) String() string {
 func (*BottlingRunCostResponse) ProtoMessage() {}
 
 func (x *BottlingRunCostResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_material_proto_msgTypes[18]
+	mi := &file_stillhouse_v1_material_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1357,7 +1487,7 @@ func (x *BottlingRunCostResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BottlingRunCostResponse.ProtoReflect.Descriptor instead.
 func (*BottlingRunCostResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{18}
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *BottlingRunCostResponse) GetBottlingRunId() string {
@@ -1495,7 +1625,18 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\fon_hand_only\x18\x02 \x01(\bR\n" +
 	"onHandOnly\"J\n" +
 	"\x18ListMaterialLotsResponse\x12.\n" +
-	"\x04lots\x18\x01 \x03(\v2\x1a.stillhouse.v1.MaterialLotR\x04lots\"@\n" +
+	"\x04lots\x18\x01 \x03(\v2\x1a.stillhouse.v1.MaterialLotR\x04lots\":\n" +
+	"\x19ProductCostSummaryRequest\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\"\xbc\x02\n" +
+	"\x1aProductCostSummaryResponse\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12\x1b\n" +
+	"\trun_count\x18\x02 \x01(\x05R\brunCount\x12#\n" +
+	"\rtotal_bottles\x18\x03 \x01(\x05R\ftotalBottles\x125\n" +
+	"\x17total_material_cost_cad\x18\x04 \x01(\x01R\x14totalMaterialCostCad\x12M\n" +
+	"$average_material_cost_per_bottle_cad\x18\x05 \x01(\x01R\x1faverageMaterialCostPerBottleCad\x127\n" +
+	"\x18runs_with_missing_prices\x18\x06 \x01(\x05R\x15runsWithMissingPrices\"@\n" +
 	"\x16BottlingRunCostRequest\x12&\n" +
 	"\x0fbottling_run_id\x18\x01 \x01(\tR\rbottlingRunId\"\xdc\x01\n" +
 	"\x13BottlingRunCostLine\x12#\n" +
@@ -1520,7 +1661,7 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x11MATERIAL_KIND_NGS\x10\x05\x12\x1b\n" +
 	"\x17MATERIAL_KIND_BOTANICAL\x10\x06\x12\x1b\n" +
 	"\x17MATERIAL_KIND_PACKAGING\x10\a\x12\x17\n" +
-	"\x13MATERIAL_KIND_OTHER\x10\b2\x9e\x06\n" +
+	"\x13MATERIAL_KIND_OTHER\x10\b2\x89\a\n" +
 	"\x0fMaterialService\x12]\n" +
 	"\x0eCreateMaterial\x12$.stillhouse.v1.CreateMaterialRequest\x1a%.stillhouse.v1.CreateMaterialResponse\x12]\n" +
 	"\x0eUpdateMaterial\x12$.stillhouse.v1.UpdateMaterialRequest\x1a%.stillhouse.v1.UpdateMaterialResponse\x12T\n" +
@@ -1529,7 +1670,8 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x0fArchiveMaterial\x12%.stillhouse.v1.ArchiveMaterialRequest\x1a&.stillhouse.v1.ArchiveMaterialResponse\x12r\n" +
 	"\x15RecordMaterialReceipt\x12+.stillhouse.v1.RecordMaterialReceiptRequest\x1a,.stillhouse.v1.RecordMaterialReceiptResponse\x12c\n" +
 	"\x10ListMaterialLots\x12&.stillhouse.v1.ListMaterialLotsRequest\x1a'.stillhouse.v1.ListMaterialLotsResponse\x12`\n" +
-	"\x0fBottlingRunCost\x12%.stillhouse.v1.BottlingRunCostRequest\x1a&.stillhouse.v1.BottlingRunCostResponseB\xd1\x01\n" +
+	"\x0fBottlingRunCost\x12%.stillhouse.v1.BottlingRunCostRequest\x1a&.stillhouse.v1.BottlingRunCostResponse\x12i\n" +
+	"\x12ProductCostSummary\x12(.stillhouse.v1.ProductCostSummaryRequest\x1a).stillhouse.v1.ProductCostSummaryResponseB\xd1\x01\n" +
 	"\x11com.stillhouse.v1B\rMaterialProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1545,7 +1687,7 @@ func file_stillhouse_v1_material_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_material_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_stillhouse_v1_material_proto_goTypes = []any{
 	(MaterialKind)(0),                     // 0: stillhouse.v1.MaterialKind
 	(*Material)(nil),                      // 1: stillhouse.v1.Material
@@ -1564,18 +1706,20 @@ var file_stillhouse_v1_material_proto_goTypes = []any{
 	(*RecordMaterialReceiptResponse)(nil), // 14: stillhouse.v1.RecordMaterialReceiptResponse
 	(*ListMaterialLotsRequest)(nil),       // 15: stillhouse.v1.ListMaterialLotsRequest
 	(*ListMaterialLotsResponse)(nil),      // 16: stillhouse.v1.ListMaterialLotsResponse
-	(*BottlingRunCostRequest)(nil),        // 17: stillhouse.v1.BottlingRunCostRequest
-	(*BottlingRunCostLine)(nil),           // 18: stillhouse.v1.BottlingRunCostLine
-	(*BottlingRunCostResponse)(nil),       // 19: stillhouse.v1.BottlingRunCostResponse
-	(*timestamppb.Timestamp)(nil),         // 20: google.protobuf.Timestamp
+	(*ProductCostSummaryRequest)(nil),     // 17: stillhouse.v1.ProductCostSummaryRequest
+	(*ProductCostSummaryResponse)(nil),    // 18: stillhouse.v1.ProductCostSummaryResponse
+	(*BottlingRunCostRequest)(nil),        // 19: stillhouse.v1.BottlingRunCostRequest
+	(*BottlingRunCostLine)(nil),           // 20: stillhouse.v1.BottlingRunCostLine
+	(*BottlingRunCostResponse)(nil),       // 21: stillhouse.v1.BottlingRunCostResponse
+	(*timestamppb.Timestamp)(nil),         // 22: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.Material.kind:type_name -> stillhouse.v1.MaterialKind
-	20, // 1: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
-	20, // 2: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
-	20, // 3: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
-	20, // 4: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
-	20, // 5: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
+	22, // 1: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
+	22, // 2: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
+	22, // 3: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
+	22, // 4: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
+	22, // 5: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 6: stillhouse.v1.CreateMaterialRequest.kind:type_name -> stillhouse.v1.MaterialKind
 	1,  // 7: stillhouse.v1.CreateMaterialResponse.material:type_name -> stillhouse.v1.Material
 	1,  // 8: stillhouse.v1.UpdateMaterialResponse.material:type_name -> stillhouse.v1.Material
@@ -1583,10 +1727,10 @@ var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 10: stillhouse.v1.ListMaterialsRequest.kind:type_name -> stillhouse.v1.MaterialKind
 	1,  // 11: stillhouse.v1.ListMaterialsResponse.materials:type_name -> stillhouse.v1.Material
 	1,  // 12: stillhouse.v1.ArchiveMaterialResponse.material:type_name -> stillhouse.v1.Material
-	20, // 13: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
+	22, // 13: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
 	2,  // 14: stillhouse.v1.RecordMaterialReceiptResponse.lot:type_name -> stillhouse.v1.MaterialLot
 	2,  // 15: stillhouse.v1.ListMaterialLotsResponse.lots:type_name -> stillhouse.v1.MaterialLot
-	18, // 16: stillhouse.v1.BottlingRunCostResponse.lines:type_name -> stillhouse.v1.BottlingRunCostLine
+	20, // 16: stillhouse.v1.BottlingRunCostResponse.lines:type_name -> stillhouse.v1.BottlingRunCostLine
 	3,  // 17: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
 	5,  // 18: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
 	7,  // 19: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
@@ -1594,17 +1738,19 @@ var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	11, // 21: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
 	13, // 22: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
 	15, // 23: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
-	17, // 24: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
-	4,  // 25: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
-	6,  // 26: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
-	8,  // 27: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
-	10, // 28: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
-	12, // 29: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
-	14, // 30: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
-	16, // 31: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
-	19, // 32: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
-	25, // [25:33] is the sub-list for method output_type
-	17, // [17:25] is the sub-list for method input_type
+	19, // 24: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
+	17, // 25: stillhouse.v1.MaterialService.ProductCostSummary:input_type -> stillhouse.v1.ProductCostSummaryRequest
+	4,  // 26: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
+	6,  // 27: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
+	8,  // 28: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
+	10, // 29: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
+	12, // 30: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
+	14, // 31: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
+	16, // 32: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
+	21, // 33: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
+	18, // 34: stillhouse.v1.MaterialService.ProductCostSummary:output_type -> stillhouse.v1.ProductCostSummaryResponse
+	26, // [26:35] is the sub-list for method output_type
+	17, // [17:26] is the sub-list for method input_type
 	17, // [17:17] is the sub-list for extension type_name
 	17, // [17:17] is the sub-list for extension extendee
 	0,  // [0:17] is the sub-list for field type_name
@@ -1621,7 +1767,7 @@ func file_stillhouse_v1_material_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_material_proto_rawDesc), len(file_stillhouse_v1_material_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   19,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

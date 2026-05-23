@@ -95,6 +95,9 @@ type Querier interface {
 	ListBarrels(ctx context.Context, includeArchived bool) ([]ListBarrelsRow, error)
 	ListBottlingRunStampUsage(ctx context.Context, bottlingRunID uuid.UUID) ([]ListBottlingRunStampUsageRow, error)
 	ListBottlingRuns(ctx context.Context, arg ListBottlingRunsParams) ([]ListBottlingRunsRow, error)
+	// Active (non-voided) bottling runs for a product, oldest first so the
+	// cost rollup walks them in chronological order.
+	ListBottlingRunsForProduct(ctx context.Context, productID uuid.UUID) ([]ListBottlingRunsForProductRow, error)
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
