@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { distillationClient } from "@/lib/clients";
 import { CreateDistillationRunRequestSchema, VoidDistillationRunRequestSchema } from "@/gen/stillhouse/v1/distillation_pb";
@@ -128,7 +129,11 @@ export function DistillationsPage() {
               <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.runs.length === 0 && (
-              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-fg-muted">No runs yet.</td></tr>
+              <EmptyRow
+                colSpan={writeable ? 5 : 4}
+                title="No distillation runs yet"
+                message="Each run captures a still session — its charges from fermenters, cuts (heads/hearts/tails), and the production gauge that puts new-make into a bulk container."
+              />
             )}
             {list.data?.runs.map((r) => {
               const voided = !!r.voidedAt;

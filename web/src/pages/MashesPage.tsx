@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { mashClient, recipeClient } from "@/lib/clients";
 import { CreateMashRunRequestSchema } from "@/gen/stillhouse/v1/mash_pb";
@@ -142,11 +143,21 @@ export function MashesPage() {
               </tr>
             )}
             {!mashes.isLoading && mashes.data?.mashRuns.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-4 py-3 text-fg-muted">
-                  No mash runs yet.
-                </td>
-              </tr>
+              <EmptyRow
+                colSpan={4}
+                title="No mashes yet"
+                message="A mash binds a recipe version to a date and tracks ingredients + metrics through to fermentation. Start one when you fire up the tun."
+                action={
+                  <WriteOnly>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+                    >
+                      New mash
+                    </button>
+                  </WriteOnly>
+                }
+              />
             )}
             {mashes.data?.mashRuns.map((m) => (
               <tr key={m.id}>

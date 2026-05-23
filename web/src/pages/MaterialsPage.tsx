@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
+import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { materialClient } from "@/lib/clients";
 import {
@@ -152,17 +153,25 @@ export function MaterialsPage() {
           <tbody className="divide-y divide-border">
             {isLoading && (
               <tr>
-                <td className="px-4 py-3 text-fg-muted" colSpan={5}>
-                  Loading…
-                </td>
+                <td className="px-4 py-3 text-fg-muted" colSpan={5}>Loading…</td>
               </tr>
             )}
             {!isLoading && data?.materials.length === 0 && (
-              <tr>
-                <td className="px-4 py-3 text-fg-muted" colSpan={5}>
-                  No materials yet. Click <b>Add material</b> to begin.
-                </td>
-              </tr>
+              <EmptyRow
+                colSpan={5}
+                title="No materials yet"
+                message="Grain, malt, yeast — everything that feeds a mash starts here. Add your first to begin tracking inventory and recipes."
+                action={
+                  <WriteOnly>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+                    >
+                      Add material
+                    </button>
+                  </WriteOnly>
+                }
+              />
             )}
             {data?.materials.map((m) => (
               <tr key={m.id}>

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { barrelClient } from "@/lib/clients";
 import { CreateBarrelRequestSchema } from "@/gen/stillhouse/v1/barrel_pb";
@@ -146,7 +147,21 @@ export function BarrelsPage() {
               <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && summary && summary.barrels.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">No barrels yet.</td></tr>
+              <EmptyRow
+                colSpan={9}
+                title="No barrels yet"
+                message="Track each cask by serial, cooperage, char level, and position. FDR B.02.020 requires ≥3 yr in small wood (≤700 L) for the Canadian Whisky label."
+                action={
+                  <WriteOnly>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+                    >
+                      Add barrel
+                    </button>
+                  </WriteOnly>
+                }
+              />
             )}
             {summary?.barrels.map((b) => (
               <tr key={b.id}>

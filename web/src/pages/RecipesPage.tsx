@@ -11,6 +11,7 @@ import {
   SpiritKind,
 } from "@/gen/stillhouse/v1/recipe_pb";
 import { create } from "@bufbuild/protobuf";
+import { EmptyRow } from "@/components/EmptyState";
 import { spiritKindLabel } from "@/lib/format";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
@@ -168,11 +169,21 @@ export function RecipesPage() {
               </tr>
             )}
             {!isLoading && data?.recipes.length === 0 && (
-              <tr>
-                <td className="px-4 py-3 text-fg-muted" colSpan={writeable ? 4 : 3}>
-                  No recipes yet. Click <b>New recipe</b> to begin.
-                </td>
-              </tr>
+              <EmptyRow
+                colSpan={writeable ? 4 : 3}
+                title="No recipes yet"
+                message="Recipes are versioned mash bills with target efficiencies. Save one so you can project LAA before running a mash."
+                action={
+                  <WriteOnly>
+                    <button
+                      onClick={() => setShowForm(true)}
+                      className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+                    >
+                      New recipe
+                    </button>
+                  </WriteOnly>
+                }
+              />
             )}
             {data?.recipes.map((r) => (
               <tr key={r.id}>

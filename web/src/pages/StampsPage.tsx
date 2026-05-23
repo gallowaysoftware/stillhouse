@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { exciseStampClient } from "@/lib/clients";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
@@ -178,7 +179,21 @@ export function StampsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {list.data?.orders.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">No stamp orders yet.</td></tr>
+              <EmptyRow
+                colSpan={9}
+                title="No stamp orders yet"
+                message="CRA-issued excise stamps are province-coded — every bottle sold duty-paid needs one. Place an order ahead of your first bottling run; lead time is weeks."
+                action={
+                  <WriteOnly>
+                    <button
+                      onClick={() => setShowOrderForm(true)}
+                      className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+                    >
+                      Order stamps
+                    </button>
+                  </WriteOnly>
+                }
+              />
             )}
             {list.data?.orders.map((o) => (
               <tr key={o.id}>
