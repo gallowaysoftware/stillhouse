@@ -169,13 +169,19 @@ func (q *Queries) SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRu
 
 const sumBulkMovementsByReason = `-- name: SumBulkMovementsByReason :many
 
-SELECT reason::text AS reason,
-       SUM(laa)::double precision AS total_laa,
+SELECT bm.reason::text AS reason,
+       SUM(bm.laa)::double precision AS total_laa,
        COUNT(*)::int AS count
-FROM bulk_movements
-WHERE occurred_at >= $1 AND occurred_at < $2
-GROUP BY reason
-ORDER BY reason
+FROM bulk_movements bm
+LEFT JOIN distillation_runs dr
+       ON bm.reason = 'production_gauge'
+      AND bm.reference_type = 'distillation_run'
+      AND dr.id = bm.reference_id
+WHERE bm.occurred_at >= $1 AND bm.occurred_at < $2
+  AND (dr.id IS NULL OR dr.voided_at IS NULL)
+  AND bm.reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+GROUP BY bm.reason
+ORDER BY bm.reason
 `
 
 type SumBulkMovementsByReasonParams struct {
@@ -190,6 +196,10 @@ type SumBulkMovementsByReasonRow struct {
 }
 
 // Aggregation queries for generating B266 sections.
+// Excludes production_gauge movements whose underlying distillation_run is
+// voided (so voiding a run removes its production LAA from B266). Also
+// excludes regauge_correction movements that reference a void event — those
+// exist purely to balance the ledger and shouldn't show up as their own line.
 func (q *Queries) SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error) {
 	rows, err := q.db.Query(ctx, sumBulkMovementsByReason, arg.OccurredAt, arg.OccurredAt_2)
 	if err != nil {

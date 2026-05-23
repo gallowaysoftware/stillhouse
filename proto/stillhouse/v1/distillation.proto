@@ -39,6 +39,10 @@ message DistillationRun {
   repeated DistillationCut cuts = 11;
   ProductionGauge gauge = 12;       // unset until RecordProductionGauge runs
   double total_cut_laa = 13;        // computed sum from cuts
+
+  google.protobuf.Timestamp voided_at = 14;
+  string voided_by = 15;
+  string voided_reason = 16;
 }
 
 message DistillationCharge {
@@ -136,6 +140,12 @@ message RecordProductionGaugeResponse {
   BulkContainer destination_container = 2;
 }
 
+message VoidDistillationRunRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidDistillationRunResponse { DistillationRun run = 1; }
+
 service DistillationService {
   rpc CreateDistillationRun(CreateDistillationRunRequest) returns (CreateDistillationRunResponse);
   rpc GetDistillationRun(GetDistillationRunRequest) returns (GetDistillationRunResponse);
@@ -144,4 +154,5 @@ service DistillationService {
   rpc AddDistillationCharge(AddDistillationChargeRequest) returns (AddDistillationChargeResponse);
   rpc AddDistillationCut(AddDistillationCutRequest) returns (AddDistillationCutResponse);
   rpc RecordProductionGauge(RecordProductionGaugeRequest) returns (RecordProductionGaugeResponse);
+  rpc VoidDistillationRun(VoidDistillationRunRequest) returns (VoidDistillationRunResponse);
 }

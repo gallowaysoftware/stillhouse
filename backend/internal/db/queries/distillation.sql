@@ -59,3 +59,11 @@ INSERT INTO production_gauges (
 
 -- name: GetProductionGaugeByRun :one
 SELECT * FROM production_gauges WHERE distillation_run_id = $1;
+
+-- name: VoidDistillationRun :one
+UPDATE distillation_runs
+SET voided_at = NOW(),
+    voided_by = $2,
+    voided_reason = $3
+WHERE id = $1 AND voided_at IS NULL
+RETURNING *;

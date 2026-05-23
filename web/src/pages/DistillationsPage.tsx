@@ -6,12 +6,14 @@ import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
 import { distillationClient } from "@/lib/clients";
-import { CreateDistillationRunRequestSchema } from "@/gen/stillhouse/v1/distillation_pb";
+import { CreateDistillationRunRequestSchema, VoidDistillationRunRequestSchema } from "@/gen/stillhouse/v1/distillation_pb";
 import { distillationStatusLabel } from "@/lib/format";
-import { WriteOnly } from "@/lib/role";
+import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
 export function DistillationsPage() {
   const qc = useQueryClient();
+  const role = useCurrentRole();
+  const writeable = canWrite(role);
   const list = useQuery({
     queryKey: ["listDistillationRuns"],
     queryFn: () => distillationClient.listDistillationRuns({}),
@@ -25,6 +27,23 @@ export function DistillationsPage() {
       setShowForm(false);
     },
   });
+  const voidRun = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof VoidDistillationRunRequestSchema>>) =>
+      distillationClient.voidDistillationRun(msg),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["listDistillationRuns"] });
+      qc.invalidateQueries({ queryKey: ["listBulkContainers"] });
+    },
+  });
+  function onVoidRun(id: string, runNo: number) {
+    const reason = window.prompt(
+      `Void distillation run #${runNo}? Production-gauge LAA will be refunded from the destination tank. ` +
+        `Fails if downstream movements have drained the tank below the gauged volume.`,
+      "recorded in error",
+    );
+    if (!reason || !reason.trim()) return;
+    voidRun.mutate(create(VoidDistillationRunRequestSchema, { id, reason: reason.trim() }));
+  }
 
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -101,25 +120,50 @@ export function DistillationsPage() {
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Still</th>
               <th className="px-4 py-3">Status</th>
+              {writeable && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {list.isLoading && (
-              <tr><td colSpan={4} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-stone-500">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.runs.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-3 text-stone-500">No runs yet.</td></tr>
+              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-stone-500">No runs yet.</td></tr>
             )}
-            {list.data?.runs.map((r) => (
-              <tr key={r.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">
-                  <Link to={`/distillations/${r.id}`} className="hover:underline">#{r.runNo}</Link>
-                </td>
-                <td className="px-4 py-3 text-stone-600">{r.runDate}</td>
-                <td className="px-4 py-3 text-stone-600">{r.stillLabel || "—"}</td>
-                <td className="px-4 py-3 text-stone-600">{distillationStatusLabel(r.status)}</td>
-              </tr>
-            ))}
+            {list.data?.runs.map((r) => {
+              const voided = !!r.voidedAt;
+              return (
+                <tr key={r.id} className={voided ? "bg-stone-50 text-stone-400" : ""}>
+                  <td className="px-4 py-3 font-medium">
+                    <Link to={`/distillations/${r.id}`} className="hover:underline">#{r.runNo}</Link>
+                    {voided && (
+                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">VOIDED</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{r.runDate}</td>
+                  <td className="px-4 py-3">
+                    {r.stillLabel || "—"}
+                    {voided && r.voidedReason && (
+                      <div className="text-xs italic">{r.voidedReason}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">{distillationStatusLabel(r.status)}</td>
+                  {writeable && (
+                    <td className="px-4 py-3 text-right">
+                      {!voided && (
+                        <button
+                          onClick={() => onVoidRun(r.id, r.runNo)}
+                          disabled={voidRun.isPending}
+                          className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                        >
+                          Void
+                        </button>
+                      )}
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

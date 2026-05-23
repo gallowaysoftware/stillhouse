@@ -849,15 +849,18 @@ type DistillationCut struct {
 }
 
 type DistillationRun struct {
-	ID         uuid.UUID          `json:"id"`
-	TenantID   uuid.UUID          `json:"tenant_id"`
-	RunNo      int32              `json:"run_no"`
-	StillLabel string             `json:"still_label"`
-	RunDate    pgtype.Date        `json:"run_date"`
-	Status     DistillationStatus `json:"status"`
-	Notes      string             `json:"notes"`
-	CreatedAt  pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt  pgtype.Timestamptz `json:"updated_at"`
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	RunNo        int32              `json:"run_no"`
+	StillLabel   string             `json:"still_label"`
+	RunDate      pgtype.Date        `json:"run_date"`
+	Status       DistillationStatus `json:"status"`
+	Notes        string             `json:"notes"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	VoidedAt     pgtype.Timestamptz `json:"voided_at"`
+	VoidedBy     uuid.NullUUID      `json:"voided_by"`
+	VoidedReason string             `json:"voided_reason"`
 }
 
 type ExciseStampOrder struct {

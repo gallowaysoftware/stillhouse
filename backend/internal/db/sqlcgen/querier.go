@@ -136,6 +136,10 @@ type Querier interface {
 	SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error)
 	SumBulkLAA(ctx context.Context) (float64, error)
 	// Aggregation queries for generating B266 sections.
+	// Excludes production_gauge movements whose underlying distillation_run is
+	// voided (so voiding a run removes its production LAA from B266). Also
+	// excludes regauge_correction movements that reference a void event — those
+	// exist purely to balance the ledger and shouldn't show up as their own line.
 	SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error)
 	// LAA on hand right now (we don't have point-in-time snapshots; B266 generated
 	// for a closed period uses current values, which is fine if generated promptly
@@ -164,6 +168,7 @@ type Querier interface {
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
+	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)
 	VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error)
 }
 

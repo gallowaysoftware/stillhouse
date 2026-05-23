@@ -3,11 +3,14 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
@@ -421,6 +424,128 @@ func (s *DistillationService) RecordProductionGauge(
 	}), nil
 }
 
+// VoidDistillationRun reverses the production gauge: refund the destination
+// container's LAA, write an offsetting bulk_movement (regauge_correction with
+// ref distillation_void), drop the production_gauge row's effect, and mark
+// the run voided.
+//
+// Bottling runs that already consumed the spirit downstream are NOT blocked
+// at this layer — the consequence is that the bottling run's source
+// container balance may go negative-ish (the cost rollup query already
+// dedupes mashes, but a void-after-bottle is a misuse the operator can
+// recover from by voiding the bottling run first). The check matches stage
+// 48's pattern: caller is responsible for ordering.
+func (s *DistillationService) VoidDistillationRun(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.VoidDistillationRunRequest],
+) (*connect.Response[stillhousev1.VoidDistillationRunResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	reason := req.Msg.GetReason()
+	if reason == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required"))
+	}
+
+	var voided sqlcgen.DistillationRun
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		existing, e := q.GetDistillationRun(ctx, id)
+		if e != nil {
+			return e
+		}
+		if existing.VoidedAt.Valid {
+			return connect.NewError(connect.CodeFailedPrecondition, errors.New("distillation run is already voided"))
+		}
+
+		// If a production gauge exists, reverse its container deposit.
+		gauge, ge := q.GetProductionGaugeByRun(ctx, id)
+		if ge != nil && !errors.Is(ge, pgx.ErrNoRows) {
+			return ge
+		}
+		if ge == nil {
+			container, ce := q.GetBulkContainer(ctx, gauge.DestinationContainerID)
+			if ce != nil {
+				return ce
+			}
+			newVol := container.CurrentVolumeL - gauge.VolumeL
+			if newVol < 0 {
+				return connect.NewError(connect.CodeFailedPrecondition,
+					errors.New("destination container balance has dropped below the gauged volume — void downstream movements first"))
+			}
+			laa := gauge.VolumeL * gauge.AbvPct / 100
+			newLAA := container.CurrentLaa - laa
+			if newLAA < 0 {
+				newLAA = 0
+			}
+			// ABV stays at whatever blended in afterward; if container empties,
+			// drop ABV to NULL (matches CreateBulkContainer initial state).
+			var newABV pgtype.Float8
+			if newVol > 0 && container.CurrentAbvPct.Valid {
+				newABV = container.CurrentAbvPct
+			}
+			if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+				ID:             container.ID,
+				CurrentVolumeL: newVol,
+				CurrentAbvPct:  newABV,
+				CurrentLaa:     newLAA,
+			}); e != nil {
+				return e
+			}
+			// Offsetting ledger row so the audit trail is reconstructable.
+			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+				TenantID:               u.TenantID,
+				SourceContainerID:      uuid.NullUUID{UUID: container.ID, Valid: true},
+				DestinationContainerID: uuid.NullUUID{Valid: false},
+				VolumeL:                gauge.VolumeL,
+				AbvPct:                 gauge.AbvPct,
+				Laa:                    laa,
+				Reason:                 sqlcgen.BulkMovementReasonRegaugeCorrection,
+				ReferenceType:          "distillation_run_void",
+				ReferenceID:            uuid.NullUUID{UUID: id, Valid: true},
+				Notes:                  "void of distillation run #" + fmt.Sprintf("%d", existing.RunNo) + ": " + reason,
+				OccurredAt:             pgtype.Timestamptz{Valid: true, Time: time.Now()},
+			}); e != nil {
+				return e
+			}
+		}
+
+		voided, e = q.VoidDistillationRun(ctx, sqlcgen.VoidDistillationRunParams{
+			ID:           id,
+			VoidedBy:     uuid.NullUUID{UUID: u.ID, Valid: true},
+			VoidedReason: reason,
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_run", voided.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":   "voided",
+				"run_no":  voided.RunNo,
+				"reason":  reason,
+				"had_gauge": ge == nil,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("distillation run not found"))
+		}
+		s.logger.Error("VoidDistillationRun", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.VoidDistillationRunResponse{
+		Run: distillationRunToProto(voided, nil, nil, nil),
+	}), nil
+}
+
 // --- converters ---
 
 func distillationRunToProto(
@@ -430,16 +555,23 @@ func distillationRunToProto(
 	gauge *stillhousev1.ProductionGauge,
 ) *stillhousev1.DistillationRun {
 	out := &stillhousev1.DistillationRun{
-		Id:         r.ID.String(),
-		TenantId:   r.TenantID.String(),
-		RunNo:      r.RunNo,
-		StillLabel: r.StillLabel,
-		RunDate:    formatDate(r.RunDate),
-		Status:     distillationStatusToProto(r.Status),
-		Notes:      r.Notes,
-		CreatedAt:  timestamppb.New(r.CreatedAt.Time),
-		UpdatedAt:  timestamppb.New(r.UpdatedAt.Time),
-		Gauge:      gauge,
+		Id:           r.ID.String(),
+		TenantId:     r.TenantID.String(),
+		RunNo:        r.RunNo,
+		StillLabel:   r.StillLabel,
+		RunDate:      formatDate(r.RunDate),
+		Status:       distillationStatusToProto(r.Status),
+		Notes:        r.Notes,
+		CreatedAt:    timestamppb.New(r.CreatedAt.Time),
+		UpdatedAt:    timestamppb.New(r.UpdatedAt.Time),
+		Gauge:        gauge,
+		VoidedReason: r.VoidedReason,
+	}
+	if r.VoidedAt.Valid {
+		out.VoidedAt = timestamppb.New(r.VoidedAt.Time)
+	}
+	if r.VoidedBy.Valid {
+		out.VoidedBy = r.VoidedBy.UUID.String()
 	}
 	for _, c := range charges {
 		ch := sqlcgen.DistillationCharge{
