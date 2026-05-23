@@ -15,13 +15,17 @@ import { CreateBottlingRunRequestSchema, VoidBottlingRunRequestSchema } from "@/
 import { formatLAA, formatQty } from "@/lib/format";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
+const PAGE_SIZE = 50;
+
 export function BottlingPage() {
   const qc = useQueryClient();
   const role = useCurrentRole();
   const writeable = canWrite(role);
+  const [page, setPage] = useState(0);
   const runs = useQuery({
-    queryKey: ["listBottlingRuns"],
-    queryFn: () => bottlingClient.listBottlingRuns({ limit: 500 }),
+    queryKey: ["listBottlingRuns", page],
+    queryFn: () =>
+      bottlingClient.listBottlingRuns({ limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
   });
   const packaged = useQuery({
     queryKey: ["listPackagedInventory"],
@@ -270,6 +274,12 @@ export function BottlingPage() {
           </tbody>
         </table>
       </div>
+      <Pager
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={runs.data?.totalCount ?? 0}
+        onPage={setPage}
+      />
 
       <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Packaged inventory</h2>
       <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
@@ -302,5 +312,37 @@ export function BottlingPage() {
         </table>
       </div>
     </Shell>
+  );
+}
+
+// Pager renders prev / next + "showing N–M of T" for a server-paginated list.
+// Hidden entirely when there's only one page.
+export function Pager({
+  page, pageSize, total, onPage,
+}: { page: number; pageSize: number; total: number; onPage: (n: number) => void }) {
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  if (pageCount <= 1) return null;
+  const from = page * pageSize + 1;
+  const to = Math.min((page + 1) * pageSize, total);
+  return (
+    <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
+      <span>Showing {from.toLocaleString()}–{to.toLocaleString()} of {total.toLocaleString()}</span>
+      <div className="flex gap-2">
+        <button
+          disabled={page === 0}
+          onClick={() => onPage(Math.max(0, page - 1))}
+          className="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100 disabled:opacity-40"
+        >
+          ← Prev
+        </button>
+        <button
+          disabled={page >= pageCount - 1}
+          onClick={() => onPage(page + 1)}
+          className="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100 disabled:opacity-40"
+        >
+          Next →
+        </button>
+      </div>
+    </div>
   );
 }

@@ -12,6 +12,9 @@ import {
 } from "@/gen/stillhouse/v1/removal_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
+import { Pager } from "@/pages/BottlingPage";
+
+const PAGE_SIZE = 50;
 
 const destLabel: Record<RemovalDestinationKind, string> = {
   [RemovalDestinationKind.UNSPECIFIED]: "—",
@@ -36,9 +39,11 @@ export function RemovalsPage() {
   const qc = useQueryClient();
   const role = useCurrentRole();
   const writeable = canWrite(role);
+  const [page, setPage] = useState(0);
   const list = useQuery({
-    queryKey: ["listRemovals"],
-    queryFn: () => removalClient.listRemovals({ limit: 500 }),
+    queryKey: ["listRemovals", page],
+    queryFn: () =>
+      removalClient.listRemovals({ limit: PAGE_SIZE, offset: page * PAGE_SIZE }),
   });
   const packaged = useQuery({
     queryKey: ["listPackagedInventory"],
@@ -235,6 +240,12 @@ export function RemovalsPage() {
           </tbody>
         </table>
       </div>
+      <Pager
+        page={page}
+        pageSize={PAGE_SIZE}
+        total={list.data?.totalCount ?? 0}
+        onPage={setPage}
+      />
     </Shell>
   );
 }
