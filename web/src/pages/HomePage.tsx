@@ -77,6 +77,7 @@ export function HomePage() {
       <ReadyToDumpCallout barrels={barrels.data?.barrels ?? []} />
       <B266DueCallout periodEnd={end} hasBottling={hasBottling} />
       <StampLowStockCallout summaries={stamps.data?.summaries ?? []} />
+      <StagnantBulkCallout containers={bulk.data?.containers ?? []} />
 
       {!completedAll && allLoaded && (
         <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
@@ -223,6 +224,40 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
         <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
         {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue — file as soon as possible`}).
         {" "}<Link to="/b266" className="underline">Open the return →</Link>
+      </p>
+    </section>
+  );
+}
+
+// StagnantBulkCallout warns when a non-barrel container (tank, blend tank,
+// spirit receiver, etc.) has had no movement for 90+ days AND holds
+// non-trivial alcohol. Barrels intentionally excluded — long stagnation
+// IS the goal for aging spirit.
+function StagnantBulkCallout({ containers }: { containers: { id: string; name: string; kind: number; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean }[] }) {
+  const STAGNANT_DAYS = 90;
+  const flagged: { id: string; name: string; days: number; currentLaa: number }[] = [];
+  for (const c of containers) {
+    if (c.archived || c.kind === 7 /* BARREL */ || c.currentLaa < 1) continue;
+    const ts = c.lastMovementAt ?? c.createdAt;
+    if (!ts) continue;
+    const days = Math.floor((Date.now() - Number(ts.seconds) * 1000) / 86_400_000);
+    if (days >= STAGNANT_DAYS) flagged.push({ id: c.id, name: c.name, days, currentLaa: c.currentLaa });
+  }
+  flagged.sort((a, b) => b.days - a.days);
+  flagged.splice(5);
+  if (flagged.length === 0) return null;
+  return (
+    <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+      <p className="text-sm text-amber-900">
+        <span className="font-semibold">Stagnant bulk inventory:</span>{" "}
+        {flagged.map((c, i) => (
+          <span key={c.id}>
+            {i > 0 && ", "}
+            {c.name} ({c.days}d, {c.currentLaa.toFixed(0)} L LAA)
+          </span>
+        ))} — no movement in 90+ days. Evap losses accrue silently; consider
+        gauging or transferring.{" "}
+        <Link to="/bulk" className="underline">Open bulk →</Link>
       </p>
     </section>
   );

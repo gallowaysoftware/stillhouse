@@ -51,6 +51,10 @@ message BulkContainer {
 
   google.protobuf.Timestamp created_at = 14;
   google.protobuf.Timestamp updated_at = 15;
+  // Last bulk_movement timestamp touching this container (as source or dest).
+  // Unset if the container has never moved alcohol — caller should fall back
+  // to created_at to compute "days since activity".
+  google.protobuf.Timestamp last_movement_at = 16;
 }
 
 message BulkMovement {

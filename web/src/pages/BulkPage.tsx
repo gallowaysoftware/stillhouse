@@ -156,14 +156,15 @@ export function BulkPage() {
               <th className="px-4 py-3 text-right">Volume (L)</th>
               <th className="px-4 py-3 text-right">ABV</th>
               <th className="px-4 py-3 text-right">LAA</th>
+              <th className="px-4 py-3 text-right">Last activity</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {list.isLoading && (
-              <tr><td colSpan={5} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.containers.length === 0 && (
-              <tr><td colSpan={5} className="px-4 py-3 text-stone-500">No containers yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No containers yet.</td></tr>
             )}
             {list.data?.containers.map((c) => (
               <tr key={c.id}>
@@ -176,6 +177,9 @@ export function BulkPage() {
                   {c.currentAbvPctSet ? c.currentAbvPct.toFixed(2) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-right font-medium text-stone-900">{formatLAA(c.currentLaa)}</td>
+                <td className="px-4 py-3 text-right text-stone-500">
+                  <ActivityCell ts={c.lastMovementAt} fallback={c.createdAt} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -218,4 +222,23 @@ export function BulkPage() {
       </div>
     </Shell>
   );
+}
+
+// ActivityCell renders "5 days ago" (or whatever) for the most recent
+// bulk_movement touching the container. Falls back to createdAt for
+// containers that have never moved alcohol.
+function ActivityCell({
+  ts,
+  fallback,
+}: {
+  ts: { seconds: bigint } | undefined;
+  fallback: { seconds: bigint } | undefined;
+}) {
+  const effective = ts ?? fallback;
+  if (!effective) return <>—</>;
+  const ms = Number(effective.seconds) * 1000;
+  const days = Math.floor((Date.now() - ms) / 86_400_000);
+  const stale = days >= 90;
+  const label = days === 0 ? "today" : `${days} day${days === 1 ? "" : "s"} ago`;
+  return <span className={stale ? "text-amber-700" : ""}>{label}</span>;
 }

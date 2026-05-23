@@ -181,8 +181,12 @@ type BulkContainer struct {
 	CurrentLaa       float64                `protobuf:"fixed64,13,opt,name=current_laa,json=currentLaa,proto3" json:"current_laa,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Last bulk_movement timestamp touching this container (as source or dest).
+	// Unset if the container has never moved alcohol — caller should fall back
+	// to created_at to compute "days since activity".
+	LastMovementAt *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=last_movement_at,json=lastMovementAt,proto3" json:"last_movement_at,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *BulkContainer) Reset() {
@@ -316,6 +320,13 @@ func (x *BulkContainer) GetCreatedAt() *timestamppb.Timestamp {
 func (x *BulkContainer) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
+	}
+	return nil
+}
+
+func (x *BulkContainer) GetLastMovementAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastMovementAt
 	}
 	return nil
 }
@@ -1156,7 +1167,7 @@ var File_stillhouse_v1_bulk_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/bulk.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb1\x04\n" +
+	"\x18stillhouse/v1/bulk.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf7\x04\n" +
 	"\rBulkContainer\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x12\n" +
@@ -1177,7 +1188,8 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd3\x04\n" +
+	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12D\n" +
+	"\x10last_movement_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastMovementAt\"\xd3\x04\n" +
 	"\fBulkMovement\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x13source_container_id\x18\x02 \x01(\tR\x11sourceContainerId\x122\n" +
@@ -1309,36 +1321,37 @@ var file_stillhouse_v1_bulk_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.BulkContainer.kind:type_name -> stillhouse.v1.BulkContainerKind
 	17, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
 	17, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 3: stillhouse.v1.BulkMovement.reason:type_name -> stillhouse.v1.BulkMovementReason
-	17, // 4: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
-	17, // 5: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: stillhouse.v1.CreateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
-	2,  // 7: stillhouse.v1.CreateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
-	0,  // 8: stillhouse.v1.UpdateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
-	2,  // 9: stillhouse.v1.UpdateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
-	2,  // 10: stillhouse.v1.SetBulkContainerArchivedResponse.container:type_name -> stillhouse.v1.BulkContainer
-	2,  // 11: stillhouse.v1.ListBulkContainersResponse.containers:type_name -> stillhouse.v1.BulkContainer
-	4,  // 12: stillhouse.v1.ListBulkContainersResponse.summary:type_name -> stillhouse.v1.BulkSummary
-	2,  // 13: stillhouse.v1.GetBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
-	3,  // 14: stillhouse.v1.GetBulkContainerResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	3,  // 15: stillhouse.v1.ListRecentBulkMovementsResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	5,  // 16: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
-	7,  // 17: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
-	9,  // 18: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
-	11, // 19: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
-	13, // 20: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
-	15, // 21: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
-	6,  // 22: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
-	8,  // 23: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
-	10, // 24: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
-	12, // 25: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
-	14, // 26: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
-	16, // 27: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
-	22, // [22:28] is the sub-list for method output_type
-	16, // [16:22] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	17, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
+	1,  // 4: stillhouse.v1.BulkMovement.reason:type_name -> stillhouse.v1.BulkMovementReason
+	17, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
+	17, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 7: stillhouse.v1.CreateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
+	2,  // 8: stillhouse.v1.CreateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
+	0,  // 9: stillhouse.v1.UpdateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
+	2,  // 10: stillhouse.v1.UpdateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
+	2,  // 11: stillhouse.v1.SetBulkContainerArchivedResponse.container:type_name -> stillhouse.v1.BulkContainer
+	2,  // 12: stillhouse.v1.ListBulkContainersResponse.containers:type_name -> stillhouse.v1.BulkContainer
+	4,  // 13: stillhouse.v1.ListBulkContainersResponse.summary:type_name -> stillhouse.v1.BulkSummary
+	2,  // 14: stillhouse.v1.GetBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
+	3,  // 15: stillhouse.v1.GetBulkContainerResponse.movements:type_name -> stillhouse.v1.BulkMovement
+	3,  // 16: stillhouse.v1.ListRecentBulkMovementsResponse.movements:type_name -> stillhouse.v1.BulkMovement
+	5,  // 17: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
+	7,  // 18: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
+	9,  // 19: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
+	11, // 20: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
+	13, // 21: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
+	15, // 22: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
+	6,  // 23: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
+	8,  // 24: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
+	10, // 25: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
+	12, // 26: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
+	14, // 27: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
+	16, // 28: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
+	23, // [23:29] is the sub-list for method output_type
+	17, // [17:23] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_bulk_proto_init() }

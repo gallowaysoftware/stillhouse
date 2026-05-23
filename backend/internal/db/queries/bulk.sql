@@ -65,6 +65,22 @@ LEFT JOIN bulk_containers dst ON dst.id = bm.destination_container_id
 ORDER BY bm.occurred_at DESC
 LIMIT 100;
 
+-- name: BulkContainerLastActivity :many
+-- Last movement timestamp per container (either as source or destination).
+-- Returns one row per container that's ever moved alcohol; containers that
+-- have only existed never accept a row here. Caller falls back to
+-- container.created_at for those.
+SELECT container_id,
+       MAX(occurred_at)::timestamptz AS last_movement_at
+FROM (
+    SELECT source_container_id AS container_id, occurred_at
+        FROM bulk_movements WHERE source_container_id IS NOT NULL
+    UNION ALL
+    SELECT destination_container_id AS container_id, occurred_at
+        FROM bulk_movements WHERE destination_container_id IS NOT NULL
+) m
+GROUP BY container_id;
+
 -- name: SumBulkLAA :one
 SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
 FROM bulk_containers

@@ -160,8 +160,11 @@ func (s *BulkService) ListBulkContainers(
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
-	var rows []sqlcgen.BulkContainer
-	var totalLAA float64
+	var (
+		rows     []sqlcgen.BulkContainer
+		totalLAA float64
+		activity []sqlcgen.BulkContainerLastActivityRow
+	)
 	err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		rows, e = q.ListBulkContainers(ctx, req.Msg.GetIncludeArchived())
@@ -169,16 +172,30 @@ func (s *BulkService) ListBulkContainers(
 			return e
 		}
 		totalLAA, e = q.SumBulkLAA(ctx)
+		if e != nil {
+			return e
+		}
+		activity, e = q.BulkContainerLastActivity(ctx)
 		return e
 	})
 	if err != nil {
 		s.logger.Error("ListBulkContainers", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	lastByID := make(map[uuid.UUID]pgtype.Timestamptz, len(activity))
+	for _, a := range activity {
+		if a.ContainerID.Valid {
+			lastByID[a.ContainerID.UUID] = pgtype.Timestamptz{Valid: true, Time: a.LastMovementAt.Time}
+		}
+	}
 	out := make([]*stillhousev1.BulkContainer, 0, len(rows))
 	activeCount := int32(0)
 	for _, c := range rows {
-		out = append(out, bulkContainerToProto(c))
+		proto := bulkContainerToProto(c)
+		if last, ok := lastByID[c.ID]; ok {
+			proto.LastMovementAt = timestamppb.New(last.Time)
+		}
+		out = append(out, proto)
 		if !c.Archived {
 			activeCount++
 		}

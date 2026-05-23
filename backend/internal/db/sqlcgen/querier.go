@@ -29,6 +29,11 @@ type Querier interface {
 	// when the source container is a blend tank or spirit receiver that
 	// collected from multiple barrels/distillations.
 	BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChainFeedsParams) ([]BottlingRunChainFeedsRow, error)
+	// Last movement timestamp per container (either as source or destination).
+	// Returns one row per container that's ever moved alcohol; containers that
+	// have only existed never accept a row here. Caller falls back to
+	// container.created_at for those.
+	BulkContainerLastActivity(ctx context.Context) ([]BulkContainerLastActivityRow, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)

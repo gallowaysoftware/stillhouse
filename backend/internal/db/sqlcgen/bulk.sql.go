@@ -12,6 +12,48 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const bulkContainerLastActivity = `-- name: BulkContainerLastActivity :many
+SELECT container_id,
+       MAX(occurred_at)::timestamptz AS last_movement_at
+FROM (
+    SELECT source_container_id AS container_id, occurred_at
+        FROM bulk_movements WHERE source_container_id IS NOT NULL
+    UNION ALL
+    SELECT destination_container_id AS container_id, occurred_at
+        FROM bulk_movements WHERE destination_container_id IS NOT NULL
+) m
+GROUP BY container_id
+`
+
+type BulkContainerLastActivityRow struct {
+	ContainerID    uuid.NullUUID      `json:"container_id"`
+	LastMovementAt pgtype.Timestamptz `json:"last_movement_at"`
+}
+
+// Last movement timestamp per container (either as source or destination).
+// Returns one row per container that's ever moved alcohol; containers that
+// have only existed never accept a row here. Caller falls back to
+// container.created_at for those.
+func (q *Queries) BulkContainerLastActivity(ctx context.Context) ([]BulkContainerLastActivityRow, error) {
+	rows, err := q.db.Query(ctx, bulkContainerLastActivity)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BulkContainerLastActivityRow{}
+	for rows.Next() {
+		var i BulkContainerLastActivityRow
+		if err := rows.Scan(&i.ContainerID, &i.LastMovementAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createBulkContainer = `-- name: CreateBulkContainer :one
 INSERT INTO bulk_containers (
     tenant_id, name, kind, capacity_l, location, notes
