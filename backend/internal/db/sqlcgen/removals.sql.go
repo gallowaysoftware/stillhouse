@@ -12,6 +12,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countRemovals = `-- name: CountRemovals :one
+SELECT COUNT(*)::int AS total
+FROM packaging_removals
+WHERE ($1::date IS NULL OR removal_date >= $1::date)
+  AND ($2::date   IS NULL OR removal_date <= $2::date)
+`
+
+type CountRemovalsParams struct {
+	PeriodStart pgtype.Date `json:"period_start"`
+	PeriodEnd   pgtype.Date `json:"period_end"`
+}
+
+func (q *Queries) CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error) {
+	row := q.db.QueryRow(ctx, countRemovals, arg.PeriodStart, arg.PeriodEnd)
+	var total int32
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createRemoval = `-- name: CreateRemoval :one
 INSERT INTO packaging_removals (
     tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed,
@@ -189,12 +208,15 @@ SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_
 FROM packaging_removals pr
 JOIN packaged_inventory pi ON pi.id = pr.packaged_inventory_id
 JOIN products p             ON p.id = pi.product_id
-WHERE ($1::date IS NULL OR pr.removal_date >= $1::date)
-  AND ($2::date   IS NULL OR pr.removal_date <= $2::date)
+WHERE ($3::date IS NULL OR pr.removal_date >= $3::date)
+  AND ($4::date   IS NULL OR pr.removal_date <= $4::date)
 ORDER BY pr.removal_date DESC, pr.removal_no DESC
+LIMIT $1 OFFSET $2
 `
 
 type ListRemovalsParams struct {
+	Limit       int32       `json:"limit"`
+	Offset      int32       `json:"offset"`
 	PeriodStart pgtype.Date `json:"period_start"`
 	PeriodEnd   pgtype.Date `json:"period_end"`
 }
@@ -226,7 +248,12 @@ type ListRemovalsRow struct {
 }
 
 func (q *Queries) ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error) {
-	rows, err := q.db.Query(ctx, listRemovals, arg.PeriodStart, arg.PeriodEnd)
+	rows, err := q.db.Query(ctx, listRemovals,
+		arg.Limit,
+		arg.Offset,
+		arg.PeriodStart,
+		arg.PeriodEnd,
+	)
 	if err != nil {
 		return nil, err
 	}

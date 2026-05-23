@@ -12,6 +12,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countBottlingRuns = `-- name: CountBottlingRuns :one
+SELECT COUNT(*)::int AS total
+FROM bottling_runs
+WHERE ($1::date IS NULL OR bottling_date >= $1::date)
+  AND ($2::date   IS NULL OR bottling_date <= $2::date)
+`
+
+type CountBottlingRunsParams struct {
+	PeriodStart pgtype.Date `json:"period_start"`
+	PeriodEnd   pgtype.Date `json:"period_end"`
+}
+
+func (q *Queries) CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error) {
+	row := q.db.QueryRow(ctx, countBottlingRuns, arg.PeriodStart, arg.PeriodEnd)
+	var total int32
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createBottlingRun = `-- name: CreateBottlingRun :one
 INSERT INTO bottling_runs (
     tenant_id, run_no, product_id, source_container_id, destination_jurisdiction,
@@ -294,8 +313,18 @@ SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br
        p.target_abv_pct AS product_target_abv_pct
 FROM bottling_runs br
 JOIN products p ON p.id = br.product_id
+WHERE ($3::date IS NULL OR br.bottling_date >= $3::date)
+  AND ($4::date   IS NULL OR br.bottling_date <= $4::date)
 ORDER BY br.bottling_date DESC, br.run_no DESC
+LIMIT $1 OFFSET $2
 `
+
+type ListBottlingRunsParams struct {
+	Limit       int32       `json:"limit"`
+	Offset      int32       `json:"offset"`
+	PeriodStart pgtype.Date `json:"period_start"`
+	PeriodEnd   pgtype.Date `json:"period_end"`
+}
 
 type ListBottlingRunsRow struct {
 	ID                      uuid.UUID          `json:"id"`
@@ -323,8 +352,13 @@ type ListBottlingRunsRow struct {
 	ProductTargetAbvPct     float64            `json:"product_target_abv_pct"`
 }
 
-func (q *Queries) ListBottlingRuns(ctx context.Context) ([]ListBottlingRunsRow, error) {
-	rows, err := q.db.Query(ctx, listBottlingRuns)
+func (q *Queries) ListBottlingRuns(ctx context.Context, arg ListBottlingRunsParams) ([]ListBottlingRunsRow, error) {
+	rows, err := q.db.Query(ctx, listBottlingRuns,
+		arg.Limit,
+		arg.Offset,
+		arg.PeriodStart,
+		arg.PeriodEnd,
+	)
 	if err != nil {
 		return nil, err
 	}

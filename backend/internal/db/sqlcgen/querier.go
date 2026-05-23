@@ -30,6 +30,8 @@ type Querier interface {
 	// collected from multiple barrels/distillations.
 	BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChainFeedsParams) ([]BottlingRunChainFeedsRow, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
+	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
+	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
 	CountTenants(ctx context.Context) (int64, error)
 	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
 	CreateBottlingRun(ctx context.Context, arg CreateBottlingRunParams) (BottlingRun, error)
@@ -92,7 +94,7 @@ type Querier interface {
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
 	ListBarrels(ctx context.Context, includeArchived bool) ([]ListBarrelsRow, error)
 	ListBottlingRunStampUsage(ctx context.Context, bottlingRunID uuid.UUID) ([]ListBottlingRunStampUsageRow, error)
-	ListBottlingRuns(ctx context.Context) ([]ListBottlingRunsRow, error)
+	ListBottlingRuns(ctx context.Context, arg ListBottlingRunsParams) ([]ListBottlingRunsRow, error)
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)

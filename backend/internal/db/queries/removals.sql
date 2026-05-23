@@ -28,7 +28,14 @@ JOIN packaged_inventory pi ON pi.id = pr.packaged_inventory_id
 JOIN products p             ON p.id = pi.product_id
 WHERE (sqlc.narg('period_start')::date IS NULL OR pr.removal_date >= sqlc.narg('period_start')::date)
   AND (sqlc.narg('period_end')::date   IS NULL OR pr.removal_date <= sqlc.narg('period_end')::date)
-ORDER BY pr.removal_date DESC, pr.removal_no DESC;
+ORDER BY pr.removal_date DESC, pr.removal_no DESC
+LIMIT $1 OFFSET $2;
+
+-- name: CountRemovals :one
+SELECT COUNT(*)::int AS total
+FROM packaging_removals
+WHERE (sqlc.narg('period_start')::date IS NULL OR removal_date >= sqlc.narg('period_start')::date)
+  AND (sqlc.narg('period_end')::date   IS NULL OR removal_date <= sqlc.narg('period_end')::date);
 
 -- name: GetRemoval :one
 SELECT * FROM packaging_removals WHERE id = $1;

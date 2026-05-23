@@ -54,8 +54,13 @@ message CreateRemovalResponse { PackagingRemoval removal = 1; }
 message ListRemovalsRequest {
   string period_start = 1;
   string period_end = 2;
+  int32  limit = 3;            // 0 = server default (100); max 500
+  int32  offset = 4;
 }
-message ListRemovalsResponse { repeated PackagingRemoval removals = 1; }
+message ListRemovalsResponse {
+  repeated PackagingRemoval removals = 1;
+  int32 total_count = 2;
+}
 
 message VoidRemovalRequest {
   string id = 1;

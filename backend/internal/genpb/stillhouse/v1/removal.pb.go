@@ -443,6 +443,8 @@ type ListRemovalsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PeriodStart   string                 `protobuf:"bytes,1,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
 	PeriodEnd     string                 `protobuf:"bytes,2,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"` // 0 = server default (100); max 500
+	Offset        int32                  `protobuf:"varint,4,opt,name=offset,proto3" json:"offset,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -491,9 +493,24 @@ func (x *ListRemovalsRequest) GetPeriodEnd() string {
 	return ""
 }
 
+func (x *ListRemovalsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListRemovalsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
 type ListRemovalsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Removals      []*PackagingRemoval    `protobuf:"bytes,1,rep,name=removals,proto3" json:"removals,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -533,6 +550,13 @@ func (x *ListRemovalsResponse) GetRemovals() []*PackagingRemoval {
 		return x.Removals
 	}
 	return nil
+}
+
+func (x *ListRemovalsResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
 }
 
 type VoidRemovalRequest struct {
@@ -672,13 +696,17 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\treference\x18\x06 \x01(\tR\treference\x12\x14\n" +
 	"\x05notes\x18\a \x01(\tR\x05notes\"R\n" +
 	"\x15CreateRemovalResponse\x129\n" +
-	"\aremoval\x18\x01 \x01(\v2\x1f.stillhouse.v1.PackagingRemovalR\aremoval\"W\n" +
+	"\aremoval\x18\x01 \x01(\v2\x1f.stillhouse.v1.PackagingRemovalR\aremoval\"\x85\x01\n" +
 	"\x13ListRemovalsRequest\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
 	"\n" +
-	"period_end\x18\x02 \x01(\tR\tperiodEnd\"S\n" +
+	"period_end\x18\x02 \x01(\tR\tperiodEnd\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x04 \x01(\x05R\x06offset\"t\n" +
 	"\x14ListRemovalsResponse\x12;\n" +
-	"\bremovals\x18\x01 \x03(\v2\x1f.stillhouse.v1.PackagingRemovalR\bremovals\"<\n" +
+	"\bremovals\x18\x01 \x03(\v2\x1f.stillhouse.v1.PackagingRemovalR\bremovals\x12\x1f\n" +
+	"\vtotal_count\x18\x02 \x01(\x05R\n" +
+	"totalCount\"<\n" +
 	"\x12VoidRemovalRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"P\n" +

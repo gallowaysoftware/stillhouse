@@ -324,11 +324,51 @@ func (s *BottlingService) ListBottlingRuns(
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
-	_ = req
-	var rows []sqlcgen.ListBottlingRunsRow
+	limit := req.Msg.GetLimit()
+	if limit <= 0 {
+		limit = 100
+	}
+	if limit > 500 {
+		limit = 500
+	}
+	offset := req.Msg.GetOffset()
+	if offset < 0 {
+		offset = 0
+	}
+	var pStart, pEnd pgtype.Date
+	if s := req.Msg.GetPeriodStart(); s != "" {
+		d, err := parseDateOrToday(s)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_start"))
+		}
+		pStart = d
+	}
+	if s := req.Msg.GetPeriodEnd(); s != "" {
+		d, err := parseDateOrToday(s)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_end"))
+		}
+		pEnd = d
+	}
+	var (
+		rows  []sqlcgen.ListBottlingRunsRow
+		total int32
+	)
 	err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
-		rows, e = q.ListBottlingRuns(ctx)
+		rows, e = q.ListBottlingRuns(ctx, sqlcgen.ListBottlingRunsParams{
+			Limit:       limit,
+			Offset:      offset,
+			PeriodStart: pStart,
+			PeriodEnd:   pEnd,
+		})
+		if e != nil {
+			return e
+		}
+		total, e = q.CountBottlingRuns(ctx, sqlcgen.CountBottlingRunsParams{
+			PeriodStart: pStart,
+			PeriodEnd:   pEnd,
+		})
 		return e
 	})
 	if err != nil {
@@ -365,7 +405,7 @@ func (s *BottlingService) ListBottlingRuns(
 			TargetAbvPct: r.ProductTargetAbvPct,
 		}, nil))
 	}
-	return connect.NewResponse(&stillhousev1.ListBottlingRunsResponse{Runs: out}), nil
+	return connect.NewResponse(&stillhousev1.ListBottlingRunsResponse{Runs: out, TotalCount: total}), nil
 }
 
 func (s *BottlingService) VoidBottlingRun(

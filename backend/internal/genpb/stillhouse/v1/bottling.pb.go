@@ -724,6 +724,10 @@ func (x *GetBottlingRunResponse) GetRun() *BottlingRun {
 
 type ListBottlingRunsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"` // 0 = server default (100); max 500
+	Offset        int32                  `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	PeriodStart   string                 `protobuf:"bytes,3,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"` // optional ISO date, inclusive
+	PeriodEnd     string                 `protobuf:"bytes,4,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`       // optional ISO date, inclusive
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -758,9 +762,38 @@ func (*ListBottlingRunsRequest) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_bottling_proto_rawDescGZIP(), []int{7}
 }
 
+func (x *ListBottlingRunsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *ListBottlingRunsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *ListBottlingRunsRequest) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *ListBottlingRunsRequest) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
 type ListBottlingRunsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Runs          []*BottlingRun         `protobuf:"bytes,1,rep,name=runs,proto3" json:"runs,omitempty"`
+	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"` // total matching the filters; for pagination
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -800,6 +833,13 @@ func (x *ListBottlingRunsResponse) GetRuns() []*BottlingRun {
 		return x.Runs
 	}
 	return nil
+}
+
+func (x *ListBottlingRunsResponse) GetTotalCount() int32 {
+	if x != nil {
+		return x.TotalCount
+	}
+	return 0
 }
 
 type ListPackagedInventoryRequest struct {
@@ -1064,10 +1104,17 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"\x15GetBottlingRunRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"F\n" +
 	"\x16GetBottlingRunResponse\x12,\n" +
-	"\x03run\x18\x01 \x01(\v2\x1a.stillhouse.v1.BottlingRunR\x03run\"\x19\n" +
-	"\x17ListBottlingRunsRequest\"J\n" +
+	"\x03run\x18\x01 \x01(\v2\x1a.stillhouse.v1.BottlingRunR\x03run\"\x89\x01\n" +
+	"\x17ListBottlingRunsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\x12!\n" +
+	"\fperiod_start\x18\x03 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x04 \x01(\tR\tperiodEnd\"k\n" +
 	"\x18ListBottlingRunsResponse\x12.\n" +
-	"\x04runs\x18\x01 \x03(\v2\x1a.stillhouse.v1.BottlingRunR\x04runs\"C\n" +
+	"\x04runs\x18\x01 \x03(\v2\x1a.stillhouse.v1.BottlingRunR\x04runs\x12\x1f\n" +
+	"\vtotal_count\x18\x02 \x01(\x05R\n" +
+	"totalCount\"C\n" +
 	"\x1cListPackagedInventoryRequest\x12#\n" +
 	"\rinclude_empty\x18\x01 \x01(\bR\fincludeEmpty\"X\n" +
 	"\x1dListPackagedInventoryResponse\x127\n" +

@@ -21,7 +21,7 @@ export function BottlingPage() {
   const writeable = canWrite(role);
   const runs = useQuery({
     queryKey: ["listBottlingRuns"],
-    queryFn: () => bottlingClient.listBottlingRuns({}),
+    queryFn: () => bottlingClient.listBottlingRuns({ limit: 500 }),
   });
   const packaged = useQuery({
     queryKey: ["listPackagedInventory"],

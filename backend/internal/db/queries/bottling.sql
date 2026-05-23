@@ -21,7 +21,16 @@ SELECT br.*,
        p.target_abv_pct AS product_target_abv_pct
 FROM bottling_runs br
 JOIN products p ON p.id = br.product_id
-ORDER BY br.bottling_date DESC, br.run_no DESC;
+WHERE (sqlc.narg('period_start')::date IS NULL OR br.bottling_date >= sqlc.narg('period_start')::date)
+  AND (sqlc.narg('period_end')::date   IS NULL OR br.bottling_date <= sqlc.narg('period_end')::date)
+ORDER BY br.bottling_date DESC, br.run_no DESC
+LIMIT $1 OFFSET $2;
+
+-- name: CountBottlingRuns :one
+SELECT COUNT(*)::int AS total
+FROM bottling_runs
+WHERE (sqlc.narg('period_start')::date IS NULL OR bottling_date >= sqlc.narg('period_start')::date)
+  AND (sqlc.narg('period_end')::date   IS NULL OR bottling_date <= sqlc.narg('period_end')::date);
 
 -- name: CreateBottlingRunStampUsage :one
 INSERT INTO bottling_run_stamp_usage (

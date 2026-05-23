@@ -246,10 +246,33 @@ func (s *RemovalService) ListRemovals(
 		}
 		pEnd = d
 	}
-	var rows []sqlcgen.ListRemovalsRow
+	limit := req.Msg.GetLimit()
+	if limit <= 0 {
+		limit = 100
+	}
+	if limit > 500 {
+		limit = 500
+	}
+	offset := req.Msg.GetOffset()
+	if offset < 0 {
+		offset = 0
+	}
+	var (
+		rows  []sqlcgen.ListRemovalsRow
+		total int32
+	)
 	err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		rows, e = q.ListRemovals(ctx, sqlcgen.ListRemovalsParams{
+			PeriodStart: pStart,
+			PeriodEnd:   pEnd,
+			Limit:       limit,
+			Offset:      offset,
+		})
+		if e != nil {
+			return e
+		}
+		total, e = q.CountRemovals(ctx, sqlcgen.CountRemovalsParams{
 			PeriodStart: pStart,
 			PeriodEnd:   pEnd,
 		})
@@ -286,7 +309,7 @@ func (s *RemovalService) ListRemovals(
 		}
 		out = append(out, packagingRemovalToProto(removal, p, r.LotCode, r.Jurisdiction))
 	}
-	return connect.NewResponse(&stillhousev1.ListRemovalsResponse{Removals: out}), nil
+	return connect.NewResponse(&stillhousev1.ListRemovalsResponse{Removals: out, TotalCount: total}), nil
 }
 
 // --- converters ---

@@ -78,8 +78,16 @@ message CreateBottlingRunResponse {
 message GetBottlingRunRequest { string id = 1; }
 message GetBottlingRunResponse { BottlingRun run = 1; }
 
-message ListBottlingRunsRequest {}
-message ListBottlingRunsResponse { repeated BottlingRun runs = 1; }
+message ListBottlingRunsRequest {
+  int32 limit = 1;             // 0 = server default (100); max 500
+  int32 offset = 2;
+  string period_start = 3;     // optional ISO date, inclusive
+  string period_end = 4;       // optional ISO date, inclusive
+}
+message ListBottlingRunsResponse {
+  repeated BottlingRun runs = 1;
+  int32 total_count = 2;       // total matching the filters; for pagination
+}
 
 message ListPackagedInventoryRequest { bool include_empty = 1; }
 message ListPackagedInventoryResponse { repeated PackagedInventoryRow rows = 1; }

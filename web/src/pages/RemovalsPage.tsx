@@ -38,7 +38,7 @@ export function RemovalsPage() {
   const writeable = canWrite(role);
   const list = useQuery({
     queryKey: ["listRemovals"],
-    queryFn: () => removalClient.listRemovals({}),
+    queryFn: () => removalClient.listRemovals({ limit: 500 }),
   });
   const packaged = useQuery({
     queryKey: ["listPackagedInventory"],
