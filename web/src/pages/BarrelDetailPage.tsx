@@ -7,6 +7,7 @@ import { create } from "@bufbuild/protobuf";
 import { Callout } from "@/components/Callout";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Shell } from "@/components/Shell";
+import { useToast } from "@/components/Toast";
 import { barrelClient, bulkClient } from "@/lib/clients";
 import {
   BarrelEventKind,
@@ -29,6 +30,7 @@ const eventKindLabels: Record<BarrelEventKind, string> = {
 
 export function BarrelDetailPage() {
   const confirm = useConfirm();
+  const toast = useToast();
   const { id } = useParams();
   const qc = useQueryClient();
 
@@ -52,22 +54,22 @@ export function BarrelDetailPage() {
   const fill = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof FillBarrelRequestSchema>>) =>
       barrelClient.fillBarrel(msg),
-    onSuccess: refresh,
+    onSuccess: () => { refresh(); toast("success", "Barrel filled."); },
   });
   const regauge = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof RegaugeBarrelRequestSchema>>) =>
       barrelClient.regaugeBarrel(msg),
-    onSuccess: refresh,
+    onSuccess: () => { refresh(); toast("success", "Regauge recorded."); },
   });
   const dump = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof DumpBarrelRequestSchema>>) =>
       barrelClient.dumpBarrel(msg),
-    onSuccess: refresh,
+    onSuccess: () => { refresh(); toast("success", "Barrel dumped."); },
   });
   const voidEvent = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof VoidBarrelEventRequestSchema>>) =>
       barrelClient.voidBarrelEvent(msg),
-    onSuccess: refresh,
+    onSuccess: () => { refresh(); toast("success", "Event voided."); },
   });
 
   async function onVoidEvent(eventId: string, kind: BarrelEventKind) {
