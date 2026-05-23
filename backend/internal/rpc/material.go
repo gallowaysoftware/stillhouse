@@ -357,42 +357,44 @@ func (s *MaterialService) BottlingRunCost(
 			if fd.Reason != sqlcgen.BulkMovementReasonProductionGauge {
 				continue
 			}
-			chain, ce := q.DistillationChainFromGauge(ctx, fd.ID)
-			if errors.Is(ce, pgx.ErrNoRows) {
+			charges, ce := q.DistillationChainFromGauge(ctx, fd.ID)
+			if errors.Is(ce, pgx.ErrNoRows) || len(charges) == 0 {
 				continue
 			}
 			if ce != nil {
 				return ce
 			}
-			if !chain.MashRunID.Valid || seen[chain.MashRunID.UUID.String()] {
-				continue
-			}
-			seen[chain.MashRunID.UUID.String()] = true
-
-			ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
-			if ie != nil {
-				return ie
-			}
-			for _, ing := range ings {
-				if !ing.MaterialLotID.Valid {
+			for _, ch := range charges {
+				if !ch.MashRunID.Valid || seen[ch.MashRunID.UUID.String()] {
 					continue
 				}
-				lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
-				if le != nil {
-					return le
+				seen[ch.MashRunID.UUID.String()] = true
+
+				ings, ie := q.ListMashIngredients(ctx, ch.MashRunID.UUID)
+				if ie != nil {
+					return ie
 				}
-				line := &stillhousev1.BottlingRunCostLine{
-					MaterialName: ing.MaterialName,
-					SupplierLot:  ing.SupplierLot.String,
-					QuantityUsed: ing.QuantityUsed,
-					Uom:          ing.Uom,
+				for _, ing := range ings {
+					if !ing.MaterialLotID.Valid {
+						continue
+					}
+					lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
+					if le != nil {
+						return le
+					}
+					line := &stillhousev1.BottlingRunCostLine{
+						MaterialName: ing.MaterialName,
+						SupplierLot:  ing.SupplierLot.String,
+						QuantityUsed: ing.QuantityUsed,
+						Uom:          ing.Uom,
+					}
+					if lot.UnitCostCad.Valid {
+						line.UnitCostCad = lot.UnitCostCad.Float64
+						line.LineCostCad = ing.QuantityUsed * lot.UnitCostCad.Float64
+						out.TotalMaterialCostCad += line.LineCostCad
+					}
+					out.Lines = append(out.Lines, line)
 				}
-				if lot.UnitCostCad.Valid {
-					line.UnitCostCad = lot.UnitCostCad.Float64
-					line.LineCostCad = ing.QuantityUsed * lot.UnitCostCad.Float64
-					out.TotalMaterialCostCad += line.LineCostCad
-				}
-				out.Lines = append(out.Lines, line)
 			}
 		}
 		return nil
@@ -483,34 +485,36 @@ func computeRunMaterialCost(
 		if fd.Reason != sqlcgen.BulkMovementReasonProductionGauge {
 			continue
 		}
-		chain, ce := q.DistillationChainFromGauge(ctx, fd.ID)
-		if errors.Is(ce, pgx.ErrNoRows) {
+		charges, ce := q.DistillationChainFromGauge(ctx, fd.ID)
+		if errors.Is(ce, pgx.ErrNoRows) || len(charges) == 0 {
 			continue
 		}
 		if ce != nil {
 			return 0, false, ce
 		}
-		if !chain.MashRunID.Valid || seen[chain.MashRunID.UUID.String()] {
-			continue
-		}
-		seen[chain.MashRunID.UUID.String()] = true
-		ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
-		if ie != nil {
-			return 0, false, ie
-		}
-		for _, ing := range ings {
-			if !ing.MaterialLotID.Valid {
+		for _, ch := range charges {
+			if !ch.MashRunID.Valid || seen[ch.MashRunID.UUID.String()] {
 				continue
 			}
-			lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
-			if le != nil {
-				return 0, false, le
+			seen[ch.MashRunID.UUID.String()] = true
+			ings, ie := q.ListMashIngredients(ctx, ch.MashRunID.UUID)
+			if ie != nil {
+				return 0, false, ie
 			}
-			if !lot.UnitCostCad.Valid {
-				missing = true
-				continue
+			for _, ing := range ings {
+				if !ing.MaterialLotID.Valid {
+					continue
+				}
+				lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
+				if le != nil {
+					return 0, false, le
+				}
+				if !lot.UnitCostCad.Valid {
+					missing = true
+					continue
+				}
+				total += ing.QuantityUsed * lot.UnitCostCad.Float64
 			}
-			total += ing.QuantityUsed * lot.UnitCostCad.Float64
 		}
 	}
 	return total, missing, nil

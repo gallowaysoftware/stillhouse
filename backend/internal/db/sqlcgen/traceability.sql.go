@@ -139,7 +139,7 @@ func (q *Queries) BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChai
 	return items, nil
 }
 
-const distillationChainFromGauge = `-- name: DistillationChainFromGauge :one
+const distillationChainFromGauge = `-- name: DistillationChainFromGauge :many
 SELECT dr.id AS distillation_run_id, dr.run_no AS distillation_run_no, dr.still_label,
        fr.id AS fermentation_run_id, fr.fermenter_label,
        fr.yeast_lot_id AS yeast_lot_id,
@@ -147,7 +147,8 @@ SELECT dr.id AS distillation_run_id, dr.run_no AS distillation_run_no, dr.still_
        ym.name          AS yeast_material_name,
        mr.id AS mash_run_id, mr.mash_no, mr.mash_date,
        rv.id AS recipe_version_id, rv.version_no AS recipe_version_no,
-       r.id  AS recipe_id, r.name AS recipe_name
+       r.id  AS recipe_id, r.name AS recipe_name,
+       dc.charge_order AS charge_order
 FROM production_gauges pg
 JOIN distillation_runs dr      ON dr.id = pg.distillation_run_id
 LEFT JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
@@ -159,7 +160,6 @@ LEFT JOIN recipe_versions rv      ON rv.id = mr.recipe_version_id
 LEFT JOIN recipes r               ON r.id = rv.recipe_id
 WHERE pg.bulk_movement_id = $1
 ORDER BY dc.charge_order
-LIMIT 1
 `
 
 type DistillationChainFromGaugeRow struct {
@@ -178,30 +178,45 @@ type DistillationChainFromGaugeRow struct {
 	RecipeVersionNo   pgtype.Int4   `json:"recipe_version_no"`
 	RecipeID          uuid.NullUUID `json:"recipe_id"`
 	RecipeName        pgtype.Text   `json:"recipe_name"`
+	ChargeOrder       pgtype.Int4   `json:"charge_order"`
 }
 
-// Pull the distillation run + first ferment + first mash + recipe behind
-// a production_gauge bulk_movement. Returns the "earliest origin" row;
-// real chains may fan out and require iterating per-charge.
-func (q *Queries) DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) (DistillationChainFromGaugeRow, error) {
-	row := q.db.QueryRow(ctx, distillationChainFromGauge, bulkMovementID)
-	var i DistillationChainFromGaugeRow
-	err := row.Scan(
-		&i.DistillationRunID,
-		&i.DistillationRunNo,
-		&i.StillLabel,
-		&i.FermentationRunID,
-		&i.FermenterLabel,
-		&i.YeastLotID,
-		&i.YeastSupplierLot,
-		&i.YeastMaterialName,
-		&i.MashRunID,
-		&i.MashNo,
-		&i.MashDate,
-		&i.RecipeVersionID,
-		&i.RecipeVersionNo,
-		&i.RecipeID,
-		&i.RecipeName,
-	)
-	return i, err
+// Pull the distillation run + every charge → ferment → mash → recipe
+// subtree behind a production_gauge bulk_movement. One row per charge
+// so multi-charge blends are fully represented in trace + cost rollups.
+func (q *Queries) DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error) {
+	rows, err := q.db.Query(ctx, distillationChainFromGauge, bulkMovementID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []DistillationChainFromGaugeRow{}
+	for rows.Next() {
+		var i DistillationChainFromGaugeRow
+		if err := rows.Scan(
+			&i.DistillationRunID,
+			&i.DistillationRunNo,
+			&i.StillLabel,
+			&i.FermentationRunID,
+			&i.FermenterLabel,
+			&i.YeastLotID,
+			&i.YeastSupplierLot,
+			&i.YeastMaterialName,
+			&i.MashRunID,
+			&i.MashNo,
+			&i.MashDate,
+			&i.RecipeVersionID,
+			&i.RecipeVersionNo,
+			&i.RecipeID,
+			&i.RecipeName,
+			&i.ChargeOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

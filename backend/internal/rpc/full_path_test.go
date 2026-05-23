@@ -213,29 +213,31 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 		if fd.Reason != sqlcgen.BulkMovementReasonProductionGauge {
 			continue
 		}
-		chain, ce := q.DistillationChainFromGauge(ctx, fd.ID)
+		charges, ce := q.DistillationChainFromGauge(ctx, fd.ID)
 		if ce != nil {
 			t.Fatalf("DistillationChainFromGauge: %v", ce)
 		}
-		if !chain.MashRunID.Valid {
-			continue
-		}
-		ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
-		if ie != nil {
-			t.Fatalf("ListMashIngredients: %v", ie)
-		}
-		for _, ing := range ings {
-			if !ing.MaterialLotID.Valid {
+		for _, chain := range charges {
+			if !chain.MashRunID.Valid {
 				continue
 			}
-			ml, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
-			if le != nil {
-				t.Fatalf("GetMaterialLot: %v", le)
+			ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
+			if ie != nil {
+				t.Fatalf("ListMashIngredients: %v", ie)
 			}
-			if !ml.UnitCostCad.Valid {
-				continue
+			for _, ing := range ings {
+				if !ing.MaterialLotID.Valid {
+					continue
+				}
+				ml, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
+				if le != nil {
+					t.Fatalf("GetMaterialLot: %v", le)
+				}
+				if !ml.UnitCostCad.Valid {
+					continue
+				}
+				totalCost += ing.QuantityUsed * ml.UnitCostCad.Float64
 			}
-			totalCost += ing.QuantityUsed * ml.UnitCostCad.Float64
 		}
 	}
 	// Expect $75 total (50 kg × $1.50/kg).

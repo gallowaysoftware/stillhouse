@@ -60,10 +60,10 @@ type Querier interface {
 	DecrementPackagedInventoryByRun(ctx context.Context, arg DecrementPackagedInventoryByRunParams) (PackagedInventory, error)
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
-	// Pull the distillation run + first ferment + first mash + recipe behind
-	// a production_gauge bulk_movement. Returns the "earliest origin" row;
-	// real chains may fan out and require iterating per-charge.
-	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) (DistillationChainFromGaugeRow, error)
+	// Pull the distillation run + every charge → ferment → mash → recipe
+	// subtree behind a production_gauge bulk_movement. One row per charge
+	// so multi-charge blends are fully represented in trace + cost rollups.
+	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error)
 	GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByDatesParams) (B266Period, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)

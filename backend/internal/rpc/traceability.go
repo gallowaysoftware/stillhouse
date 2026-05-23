@@ -102,42 +102,47 @@ func (s *TraceabilityService) TraceBottlingRun(
 
 			switch fd.Reason {
 			case sqlcgen.BulkMovementReasonProductionGauge:
-				// Walk into the distillation chain.
-				chain, ce := q.DistillationChainFromGauge(ctx, fd.ID)
-				if errors.Is(ce, pgx.ErrNoRows) {
+				// Walk into the distillation chain — one row per charge.
+				charges, ce := q.DistillationChainFromGauge(ctx, fd.ID)
+				if errors.Is(ce, pgx.ErrNoRows) || len(charges) == 0 {
 					continue
 				}
 				if ce != nil {
 					return ce
 				}
-				resp.Nodes = append(resp.Nodes,
-					&stillhousev1.TraceabilityNode{
-						Kind: "distillation_run", Id: chain.DistillationRunID.String(),
-						Headline: fmt.Sprintf("  ↳ Distillation #%d (%s)", chain.DistillationRunNo, chain.StillLabel),
-					},
-					&stillhousev1.TraceabilityNode{
-						Kind: "fermentation_run", Id: nullUUIDString(chain.FermentationRunID),
-						Headline: fmt.Sprintf("    ↳ Fermentation %s", chain.FermenterLabel.String),
-					},
-				)
-				if chain.YeastLotID.Valid {
+				// Distillation node emitted once from the first row.
+				first := charges[0]
+				resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
+					Kind: "distillation_run", Id: first.DistillationRunID.String(),
+					Headline: fmt.Sprintf("  ↳ Distillation #%d (%s)", first.DistillationRunNo, first.StillLabel),
+				})
+				// Then one ferment → yeast → mash → recipe subtree per charge.
+				// Multi-charge blends now show up faithfully instead of being
+				// LIMIT 1'd down to the first.
+				for _, ch := range charges {
+					if !ch.FermentationRunID.Valid {
+						continue
+					}
 					resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
-						Kind: "yeast_lot", Id: chain.YeastLotID.UUID.String(),
-						Headline: fmt.Sprintf("      ↳ Yeast: %s lot %s",
-							chain.YeastMaterialName.String, chain.YeastSupplierLot.String),
+						Kind: "fermentation_run", Id: nullUUIDString(ch.FermentationRunID),
+						Headline: fmt.Sprintf("    ↳ Fermentation %s (charge %d)",
+							ch.FermenterLabel.String, ch.ChargeOrder.Int32),
 					})
-				}
-				resp.Nodes = append(resp.Nodes,
-					&stillhousev1.TraceabilityNode{
-						Kind: "mash_run", Id: nullUUIDString(chain.MashRunID),
-						Headline: fmt.Sprintf("      ↳ Mash #%d on %s", chain.MashNo.Int32, formatDate(chain.MashDate)),
-					},
-				)
-				// Drop in a material_lot node per lot-linked ingredient on this mash.
-				// This is the link that makes grain→bottle traceability actionable:
-				// "this bottle came from supplier lot X received on Y".
-				if chain.MashRunID.Valid {
-					ings, ie := q.ListMashIngredients(ctx, chain.MashRunID.UUID)
+					if ch.YeastLotID.Valid {
+						resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
+							Kind: "yeast_lot", Id: ch.YeastLotID.UUID.String(),
+							Headline: fmt.Sprintf("      ↳ Yeast: %s lot %s",
+								ch.YeastMaterialName.String, ch.YeastSupplierLot.String),
+						})
+					}
+					if !ch.MashRunID.Valid {
+						continue
+					}
+					resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
+						Kind: "mash_run", Id: nullUUIDString(ch.MashRunID),
+						Headline: fmt.Sprintf("      ↳ Mash #%d on %s", ch.MashNo.Int32, formatDate(ch.MashDate)),
+					})
+					ings, ie := q.ListMashIngredients(ctx, ch.MashRunID.UUID)
 					if ie != nil {
 						return ie
 					}
@@ -148,19 +153,16 @@ func (s *TraceabilityService) TraceBottlingRun(
 						resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
 							Kind: "material_lot", Id: ing.MaterialLotID.UUID.String(),
 							Headline: fmt.Sprintf("        ↳ %s: lot %s",
-								ing.MaterialName,
-								ing.SupplierLot.String),
+								ing.MaterialName, ing.SupplierLot.String),
 							Detail: fmt.Sprintf("%s %s used; received %s",
 								formatQtyTrace(ing.QuantityUsed), ing.Uom, formatLotReceived(ing.LotReceivedAt)),
 						})
 					}
+					resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
+						Kind: "recipe_version", Id: nullUUIDString(ch.RecipeVersionID),
+						Headline: fmt.Sprintf("        ↳ Recipe: %s v%d", ch.RecipeName.String, ch.RecipeVersionNo.Int32),
+					})
 				}
-				resp.Nodes = append(resp.Nodes,
-					&stillhousev1.TraceabilityNode{
-						Kind: "recipe_version", Id: nullUUIDString(chain.RecipeVersionID),
-						Headline: fmt.Sprintf("        ↳ Recipe: %s v%d", chain.RecipeName.String, chain.RecipeVersionNo.Int32),
-					},
-				)
 			case sqlcgen.BulkMovementReasonInterTankTransfer:
 				// May be a barrel dump.
 				dump, de := q.BarrelDumpsForContainerFill(ctx, fd.ID)
