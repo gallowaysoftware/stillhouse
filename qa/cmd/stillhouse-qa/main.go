@@ -25,6 +25,7 @@ import (
 	"github.com/gallowaysoftware/vibe/vamp"
 
 	"github.com/gallowaysoftware/stillhouse/qa/internal/pipeline"
+	"github.com/gallowaysoftware/stillhouse/qa/internal/runner"
 )
 
 func main() {
@@ -50,8 +51,10 @@ qa/runs/<timestamp>/qa-report.md — findings only, no code changes.`,
 	root.AddCommand(prepareCommand())
 	root.AddCommand(discoverCommand())
 	root.AddCommand(planCommand())
-	// TODO: run, deepen, report, all — each lands as its own
-	// pipeline.go file under internal/pipeline.
+	root.AddCommand(runCommand())
+	root.AddCommand(reportCommand())
+	// TODO: deepen, all — landing after the run + report loop is
+	// exercised against a live Stillhouse stack.
 
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "stillhouse-qa:", err)
@@ -173,5 +176,83 @@ consumes plan.json to dispatch ConnectRPC + Playwright probes.`,
 	cmd.Flags().StringVar(&outDir, "out", "qa/runs/plan", "Directory plan.json lands in.")
 	cmd.Flags().StringVar(&discoveryFile, "discovery", "qa/runs/discover-001/discovery.json", "Path to discovery.json from a prior discover run.")
 	cmd.Flags().StringVar(&primerFile, "primer", "qa/runs/prepare-001/primer.md", "Path to primer.md from a prior prepare run.")
+	return cmd
+}
+
+func runCommand() *cobra.Command {
+	var (
+		outDir        string
+		planFile      string
+		backendURL    string
+		adminEmail    string
+		adminPassword string
+	)
+	cmd := &cobra.Command{
+		Use:   "run",
+		Short: "Execute plan.json against a running Stillhouse backend; emit findings.jsonl.",
+		Long: `run dispatches every test case in plan.json against the
+ConnectRPC endpoint at --backend-url. The caller is responsible for
+having the Stillhouse stack already-running and seeded:
+
+  make dev-up backend-dev web-dev seed
+
+The seed cmd prints the admin email + password; pass them to the
+runner via --admin-email / --admin-password (or STILLHOUSE_QA_EMAIL
++ STILLHOUSE_QA_PASSWORD env vars). One findings.jsonl row lands per
+test case; the report phase aggregates them.
+
+V1 limitations (will be lifted in follow-up work):
+  - Each case gets a fresh HTTP session but reuses the seed tenant.
+    Fresh-tenant-per-case requires a CreateTenant RPC + RBAC.
+  - kind: ui steps are skipped (playwright-go wiring pending).
+  - kind: assert types beyond audit_log_has_entry are unimplemented.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if adminEmail == "" {
+				adminEmail = os.Getenv("STILLHOUSE_QA_EMAIL")
+			}
+			if adminPassword == "" {
+				adminPassword = os.Getenv("STILLHOUSE_QA_PASSWORD")
+			}
+			if adminEmail == "" || adminPassword == "" {
+				return fmt.Errorf("admin credentials required: pass --admin-email/--admin-password or set STILLHOUSE_QA_EMAIL/STILLHOUSE_QA_PASSWORD")
+			}
+			return runner.Run(cmd.Context(), runner.Config{
+				BackendURL:    backendURL,
+				AdminEmail:    adminEmail,
+				AdminPassword: adminPassword,
+				PlanFile:      planFile,
+				OutDir:        outDir,
+			})
+		},
+	}
+	cmd.Flags().StringVar(&outDir, "out", "qa/runs/run", "Directory findings.jsonl lands in.")
+	cmd.Flags().StringVar(&planFile, "plan", "qa/runs/plan-001/plan.json", "Path to plan.json from a prior plan run.")
+	cmd.Flags().StringVar(&backendURL, "backend-url", "http://localhost:8080", "Base URL of the running Stillhouse backend.")
+	cmd.Flags().StringVar(&adminEmail, "admin-email", "", "Login email for the seed admin (or STILLHOUSE_QA_EMAIL).")
+	cmd.Flags().StringVar(&adminPassword, "admin-password", "", "Login password for the seed admin (or STILLHOUSE_QA_PASSWORD).")
+	return cmd
+}
+
+func reportCommand() *cobra.Command {
+	var (
+		findingsFile string
+		outFile      string
+	)
+	cmd := &cobra.Command{
+		Use:   "report",
+		Short: "Aggregate findings.jsonl into a markdown qa-report.md.",
+		Long: `report is a pure-Go aggregator over findings.jsonl. No LLM call —
+it groups findings by status / category / priority, surfaces every
+failure and error with its evidence, and lists passes by title at
+the end. The output lands next to findings.jsonl by default.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runner.Report(runner.ReportConfig{
+				FindingsFile: findingsFile,
+				OutFile:      outFile,
+			})
+		},
+	}
+	cmd.Flags().StringVar(&findingsFile, "findings", "qa/runs/run/findings.jsonl", "Path to findings.jsonl from a prior run.")
+	cmd.Flags().StringVar(&outFile, "out", "", "Path to write qa-report.md (defaults to next to findings.jsonl).")
 	return cmd
 }
