@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"connectrpc.com/connect"
@@ -245,6 +246,158 @@ func (s *BulkService) GetBulkContainer(
 	}
 	for _, m := range moves {
 		out.Movements = append(out.Movements, bulkMovementRowToProto(m))
+	}
+	return connect.NewResponse(out), nil
+}
+
+// CreateBlend records pulling spirits from N source containers into one
+// destination (typically blend_tank), as a single atomic operation. Each
+// source contributes its current ABV at the requested volume; the dest's
+// post-blend ABV is the LAA-weighted average computed via applyDeposit.
+//
+// Surfaces what the schema already supported (reason=blend +
+// kind=blend_tank) but had no API to invoke. Until this stage operators
+// had to record N separate inter-tank transfers and the journal showed
+// blends as ordinary transfers.
+func (s *BulkService) CreateBlend(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.CreateBlendRequest],
+) (*connect.Response[stillhousev1.CreateBlendResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	destID, err := uuid.Parse(req.Msg.GetDestinationContainerId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid destination_container_id"))
+	}
+	inputs := req.Msg.GetSources()
+	if len(inputs) < 2 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("blend requires at least two sources"))
+	}
+	type parsedSource struct {
+		id  uuid.UUID
+		vol float64
+	}
+	parsed := make([]parsedSource, 0, len(inputs))
+	for _, s := range inputs {
+		sid, e := uuid.Parse(s.GetSourceContainerId())
+		if e != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid source_container_id"))
+		}
+		if s.GetVolumeL() <= 0 {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("each source volume_l must be > 0"))
+		}
+		if sid == destID {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("source and destination must differ"))
+		}
+		parsed = append(parsed, parsedSource{id: sid, vol: s.GetVolumeL()})
+	}
+	occurred := timestampOrNow(req.Msg.GetOccurredAt())
+
+	var (
+		dest      sqlcgen.BulkContainer
+		movements []sqlcgen.BulkMovement
+	)
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		// Lock-free reads — single tx + tenant RLS keeps cross-tenant collisions
+		// out; same-tenant concurrent writers race on the container balance,
+		// which the application accepts in v1 (rare in a single-distillery
+		// workflow). Move to SELECT … FOR UPDATE if it becomes a problem.
+		d, e := q.GetBulkContainer(ctx, destID)
+		if e != nil {
+			return e
+		}
+		curVol := d.CurrentVolumeL
+		curABV := d.CurrentAbvPct
+		curLAA := d.CurrentLaa
+
+		for _, ps := range parsed {
+			src, e := q.GetBulkContainer(ctx, ps.id)
+			if e != nil {
+				return e
+			}
+			if !src.CurrentAbvPct.Valid {
+				return connect.NewError(connect.CodeFailedPrecondition,
+					fmt.Errorf("source %s is empty", src.Name))
+			}
+			if src.CurrentVolumeL+1e-6 < ps.vol {
+				return connect.NewError(connect.CodeFailedPrecondition,
+					fmt.Errorf("source %s has %.4f L; blend asks for %.4f L", src.Name, src.CurrentVolumeL, ps.vol))
+			}
+			abv := src.CurrentAbvPct.Float64
+			laa := ps.vol * abv / 100
+
+			mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+				TenantID:               u.TenantID,
+				SourceContainerID:      uuid.NullUUID{UUID: src.ID, Valid: true},
+				DestinationContainerID: uuid.NullUUID{UUID: destID, Valid: true},
+				VolumeL:                ps.vol,
+				AbvPct:                 abv,
+				Laa:                    laa,
+				Reason:                 sqlcgen.BulkMovementReasonBlend,
+				ReferenceType:          "blend",
+				Notes:                  req.Msg.GetNotes(),
+				OccurredAt:             occurred,
+			})
+			if e != nil {
+				return e
+			}
+			movements = append(movements, mv)
+
+			// Decrement source. ABV unchanged on the source (we draw at its
+			// current proof). Volume and LAA drop proportionally.
+			srcNewVol := src.CurrentVolumeL - ps.vol
+			srcNewLAA := src.CurrentLaa - laa
+			if srcNewLAA < 0 {
+				srcNewLAA = 0
+			}
+			srcNewABV := src.CurrentAbvPct
+			if srcNewVol <= 0 {
+				srcNewABV = pgtype.Float8{} // emptied
+			}
+			if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+				ID: src.ID, CurrentVolumeL: srcNewVol, CurrentAbvPct: srcNewABV, CurrentLaa: srcNewLAA,
+			}); e != nil {
+				return e
+			}
+
+			// Compound onto destination via applyDeposit so the blended ABV
+			// stays the LAA-weighted average across sources.
+			curVol, curABV, curLAA = applyDeposit(curVol, curABV, ps.vol, abv)
+		}
+
+		d, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+			ID: destID, CurrentVolumeL: curVol, CurrentAbvPct: curABV, CurrentLaa: curLAA,
+		})
+		if e != nil {
+			return e
+		}
+		dest = d
+		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_container", destID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":           "blend",
+				"source_count":    len(parsed),
+				"destination":     d.Name,
+				"final_volume_l":  d.CurrentVolumeL,
+				"final_abv_pct":   d.CurrentAbvPct.Float64,
+				"final_laa":       d.CurrentLaa,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		s.logger.Error("CreateBlend", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	out := &stillhousev1.CreateBlendResponse{
+		Destination: bulkContainerToProto(dest),
+		Movements:   make([]*stillhousev1.BulkMovement, 0, len(movements)),
+	}
+	for _, m := range movements {
+		out.Movements = append(out.Movements, bulkMovementToProto(m))
 	}
 	return connect.NewResponse(out), nil
 }

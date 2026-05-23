@@ -1163,6 +1163,178 @@ func (x *ListRecentBulkMovementsResponse) GetMovements() []*BulkMovement {
 	return nil
 }
 
+type BlendSourceInput struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	SourceContainerId string                 `protobuf:"bytes,1,opt,name=source_container_id,json=sourceContainerId,proto3" json:"source_container_id,omitempty"`
+	VolumeL           float64                `protobuf:"fixed64,2,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"` // amount drawn from this source
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *BlendSourceInput) Reset() {
+	*x = BlendSourceInput{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BlendSourceInput) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BlendSourceInput) ProtoMessage() {}
+
+func (x *BlendSourceInput) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BlendSourceInput.ProtoReflect.Descriptor instead.
+func (*BlendSourceInput) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *BlendSourceInput) GetSourceContainerId() string {
+	if x != nil {
+		return x.SourceContainerId
+	}
+	return ""
+}
+
+func (x *BlendSourceInput) GetVolumeL() float64 {
+	if x != nil {
+		return x.VolumeL
+	}
+	return 0
+}
+
+type CreateBlendRequest struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	DestinationContainerId string                 `protobuf:"bytes,1,opt,name=destination_container_id,json=destinationContainerId,proto3" json:"destination_container_id,omitempty"` // must be blend_tank (or tank) kind
+	Sources                []*BlendSourceInput    `protobuf:"bytes,2,rep,name=sources,proto3" json:"sources,omitempty"`                                                               // ≥2 sources required
+	Notes                  string                 `protobuf:"bytes,3,opt,name=notes,proto3" json:"notes,omitempty"`
+	OccurredAt             *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"` // unset = now
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *CreateBlendRequest) Reset() {
+	*x = CreateBlendRequest{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateBlendRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateBlendRequest) ProtoMessage() {}
+
+func (x *CreateBlendRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateBlendRequest.ProtoReflect.Descriptor instead.
+func (*CreateBlendRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *CreateBlendRequest) GetDestinationContainerId() string {
+	if x != nil {
+		return x.DestinationContainerId
+	}
+	return ""
+}
+
+func (x *CreateBlendRequest) GetSources() []*BlendSourceInput {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+func (x *CreateBlendRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+func (x *CreateBlendRequest) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
+type CreateBlendResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Destination   *BulkContainer         `protobuf:"bytes,1,opt,name=destination,proto3" json:"destination,omitempty"`
+	Movements     []*BulkMovement        `protobuf:"bytes,2,rep,name=movements,proto3" json:"movements,omitempty"` // one per source
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateBlendResponse) Reset() {
+	*x = CreateBlendResponse{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateBlendResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateBlendResponse) ProtoMessage() {}
+
+func (x *CreateBlendResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateBlendResponse.ProtoReflect.Descriptor instead.
+func (*CreateBlendResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *CreateBlendResponse) GetDestination() *BulkContainer {
+	if x != nil {
+		return x.Destination
+	}
+	return nil
+}
+
+func (x *CreateBlendResponse) GetMovements() []*BulkMovement {
+	if x != nil {
+		return x.Movements
+	}
+	return nil
+}
+
 var File_stillhouse_v1_bulk_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_bulk_proto_rawDesc = "" +
@@ -1251,7 +1423,19 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\tmovements\x18\x02 \x03(\v2\x1b.stillhouse.v1.BulkMovementR\tmovements\" \n" +
 	"\x1eListRecentBulkMovementsRequest\"\\\n" +
 	"\x1fListRecentBulkMovementsResponse\x129\n" +
-	"\tmovements\x18\x01 \x03(\v2\x1b.stillhouse.v1.BulkMovementR\tmovements*\xa4\x02\n" +
+	"\tmovements\x18\x01 \x03(\v2\x1b.stillhouse.v1.BulkMovementR\tmovements\"]\n" +
+	"\x10BlendSourceInput\x12.\n" +
+	"\x13source_container_id\x18\x01 \x01(\tR\x11sourceContainerId\x12\x19\n" +
+	"\bvolume_l\x18\x02 \x01(\x01R\avolumeL\"\xdc\x01\n" +
+	"\x12CreateBlendRequest\x128\n" +
+	"\x18destination_container_id\x18\x01 \x01(\tR\x16destinationContainerId\x129\n" +
+	"\asources\x18\x02 \x03(\v2\x1f.stillhouse.v1.BlendSourceInputR\asources\x12\x14\n" +
+	"\x05notes\x18\x03 \x01(\tR\x05notes\x12;\n" +
+	"\voccurred_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"occurredAt\"\x90\x01\n" +
+	"\x13CreateBlendResponse\x12>\n" +
+	"\vdestination\x18\x01 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\vdestination\x129\n" +
+	"\tmovements\x18\x02 \x03(\v2\x1b.stillhouse.v1.BulkMovementR\tmovements*\xa4\x02\n" +
 	"\x11BulkContainerKind\x12#\n" +
 	"\x1fBULK_CONTAINER_KIND_UNSPECIFIED\x10\x00\x12'\n" +
 	"#BULK_CONTAINER_KIND_SPIRIT_RECEIVER\x10\x01\x12\x1c\n" +
@@ -1273,14 +1457,15 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"%BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED\x10\b\x12+\n" +
 	"'BULK_MOVEMENT_REASON_REGAUGE_CORRECTION\x10\t\x12$\n" +
 	" BULK_MOVEMENT_REASON_DESTRUCTION\x10\n" +
-	"2\xb0\x05\n" +
+	"2\x86\x06\n" +
 	"\vBulkService\x12l\n" +
 	"\x13CreateBulkContainer\x12).stillhouse.v1.CreateBulkContainerRequest\x1a*.stillhouse.v1.CreateBulkContainerResponse\x12l\n" +
 	"\x13UpdateBulkContainer\x12).stillhouse.v1.UpdateBulkContainerRequest\x1a*.stillhouse.v1.UpdateBulkContainerResponse\x12{\n" +
 	"\x18SetBulkContainerArchived\x12..stillhouse.v1.SetBulkContainerArchivedRequest\x1a/.stillhouse.v1.SetBulkContainerArchivedResponse\x12i\n" +
 	"\x12ListBulkContainers\x12(.stillhouse.v1.ListBulkContainersRequest\x1a).stillhouse.v1.ListBulkContainersResponse\x12c\n" +
 	"\x10GetBulkContainer\x12&.stillhouse.v1.GetBulkContainerRequest\x1a'.stillhouse.v1.GetBulkContainerResponse\x12x\n" +
-	"\x17ListRecentBulkMovements\x12-.stillhouse.v1.ListRecentBulkMovementsRequest\x1a..stillhouse.v1.ListRecentBulkMovementsResponseB\xcd\x01\n" +
+	"\x17ListRecentBulkMovements\x12-.stillhouse.v1.ListRecentBulkMovementsRequest\x1a..stillhouse.v1.ListRecentBulkMovementsResponse\x12T\n" +
+	"\vCreateBlend\x12!.stillhouse.v1.CreateBlendRequest\x1a\".stillhouse.v1.CreateBlendResponseB\xcd\x01\n" +
 	"\x11com.stillhouse.v1B\tBulkProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1296,7 +1481,7 @@ func file_stillhouse_v1_bulk_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_bulk_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_bulk_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_stillhouse_v1_bulk_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_stillhouse_v1_bulk_proto_goTypes = []any{
 	(BulkContainerKind)(0),                   // 0: stillhouse.v1.BulkContainerKind
 	(BulkMovementReason)(0),                  // 1: stillhouse.v1.BulkMovementReason
@@ -1315,16 +1500,19 @@ var file_stillhouse_v1_bulk_proto_goTypes = []any{
 	(*GetBulkContainerResponse)(nil),         // 14: stillhouse.v1.GetBulkContainerResponse
 	(*ListRecentBulkMovementsRequest)(nil),   // 15: stillhouse.v1.ListRecentBulkMovementsRequest
 	(*ListRecentBulkMovementsResponse)(nil),  // 16: stillhouse.v1.ListRecentBulkMovementsResponse
-	(*timestamppb.Timestamp)(nil),            // 17: google.protobuf.Timestamp
+	(*BlendSourceInput)(nil),                 // 17: stillhouse.v1.BlendSourceInput
+	(*CreateBlendRequest)(nil),               // 18: stillhouse.v1.CreateBlendRequest
+	(*CreateBlendResponse)(nil),              // 19: stillhouse.v1.CreateBlendResponse
+	(*timestamppb.Timestamp)(nil),            // 20: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_bulk_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.BulkContainer.kind:type_name -> stillhouse.v1.BulkContainerKind
-	17, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
-	17, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
-	17, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
+	20, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
+	20, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: stillhouse.v1.BulkMovement.reason:type_name -> stillhouse.v1.BulkMovementReason
-	17, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
-	17, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
+	20, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
+	20, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 7: stillhouse.v1.CreateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
 	2,  // 8: stillhouse.v1.CreateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
 	0,  // 9: stillhouse.v1.UpdateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
@@ -1335,23 +1523,29 @@ var file_stillhouse_v1_bulk_proto_depIdxs = []int32{
 	2,  // 14: stillhouse.v1.GetBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
 	3,  // 15: stillhouse.v1.GetBulkContainerResponse.movements:type_name -> stillhouse.v1.BulkMovement
 	3,  // 16: stillhouse.v1.ListRecentBulkMovementsResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	5,  // 17: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
-	7,  // 18: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
-	9,  // 19: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
-	11, // 20: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
-	13, // 21: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
-	15, // 22: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
-	6,  // 23: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
-	8,  // 24: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
-	10, // 25: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
-	12, // 26: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
-	14, // 27: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
-	16, // 28: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
-	23, // [23:29] is the sub-list for method output_type
-	17, // [17:23] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	17, // 17: stillhouse.v1.CreateBlendRequest.sources:type_name -> stillhouse.v1.BlendSourceInput
+	20, // 18: stillhouse.v1.CreateBlendRequest.occurred_at:type_name -> google.protobuf.Timestamp
+	2,  // 19: stillhouse.v1.CreateBlendResponse.destination:type_name -> stillhouse.v1.BulkContainer
+	3,  // 20: stillhouse.v1.CreateBlendResponse.movements:type_name -> stillhouse.v1.BulkMovement
+	5,  // 21: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
+	7,  // 22: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
+	9,  // 23: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
+	11, // 24: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
+	13, // 25: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
+	15, // 26: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
+	18, // 27: stillhouse.v1.BulkService.CreateBlend:input_type -> stillhouse.v1.CreateBlendRequest
+	6,  // 28: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
+	8,  // 29: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
+	10, // 30: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
+	12, // 31: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
+	14, // 32: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
+	16, // 33: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
+	19, // 34: stillhouse.v1.BulkService.CreateBlend:output_type -> stillhouse.v1.CreateBlendResponse
+	28, // [28:35] is the sub-list for method output_type
+	21, // [21:28] is the sub-list for method input_type
+	21, // [21:21] is the sub-list for extension type_name
+	21, // [21:21] is the sub-list for extension extendee
+	0,  // [0:21] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_bulk_proto_init() }
@@ -1365,7 +1559,7 @@ func file_stillhouse_v1_bulk_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_bulk_proto_rawDesc), len(file_stillhouse_v1_bulk_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   15,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

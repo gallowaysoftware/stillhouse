@@ -55,6 +55,8 @@ const (
 	// BulkServiceListRecentBulkMovementsProcedure is the fully-qualified name of the BulkService's
 	// ListRecentBulkMovements RPC.
 	BulkServiceListRecentBulkMovementsProcedure = "/stillhouse.v1.BulkService/ListRecentBulkMovements"
+	// BulkServiceCreateBlendProcedure is the fully-qualified name of the BulkService's CreateBlend RPC.
+	BulkServiceCreateBlendProcedure = "/stillhouse.v1.BulkService/CreateBlend"
 )
 
 // BulkServiceClient is a client for the stillhouse.v1.BulkService service.
@@ -65,6 +67,7 @@ type BulkServiceClient interface {
 	ListBulkContainers(context.Context, *connect.Request[v1.ListBulkContainersRequest]) (*connect.Response[v1.ListBulkContainersResponse], error)
 	GetBulkContainer(context.Context, *connect.Request[v1.GetBulkContainerRequest]) (*connect.Response[v1.GetBulkContainerResponse], error)
 	ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error)
+	CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error)
 }
 
 // NewBulkServiceClient constructs a client for the stillhouse.v1.BulkService service. By default,
@@ -114,6 +117,12 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(bulkServiceMethods.ByName("ListRecentBulkMovements")),
 			connect.WithClientOptions(opts...),
 		),
+		createBlend: connect.NewClient[v1.CreateBlendRequest, v1.CreateBlendResponse](
+			httpClient,
+			baseURL+BulkServiceCreateBlendProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("CreateBlend")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -125,6 +134,7 @@ type bulkServiceClient struct {
 	listBulkContainers       *connect.Client[v1.ListBulkContainersRequest, v1.ListBulkContainersResponse]
 	getBulkContainer         *connect.Client[v1.GetBulkContainerRequest, v1.GetBulkContainerResponse]
 	listRecentBulkMovements  *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
+	createBlend              *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
 }
 
 // CreateBulkContainer calls stillhouse.v1.BulkService.CreateBulkContainer.
@@ -157,6 +167,11 @@ func (c *bulkServiceClient) ListRecentBulkMovements(ctx context.Context, req *co
 	return c.listRecentBulkMovements.CallUnary(ctx, req)
 }
 
+// CreateBlend calls stillhouse.v1.BulkService.CreateBlend.
+func (c *bulkServiceClient) CreateBlend(ctx context.Context, req *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error) {
+	return c.createBlend.CallUnary(ctx, req)
+}
+
 // BulkServiceHandler is an implementation of the stillhouse.v1.BulkService service.
 type BulkServiceHandler interface {
 	CreateBulkContainer(context.Context, *connect.Request[v1.CreateBulkContainerRequest]) (*connect.Response[v1.CreateBulkContainerResponse], error)
@@ -165,6 +180,7 @@ type BulkServiceHandler interface {
 	ListBulkContainers(context.Context, *connect.Request[v1.ListBulkContainersRequest]) (*connect.Response[v1.ListBulkContainersResponse], error)
 	GetBulkContainer(context.Context, *connect.Request[v1.GetBulkContainerRequest]) (*connect.Response[v1.GetBulkContainerResponse], error)
 	ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error)
+	CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error)
 }
 
 // NewBulkServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -210,6 +226,12 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(bulkServiceMethods.ByName("ListRecentBulkMovements")),
 		connect.WithHandlerOptions(opts...),
 	)
+	bulkServiceCreateBlendHandler := connect.NewUnaryHandler(
+		BulkServiceCreateBlendProcedure,
+		svc.CreateBlend,
+		connect.WithSchema(bulkServiceMethods.ByName("CreateBlend")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.BulkService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BulkServiceCreateBulkContainerProcedure:
@@ -224,6 +246,8 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 			bulkServiceGetBulkContainerHandler.ServeHTTP(w, r)
 		case BulkServiceListRecentBulkMovementsProcedure:
 			bulkServiceListRecentBulkMovementsHandler.ServeHTTP(w, r)
+		case BulkServiceCreateBlendProcedure:
+			bulkServiceCreateBlendHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -255,4 +279,8 @@ func (UnimplementedBulkServiceHandler) GetBulkContainer(context.Context, *connec
 
 func (UnimplementedBulkServiceHandler) ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.ListRecentBulkMovements is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.CreateBlend is not implemented"))
 }

@@ -51,6 +51,7 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.BulkService/ListBulkContainers":      roleViewer,
 	"/stillhouse.v1.BulkService/GetBulkContainer":        roleViewer,
 	"/stillhouse.v1.BulkService/ListRecentBulkMovements": roleViewer,
+	"/stillhouse.v1.BulkService/CreateBlend":             roleOperator,
 
 	// DistillationService
 	"/stillhouse.v1.DistillationService/CreateDistillationRun":   roleOperator,
