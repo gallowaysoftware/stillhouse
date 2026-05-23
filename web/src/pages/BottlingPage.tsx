@@ -214,7 +214,7 @@ export function BottlingPage() {
               {createRun.isPending ? "Bottling…" : "Run bottling"}
             </button>
             {createRun.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createRun.error instanceof ConnectError
                   ? createRun.error.rawMessage
                   : String(createRun.error)}
@@ -250,7 +250,7 @@ export function BottlingPage() {
                   <td className="px-4 py-3 font-medium">
                     <Link to={`/bottling/${r.id}`} className="hover:underline">#{r.runNo}</Link>
                     {voided && (
-                      <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-normal text-red-400">VOIDED</span>
+                      <span className="ml-2 rounded bg-danger/15 px-1.5 py-0.5 text-xs font-normal text-danger-fg">VOIDED</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{r.bottlingDate}</td>
@@ -270,7 +270,7 @@ export function BottlingPage() {
                         <button
                           onClick={() => onVoidRun(r.id, r.runNo, r.bottleCount)}
                           disabled={voidRun.isPending}
-                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                         >
                           Void
                         </button>
@@ -341,7 +341,7 @@ function PackagedAge({ bottledOn }: { bottledOn: string }) {
   if (days < 60) label = `${days}d`;
   else if (days < 730) label = `${Math.round(days / 30)}mo`;
   else label = `${(days / 365).toFixed(1)} yr`;
-  return <span className={stale ? "text-amber-400" : ""}>{label}</span>;
+  return <span className={stale ? "text-warning-fg" : ""}>{label}</span>;
 }
 
 // Pager renders prev / next + "showing N–M of T" for a server-paginated list.

@@ -24,7 +24,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       return <Navigate to="/login" replace />;
     }
     return (
-      <div className="flex min-h-screen items-center justify-center text-red-400">
+      <div className="flex min-h-screen items-center justify-center text-danger-fg">
         Error: {error instanceof Error ? error.message : String(error)}
       </div>
     );

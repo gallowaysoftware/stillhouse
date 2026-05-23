@@ -196,7 +196,7 @@ export function RecipeDetailPage() {
                       <button
                         type="button"
                         onClick={() => removeRow(idx)}
-                        className="text-sm text-fg-muted hover:text-red-400"
+                        className="text-sm text-fg-muted hover:text-danger-fg"
                       >
                         ✕
                       </button>
@@ -223,7 +223,7 @@ export function RecipeDetailPage() {
                   {saveVersion.isPending ? "Saving…" : "Save version"}
                 </button>
                 {saveVersion.error && (
-                  <span className="text-sm text-red-400">
+                  <span className="text-sm text-danger-fg">
                     {saveVersion.error instanceof ConnectError
                       ? saveVersion.error.rawMessage
                       : String(saveVersion.error)}
@@ -365,7 +365,7 @@ function VersionHistory({ recipeId, currentVersionId }: { recipeId: string; curr
           </thead>
           <tbody className="divide-y divide-border">
             {list.map((v) => (
-              <tr key={v.id} className={v.id === currentVersionId ? "bg-emerald-500/10" : ""}>
+              <tr key={v.id} className={v.id === currentVersionId ? "bg-success/10" : ""}>
                 <td className="px-4 py-2 font-medium text-fg">
                   v{v.versionNo}
                   {v.id === currentVersionId && (

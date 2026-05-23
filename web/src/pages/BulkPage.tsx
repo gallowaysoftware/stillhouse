@@ -151,7 +151,7 @@ export function BulkPage() {
               {createContainer.isPending ? "Saving…" : "Save"}
             </button>
             {createContainer.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createContainer.error instanceof ConnectError
                   ? createContainer.error.rawMessage
                   : String(createContainer.error)}
@@ -307,7 +307,7 @@ function BlendForm({
             />
             {rows.length > 2 && (
               <button type="button" onClick={() => setRows(rows.filter((_, j) => j !== i))}
-                className="text-xs text-fg-muted hover:text-red-400">×</button>
+                className="text-xs text-fg-muted hover:text-danger-fg">×</button>
             )}
           </div>
         ))}
@@ -327,7 +327,7 @@ function BlendForm({
           {mut.isPending ? "Blending…" : "Create blend"}
         </button>
         {mut.error && (
-          <span className="text-sm text-red-400">
+          <span className="text-sm text-danger-fg">
             {mut.error instanceof ConnectError ? mut.error.rawMessage : String(mut.error)}
           </span>
         )}
@@ -352,5 +352,5 @@ function ActivityCell({
   const days = Math.floor((Date.now() - ms) / 86_400_000);
   const stale = days >= 90;
   const label = days === 0 ? "today" : `${days} day${days === 1 ? "" : "s"} ago`;
-  return <span className={stale ? "text-amber-400" : ""}>{label}</span>;
+  return <span className={stale ? "text-warning-fg" : ""}>{label}</span>;
 }

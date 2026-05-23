@@ -106,7 +106,7 @@ export function B266Page() {
           </button>
         </WriteOnly>
         {generate.error && (
-          <span className="text-sm text-red-400">
+          <span className="text-sm text-danger-fg">
             {generate.error instanceof ConnectError ? generate.error.rawMessage : String(generate.error)}
           </span>
         )}
@@ -259,7 +259,7 @@ function ReportView({
             {submitting ? "Submitting…" : "Mark submitted (freeze snapshot)"}
           </button>
           {submitError && (
-            <span className="text-sm text-red-400">
+            <span className="text-sm text-danger-fg">
               {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
             </span>
           )}
@@ -296,18 +296,18 @@ function ReopenPanel({ periodId }: { periodId: string }) {
   });
   return (
     <div data-print-hide className="space-y-3">
-      <p className="rounded bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
+      <p className="rounded bg-success/10 px-4 py-2 text-sm text-success-fg">
         This return is submitted; the snapshot is frozen.
       </p>
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="rounded border border-amber-500/40 px-3 py-2 text-sm text-amber-400 hover:bg-amber-500/10"
+          className="rounded border border-warning/40 px-3 py-2 text-sm text-warning-fg hover:bg-warning/10"
         >
           Reopen for correction…
         </button>
       ) : (
-        <div className="space-y-3 rounded border border-amber-500/40 bg-amber-500/5 p-4">
+        <div className="space-y-3 rounded border border-warning/40 bg-warning/5 p-4">
           <p className="text-sm text-fg">
             Reopening flips this period back to <b>draft</b> so backdated voids and inserts pass the
             period-lock guard. The snapshot stays for audit, but live numbers may drift from what
@@ -320,7 +320,7 @@ function ReopenPanel({ periodId }: { periodId: string }) {
             className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
           />
           {reopen.error && (
-            <p className="text-sm text-red-400">
+            <p className="text-sm text-danger-fg">
               {reopen.error instanceof ConnectError ? reopen.error.rawMessage : String(reopen.error)}
             </p>
           )}
@@ -360,9 +360,9 @@ function Row({
   k, v, bold, dim, highlight,
 }: { k: string; v: string; bold?: boolean; dim?: boolean; highlight?: boolean }) {
   return (
-    <div className={`flex items-center justify-between px-4 py-2 ${highlight ? "bg-emerald-500/10" : ""}`}>
+    <div className={`flex items-center justify-between px-4 py-2 ${highlight ? "bg-success/10" : ""}`}>
       <dt className={`text-fg-muted ${dim ? "text-fg-subtle" : ""}`}>{k}</dt>
-      <dd className={`font-mono ${bold ? "font-semibold text-fg" : "text-fg"} ${highlight ? "text-emerald-400" : ""}`}>{v}</dd>
+      <dd className={`font-mono ${bold ? "font-semibold text-fg" : "text-fg"} ${highlight ? "text-success-fg" : ""}`}>{v}</dd>
     </div>
   );
 }

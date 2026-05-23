@@ -92,7 +92,7 @@ export function LoginPage() {
         </div>
 
         {login.error && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-danger-fg">
             {login.error instanceof ConnectError
               ? login.error.rawMessage
               : String(login.error)}

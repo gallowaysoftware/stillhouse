@@ -129,7 +129,7 @@ export function MaterialsPage() {
               {createMaterial.isPending ? "Saving…" : "Save material"}
             </button>
             {createMaterial.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createMaterial.error instanceof ConnectError
                   ? createMaterial.error.rawMessage
                   : String(createMaterial.error)}

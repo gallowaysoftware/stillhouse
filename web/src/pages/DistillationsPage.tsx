@@ -112,7 +112,7 @@ export function DistillationsPage() {
               {createRun.isPending ? "Creating…" : "Create run"}
             </button>
             {createRun.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createRun.error instanceof ConnectError
                   ? createRun.error.rawMessage
                   : String(createRun.error)}
@@ -151,7 +151,7 @@ export function DistillationsPage() {
                   <td className="px-4 py-3 font-medium">
                     <Link to={`/distillations/${r.id}`} className="hover:underline">#{r.runNo}</Link>
                     {voided && (
-                      <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-normal text-red-400">VOIDED</span>
+                      <span className="ml-2 rounded bg-danger/15 px-1.5 py-0.5 text-xs font-normal text-danger-fg">VOIDED</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{r.runDate}</td>
@@ -168,7 +168,7 @@ export function DistillationsPage() {
                         <button
                           onClick={() => onVoidRun(r.id, r.runNo)}
                           disabled={voidRun.isPending}
-                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                         >
                           Void
                         </button>

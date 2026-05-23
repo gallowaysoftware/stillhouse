@@ -230,9 +230,9 @@ function CWForecastSection({ barrels }: { barrels: { currentLaa: number; canadia
       <h2 className="mb-3 text-xs font-semibold text-fg-muted">Canadian Whisky maturation forecast</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-7">
         {buckets.map((b, i) => (
-          <div key={b.label} className={`rounded-lg border p-3 ${i === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-border bg-surface-2"}`}>
+          <div key={b.label} className={`rounded-lg border p-3 ${i === 0 ? "border-success/30 bg-success/10" : "border-border bg-surface-2"}`}>
             <p className="text-xs text-fg-muted">{b.label}</p>
-            <p className={`mt-1 text-base font-semibold ${i === 0 ? "text-emerald-400" : "text-fg"}`}>
+            <p className={`mt-1 text-base font-semibold ${i === 0 ? "text-success-fg" : "text-fg"}`}>
               {b.laa.toFixed(1)} L
             </p>
             <p className="text-xs text-fg-muted">{b.count} barrel{b.count === 1 ? "" : "s"}</p>
@@ -250,8 +250,8 @@ function ReadyToDumpCallout({ barrels }: { barrels: { id: string; name: string; 
   const ready = barrels.filter((b) => b.currentLaa > 0 && b.canadianWhiskyEligible);
   if (ready.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
-      <p className="text-sm text-emerald-300">
+    <section className="mb-6 rounded-lg border border-success/30 bg-success/10 p-4">
+      <p className="text-sm text-success-fg">
         <span className="font-semibold">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
         and still hold alcohol — ready to dump for bottling.{" "}
         <Link to="/barrels" className="underline">Open barrels →</Link>
@@ -270,9 +270,9 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
   const overdue = daysToDue < 0;
   const urgent = daysToDue <= 7 && !overdue;
   const colour = overdue
-    ? "border-red-500/40 bg-red-500/10 text-red-300"
+    ? "border-danger/40 bg-danger/10 text-danger-fg"
     : urgent
-      ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+      ? "border-warning/40 bg-warning/10 text-warning-fg"
       : "border-border bg-surface-2 text-fg";
   return (
     <section className={`mb-6 rounded-lg border p-4 ${colour}`}>
@@ -304,8 +304,8 @@ function StagnantBulkCallout({ containers }: { containers: { id: string; name: s
   flagged.splice(5);
   if (flagged.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-      <p className="text-sm text-amber-300">
+    <section className="mb-6 rounded-lg border border-warning/40 bg-warning/10 p-4">
+      <p className="text-sm text-warning-fg">
         <span className="font-semibold">Stagnant bulk inventory:</span>{" "}
         {flagged.map((c, i) => (
           <span key={c.id}>
@@ -331,8 +331,8 @@ function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string
     .filter((s) => s.daysLeft < WARN_DAYS);
   if (flagged.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-      <p className="text-sm text-amber-300">
+    <section className="mb-6 rounded-lg border border-warning/40 bg-warning/10 p-4">
+      <p className="text-sm text-warning-fg">
         <span className="font-semibold">Stamps running low:</span>{" "}
         {flagged.map((s, i) => (
           <span key={s.jurisdiction}>
@@ -375,11 +375,11 @@ function Stat({
     <Link
       to={to}
       className={`block rounded-lg border bg-surface-2 p-5 shadow-sm transition hover:border-border-strong ${
-        highlight ? "border-emerald-500/30" : "border-border"
+        highlight ? "border-success/30" : "border-border"
       }`}
     >
       <p className="text-xs text-fg-muted">{label}</p>
-      <p className={`mt-2 text-3xl font-bold tracking-tight ${highlight ? "text-emerald-400" : "text-fg"}`}>
+      <p className={`mt-2 text-3xl font-bold tracking-tight ${highlight ? "text-success-fg" : "text-fg"}`}>
         {value}
         {suffix && <span className="ml-1 text-base font-normal text-fg-muted">{suffix}</span>}
       </p>

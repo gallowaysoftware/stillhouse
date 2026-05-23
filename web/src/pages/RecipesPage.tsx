@@ -148,7 +148,7 @@ export function RecipesPage() {
               {createRecipe.isPending ? "Creating…" : "Create recipe"}
             </button>
             {createRecipe.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createRecipe.error instanceof ConnectError
                   ? createRecipe.error.rawMessage
                   : String(createRecipe.error)}

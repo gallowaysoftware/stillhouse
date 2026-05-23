@@ -108,9 +108,9 @@ export function SettingsPage() {
           ) : (
             <span className="text-xs text-fg-muted">Owner-only — ask your distillery owner to update these fields.</span>
           )}
-          {saved && <span className="text-sm text-emerald-400">Saved.</span>}
+          {saved && <span className="text-sm text-success-fg">Saved.</span>}
           {update.error && (
-            <span className="text-sm text-red-400">
+            <span className="text-sm text-danger-fg">
               {update.error instanceof ConnectError ? update.error.rawMessage : String(update.error)}
             </span>
           )}
@@ -171,8 +171,8 @@ function DangerZone({ tenantName }: { tenantName: string }) {
 
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-red-400">Danger zone</h2>
-      <div className="rounded-lg border border-red-500/40 bg-red-500/5 p-5">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-danger-fg">Danger zone</h2>
+      <div className="rounded-lg border border-danger/40 bg-danger/5 p-5">
         <h3 className="text-sm font-semibold text-fg">Delete this distillery</h3>
         <p className="mt-1 text-sm text-fg-muted">
           Wipes every record under <span className="font-medium text-fg">{tenantName}</span> —
@@ -183,14 +183,14 @@ function DangerZone({ tenantName }: { tenantName: string }) {
         {!open ? (
           <button
             onClick={() => setOpen(true)}
-            className="mt-4 rounded border border-red-500/40 px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10"
+            className="mt-4 rounded border border-danger/40 px-3 py-2 text-sm font-medium text-danger-fg hover:bg-danger/10"
           >
             Delete tenant…
           </button>
         ) : (
-          <div className="mt-4 space-y-3 rounded border border-red-500/40 bg-surface-2 p-4">
+          <div className="mt-4 space-y-3 rounded border border-danger/40 bg-surface-2 p-4">
             <p className="text-sm text-fg">
-              Retype <span className="font-mono text-red-400">{tenantName}</span> below to confirm.
+              Retype <span className="font-mono text-danger-fg">{tenantName}</span> below to confirm.
             </p>
             <input
               autoFocus
@@ -199,7 +199,7 @@ function DangerZone({ tenantName }: { tenantName: string }) {
               className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
             />
             {del.error && (
-              <p className="text-sm text-red-400">
+              <p className="text-sm text-danger-fg">
                 {del.error instanceof ConnectError ? del.error.rawMessage : String(del.error)}
               </p>
             )}
@@ -273,11 +273,11 @@ function ChangePasswordPanel() {
           >
             {change.isPending ? "Updating…" : "Update password"}
           </button>
-          {done && <span className="text-sm text-emerald-400">Password updated.</span>}
-          {mismatch && <span className="text-sm text-red-400">Passwords don't match.</span>}
-          {tooShort && !mismatch && <span className="text-sm text-red-400">Must be at least 12 characters.</span>}
+          {done && <span className="text-sm text-success-fg">Password updated.</span>}
+          {mismatch && <span className="text-sm text-danger-fg">Passwords don't match.</span>}
+          {tooShort && !mismatch && <span className="text-sm text-danger-fg">Must be at least 12 characters.</span>}
           {change.error && (
-            <span className="text-sm text-red-400">
+            <span className="text-sm text-danger-fg">
               {change.error instanceof ConnectError ? change.error.rawMessage : String(change.error)}
             </span>
           )}
@@ -371,13 +371,13 @@ function UsersPanel({ isOwner, users, onCreated }: {
               {create_.isPending ? "Creating…" : "Invite user"}
             </button>
             {create_.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {create_.error instanceof ConnectError ? create_.error.rawMessage : String(create_.error)}
               </span>
             )}
           </div>
           {lastCreated && (
-            <div className="col-span-3 rounded border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+            <div className="col-span-3 rounded border border-success/30 bg-success/10 p-3 text-sm text-success-fg">
               <p className="font-medium">User created.</p>
               <p>Deliver this initial password to {lastCreated.email} through a secure channel — it will not be shown again:</p>
               <p className="mt-2 font-mono text-fg">{lastCreated.password}</p>
@@ -460,13 +460,13 @@ function InvitesPanel() {
             {createInvite.isPending ? "Generating…" : "Generate code"}
           </button>
           {createInvite.error && (
-            <span className="text-sm text-red-400">
+            <span className="text-sm text-danger-fg">
               {createInvite.error instanceof ConnectError ? createInvite.error.rawMessage : String(createInvite.error)}
             </span>
           )}
         </form>
         {justCreated && (
-          <div className="mb-4 rounded border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+          <div className="mb-4 rounded border border-success/40 bg-success/10 p-3 text-sm text-success-fg">
             <p className="font-medium">New invite ready.</p>
             <p className="mt-1">
               Share this signup URL with the recipient — it expires after one redemption.
@@ -521,7 +521,7 @@ function InvitesPanel() {
                         <button
                           onClick={() => revoke.mutate(i.code)}
                           disabled={revoke.isPending}
-                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                         >
                           Revoke
                         </button>

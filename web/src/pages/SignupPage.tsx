@@ -65,7 +65,7 @@ export function SignupPage() {
         </div>
 
         {signup.error && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-danger-fg">
             {signup.error instanceof ConnectError ? signup.error.rawMessage : String(signup.error)}
           </p>
         )}

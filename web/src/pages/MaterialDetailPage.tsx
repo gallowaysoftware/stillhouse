@@ -144,7 +144,7 @@ export function MaterialDetailPage() {
               {recordReceipt.isPending ? "Saving…" : "Record receipt"}
             </button>
             {recordReceipt.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {recordReceipt.error instanceof ConnectError ? recordReceipt.error.rawMessage : String(recordReceipt.error)}
               </span>
             )}
@@ -193,9 +193,9 @@ export function MaterialDetailPage() {
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-success/30" : "border-border"}`}>
       <p className="text-xs text-fg-muted">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-success-fg" : "text-fg"}`}>{value}</p>
     </div>
   );
 }

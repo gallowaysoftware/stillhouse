@@ -161,7 +161,7 @@ export function StampsPage() {
               {createOrder.isPending ? "Saving…" : "Place order"}
             </button>
             {createOrder.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createOrder.error instanceof ConnectError
                   ? createOrder.error.rawMessage
                   : String(createOrder.error)}
@@ -231,7 +231,7 @@ export function StampsPage() {
                     <button
                       onClick={() => onVoid(o.id, o.availableCount)}
                       disabled={voidStamps.isPending}
-                      className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                      className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                     >
                       Void
                     </button>
@@ -282,7 +282,7 @@ export function StampsPage() {
                 {receive.isPending ? "Saving…" : "Mark received"}
               </button>
               {receive.error && (
-                <span className="text-sm text-red-400">
+                <span className="text-sm text-danger-fg">
                   {receive.error instanceof ConnectError
                     ? receive.error.rawMessage
                     : String(receive.error)}

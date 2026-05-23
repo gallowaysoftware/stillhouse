@@ -84,7 +84,7 @@ export function PricingPage() {
           {compute.isPending ? "Computing…" : "Compute"}
         </button>
         {compute.error && (
-          <span className="text-sm text-red-400">
+          <span className="text-sm text-danger-fg">
             {compute.error instanceof ConnectError ? compute.error.rawMessage : String(compute.error)}
           </span>
         )}
@@ -124,7 +124,7 @@ export function PricingPage() {
                     <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.federalExciseCad)}</td>
                     <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.containerDepositCad)}</td>
                     <td className="px-4 py-3 text-right font-medium text-fg">${formatQty(b.shelfBeforeSalesTax)}</td>
-                    <td className="px-4 py-3 text-right font-medium text-emerald-400">${formatQty(b.onSiteRetailNetCad)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-success-fg">${formatQty(b.onSiteRetailNetCad)}</td>
                   </tr>
                 ))}
               </tbody>

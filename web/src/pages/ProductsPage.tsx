@@ -92,7 +92,7 @@ export function ProductsPage() {
               {createProduct.isPending ? "Saving…" : "Save"}
             </button>
             {createProduct.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createProduct.error instanceof ConnectError
                   ? createProduct.error.rawMessage
                   : String(createProduct.error)}
@@ -169,7 +169,7 @@ function CostCell({ productId }: { productId: string }) {
     <span title={`${data.runCount} run${data.runCount === 1 ? "" : "s"}, ${data.totalBottles.toLocaleString()} bottles`}>
       ${data.averageMaterialCostPerBottleCad.toFixed(2)}
       {data.runsWithMissingPrices > 0 && (
-        <span className="ml-1 text-amber-400" title={`${data.runsWithMissingPrices} runs missing price data`}>*</span>
+        <span className="ml-1 text-warning-fg" title={`${data.runsWithMissingPrices} runs missing price data`}>*</span>
       )}
     </span>
   );

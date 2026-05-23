@@ -114,7 +114,7 @@ export function MashesPage() {
               {createMash.isPending ? "Creating…" : "Create mash"}
             </button>
             {createMash.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createMash.error instanceof ConnectError
                   ? createMash.error.rawMessage
                   : String(createMash.error)}

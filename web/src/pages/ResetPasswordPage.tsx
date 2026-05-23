@@ -40,7 +40,7 @@ export function ResetPasswordPage() {
           </h1>
         </div>
         {!token && (
-          <p className="rounded border border-red-500/40 bg-red-500/10 px-3 py-3 text-sm text-red-300">
+          <p className="rounded border border-danger/40 bg-danger/10 px-3 py-3 text-sm text-danger-fg">
             Missing token. Open the link from your email exactly as sent.
           </p>
         )}
@@ -66,10 +66,10 @@ export function ResetPasswordPage() {
             className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
           />
         </div>
-        {mismatch && <p className="text-sm text-red-400">Passwords don't match.</p>}
-        {tooShort && <p className="text-sm text-red-400">Must be at least 12 characters.</p>}
+        {mismatch && <p className="text-sm text-danger-fg">Passwords don't match.</p>}
+        {tooShort && <p className="text-sm text-danger-fg">Must be at least 12 characters.</p>}
         {submit.error && (
-          <p className="text-sm text-red-400">
+          <p className="text-sm text-danger-fg">
             {submit.error instanceof ConnectError ? submit.error.rawMessage : String(submit.error)}
           </p>
         )}

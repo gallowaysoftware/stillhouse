@@ -225,7 +225,7 @@ function ChargesPanel({
         >
           Add
         </button>
-        {error && <span className="text-xs text-red-400">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
+        {error && <span className="text-xs text-danger-fg">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
       </form>
       <table className="min-w-full divide-y divide-border text-sm">
         <thead className="text-left text-xs text-fg-muted">
@@ -334,7 +334,7 @@ function CutsPanel({
         >
           Add
         </button>
-        {error && <span className="text-xs text-red-400">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
+        {error && <span className="text-xs text-danger-fg">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
       </form>
       <table className="min-w-full divide-y divide-border text-sm">
         <thead className="text-left text-xs text-fg-muted">
@@ -428,7 +428,7 @@ function CutsPanel({
                       if (ok) onDelete(c.id);
                     }}
                     disabled={deleting}
-                    className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                    className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                   >
                     Delete
                   </button>
@@ -509,7 +509,7 @@ function GaugeForm({
           {submitting ? "Recording…" : "Record gauge"}
         </button>
         {error && (
-          <span className="text-sm text-red-400">
+          <span className="text-sm text-danger-fg">
             {error instanceof ConnectError ? error.rawMessage : String(error)}
           </span>
         )}
@@ -522,9 +522,9 @@ function Metric({
   label, value, hint, highlight,
 }: { label: string; value: string; hint?: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-success/30" : "border-border"}`}>
       <p className="text-xs text-fg-muted">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-success-fg" : "text-fg"}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>
   );

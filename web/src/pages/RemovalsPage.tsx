@@ -182,7 +182,7 @@ export function RemovalsPage() {
               {create_.isPending ? "Saving…" : "Record removal"}
             </button>
             {create_.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {create_.error instanceof ConnectError ? create_.error.rawMessage : String(create_.error)}
               </span>
             )}
@@ -216,7 +216,7 @@ export function RemovalsPage() {
                   <td className="px-4 py-3 font-medium">
                     #{r.removalNo}
                     {voided && (
-                      <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-normal text-red-400">VOIDED</span>
+                      <span className="ml-2 rounded bg-danger/15 px-1.5 py-0.5 text-xs font-normal text-danger-fg">VOIDED</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{r.removalDate}</td>
@@ -237,7 +237,7 @@ export function RemovalsPage() {
                         <button
                           onClick={() => onVoid(r.id, r.removalNo, r.bottlesRemoved)}
                           disabled={voidRemoval.isPending}
-                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                         >
                           Void
                         </button>

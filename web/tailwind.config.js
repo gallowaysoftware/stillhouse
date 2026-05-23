@@ -23,6 +23,26 @@ export default {
           hover:   "rgb(var(--color-accent-hover) / <alpha-value>)",
           fg:      "rgb(var(--color-accent-fg) / <alpha-value>)",
         },
+        // Semantic state colors — kept distinct from accent so the eye can
+        // tell at a glance: amber = warning (something needs attention),
+        // emerald = success/ok, red = danger/destructive, sky = info.
+        // Components should reach for these, not raw Tailwind palette names.
+        success: {
+          DEFAULT: "rgb(var(--color-success) / <alpha-value>)",
+          fg:      "rgb(var(--color-success-fg) / <alpha-value>)",
+        },
+        warning: {
+          DEFAULT: "rgb(var(--color-warning) / <alpha-value>)",
+          fg:      "rgb(var(--color-warning-fg) / <alpha-value>)",
+        },
+        danger: {
+          DEFAULT: "rgb(var(--color-danger) / <alpha-value>)",
+          fg:      "rgb(var(--color-danger-fg) / <alpha-value>)",
+        },
+        info: {
+          DEFAULT: "rgb(var(--color-info) / <alpha-value>)",
+          fg:      "rgb(var(--color-info-fg) / <alpha-value>)",
+        },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],

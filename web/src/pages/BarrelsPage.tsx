@@ -117,7 +117,7 @@ export function BarrelsPage() {
               {createBarrel.isPending ? "Saving…" : "Save barrel"}
             </button>
             {createBarrel.error && (
-              <span className="text-sm text-red-400">
+              <span className="text-sm text-danger-fg">
                 {createBarrel.error instanceof ConnectError
                   ? createBarrel.error.rawMessage
                   : String(createBarrel.error)}
@@ -218,9 +218,9 @@ function AgingBuckets({ barrels }: { barrels: { daysAged: number; currentLaa: nu
       <h2 className="mb-3 text-sm font-semibold text-fg-muted">Aging buckets</h2>
       <div className="grid grid-cols-5 gap-3">
         {stats.map((s) => (
-          <div key={s.label} className={`rounded border p-3 ${s.min >= 1095 ? "border-emerald-500/30 bg-emerald-500/10" : "border-border"}`}>
+          <div key={s.label} className={`rounded border p-3 ${s.min >= 1095 ? "border-success/30 bg-success/10" : "border-border"}`}>
             <p className="text-xs text-fg-muted">{s.label}</p>
-            <p className={`mt-1 text-lg font-semibold ${s.min >= 1095 ? "text-emerald-400" : "text-fg"}`}>
+            <p className={`mt-1 text-lg font-semibold ${s.min >= 1095 ? "text-success-fg" : "text-fg"}`}>
               {s.count}
               {s.laa > 0 && (
                 <span className="ml-2 text-xs font-normal text-fg-muted">{formatLAA(s.laa)} L LAA</span>
@@ -238,13 +238,13 @@ function MaturationBadge({ barrel }: { barrel: { daysAged: number; canadianWhisk
     return <span className="rounded bg-surface-3 px-2 py-0.5 text-xs text-fg-muted">Empty</span>;
   }
   if (barrel.canadianWhiskyEligible) {
-    return <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-400">CW eligible</span>;
+    return <span className="rounded bg-success/15 px-2 py-0.5 text-xs text-success-fg">CW eligible</span>;
   }
   if (!barrel.smallWood) {
-    return <span className="rounded bg-amber-500/15 px-2 py-0.5 text-xs text-amber-400">Aging (not small wood)</span>;
+    return <span className="rounded bg-warning/15 px-2 py-0.5 text-xs text-warning-fg">Aging (not small wood)</span>;
   }
   return (
-    <span className="rounded bg-blue-500/15 px-2 py-0.5 text-xs text-blue-300">
+    <span className="rounded bg-info/15 px-2 py-0.5 text-xs text-info-fg">
       Aging ({barrel.daysToCanadianWhiskyEligible} d to CW)
     </span>
   );
@@ -252,9 +252,9 @@ function MaturationBadge({ barrel }: { barrel: { daysAged: number; canadianWhisk
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-success/30" : "border-border"}`}>
       <p className="text-xs text-fg-muted">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-success-fg" : "text-fg"}`}>{value}</p>
     </div>
   );
 }

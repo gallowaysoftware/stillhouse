@@ -95,7 +95,7 @@ export function BottlingRunDetailPage() {
                   </td>
                   <td className="px-3 py-2 text-right text-fg-muted">{formatQty(l.quantityUsed)} {l.uom}</td>
                   <td className="px-3 py-2 text-right text-fg-muted">
-                    {l.unitCostCad > 0 ? `$${l.unitCostCad.toFixed(3)}` : <span className="text-amber-400">no price</span>}
+                    {l.unitCostCad > 0 ? `$${l.unitCostCad.toFixed(3)}` : <span className="text-warning-fg">no price</span>}
                   </td>
                   <td className="px-3 py-2 text-right font-medium text-fg">
                     {l.lineCostCad > 0 ? `$${l.lineCostCad.toFixed(2)}` : "—"}
@@ -115,7 +115,7 @@ export function BottlingRunDetailPage() {
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-fg-muted">Grain-to-glass trace</h2>
           {trace.isLoading && <p className="text-sm text-fg-muted">Loading trace…</p>}
-          {trace.error && <p className="text-sm text-red-400">{String(trace.error)}</p>}
+          {trace.error && <p className="text-sm text-danger-fg">{String(trace.error)}</p>}
           {trace.data && (
             <ol className="space-y-1 font-mono text-xs">
               {trace.data.nodes.map((n) => (
@@ -169,9 +169,9 @@ export function BottlingRunDetailPage() {
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-success/30" : "border-border"}`}>
       <p className="text-xs text-fg-muted">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-success-fg" : "text-fg"}`}>{value}</p>
     </div>
   );
 }

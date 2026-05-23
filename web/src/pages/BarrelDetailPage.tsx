@@ -120,11 +120,11 @@ export function BarrelDetailPage() {
               <p className="text-xs text-fg-muted">Aging</p>
               <p className="text-3xl font-bold tracking-tight text-fg">{b.daysAged} days</p>
               {b.canadianWhiskyEligible ? (
-                <p className="text-xs text-emerald-400">Canadian Whisky eligible</p>
+                <p className="text-xs text-success-fg">Canadian Whisky eligible</p>
               ) : b.smallWood ? (
-                <p className="text-xs text-blue-300">{b.daysToCanadianWhiskyEligible} d to CW eligibility</p>
+                <p className="text-xs text-info-fg">{b.daysToCanadianWhiskyEligible} d to CW eligibility</p>
               ) : (
-                <p className="text-xs text-amber-400">Aging in non-small-wood vessel</p>
+                <p className="text-xs text-warning-fg">Aging in non-small-wood vessel</p>
               )}
               {b.fillDate && <p className="mt-1 text-xs text-fg-muted">filled {b.fillDate}</p>}
             </>
@@ -208,7 +208,7 @@ export function BarrelDetailPage() {
                     <button
                       onClick={() => onVoidEvent(e.id, e.kind)}
                       disabled={voidEvent.isPending}
-                      className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                      className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                     >
                       Void
                     </button>
@@ -308,7 +308,7 @@ function RegaugeCard({
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Regauge</Submit>
         {lastResult && lastResult.lostLaa > 0 && (
-          <p className="text-xs text-amber-400">Recorded loss: {formatLAA(lastResult.lostLaa)} L LAA</p>
+          <p className="text-xs text-warning-fg">Recorded loss: {formatLAA(lastResult.lostLaa)} L LAA</p>
         )}
         <p className="text-xs text-fg-muted">
           Difference vs current is recorded as a loss_evaporation movement.
@@ -442,7 +442,7 @@ function Submit({ submitting, error, children }: { submitting: boolean; error: E
         {submitting ? "Saving…" : children}
       </button>
       {error && (
-        <span className="text-xs text-red-400">
+        <span className="text-xs text-danger-fg">
           {error instanceof ConnectError ? error.rawMessage : String(error)}
         </span>
       )}
@@ -454,7 +454,7 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
   return (
     <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
       <p className="text-xs text-fg-muted">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-success-fg" : "text-fg"}`}>{value}</p>
     </div>
   );
 }

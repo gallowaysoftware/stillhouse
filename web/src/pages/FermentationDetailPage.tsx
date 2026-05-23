@@ -140,7 +140,7 @@ export function FermentationDetailPage() {
             {addLog.isPending ? "Saving…" : "Add reading"}
           </button>
           {addLog.error && (
-            <span className="text-sm text-red-400">
+            <span className="text-sm text-danger-fg">
               {addLog.error instanceof ConnectError ? addLog.error.rawMessage : String(addLog.error)}
             </span>
           )}
