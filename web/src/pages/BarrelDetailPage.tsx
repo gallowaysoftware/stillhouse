@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { Callout } from "@/components/Callout";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Shell } from "@/components/Shell";
 import { barrelClient, bulkClient } from "@/lib/clients";
@@ -275,10 +276,10 @@ function FillCard({
           ))}
         </Select>
         {sourceHasNoABV && (
-          <p className="rounded border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger-fg">
+          <Callout tone="danger">
             Source tank has no recorded ABV. Gauge it before filling — otherwise the LAA in the
             barrel (and in B266 downstream) will be wrong.
-          </p>
+          </Callout>
         )}
         <NumField label="Volume (litres of liquid)" value={vol} onChange={setVol} />
         <NumField label="ABV %" value={abv} onChange={setAbv} />

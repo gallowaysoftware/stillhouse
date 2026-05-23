@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
+import { Callout } from "@/components/Callout";
 import { Shell } from "@/components/Shell";
 import {
   auditClient,
@@ -250,13 +251,13 @@ function ReadyToDumpCallout({ barrels }: { barrels: { id: string; name: string; 
   const ready = barrels.filter((b) => b.currentLaa > 0 && b.canadianWhiskyEligible);
   if (ready.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-success/30 bg-success/10 p-4">
-      <p className="text-sm text-success-fg">
-        <span className="font-semibold">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
+    <div className="mb-6">
+      <Callout tone="success">
+        <span className="font-semibold text-success-fg">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
         and still hold alcohol — ready to dump for bottling.{" "}
         <Link to="/barrels" className="underline">Open barrels →</Link>
-      </p>
-    </section>
+      </Callout>
+    </div>
   );
 }
 
@@ -269,20 +270,16 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
   const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   const overdue = daysToDue < 0;
   const urgent = daysToDue <= 7 && !overdue;
-  const colour = overdue
-    ? "border-danger/40 bg-danger/10 text-danger-fg"
-    : urgent
-      ? "border-warning/40 bg-warning/10 text-warning-fg"
-      : "border-border bg-surface-2 text-fg";
+  const tone = overdue ? "danger" : urgent ? "warning" : "info";
   return (
-    <section className={`mb-6 rounded-lg border p-4 ${colour}`}>
-      <p className="text-sm">
-        {overdue && <span className="mr-2 rounded bg-red-700 px-1.5 py-0.5 text-xs font-semibold text-white">OVERDUE</span>}
+    <div className="mb-6">
+      <Callout tone={tone}>
+        {overdue && <span className="mr-2 rounded bg-danger px-1.5 py-0.5 text-xs font-semibold text-white">OVERDUE</span>}
         <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
         {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue — file as soon as possible`}).
         {" "}<Link to="/b266" className="underline">Open the return →</Link>
-      </p>
-    </section>
+      </Callout>
+    </div>
   );
 }
 
@@ -304,8 +301,8 @@ function StagnantBulkCallout({ containers }: { containers: { id: string; name: s
   flagged.splice(5);
   if (flagged.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-warning/40 bg-warning/10 p-4">
-      <p className="text-sm text-warning-fg">
+    <div className="mb-6">
+      <Callout tone="warning">
         <span className="font-semibold">Stagnant bulk inventory:</span>{" "}
         {flagged.map((c, i) => (
           <span key={c.id}>
@@ -315,8 +312,8 @@ function StagnantBulkCallout({ containers }: { containers: { id: string; name: s
         ))} — no movement in 90+ days. Evap losses accrue silently; consider
         gauging or transferring.{" "}
         <Link to="/bulk" className="underline">Open bulk →</Link>
-      </p>
-    </section>
+      </Callout>
+    </div>
   );
 }
 
@@ -331,8 +328,8 @@ function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string
     .filter((s) => s.daysLeft < WARN_DAYS);
   if (flagged.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-warning/40 bg-warning/10 p-4">
-      <p className="text-sm text-warning-fg">
+    <div className="mb-6">
+      <Callout tone="warning">
         <span className="font-semibold">Stamps running low:</span>{" "}
         {flagged.map((s, i) => (
           <span key={s.jurisdiction}>
@@ -341,8 +338,8 @@ function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string
           </span>
         ))}. CRA orders take weeks — place a replenishment order now.{" "}
         <Link to="/stamps" className="underline">Open stamps →</Link>
-      </p>
-    </section>
+      </Callout>
+    </div>
   );
 }
 
