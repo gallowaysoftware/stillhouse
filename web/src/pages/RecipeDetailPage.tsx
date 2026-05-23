@@ -101,7 +101,7 @@ export function RecipeDetailPage() {
         <>
           <div className="mb-6 flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-semibold">{recipe.data.recipe.name}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">{recipe.data.recipe.name}</h1>
               <p className="text-sm text-fg-muted">
                 {spiritKindLabel(recipe.data.recipe.spiritKind)}
                 {recipe.data.currentVersion && (
@@ -237,7 +237,7 @@ export function RecipeDetailPage() {
             <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
                 <header className="border-b border-border bg-surface-3 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase text-fg-muted">
+                  <h2 className="text-sm font-semibold text-fg-muted">
                     Current version
                   </h2>
                 </header>
@@ -262,7 +262,7 @@ export function RecipeDetailPage() {
 
               <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
                 <header className="border-b border-border bg-surface-3 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase text-fg-muted">Projection</h2>
+                  <h2 className="text-sm font-semibold text-fg-muted">Projection</h2>
                 </header>
                 <dl className="divide-y divide-border text-sm">
                   <DLRow label="Projected LAA">
@@ -285,12 +285,12 @@ export function RecipeDetailPage() {
 
               <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm lg:col-span-2">
                 <header className="border-b border-border bg-surface-3 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase text-fg-muted">
+                  <h2 className="text-sm font-semibold text-fg-muted">
                     Ingredients
                   </h2>
                 </header>
                 <table className="min-w-full divide-y divide-border text-sm">
-                  <thead className="bg-surface-2 text-left text-xs uppercase text-fg-muted">
+                  <thead className="bg-surface-2 text-left text-xs text-fg-muted">
                     <tr>
                       <th className="px-4 py-3">Material</th>
                       <th className="px-4 py-3 text-right">Qty</th>
@@ -349,10 +349,10 @@ function VersionHistory({ recipeId, currentVersionId }: { recipeId: string; curr
   if (list.length <= 1) return null;
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Version history</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Version history</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-2">Version</th>
               <th className="px-4 py-2">Saved</th>
@@ -402,7 +402,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
+      <label className="mb-2 block text-sm font-medium text-fg-muted">{label}</label>
       <input
         value={value}
         placeholder={placeholder}

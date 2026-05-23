@@ -127,7 +127,7 @@ export function BottlingPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Bottling</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Bottling</h1>
           <p className="text-sm text-fg-muted">
             A bottling run debits the source container, applies province-coded stamps,
             and produces packaged inventory.
@@ -149,7 +149,7 @@ export function BottlingPage() {
           className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Product</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Product</label>
             <select value={productId} onChange={(e) => setProductId(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value="">Select product…</option>
               {products.data?.products.map((p) => (
@@ -158,7 +158,7 @@ export function BottlingPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Source container</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Source container</label>
             <select value={sourceId} onChange={(e) => setSourceId(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value="">Select source…</option>
               {containers.data?.containers
@@ -176,7 +176,7 @@ export function BottlingPage() {
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Destination jurisdiction</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Destination jurisdiction</label>
             <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             {jurisdictionSummary && (
               <p className="mt-1 text-xs text-fg-muted">
@@ -185,7 +185,7 @@ export function BottlingPage() {
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Bottle count</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Bottle count</label>
             <input value={bottleCount} onChange={(e) => setBottleCount(e.target.value)} type="number" min="1" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             {requiredVol !== null && (
               <p className="mt-1 text-xs text-fg-muted">
@@ -194,15 +194,15 @@ export function BottlingPage() {
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Lot code</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Lot code</label>
             <input value={lotCode} onChange={(e) => setLotCode(e.target.value)} required placeholder="L2026-0001" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Bottling loss (L)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Bottling loss (L)</label>
             <input value={bottlingLoss} onChange={(e) => setBottlingLoss(e.target.value)} type="number" step="0.01" min="0" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <input value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
@@ -224,10 +224,10 @@ export function BottlingPage() {
         </form>
       )}
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Recent bottling runs</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Recent bottling runs</h2>
       <div className="mb-8 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>
@@ -290,10 +290,10 @@ export function BottlingPage() {
         onPage={setPage}
       />
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Packaged inventory</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Packaged inventory</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Lot</th>

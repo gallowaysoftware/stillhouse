@@ -48,7 +48,7 @@ export function MashesPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Mashes</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Mashes</h1>
           <p className="text-sm text-fg-muted">Mash runs against a recipe version.</p>
         </div>
         <WriteOnly>
@@ -67,7 +67,7 @@ export function MashesPage() {
           className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Recipe</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Recipe</label>
             <select
               name="recipe_version_id"
               required
@@ -90,7 +90,7 @@ export function MashesPage() {
               )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Mash date</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Mash date</label>
             <input
               name="mash_date"
               type="date"
@@ -98,7 +98,7 @@ export function MashesPage() {
             />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <textarea
               name="notes"
               rows={2}
@@ -126,7 +126,7 @@ export function MashesPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>

@@ -40,7 +40,7 @@ export function AuditPage() {
   return (
     <Shell>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Audit log</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Audit log</h1>
         <p className="text-sm text-fg-muted">
           Append-only journal of significant actions. Backs s.206 records-keeping
           obligations under the Excise Act, 2001 (6-year retention).
@@ -49,7 +49,7 @@ export function AuditPage() {
 
       <div className="mb-4 flex items-end gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Filter by entity type</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Filter by entity type</label>
           <input
             value={entityType}
             onChange={(e) => setEntityType(e.target.value)}
@@ -58,11 +58,11 @@ export function AuditPage() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">From (export only)</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">From (export only)</label>
           <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">To (export only)</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">To (export only)</label>
           <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <a
@@ -78,7 +78,7 @@ export function AuditPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Actor</th>

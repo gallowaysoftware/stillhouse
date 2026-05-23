@@ -68,7 +68,7 @@ export function MaterialDetailPage() {
   return (
     <Shell>
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold">{m.name}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{m.name}</h1>
         <p className="text-sm text-fg-muted">
           {materialKindLabel(m.kind)} · {m.uom}
           {m.supplier && <> · {m.supplier}</>}
@@ -84,10 +84,10 @@ export function MaterialDetailPage() {
       </section>
 
       <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Record receipt</h2>
+        <h2 className="mb-3 text-sm font-semibold text-fg-muted">Record receipt</h2>
         <form onSubmit={submit} className="grid grid-cols-2 gap-4">
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Supplier lot</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Supplier lot</label>
             <input
               value={supplierLot}
               onChange={(e) => setSupplierLot(e.target.value)}
@@ -96,7 +96,7 @@ export function MaterialDetailPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Quantity received ({m.uom})</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Quantity received ({m.uom})</label>
             <input
               type="number"
               step="0.01"
@@ -108,7 +108,7 @@ export function MaterialDetailPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Received at (optional)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Received at (optional)</label>
             <input
               type="date"
               value={receivedAt}
@@ -117,7 +117,7 @@ export function MaterialDetailPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Unit cost (CAD/{m.uom}, optional)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Unit cost (CAD/{m.uom}, optional)</label>
             <input
               type="number"
               step="0.001"
@@ -128,7 +128,7 @@ export function MaterialDetailPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -152,10 +152,10 @@ export function MaterialDetailPage() {
         </form>
       </section>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Lot history</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Lot history</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Received</th>
               <th className="px-4 py-3">Supplier lot</th>
@@ -194,7 +194,7 @@ export function MaterialDetailPage() {
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );

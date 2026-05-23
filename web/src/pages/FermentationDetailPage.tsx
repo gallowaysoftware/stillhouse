@@ -82,7 +82,7 @@ export function FermentationDetailPage() {
     <Shell>
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{r.fermenterLabel}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{r.fermenterLabel}</h1>
           <p className="text-sm text-fg-muted">
             {r.recipeName} · mash{" "}
             <Link to={`/mashes/${r.mashRunId}`} className="underline">
@@ -126,7 +126,7 @@ export function FermentationDetailPage() {
       </section>
 
       <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Add reading</h2>
+        <h2 className="mb-3 text-sm font-semibold text-fg-muted">Add reading</h2>
         <form onSubmit={submitLog} className="flex flex-wrap items-end gap-3">
           <NumField label="Specific gravity" value={sg} onChange={setSG} step="0.001" placeholder="1.020" />
           <NumField label="pH" value={ph} onChange={setPH} step="0.1" />
@@ -149,7 +149,7 @@ export function FermentationDetailPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3 text-right">SG</th>
@@ -193,7 +193,7 @@ export function FermentationDetailPage() {
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className="mt-1 text-xl font-semibold text-fg">{value}</p>
       {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>

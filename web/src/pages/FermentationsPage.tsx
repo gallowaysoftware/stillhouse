@@ -14,13 +14,13 @@ export function FermentationsPage() {
   return (
     <Shell>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Fermentations</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Fermentations</h1>
         <p className="text-sm text-fg-muted">All fermentation runs. Create new ones from a mash detail page.</p>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Fermenter</th>
               <th className="px-4 py-3">Mash</th>

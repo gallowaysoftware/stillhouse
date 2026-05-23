@@ -88,7 +88,7 @@ export function RecipesPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Recipes</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Recipes</h1>
           <p className="text-sm text-fg-muted">
             Mash bills with versioned process assumptions and projected LAA yield.
           </p>
@@ -109,7 +109,7 @@ export function RecipesPage() {
           className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Name</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Name</label>
             <input
               name="name"
               required
@@ -117,7 +117,7 @@ export function RecipesPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Spirit kind</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Spirit kind</label>
             <select
               name="spirit_kind"
               required
@@ -132,7 +132,7 @@ export function RecipesPage() {
             </select>
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <textarea
               name="notes"
               rows={2}
@@ -160,7 +160,7 @@ export function RecipesPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Spirit</th>

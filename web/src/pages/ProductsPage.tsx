@@ -58,7 +58,7 @@ export function ProductsPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Products</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
           <p className="text-sm text-fg-muted">Finished-product SKUs: name, bottle size, bottle proof.</p>
         </div>
         <WriteOnly>
@@ -104,7 +104,7 @@ export function ProductsPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Spirit</th>
@@ -184,7 +184,7 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
+      <label className="mb-2 block text-sm font-medium text-fg-muted">{label}</label>
       {as === "select" ? (
         <select
           name={name}

@@ -117,7 +117,7 @@ export function RemovalsPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Removals</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Removals</h1>
           <p className="text-sm text-fg-muted">
             Removals from the excise warehouse crystallize CRA duty
             ($14.117/LAA for spirits &gt;7%; rate effective April 1, 2026).
@@ -136,7 +136,7 @@ export function RemovalsPage() {
       {showForm && (
         <form onSubmit={submit} className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Packaged inventory row</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Packaged inventory row</label>
             <select value={piID} onChange={(e) => setPiID(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value="">Select…</option>
               {packaged.data?.rows.map((r) => (
@@ -152,25 +152,25 @@ export function RemovalsPage() {
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Bottles</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Bottles</label>
             <input type="number" min="1" value={bottles} onChange={(e) => setBottles(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Removal date</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Removal date</label>
             <input type="date" value={removalDate} onChange={(e) => setRemovalDate(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Destination kind</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Destination kind</label>
             <select value={dest} onChange={(e) => setDest(Number(e.target.value) as RemovalDestinationKind)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               {destOptions.map((d) => <option key={d} value={d}>{destLabel[d]}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Destination name</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Destination name</label>
             <input value={destName} onChange={(e) => setDestName(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Reference (BOL / invoice)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Reference (BOL / invoice)</label>
             <input value={reference} onChange={(e) => setReference(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
@@ -192,7 +192,7 @@ export function RemovalsPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>

@@ -27,7 +27,7 @@ export function BulkContainerDetailPage() {
   return (
     <Shell>
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold">{c.name}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{c.name}</h1>
         <p className="text-sm text-fg-muted">
           {bulkContainerKindLabel(c.kind)}
           {c.capacityLSet && <> · capacity {formatQty(c.capacityL)} L</>}
@@ -42,10 +42,10 @@ export function BulkContainerDetailPage() {
         <Stat label="Movements" value={String(detail.data.movements.length)} />
       </section>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Movement history</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Movement history</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Reason</th>
@@ -90,7 +90,7 @@ export function BulkContainerDetailPage() {
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-fg" : "text-fg"}`}>
         {value}
       </p>

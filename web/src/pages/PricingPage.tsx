@@ -36,7 +36,7 @@ export function PricingPage() {
   return (
     <Shell>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">Provincial pricing</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Provincial pricing</h1>
         <p className="text-sm text-fg-muted">
           Run an FOB price for one of your products through each province's
           monopoly markup to see the rough consumer shelf price. Markups are
@@ -49,7 +49,7 @@ export function PricingPage() {
         className="mb-8 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
       >
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Product</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Product</label>
           <select
             value={productId}
             onChange={(e) => setProductId(e.target.value)}
@@ -65,7 +65,7 @@ export function PricingPage() {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">FOB price (CAD)</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">FOB price (CAD)</label>
           <input
             value={fob}
             onChange={(e) => setFob(e.target.value)}
@@ -97,7 +97,7 @@ export function PricingPage() {
           </p>
           <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
             <table className="min-w-full divide-y divide-border text-sm">
-              <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+              <thead className="bg-surface-3 text-left text-xs text-fg-muted">
                 <tr>
                   <th className="px-4 py-3">Jurisdiction</th>
                   <th className="px-4 py-3 text-right">FOB</th>

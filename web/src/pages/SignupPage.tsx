@@ -43,7 +43,7 @@ export function SignupPage() {
         className="w-full max-w-lg space-y-5 rounded-xl border border-border bg-surface-2 p-8 shadow-card-dark"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-fg">
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight tracking-tight text-fg">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
             Stillhouse
           </h1>
@@ -58,7 +58,7 @@ export function SignupPage() {
         <Field label="Default jurisdiction (ISO 3166-2)" value={jurisdiction} onChange={setJurisdiction} placeholder="CA-ON" />
 
         <div className="border-t border-border pt-5">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Owner login</h2>
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">Owner login</h2>
           <Field label="Your name" value={displayName} onChange={setDisplayName} required />
           <Field label="Email" type="email" autoComplete="email" value={email} onChange={setEmail} required />
           <Field label="Password (12+ chars)" type="password" autoComplete="new-password" value={password} onChange={setPassword} required minLength={12} />
@@ -95,7 +95,7 @@ function Field({
 }) {
   return (
     <div className="mb-3 space-y-1">
-      <label className="block text-xs font-medium text-fg-muted">{label}</label>
+      <label className="block text-sm font-medium text-fg-muted">{label}</label>
       <input
         type={type}
         required={required}

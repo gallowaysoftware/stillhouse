@@ -95,7 +95,7 @@ export function MashDetailPage() {
     <Shell>
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Mash #{m.mashNo}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Mash #{m.mashNo}</h1>
           <p className="text-sm text-fg-muted">
             {m.mashDate} · {m.recipeName} v{m.recipeVersionNo}
           </p>
@@ -169,7 +169,7 @@ export function MashDetailPage() {
           }
         >
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="text-left text-xs uppercase text-fg-muted">
+            <thead className="text-left text-xs text-fg-muted">
               <tr>
                 <th className="px-3 py-2">Material / Lot</th>
                 <th className="px-3 py-2 text-right">Qty</th>
@@ -239,7 +239,7 @@ export function MashDetailPage() {
           }
         >
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="text-left text-xs uppercase text-fg-muted">
+            <thead className="text-left text-xs text-fg-muted">
               <tr>
                 <th className="px-3 py-2">When</th>
                 <th className="px-3 py-2">Kind</th>
@@ -296,7 +296,7 @@ export function MashDetailPage() {
           }
         >
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="text-left text-xs uppercase text-fg-muted">
+            <thead className="text-left text-xs text-fg-muted">
               <tr>
                 <th className="px-3 py-2">Fermenter</th>
                 <th className="px-3 py-2">Pitched</th>
@@ -564,7 +564,7 @@ function ProjStat({
 }: { label: string; value: string; hint?: string; highlight?: boolean }) {
   return (
     <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>
@@ -657,7 +657,7 @@ function Panel({
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
       <header className="flex items-center justify-between border-b border-border bg-surface-3 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
+        <h2 className="text-sm font-semibold text-fg-muted">{title}</h2>
         {right}
       </header>
       <div className="overflow-x-auto">{children}</div>

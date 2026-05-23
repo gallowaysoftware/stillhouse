@@ -22,7 +22,7 @@ export function ForgotPasswordPage() {
         className="w-full max-w-sm space-y-5 rounded-xl border border-border bg-surface-2 p-8 shadow-card-dark"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-fg">
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight tracking-tight text-fg">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
             Reset password
           </h1>
@@ -37,7 +37,7 @@ export function ForgotPasswordPage() {
         ) : (
           <>
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-fg-muted">Email</label>
+              <label className="block text-sm font-medium text-fg-muted">Email</label>
               <input
                 type="email"
                 required

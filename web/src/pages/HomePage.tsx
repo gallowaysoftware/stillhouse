@@ -67,7 +67,7 @@ export function HomePage() {
 
   return (
     <Shell>
-      <h1 className="mb-1 text-2xl font-semibold">Dashboard</h1>
+      <h1 className="mb-1 text-3xl font-bold tracking-tight">Dashboard</h1>
       <p className="mb-8 text-sm text-fg-muted">
         {isFreshInstall
           ? "Welcome to Stillhouse. Walk through the steps below to get from a fresh install to your first B266."
@@ -82,7 +82,7 @@ export function HomePage() {
 
       {!completedAll && allLoaded && (
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Getting started</h2>
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">Getting started</h2>
           <ol className="space-y-2 text-sm">
             <Step n={1} done={hasMaterials} to="/materials" label="Add your raw materials (grain, malt, water)." />
             <Step n={2} done={hasRecipes} to="/recipes" label="Save at least one recipe with a saved version." />
@@ -99,7 +99,7 @@ export function HomePage() {
 
       {(hasBulkContainers || hasBottling || hasStamps) && (
         <section className="mb-8">
-          <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">Alcohol on hand (LAA)</h2>
+          <h2 className="mb-3 text-xs font-semibold text-fg-muted">Alcohol on hand (LAA)</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat to="/bulk" label="Bulk tanks" value={formatLAA(nonBarrelBulk)} suffix="L" />
             <Stat
@@ -124,7 +124,7 @@ export function HomePage() {
 
       {hasBottling && (
         <section className="mb-8">
-          <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">
+          <h2 className="mb-3 text-xs font-semibold text-fg-muted">
             Current period · {start} → {end}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -154,10 +154,10 @@ export function HomePage() {
 
       {(audit.data?.events.length ?? 0) > 0 && (
         <section>
-          <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">Recent activity</h2>
+          <h2 className="mb-3 text-xs font-semibold text-fg-muted">Recent activity</h2>
           <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
             <table className="min-w-full divide-y divide-border text-sm">
-              <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+              <thead className="bg-surface-3 text-left text-xs text-fg-muted">
                 <tr>
                   <th className="px-4 py-2">When</th>
                   <th className="px-4 py-2">Who</th>
@@ -227,11 +227,11 @@ function CWForecastSection({ barrels }: { barrels: { currentLaa: number; canadia
   }
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">Canadian Whisky maturation forecast</h2>
+      <h2 className="mb-3 text-xs font-semibold text-fg-muted">Canadian Whisky maturation forecast</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-7">
         {buckets.map((b, i) => (
           <div key={b.label} className={`rounded-lg border p-3 ${i === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-border bg-surface-2"}`}>
-            <p className="text-xs uppercase text-fg-muted">{b.label}</p>
+            <p className="text-xs text-fg-muted">{b.label}</p>
             <p className={`mt-1 text-base font-semibold ${i === 0 ? "text-emerald-400" : "text-fg"}`}>
               {b.laa.toFixed(1)} L
             </p>
@@ -378,8 +378,8 @@ function Stat({
         highlight ? "border-emerald-500/30" : "border-border"
       }`}
     >
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>
+      <p className="text-xs text-fg-muted">{label}</p>
+      <p className={`mt-2 text-3xl font-bold tracking-tight ${highlight ? "text-emerald-400" : "text-fg"}`}>
         {value}
         {suffix && <span className="ml-1 text-base font-normal text-fg-muted">{suffix}</span>}
       </p>

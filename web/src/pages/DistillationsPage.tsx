@@ -71,7 +71,7 @@ export function DistillationsPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Distillations</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Distillations</h1>
           <p className="text-sm text-fg-muted">
             Distillation runs. The production gauge on a completed run is what puts new alcohol into the bulk ledger.
           </p>
@@ -92,15 +92,15 @@ export function DistillationsPage() {
           className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Still label</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Still label</label>
             <input name="still_label" placeholder="e.g. Pot Still #1" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Run date</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Run date</label>
             <input name="run_date" type="date" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <textarea name="notes" rows={2} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
@@ -124,7 +124,7 @@ export function DistillationsPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>

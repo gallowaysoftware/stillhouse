@@ -105,7 +105,7 @@ export function StampsPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Excise stamps</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Excise stamps</h1>
           <p className="text-sm text-fg-muted">
             Province-coded stamps from CRA. Order, receive, then apply at bottling.
             Jurisdiction codes use ISO 3166-2 (CA-ON, CA-QC, CA-BC, …).
@@ -125,8 +125,8 @@ export function StampsPage() {
         <section className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {list.data.summaries.map((s) => (
             <div key={s.jurisdiction} className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
-              <p className="text-xs uppercase text-fg-muted">{s.jurisdiction}</p>
-              <p className="mt-1 text-2xl font-semibold text-fg">{s.totalOnHand.toLocaleString()}</p>
+              <p className="text-xs text-fg-muted">{s.jurisdiction}</p>
+              <p className="mt-1 text-3xl font-bold tracking-tight text-fg">{s.totalOnHand.toLocaleString()}</p>
               <p className="text-xs text-fg-muted">
                 on hand · {s.totalApplied.toLocaleString()} applied · {s.totalReceived.toLocaleString()} received
               </p>
@@ -141,15 +141,15 @@ export function StampsPage() {
           className="mb-6 grid grid-cols-3 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Jurisdiction</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Jurisdiction</label>
             <input name="jurisdiction" placeholder="CA-ON" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Quantity</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Quantity</label>
             <input name="quantity_ordered" type="number" min="1" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <input name="notes" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-3 flex items-center gap-3">
@@ -173,7 +173,7 @@ export function StampsPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Jurisdiction</th>
               <th className="px-4 py-3">Ordered</th>
@@ -251,11 +251,11 @@ export function StampsPage() {
             onSubmit={(e) => submitReceive(order.id, e)}
             className="mt-4 grid grid-cols-3 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
           >
-            <h2 className="col-span-3 text-sm font-semibold uppercase text-fg-muted">
+            <h2 className="col-span-3 text-sm font-semibold text-fg-muted">
               Receive order for {order.jurisdiction}
             </h2>
             <div>
-              <label className="mb-1 block text-xs font-medium text-fg-muted">Quantity received</label>
+              <label className="mb-2 block text-sm font-medium text-fg-muted">Quantity received</label>
               <input
                 name="quantity_received"
                 type="number"
@@ -266,11 +266,11 @@ export function StampsPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-fg-muted">Serial start</label>
+              <label className="mb-2 block text-sm font-medium text-fg-muted">Serial start</label>
               <input name="serial_start" placeholder="ABC00001" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-fg-muted">Serial end</label>
+              <label className="mb-2 block text-sm font-medium text-fg-muted">Serial end</label>
               <input name="serial_end" placeholder="ABC10000" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             </div>
             <div className="col-span-3 flex items-center gap-3">

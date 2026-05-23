@@ -75,7 +75,7 @@ export function B266Page() {
   return (
     <Shell>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold">CRA Form B266</h1>
+        <h1 className="text-3xl font-bold tracking-tight">CRA Form B266</h1>
         <p className="text-sm text-fg-muted">
           Monthly Excise Duty Return — Spirits Licensee. Pick a period, generate the
           values, copy them into the My Business Account return.
@@ -89,11 +89,11 @@ export function B266Page() {
         className="mb-8 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
       >
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Period start</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Period start</label>
           <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Period end</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Period end</label>
           <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <WriteOnly>
@@ -123,10 +123,10 @@ export function B266Page() {
         />
       )}
 
-      <h2 data-print-hide className="mb-3 mt-10 text-sm font-semibold uppercase text-fg-muted">Past returns</h2>
+      <h2 data-print-hide className="mb-3 mt-10 text-sm font-semibold text-fg-muted">Past returns</h2>
       <div data-print-hide className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Period</th>
               <th className="px-4 py-3">Status</th>
@@ -156,7 +156,7 @@ export function B266Page() {
 
       {openPeriodId && (
         <section className="mt-6">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">
             Snapshot · {openPeriod.data?.period?.periodStart} → {openPeriod.data?.period?.periodEnd}
           </h2>
           {openPeriod.isLoading && <p className="text-fg-muted">Loading…</p>}
@@ -204,7 +204,7 @@ function ReportView({
   return (
     <section className="space-y-6">
       <div data-print-only className="border-b border-border-strong pb-4">
-        <p className="text-xs uppercase text-fg-muted">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
+        <p className="text-xs text-fg-muted">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
         <h2 className="mt-1 text-xl font-semibold">{tenantName || "Distillery"}</h2>
         <p className="mt-1 text-sm">
           Period {periodStart} → {periodEnd}
@@ -349,7 +349,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
       <header className="border-b border-border bg-surface-3 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
+        <h2 className="text-sm font-semibold text-fg-muted">{title}</h2>
       </header>
       <dl className="divide-y divide-border text-sm">{children}</dl>
     </div>

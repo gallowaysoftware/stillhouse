@@ -35,7 +35,7 @@ export function BottlingRunDetailPage() {
     <Shell>
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Bottling run #{r.runNo}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Bottling run #{r.runNo}</h1>
           <p className="text-sm text-fg-muted">
             {r.bottlingDate} · {r.productName} · lot {r.lotCode} · → {r.destinationJurisdiction}
           </p>
@@ -57,7 +57,7 @@ export function BottlingRunDetailPage() {
       </section>
 
       <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Tank gauge</h2>
+        <h2 className="mb-3 text-sm font-semibold text-fg-muted">Tank gauge</h2>
         <dl className="grid grid-cols-3 gap-3 text-sm">
           <Row k="Volume drawn">{formatQty(r.tankGaugeVolumeL)} L</Row>
           <Row k="ABV at gauge">{r.tankGaugeAbvPct.toFixed(2)}%</Row>
@@ -68,7 +68,7 @@ export function BottlingRunDetailPage() {
 
       {cost.data && cost.data.lines.length > 0 && (
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Material cost</h2>
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">Material cost</h2>
           <div className="mb-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
             <Stat label="Total materials" value={`$${cost.data.totalMaterialCostCad.toFixed(2)}`} />
             <Stat
@@ -78,7 +78,7 @@ export function BottlingRunDetailPage() {
             />
           </div>
           <table className="min-w-full divide-y divide-border text-sm">
-            <thead className="text-left text-xs uppercase text-fg-muted">
+            <thead className="text-left text-xs text-fg-muted">
               <tr>
                 <th className="px-3 py-2">Material / Lot</th>
                 <th className="px-3 py-2 text-right">Qty</th>
@@ -113,7 +113,7 @@ export function BottlingRunDetailPage() {
 
       {traceOpen && (
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Grain-to-glass trace</h2>
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">Grain-to-glass trace</h2>
           {trace.isLoading && <p className="text-sm text-fg-muted">Loading trace…</p>}
           {trace.error && <p className="text-sm text-red-400">{String(trace.error)}</p>}
           {trace.data && (
@@ -133,10 +133,10 @@ export function BottlingRunDetailPage() {
         </section>
       )}
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Excise stamps applied</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Excise stamps applied</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Jurisdiction</th>
               <th className="px-4 py-3">Serial range</th>
@@ -170,7 +170,7 @@ export function BottlingRunDetailPage() {
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );
@@ -179,7 +179,7 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
 function Row({ k, children }: { k: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase text-fg-muted">{k}</dt>
+      <dt className="text-xs text-fg-muted">{k}</dt>
       <dd className="mt-1 text-fg">{children}</dd>
     </div>
   );

@@ -61,7 +61,7 @@ export function BarrelsPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Barrels</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Barrels</h1>
           <p className="text-sm text-fg-muted">
             Cooperage inventory + maturation. Canadian Whisky eligibility (FDR B.02.020):
             ≥3 years in small wood (≤700 L).
@@ -129,7 +129,7 @@ export function BarrelsPage() {
 
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Cooperage</th>
@@ -215,11 +215,11 @@ function AgingBuckets({ barrels }: { barrels: { daysAged: number; currentLaa: nu
   });
   return (
     <section className="mb-6 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Aging buckets</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Aging buckets</h2>
       <div className="grid grid-cols-5 gap-3">
         {stats.map((s) => (
           <div key={s.label} className={`rounded border p-3 ${s.min >= 1095 ? "border-emerald-500/30 bg-emerald-500/10" : "border-border"}`}>
-            <p className="text-xs uppercase text-fg-muted">{s.label}</p>
+            <p className="text-xs text-fg-muted">{s.label}</p>
             <p className={`mt-1 text-lg font-semibold ${s.min >= 1095 ? "text-emerald-400" : "text-fg"}`}>
               {s.count}
               {s.laa > 0 && (
@@ -253,7 +253,7 @@ function MaturationBadge({ barrel }: { barrel: { daysAged: number; canadianWhisk
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );
@@ -282,7 +282,7 @@ function FormField({
 }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
+      <label className="mb-2 block text-sm font-medium text-fg-muted">{label}</label>
       <input
         name={name}
         type={type}

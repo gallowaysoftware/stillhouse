@@ -34,7 +34,7 @@ export function ResetPasswordPage() {
         className="w-full max-w-sm space-y-5 rounded-xl border border-border bg-surface-2 p-8 shadow-card-dark"
       >
         <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-fg">
+          <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight tracking-tight text-fg">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
             Set a new password
           </h1>
@@ -45,7 +45,7 @@ export function ResetPasswordPage() {
           </p>
         )}
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-fg-muted">New password (12+ chars)</label>
+          <label className="block text-sm font-medium text-fg-muted">New password (12+ chars)</label>
           <input
             type="password"
             required
@@ -56,7 +56,7 @@ export function ResetPasswordPage() {
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-xs font-medium text-fg-muted">Confirm new password</label>
+          <label className="block text-sm font-medium text-fg-muted">Confirm new password</label>
           <input
             type="password"
             required

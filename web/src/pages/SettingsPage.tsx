@@ -73,27 +73,27 @@ export function SettingsPage() {
 
   return (
     <Shell>
-      <h1 className="mb-1 text-2xl font-semibold">Settings</h1>
+      <h1 className="mb-1 text-3xl font-bold tracking-tight">Settings</h1>
       <p className="mb-6 text-sm text-fg-muted">Tenant metadata — what shows in the sidebar and what gets stamped on records.</p>
 
       <form onSubmit={submit} className="mb-10 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <div className="col-span-2">
-          <h2 className="text-sm font-semibold uppercase text-fg-muted">Distillery</h2>
+          <h2 className="text-sm font-semibold text-fg-muted">Distillery</h2>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Distillery name</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Distillery name</label>
           <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">CRA spirits licence #</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">CRA spirits licence #</label>
           <input value={licence} onChange={(e) => setLicence(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Excise warehouse licence # (optional)</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Excise warehouse licence # (optional)</label>
           <input value={warehouse} onChange={(e) => setWarehouse(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Default jurisdiction (ISO 3166-2)</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Default jurisdiction (ISO 3166-2)</label>
           <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div className="col-span-2 flex items-center gap-3">
@@ -127,7 +127,7 @@ export function SettingsPage() {
 
       {isOwner && (
         <section className="mt-10">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Tenant data export</h2>
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">Tenant data export</h2>
           <div className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
             <p className="mb-3 text-sm text-fg">
               Download a zip containing one CSV per significant table — recipes through B266 history, plus the
@@ -251,18 +251,18 @@ function ChangePasswordPanel() {
   }
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Change my password</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Change my password</h2>
       <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Current password</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Current password</label>
           <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" autoComplete="current-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">New password (12+ chars)</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">New password (12+ chars)</label>
           <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-fg-muted">Confirm new password</label>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Confirm new password</label>
           <input value={confirm} onChange={(e) => setConfirm(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div className="col-span-3 flex items-center gap-3">
@@ -317,10 +317,10 @@ function UsersPanel({ isOwner, users, onCreated }: {
 
   return (
     <section>
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Users</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Users</h2>
       <div className="mb-6 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Display name</th>
               <th className="px-4 py-3">Email</th>
@@ -347,15 +347,15 @@ function UsersPanel({ isOwner, users, onCreated }: {
       ) : (
         <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Email</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Email</label>
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Display name</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Display name</label>
             <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Role</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Role</label>
             <select value={role} onChange={(e) => setRole(Number(e.target.value) as UserRole)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value={UserRole.OPERATOR}>Operator</option>
               <option value={UserRole.OWNER}>Owner</option>
@@ -422,7 +422,7 @@ function InvitesPanel() {
 
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Distillery invites</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Distillery invites</h2>
       <div className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <p className="mb-4 text-sm text-fg-muted">
           Generate a one-time code for someone to create their own distillery tenant on this Stillhouse install.
@@ -434,7 +434,7 @@ function InvitesPanel() {
           className="mb-4 flex flex-wrap items-end gap-3 border-b border-border pb-4"
         >
           <div className="flex-1 min-w-[12rem]">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Note (who's this for?)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Note (who's this for?)</label>
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -443,7 +443,7 @@ function InvitesPanel() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Expires in (days)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Expires in (days)</label>
             <input
               type="number"
               min="0"
@@ -483,7 +483,7 @@ function InvitesPanel() {
           </div>
         )}
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="text-left text-xs uppercase text-fg-muted">
+          <thead className="text-left text-xs text-fg-muted">
             <tr>
               <th className="px-2 py-2">Note</th>
               <th className="px-2 py-2">Code</th>

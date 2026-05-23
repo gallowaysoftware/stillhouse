@@ -35,7 +35,7 @@ export function LoginPage() {
       >
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-fg">
+            <h1 className="flex items-center gap-2 text-3xl font-bold tracking-tight tracking-tight text-fg">
               <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
               Stillhouse
             </h1>

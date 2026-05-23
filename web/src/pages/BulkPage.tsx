@@ -72,7 +72,7 @@ export function BulkPage() {
     <Shell>
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Bulk inventory</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Bulk inventory</h1>
           <p className="text-sm text-fg-muted">
             Tanks, IBCs, and other containers holding bulk spirits.
             {list.data?.summary && (
@@ -111,7 +111,7 @@ export function BulkPage() {
           className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Name</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Name</label>
             <input
               name="name"
               required
@@ -119,7 +119,7 @@ export function BulkPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Kind</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Kind</label>
             <select
               name="kind"
               defaultValue={BulkContainerKind.TANK}
@@ -131,15 +131,15 @@ export function BulkPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Capacity (L)</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Capacity (L)</label>
             <input name="capacity_l" type="number" step="0.1" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Location</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Location</label>
             <input name="location" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
             <input name="notes" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
@@ -163,7 +163,7 @@ export function BulkPage() {
 
       <div className="mb-8 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Kind</th>
@@ -200,10 +200,10 @@ export function BulkPage() {
         </table>
       </div>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Recent movements</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Recent movements</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Reason</th>
@@ -273,9 +273,9 @@ function BlendForm({
       onSubmit={submit}
       className="mb-6 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
     >
-      <h3 className="mb-3 text-sm font-semibold uppercase text-fg-muted">New blend</h3>
+      <h3 className="mb-3 text-sm font-semibold text-fg-muted">New blend</h3>
       <div className="mb-3">
-        <label className="mb-1 block text-xs font-medium text-fg-muted">Destination</label>
+        <label className="mb-2 block text-sm font-medium text-fg-muted">Destination</label>
         <select required value={destId} onChange={(e) => setDestId(e.target.value)}
           className="w-full rounded border border-border-strong px-3 py-2 text-sm">
           <option value="">Select destination tank…</option>
@@ -315,7 +315,7 @@ function BlendForm({
       <button type="button" onClick={() => setRows([...rows, { srcId: "", vol: "" }])}
         className="mt-2 text-xs text-fg-muted hover:text-fg">+ Add source</button>
       <div className="mt-3">
-        <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+        <label className="mb-2 block text-sm font-medium text-fg-muted">Notes</label>
         <input value={notes} onChange={(e) => setNotes(e.target.value)}
           className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
       </div>

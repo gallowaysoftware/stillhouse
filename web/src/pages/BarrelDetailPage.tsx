@@ -98,7 +98,7 @@ export function BarrelDetailPage() {
     <Shell>
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">{b.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{b.name}</h1>
           <p className="text-sm text-fg-muted">
             {b.cooperageSupplier || "Unknown cooperage"}
             {b.charLevelSet && <> · char #{b.charLevel}</>}
@@ -117,8 +117,8 @@ export function BarrelDetailPage() {
         <div className="text-right">
           {b.fillDate ? (
             <>
-              <p className="text-xs uppercase text-fg-muted">Aging</p>
-              <p className="text-2xl font-semibold text-fg">{b.daysAged} days</p>
+              <p className="text-xs text-fg-muted">Aging</p>
+              <p className="text-3xl font-bold tracking-tight text-fg">{b.daysAged} days</p>
               {b.canadianWhiskyEligible ? (
                 <p className="text-xs text-emerald-400">Canadian Whisky eligible</p>
               ) : b.smallWood ? (
@@ -130,8 +130,8 @@ export function BarrelDetailPage() {
             </>
           ) : b.daysAgedAtDumpSet ? (
             <>
-              <p className="text-xs uppercase text-fg-muted">Last filled for</p>
-              <p className="text-2xl font-semibold text-fg">{b.daysAgedAtDump} days</p>
+              <p className="text-xs text-fg-muted">Last filled for</p>
+              <p className="text-3xl font-bold tracking-tight text-fg">{b.daysAgedAtDump} days</p>
               <p className="text-xs text-fg-muted">currently empty</p>
             </>
           ) : (
@@ -175,10 +175,10 @@ export function BarrelDetailPage() {
         )}
       </section>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Event history</h2>
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Event history</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
-          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Event</th>
@@ -370,7 +370,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
       <header className="border-b border-border bg-surface-3 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
+        <h2 className="text-sm font-semibold text-fg-muted">{title}</h2>
       </header>
       {children}
     </div>
@@ -453,7 +453,7 @@ function Submit({ submitting, error, children }: { submitting: boolean; error: E
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );

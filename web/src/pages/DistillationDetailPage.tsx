@@ -96,16 +96,16 @@ export function DistillationDetailPage() {
     <Shell>
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Distillation #{r.runNo}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Distillation #{r.runNo}</h1>
           <p className="text-sm text-fg-muted">
             {r.runDate} · {r.stillLabel || "no still labelled"} · {distillationStatusLabel(r.status)}
           </p>
         </div>
         {r.gauge && (
           <div className="text-right">
-            <p className="text-xs uppercase text-fg-muted">Gauged into</p>
+            <p className="text-xs text-fg-muted">Gauged into</p>
             <p className="font-medium text-fg">{r.gauge.destinationContainerName}</p>
-            <p className="text-2xl font-semibold text-fg">{formatLAA(r.gauge.laa)} L LAA</p>
+            <p className="text-3xl font-bold tracking-tight text-fg">{formatLAA(r.gauge.laa)} L LAA</p>
           </div>
         )}
       </header>
@@ -147,7 +147,7 @@ export function DistillationDetailPage() {
       </section>
 
       <section className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Production gauge</h2>
+        <h2 className="mb-3 text-sm font-semibold text-fg-muted">Production gauge</h2>
         {r.gauge ? (
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <Row k="Destination">{r.gauge.destinationContainerName}</Row>
@@ -228,7 +228,7 @@ function ChargesPanel({
         {error && <span className="text-xs text-red-400">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
       </form>
       <table className="min-w-full divide-y divide-border text-sm">
-        <thead className="text-left text-xs uppercase text-fg-muted">
+        <thead className="text-left text-xs text-fg-muted">
           <tr>
             <th className="px-3 py-2">Order</th>
             <th className="px-3 py-2">Ferment</th>
@@ -337,7 +337,7 @@ function CutsPanel({
         {error && <span className="text-xs text-red-400">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
       </form>
       <table className="min-w-full divide-y divide-border text-sm">
-        <thead className="text-left text-xs uppercase text-fg-muted">
+        <thead className="text-left text-xs text-fg-muted">
           <tr>
             <th className="px-3 py-2">#</th>
             <th className="px-3 py-2">Kind</th>
@@ -480,7 +480,7 @@ function GaugeForm({
   return (
     <form onSubmit={submit} className="grid grid-cols-2 gap-3 text-sm">
       <div className="col-span-2">
-        <label className="mb-1 block text-xs font-medium text-fg-muted">Destination container</label>
+        <label className="mb-2 block text-sm font-medium text-fg-muted">Destination container</label>
         <select
           value={destID}
           onChange={(e) => setDestID(e.target.value)}
@@ -523,7 +523,7 @@ function Metric({
 }: { label: string; value: string; hint?: string; highlight?: boolean }) {
   return (
     <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
-      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="text-xs text-fg-muted">{label}</p>
       <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
       {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>
@@ -534,7 +534,7 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
       <header className="border-b border-border bg-surface-3 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
+        <h2 className="text-sm font-semibold text-fg-muted">{title}</h2>
       </header>
       <div className="overflow-x-auto">{children}</div>
     </div>
