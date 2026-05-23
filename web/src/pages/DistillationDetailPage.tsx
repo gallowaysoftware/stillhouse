@@ -12,6 +12,7 @@ import {
   DeleteDistillationCutRequestSchema,
   DistillationCutKind,
   RecordProductionGaugeRequestSchema,
+  UpdateDistillationCutRequestSchema,
 } from "@/gen/stillhouse/v1/distillation_pb";
 import {
   cutKindLabel,
@@ -65,6 +66,11 @@ export function DistillationDetailPage() {
   const deleteCut = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof DeleteDistillationCutRequestSchema>>) =>
       distillationClient.deleteDistillationCut(msg),
+    onSuccess: refresh,
+  });
+  const updateCut = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof UpdateDistillationCutRequestSchema>>) =>
+      distillationClient.updateDistillationCut(msg),
     onSuccess: refresh,
   });
   const recordGauge = useMutation({
@@ -134,6 +140,8 @@ export function DistillationDetailPage() {
           error={addCut.error}
           onDelete={(id) => deleteCut.mutate(create(DeleteDistillationCutRequestSchema, { id }))}
           deleting={deleteCut.isPending}
+          onUpdate={(m) => updateCut.mutate(m)}
+          updating={updateCut.isPending}
         />
       </section>
 
@@ -254,6 +262,8 @@ function CutsPanel({
   error,
   onDelete,
   deleting,
+  onUpdate,
+  updating,
 }: {
   run: ReturnType<typeof useDistillationRun>;
   onSubmit: (m: ReturnType<typeof create<typeof AddDistillationCutRequestSchema>>) => void;
@@ -261,7 +271,30 @@ function CutsPanel({
   error: Error | null;
   onDelete: (id: string) => void;
   deleting: boolean;
+  onUpdate: (m: ReturnType<typeof create<typeof UpdateDistillationCutRequestSchema>>) => void;
+  updating: boolean;
 }) {
+  // Track which cut id is currently being edited inline. Empty string = none.
+  const [editingId, setEditingId] = useState<string>("");
+  const [editKind, setEditKind] = useState("");
+  const [editVol, setEditVol] = useState("");
+  const [editAbv, setEditAbv] = useState("");
+  function startEdit(c: { id: string; kind: number; volumeL: number; abvPct: number; cutOrder: number }) {
+    setEditingId(c.id);
+    setEditKind(String(c.kind));
+    setEditVol(String(c.volumeL));
+    setEditAbv(String(c.abvPct));
+  }
+  function commitEdit(cutOrder: number) {
+    onUpdate(create(UpdateDistillationCutRequestSchema, {
+      id: editingId,
+      kind: Number(editKind) as DistillationCutKind,
+      volumeL: Number(editVol),
+      abvPct: Number(editAbv),
+      cutOrder,
+    }));
+    setEditingId("");
+  }
   const [kind, setKind] = useState(String(DistillationCutKind.HEARTS));
   const [vol, setVol] = useState("");
   const [abv, setAbv] = useState("");
@@ -316,26 +349,85 @@ function CutsPanel({
           {run.cuts.length === 0 && (
             <tr><td colSpan={6} className="px-3 py-2 text-fg-muted">No cuts yet.</td></tr>
           )}
-          {run.cuts.map((c) => (
-            <tr key={c.id}>
-              <td className="px-3 py-2 text-fg-muted">{c.cutOrder}</td>
-              <td className="px-3 py-2 text-fg">{cutKindLabel(c.kind)}</td>
-              <td className="px-3 py-2 text-right text-fg-muted">{formatQty(c.volumeL)}</td>
-              <td className="px-3 py-2 text-right text-fg-muted">{c.abvPct.toFixed(2)}%</td>
-              <td className="px-3 py-2 text-right text-fg-muted">{formatLAA(c.laa)}</td>
-              <td className="px-3 py-2 text-right">
-                <button
-                  onClick={() => {
-                    if (window.confirm(`Delete this ${cutKindLabel(c.kind)} cut?`)) onDelete(c.id);
-                  }}
-                  disabled={deleting}
-                  className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
+          {run.cuts.map((c) => {
+            const isEditing = editingId === c.id;
+            if (isEditing) {
+              return (
+                <tr key={c.id} className="bg-surface-3">
+                  <td className="px-3 py-2 text-fg-muted">{c.cutOrder}</td>
+                  <td className="px-3 py-2">
+                    <select
+                      value={editKind}
+                      onChange={(e) => setEditKind(e.target.value)}
+                      className="rounded border border-border-strong bg-surface px-2 py-1 text-sm text-fg"
+                    >
+                      {cutKindOptions.map((k) => (
+                        <option key={k.v} value={k.v}>{k.label}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <input
+                      type="number" step="0.01"
+                      value={editVol}
+                      onChange={(e) => setEditVol(e.target.value)}
+                      className="w-20 rounded border border-border-strong bg-surface px-2 py-1 text-right text-sm text-fg"
+                    />
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <input
+                      type="number" step="0.01"
+                      value={editAbv}
+                      onChange={(e) => setEditAbv(e.target.value)}
+                      className="w-20 rounded border border-border-strong bg-surface px-2 py-1 text-right text-sm text-fg"
+                    />
+                  </td>
+                  <td className="px-3 py-2 text-right text-fg-subtle">—</td>
+                  <td className="px-3 py-2 text-right space-x-2">
+                    <button
+                      onClick={() => commitEdit(c.cutOrder)}
+                      disabled={updating}
+                      className="text-xs text-accent-hover hover:text-accent disabled:opacity-50"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingId("")}
+                      className="text-xs text-fg-muted hover:text-fg"
+                    >
+                      Cancel
+                    </button>
+                  </td>
+                </tr>
+              );
+            }
+            return (
+              <tr key={c.id}>
+                <td className="px-3 py-2 text-fg-muted">{c.cutOrder}</td>
+                <td className="px-3 py-2 text-fg">{cutKindLabel(c.kind)}</td>
+                <td className="px-3 py-2 text-right text-fg-muted">{formatQty(c.volumeL)}</td>
+                <td className="px-3 py-2 text-right text-fg-muted">{c.abvPct.toFixed(2)}%</td>
+                <td className="px-3 py-2 text-right text-fg-muted">{formatLAA(c.laa)}</td>
+                <td className="px-3 py-2 text-right space-x-3">
+                  <button
+                    onClick={() => startEdit(c)}
+                    className="text-xs text-fg-muted hover:text-fg"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (window.confirm(`Delete this ${cutKindLabel(c.kind)} cut?`)) onDelete(c.id);
+                    }}
+                    disabled={deleting}
+                    className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </Panel>
