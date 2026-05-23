@@ -1,0 +1,4 @@
+# Per-run artefacts: primer, discovery map, test plan, probe findings,
+# qa-report.md. These are reproducible from a vibe daemon + the QA
+# binary, so we don't track them in git.
+runs/
