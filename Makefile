@@ -7,6 +7,14 @@ SHELL := /usr/bin/env bash
 CONTAINER       ?= $(shell command -v podman 2>/dev/null || echo docker)
 COMPOSE         ?= $(CONTAINER) compose -f deploy/compose.yaml
 
+# ----- Image build / push -----------------------------------------------------
+# Override REGISTRY / IMAGE_NAME to push elsewhere. Tag defaults to the short
+# git SHA so every push is content-addressable; :latest is updated alongside.
+REGISTRY        ?= registry.home.thegalloways.ca
+IMAGE_NAME      ?= stillhouse
+IMAGE_TAG       ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
+IMAGE           := $(REGISTRY)/$(IMAGE_NAME)
+
 # Two DSNs:
 #   PG_ADMIN_DSN — superuser; runs migrations + seed. Bypasses RLS.
 #   PG_APP_DSN   — non-superuser; the Go server connects with this so the
@@ -112,6 +120,27 @@ fmt: ## Format code.
 	cd backend && go fmt ./...
 	cd proto && buf format -w
 
+# ----- Container image --------------------------------------------------------
+
+image: ## Build the production container image. Tags :latest and :$(IMAGE_TAG).
+	$(CONTAINER) build \
+	    -f deploy/Dockerfile \
+	    -t $(IMAGE):$(IMAGE_TAG) \
+	    -t $(IMAGE):latest \
+	    .
+
+push: ## Push the production image to $(REGISTRY). Pushes both :latest and :$(IMAGE_TAG).
+	$(CONTAINER) push $(IMAGE):$(IMAGE_TAG)
+	$(CONTAINER) push $(IMAGE):latest
+
+image-push: image push ## Build and push in one step.
+
+image-info: ## Print the image coordinates that would be built / pushed.
+	@echo "REGISTRY  = $(REGISTRY)"
+	@echo "IMAGE     = $(IMAGE)"
+	@echo "IMAGE_TAG = $(IMAGE_TAG)"
+
 .PHONY: help tools generate buf-generate sqlc-generate dev-up dev-down dev-logs \
 	migrate-up migrate-down migrate-new migrate-force seed backend-dev web-dev \
-	build build-web build-backend test lint fmt
+	build build-web build-backend test lint fmt \
+	image push image-push image-info
