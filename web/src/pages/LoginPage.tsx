@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
@@ -106,6 +106,15 @@ export function LoginPage() {
         >
           {login.isPending ? t("Signing in…", "Connexion…") : t("Sign in", "Se connecter")}
         </button>
+
+        <div className="flex justify-between text-xs text-fg-subtle">
+          <Link to="/forgot-password" className="hover:text-fg">
+            {t("Forgot password?", "Mot de passe oublié ?")}
+          </Link>
+          <Link to="/signup" className="hover:text-fg">
+            {t("Have an invite code?", "Vous avez un code d'invitation ?")}
+          </Link>
+        </div>
       </form>
     </div>
   );

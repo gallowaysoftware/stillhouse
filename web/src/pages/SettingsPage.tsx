@@ -4,7 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
-import { tenantClient, userClient } from "@/lib/clients";
+import { inviteClient, tenantClient, userClient } from "@/lib/clients";
 import { UpdateTenantRequestSchema } from "@/gen/stillhouse/v1/tenant_pb";
 import { ChangeMyPasswordRequestSchema, CreateUserRequestSchema, UserRole } from "@/gen/stillhouse/v1/user_pb";
 
@@ -121,6 +121,8 @@ export function SettingsPage() {
         users={users.data?.users ?? []}
         onCreated={() => qc.invalidateQueries({ queryKey: ["listUsers"] })}
       />
+
+      {isOwner && <InvitesPanel />}
 
       {isOwner && (
         <section className="mt-10">
@@ -305,6 +307,155 @@ function UsersPanel({ isOwner, users, onCreated }: {
           )}
         </form>
       )}
+    </section>
+  );
+}
+
+// InvitesPanel — owner-only. Generate codes to hand out to prospective
+// distillery owners. Each redemption creates a brand new tenant; the
+// invite tracks the redeemed_email + tenant_id afterward for attribution.
+function InvitesPanel() {
+  const qc = useQueryClient();
+  const list = useQuery({
+    queryKey: ["listMyInviteCodes"],
+    queryFn: () => inviteClient.listMyInviteCodes({}),
+  });
+  const [note, setNote] = useState("");
+  const [expiresInDays, setExpiresInDays] = useState("30");
+  const [justCreated, setJustCreated] = useState<string | null>(null);
+
+  const createInvite = useMutation({
+    mutationFn: () => inviteClient.createInviteCode({ note, expiresInDays: Number(expiresInDays) || 0 }),
+    onSuccess: (resp) => {
+      setJustCreated(resp.invite?.code ?? null);
+      setNote("");
+      qc.invalidateQueries({ queryKey: ["listMyInviteCodes"] });
+    },
+  });
+  const revoke = useMutation({
+    mutationFn: (code: string) => inviteClient.revokeInviteCode({ code }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["listMyInviteCodes"] }),
+  });
+
+  function copySignupURL(code: string) {
+    const url = `${window.location.origin}/signup?code=${encodeURIComponent(code)}`;
+    void navigator.clipboard.writeText(url);
+  }
+
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Distillery invites</h2>
+      <div className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+        <p className="mb-4 text-sm text-fg-muted">
+          Generate a one-time code for someone to create their own distillery tenant on this Stillhouse install.
+          They'll get a signup URL pre-filled with the code; redeeming it creates their tenant + their owner login
+          and uses up the code.
+        </p>
+        <form
+          onSubmit={(e) => { e.preventDefault(); createInvite.mutate(); }}
+          className="mb-4 flex flex-wrap items-end gap-3 border-b border-border pb-4"
+        >
+          <div className="flex-1 min-w-[12rem]">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Note (who's this for?)</label>
+            <input
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="ACME Distillery"
+              className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Expires in (days)</label>
+            <input
+              type="number"
+              min="0"
+              value={expiresInDays}
+              onChange={(e) => setExpiresInDays(e.target.value)}
+              className="w-24 rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={createInvite.isPending}
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
+          >
+            {createInvite.isPending ? "Generating…" : "Generate code"}
+          </button>
+          {createInvite.error && (
+            <span className="text-sm text-red-400">
+              {createInvite.error instanceof ConnectError ? createInvite.error.rawMessage : String(createInvite.error)}
+            </span>
+          )}
+        </form>
+        {justCreated && (
+          <div className="mb-4 rounded border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm text-emerald-300">
+            <p className="font-medium">New invite ready.</p>
+            <p className="mt-1">
+              Share this signup URL with the recipient — it expires after one redemption.
+            </p>
+            <p className="mt-2 break-all rounded bg-surface px-2 py-1 font-mono text-xs text-fg">
+              {window.location.origin}/signup?code={justCreated}
+            </p>
+            <button
+              onClick={() => copySignupURL(justCreated)}
+              className="mt-2 text-xs text-fg-muted hover:text-fg"
+            >
+              Copy URL to clipboard
+            </button>
+          </div>
+        )}
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="text-left text-xs uppercase text-fg-muted">
+            <tr>
+              <th className="px-2 py-2">Note</th>
+              <th className="px-2 py-2">Code</th>
+              <th className="px-2 py-2">Status</th>
+              <th className="px-2 py-2 text-right"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {list.data?.invites.length === 0 && (
+              <tr><td colSpan={4} className="px-2 py-3 text-fg-muted">No invites yet.</td></tr>
+            )}
+            {list.data?.invites.map((i) => {
+              const status = i.redeemedAt
+                ? `Redeemed by ${i.redeemedEmail}`
+                : i.revokedAt
+                  ? "Revoked"
+                  : i.expiresAt && Number(i.expiresAt.seconds) * 1000 < Date.now()
+                    ? "Expired"
+                    : "Active";
+              const active = !i.redeemedAt && !i.revokedAt && (!i.expiresAt || Number(i.expiresAt.seconds) * 1000 > Date.now());
+              return (
+                <tr key={i.code}>
+                  <td className="px-2 py-2 text-fg">{i.note || <span className="text-fg-subtle">—</span>}</td>
+                  <td className="px-2 py-2 font-mono text-xs text-fg-muted">{i.code.slice(0, 12)}…</td>
+                  <td className="px-2 py-2 text-fg-muted">{status}</td>
+                  <td className="px-2 py-2 text-right">
+                    {active && (
+                      <>
+                        <button
+                          onClick={() => copySignupURL(i.code)}
+                          className="mr-3 text-xs text-fg-muted hover:text-fg"
+                        >
+                          Copy URL
+                        </button>
+                        <button
+                          onClick={() => revoke.mutate(i.code)}
+                          disabled={revoke.isPending}
+                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
+                        >
+                          Revoke
+                        </button>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }

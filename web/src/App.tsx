@@ -12,8 +12,11 @@ import { DistillationDetailPage } from "./pages/DistillationDetailPage";
 import { DistillationsPage } from "./pages/DistillationsPage";
 import { FermentationDetailPage } from "./pages/FermentationDetailPage";
 import { FermentationsPage } from "./pages/FermentationsPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { SignupPage } from "./pages/SignupPage";
 import { MashDetailPage } from "./pages/MashDetailPage";
 import { MashesPage } from "./pages/MashesPage";
 import { MaterialDetailPage } from "./pages/MaterialDetailPage";
@@ -35,6 +38,9 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/" element={<Guarded><HomePage /></Guarded>} />
       <Route path="/materials" element={<Guarded><MaterialsPage /></Guarded>} />
       <Route path="/materials/:id" element={<Guarded><MaterialDetailPage /></Guarded>} />
