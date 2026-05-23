@@ -5,23 +5,50 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authClient, userClient } from "@/lib/clients";
 import { setLang, useLang, useT } from "@/lib/i18n";
 
-const navItemKeys: { to: string; en: string; fr: string }[] = [
-  { to: "/", en: "Dashboard", fr: "Tableau de bord" },
-  { to: "/materials", en: "Materials", fr: "Matières premières" },
-  { to: "/recipes", en: "Recipes", fr: "Recettes" },
-  { to: "/mashes", en: "Mashes", fr: "Brassins" },
-  { to: "/fermentations", en: "Fermentations", fr: "Fermentations" },
-  { to: "/distillations", en: "Distillations", fr: "Distillations" },
-  { to: "/bulk", en: "Bulk inventory", fr: "Inventaire en vrac" },
-  { to: "/barrels", en: "Barrels", fr: "Fûts" },
-  { to: "/products", en: "Products", fr: "Produits" },
-  { to: "/stamps", en: "Excise stamps", fr: "Timbres d'accise" },
-  { to: "/bottling", en: "Bottling", fr: "Embouteillage" },
-  { to: "/removals", en: "Removals", fr: "Sorties" },
-  { to: "/b266", en: "B266 returns", fr: "Déclarations B266" },
-  { to: "/audit", en: "Audit log", fr: "Journal d'audit" },
-  { to: "/pricing", en: "Provincial pricing", fr: "Prix provincial" },
-  { to: "/settings", en: "Settings", fr: "Paramètres" },
+type NavItem = { to: string; en: string; fr: string };
+type NavGroup = { en: string; fr: string; items: NavItem[] };
+
+// Groups follow the production timeline an operator actually walks:
+// Setup (config you touch rarely) → Production (the daily flow from
+// material to barrel to bottle) → Compliance (the reports you owe CRA
+// at month-end). Putting "Dashboard" outside any group keeps the home
+// link prominent at the top.
+const homeItem: NavItem = { to: "/", en: "Dashboard", fr: "Tableau de bord" };
+
+const navGroups: NavGroup[] = [
+  {
+    en: "Setup",
+    fr: "Configuration",
+    items: [
+      { to: "/materials", en: "Materials", fr: "Matières premières" },
+      { to: "/recipes", en: "Recipes", fr: "Recettes" },
+      { to: "/products", en: "Products", fr: "Produits" },
+      { to: "/stamps", en: "Excise stamps", fr: "Timbres d'accise" },
+      { to: "/pricing", en: "Provincial pricing", fr: "Prix provincial" },
+    ],
+  },
+  {
+    en: "Production",
+    fr: "Production",
+    items: [
+      { to: "/mashes", en: "Mashes", fr: "Brassins" },
+      { to: "/fermentations", en: "Fermentations", fr: "Fermentations" },
+      { to: "/distillations", en: "Distillations", fr: "Distillations" },
+      { to: "/bulk", en: "Bulk inventory", fr: "Inventaire en vrac" },
+      { to: "/barrels", en: "Barrels", fr: "Fûts" },
+      { to: "/bottling", en: "Bottling", fr: "Embouteillage" },
+      { to: "/removals", en: "Removals", fr: "Sorties" },
+    ],
+  },
+  {
+    en: "Compliance",
+    fr: "Conformité",
+    items: [
+      { to: "/b266", en: "B266 returns", fr: "Déclarations B266" },
+      { to: "/audit", en: "Audit log", fr: "Journal d'audit" },
+      { to: "/settings", en: "Settings", fr: "Paramètres" },
+    ],
+  },
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
@@ -64,21 +91,16 @@ export function Shell({ children }: { children: ReactNode }) {
         )}
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-3">
-        {navItemKeys.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            className={({ isActive }) =>
-              `mb-0.5 block rounded-md px-3 py-1.5 text-sm transition-colors ${
-                isActive
-                  ? "bg-accent/15 text-accent-hover font-medium"
-                  : "text-fg-muted hover:bg-surface-3 hover:text-fg"
-              }`
-            }
-          >
-            {t(item.en, item.fr)}
-          </NavLink>
+        <NavItemLink item={homeItem} t={t} />
+        {navGroups.map((group) => (
+          <div key={group.en} className="mt-4">
+            <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-fg-subtle">
+              {t(group.en, group.fr)}
+            </p>
+            {group.items.map((item) => (
+              <NavItemLink key={item.to} item={item} t={t} />
+            ))}
+          </div>
         ))}
       </nav>
       <div className="border-t border-border px-4 py-4 text-xs text-fg-muted">
@@ -180,5 +202,23 @@ export function Shell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl px-4 pt-20 pb-10 md:px-8 md:pt-10">{children}</div>
       </main>
     </div>
+  );
+}
+
+function NavItemLink({ item, t }: { item: NavItem; t: (en: string, fr: string) => string }) {
+  return (
+    <NavLink
+      to={item.to}
+      end={item.to === "/"}
+      className={({ isActive }) =>
+        `mb-0.5 block rounded-md px-3 py-1.5 text-sm transition-colors ${
+          isActive
+            ? "bg-accent/15 text-accent-hover font-medium"
+            : "text-fg-muted hover:bg-surface-3 hover:text-fg"
+        }`
+      }
+    >
+      {t(item.en, item.fr)}
+    </NavLink>
   );
 }
