@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { LockedPeriodHint } from "@/components/LockedPeriodHint";
 import { Shell } from "@/components/Shell";
 import { bottlingClient, removalClient } from "@/lib/clients";
 import {
@@ -158,6 +159,7 @@ export function RemovalsPage() {
           <div>
             <label className="mb-2 block text-sm font-medium text-fg-muted">Removal date</label>
             <input type="date" value={removalDate} onChange={(e) => setRemovalDate(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
+            <LockedPeriodHint date={removalDate} />
           </div>
           <div>
             <label className="mb-2 block text-sm font-medium text-fg-muted">Destination kind</label>
