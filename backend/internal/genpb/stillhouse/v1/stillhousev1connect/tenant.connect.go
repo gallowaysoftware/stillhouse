@@ -44,6 +44,9 @@ const (
 	// TenantServiceUpdateTenantProcedure is the fully-qualified name of the TenantService's
 	// UpdateTenant RPC.
 	TenantServiceUpdateTenantProcedure = "/stillhouse.v1.TenantService/UpdateTenant"
+	// TenantServiceDeleteMyTenantProcedure is the fully-qualified name of the TenantService's
+	// DeleteMyTenant RPC.
+	TenantServiceDeleteMyTenantProcedure = "/stillhouse.v1.TenantService/DeleteMyTenant"
 )
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
@@ -51,6 +54,7 @@ type TenantServiceClient interface {
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
 	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
+	DeleteMyTenant(context.Context, *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error)
 }
 
 // NewTenantServiceClient constructs a client for the stillhouse.v1.TenantService service. By
@@ -82,14 +86,21 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(tenantServiceMethods.ByName("UpdateTenant")),
 			connect.WithClientOptions(opts...),
 		),
+		deleteMyTenant: connect.NewClient[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse](
+			httpClient,
+			baseURL+TenantServiceDeleteMyTenantProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("DeleteMyTenant")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // tenantServiceClient implements TenantServiceClient.
 type tenantServiceClient struct {
-	createTenant *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
-	getTenant    *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
-	updateTenant *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
+	createTenant   *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
+	getTenant      *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
+	updateTenant   *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
+	deleteMyTenant *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
 }
 
 // CreateTenant calls stillhouse.v1.TenantService.CreateTenant.
@@ -107,11 +118,17 @@ func (c *tenantServiceClient) UpdateTenant(ctx context.Context, req *connect.Req
 	return c.updateTenant.CallUnary(ctx, req)
 }
 
+// DeleteMyTenant calls stillhouse.v1.TenantService.DeleteMyTenant.
+func (c *tenantServiceClient) DeleteMyTenant(ctx context.Context, req *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error) {
+	return c.deleteMyTenant.CallUnary(ctx, req)
+}
+
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
 	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
+	DeleteMyTenant(context.Context, *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error)
 }
 
 // NewTenantServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -139,6 +156,12 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(tenantServiceMethods.ByName("UpdateTenant")),
 		connect.WithHandlerOptions(opts...),
 	)
+	tenantServiceDeleteMyTenantHandler := connect.NewUnaryHandler(
+		TenantServiceDeleteMyTenantProcedure,
+		svc.DeleteMyTenant,
+		connect.WithSchema(tenantServiceMethods.ByName("DeleteMyTenant")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TenantServiceCreateTenantProcedure:
@@ -147,6 +170,8 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 			tenantServiceGetTenantHandler.ServeHTTP(w, r)
 		case TenantServiceUpdateTenantProcedure:
 			tenantServiceUpdateTenantHandler.ServeHTTP(w, r)
+		case TenantServiceDeleteMyTenantProcedure:
+			tenantServiceDeleteMyTenantHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -166,4 +191,8 @@ func (UnimplementedTenantServiceHandler) GetTenant(context.Context, *connect.Req
 
 func (UnimplementedTenantServiceHandler) UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.UpdateTenant is not implemented"))
+}
+
+func (UnimplementedTenantServiceHandler) DeleteMyTenant(context.Context, *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.DeleteMyTenant is not implemented"))
 }

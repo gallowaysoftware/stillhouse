@@ -44,10 +44,23 @@ message UpdateTenantRequest {
 }
 message UpdateTenantResponse { Tenant tenant = 1; }
 
+// DeleteMyTenant — owner-only, hard-deletes the caller's tenant and every
+// row that cascades from it (users, recipes, mashes, ferments, distillations,
+// barrels, bulk, bottling, removals, B266 history, audit_events, invite
+// codes redeemed by this tenant, etc). Irreversible.
+//
+// Caller must retype the tenant name as a confirmation, mirroring the
+// GitHub / Stripe pattern for destructive account actions.
+message DeleteMyTenantRequest {
+  string confirm_name = 1;
+}
+message DeleteMyTenantResponse {}
+
 // TenantService manages tenant metadata.
 // CreateTenant is the bootstrap operation for a fresh self-hosted install.
 service TenantService {
   rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse);
   rpc GetTenant(GetTenantRequest) returns (GetTenantResponse);
   rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse);
+  rpc DeleteMyTenant(DeleteMyTenantRequest) returns (DeleteMyTenantResponse);
 }

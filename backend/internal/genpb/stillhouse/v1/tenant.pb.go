@@ -438,6 +438,93 @@ func (x *UpdateTenantResponse) GetTenant() *Tenant {
 	return nil
 }
 
+// DeleteMyTenant — owner-only, hard-deletes the caller's tenant and every
+// row that cascades from it (users, recipes, mashes, ferments, distillations,
+// barrels, bulk, bottling, removals, B266 history, audit_events, invite
+// codes redeemed by this tenant, etc). Irreversible.
+//
+// Caller must retype the tenant name as a confirmation, mirroring the
+// GitHub / Stripe pattern for destructive account actions.
+type DeleteMyTenantRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ConfirmName   string                 `protobuf:"bytes,1,opt,name=confirm_name,json=confirmName,proto3" json:"confirm_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteMyTenantRequest) Reset() {
+	*x = DeleteMyTenantRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteMyTenantRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMyTenantRequest) ProtoMessage() {}
+
+func (x *DeleteMyTenantRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMyTenantRequest.ProtoReflect.Descriptor instead.
+func (*DeleteMyTenantRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DeleteMyTenantRequest) GetConfirmName() string {
+	if x != nil {
+		return x.ConfirmName
+	}
+	return ""
+}
+
+type DeleteMyTenantResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteMyTenantResponse) Reset() {
+	*x = DeleteMyTenantResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteMyTenantResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMyTenantResponse) ProtoMessage() {}
+
+func (x *DeleteMyTenantResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMyTenantResponse.ProtoReflect.Descriptor instead.
+func (*DeleteMyTenantResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{8}
+}
+
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
@@ -472,11 +559,15 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x1fexcise_warehouse_licence_number\x18\x03 \x01(\tR\x1cexciseWarehouseLicenceNumber\x121\n" +
 	"\x14default_jurisdiction\x18\x04 \x01(\tR\x13defaultJurisdiction\"E\n" +
 	"\x14UpdateTenantResponse\x12-\n" +
-	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant2\x91\x02\n" +
+	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\":\n" +
+	"\x15DeleteMyTenantRequest\x12!\n" +
+	"\fconfirm_name\x18\x01 \x01(\tR\vconfirmName\"\x18\n" +
+	"\x16DeleteMyTenantResponse2\xf0\x02\n" +
 	"\rTenantService\x12W\n" +
 	"\fCreateTenant\x12\".stillhouse.v1.CreateTenantRequest\x1a#.stillhouse.v1.CreateTenantResponse\x12N\n" +
 	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
-	"\fUpdateTenant\x12\".stillhouse.v1.UpdateTenantRequest\x1a#.stillhouse.v1.UpdateTenantResponseB\xcf\x01\n" +
+	"\fUpdateTenant\x12\".stillhouse.v1.UpdateTenantRequest\x1a#.stillhouse.v1.UpdateTenantResponse\x12]\n" +
+	"\x0eDeleteMyTenant\x12$.stillhouse.v1.DeleteMyTenantRequest\x1a%.stillhouse.v1.DeleteMyTenantResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vTenantProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -491,31 +582,35 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_tenant_proto_rawDescData
 }
 
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
-	(*Tenant)(nil),                // 0: stillhouse.v1.Tenant
-	(*CreateTenantRequest)(nil),   // 1: stillhouse.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),  // 2: stillhouse.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),      // 3: stillhouse.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),     // 4: stillhouse.v1.GetTenantResponse
-	(*UpdateTenantRequest)(nil),   // 5: stillhouse.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),  // 6: stillhouse.v1.UpdateTenantResponse
-	(*timestamppb.Timestamp)(nil), // 7: google.protobuf.Timestamp
+	(*Tenant)(nil),                 // 0: stillhouse.v1.Tenant
+	(*CreateTenantRequest)(nil),    // 1: stillhouse.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),   // 2: stillhouse.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),       // 3: stillhouse.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),      // 4: stillhouse.v1.GetTenantResponse
+	(*UpdateTenantRequest)(nil),    // 5: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),   // 6: stillhouse.v1.UpdateTenantResponse
+	(*DeleteMyTenantRequest)(nil),  // 7: stillhouse.v1.DeleteMyTenantRequest
+	(*DeleteMyTenantResponse)(nil), // 8: stillhouse.v1.DeleteMyTenantResponse
+	(*timestamppb.Timestamp)(nil),  // 9: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	7, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	7, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	9, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	9, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0, // 2: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	0, // 3: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	0, // 4: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	1, // 5: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
 	3, // 6: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
 	5, // 7: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	2, // 8: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	4, // 9: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	6, // 10: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	8, // [8:11] is the sub-list for method output_type
-	5, // [5:8] is the sub-list for method input_type
+	7, // 8: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	2, // 9: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	4, // 10: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	6, // 11: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	8, // 12: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	9, // [9:13] is the sub-list for method output_type
+	5, // [5:9] is the sub-list for method input_type
 	5, // [5:5] is the sub-list for extension type_name
 	5, // [5:5] is the sub-list for extension extendee
 	0, // [0:5] is the sub-list for field type_name
@@ -532,7 +627,7 @@ func file_stillhouse_v1_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -77,6 +77,11 @@ type Querier interface {
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
+	// Hard delete — every FK to tenants is ON DELETE CASCADE so this wipes
+	// the entire tenant footprint (users, recipes, mashes, ferments,
+	// distillations, barrels, bulk, bottling, removals, B266 history,
+	// audit_events, etc) in one go.
+	DeleteTenant(ctx context.Context, id uuid.UUID) error
 	// Pull the distillation run + every charge → ferment → mash → recipe
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.

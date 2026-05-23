@@ -1,4 +1,5 @@
 import { FormEvent, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
@@ -143,7 +144,84 @@ export function SettingsPage() {
       )}
 
       <ChangePasswordPanel />
+
+      {isOwner && <DangerZone tenantName={me.data?.tenant?.name ?? ""} />}
     </Shell>
+  );
+}
+
+// DangerZone — irreversible owner actions live here, visually quarantined.
+// Currently just delete-my-tenant; account-deletion is hard delete (every
+// FK to tenants cascades). Type-the-name confirmation matches the GitHub /
+// Stripe pattern for destructive operations.
+function DangerZone({ tenantName }: { tenantName: string }) {
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const [confirm, setConfirm] = useState("");
+  const [open, setOpen] = useState(false);
+  const del = useMutation({
+    mutationFn: () => tenantClient.deleteMyTenant({ confirmName: confirm }),
+    onSuccess: async () => {
+      // Tenant + session both gone server-side; clear local state and
+      // bounce to the login screen with a "tenant deleted" note.
+      qc.clear();
+      navigate("/login?deleted=1", { replace: true });
+    },
+  });
+
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-red-400">Danger zone</h2>
+      <div className="rounded-lg border border-red-500/40 bg-red-500/5 p-5">
+        <h3 className="text-sm font-semibold text-fg">Delete this distillery</h3>
+        <p className="mt-1 text-sm text-fg-muted">
+          Wipes every record under <span className="font-medium text-fg">{tenantName}</span> —
+          users, materials, recipes, mashes, ferments, distillations, barrels, bulk movements,
+          bottling runs, removals, B266 history, audit log. Cannot be undone. Export your data
+          first if you want a copy.
+        </p>
+        {!open ? (
+          <button
+            onClick={() => setOpen(true)}
+            className="mt-4 rounded border border-red-500/40 px-3 py-2 text-sm font-medium text-red-400 hover:bg-red-500/10"
+          >
+            Delete tenant…
+          </button>
+        ) : (
+          <div className="mt-4 space-y-3 rounded border border-red-500/40 bg-surface-2 p-4">
+            <p className="text-sm text-fg">
+              Retype <span className="font-mono text-red-400">{tenantName}</span> below to confirm.
+            </p>
+            <input
+              autoFocus
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
+            />
+            {del.error && (
+              <p className="text-sm text-red-400">
+                {del.error instanceof ConnectError ? del.error.rawMessage : String(del.error)}
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => del.mutate()}
+                disabled={confirm !== tenantName || del.isPending}
+                className="rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+              >
+                {del.isPending ? "Deleting…" : "I understand, delete it"}
+              </button>
+              <button
+                onClick={() => { setOpen(false); setConfirm(""); }}
+                className="rounded border border-border-strong px-3 py-2 text-sm text-fg hover:bg-surface-3"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 

@@ -140,3 +140,40 @@ func (s *TenantService) UpdateTenant(
 		Tenant: tenantToProto(t),
 	}), nil
 }
+
+// DeleteMyTenant hard-deletes the caller's tenant. Owner-only; requires
+// the caller to retype the tenant name as a confirmation. Cascading FKs
+// wipe every dependent row.
+func (s *TenantService) DeleteMyTenant(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteMyTenantRequest],
+) (*connect.Response[stillhousev1.DeleteMyTenantResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	if u.Role != sqlcgen.UserRoleOwner {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("owner role required"))
+	}
+	t, err := s.q.GetTenantByID(ctx, u.TenantID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("tenant not found"))
+		}
+		s.logger.Error("DeleteMyTenant: lookup", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if req.Msg.GetConfirmName() != t.Name {
+		return nil, connect.NewError(connect.CodeFailedPrecondition,
+			errors.New("confirm_name must exactly match the tenant name"))
+	}
+	if err := s.q.DeleteTenant(ctx, u.TenantID); err != nil {
+		s.logger.Error("DeleteMyTenant: delete", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	s.logger.Warn("tenant deleted",
+		"tenant_id", u.TenantID.String(),
+		"tenant_name", t.Name,
+		"by_user", u.ID.String())
+	return connect.NewResponse(&stillhousev1.DeleteMyTenantResponse{}), nil
+}

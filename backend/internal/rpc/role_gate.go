@@ -122,8 +122,10 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,
 
 	// TenantService — UpdateTenant changes the CRA licence on file, owner only.
-	"/stillhouse.v1.TenantService/GetTenant":    roleViewer,
-	"/stillhouse.v1.TenantService/UpdateTenant": roleOwner,
+	// DeleteMyTenant is destructive and owner-only.
+	"/stillhouse.v1.TenantService/GetTenant":      roleViewer,
+	"/stillhouse.v1.TenantService/UpdateTenant":   roleOwner,
+	"/stillhouse.v1.TenantService/DeleteMyTenant": roleOwner,
 
 	// TraceabilityService
 	"/stillhouse.v1.TraceabilityService/TraceBottlingRun": roleViewer,

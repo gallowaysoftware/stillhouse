@@ -58,6 +58,19 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 	return i, err
 }
 
+const deleteTenant = `-- name: DeleteTenant :exec
+DELETE FROM tenants WHERE id = $1
+`
+
+// Hard delete — every FK to tenants is ON DELETE CASCADE so this wipes
+// the entire tenant footprint (users, recipes, mashes, ferments,
+// distillations, barrels, bulk, bottling, removals, B266 history,
+// audit_events, etc) in one go.
+func (q *Queries) DeleteTenant(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteTenant, id)
+	return err
+}
+
 const getTenantByID = `-- name: GetTenantByID :one
 SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at FROM tenants WHERE id = $1
 `
