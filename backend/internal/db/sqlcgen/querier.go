@@ -65,6 +65,7 @@ type Querier interface {
 	DecrementPackagedInventoryByRun(ctx context.Context, arg DecrementPackagedInventoryByRunParams) (PackagedInventory, error)
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
+	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
 	// Pull the distillation run + every charge → ferment → mash → recipe
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
@@ -74,6 +75,7 @@ type Querier interface {
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
 	GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error)
 	GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error)
+	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
@@ -171,6 +173,7 @@ type Querier interface {
 	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	UpdateBulkContainer(ctx context.Context, arg UpdateBulkContainerParams) (BulkContainer, error)
 	UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulkContainerBalanceParams) (BulkContainer, error)
+	UpdateDistillationCut(ctx context.Context, arg UpdateDistillationCutParams) (DistillationCut, error)
 	UpdateDistillationStatus(ctx context.Context, arg UpdateDistillationStatusParams) (DistillationRun, error)
 	UpdateFermentationStatus(ctx context.Context, arg UpdateFermentationStatusParams) (FermentationRun, error)
 	UpdateMashStatus(ctx context.Context, arg UpdateMashStatusParams) (MashRun, error)

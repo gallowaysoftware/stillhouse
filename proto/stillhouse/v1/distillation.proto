@@ -125,6 +125,20 @@ message AddDistillationCutRequest {
 }
 message AddDistillationCutResponse { DistillationCut cut = 1; }
 
+message UpdateDistillationCutRequest {
+  string id = 1;
+  DistillationCutKind kind = 2;
+  double volume_l = 3;
+  double abv_pct = 4;
+  int32  cut_order = 5;
+  google.protobuf.Timestamp observed_at = 6;
+  string notes = 7;
+}
+message UpdateDistillationCutResponse { DistillationCut cut = 1; }
+
+message DeleteDistillationCutRequest { string id = 1; }
+message DeleteDistillationCutResponse {}
+
 message RecordProductionGaugeRequest {
   string distillation_run_id = 1;
   string destination_container_id = 2;
@@ -155,4 +169,6 @@ service DistillationService {
   rpc AddDistillationCut(AddDistillationCutRequest) returns (AddDistillationCutResponse);
   rpc RecordProductionGauge(RecordProductionGaugeRequest) returns (RecordProductionGaugeResponse);
   rpc VoidDistillationRun(VoidDistillationRunRequest) returns (VoidDistillationRunResponse);
+  rpc UpdateDistillationCut(UpdateDistillationCutRequest) returns (UpdateDistillationCutResponse);
+  rpc DeleteDistillationCut(DeleteDistillationCutRequest) returns (DeleteDistillationCutResponse);
 }

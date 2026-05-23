@@ -49,6 +49,23 @@ SELECT * FROM distillation_cuts
 WHERE distillation_run_id = $1
 ORDER BY cut_order, observed_at;
 
+-- name: GetDistillationCut :one
+SELECT * FROM distillation_cuts WHERE id = $1;
+
+-- name: UpdateDistillationCut :one
+UPDATE distillation_cuts
+SET kind        = $2,
+    volume_l    = $3,
+    abv_pct     = $4,
+    cut_order   = $5,
+    observed_at = $6,
+    notes       = $7
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteDistillationCut :exec
+DELETE FROM distillation_cuts WHERE id = $1;
+
 -- name: CreateProductionGauge :one
 INSERT INTO production_gauges (
     tenant_id, distillation_run_id, destination_container_id, bulk_movement_id,

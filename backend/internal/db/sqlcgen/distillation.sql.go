@@ -200,6 +200,37 @@ func (q *Queries) CreateProductionGauge(ctx context.Context, arg CreateProductio
 	return i, err
 }
 
+const deleteDistillationCut = `-- name: DeleteDistillationCut :exec
+DELETE FROM distillation_cuts WHERE id = $1
+`
+
+func (q *Queries) DeleteDistillationCut(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteDistillationCut, id)
+	return err
+}
+
+const getDistillationCut = `-- name: GetDistillationCut :one
+SELECT id, tenant_id, distillation_run_id, kind, volume_l, abv_pct, laa, cut_order, observed_at, notes FROM distillation_cuts WHERE id = $1
+`
+
+func (q *Queries) GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error) {
+	row := q.db.QueryRow(ctx, getDistillationCut, id)
+	var i DistillationCut
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.DistillationRunID,
+		&i.Kind,
+		&i.VolumeL,
+		&i.AbvPct,
+		&i.Laa,
+		&i.CutOrder,
+		&i.ObservedAt,
+		&i.Notes,
+	)
+	return i, err
+}
+
 const getDistillationRun = `-- name: GetDistillationRun :one
 SELECT id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason FROM distillation_runs WHERE id = $1
 `
@@ -391,6 +422,54 @@ func (q *Queries) NextDistillationRunNo(ctx context.Context) (int32, error) {
 	var next int32
 	err := row.Scan(&next)
 	return next, err
+}
+
+const updateDistillationCut = `-- name: UpdateDistillationCut :one
+UPDATE distillation_cuts
+SET kind        = $2,
+    volume_l    = $3,
+    abv_pct     = $4,
+    cut_order   = $5,
+    observed_at = $6,
+    notes       = $7
+WHERE id = $1
+RETURNING id, tenant_id, distillation_run_id, kind, volume_l, abv_pct, laa, cut_order, observed_at, notes
+`
+
+type UpdateDistillationCutParams struct {
+	ID         uuid.UUID           `json:"id"`
+	Kind       DistillationCutKind `json:"kind"`
+	VolumeL    float64             `json:"volume_l"`
+	AbvPct     float64             `json:"abv_pct"`
+	CutOrder   int32               `json:"cut_order"`
+	ObservedAt pgtype.Timestamptz  `json:"observed_at"`
+	Notes      string              `json:"notes"`
+}
+
+func (q *Queries) UpdateDistillationCut(ctx context.Context, arg UpdateDistillationCutParams) (DistillationCut, error) {
+	row := q.db.QueryRow(ctx, updateDistillationCut,
+		arg.ID,
+		arg.Kind,
+		arg.VolumeL,
+		arg.AbvPct,
+		arg.CutOrder,
+		arg.ObservedAt,
+		arg.Notes,
+	)
+	var i DistillationCut
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.DistillationRunID,
+		&i.Kind,
+		&i.VolumeL,
+		&i.AbvPct,
+		&i.Laa,
+		&i.CutOrder,
+		&i.ObservedAt,
+		&i.Notes,
+	)
+	return i, err
 }
 
 const updateDistillationStatus = `-- name: UpdateDistillationStatus :one

@@ -283,6 +283,101 @@ func (s *DistillationService) AddDistillationCut(
 	return connect.NewResponse(&stillhousev1.AddDistillationCutResponse{Cut: distillationCutToProto(c)}), nil
 }
 
+func (s *DistillationService) UpdateDistillationCut(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.UpdateDistillationCutRequest],
+) (*connect.Response[stillhousev1.UpdateDistillationCutResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	kind, err := distillationCutKindToDB(req.Msg.GetKind())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	observed := timestampOrNow(req.Msg.GetObservedAt())
+	order := req.Msg.GetCutOrder()
+	if order == 0 {
+		order = 1
+	}
+	var c sqlcgen.DistillationCut
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		c, e = q.UpdateDistillationCut(ctx, sqlcgen.UpdateDistillationCutParams{
+			ID:         id,
+			Kind:       kind,
+			VolumeL:    req.Msg.GetVolumeL(),
+			AbvPct:     req.Msg.GetAbvPct(),
+			CutOrder:   order,
+			ObservedAt: observed,
+			Notes:      req.Msg.GetNotes(),
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_cut", c.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"distillation_run_id": c.DistillationRunID.String(),
+				"kind":                string(c.Kind),
+				"volume_l":            c.VolumeL,
+				"abv_pct":             c.AbvPct,
+				"cut_order":           c.CutOrder,
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("cut not found"))
+		}
+		s.logger.Error("UpdateDistillationCut", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.UpdateDistillationCutResponse{Cut: distillationCutToProto(c)}), nil
+}
+
+func (s *DistillationService) DeleteDistillationCut(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteDistillationCutRequest],
+) (*connect.Response[stillhousev1.DeleteDistillationCutResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		// Load before delete so the audit payload has the values that vanished.
+		c, e := q.GetDistillationCut(ctx, id)
+		if e != nil {
+			return e
+		}
+		if e := q.DeleteDistillationCut(ctx, id); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_cut", id.String(),
+			sqlcgen.AuditActionDelete, map[string]any{
+				"distillation_run_id": c.DistillationRunID.String(),
+				"kind":                string(c.Kind),
+				"volume_l":            c.VolumeL,
+				"abv_pct":             c.AbvPct,
+				"cut_order":           c.CutOrder,
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("cut not found"))
+		}
+		s.logger.Error("DeleteDistillationCut", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DeleteDistillationCutResponse{}), nil
+}
+
 // RecordProductionGauge is the bridge from operational records to the bulk
 // alcohol ledger. It runs in one transaction:
 //

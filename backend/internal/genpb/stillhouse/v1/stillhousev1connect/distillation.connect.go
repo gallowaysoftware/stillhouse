@@ -57,6 +57,12 @@ const (
 	// DistillationServiceVoidDistillationRunProcedure is the fully-qualified name of the
 	// DistillationService's VoidDistillationRun RPC.
 	DistillationServiceVoidDistillationRunProcedure = "/stillhouse.v1.DistillationService/VoidDistillationRun"
+	// DistillationServiceUpdateDistillationCutProcedure is the fully-qualified name of the
+	// DistillationService's UpdateDistillationCut RPC.
+	DistillationServiceUpdateDistillationCutProcedure = "/stillhouse.v1.DistillationService/UpdateDistillationCut"
+	// DistillationServiceDeleteDistillationCutProcedure is the fully-qualified name of the
+	// DistillationService's DeleteDistillationCut RPC.
+	DistillationServiceDeleteDistillationCutProcedure = "/stillhouse.v1.DistillationService/DeleteDistillationCut"
 )
 
 // DistillationServiceClient is a client for the stillhouse.v1.DistillationService service.
@@ -69,6 +75,8 @@ type DistillationServiceClient interface {
 	AddDistillationCut(context.Context, *connect.Request[v1.AddDistillationCutRequest]) (*connect.Response[v1.AddDistillationCutResponse], error)
 	RecordProductionGauge(context.Context, *connect.Request[v1.RecordProductionGaugeRequest]) (*connect.Response[v1.RecordProductionGaugeResponse], error)
 	VoidDistillationRun(context.Context, *connect.Request[v1.VoidDistillationRunRequest]) (*connect.Response[v1.VoidDistillationRunResponse], error)
+	UpdateDistillationCut(context.Context, *connect.Request[v1.UpdateDistillationCutRequest]) (*connect.Response[v1.UpdateDistillationCutResponse], error)
+	DeleteDistillationCut(context.Context, *connect.Request[v1.DeleteDistillationCutRequest]) (*connect.Response[v1.DeleteDistillationCutResponse], error)
 }
 
 // NewDistillationServiceClient constructs a client for the stillhouse.v1.DistillationService
@@ -130,6 +138,18 @@ func NewDistillationServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(distillationServiceMethods.ByName("VoidDistillationRun")),
 			connect.WithClientOptions(opts...),
 		),
+		updateDistillationCut: connect.NewClient[v1.UpdateDistillationCutRequest, v1.UpdateDistillationCutResponse](
+			httpClient,
+			baseURL+DistillationServiceUpdateDistillationCutProcedure,
+			connect.WithSchema(distillationServiceMethods.ByName("UpdateDistillationCut")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteDistillationCut: connect.NewClient[v1.DeleteDistillationCutRequest, v1.DeleteDistillationCutResponse](
+			httpClient,
+			baseURL+DistillationServiceDeleteDistillationCutProcedure,
+			connect.WithSchema(distillationServiceMethods.ByName("DeleteDistillationCut")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -143,6 +163,8 @@ type distillationServiceClient struct {
 	addDistillationCut       *connect.Client[v1.AddDistillationCutRequest, v1.AddDistillationCutResponse]
 	recordProductionGauge    *connect.Client[v1.RecordProductionGaugeRequest, v1.RecordProductionGaugeResponse]
 	voidDistillationRun      *connect.Client[v1.VoidDistillationRunRequest, v1.VoidDistillationRunResponse]
+	updateDistillationCut    *connect.Client[v1.UpdateDistillationCutRequest, v1.UpdateDistillationCutResponse]
+	deleteDistillationCut    *connect.Client[v1.DeleteDistillationCutRequest, v1.DeleteDistillationCutResponse]
 }
 
 // CreateDistillationRun calls stillhouse.v1.DistillationService.CreateDistillationRun.
@@ -185,6 +207,16 @@ func (c *distillationServiceClient) VoidDistillationRun(ctx context.Context, req
 	return c.voidDistillationRun.CallUnary(ctx, req)
 }
 
+// UpdateDistillationCut calls stillhouse.v1.DistillationService.UpdateDistillationCut.
+func (c *distillationServiceClient) UpdateDistillationCut(ctx context.Context, req *connect.Request[v1.UpdateDistillationCutRequest]) (*connect.Response[v1.UpdateDistillationCutResponse], error) {
+	return c.updateDistillationCut.CallUnary(ctx, req)
+}
+
+// DeleteDistillationCut calls stillhouse.v1.DistillationService.DeleteDistillationCut.
+func (c *distillationServiceClient) DeleteDistillationCut(ctx context.Context, req *connect.Request[v1.DeleteDistillationCutRequest]) (*connect.Response[v1.DeleteDistillationCutResponse], error) {
+	return c.deleteDistillationCut.CallUnary(ctx, req)
+}
+
 // DistillationServiceHandler is an implementation of the stillhouse.v1.DistillationService service.
 type DistillationServiceHandler interface {
 	CreateDistillationRun(context.Context, *connect.Request[v1.CreateDistillationRunRequest]) (*connect.Response[v1.CreateDistillationRunResponse], error)
@@ -195,6 +227,8 @@ type DistillationServiceHandler interface {
 	AddDistillationCut(context.Context, *connect.Request[v1.AddDistillationCutRequest]) (*connect.Response[v1.AddDistillationCutResponse], error)
 	RecordProductionGauge(context.Context, *connect.Request[v1.RecordProductionGaugeRequest]) (*connect.Response[v1.RecordProductionGaugeResponse], error)
 	VoidDistillationRun(context.Context, *connect.Request[v1.VoidDistillationRunRequest]) (*connect.Response[v1.VoidDistillationRunResponse], error)
+	UpdateDistillationCut(context.Context, *connect.Request[v1.UpdateDistillationCutRequest]) (*connect.Response[v1.UpdateDistillationCutResponse], error)
+	DeleteDistillationCut(context.Context, *connect.Request[v1.DeleteDistillationCutRequest]) (*connect.Response[v1.DeleteDistillationCutResponse], error)
 }
 
 // NewDistillationServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -252,6 +286,18 @@ func NewDistillationServiceHandler(svc DistillationServiceHandler, opts ...conne
 		connect.WithSchema(distillationServiceMethods.ByName("VoidDistillationRun")),
 		connect.WithHandlerOptions(opts...),
 	)
+	distillationServiceUpdateDistillationCutHandler := connect.NewUnaryHandler(
+		DistillationServiceUpdateDistillationCutProcedure,
+		svc.UpdateDistillationCut,
+		connect.WithSchema(distillationServiceMethods.ByName("UpdateDistillationCut")),
+		connect.WithHandlerOptions(opts...),
+	)
+	distillationServiceDeleteDistillationCutHandler := connect.NewUnaryHandler(
+		DistillationServiceDeleteDistillationCutProcedure,
+		svc.DeleteDistillationCut,
+		connect.WithSchema(distillationServiceMethods.ByName("DeleteDistillationCut")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.DistillationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case DistillationServiceCreateDistillationRunProcedure:
@@ -270,6 +316,10 @@ func NewDistillationServiceHandler(svc DistillationServiceHandler, opts ...conne
 			distillationServiceRecordProductionGaugeHandler.ServeHTTP(w, r)
 		case DistillationServiceVoidDistillationRunProcedure:
 			distillationServiceVoidDistillationRunHandler.ServeHTTP(w, r)
+		case DistillationServiceUpdateDistillationCutProcedure:
+			distillationServiceUpdateDistillationCutHandler.ServeHTTP(w, r)
+		case DistillationServiceDeleteDistillationCutProcedure:
+			distillationServiceDeleteDistillationCutHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -309,4 +359,12 @@ func (UnimplementedDistillationServiceHandler) RecordProductionGauge(context.Con
 
 func (UnimplementedDistillationServiceHandler) VoidDistillationRun(context.Context, *connect.Request[v1.VoidDistillationRunRequest]) (*connect.Response[v1.VoidDistillationRunResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.DistillationService.VoidDistillationRun is not implemented"))
+}
+
+func (UnimplementedDistillationServiceHandler) UpdateDistillationCut(context.Context, *connect.Request[v1.UpdateDistillationCutRequest]) (*connect.Response[v1.UpdateDistillationCutResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.DistillationService.UpdateDistillationCut is not implemented"))
+}
+
+func (UnimplementedDistillationServiceHandler) DeleteDistillationCut(context.Context, *connect.Request[v1.DeleteDistillationCutRequest]) (*connect.Response[v1.DeleteDistillationCutResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.DistillationService.DeleteDistillationCut is not implemented"))
 }
