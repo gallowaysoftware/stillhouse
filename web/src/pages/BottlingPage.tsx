@@ -13,11 +13,13 @@ import {
 } from "@/lib/clients";
 import { CreateBottlingRunRequestSchema, VoidBottlingRunRequestSchema } from "@/gen/stillhouse/v1/bottling_pb";
 import { formatLAA, formatQty } from "@/lib/format";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
 const PAGE_SIZE = 50;
 
 export function BottlingPage() {
+  const confirm = useConfirm();
   const qc = useQueryClient();
   const role = useCurrentRole();
   const writeable = canWrite(role);
@@ -103,15 +105,22 @@ export function BottlingPage() {
     },
   });
 
-  function onVoidRun(id: string, no: number, bottles: number) {
-    const reason = window.prompt(
-      `Void bottling run #${no}? This will refund ${bottles.toLocaleString()} bottles to inventory, ` +
-        `release the applied stamps, and add the LAA back to the source tank. ` +
-        `Will fail if any of those bottles have already been removed. Reason:`,
-      "recorded in error",
-    );
-    if (!reason || !reason.trim()) return;
-    voidRun.mutate(create(VoidBottlingRunRequestSchema, { id, reason: reason.trim() }));
+  async function onVoidRun(id: string, no: number, bottles: number) {
+    const ok = await confirm({
+      title: `Void bottling run #${no}?`,
+      body: <>This reverses every side-effect of the run: stamps, packaged inventory, and the source tank balance.</>,
+      consequences: [
+        `${bottles.toLocaleString()} bottles drop out of packaged inventory`,
+        "Applied stamps go back to available",
+        "Source tank LAA is refunded via an offsetting bulk movement",
+        "Fails if any of these bottles have been removed downstream — void those removals first",
+      ],
+      requireReason: { label: "Reason", placeholder: "recorded in error" },
+      confirmLabel: "Void run",
+      tone: "danger",
+    });
+    if (!ok) return;
+    voidRun.mutate(create(VoidBottlingRunRequestSchema, { id, reason: ok.reason }));
   }
 
   return (

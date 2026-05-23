@@ -11,6 +11,7 @@ import {
   SpiritKind,
 } from "@/gen/stillhouse/v1/recipe_pb";
 import { create } from "@bufbuild/protobuf";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyRow } from "@/components/EmptyState";
 import { spiritKindLabel } from "@/lib/format";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
@@ -28,6 +29,7 @@ const spiritOptions: { value: SpiritKind; label: string }[] = [
 ];
 
 export function RecipesPage() {
+  const confirm = useConfirm();
   const qc = useQueryClient();
   const role = useCurrentRole();
   const writeable = canWrite(role);
@@ -52,14 +54,20 @@ export function RecipesPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["listRecipes"] }),
   });
 
-  function onDuplicate(sourceId: string, sourceName: string) {
+  async function onDuplicate(sourceId: string, sourceName: string) {
     const proposed = `${sourceName} (copy)`;
-    const newName = window.prompt("Name for the duplicate:", proposed);
-    if (!newName || !newName.trim()) return;
+    const ok = await confirm({
+      title: `Duplicate "${sourceName}"?`,
+      body: <>Copies the recipe and its current version (params + ingredient list) into a new recipe — the duplicate is immediately usable.</>,
+      requireReason: { label: "Name for the duplicate", placeholder: proposed },
+      confirmLabel: "Duplicate recipe",
+      tone: "primary",
+    });
+    if (!ok) return;
     duplicateRecipe.mutate(
       create(DuplicateRecipeRequestSchema, {
         sourceRecipeId: sourceId,
-        newName: newName.trim(),
+        newName: ok.reason,
       }),
     );
   }

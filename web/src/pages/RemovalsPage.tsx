@@ -12,6 +12,7 @@ import {
 } from "@/gen/stillhouse/v1/removal_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Pager } from "@/pages/BottlingPage";
 
 const PAGE_SIZE = 50;
@@ -78,13 +79,22 @@ export function RemovalsPage() {
     },
   });
 
-  function onVoid(id: string, no: number, bottles: number) {
-    const reason = window.prompt(
-      `Void removal #${no} (${bottles.toLocaleString()} bottles will be refunded to inventory). Reason:`,
-      "recorded in error",
-    );
-    if (!reason || !reason.trim()) return;
-    voidRemoval.mutate(create(VoidRemovalRequestSchema, { id, reason: reason.trim() }));
+  const confirm = useConfirm();
+  async function onVoid(id: string, no: number, bottles: number) {
+    const ok = await confirm({
+      title: `Void removal #${no}?`,
+      body: <>You're about to void this removal. The {bottles.toLocaleString()} bottles will be refunded to packaged inventory and the duty entry rolled back.</>,
+      consequences: [
+        `${bottles.toLocaleString()} bottles return to on-hand inventory`,
+        "Duty contribution drops out of the current B266 period",
+        "Original row stays for audit — voided with timestamp + user",
+      ],
+      requireReason: { label: "Reason", placeholder: "recorded in error" },
+      confirmLabel: "Void removal",
+      tone: "danger",
+    });
+    if (!ok) return;
+    voidRemoval.mutate(create(VoidRemovalRequestSchema, { id, reason: ok.reason }));
   }
 
   function submit(e: FormEvent) {

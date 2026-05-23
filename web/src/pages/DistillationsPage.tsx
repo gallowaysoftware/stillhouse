@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { distillationClient } from "@/lib/clients";
@@ -12,6 +13,7 @@ import { distillationStatusLabel } from "@/lib/format";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 
 export function DistillationsPage() {
+  const confirm = useConfirm();
   const qc = useQueryClient();
   const role = useCurrentRole();
   const writeable = canWrite(role);
@@ -36,14 +38,21 @@ export function DistillationsPage() {
       qc.invalidateQueries({ queryKey: ["listBulkContainers"] });
     },
   });
-  function onVoidRun(id: string, runNo: number) {
-    const reason = window.prompt(
-      `Void distillation run #${runNo}? Production-gauge LAA will be refunded from the destination tank. ` +
-        `Fails if downstream movements have drained the tank below the gauged volume.`,
-      "recorded in error",
-    );
-    if (!reason || !reason.trim()) return;
-    voidRun.mutate(create(VoidDistillationRunRequestSchema, { id, reason: reason.trim() }));
+  async function onVoidRun(id: string, runNo: number) {
+    const ok = await confirm({
+      title: `Void distillation run #${runNo}?`,
+      body: <>The production-gauge LAA will be refunded from the destination tank and an offsetting ledger row written.</>,
+      consequences: [
+        "Destination tank's running balance drops by the gauged volume + LAA",
+        "B266 production line for this period drops by the same amount",
+        "Fails if downstream movements have drained the tank below the gauged volume — void those first",
+      ],
+      requireReason: { label: "Reason", placeholder: "recorded in error" },
+      confirmLabel: "Void run",
+      tone: "danger",
+    });
+    if (!ok) return;
+    voidRun.mutate(create(VoidDistillationRunRequestSchema, { id, reason: ok.reason }));
   }
 
   function submit(e: FormEvent<HTMLFormElement>) {

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { exciseStampClient } from "@/lib/clients";
@@ -22,6 +23,7 @@ const statusLabel: Record<ExciseStampOrderStatus, string> = {
 };
 
 export function StampsPage() {
+  const confirm = useConfirm();
   const qc = useQueryClient();
   const role = useCurrentRole();
   const writeable = canWrite(role);
@@ -54,16 +56,23 @@ export function StampsPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["listStampOrders"] }),
   });
 
-  function onVoid(orderId: string, available: number) {
+  async function onVoid(orderId: string, available: number) {
     if (available <= 0) return;
-    const qtyRaw = window.prompt(`How many stamps to void? (max ${available})`, "1");
-    if (!qtyRaw) return;
-    const qty = Number(qtyRaw);
-    if (!Number.isFinite(qty) || qty <= 0 || qty > available) return;
-    const reason = window.prompt("Reason (damaged, misprint, misapplied, …):", "damaged in application");
-    if (!reason || !reason.trim()) return;
+    const ok = await confirm({
+      title: "Void stamps from this order?",
+      body: <>Voiding records that physical stamps were destroyed or misapplied so the on-hand count stays accurate.</>,
+      consequences: [
+        "Quantity voided increments on the order; available count drops accordingly",
+        "Audit-logged with the reason for CRA records",
+      ],
+      requireQuantity: { label: "Quantity to void", max: available, defaultValue: 1 },
+      requireReason: { label: "Reason", placeholder: "damaged in application" },
+      confirmLabel: "Void stamps",
+      tone: "warning",
+    });
+    if (!ok || ok.quantity === undefined) return;
     voidStamps.mutate(
-      create(VoidStampsRequestSchema, { id: orderId, quantity: qty, reason: reason.trim() }),
+      create(VoidStampsRequestSchema, { id: orderId, quantity: ok.quantity, reason: ok.reason }),
     );
   }
 

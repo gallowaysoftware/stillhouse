@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Shell } from "@/components/Shell";
 import { bulkClient, distillationClient, fermentationClient } from "@/lib/clients";
 import {
@@ -274,6 +275,7 @@ function CutsPanel({
   onUpdate: (m: ReturnType<typeof create<typeof UpdateDistillationCutRequestSchema>>) => void;
   updating: boolean;
 }) {
+  const confirm = useConfirm();
   // Track which cut id is currently being edited inline. Empty string = none.
   const [editingId, setEditingId] = useState<string>("");
   const [editKind, setEditKind] = useState("");
@@ -416,8 +418,14 @@ function CutsPanel({
                     Edit
                   </button>
                   <button
-                    onClick={() => {
-                      if (window.confirm(`Delete this ${cutKindLabel(c.kind)} cut?`)) onDelete(c.id);
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: `Delete this ${cutKindLabel(c.kind)} cut?`,
+                        body: <>The row vanishes from the run; total cut LAA recalculates from what remains.</>,
+                        confirmLabel: "Delete cut",
+                        tone: "danger",
+                      });
+                      if (ok) onDelete(c.id);
                     }}
                     disabled={deleting}
                     className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"

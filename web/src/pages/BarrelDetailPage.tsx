@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Shell } from "@/components/Shell";
 import { barrelClient, bulkClient } from "@/lib/clients";
 import {
@@ -26,6 +27,7 @@ const eventKindLabels: Record<BarrelEventKind, string> = {
 };
 
 export function BarrelDetailPage() {
+  const confirm = useConfirm();
   const { id } = useParams();
   const qc = useQueryClient();
 
@@ -67,13 +69,21 @@ export function BarrelDetailPage() {
     onSuccess: refresh,
   });
 
-  function onVoidEvent(eventId: string, kind: BarrelEventKind) {
-    const reason = window.prompt(
-      `Void this ${eventKindLabels[kind]} event? Reverses the linked bulk movement and recomputes both containers' balances. Regauge events can't be voided — record a new corrective regauge instead.`,
-      "recorded in error",
-    );
-    if (!reason || !reason.trim()) return;
-    voidEvent.mutate(create(VoidBarrelEventRequestSchema, { id: eventId, reason: reason.trim() }));
+  async function onVoidEvent(eventId: string, kind: BarrelEventKind) {
+    const ok = await confirm({
+      title: `Void ${eventKindLabels[kind]} event?`,
+      body: <>This reverses the linked bulk movement and recomputes both containers' balances. The original event row stays for audit.</>,
+      consequences: [
+        "Source / destination tank balances adjust by the inverse of this event",
+        "An offsetting regauge_correction movement gets written to the ledger",
+        "Regauge events can't be voided — record a corrective regauge instead",
+      ],
+      requireReason: { label: "Reason", placeholder: "recorded in error" },
+      confirmLabel: "Void event",
+      tone: "danger",
+    });
+    if (!ok) return;
+    voidEvent.mutate(create(VoidBarrelEventRequestSchema, { id: eventId, reason: ok.reason }));
   }
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
