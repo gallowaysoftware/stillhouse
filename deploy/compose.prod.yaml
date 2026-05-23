@@ -1,14 +1,23 @@
-# Production stack — bundles Postgres and the Stillhouse app. Designed for
-# a single-host deploy (Unraid, plain Docker host, etc). Persistent data
-# lives under STILLHOUSE_DATA_DIR; on Unraid set that to a path under
-# /mnt/user/appdata/stillhouse/ in .env.
+# Production stack — bundles Postgres and the Stillhouse app.
 #
-# TLS termination is intentionally not handled here — put NPM / Caddy /
-# Traefik in front and point it at the published STILLHOUSE_PORT.
+# Networking:
+#   - `stillhouse` bridge: internal, db + app talk over it. Postgres has no
+#     LAN exposure at all.
+#   - `macvlan` (br0 external): app gets its own LAN IP (default
+#     172.16.3.210) so it appears as a real host. NPM proxies
+#     stillhouse.thegalloways.ca → 172.16.3.210:8080 for TLS.
 #
-# All secrets pulled from a sibling .env (see .env.example).
+# Prereqs:
+#   - br0 is an existing macvlan network on Unraid (Settings → Docker →
+#     enable macvlan/ipvlan).
+#   - The image lives at ${STILLHOUSE_IMAGE} on the registry; default is
+#     registry.home.thegalloways.ca/stillhouse:latest, pushed via
+#     `make image-push` from the dev box.
+#
+# .env (sibling of this file in the stack folder) — see .env.example.
 
 services:
+
   postgres:
     image: docker.io/library/postgres:16
     container_name: stillhouse-postgres
@@ -19,18 +28,18 @@ services:
       POSTGRES_PASSWORD: ${PG_ADMIN_PASSWORD:?PG_ADMIN_PASSWORD must be set in .env}
     volumes:
       - ${STILLHOUSE_DATA_DIR:?STILLHOUSE_DATA_DIR must be set in .env}/postgres:/var/lib/postgresql/data
+    networks: [stillhouse]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U stillhouse -d stillhouse"]
       interval: 5s
-      timeout: 3s
-      retries: 5
-    # No published port — only the app container reaches it on the
-    # internal network. Operators wanting psql access can `docker exec`.
+      timeout: 5s
+      retries: 10
 
   app:
     image: ${STILLHOUSE_IMAGE:-registry.home.thegalloways.ca/stillhouse:latest}
     container_name: stillhouse-app
     restart: unless-stopped
+    pull_policy: always
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,9 +53,21 @@ services:
       STILLHOUSE_APP_PASSWORD: ${PG_APP_PASSWORD}
       STILLHOUSE_ADDR: ":8080"
       STILLHOUSE_STATIC_DIR: /app/static
-    ports:
-      - "${STILLHOUSE_PORT:-8080}:8080"
-    # No app healthcheck — the distroless base image doesn't ship wget or
-    # curl, so the /healthz endpoint can't be probed from inside the
-    # container without a custom shim. NPM in front does its own
-    # upstream probing; that's the operational healthcheck.
+    networks:
+      macvlan:
+        ipv4_address: ${WEB_IPV4:-172.16.3.210}
+      stillhouse: {}
+    labels:
+      net.unraid.docker.webui: "http://${WEB_IPV4:-172.16.3.210}:8080"
+      net.unraid.docker.shell: "sh"
+    # No app healthcheck — the distroless runtime has no wget/curl to probe
+    # /healthz from inside the container. NPM's upstream check is the
+    # operational signal.
+
+networks:
+  stillhouse:
+    driver: bridge
+    name: stillhouse
+  macvlan:
+    external: true
+    name: br0
