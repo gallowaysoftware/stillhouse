@@ -49,7 +49,8 @@ qa/runs/<timestamp>/qa-report.md — findings only, no code changes.`,
 
 	root.AddCommand(prepareCommand())
 	root.AddCommand(discoverCommand())
-	// TODO: plan, run, deepen, report, all — each lands as its own
+	root.AddCommand(planCommand())
+	// TODO: run, deepen, report, all — each lands as its own
 	// pipeline.go file under internal/pipeline.
 
 	if err := root.Execute(); err != nil {
@@ -134,5 +135,43 @@ path); override with --primer if a prior run lives elsewhere.`,
 	cmd.Flags().StringVar(&outDir, "out", "qa/runs/discover", "Directory discovery.json + the proto bundle land in.")
 	cmd.Flags().StringVar(&primerFile, "primer", "qa/runs/prepare-001/primer.md", "Path to the primer.md a prior prepare run produced.")
 	cmd.Flags().StringVar(&stillhouseRoot, "stillhouse-root", ".", "Path to the Stillhouse repo root (where proto/ + README.md live).")
+	return cmd
+}
+
+func planCommand() *cobra.Command {
+	var (
+		outDir        string
+		discoveryFile string
+		primerFile    string
+	)
+	cmd := &cobra.Command{
+		Use:   "plan",
+		Short: "Generate a breadth-first test plan from discovery.json + primer.md.",
+		Long: `plan reads discovery.json (from discover) and primer.md (from
+prepare), and runs an LLM phase that emits plan.json — a structured
+catalogue of test cases covering happy paths, boundary inputs,
+invariant-violation attempts, RLS probes, audit-log gap detection,
+B266 reconciliation drift, and race conditions.
+
+Each test case lists which invariant(s) it verifies, the RPC and
+UI steps it executes, and the expected outcome. The run phase
+consumes plan.json to dispatch ConnectRPC + Playwright probes.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			root, err := vamp.BuildRoot(func() (*vamp.Pipeline, error) {
+				return pipeline.BuildPlan(pipeline.PlanConfig{
+					DiscoveryFile: discoveryFile,
+					PrimerFile:    primerFile,
+				})
+			})
+			if err != nil {
+				return err
+			}
+			root.SetArgs(append([]string{"run", "--run-dir", outDir}, args...))
+			return root.Execute()
+		},
+	}
+	cmd.Flags().StringVar(&outDir, "out", "qa/runs/plan", "Directory plan.json lands in.")
+	cmd.Flags().StringVar(&discoveryFile, "discovery", "qa/runs/discover-001/discovery.json", "Path to discovery.json from a prior discover run.")
+	cmd.Flags().StringVar(&primerFile, "primer", "qa/runs/prepare-001/primer.md", "Path to primer.md from a prior prepare run.")
 	return cmd
 }
