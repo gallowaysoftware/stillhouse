@@ -105,18 +105,16 @@ import the same `compose.yaml` / `.env` pair and toggle from the UI.
 
 ## First-run bootstrap
 
-The schema is empty after first migration. To create the first tenant +
+The schema is empty after first migration. Create the first tenant +
 owner user:
 
 ```bash
-# Get the admin DSN that the running container is using:
-docker exec stillhouse-app printenv ADMIN_DATABASE_URL
-# Run the seed binary against it (the binary is in the same image):
-docker exec -it stillhouse-app \
-  sh -c 'DATABASE_URL="$ADMIN_DATABASE_URL" /app/stillhouse-seed'
+docker exec -it stillhouse-app /app/stillhouse-seed
 ```
 
-This prints the generated email + password — record them before you lose
+The seed binary reads `ADMIN_DATABASE_URL` directly (no shell needed —
+the runtime is distroless and has no `/bin/sh`). This prints the
+generated email + password — record them before you lose
 the terminal. After login, change the password via Settings → Change my
 password.
 

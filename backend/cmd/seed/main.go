@@ -20,7 +20,14 @@ import (
 )
 
 func main() {
-	databaseURL := os.Getenv("DATABASE_URL")
+	// Prefer ADMIN_DATABASE_URL when set — the prod container ships with both
+	// (admin = superuser for migrations + seed, app = the limited role the
+	// server uses at runtime). Falls back to DATABASE_URL for dev, which is
+	// already the superuser DSN there.
+	databaseURL := os.Getenv("ADMIN_DATABASE_URL")
+	if databaseURL == "" {
+		databaseURL = os.Getenv("DATABASE_URL")
+	}
 	if databaseURL == "" {
 		databaseURL = "postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable"
 	}
