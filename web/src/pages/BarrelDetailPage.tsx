@@ -231,7 +231,7 @@ function FillCard({
   error,
 }: {
   barrelId: string;
-  containers: { id: string; name: string; currentLaa: number }[];
+  containers: { id: string; name: string; currentLaa: number; currentAbvPct: number; currentAbvPctSet: boolean }[];
   onSubmit: (m: ReturnType<typeof create<typeof FillBarrelRequestSchema>>) => void;
   submitting: boolean;
   error: Error | null;
@@ -240,6 +240,15 @@ function FillCard({
   const [vol, setVol] = useState("");
   const [abv, setAbv] = useState("");
   const [notes, setNotes] = useState("");
+  const selectedSource = containers.find((c) => c.id === srcID);
+  const sourceHasNoABV = selectedSource && !selectedSource.currentAbvPctSet;
+  // Prefill ABV from the source the first time it's selected — operators
+  // almost always fill at the container's current ABV; saves re-typing.
+  function onSourceChange(id: string) {
+    setSrcID(id);
+    const next = containers.find((c) => c.id === id);
+    if (next && next.currentAbvPctSet && !abv) setAbv(next.currentAbvPct.toFixed(2));
+  }
   function submit(e: FormEvent) {
     e.preventDefault();
     if (!srcID || !vol || !abv) return;
@@ -256,15 +265,22 @@ function FillCard({
   return (
     <Card title="Fill barrel">
       <form onSubmit={submit} className="space-y-3 p-4">
-        <Select label="From container" value={srcID} onChange={setSrcID}>
+        <Select label="From container" value={srcID} onChange={onSourceChange}>
           <option value="">Select source…</option>
           {containers.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name} ({formatLAA(c.currentLaa)} L LAA on hand)
+              {c.currentAbvPctSet ? "" : " — ABV NOT SET"}
             </option>
           ))}
         </Select>
-        <NumField label="Volume (L)" value={vol} onChange={setVol} />
+        {sourceHasNoABV && (
+          <p className="rounded border border-danger/40 bg-danger/10 px-3 py-2 text-xs text-danger-fg">
+            Source tank has no recorded ABV. Gauge it before filling — otherwise the LAA in the
+            barrel (and in B266 downstream) will be wrong.
+          </p>
+        )}
+        <NumField label="Volume (litres of liquid)" value={vol} onChange={setVol} />
         <NumField label="ABV %" value={abv} onChange={setAbv} />
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Fill</Submit>
@@ -303,7 +319,7 @@ function RegaugeCard({
   return (
     <Card title="Regauge (record current actual)">
       <form onSubmit={submit} className="space-y-3 p-4">
-        <NumField label="Actual volume (L)" value={vol} onChange={setVol} />
+        <NumField label="Actual volume (L liquid)" value={vol} onChange={setVol} />
         <NumField label="Actual ABV %" value={abv} onChange={setAbv} />
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Regauge</Submit>
@@ -357,7 +373,7 @@ function DumpCard({
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </Select>
-        <NumField label="Actual volume (L)" value={vol} onChange={setVol} />
+        <NumField label="Actual volume (L liquid)" value={vol} onChange={setVol} />
         <NumField label="Actual ABV %" value={abv} onChange={setAbv} />
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Dump</Submit>

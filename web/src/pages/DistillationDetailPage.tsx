@@ -216,7 +216,7 @@ function ChargesPanel({
             </option>
           ))}
         </Field>
-        <Field label="Vol (L)" value={vol} onChange={setVol} type="number" step="0.1" width="w-24" />
+        <Field label="Vol (L liquid)" value={vol} onChange={setVol} type="number" step="0.1" width="w-24" />
         <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="0.01" width="w-20" />
         <button
           type="submit"
@@ -325,7 +325,7 @@ function CutsPanel({
             <option key={k.v} value={k.v}>{k.label}</option>
           ))}
         </Field>
-        <Field label="Vol (L)" value={vol} onChange={setVol} type="number" step="0.01" width="w-24" />
+        <Field label="Vol (L liquid)" value={vol} onChange={setVol} type="number" step="0.01" width="w-24" />
         <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="0.01" width="w-20" />
         <button
           type="submit"
@@ -496,7 +496,7 @@ function GaugeForm({
           Recording the gauge creates a BulkMovement into this container and updates its running balance.
         </p>
       </div>
-      <Field label="Volume (L)" value={vol} onChange={setVol} type="number" step="0.01" />
+      <Field label="Volume (L liquid)" value={vol} onChange={setVol} type="number" step="0.01" />
       <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="0.01" />
       <Field label="Temperature (°C, optional)" value={temp} onChange={setTemp} type="number" step="0.1" />
       <Field label="Notes" value={notes} onChange={setNotes} />
