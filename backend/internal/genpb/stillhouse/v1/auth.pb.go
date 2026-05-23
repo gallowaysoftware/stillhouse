@@ -197,6 +197,176 @@ func (*LogoutResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{3}
 }
 
+// Public — always returns success. Backend silently skips if the email
+// isn't on file so we don't leak which addresses are registered.
+type RequestPasswordResetRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetRequest) Reset() {
+	*x = RequestPasswordResetRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetRequest) ProtoMessage() {}
+
+func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RequestPasswordResetRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type RequestPasswordResetResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RequestPasswordResetResponse) Reset() {
+	*x = RequestPasswordResetResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RequestPasswordResetResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RequestPasswordResetResponse) ProtoMessage() {}
+
+func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
+func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{5}
+}
+
+type ResetPasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
+	NewPassword   string                 `protobuf:"bytes,2,opt,name=new_password,json=newPassword,proto3" json:"new_password,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordRequest) Reset() {
+	*x = ResetPasswordRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordRequest) ProtoMessage() {}
+
+func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
+func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ResetPasswordRequest) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *ResetPasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type ResetPasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordResponse) Reset() {
+	*x = ResetPasswordResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordResponse) ProtoMessage() {}
+
+func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
+func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{7}
+}
+
 var File_stillhouse_v1_auth_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_auth_proto_rawDesc = "" +
@@ -209,10 +379,19 @@ const file_stillhouse_v1_auth_proto_rawDesc = "" +
 	"\x04user\x18\x01 \x01(\v2\x13.stillhouse.v1.UserR\x04user\x12-\n" +
 	"\x06tenant\x18\x02 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\x0f\n" +
 	"\rLogoutRequest\"\x10\n" +
-	"\x0eLogoutResponse2\x98\x01\n" +
+	"\x0eLogoutResponse\"3\n" +
+	"\x1bRequestPasswordResetRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\"\x1e\n" +
+	"\x1cRequestPasswordResetResponse\"O\n" +
+	"\x14ResetPasswordRequest\x12\x14\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\x12!\n" +
+	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\x17\n" +
+	"\x15ResetPasswordResponse2\xe5\x02\n" +
 	"\vAuthService\x12B\n" +
 	"\x05Login\x12\x1b.stillhouse.v1.LoginRequest\x1a\x1c.stillhouse.v1.LoginResponse\x12E\n" +
-	"\x06Logout\x12\x1c.stillhouse.v1.LogoutRequest\x1a\x1d.stillhouse.v1.LogoutResponseB\xcd\x01\n" +
+	"\x06Logout\x12\x1c.stillhouse.v1.LogoutRequest\x1a\x1d.stillhouse.v1.LogoutResponse\x12o\n" +
+	"\x14RequestPasswordReset\x12*.stillhouse.v1.RequestPasswordResetRequest\x1a+.stillhouse.v1.RequestPasswordResetResponse\x12Z\n" +
+	"\rResetPassword\x12#.stillhouse.v1.ResetPasswordRequest\x1a$.stillhouse.v1.ResetPasswordResponseB\xcd\x01\n" +
 	"\x11com.stillhouse.v1B\tAuthProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -227,24 +406,32 @@ func file_stillhouse_v1_auth_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_auth_proto_rawDescData
 }
 
-var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_stillhouse_v1_auth_proto_goTypes = []any{
-	(*LoginRequest)(nil),   // 0: stillhouse.v1.LoginRequest
-	(*LoginResponse)(nil),  // 1: stillhouse.v1.LoginResponse
-	(*LogoutRequest)(nil),  // 2: stillhouse.v1.LogoutRequest
-	(*LogoutResponse)(nil), // 3: stillhouse.v1.LogoutResponse
-	(*User)(nil),           // 4: stillhouse.v1.User
-	(*Tenant)(nil),         // 5: stillhouse.v1.Tenant
+	(*LoginRequest)(nil),                 // 0: stillhouse.v1.LoginRequest
+	(*LoginResponse)(nil),                // 1: stillhouse.v1.LoginResponse
+	(*LogoutRequest)(nil),                // 2: stillhouse.v1.LogoutRequest
+	(*LogoutResponse)(nil),               // 3: stillhouse.v1.LogoutResponse
+	(*RequestPasswordResetRequest)(nil),  // 4: stillhouse.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil), // 5: stillhouse.v1.RequestPasswordResetResponse
+	(*ResetPasswordRequest)(nil),         // 6: stillhouse.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),        // 7: stillhouse.v1.ResetPasswordResponse
+	(*User)(nil),                         // 8: stillhouse.v1.User
+	(*Tenant)(nil),                       // 9: stillhouse.v1.Tenant
 }
 var file_stillhouse_v1_auth_proto_depIdxs = []int32{
-	4, // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
-	5, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
+	8, // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
+	9, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
 	0, // 2: stillhouse.v1.AuthService.Login:input_type -> stillhouse.v1.LoginRequest
 	2, // 3: stillhouse.v1.AuthService.Logout:input_type -> stillhouse.v1.LogoutRequest
-	1, // 4: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
-	3, // 5: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
+	4, // 4: stillhouse.v1.AuthService.RequestPasswordReset:input_type -> stillhouse.v1.RequestPasswordResetRequest
+	6, // 5: stillhouse.v1.AuthService.ResetPassword:input_type -> stillhouse.v1.ResetPasswordRequest
+	1, // 6: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
+	3, // 7: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
+	5, // 8: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
+	7, // 9: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
+	6, // [6:10] is the sub-list for method output_type
+	2, // [2:6] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -263,7 +450,7 @@ func file_stillhouse_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_auth_proto_rawDesc), len(file_stillhouse_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

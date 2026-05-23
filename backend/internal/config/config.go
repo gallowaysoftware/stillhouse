@@ -24,6 +24,12 @@ type Config struct {
 	// operator override the dev-default password baked into migration
 	// 000010 without an out-of-band psql step.
 	AppRolePassword string
+
+	// BaseURL is the public origin where the app is reachable (no trailing
+	// slash). Used to build absolute URLs in emails — password-reset
+	// links etc. Defaults to http://localhost:8080 when empty so dev
+	// emails are still clickable from the console.
+	BaseURL string
 }
 
 func Load() (*Config, error) {
@@ -34,6 +40,7 @@ func Load() (*Config, error) {
 		StaticDir:        os.Getenv("STILLHOUSE_STATIC_DIR"),
 		AdminDatabaseURL: os.Getenv("ADMIN_DATABASE_URL"),
 		AppRolePassword:  os.Getenv("STILLHOUSE_APP_PASSWORD"),
+		BaseURL:          os.Getenv("STILLHOUSE_BASE_URL"),
 	}
 	if c.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")

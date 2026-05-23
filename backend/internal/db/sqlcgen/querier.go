@@ -39,6 +39,10 @@ type Querier interface {
 	// have only existed never accept a row here. Caller falls back to
 	// container.created_at for those.
 	BulkContainerLastActivity(ctx context.Context) ([]BulkContainerLastActivityRow, error)
+	// Single-use semantics: WHERE used_at IS NULL guarantees the same token
+	// can't be redeemed twice. Expiry check inline so we don't accidentally
+	// accept stale tokens.
+	ConsumePasswordResetToken(ctx context.Context, tokenHash []byte) (PasswordResetToken, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
@@ -53,6 +57,7 @@ type Querier interface {
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
+	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
 	CreateProductionGauge(ctx context.Context, arg CreateProductionGaugeParams) (ProductionGauge, error)
 	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)

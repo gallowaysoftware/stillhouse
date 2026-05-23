@@ -2,6 +2,9 @@ package rpc
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -11,26 +14,41 @@ import (
 	"connectrpc.com/connect"
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/auth"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 )
 
-type AuthService struct {
-	q       *sqlcgen.Queries
-	session *scs.SessionManager
-	logger  *slog.Logger
-	limiter *SlidingWindowLimiter
+// PasswordResetMailer narrows the mailer.Mailer surface to just what
+// AuthService needs. Lets server.go pass the same Mailer here without
+// AuthService depending on the package.
+type PasswordResetMailer interface {
+	SendPasswordReset(ctx context.Context, to, displayName, resetURL string) error
 }
 
-func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Logger) *AuthService {
+type AuthService struct {
+	q              *sqlcgen.Queries
+	session        *scs.SessionManager
+	logger         *slog.Logger
+	limiter        *SlidingWindowLimiter
+	resetLimiter   *SlidingWindowLimiter
+	mailer         PasswordResetMailer
+	resetURLPrefix string // e.g. https://stillhouse.thegalloways.ca/reset-password?token=
+}
+
+func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Logger, mailer PasswordResetMailer, resetURLPrefix string) *AuthService {
 	return &AuthService{
-		q: q, session: sm, logger: logger,
+		q: q, session: sm, logger: logger, mailer: mailer, resetURLPrefix: resetURLPrefix,
 		// 10 attempts / 60s per (remote_ip, email-lowercased) — typical
 		// password-guessing attacks need many more attempts than that, but
 		// a real user typo'ing won't hit it.
 		limiter: NewSlidingWindowLimiter(10, 60*time.Second),
+		// Password-reset requests are rate-limited per IP only (the email
+		// isn't useful for keying since we don't tell the caller whether
+		// it's registered).
+		resetLimiter: NewSlidingWindowLimiter(5, 5*time.Minute),
 	}
 }
 
@@ -112,4 +130,85 @@ func (s *AuthService) Logout(
 		s.logger.Error("logout: destroy session", "err", err)
 	}
 	return connect.NewResponse(&stillhousev1.LogoutResponse{}), nil
+}
+
+// RequestPasswordReset always returns success — we never tell the caller
+// whether the email was found. On a hit we generate a 32-byte token, store
+// its SHA-256 in the DB, and email the plaintext token to the user.
+func (s *AuthService) RequestPasswordReset(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.RequestPasswordResetRequest],
+) (*connect.Response[stillhousev1.RequestPasswordResetResponse], error) {
+	if !s.resetLimiter.Allow(clientIP(req.Header())) {
+		// Quietly succeed even when rate-limited so the caller can't probe
+		// for the limit boundary.
+		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+	}
+	email := strings.ToLower(strings.TrimSpace(req.Msg.GetEmail()))
+	if email == "" {
+		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+	}
+	u, err := s.q.GetUserByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+		}
+		s.logger.Error("password reset: user lookup", "err", err)
+		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+	}
+	tokenBytes := make([]byte, 32)
+	if _, err := rand.Read(tokenBytes); err != nil {
+		s.logger.Error("password reset: rand", "err", err)
+		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+	}
+	token := base64.RawURLEncoding.EncodeToString(tokenBytes)
+	hash := sha256.Sum256([]byte(token))
+	if _, err := s.q.CreatePasswordResetToken(ctx, sqlcgen.CreatePasswordResetTokenParams{
+		TokenHash:  hash[:],
+		UserID:     u.ID,
+		ExpiresAt:  pgtype.Timestamptz{Valid: true, Time: time.Now().Add(1 * time.Hour)},
+	}); err != nil {
+		s.logger.Error("password reset: token insert", "err", err)
+		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+	}
+	if s.mailer != nil {
+		url := s.resetURLPrefix + token
+		if err := s.mailer.SendPasswordReset(ctx, u.Email, u.DisplayName, url); err != nil {
+			s.logger.Warn("password reset email failed", "err", err, "to", u.Email)
+		}
+	}
+	return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+}
+
+func (s *AuthService) ResetPassword(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.ResetPasswordRequest],
+) (*connect.Response[stillhousev1.ResetPasswordResponse], error) {
+	token := req.Msg.GetToken()
+	newPassword := req.Msg.GetNewPassword()
+	if token == "" || len(newPassword) < 12 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("token and a password of at least 12 characters are required"))
+	}
+	hash := sha256.Sum256([]byte(token))
+	row, err := s.q.ConsumePasswordResetToken(ctx, hash[:])
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeFailedPrecondition, errors.New("invalid or expired token"))
+		}
+		s.logger.Error("password reset: consume", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	pwHash, err := auth.HashPassword(newPassword)
+	if err != nil {
+		s.logger.Error("password reset: hash", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if _, err := s.q.UpdateUserPassword(ctx, sqlcgen.UpdateUserPasswordParams{
+		ID: row.UserID, PasswordHash: pwHash,
+	}); err != nil {
+		s.logger.Error("password reset: update", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.ResetPasswordResponse{}), nil
 }

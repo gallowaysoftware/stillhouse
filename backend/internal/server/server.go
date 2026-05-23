@@ -16,6 +16,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/config"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1connect "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1/stillhousev1connect"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/mailer"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
@@ -52,7 +53,16 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	queries := sqlcgen.New(pool)
 	tdb := tenantdb.New(pool)
 
-	authSvc := rpc.NewAuthService(queries, sm, logger)
+	mailerImpl := mailer.FromEnv(logger)
+	// resetURLPrefix is what gets emailed to users; the token is appended
+	// to it. STILLHOUSE_BASE_URL=https://stillhouse.thegalloways.ca in
+	// prod; falls back to localhost for dev so the console mailer still
+	// produces clickable links.
+	baseURL := cfg.BaseURL
+	if baseURL == "" {
+		baseURL = "http://localhost:8080"
+	}
+	authSvc := rpc.NewAuthService(queries, sm, logger, mailerImpl, baseURL+"/reset-password?token=")
 	tenantSvc := rpc.NewTenantService(pool, queries, logger)
 	userSvc := rpc.NewUserService(queries, logger)
 	materialSvc := rpc.NewMaterialService(tdb, logger)
@@ -70,9 +80,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	auditSvc := rpc.NewAuditService(tdb, logger)
 	pricingSvc := rpc.NewPricingService(tdb, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
-	// mailer nil until stage 79 wires Resend; InviteService tolerates a nil
-	// mailer (welcome email becomes a no-op).
-	inviteSvc := rpc.NewInviteService(queries, tdb, sm, nil, logger)
+	inviteSvc := rpc.NewInviteService(queries, tdb, sm, mailerImpl, logger)
 
 	interceptors := connect.WithInterceptors(
 		rpc.NewAuthInterceptor(sm, queries),

@@ -18,7 +18,20 @@ message LoginResponse {
 message LogoutRequest {}
 message LogoutResponse {}
 
+// Public — always returns success. Backend silently skips if the email
+// isn't on file so we don't leak which addresses are registered.
+message RequestPasswordResetRequest { string email = 1; }
+message RequestPasswordResetResponse {}
+
+message ResetPasswordRequest {
+  string token = 1;
+  string new_password = 2;
+}
+message ResetPasswordResponse {}
+
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
 }

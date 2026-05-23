@@ -1026,6 +1026,14 @@ type PackagingRemoval struct {
 	VoidedReason        string                 `json:"voided_reason"`
 }
 
+type PasswordResetToken struct {
+	TokenHash []byte             `json:"token_hash"`
+	UserID    uuid.UUID          `json:"user_id"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
+	UsedAt    pgtype.Timestamptz `json:"used_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
 type Product struct {
 	ID           uuid.UUID          `json:"id"`
 	TenantID     uuid.UUID          `json:"tenant_id"`
