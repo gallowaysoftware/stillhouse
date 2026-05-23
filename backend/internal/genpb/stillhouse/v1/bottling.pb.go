@@ -359,20 +359,21 @@ func (x *BottlingRunStampUsage) GetCreatedAt() *timestamppb.Timestamp {
 }
 
 type PackagedInventoryRow struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ProductId       string                 `protobuf:"bytes,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	ProductName     string                 `protobuf:"bytes,3,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
-	BottleSizeMl    int32                  `protobuf:"varint,4,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
-	TargetAbvPct    float64                `protobuf:"fixed64,5,opt,name=target_abv_pct,json=targetAbvPct,proto3" json:"target_abv_pct,omitempty"`
-	LotCode         string                 `protobuf:"bytes,6,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
-	Jurisdiction    string                 `protobuf:"bytes,7,opt,name=jurisdiction,proto3" json:"jurisdiction,omitempty"`
-	BottlesOnHand   int32                  `protobuf:"varint,8,opt,name=bottles_on_hand,json=bottlesOnHand,proto3" json:"bottles_on_hand,omitempty"`
-	BottlesPackaged int32                  `protobuf:"varint,9,opt,name=bottles_packaged,json=bottlesPackaged,proto3" json:"bottles_packaged,omitempty"`
-	BottlesRemoved  int32                  `protobuf:"varint,10,opt,name=bottles_removed,json=bottlesRemoved,proto3" json:"bottles_removed,omitempty"`
-	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ProductId        string                 `protobuf:"bytes,2,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	ProductName      string                 `protobuf:"bytes,3,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	BottleSizeMl     int32                  `protobuf:"varint,4,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
+	TargetAbvPct     float64                `protobuf:"fixed64,5,opt,name=target_abv_pct,json=targetAbvPct,proto3" json:"target_abv_pct,omitempty"`
+	LotCode          string                 `protobuf:"bytes,6,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
+	Jurisdiction     string                 `protobuf:"bytes,7,opt,name=jurisdiction,proto3" json:"jurisdiction,omitempty"`
+	BottlesOnHand    int32                  `protobuf:"varint,8,opt,name=bottles_on_hand,json=bottlesOnHand,proto3" json:"bottles_on_hand,omitempty"`
+	BottlesPackaged  int32                  `protobuf:"varint,9,opt,name=bottles_packaged,json=bottlesPackaged,proto3" json:"bottles_packaged,omitempty"`
+	BottlesRemoved   int32                  `protobuf:"varint,10,opt,name=bottles_removed,json=bottlesRemoved,proto3" json:"bottles_removed,omitempty"`
+	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	FirstBottledDate string                 `protobuf:"bytes,12,opt,name=first_bottled_date,json=firstBottledDate,proto3" json:"first_bottled_date,omitempty"` // ISO; empty if pre-bottling-run linkage
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *PackagedInventoryRow) Reset() {
@@ -480,6 +481,13 @@ func (x *PackagedInventoryRow) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *PackagedInventoryRow) GetFirstBottledDate() string {
+	if x != nil {
+		return x.FirstBottledDate
+	}
+	return ""
 }
 
 type CreateBottlingRunRequest struct {
@@ -1072,7 +1080,7 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"serial_end\x18\a \x01(\tR\tserialEnd\x12\x14\n" +
 	"\x05voids\x18\b \x01(\x05R\x05voids\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xaa\x03\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xd8\x03\n" +
 	"\x14PackagedInventoryRow\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1087,7 +1095,8 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"\x0fbottles_removed\x18\n" +
 	" \x01(\x05R\x0ebottlesRemoved\x129\n" +
 	"\n" +
-	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xc5\x02\n" +
+	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12,\n" +
+	"\x12first_bottled_date\x18\f \x01(\tR\x10firstBottledDate\"\xc5\x02\n" +
 	"\x18CreateBottlingRunRequest\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12.\n" +

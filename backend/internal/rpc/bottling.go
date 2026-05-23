@@ -574,7 +574,7 @@ func (s *BottlingService) ListPackagedInventory(
 	}
 	out := make([]*stillhousev1.PackagedInventoryRow, 0, len(rows))
 	for _, r := range rows {
-		out = append(out, &stillhousev1.PackagedInventoryRow{
+		row := &stillhousev1.PackagedInventoryRow{
 			Id:              r.ID.String(),
 			ProductId:       r.ProductID.String(),
 			ProductName:     r.ProductName,
@@ -586,7 +586,11 @@ func (s *BottlingService) ListPackagedInventory(
 			BottlesPackaged: r.BottlesPackaged,
 			BottlesRemoved:  r.BottlesRemoved,
 			UpdatedAt:       timestamppb.New(r.UpdatedAt.Time),
-		})
+		}
+		if r.FirstBottledDate.Valid {
+			row.FirstBottledDate = formatDate(r.FirstBottledDate)
+		}
+		out = append(out, row)
 	}
 	return connect.NewResponse(&stillhousev1.ListPackagedInventoryResponse{Rows: out}), nil
 }

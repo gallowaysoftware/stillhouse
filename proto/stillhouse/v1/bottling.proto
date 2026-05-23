@@ -56,6 +56,7 @@ message PackagedInventoryRow {
   int32  bottles_packaged = 9;
   int32  bottles_removed = 10;
   google.protobuf.Timestamp updated_at = 11;
+  string first_bottled_date = 12;       // ISO; empty if pre-bottling-run linkage
 }
 
 // --- requests ---

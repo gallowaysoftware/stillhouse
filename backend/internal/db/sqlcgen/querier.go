@@ -116,6 +116,9 @@ type Querier interface {
 	ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]ListMashRunsRow, error)
 	ListMaterialLots(ctx context.Context, arg ListMaterialLotsParams) ([]MaterialLot, error)
 	ListMaterials(ctx context.Context, arg ListMaterialsParams) ([]Material, error)
+	// LEFT JOINs the originating bottling_run so we can carry first_bottled_date
+	// back to the client for an aging calc. packaged_inventory.bottling_run_id
+	// is nullable to support backfill cases.
 	ListPackagedInventory(ctx context.Context, includeEmpty bool) ([]ListPackagedInventoryRow, error)
 	ListProducts(ctx context.Context, includeArchived bool) ([]Product, error)
 	ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulkMovementsRow, error)

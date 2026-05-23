@@ -448,31 +448,37 @@ const listPackagedInventory = `-- name: ListPackagedInventory :many
 SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at,
        p.name           AS product_name,
        p.bottle_size_ml AS bottle_size_ml,
-       p.target_abv_pct AS target_abv_pct
+       p.target_abv_pct AS target_abv_pct,
+       br.bottling_date AS first_bottled_date
 FROM packaged_inventory pi
-JOIN products p ON p.id = pi.product_id
+JOIN products p             ON p.id = pi.product_id
+LEFT JOIN bottling_runs br  ON br.id = pi.bottling_run_id
 WHERE pi.bottles_on_hand > 0
    OR $1::boolean
 ORDER BY p.name, pi.jurisdiction, pi.lot_code
 `
 
 type ListPackagedInventoryRow struct {
-	ID              uuid.UUID          `json:"id"`
-	TenantID        uuid.UUID          `json:"tenant_id"`
-	ProductID       uuid.UUID          `json:"product_id"`
-	LotCode         string             `json:"lot_code"`
-	Jurisdiction    string             `json:"jurisdiction"`
-	BottlingRunID   uuid.NullUUID      `json:"bottling_run_id"`
-	BottlesOnHand   int32              `json:"bottles_on_hand"`
-	BottlesPackaged int32              `json:"bottles_packaged"`
-	BottlesRemoved  int32              `json:"bottles_removed"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
-	ProductName     string             `json:"product_name"`
-	BottleSizeMl    int32              `json:"bottle_size_ml"`
-	TargetAbvPct    float64            `json:"target_abv_pct"`
+	ID               uuid.UUID          `json:"id"`
+	TenantID         uuid.UUID          `json:"tenant_id"`
+	ProductID        uuid.UUID          `json:"product_id"`
+	LotCode          string             `json:"lot_code"`
+	Jurisdiction     string             `json:"jurisdiction"`
+	BottlingRunID    uuid.NullUUID      `json:"bottling_run_id"`
+	BottlesOnHand    int32              `json:"bottles_on_hand"`
+	BottlesPackaged  int32              `json:"bottles_packaged"`
+	BottlesRemoved   int32              `json:"bottles_removed"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+	ProductName      string             `json:"product_name"`
+	BottleSizeMl     int32              `json:"bottle_size_ml"`
+	TargetAbvPct     float64            `json:"target_abv_pct"`
+	FirstBottledDate pgtype.Date        `json:"first_bottled_date"`
 }
 
+// LEFT JOINs the originating bottling_run so we can carry first_bottled_date
+// back to the client for an aging calc. packaged_inventory.bottling_run_id
+// is nullable to support backfill cases.
 func (q *Queries) ListPackagedInventory(ctx context.Context, includeEmpty bool) ([]ListPackagedInventoryRow, error) {
 	rows, err := q.db.Query(ctx, listPackagedInventory, includeEmpty)
 	if err != nil {
@@ -497,6 +503,7 @@ func (q *Queries) ListPackagedInventory(ctx context.Context, includeEmpty bool) 
 			&i.ProductName,
 			&i.BottleSizeMl,
 			&i.TargetAbvPct,
+			&i.FirstBottledDate,
 		); err != nil {
 			return nil, err
 		}

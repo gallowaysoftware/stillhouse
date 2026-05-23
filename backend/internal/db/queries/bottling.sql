@@ -62,12 +62,17 @@ SET bottles_on_hand  = packaged_inventory.bottles_on_hand  + EXCLUDED.bottles_on
 RETURNING *;
 
 -- name: ListPackagedInventory :many
+-- LEFT JOINs the originating bottling_run so we can carry first_bottled_date
+-- back to the client for an aging calc. packaged_inventory.bottling_run_id
+-- is nullable to support backfill cases.
 SELECT pi.*,
        p.name           AS product_name,
        p.bottle_size_ml AS bottle_size_ml,
-       p.target_abv_pct AS target_abv_pct
+       p.target_abv_pct AS target_abv_pct,
+       br.bottling_date AS first_bottled_date
 FROM packaged_inventory pi
-JOIN products p ON p.id = pi.product_id
+JOIN products p             ON p.id = pi.product_id
+LEFT JOIN bottling_runs br  ON br.id = pi.bottling_run_id
 WHERE pi.bottles_on_hand > 0
    OR sqlc.arg('include_empty')::boolean
 ORDER BY p.name, pi.jurisdiction, pi.lot_code;

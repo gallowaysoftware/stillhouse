@@ -292,11 +292,12 @@ export function BottlingPage() {
               <th className="px-4 py-3 text-right">On hand</th>
               <th className="px-4 py-3 text-right">Packaged</th>
               <th className="px-4 py-3 text-right">Removed</th>
+              <th className="px-4 py-3 text-right">Age</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-100">
             {packaged.data?.rows.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">Nothing packaged yet.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-3 text-stone-500">Nothing packaged yet.</td></tr>
             )}
             {packaged.data?.rows.map((r) => (
               <tr key={r.id}>
@@ -306,6 +307,9 @@ export function BottlingPage() {
                 <td className="px-4 py-3 text-right font-medium text-stone-900">{r.bottlesOnHand.toLocaleString()}</td>
                 <td className="px-4 py-3 text-right text-stone-600">{r.bottlesPackaged.toLocaleString()}</td>
                 <td className="px-4 py-3 text-right text-stone-600">{r.bottlesRemoved.toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-stone-500">
+                  <PackagedAge bottledOn={r.firstBottledDate} />
+                </td>
               </tr>
             ))}
           </tbody>
@@ -313,6 +317,22 @@ export function BottlingPage() {
       </div>
     </Shell>
   );
+}
+
+// PackagedAge renders "12d" / "8mo" / "2 yr" / "—" for a packaged inventory
+// row's first-bottled date. Amber when older than 365 days — most distilled
+// spirits sit happily in the warehouse for years, but the visual nudge helps
+// operators spot lots they might want to push.
+function PackagedAge({ bottledOn }: { bottledOn: string }) {
+  if (!bottledOn) return <>—</>;
+  const days = Math.floor((Date.now() - Date.parse(bottledOn + "T00:00:00Z")) / 86_400_000);
+  if (!Number.isFinite(days) || days < 0) return <>—</>;
+  const stale = days >= 365;
+  let label: string;
+  if (days < 60) label = `${days}d`;
+  else if (days < 730) label = `${Math.round(days / 30)}mo`;
+  else label = `${(days / 365).toFixed(1)} yr`;
+  return <span className={stale ? "text-amber-700" : ""}>{label}</span>;
 }
 
 // Pager renders prev / next + "showing N–M of T" for a server-paginated list.
