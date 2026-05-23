@@ -903,6 +903,7 @@ type FermentationRun struct {
 	Notes              string             `json:"notes"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	YeastLotID         uuid.NullUUID      `json:"yeast_lot_id"`
 }
 
 type MashIngredientUsage struct {

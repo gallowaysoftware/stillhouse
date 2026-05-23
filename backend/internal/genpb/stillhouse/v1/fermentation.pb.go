@@ -88,6 +88,8 @@ type FermentationRun struct {
 	FermenterLabel        string                 `protobuf:"bytes,4,opt,name=fermenter_label,json=fermenterLabel,proto3" json:"fermenter_label,omitempty"`
 	YeastMaterialId       string                 `protobuf:"bytes,5,opt,name=yeast_material_id,json=yeastMaterialId,proto3" json:"yeast_material_id,omitempty"` // optional UUID; empty if none
 	YeastNotes            string                 `protobuf:"bytes,6,opt,name=yeast_notes,json=yeastNotes,proto3" json:"yeast_notes,omitempty"`
+	YeastLotId            string                 `protobuf:"bytes,24,opt,name=yeast_lot_id,json=yeastLotId,proto3" json:"yeast_lot_id,omitempty"`                   // optional UUID; empty if not lot-linked
+	YeastSupplierLot      string                 `protobuf:"bytes,25,opt,name=yeast_supplier_lot,json=yeastSupplierLot,proto3" json:"yeast_supplier_lot,omitempty"` // denormalized from material_lots when set
 	PitchAt               *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=pitch_at,json=pitchAt,proto3" json:"pitch_at,omitempty"`
 	TargetFinalGravity    float64                `protobuf:"fixed64,8,opt,name=target_final_gravity,json=targetFinalGravity,proto3" json:"target_final_gravity,omitempty"`
 	TargetFinalGravitySet bool                   `protobuf:"varint,9,opt,name=target_final_gravity_set,json=targetFinalGravitySet,proto3" json:"target_final_gravity_set,omitempty"`
@@ -180,6 +182,20 @@ func (x *FermentationRun) GetYeastMaterialId() string {
 func (x *FermentationRun) GetYeastNotes() string {
 	if x != nil {
 		return x.YeastNotes
+	}
+	return ""
+}
+
+func (x *FermentationRun) GetYeastLotId() string {
+	if x != nil {
+		return x.YeastLotId
+	}
+	return ""
+}
+
+func (x *FermentationRun) GetYeastSupplierLot() string {
+	if x != nil {
+		return x.YeastSupplierLot
 	}
 	return ""
 }
@@ -431,6 +447,7 @@ type CreateFermentationRunRequest struct {
 	InitialVolumeL        float64                `protobuf:"fixed64,8,opt,name=initial_volume_l,json=initialVolumeL,proto3" json:"initial_volume_l,omitempty"`
 	InitialVolumeLSet     bool                   `protobuf:"varint,9,opt,name=initial_volume_l_set,json=initialVolumeLSet,proto3" json:"initial_volume_l_set,omitempty"`
 	Notes                 string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
+	YeastLotId            string                 `protobuf:"bytes,11,opt,name=yeast_lot_id,json=yeastLotId,proto3" json:"yeast_lot_id,omitempty"` // optional; debits the lot on insert
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -531,6 +548,13 @@ func (x *CreateFermentationRunRequest) GetInitialVolumeLSet() bool {
 func (x *CreateFermentationRunRequest) GetNotes() string {
 	if x != nil {
 		return x.Notes
+	}
+	return ""
+}
+
+func (x *CreateFermentationRunRequest) GetYeastLotId() string {
+	if x != nil {
+		return x.YeastLotId
 	}
 	return ""
 }
@@ -1015,7 +1039,7 @@ var File_stillhouse_v1_fermentation_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\n" +
-	" stillhouse/v1/fermentation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x81\b\n" +
+	" stillhouse/v1/fermentation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd1\b\n" +
 	"\x0fFermentationRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1e\n" +
@@ -1023,7 +1047,10 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\x0ffermenter_label\x18\x04 \x01(\tR\x0efermenterLabel\x12*\n" +
 	"\x11yeast_material_id\x18\x05 \x01(\tR\x0fyeastMaterialId\x12\x1f\n" +
 	"\vyeast_notes\x18\x06 \x01(\tR\n" +
-	"yeastNotes\x125\n" +
+	"yeastNotes\x12 \n" +
+	"\fyeast_lot_id\x18\x18 \x01(\tR\n" +
+	"yeastLotId\x12,\n" +
+	"\x12yeast_supplier_lot\x18\x19 \x01(\tR\x10yeastSupplierLot\x125\n" +
 	"\bpitch_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\apitchAt\x120\n" +
 	"\x14target_final_gravity\x18\b \x01(\x01R\x12targetFinalGravity\x127\n" +
 	"\x18target_final_gravity_set\x18\t \x01(\bR\x15targetFinalGravitySet\x12(\n" +
@@ -1057,7 +1084,7 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\rtemperature_c\x18\b \x01(\x01R\ftemperatureC\x12*\n" +
 	"\x11temperature_c_set\x18\t \x01(\bR\x0ftemperatureCSet\x12\x14\n" +
 	"\x05notes\x18\n" +
-	" \x01(\tR\x05notes\"\xc7\x03\n" +
+	" \x01(\tR\x05notes\"\xe9\x03\n" +
 	"\x1cCreateFermentationRunRequest\x12\x1e\n" +
 	"\vmash_run_id\x18\x01 \x01(\tR\tmashRunId\x12'\n" +
 	"\x0ffermenter_label\x18\x02 \x01(\tR\x0efermenterLabel\x12*\n" +
@@ -1070,7 +1097,9 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\x10initial_volume_l\x18\b \x01(\x01R\x0einitialVolumeL\x12/\n" +
 	"\x14initial_volume_l_set\x18\t \x01(\bR\x11initialVolumeLSet\x12\x14\n" +
 	"\x05notes\x18\n" +
-	" \x01(\tR\x05notes\"Q\n" +
+	" \x01(\tR\x05notes\x12 \n" +
+	"\fyeast_lot_id\x18\v \x01(\tR\n" +
+	"yeastLotId\"Q\n" +
 	"\x1dCreateFermentationRunResponse\x120\n" +
 	"\x03run\x18\x01 \x01(\v2\x1e.stillhouse.v1.FermentationRunR\x03run\"+\n" +
 	"\x19GetFermentationRunRequest\x12\x0e\n" +

@@ -20,6 +20,9 @@ ORDER BY bm.occurred_at DESC;
 -- real chains may fan out and require iterating per-charge.
 SELECT dr.id AS distillation_run_id, dr.run_no AS distillation_run_no, dr.still_label,
        fr.id AS fermentation_run_id, fr.fermenter_label,
+       fr.yeast_lot_id AS yeast_lot_id,
+       yml.supplier_lot AS yeast_supplier_lot,
+       ym.name          AS yeast_material_name,
        mr.id AS mash_run_id, mr.mash_no, mr.mash_date,
        rv.id AS recipe_version_id, rv.version_no AS recipe_version_no,
        r.id  AS recipe_id, r.name AS recipe_name
@@ -27,6 +30,8 @@ FROM production_gauges pg
 JOIN distillation_runs dr      ON dr.id = pg.distillation_run_id
 LEFT JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
 LEFT JOIN fermentation_runs fr    ON fr.id = dc.fermentation_run_id
+LEFT JOIN material_lots yml       ON yml.id = fr.yeast_lot_id
+LEFT JOIN materials ym            ON ym.id = fr.yeast_material_id
 LEFT JOIN mash_runs mr            ON mr.id = fr.mash_run_id
 LEFT JOIN recipe_versions rv      ON rv.id = mr.recipe_version_id
 LEFT JOIN recipes r               ON r.id = rv.recipe_id

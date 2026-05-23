@@ -142,6 +142,9 @@ func (q *Queries) BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChai
 const distillationChainFromGauge = `-- name: DistillationChainFromGauge :one
 SELECT dr.id AS distillation_run_id, dr.run_no AS distillation_run_no, dr.still_label,
        fr.id AS fermentation_run_id, fr.fermenter_label,
+       fr.yeast_lot_id AS yeast_lot_id,
+       yml.supplier_lot AS yeast_supplier_lot,
+       ym.name          AS yeast_material_name,
        mr.id AS mash_run_id, mr.mash_no, mr.mash_date,
        rv.id AS recipe_version_id, rv.version_no AS recipe_version_no,
        r.id  AS recipe_id, r.name AS recipe_name
@@ -149,6 +152,8 @@ FROM production_gauges pg
 JOIN distillation_runs dr      ON dr.id = pg.distillation_run_id
 LEFT JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
 LEFT JOIN fermentation_runs fr    ON fr.id = dc.fermentation_run_id
+LEFT JOIN material_lots yml       ON yml.id = fr.yeast_lot_id
+LEFT JOIN materials ym            ON ym.id = fr.yeast_material_id
 LEFT JOIN mash_runs mr            ON mr.id = fr.mash_run_id
 LEFT JOIN recipe_versions rv      ON rv.id = mr.recipe_version_id
 LEFT JOIN recipes r               ON r.id = rv.recipe_id
@@ -163,6 +168,9 @@ type DistillationChainFromGaugeRow struct {
 	StillLabel        string        `json:"still_label"`
 	FermentationRunID uuid.NullUUID `json:"fermentation_run_id"`
 	FermenterLabel    pgtype.Text   `json:"fermenter_label"`
+	YeastLotID        uuid.NullUUID `json:"yeast_lot_id"`
+	YeastSupplierLot  pgtype.Text   `json:"yeast_supplier_lot"`
+	YeastMaterialName pgtype.Text   `json:"yeast_material_name"`
 	MashRunID         uuid.NullUUID `json:"mash_run_id"`
 	MashNo            pgtype.Int4   `json:"mash_no"`
 	MashDate          pgtype.Date   `json:"mash_date"`
@@ -184,6 +192,9 @@ func (q *Queries) DistillationChainFromGauge(ctx context.Context, bulkMovementID
 		&i.StillLabel,
 		&i.FermentationRunID,
 		&i.FermenterLabel,
+		&i.YeastLotID,
+		&i.YeastSupplierLot,
+		&i.YeastMaterialName,
 		&i.MashRunID,
 		&i.MashNo,
 		&i.MashDate,

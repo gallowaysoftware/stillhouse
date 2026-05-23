@@ -56,11 +56,11 @@ func (q *Queries) AddFermentationLog(ctx context.Context, arg AddFermentationLog
 
 const createFermentationRun = `-- name: CreateFermentationRun :one
 INSERT INTO fermentation_runs (
-    tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes,
+    tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_lot_id, yeast_notes,
     pitch_at, target_final_gravity, initial_volume_l, status, notes
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-) RETURNING id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+) RETURNING id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at, yeast_lot_id
 `
 
 type CreateFermentationRunParams struct {
@@ -68,6 +68,7 @@ type CreateFermentationRunParams struct {
 	MashRunID          uuid.UUID          `json:"mash_run_id"`
 	FermenterLabel     string             `json:"fermenter_label"`
 	YeastMaterialID    uuid.NullUUID      `json:"yeast_material_id"`
+	YeastLotID         uuid.NullUUID      `json:"yeast_lot_id"`
 	YeastNotes         string             `json:"yeast_notes"`
 	PitchAt            pgtype.Timestamptz `json:"pitch_at"`
 	TargetFinalGravity pgtype.Float8      `json:"target_final_gravity"`
@@ -82,6 +83,7 @@ func (q *Queries) CreateFermentationRun(ctx context.Context, arg CreateFermentat
 		arg.MashRunID,
 		arg.FermenterLabel,
 		arg.YeastMaterialID,
+		arg.YeastLotID,
 		arg.YeastNotes,
 		arg.PitchAt,
 		arg.TargetFinalGravity,
@@ -104,12 +106,13 @@ func (q *Queries) CreateFermentationRun(ctx context.Context, arg CreateFermentat
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.YeastLotID,
 	)
 	return i, err
 }
 
 const getFermentationRun = `-- name: GetFermentationRun :one
-SELECT id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at FROM fermentation_runs WHERE id = $1
+SELECT id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at, yeast_lot_id FROM fermentation_runs WHERE id = $1
 `
 
 func (q *Queries) GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error) {
@@ -129,6 +132,7 @@ func (q *Queries) GetFermentationRun(ctx context.Context, id uuid.UUID) (Ferment
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.YeastLotID,
 	)
 	return i, err
 }
@@ -169,7 +173,7 @@ func (q *Queries) ListFermentationLogs(ctx context.Context, fermentationRunID uu
 }
 
 const listFermentationRuns = `-- name: ListFermentationRuns :many
-SELECT fr.id, fr.tenant_id, fr.mash_run_id, fr.fermenter_label, fr.yeast_material_id, fr.yeast_notes, fr.pitch_at, fr.target_final_gravity, fr.initial_volume_l, fr.status, fr.notes, fr.created_at, fr.updated_at,
+SELECT fr.id, fr.tenant_id, fr.mash_run_id, fr.fermenter_label, fr.yeast_material_id, fr.yeast_notes, fr.pitch_at, fr.target_final_gravity, fr.initial_volume_l, fr.status, fr.notes, fr.created_at, fr.updated_at, fr.yeast_lot_id,
        mr.mash_no   AS mash_no,
        mr.mash_date AS mash_date,
        r.name       AS recipe_name
@@ -195,6 +199,7 @@ type ListFermentationRunsRow struct {
 	Notes              string             `json:"notes"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
+	YeastLotID         uuid.NullUUID      `json:"yeast_lot_id"`
 	MashNo             int32              `json:"mash_no"`
 	MashDate           pgtype.Date        `json:"mash_date"`
 	RecipeName         string             `json:"recipe_name"`
@@ -223,6 +228,7 @@ func (q *Queries) ListFermentationRuns(ctx context.Context, status NullFermentat
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.YeastLotID,
 			&i.MashNo,
 			&i.MashDate,
 			&i.RecipeName,
@@ -238,7 +244,7 @@ func (q *Queries) ListFermentationRuns(ctx context.Context, status NullFermentat
 }
 
 const listFermentationRunsByMash = `-- name: ListFermentationRunsByMash :many
-SELECT id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at FROM fermentation_runs
+SELECT id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at, yeast_lot_id FROM fermentation_runs
 WHERE mash_run_id = $1
 ORDER BY pitch_at
 `
@@ -266,6 +272,7 @@ func (q *Queries) ListFermentationRunsByMash(ctx context.Context, mashRunID uuid
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.YeastLotID,
 		); err != nil {
 			return nil, err
 		}
@@ -278,7 +285,7 @@ func (q *Queries) ListFermentationRunsByMash(ctx context.Context, mashRunID uuid
 }
 
 const updateFermentationStatus = `-- name: UpdateFermentationStatus :one
-UPDATE fermentation_runs SET status = $2 WHERE id = $1 RETURNING id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at
+UPDATE fermentation_runs SET status = $2 WHERE id = $1 RETURNING id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at, yeast_lot_id
 `
 
 type UpdateFermentationStatusParams struct {
@@ -303,6 +310,7 @@ func (q *Queries) UpdateFermentationStatus(ctx context.Context, arg UpdateFermen
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.YeastLotID,
 	)
 	return i, err
 }

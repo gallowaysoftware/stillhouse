@@ -119,6 +119,15 @@ func (s *TraceabilityService) TraceBottlingRun(
 						Kind: "fermentation_run", Id: nullUUIDString(chain.FermentationRunID),
 						Headline: fmt.Sprintf("    ↳ Fermentation %s", chain.FermenterLabel.String),
 					},
+				)
+				if chain.YeastLotID.Valid {
+					resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
+						Kind: "yeast_lot", Id: chain.YeastLotID.UUID.String(),
+						Headline: fmt.Sprintf("      ↳ Yeast: %s lot %s",
+							chain.YeastMaterialName.String, chain.YeastSupplierLot.String),
+					})
+				}
+				resp.Nodes = append(resp.Nodes,
 					&stillhousev1.TraceabilityNode{
 						Kind: "mash_run", Id: nullUUIDString(chain.MashRunID),
 						Headline: fmt.Sprintf("      ↳ Mash #%d on %s", chain.MashNo.Int32, formatDate(chain.MashDate)),

@@ -18,6 +18,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -47,8 +48,9 @@ qa/runs/<timestamp>/qa-report.md — findings only, no code changes.`,
 	}
 
 	root.AddCommand(prepareCommand())
-	// TODO: discover, plan, run, deepen, report, all — each lands as
-	// its own pipeline.go file under internal/pipeline.
+	root.AddCommand(discoverCommand())
+	// TODO: plan, run, deepen, report, all — each lands as its own
+	// pipeline.go file under internal/pipeline.
 
 	if err := root.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, "stillhouse-qa:", err)
@@ -82,5 +84,55 @@ prompt edit surfaces in subsequent QA cycles without staleness.`,
 		},
 	}
 	cmd.Flags().StringVar(&outDir, "out", "qa/runs/prepare", "Directory the primer + intermediate stage outputs land in.")
+	return cmd
+}
+
+func discoverCommand() *cobra.Command {
+	var (
+		outDir         string
+		primerFile     string
+		stillhouseRoot string
+	)
+	cmd := &cobra.Command{
+		Use:   "discover",
+		Short: "Read primer + README + proto → emit a structured entity/workflow/invariant JSON.",
+		Long: `discover stages the Stillhouse proto files + README into the run dir,
+then runs an LLM phase that maps the app's QA-relevant structure
+into discovery.json. The plan / run / deepen phases consume this
+JSON to drive test-case generation and probe execution.
+
+By default the discovery looks for the primer at
+qa/runs/prepare-001/primer.md (the prepare phase's canonical output
+path); override with --primer if a prior run lives elsewhere.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := os.MkdirAll(outDir, 0o755); err != nil {
+				return fmt.Errorf("mkdir out: %w", err)
+			}
+			protoDst := filepath.Join(outDir, "proto-bundle.txt")
+			files, err := pipeline.StageProtoConcat(
+				filepath.Join(stillhouseRoot, "proto"), protoDst,
+			)
+			if err != nil {
+				return fmt.Errorf("stage proto bundle: %w", err)
+			}
+			fmt.Fprintf(cmd.ErrOrStderr(), "staged %d proto files → %s\n", len(files), protoDst)
+
+			root, err := vamp.BuildRoot(func() (*vamp.Pipeline, error) {
+				return pipeline.BuildDiscover(pipeline.DiscoverConfig{
+					PrimerFile:      primerFile,
+					ReadmeFile:      filepath.Join(stillhouseRoot, "README.md"),
+					ProtoConcatFile: protoDst,
+				})
+			})
+			if err != nil {
+				return err
+			}
+			root.SetArgs(append([]string{"run", "--run-dir", outDir}, args...))
+			return root.Execute()
+		},
+	}
+	cmd.Flags().StringVar(&outDir, "out", "qa/runs/discover", "Directory discovery.json + the proto bundle land in.")
+	cmd.Flags().StringVar(&primerFile, "primer", "qa/runs/prepare-001/primer.md", "Path to the primer.md a prior prepare run produced.")
+	cmd.Flags().StringVar(&stillhouseRoot, "stillhouse-root", ".", "Path to the Stillhouse repo root (where proto/ + README.md live).")
 	return cmd
 }

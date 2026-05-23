@@ -21,6 +21,8 @@ message FermentationRun {
 
   string yeast_material_id = 5;       // optional UUID; empty if none
   string yeast_notes = 6;
+  string yeast_lot_id = 24;            // optional UUID; empty if not lot-linked
+  string yeast_supplier_lot = 25;      // denormalized from material_lots when set
 
   google.protobuf.Timestamp pitch_at = 7;
   double target_final_gravity = 8;
@@ -75,6 +77,7 @@ message CreateFermentationRunRequest {
   double initial_volume_l = 8;
   bool   initial_volume_l_set = 9;
   string notes = 10;
+  string yeast_lot_id = 11;                  // optional; debits the lot on insert
 }
 message CreateFermentationRunResponse { FermentationRun run = 1; }
 

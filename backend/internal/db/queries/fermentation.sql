@@ -1,9 +1,9 @@
 -- name: CreateFermentationRun :one
 INSERT INTO fermentation_runs (
-    tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes,
+    tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_lot_id, yeast_notes,
     pitch_at, target_final_gravity, initial_volume_l, status, notes
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 ) RETURNING *;
 
 -- name: GetFermentationRun :one

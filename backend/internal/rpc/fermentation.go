@@ -50,6 +50,14 @@ func (s *FermentationService) CreateFermentationRun(
 		}
 		yeastID = uuid.NullUUID{UUID: id, Valid: true}
 	}
+	var yeastLotID uuid.NullUUID
+	if s := in.GetYeastLotId(); s != "" {
+		id, e := uuid.Parse(s)
+		if e != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid yeast_lot_id"))
+		}
+		yeastLotID = uuid.NullUUID{UUID: id, Valid: true}
+	}
 
 	var run sqlcgen.FermentationRun
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
@@ -62,6 +70,7 @@ func (s *FermentationService) CreateFermentationRun(
 			MashRunID:           mashID,
 			FermenterLabel:      in.GetFermenterLabel(),
 			YeastMaterialID:     yeastID,
+			YeastLotID:          yeastLotID,
 			YeastNotes:          in.GetYeastNotes(),
 			PitchAt:             pitch,
 			TargetFinalGravity:  optionalFloat(in.GetTargetFinalGravitySet(), in.GetTargetFinalGravity()),
@@ -77,6 +86,7 @@ func (s *FermentationService) CreateFermentationRun(
 				"mash_run_id":     mashID.String(),
 				"fermenter_label": run.FermenterLabel,
 				"initial_volume":  in.GetInitialVolumeL(),
+				"yeast_lot_id":    nullUUIDString(yeastLotID),
 			})
 	})
 	if err != nil {
@@ -332,6 +342,9 @@ func fermentationRunToProto(
 	}
 	if r.YeastMaterialID.Valid {
 		out.YeastMaterialId = r.YeastMaterialID.UUID.String()
+	}
+	if r.YeastLotID.Valid {
+		out.YeastLotId = r.YeastLotID.UUID.String()
 	}
 	if r.TargetFinalGravity.Valid {
 		out.TargetFinalGravity = r.TargetFinalGravity.Float64
