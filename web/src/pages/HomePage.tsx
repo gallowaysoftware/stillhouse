@@ -78,6 +78,7 @@ export function HomePage() {
       <B266DueCallout periodEnd={end} hasBottling={hasBottling} />
       <StampLowStockCallout summaries={stamps.data?.summaries ?? []} />
       <StagnantBulkCallout containers={bulk.data?.containers ?? []} />
+      <CWForecastSection barrels={barrels.data?.barrels ?? []} />
 
       {!completedAll && allLoaded && (
         <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
@@ -186,6 +187,62 @@ export function HomePage() {
         </section>
       )}
     </Shell>
+  );
+}
+
+// CWForecastSection projects when in-cask LAA will cross the Canadian
+// Whisky 3-year eligibility threshold, binned by calendar quarter. Eligible
+// LAA today shows in the first bucket; a barrel 200 days from CW shows in
+// whatever quarter that lands in. Non-small-wood barrels are excluded —
+// they can age forever without becoming CW.
+function CWForecastSection({ barrels }: { barrels: { currentLaa: number; canadianWhiskyEligible: boolean; smallWood: boolean; daysToCanadianWhiskyEligible: number }[] }) {
+  const eligible = barrels.filter((b) => b.smallWood && b.currentLaa > 0);
+  if (eligible.length === 0) return null;
+  // 6 quarter-buckets ahead, plus a "ready now" bucket.
+  const buckets: { label: string; laa: number; count: number }[] = [
+    { label: "Ready now", laa: 0, count: 0 },
+  ];
+  const now = new Date();
+  for (let i = 0; i < 6; i++) {
+    const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + i * 3, 1));
+    buckets.push({ label: `${["Q1","Q2","Q3","Q4"][Math.floor(start.getUTCMonth() / 3)]} ${start.getUTCFullYear()}`, laa: 0, count: 0 });
+  }
+  for (const b of eligible) {
+    if (b.canadianWhiskyEligible) {
+      buckets[0].laa += b.currentLaa;
+      buckets[0].count++;
+      continue;
+    }
+    const target = new Date(now.getTime() + b.daysToCanadianWhiskyEligible * 86_400_000);
+    const monthsFromNow = (target.getUTCFullYear() - now.getUTCFullYear()) * 12 + (target.getUTCMonth() - now.getUTCMonth());
+    const idx = 1 + Math.floor(monthsFromNow / 3);
+    if (idx >= 1 && idx < buckets.length) {
+      buckets[idx].laa += b.currentLaa;
+      buckets[idx].count++;
+    }
+  }
+  // Drop trailing zero buckets so a small operation doesn't waste real estate.
+  while (buckets.length > 1 && buckets[buckets.length - 1].count === 0) {
+    buckets.pop();
+  }
+  return (
+    <section className="mb-8">
+      <h2 className="mb-3 text-xs font-semibold uppercase text-stone-500">Canadian Whisky maturation forecast</h2>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-7">
+        {buckets.map((b, i) => (
+          <div key={b.label} className={`rounded-lg border p-3 ${i === 0 ? "border-emerald-200 bg-emerald-50" : "border-stone-200 bg-white"}`}>
+            <p className="text-xs uppercase text-stone-500">{b.label}</p>
+            <p className={`mt-1 text-base font-semibold ${i === 0 ? "text-emerald-700" : "text-stone-900"}`}>
+              {b.laa.toFixed(1)} L
+            </p>
+            <p className="text-xs text-stone-500">{b.count} barrel{b.count === 1 ? "" : "s"}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-2 text-xs text-stone-500">
+        Only small-wood barrels (≤700 L) shown — FDR B.02.020 excludes larger casks from the CW class.
+      </p>
+    </section>
   );
 }
 
