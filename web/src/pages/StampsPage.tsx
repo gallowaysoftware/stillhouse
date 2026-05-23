@@ -96,7 +96,7 @@ export function StampsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Excise stamps</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             Province-coded stamps from CRA. Order, receive, then apply at bottling.
             Jurisdiction codes use ISO 3166-2 (CA-ON, CA-QC, CA-BC, …).
           </p>
@@ -104,7 +104,7 @@ export function StampsPage() {
         <WriteOnly>
           <button
             onClick={() => setShowOrderForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showOrderForm ? "Cancel" : "Order stamps"}
           </button>
@@ -114,10 +114,10 @@ export function StampsPage() {
       {list.data?.summaries && list.data.summaries.length > 0 && (
         <section className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {list.data.summaries.map((s) => (
-            <div key={s.jurisdiction} className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-              <p className="text-xs uppercase text-stone-500">{s.jurisdiction}</p>
-              <p className="mt-1 text-2xl font-semibold text-stone-900">{s.totalOnHand.toLocaleString()}</p>
-              <p className="text-xs text-stone-500">
+            <div key={s.jurisdiction} className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
+              <p className="text-xs uppercase text-fg-muted">{s.jurisdiction}</p>
+              <p className="mt-1 text-2xl font-semibold text-fg">{s.totalOnHand.toLocaleString()}</p>
+              <p className="text-xs text-fg-muted">
                 on hand · {s.totalApplied.toLocaleString()} applied · {s.totalReceived.toLocaleString()} received
               </p>
             </div>
@@ -128,30 +128,30 @@ export function StampsPage() {
       {showOrderForm && (
         <form
           onSubmit={submitOrder}
-          className="mb-6 grid grid-cols-3 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-3 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Jurisdiction</label>
-            <input name="jurisdiction" placeholder="CA-ON" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Jurisdiction</label>
+            <input name="jurisdiction" placeholder="CA-ON" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Quantity</label>
-            <input name="quantity_ordered" type="number" min="1" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Quantity</label>
+            <input name="quantity_ordered" type="number" min="1" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
-            <input name="notes" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <input name="notes" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-3 flex items-center gap-3">
             <button
               type="submit"
               disabled={createOrder.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createOrder.isPending ? "Saving…" : "Place order"}
             </button>
             {createOrder.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createOrder.error instanceof ConnectError
                   ? createOrder.error.rawMessage
                   : String(createOrder.error)}
@@ -161,9 +161,9 @@ export function StampsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Jurisdiction</th>
               <th className="px-4 py-3">Ordered</th>
@@ -176,29 +176,29 @@ export function StampsPage() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.data?.orders.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-3 text-stone-500">No stamp orders yet.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">No stamp orders yet.</td></tr>
             )}
             {list.data?.orders.map((o) => (
               <tr key={o.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">{o.jurisdiction}</td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 font-medium text-fg">{o.jurisdiction}</td>
+                <td className="px-4 py-3 text-fg-muted">
                   {o.orderedAt ? new Date(Number(o.orderedAt.seconds) * 1000).toLocaleDateString() : ""}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{statusLabel[o.status]}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{o.quantityOrdered}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{o.quantityReceived}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{o.quantityApplied}</td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">{o.availableCount}</td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">{statusLabel[o.status]}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{o.quantityOrdered}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{o.quantityReceived}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{o.quantityApplied}</td>
+                <td className="px-4 py-3 text-right font-medium text-fg">{o.availableCount}</td>
+                <td className="px-4 py-3 text-fg-muted">
                   {o.serialStart && o.serialEnd ? `${o.serialStart}..${o.serialEnd}` : "—"}
                 </td>
                 <td className="px-4 py-3 space-x-3">
                   {o.status === ExciseStampOrderStatus.ORDERED && writeable && (
                     <button
                       onClick={() => setReceivingId(receivingId === o.id ? null : o.id)}
-                      className="text-stone-600 hover:text-stone-900"
+                      className="text-fg-muted hover:text-fg"
                     >
                       {receivingId === o.id ? "Cancel" : "Receive"}
                     </button>
@@ -207,7 +207,7 @@ export function StampsPage() {
                     <button
                       onClick={() => onVoid(o.id, o.availableCount)}
                       disabled={voidStamps.isPending}
-                      className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                      className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
                     >
                       Void
                     </button>
@@ -225,40 +225,40 @@ export function StampsPage() {
         return (
           <form
             onSubmit={(e) => submitReceive(order.id, e)}
-            className="mt-4 grid grid-cols-3 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+            className="mt-4 grid grid-cols-3 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
           >
-            <h2 className="col-span-3 text-sm font-semibold uppercase text-stone-500">
+            <h2 className="col-span-3 text-sm font-semibold uppercase text-fg-muted">
               Receive order for {order.jurisdiction}
             </h2>
             <div>
-              <label className="mb-1 block text-xs font-medium text-stone-600">Quantity received</label>
+              <label className="mb-1 block text-xs font-medium text-fg-muted">Quantity received</label>
               <input
                 name="quantity_received"
                 type="number"
                 min="1"
                 defaultValue={order.quantityOrdered}
                 required
-                className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded border border-border-strong px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-stone-600">Serial start</label>
-              <input name="serial_start" placeholder="ABC00001" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-xs font-medium text-fg-muted">Serial start</label>
+              <input name="serial_start" placeholder="ABC00001" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-stone-600">Serial end</label>
-              <input name="serial_end" placeholder="ABC10000" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+              <label className="mb-1 block text-xs font-medium text-fg-muted">Serial end</label>
+              <input name="serial_end" placeholder="ABC10000" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             </div>
             <div className="col-span-3 flex items-center gap-3">
               <button
                 type="submit"
                 disabled={receive.isPending}
-                className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+                className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
               >
                 {receive.isPending ? "Saving…" : "Mark received"}
               </button>
               {receive.error && (
-                <span className="text-sm text-red-600">
+                <span className="text-sm text-red-400">
                   {receive.error instanceof ConnectError
                     ? receive.error.rawMessage
                     : String(receive.error)}

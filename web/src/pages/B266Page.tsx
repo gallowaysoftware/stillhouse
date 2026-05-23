@@ -76,7 +76,7 @@ export function B266Page() {
     <Shell>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">CRA Form B266</h1>
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-fg-muted">
           Monthly Excise Duty Return — Spirits Licensee. Pick a period, generate the
           values, copy them into the My Business Account return.
           Generated today {todayISO()}; rates effective April 1, 2026.
@@ -86,27 +86,27 @@ export function B266Page() {
       <form
         data-print-hide
         onSubmit={generateNow}
-        className="mb-8 flex flex-wrap items-end gap-3 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+        className="mb-8 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
       >
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Period start</label>
-          <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required className="rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Period start</label>
+          <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Period end</label>
-          <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required className="rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Period end</label>
+          <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <WriteOnly>
           <button
             type="submit"
             disabled={generate.isPending}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
           >
             {generate.isPending ? "Generating…" : "Generate"}
           </button>
         </WriteOnly>
         {generate.error && (
-          <span className="text-sm text-red-600">
+          <span className="text-sm text-red-400">
             {generate.error instanceof ConnectError ? generate.error.rawMessage : String(generate.error)}
           </span>
         )}
@@ -123,29 +123,29 @@ export function B266Page() {
         />
       )}
 
-      <h2 data-print-hide className="mb-3 mt-10 text-sm font-semibold uppercase text-stone-500">Past returns</h2>
-      <div data-print-hide className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 data-print-hide className="mb-3 mt-10 text-sm font-semibold uppercase text-fg-muted">Past returns</h2>
+      <div data-print-hide className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Period</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Submitted</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {periods.data?.periods.length === 0 && (
-              <tr><td colSpan={3} className="px-4 py-3 text-stone-500">No periods yet.</td></tr>
+              <tr><td colSpan={3} className="px-4 py-3 text-fg-muted">No periods yet.</td></tr>
             )}
             {periods.data?.periods.map((p) => (
               <tr
                 key={p.id}
-                className={`cursor-pointer hover:bg-stone-50 ${openPeriodId === p.id ? "bg-stone-50" : ""}`}
+                className={`cursor-pointer hover:bg-surface-3 ${openPeriodId === p.id ? "bg-surface-3" : ""}`}
                 onClick={() => setOpenPeriodId(openPeriodId === p.id ? "" : p.id)}
               >
-                <td className="px-4 py-3 font-medium text-stone-900">{p.periodStart} → {p.periodEnd}</td>
-                <td className="px-4 py-3 text-stone-600">{p.status === B266Status.SUBMITTED ? "Submitted" : "Draft"}</td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 font-medium text-fg">{p.periodStart} → {p.periodEnd}</td>
+                <td className="px-4 py-3 text-fg-muted">{p.status === B266Status.SUBMITTED ? "Submitted" : "Draft"}</td>
+                <td className="px-4 py-3 text-fg-muted">
                   {p.submittedAt ? new Date(Number(p.submittedAt.seconds) * 1000).toLocaleString() : "—"}
                 </td>
               </tr>
@@ -156,12 +156,12 @@ export function B266Page() {
 
       {openPeriodId && (
         <section className="mt-6">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">
             Snapshot · {openPeriod.data?.period?.periodStart} → {openPeriod.data?.period?.periodEnd}
           </h2>
-          {openPeriod.isLoading && <p className="text-stone-500">Loading…</p>}
+          {openPeriod.isLoading && <p className="text-fg-muted">Loading…</p>}
           {openPeriod.data && !openPeriod.data.snapshot && (
-            <p className="text-sm text-stone-500">
+            <p className="text-sm text-fg-muted">
               This period was never submitted — no frozen snapshot exists. Re-generate it above
               with the same period bounds to recompute.
             </p>
@@ -203,8 +203,8 @@ function ReportView({
   const periodEnd = period?.periodEnd ?? report.periodEnd;
   return (
     <section className="space-y-6">
-      <div data-print-only className="border-b border-stone-300 pb-4">
-        <p className="text-xs uppercase text-stone-500">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
+      <div data-print-only className="border-b border-border-strong pb-4">
+        <p className="text-xs uppercase text-fg-muted">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
         <h2 className="mt-1 text-xl font-semibold">{tenantName || "Distillery"}</h2>
         <p className="mt-1 text-sm">
           Period {periodStart} → {periodEnd}
@@ -242,7 +242,7 @@ function ReportView({
       <div data-print-hide className="flex items-center gap-3">
         <button
           onClick={() => window.print()}
-          className="rounded border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
+          className="rounded border border-border-strong px-3 py-2 text-sm text-fg hover:bg-surface-3"
         >
           Print / Save as PDF
         </button>
@@ -254,23 +254,23 @@ function ReportView({
           <button
             onClick={onSubmit}
             disabled={submitting}
-            className="rounded bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-stone-400"
+            className="rounded bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-accent/50"
           >
             {submitting ? "Submitting…" : "Mark submitted (freeze snapshot)"}
           </button>
           {submitError && (
-            <span className="text-sm text-red-600">
+            <span className="text-sm text-red-400">
               {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
             </span>
           )}
-          <p className="text-xs text-stone-500">
+          <p className="text-xs text-fg-muted">
             Marking submitted freezes the values for audit. Make sure you've entered these into the CRA portal first.
           </p>
         </div>
         </OwnerOnly>
       )}
       {submittedStatus === B266Status.SUBMITTED && (
-        <p className="rounded bg-emerald-50 px-4 py-2 text-sm text-emerald-700">This return is submitted; the snapshot is frozen.</p>
+        <p className="rounded bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">This return is submitted; the snapshot is frozen.</p>
       )}
     </section>
   );
@@ -278,11 +278,11 @@ function ReportView({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-      <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-stone-500">{title}</h2>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
       </header>
-      <dl className="divide-y divide-stone-100 text-sm">{children}</dl>
+      <dl className="divide-y divide-border text-sm">{children}</dl>
     </div>
   );
 }
@@ -291,9 +291,9 @@ function Row({
   k, v, bold, dim, highlight,
 }: { k: string; v: string; bold?: boolean; dim?: boolean; highlight?: boolean }) {
   return (
-    <div className={`flex items-center justify-between px-4 py-2 ${highlight ? "bg-emerald-50" : ""}`}>
-      <dt className={`text-stone-500 ${dim ? "text-stone-400" : ""}`}>{k}</dt>
-      <dd className={`font-mono ${bold ? "font-semibold text-stone-900" : "text-stone-700"} ${highlight ? "text-emerald-700" : ""}`}>{v}</dd>
+    <div className={`flex items-center justify-between px-4 py-2 ${highlight ? "bg-emerald-500/10" : ""}`}>
+      <dt className={`text-fg-muted ${dim ? "text-fg-subtle" : ""}`}>{k}</dt>
+      <dd className={`font-mono ${bold ? "font-semibold text-fg" : "text-fg"} ${highlight ? "text-emerald-400" : ""}`}>{v}</dd>
     </div>
   );
 }

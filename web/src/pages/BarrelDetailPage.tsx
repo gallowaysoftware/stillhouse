@@ -77,7 +77,7 @@ export function BarrelDetailPage() {
   }
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
-  if (detail.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
+  if (detail.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
   if (!detail.data?.barrel) return <Shell><p>Not found.</p></Shell>;
   const b = detail.data.barrel;
 
@@ -89,7 +89,7 @@ export function BarrelDetailPage() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{b.name}</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             {b.cooperageSupplier || "Unknown cooperage"}
             {b.charLevelSet && <> · char #{b.charLevel}</>}
             {b.capacityLSet && <> · {formatQty(b.capacityL)} L</>}
@@ -97,7 +97,7 @@ export function BarrelDetailPage() {
             {b.serialBurnin && <> · {b.serialBurnin}</>}
           </p>
           {(b.rickhouse || b.rowPosition || b.levelPosition || b.columnPosition) && (
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-fg-muted">
               {[b.rickhouse, b.rowPosition && `row ${b.rowPosition}`, b.levelPosition && `lvl ${b.levelPosition}`, b.columnPosition && `col ${b.columnPosition}`]
                 .filter(Boolean)
                 .join(" · ")}
@@ -107,25 +107,25 @@ export function BarrelDetailPage() {
         <div className="text-right">
           {b.fillDate ? (
             <>
-              <p className="text-xs uppercase text-stone-500">Aging</p>
-              <p className="text-2xl font-semibold text-stone-900">{b.daysAged} days</p>
+              <p className="text-xs uppercase text-fg-muted">Aging</p>
+              <p className="text-2xl font-semibold text-fg">{b.daysAged} days</p>
               {b.canadianWhiskyEligible ? (
-                <p className="text-xs text-emerald-700">Canadian Whisky eligible</p>
+                <p className="text-xs text-emerald-400">Canadian Whisky eligible</p>
               ) : b.smallWood ? (
-                <p className="text-xs text-blue-700">{b.daysToCanadianWhiskyEligible} d to CW eligibility</p>
+                <p className="text-xs text-blue-300">{b.daysToCanadianWhiskyEligible} d to CW eligibility</p>
               ) : (
-                <p className="text-xs text-amber-700">Aging in non-small-wood vessel</p>
+                <p className="text-xs text-amber-400">Aging in non-small-wood vessel</p>
               )}
-              {b.fillDate && <p className="mt-1 text-xs text-stone-500">filled {b.fillDate}</p>}
+              {b.fillDate && <p className="mt-1 text-xs text-fg-muted">filled {b.fillDate}</p>}
             </>
           ) : b.daysAgedAtDumpSet ? (
             <>
-              <p className="text-xs uppercase text-stone-500">Last filled for</p>
-              <p className="text-2xl font-semibold text-stone-900">{b.daysAgedAtDump} days</p>
-              <p className="text-xs text-stone-500">currently empty</p>
+              <p className="text-xs uppercase text-fg-muted">Last filled for</p>
+              <p className="text-2xl font-semibold text-fg">{b.daysAgedAtDump} days</p>
+              <p className="text-xs text-fg-muted">currently empty</p>
             </>
           ) : (
-            <p className="text-sm text-stone-500">Empty / never filled</p>
+            <p className="text-sm text-fg-muted">Empty / never filled</p>
           )}
         </div>
       </header>
@@ -165,10 +165,10 @@ export function BarrelDetailPage() {
         )}
       </section>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Event history</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Event history</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Event</th>
@@ -179,26 +179,26 @@ export function BarrelDetailPage() {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {detail.data.events.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-3 text-stone-500">No events yet.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-3 text-fg-muted">No events yet.</td></tr>
             )}
             {detail.data.events.map((e) => (
               <tr key={e.id}>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">
                   {e.eventDate ? new Date(Number(e.eventDate.seconds) * 1000).toLocaleString() : ""}
                 </td>
-                <td className="px-4 py-3 font-medium text-stone-900">{eventKindLabels[e.kind] ?? "—"}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{e.volumeLSet ? formatQty(e.volumeL) : "—"}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{e.abvPctSet ? `${e.abvPct.toFixed(2)}%` : "—"}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{e.laaSet ? formatLAA(e.laa) : "—"}</td>
-                <td className="px-4 py-3 text-stone-600">{e.notes}</td>
+                <td className="px-4 py-3 font-medium text-fg">{eventKindLabels[e.kind] ?? "—"}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{e.volumeLSet ? formatQty(e.volumeL) : "—"}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{e.abvPctSet ? `${e.abvPct.toFixed(2)}%` : "—"}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{e.laaSet ? formatLAA(e.laa) : "—"}</td>
+                <td className="px-4 py-3 text-fg-muted">{e.notes}</td>
                 <td className="px-4 py-3 text-right">
                   {e.kind !== BarrelEventKind.REGAUGE && (
                     <button
                       onClick={() => onVoidEvent(e.id, e.kind)}
                       disabled={voidEvent.isPending}
-                      className="text-xs text-stone-500 hover:text-red-700 disabled:opacity-50"
+                      className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
                     >
                       Void
                     </button>
@@ -298,9 +298,9 @@ function RegaugeCard({
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Regauge</Submit>
         {lastResult && lastResult.lostLaa > 0 && (
-          <p className="text-xs text-amber-700">Recorded loss: {formatLAA(lastResult.lostLaa)} L LAA</p>
+          <p className="text-xs text-amber-400">Recorded loss: {formatLAA(lastResult.lostLaa)} L LAA</p>
         )}
-        <p className="text-xs text-stone-500">
+        <p className="text-xs text-fg-muted">
           Difference vs current is recorded as a loss_evaporation movement.
         </p>
       </form>
@@ -358,9 +358,9 @@ function DumpCard({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-      <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-stone-500">{title}</h2>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
       </header>
       {children}
     </div>
@@ -370,13 +370,13 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 function NumField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       <input
         type="number"
         step="0.01"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+        className="w-full rounded border border-border-strong px-3 py-2 text-sm"
       />
     </div>
   );
@@ -385,12 +385,12 @@ function NumField({ label, value, onChange }: { label: string; value: string; on
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+        className="w-full rounded border border-border-strong px-3 py-2 text-sm"
       />
     </div>
   );
@@ -409,11 +409,11 @@ function Select({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+        className="w-full rounded border border-border-strong px-3 py-2 text-sm"
       >
         {children}
       </select>
@@ -427,12 +427,12 @@ function Submit({ submitting, error, children }: { submitting: boolean; error: E
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+        className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
       >
         {submitting ? "Saving…" : children}
       </button>
       {error && (
-        <span className="text-xs text-red-600">
+        <span className="text-xs text-red-400">
           {error instanceof ConnectError ? error.rawMessage : String(error)}
         </span>
       )}
@@ -442,9 +442,9 @@ function Submit({ submitting, error, children }: { submitting: boolean; error: E
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
+    <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );
 }

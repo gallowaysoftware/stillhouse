@@ -26,7 +26,7 @@ export function BottlingRunDetailPage() {
   });
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
-  if (run.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
+  if (run.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
   if (!run.data?.run) return <Shell><p>Bottling run not found.</p></Shell>;
 
   const r = run.data.run;
@@ -36,14 +36,14 @@ export function BottlingRunDetailPage() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Bottling run #{r.runNo}</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             {r.bottlingDate} · {r.productName} · lot {r.lotCode} · → {r.destinationJurisdiction}
           </p>
-          {r.notes && <p className="mt-2 text-sm text-stone-700">{r.notes}</p>}
+          {r.notes && <p className="mt-2 text-sm text-fg">{r.notes}</p>}
         </div>
         <button
           onClick={() => setTraceOpen((s) => !s)}
-          className="rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+          className="rounded border border-border-strong px-3 py-2 text-sm font-medium text-fg hover:bg-surface-3"
         >
           {traceOpen ? "Hide trace" : "Trace to grain"}
         </button>
@@ -56,8 +56,8 @@ export function BottlingRunDetailPage() {
         <Stat label="LAA" value={`${formatLAA(r.tankGaugeLaa)} L`} highlight />
       </section>
 
-      <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Tank gauge</h2>
+      <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Tank gauge</h2>
         <dl className="grid grid-cols-3 gap-3 text-sm">
           <Row k="Volume drawn">{formatQty(r.tankGaugeVolumeL)} L</Row>
           <Row k="ABV at gauge">{r.tankGaugeAbvPct.toFixed(2)}%</Row>
@@ -67,8 +67,8 @@ export function BottlingRunDetailPage() {
       </section>
 
       {cost.data && cost.data.lines.length > 0 && (
-        <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Material cost</h2>
+        <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Material cost</h2>
           <div className="mb-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
             <Stat label="Total materials" value={`$${cost.data.totalMaterialCostCad.toFixed(2)}`} />
             <Stat
@@ -77,8 +77,8 @@ export function BottlingRunDetailPage() {
               highlight
             />
           </div>
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="text-left text-xs uppercase text-stone-500">
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="text-left text-xs uppercase text-fg-muted">
               <tr>
                 <th className="px-3 py-2">Material / Lot</th>
                 <th className="px-3 py-2 text-right">Qty</th>
@@ -86,25 +86,25 @@ export function BottlingRunDetailPage() {
                 <th className="px-3 py-2 text-right">Line cost</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-border">
               {cost.data.lines.map((l, i) => (
                 <tr key={`${l.materialName}-${l.supplierLot}-${i}`}>
                   <td className="px-3 py-2">
-                    <div className="text-stone-900">{l.materialName}</div>
-                    {l.supplierLot && <div className="text-xs text-stone-500">lot {l.supplierLot}</div>}
+                    <div className="text-fg">{l.materialName}</div>
+                    {l.supplierLot && <div className="text-xs text-fg-muted">lot {l.supplierLot}</div>}
                   </td>
-                  <td className="px-3 py-2 text-right text-stone-600">{formatQty(l.quantityUsed)} {l.uom}</td>
-                  <td className="px-3 py-2 text-right text-stone-600">
-                    {l.unitCostCad > 0 ? `$${l.unitCostCad.toFixed(3)}` : <span className="text-amber-700">no price</span>}
+                  <td className="px-3 py-2 text-right text-fg-muted">{formatQty(l.quantityUsed)} {l.uom}</td>
+                  <td className="px-3 py-2 text-right text-fg-muted">
+                    {l.unitCostCad > 0 ? `$${l.unitCostCad.toFixed(3)}` : <span className="text-amber-400">no price</span>}
                   </td>
-                  <td className="px-3 py-2 text-right font-medium text-stone-900">
+                  <td className="px-3 py-2 text-right font-medium text-fg">
                     {l.lineCostCad > 0 ? `$${l.lineCostCad.toFixed(2)}` : "—"}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className="mt-3 text-xs text-stone-500">
+          <p className="mt-3 text-xs text-fg-muted">
             Materials only. Doesn't include labour, energy, packaging, excise duty, or overhead.
             Lines without a recorded unit price are dropped from the per-bottle figure.
           </p>
@@ -112,31 +112,31 @@ export function BottlingRunDetailPage() {
       )}
 
       {traceOpen && (
-        <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Grain-to-glass trace</h2>
-          {trace.isLoading && <p className="text-sm text-stone-500">Loading trace…</p>}
-          {trace.error && <p className="text-sm text-red-600">{String(trace.error)}</p>}
+        <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Grain-to-glass trace</h2>
+          {trace.isLoading && <p className="text-sm text-fg-muted">Loading trace…</p>}
+          {trace.error && <p className="text-sm text-red-400">{String(trace.error)}</p>}
           {trace.data && (
             <ol className="space-y-1 font-mono text-xs">
               {trace.data.nodes.map((n) => (
-                <li key={`${n.kind}-${n.id}-${n.headline}`} className="text-stone-700">
-                  <span className="text-stone-900">{n.headline}</span>
-                  {n.detail && <span className="block pl-4 text-stone-500">{n.detail}</span>}
+                <li key={`${n.kind}-${n.id}-${n.headline}`} className="text-fg">
+                  <span className="text-fg">{n.headline}</span>
+                  {n.detail && <span className="block pl-4 text-fg-muted">{n.detail}</span>}
                 </li>
               ))}
             </ol>
           )}
-          <p className="mt-3 text-xs text-stone-500">
+          <p className="mt-3 text-xs text-fg-muted">
             Walks bottling → source-container feeds (last year) → production gauges → distillation → every charge's
             fermentation → yeast lot → mash → material lots → recipe, plus barrel dumps where applicable.
           </p>
         </section>
       )}
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Excise stamps applied</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Excise stamps applied</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Jurisdiction</th>
               <th className="px-4 py-3">Serial range</th>
@@ -144,20 +144,20 @@ export function BottlingRunDetailPage() {
               <th className="px-4 py-3 text-right">Voids</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {r.stampUsage.length === 0 && (
-              <tr><td colSpan={4} className="px-4 py-3 text-stone-500">No stamp usage recorded.</td></tr>
+              <tr><td colSpan={4} className="px-4 py-3 text-fg-muted">No stamp usage recorded.</td></tr>
             )}
             {r.stampUsage.map((u) => (
               <tr key={u.id}>
-                <td className="px-4 py-3 text-stone-900">{u.jurisdiction}</td>
-                <td className="px-4 py-3 font-mono text-stone-700">
+                <td className="px-4 py-3 text-fg">{u.jurisdiction}</td>
+                <td className="px-4 py-3 font-mono text-fg">
                   {u.serialStart && u.serialEnd
                     ? `${u.serialStart} – ${u.serialEnd}`
-                    : <span className="text-stone-400">(no serials recorded for this order)</span>}
+                    : <span className="text-fg-subtle">(no serials recorded for this order)</span>}
                 </td>
-                <td className="px-4 py-3 text-right text-stone-600">{u.bottleCount.toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{u.voids}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{u.bottleCount.toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{u.voids}</td>
               </tr>
             ))}
           </tbody>
@@ -169,9 +169,9 @@ export function BottlingRunDetailPage() {
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-white p-4 shadow-sm ${highlight ? "border-emerald-200" : "border-stone-200"}`}>
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );
 }
@@ -179,8 +179,8 @@ function Stat({ label, value, highlight }: { label: string; value: string; highl
 function Row({ k, children }: { k: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-xs uppercase text-stone-500">{k}</dt>
-      <dd className="mt-1 text-stone-900">{children}</dd>
+      <dt className="text-xs uppercase text-fg-muted">{k}</dt>
+      <dd className="mt-1 text-fg">{children}</dd>
     </div>
   );
 }

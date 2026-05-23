@@ -2,14 +2,66 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Color tokens. Dark is the default — light overrides only kick in when
+   <html class="light"> is set explicitly, which nothing does today. */
+@layer base {
+  :root {
+    /* Dark palette: warm copper accent on a zinc-leaning neutral. */
+    --color-surface: 9 9 11;            /* zinc-950 */
+    --color-surface-2: 24 24 27;        /* zinc-900 */
+    --color-surface-3: 39 39 42;        /* zinc-800 */
+    --color-fg: 250 250 250;            /* zinc-50 */
+    --color-fg-muted: 161 161 170;      /* zinc-400 */
+    --color-fg-subtle: 113 113 122;     /* zinc-500 */
+    --color-border: 39 39 42;           /* zinc-800 */
+    --color-border-strong: 63 63 70;    /* zinc-700 */
+    /* Amber-500 sits in copper territory; -400 hover for brighter feedback. */
+    --color-accent: 245 158 11;         /* amber-500 */
+    --color-accent-hover: 251 191 36;   /* amber-400 */
+    --color-accent-fg: 24 24 27;        /* dark text on amber */
+  }
+
+  /* Light overrides — kept warm + paper-like. Toggle by setting class="light"
+     on <html>; default is dark. */
+  html.light {
+    --color-surface: 250 250 249;       /* stone-50 */
+    --color-surface-2: 255 255 255;     /* white */
+    --color-surface-3: 245 245 244;     /* stone-100 */
+    --color-fg: 28 25 23;               /* stone-900 */
+    --color-fg-muted: 87 83 78;         /* stone-600 */
+    --color-fg-subtle: 120 113 108;     /* stone-500 */
+    --color-border: 231 229 228;        /* stone-200 */
+    --color-border-strong: 214 211 209; /* stone-300 */
+    --color-accent: 180 83 9;           /* amber-700 — darker on light bg */
+    --color-accent-hover: 217 119 6;    /* amber-600 */
+    --color-accent-fg: 255 255 255;
+  }
+
+  body {
+    @apply bg-surface text-fg antialiased;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  /* Inputs get a real focus ring on the accent. */
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  button:focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2 ring-offset-surface;
+  }
+}
+
 /* Print rules for the B266 report and other auditable views.
    Anything tagged data-print-hide (nav, action buttons, generate
    forms) collapses, and data-print-only (the report header with
    tenant + period stamping) appears. */
 @media print {
+  /* Force light styling for printable artefacts even if the operator is in
+     dark mode — ink looks awful on dark. */
+  html { background: white !important; color: black !important; }
+  body { background: white !important; color: black !important; }
   [data-print-hide] { display: none !important; }
   [data-print-only] { display: block !important; }
-  body { background: white; }
   section, .rounded-lg, table { box-shadow: none !important; border-color: #ccc !important; }
 }
 [data-print-only] { display: none; }

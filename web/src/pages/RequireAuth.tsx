@@ -13,7 +13,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-stone-500">
+      <div className="flex min-h-screen items-center justify-center text-fg-muted">
         Loading…
       </div>
     );
@@ -24,7 +24,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
       return <Navigate to="/login" replace />;
     }
     return (
-      <div className="flex min-h-screen items-center justify-center text-red-600">
+      <div className="flex min-h-screen items-center justify-center text-red-400">
         Error: {error instanceof Error ? error.message : String(error)}
       </div>
     );

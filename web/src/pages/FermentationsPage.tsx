@@ -15,12 +15,12 @@ export function FermentationsPage() {
     <Shell>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Fermentations</h1>
-        <p className="text-sm text-stone-500">All fermentation runs. Create new ones from a mash detail page.</p>
+        <p className="text-sm text-fg-muted">All fermentation runs. Create new ones from a mash detail page.</p>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Fermenter</th>
               <th className="px-4 py-3">Mash</th>
@@ -30,17 +30,17 @@ export function FermentationsPage() {
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {isLoading && (
               <tr>
-                <td colSpan={6} className="px-4 py-3 text-stone-500">
+                <td colSpan={6} className="px-4 py-3 text-fg-muted">
                   Loading…
                 </td>
               </tr>
             )}
             {!isLoading && data?.runs.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-3 text-stone-500">
+                <td colSpan={6} className="px-4 py-3 text-fg-muted">
                   No fermentation runs yet.
                 </td>
               </tr>
@@ -48,19 +48,19 @@ export function FermentationsPage() {
             {data?.runs.map((f) => (
               <tr key={f.id}>
                 <td className="px-4 py-3">
-                  <Link to={`/fermentations/${f.id}`} className="text-stone-900 hover:underline">
+                  <Link to={`/fermentations/${f.id}`} className="text-fg hover:underline">
                     {f.fermenterLabel}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-stone-600">#{f.mashNo} · {f.mashDate}</td>
-                <td className="px-4 py-3 text-stone-600">{f.recipeName}</td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">#{f.mashNo} · {f.mashDate}</td>
+                <td className="px-4 py-3 text-fg-muted">{f.recipeName}</td>
+                <td className="px-4 py-3 text-fg-muted">
                   {f.pitchAt ? new Date(Number(f.pitchAt.seconds) * 1000).toLocaleDateString() : ""}
                 </td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {f.initialVolumeLSet ? formatQty(f.initialVolumeL) : "—"}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{fermentationStatusLabel(f.status)}</td>
+                <td className="px-4 py-3 text-fg-muted">{fermentationStatusLabel(f.status)}</td>
               </tr>
             ))}
           </tbody>

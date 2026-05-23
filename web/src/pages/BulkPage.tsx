@@ -73,11 +73,11 @@ export function BulkPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Bulk inventory</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             Tanks, IBCs, and other containers holding bulk spirits.
             {list.data?.summary && (
               <>
-                {" "}Total: <span className="font-medium text-stone-900">
+                {" "}Total: <span className="font-medium text-fg">
                   {formatLAA(list.data.summary.totalLaa)} L LAA
                 </span>{" "}across {list.data.summary.containerCount} container(s).
               </>
@@ -87,13 +87,13 @@ export function BulkPage() {
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "Add container"}
           </button>
           <button
             onClick={() => setShowBlend((s) => !s)}
-            className="ml-2 rounded border border-stone-300 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-100"
+            className="ml-2 rounded border border-border-strong px-3 py-2 text-sm font-medium text-fg hover:bg-surface-3"
           >
             {showBlend ? "Cancel blend" : "New blend"}
           </button>
@@ -108,22 +108,22 @@ export function BulkPage() {
       {showForm && (
         <form
           onSubmit={submit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Name</label>
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Name</label>
             <input
               name="name"
               required
-              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Kind</label>
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Kind</label>
             <select
               name="kind"
               defaultValue={BulkContainerKind.TANK}
-              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
             >
               {kindOptions.map((k) => (
                 <option key={k.v} value={k.v}>{k.label}</option>
@@ -131,27 +131,27 @@ export function BulkPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Capacity (L)</label>
-            <input name="capacity_l" type="number" step="0.1" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Capacity (L)</label>
+            <input name="capacity_l" type="number" step="0.1" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Location</label>
-            <input name="location" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Location</label>
+            <input name="location" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
-            <input name="notes" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <input name="notes" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
             <button
               type="submit"
               disabled={createContainer.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createContainer.isPending ? "Saving…" : "Save"}
             </button>
             {createContainer.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createContainer.error instanceof ConnectError
                   ? createContainer.error.rawMessage
                   : String(createContainer.error)}
@@ -161,9 +161,9 @@ export function BulkPage() {
         </form>
       )}
 
-      <div className="mb-8 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="mb-8 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Kind</th>
@@ -173,25 +173,25 @@ export function BulkPage() {
               <th className="px-4 py-3 text-right">Last activity</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.isLoading && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.containers.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No containers yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">No containers yet.</td></tr>
             )}
             {list.data?.containers.map((c) => (
               <tr key={c.id}>
                 <td className="px-4 py-3">
-                  <Link to={`/bulk/${c.id}`} className="text-stone-900 hover:underline">{c.name}</Link>
+                  <Link to={`/bulk/${c.id}`} className="text-fg hover:underline">{c.name}</Link>
                 </td>
-                <td className="px-4 py-3 text-stone-600">{bulkContainerKindLabel(c.kind)}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{formatQty(c.currentVolumeL)}</td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">{bulkContainerKindLabel(c.kind)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{formatQty(c.currentVolumeL)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {c.currentAbvPctSet ? c.currentAbvPct.toFixed(2) + "%" : "—"}
                 </td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">{formatLAA(c.currentLaa)}</td>
-                <td className="px-4 py-3 text-right text-stone-500">
+                <td className="px-4 py-3 text-right font-medium text-fg">{formatLAA(c.currentLaa)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">
                   <ActivityCell ts={c.lastMovementAt} fallback={c.createdAt} />
                 </td>
               </tr>
@@ -200,10 +200,10 @@ export function BulkPage() {
         </table>
       </div>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Recent movements</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Recent movements</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Reason</th>
@@ -213,22 +213,22 @@ export function BulkPage() {
               <th className="px-4 py-3 text-right">LAA</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {recent.data?.movements.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No movements yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">No movements yet.</td></tr>
             )}
             {recent.data?.movements.map((m) => (
               <tr key={m.id}>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">
                   {m.occurredAt ? new Date(Number(m.occurredAt.seconds) * 1000).toLocaleString() : ""}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{bulkMovementReasonLabel(m.reason)}</td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">{bulkMovementReasonLabel(m.reason)}</td>
+                <td className="px-4 py-3 text-fg-muted">
                   {m.sourceContainerName || "—"} → {m.destinationContainerName || "—"}
                 </td>
-                <td className="px-4 py-3 text-right text-stone-600">{formatQty(m.volumeL)}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{m.abvPct.toFixed(2)}%</td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">{formatLAA(m.laa)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{formatQty(m.volumeL)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{m.abvPct.toFixed(2)}%</td>
+                <td className="px-4 py-3 text-right font-medium text-fg">{formatLAA(m.laa)}</td>
               </tr>
             ))}
           </tbody>
@@ -271,13 +271,13 @@ function BlendForm({
   return (
     <form
       onSubmit={submit}
-      className="mb-6 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+      className="mb-6 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
     >
-      <h3 className="mb-3 text-sm font-semibold uppercase text-stone-500">New blend</h3>
+      <h3 className="mb-3 text-sm font-semibold uppercase text-fg-muted">New blend</h3>
       <div className="mb-3">
-        <label className="mb-1 block text-xs font-medium text-stone-600">Destination</label>
+        <label className="mb-1 block text-xs font-medium text-fg-muted">Destination</label>
         <select required value={destId} onChange={(e) => setDestId(e.target.value)}
-          className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+          className="w-full rounded border border-border-strong px-3 py-2 text-sm">
           <option value="">Select destination tank…</option>
           {active.map((c) => (
             <option key={c.id} value={c.id}>{c.name} ({formatQty(c.currentVolumeL)} L on hand)</option>
@@ -290,7 +290,7 @@ function BlendForm({
             <select
               required value={r.srcId}
               onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, srcId: e.target.value } : x))}
-              className="flex-1 rounded border border-stone-300 px-3 py-2 text-sm"
+              className="flex-1 rounded border border-border-strong px-3 py-2 text-sm"
             >
               <option value="">Source #{i + 1}…</option>
               {active.filter((c) => c.id !== destId && c.currentAbvPctSet && c.currentVolumeL > 0).map((c) => (
@@ -303,31 +303,31 @@ function BlendForm({
               required type="number" step="0.1" min="0.1" placeholder="Vol (L)"
               value={r.vol}
               onChange={(e) => setRows(rows.map((x, j) => j === i ? { ...x, vol: e.target.value } : x))}
-              className="w-32 rounded border border-stone-300 px-3 py-2 text-sm"
+              className="w-32 rounded border border-border-strong px-3 py-2 text-sm"
             />
             {rows.length > 2 && (
               <button type="button" onClick={() => setRows(rows.filter((_, j) => j !== i))}
-                className="text-xs text-stone-500 hover:text-red-700">×</button>
+                className="text-xs text-fg-muted hover:text-red-400">×</button>
             )}
           </div>
         ))}
       </div>
       <button type="button" onClick={() => setRows([...rows, { srcId: "", vol: "" }])}
-        className="mt-2 text-xs text-stone-600 hover:text-stone-900">+ Add source</button>
+        className="mt-2 text-xs text-fg-muted hover:text-fg">+ Add source</button>
       <div className="mt-3">
-        <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
+        <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
         <input value={notes} onChange={(e) => setNotes(e.target.value)}
-          className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
       </div>
       <div className="mt-3 flex items-center gap-3">
         <button
           type="submit" disabled={mut.isPending}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
         >
           {mut.isPending ? "Blending…" : "Create blend"}
         </button>
         {mut.error && (
-          <span className="text-sm text-red-600">
+          <span className="text-sm text-red-400">
             {mut.error instanceof ConnectError ? mut.error.rawMessage : String(mut.error)}
           </span>
         )}
@@ -352,5 +352,5 @@ function ActivityCell({
   const days = Math.floor((Date.now() - ms) / 86_400_000);
   const stale = days >= 90;
   const label = days === 0 ? "today" : `${days} day${days === 1 ? "" : "s"} ago`;
-  return <span className={stale ? "text-amber-700" : ""}>{label}</span>;
+  return <span className={stale ? "text-amber-400" : ""}>{label}</span>;
 }

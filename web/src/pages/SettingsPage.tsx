@@ -73,43 +73,43 @@ export function SettingsPage() {
   return (
     <Shell>
       <h1 className="mb-1 text-2xl font-semibold">Settings</h1>
-      <p className="mb-6 text-sm text-stone-500">Tenant metadata — what shows in the sidebar and what gets stamped on records.</p>
+      <p className="mb-6 text-sm text-fg-muted">Tenant metadata — what shows in the sidebar and what gets stamped on records.</p>
 
-      <form onSubmit={submit} className="mb-10 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <form onSubmit={submit} className="mb-10 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <div className="col-span-2">
-          <h2 className="text-sm font-semibold uppercase text-stone-500">Distillery</h2>
+          <h2 className="text-sm font-semibold uppercase text-fg-muted">Distillery</h2>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Distillery name</label>
-          <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Distillery name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">CRA spirits licence #</label>
-          <input value={licence} onChange={(e) => setLicence(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">CRA spirits licence #</label>
+          <input value={licence} onChange={(e) => setLicence(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Excise warehouse licence # (optional)</label>
-          <input value={warehouse} onChange={(e) => setWarehouse(e.target.value)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Excise warehouse licence # (optional)</label>
+          <input value={warehouse} onChange={(e) => setWarehouse(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Default jurisdiction (ISO 3166-2)</label>
-          <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Default jurisdiction (ISO 3166-2)</label>
+          <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div className="col-span-2 flex items-center gap-3">
           {isOwner ? (
             <button
               type="submit"
               disabled={update.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {update.isPending ? "Saving…" : "Save changes"}
             </button>
           ) : (
-            <span className="text-xs text-stone-500">Owner-only — ask your distillery owner to update these fields.</span>
+            <span className="text-xs text-fg-muted">Owner-only — ask your distillery owner to update these fields.</span>
           )}
-          {saved && <span className="text-sm text-emerald-700">Saved.</span>}
+          {saved && <span className="text-sm text-emerald-400">Saved.</span>}
           {update.error && (
-            <span className="text-sm text-red-600">
+            <span className="text-sm text-red-400">
               {update.error instanceof ConnectError ? update.error.rawMessage : String(update.error)}
             </span>
           )}
@@ -124,15 +124,15 @@ export function SettingsPage() {
 
       {isOwner && (
         <section className="mt-10">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Tenant data export</h2>
-          <div className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-            <p className="mb-3 text-sm text-stone-700">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Tenant data export</h2>
+          <div className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+            <p className="mb-3 text-sm text-fg">
               Download a zip containing one CSV per significant table — recipes through B266 history, plus the
               full audit log. Covers your Excise Act s.206 retention duty and your PIPEDA right-to-data.
             </p>
             <a
               href="/export/tenant.zip"
-              className="inline-block rounded border border-stone-300 px-3 py-2 text-sm text-stone-700 hover:bg-stone-100"
+              className="inline-block rounded border border-border-strong px-3 py-2 text-sm text-fg hover:bg-surface-3"
             >
               Download tenant export (.zip)
             </a>
@@ -171,33 +171,33 @@ function ChangePasswordPanel() {
   }
   return (
     <section className="mt-10">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Change my password</h2>
-      <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Change my password</h2>
+      <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Current password</label>
-          <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" autoComplete="current-password" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Current password</label>
+          <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" autoComplete="current-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">New password (12+ chars)</label>
-          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">New password (12+ chars)</label>
+          <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-stone-600">Confirm new password</label>
-          <input value={confirm} onChange={(e) => setConfirm(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+          <label className="mb-1 block text-xs font-medium text-fg-muted">Confirm new password</label>
+          <input value={confirm} onChange={(e) => setConfirm(e.target.value)} type="password" autoComplete="new-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div className="col-span-3 flex items-center gap-3">
           <button
             type="submit"
             disabled={change.isPending || mismatch || tooShort}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
           >
             {change.isPending ? "Updating…" : "Update password"}
           </button>
-          {done && <span className="text-sm text-emerald-700">Password updated.</span>}
-          {mismatch && <span className="text-sm text-red-600">Passwords don't match.</span>}
-          {tooShort && !mismatch && <span className="text-sm text-red-600">Must be at least 12 characters.</span>}
+          {done && <span className="text-sm text-emerald-400">Password updated.</span>}
+          {mismatch && <span className="text-sm text-red-400">Passwords don't match.</span>}
+          {tooShort && !mismatch && <span className="text-sm text-red-400">Must be at least 12 characters.</span>}
           {change.error && (
-            <span className="text-sm text-red-600">
+            <span className="text-sm text-red-400">
               {change.error instanceof ConnectError ? change.error.rawMessage : String(change.error)}
             </span>
           )}
@@ -237,25 +237,25 @@ function UsersPanel({ isOwner, users, onCreated }: {
 
   return (
     <section>
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Users</h2>
-      <div className="mb-6 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Users</h2>
+      <div className="mb-6 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Display name</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Role</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {users.length === 0 && (
-              <tr><td colSpan={3} className="px-4 py-3 text-stone-500">No users.</td></tr>
+              <tr><td colSpan={3} className="px-4 py-3 text-fg-muted">No users.</td></tr>
             )}
             {users.map((u) => (
               <tr key={u.id}>
-                <td className="px-4 py-3 text-stone-900">{u.displayName}</td>
-                <td className="px-4 py-3 text-stone-600">{u.email}</td>
-                <td className="px-4 py-3 text-stone-600">{roleLabels[u.role]}</td>
+                <td className="px-4 py-3 text-fg">{u.displayName}</td>
+                <td className="px-4 py-3 text-fg-muted">{u.email}</td>
+                <td className="px-4 py-3 text-fg-muted">{roleLabels[u.role]}</td>
               </tr>
             ))}
           </tbody>
@@ -263,20 +263,20 @@ function UsersPanel({ isOwner, users, onCreated }: {
       </div>
 
       {!isOwner ? (
-        <p className="text-sm text-stone-500">Only owners can invite new users.</p>
+        <p className="text-sm text-fg-muted">Only owners can invite new users.</p>
       ) : (
-        <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+        <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Email</label>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Display name</label>
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Display name</label>
+            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Role</label>
-            <select value={role} onChange={(e) => setRole(Number(e.target.value) as UserRole)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Role</label>
+            <select value={role} onChange={(e) => setRole(Number(e.target.value) as UserRole)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value={UserRole.OPERATOR}>Operator</option>
               <option value={UserRole.OWNER}>Owner</option>
               <option value={UserRole.VIEWER}>Viewer</option>
@@ -286,21 +286,21 @@ function UsersPanel({ isOwner, users, onCreated }: {
             <button
               type="submit"
               disabled={create_.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {create_.isPending ? "Creating…" : "Invite user"}
             </button>
             {create_.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {create_.error instanceof ConnectError ? create_.error.rawMessage : String(create_.error)}
               </span>
             )}
           </div>
           {lastCreated && (
-            <div className="col-span-3 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+            <div className="col-span-3 rounded border border-emerald-500/30 bg-emerald-500/10 p-3 text-sm text-emerald-300">
               <p className="font-medium">User created.</p>
               <p>Deliver this initial password to {lastCreated.email} through a secure channel — it will not be shown again:</p>
-              <p className="mt-2 font-mono text-stone-900">{lastCreated.password}</p>
+              <p className="mt-2 font-mono text-fg">{lastCreated.password}</p>
             </div>
           )}
         </form>

@@ -62,14 +62,14 @@ export function DistillationsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Distillations</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             Distillation runs. The production gauge on a completed run is what puts new alcohol into the bulk ledger.
           </p>
         </div>
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "New run"}
           </button>
@@ -79,30 +79,30 @@ export function DistillationsPage() {
       {showForm && (
         <form
           onSubmit={submit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Still label</label>
-            <input name="still_label" placeholder="e.g. Pot Still #1" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Still label</label>
+            <input name="still_label" placeholder="e.g. Pot Still #1" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Run date</label>
-            <input name="run_date" type="date" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Run date</label>
+            <input name="run_date" type="date" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
-            <textarea name="notes" rows={2} className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <textarea name="notes" rows={2} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
             <button
               type="submit"
               disabled={createRun.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createRun.isPending ? "Creating…" : "Create run"}
             </button>
             {createRun.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createRun.error instanceof ConnectError
                   ? createRun.error.rawMessage
                   : String(createRun.error)}
@@ -112,9 +112,9 @@ export function DistillationsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>
@@ -123,21 +123,21 @@ export function DistillationsPage() {
               {writeable && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.isLoading && (
-              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.runs.length === 0 && (
-              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-stone-500">No runs yet.</td></tr>
+              <tr><td colSpan={writeable ? 5 : 4} className="px-4 py-3 text-fg-muted">No runs yet.</td></tr>
             )}
             {list.data?.runs.map((r) => {
               const voided = !!r.voidedAt;
               return (
-                <tr key={r.id} className={voided ? "bg-stone-50 text-stone-400" : ""}>
+                <tr key={r.id} className={voided ? "bg-surface-3 text-fg-subtle" : ""}>
                   <td className="px-4 py-3 font-medium">
                     <Link to={`/distillations/${r.id}`} className="hover:underline">#{r.runNo}</Link>
                     {voided && (
-                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">VOIDED</span>
+                      <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-normal text-red-400">VOIDED</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{r.runDate}</td>
@@ -154,7 +154,7 @@ export function DistillationsPage() {
                         <button
                           onClick={() => onVoidRun(r.id, r.runNo)}
                           disabled={voidRun.isPending}
-                          className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
                         >
                           Void
                         </button>

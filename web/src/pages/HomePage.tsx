@@ -68,7 +68,7 @@ export function HomePage() {
   return (
     <Shell>
       <h1 className="mb-1 text-2xl font-semibold">Dashboard</h1>
-      <p className="mb-8 text-sm text-stone-500">
+      <p className="mb-8 text-sm text-fg-muted">
         {isFreshInstall
           ? "Welcome to Stillhouse. Walk through the steps below to get from a fresh install to your first B266."
           : "Live snapshot of everything Stillhouse is currently tracking."}
@@ -81,8 +81,8 @@ export function HomePage() {
       <CWForecastSection barrels={barrels.data?.barrels ?? []} />
 
       {!completedAll && allLoaded && (
-        <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-          <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Getting started</h2>
+        <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Getting started</h2>
           <ol className="space-y-2 text-sm">
             <Step n={1} done={hasMaterials} to="/materials" label="Add your raw materials (grain, malt, water)." />
             <Step n={2} done={hasRecipes} to="/recipes" label="Save at least one recipe with a saved version." />
@@ -90,7 +90,7 @@ export function HomePage() {
             <Step n={4} done={hasStamps} to="/stamps" label="Order CRA excise stamps for the provinces you'll sell in." />
             <Step n={5} done={hasBottling} to="/bottling" label="Run a bottling to produce packaged inventory." />
           </ol>
-          <p className="mt-3 text-xs text-stone-500">
+          <p className="mt-3 text-xs text-fg-muted">
             You can also use the full nav at left to skip ahead. Mash, fermentation, distillation, and barrel pages are ready
             whenever you start tracking production.
           </p>
@@ -99,7 +99,7 @@ export function HomePage() {
 
       {(hasBulkContainers || hasBottling || hasStamps) && (
         <section className="mb-8">
-          <h2 className="mb-3 text-xs font-semibold uppercase text-stone-500">Alcohol on hand (LAA)</h2>
+          <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">Alcohol on hand (LAA)</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <Stat to="/bulk" label="Bulk tanks" value={formatLAA(nonBarrelBulk)} suffix="L" />
             <Stat
@@ -124,7 +124,7 @@ export function HomePage() {
 
       {hasBottling && (
         <section className="mb-8">
-          <h2 className="mb-3 text-xs font-semibold uppercase text-stone-500">
+          <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">
             Current period · {start} → {end}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -154,10 +154,10 @@ export function HomePage() {
 
       {(audit.data?.events.length ?? 0) > 0 && (
         <section>
-          <h2 className="mb-3 text-xs font-semibold uppercase text-stone-500">Recent activity</h2>
-          <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-            <table className="min-w-full divide-y divide-stone-200 text-sm">
-              <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+          <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">Recent activity</h2>
+          <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+            <table className="min-w-full divide-y divide-border text-sm">
+              <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
                 <tr>
                   <th className="px-4 py-2">When</th>
                   <th className="px-4 py-2">Who</th>
@@ -165,24 +165,24 @@ export function HomePage() {
                   <th className="px-4 py-2">Entity</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-border">
                 {audit.data?.events.map((e) => (
                   <tr key={e.id}>
-                    <td className="px-4 py-2 text-stone-600">
+                    <td className="px-4 py-2 text-fg-muted">
                       {e.occurredAt ? new Date(Number(e.occurredAt.seconds) * 1000).toLocaleString() : ""}
                     </td>
-                    <td className="px-4 py-2 text-stone-600">{e.userDisplayName || e.userEmail || "system"}</td>
-                    <td className="px-4 py-2 text-stone-900">{actionLabels[e.action]}</td>
-                    <td className="px-4 py-2 font-mono text-xs text-stone-600">
-                      {e.entityType} <span className="text-stone-400">{e.entityId.slice(0, 8)}</span>
+                    <td className="px-4 py-2 text-fg-muted">{e.userDisplayName || e.userEmail || "system"}</td>
+                    <td className="px-4 py-2 text-fg">{actionLabels[e.action]}</td>
+                    <td className="px-4 py-2 font-mono text-xs text-fg-muted">
+                      {e.entityType} <span className="text-fg-subtle">{e.entityId.slice(0, 8)}</span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="mt-2 text-right text-xs text-stone-500">
-            <Link to="/audit" className="hover:text-stone-900">Full audit log →</Link>
+          <p className="mt-2 text-right text-xs text-fg-muted">
+            <Link to="/audit" className="hover:text-fg">Full audit log →</Link>
           </p>
         </section>
       )}
@@ -227,19 +227,19 @@ function CWForecastSection({ barrels }: { barrels: { currentLaa: number; canadia
   }
   return (
     <section className="mb-8">
-      <h2 className="mb-3 text-xs font-semibold uppercase text-stone-500">Canadian Whisky maturation forecast</h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase text-fg-muted">Canadian Whisky maturation forecast</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-7">
         {buckets.map((b, i) => (
-          <div key={b.label} className={`rounded-lg border p-3 ${i === 0 ? "border-emerald-200 bg-emerald-50" : "border-stone-200 bg-white"}`}>
-            <p className="text-xs uppercase text-stone-500">{b.label}</p>
-            <p className={`mt-1 text-base font-semibold ${i === 0 ? "text-emerald-700" : "text-stone-900"}`}>
+          <div key={b.label} className={`rounded-lg border p-3 ${i === 0 ? "border-emerald-500/30 bg-emerald-500/10" : "border-border bg-surface-2"}`}>
+            <p className="text-xs uppercase text-fg-muted">{b.label}</p>
+            <p className={`mt-1 text-base font-semibold ${i === 0 ? "text-emerald-400" : "text-fg"}`}>
               {b.laa.toFixed(1)} L
             </p>
-            <p className="text-xs text-stone-500">{b.count} barrel{b.count === 1 ? "" : "s"}</p>
+            <p className="text-xs text-fg-muted">{b.count} barrel{b.count === 1 ? "" : "s"}</p>
           </div>
         ))}
       </div>
-      <p className="mt-2 text-xs text-stone-500">
+      <p className="mt-2 text-xs text-fg-muted">
         Only small-wood barrels (≤700 L) shown — FDR B.02.020 excludes larger casks from the CW class.
       </p>
     </section>
@@ -250,8 +250,8 @@ function ReadyToDumpCallout({ barrels }: { barrels: { id: string; name: string; 
   const ready = barrels.filter((b) => b.currentLaa > 0 && b.canadianWhiskyEligible);
   if (ready.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-      <p className="text-sm text-emerald-900">
+    <section className="mb-6 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+      <p className="text-sm text-emerald-300">
         <span className="font-semibold">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
         and still hold alcohol — ready to dump for bottling.{" "}
         <Link to="/barrels" className="underline">Open barrels →</Link>
@@ -270,10 +270,10 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
   const overdue = daysToDue < 0;
   const urgent = daysToDue <= 7 && !overdue;
   const colour = overdue
-    ? "border-red-300 bg-red-50 text-red-900"
+    ? "border-red-500/40 bg-red-500/10 text-red-300"
     : urgent
-      ? "border-amber-300 bg-amber-50 text-amber-900"
-      : "border-stone-200 bg-white text-stone-700";
+      ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+      : "border-border bg-surface-2 text-fg";
   return (
     <section className={`mb-6 rounded-lg border p-4 ${colour}`}>
       <p className="text-sm">
@@ -304,8 +304,8 @@ function StagnantBulkCallout({ containers }: { containers: { id: string; name: s
   flagged.splice(5);
   if (flagged.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
-      <p className="text-sm text-amber-900">
+    <section className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+      <p className="text-sm text-amber-300">
         <span className="font-semibold">Stagnant bulk inventory:</span>{" "}
         {flagged.map((c, i) => (
           <span key={c.id}>
@@ -331,8 +331,8 @@ function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string
     .filter((s) => s.daysLeft < WARN_DAYS);
   if (flagged.length === 0) return null;
   return (
-    <section className="mb-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
-      <p className="text-sm text-amber-900">
+    <section className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+      <p className="text-sm text-amber-300">
         <span className="font-semibold">Stamps running low:</span>{" "}
         {flagged.map((s, i) => (
           <span key={s.jurisdiction}>
@@ -350,11 +350,11 @@ function Step({ n, done, to, label }: { n: number; done: boolean; to: string; la
   return (
     <li className="flex items-start gap-3">
       <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
-        done ? "bg-emerald-600 text-white" : "bg-stone-200 text-stone-600"
+        done ? "bg-emerald-600 text-white" : "bg-stone-200 text-fg-muted"
       }`}>
         {done ? "✓" : n}
       </span>
-      <Link to={to} className={done ? "text-stone-500 line-through" : "text-stone-900 hover:underline"}>
+      <Link to={to} className={done ? "text-fg-muted line-through" : "text-fg hover:underline"}>
         {label}
       </Link>
     </li>
@@ -374,16 +374,16 @@ function Stat({
   return (
     <Link
       to={to}
-      className={`block rounded-lg border bg-white p-5 shadow-sm transition hover:border-stone-400 ${
-        highlight ? "border-emerald-200" : "border-stone-200"
+      className={`block rounded-lg border bg-surface-2 p-5 shadow-sm transition hover:border-border-strong ${
+        highlight ? "border-emerald-500/30" : "border-border"
       }`}
     >
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-2 text-2xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-2 text-2xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>
         {value}
-        {suffix && <span className="ml-1 text-base font-normal text-stone-500">{suffix}</span>}
+        {suffix && <span className="ml-1 text-base font-normal text-fg-muted">{suffix}</span>}
       </p>
-      {sub && <p className="mt-1 text-xs text-stone-500">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-fg-muted">{sub}</p>}
     </Link>
   );
 }

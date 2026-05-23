@@ -73,7 +73,7 @@ export function FermentationDetailPage() {
   }
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
-  if (run.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
+  if (run.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
   if (!run.data?.run) return <Shell><p>Not found.</p></Shell>;
 
   const r = run.data.run;
@@ -83,7 +83,7 @@ export function FermentationDetailPage() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{r.fermenterLabel}</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             {r.recipeName} · mash{" "}
             <Link to={`/mashes/${r.mashRunId}`} className="underline">
               #{r.mashNo}
@@ -92,7 +92,7 @@ export function FermentationDetailPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-stone-500">Status</label>
+          <label className="text-xs text-fg-muted">Status</label>
           <select
             value={r.status}
             onChange={(e) =>
@@ -103,7 +103,7 @@ export function FermentationDetailPage() {
                 }),
               )
             }
-            className="rounded border border-stone-300 px-2 py-1 text-sm"
+            className="rounded border border-border-strong px-2 py-1 text-sm"
           >
             {statusOptions.map((s) => (
               <option key={s} value={s}>
@@ -125,8 +125,8 @@ export function FermentationDetailPage() {
         <Stat label="Logs" value={String(r.logs.length)} />
       </section>
 
-      <section className="mb-8 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Add reading</h2>
+      <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Add reading</h2>
         <form onSubmit={submitLog} className="flex flex-wrap items-end gap-3">
           <NumField label="Specific gravity" value={sg} onChange={setSG} step="0.001" placeholder="1.020" />
           <NumField label="pH" value={ph} onChange={setPH} step="0.1" />
@@ -135,21 +135,21 @@ export function FermentationDetailPage() {
           <button
             type="submit"
             disabled={addLog.isPending}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
           >
             {addLog.isPending ? "Saving…" : "Add reading"}
           </button>
           {addLog.error && (
-            <span className="text-sm text-red-600">
+            <span className="text-sm text-red-400">
               {addLog.error instanceof ConnectError ? addLog.error.rawMessage : String(addLog.error)}
             </span>
           )}
         </form>
       </section>
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3 text-right">SG</th>
@@ -158,29 +158,29 @@ export function FermentationDetailPage() {
               <th className="px-4 py-3">Notes</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {r.logs.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-3 text-stone-500">
+                <td colSpan={5} className="px-4 py-3 text-fg-muted">
                   No readings yet.
                 </td>
               </tr>
             )}
             {r.logs.map((l) => (
               <tr key={l.id}>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">
                   {l.observedAt ? new Date(Number(l.observedAt.seconds) * 1000).toLocaleString() : ""}
                 </td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {l.specificGravitySet ? l.specificGravity.toFixed(4) : "—"}
                 </td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {l.phSet ? l.ph.toFixed(2) : "—"}
                 </td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {l.temperatureCSet ? l.temperatureC.toFixed(1) : "—"}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{l.notes}</td>
+                <td className="px-4 py-3 text-fg-muted">{l.notes}</td>
               </tr>
             ))}
           </tbody>
@@ -192,10 +192,10 @@ export function FermentationDetailPage() {
 
 function Stat({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className="mt-1 text-xl font-semibold text-stone-900">{value}</p>
-      {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+    <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className="mt-1 text-xl font-semibold text-fg">{value}</p>
+      {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>
   );
 }
@@ -215,14 +215,14 @@ function NumField({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       <input
         type="number"
         step={step}
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-32 rounded border border-stone-300 px-3 py-2 text-sm"
+        className="w-32 rounded border border-border-strong px-3 py-2 text-sm"
       />
     </div>
   );
@@ -241,12 +241,12 @@ function TextField({
 }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+        className="w-full rounded border border-border-strong px-3 py-2 text-sm"
       />
     </div>
   );

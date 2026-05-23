@@ -19,7 +19,7 @@ export function BulkContainerDetailPage() {
   });
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
-  if (detail.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
+  if (detail.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
   if (!detail.data?.container) return <Shell><p>Not found.</p></Shell>;
 
   const c = detail.data.container;
@@ -28,7 +28,7 @@ export function BulkContainerDetailPage() {
     <Shell>
       <header className="mb-6">
         <h1 className="text-2xl font-semibold">{c.name}</h1>
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-fg-muted">
           {bulkContainerKindLabel(c.kind)}
           {c.capacityLSet && <> · capacity {formatQty(c.capacityL)} L</>}
           {c.location && <> · {c.location}</>}
@@ -42,10 +42,10 @@ export function BulkContainerDetailPage() {
         <Stat label="Movements" value={String(detail.data.movements.length)} />
       </section>
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Movement history</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Movement history</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Reason</th>
@@ -55,26 +55,26 @@ export function BulkContainerDetailPage() {
               <th className="px-4 py-3 text-right">LAA</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {detail.data.movements.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No movements yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">No movements yet.</td></tr>
             )}
             {detail.data.movements.map((m) => {
               const isIn = m.destinationContainerId === c.id;
               return (
                 <tr key={m.id}>
-                  <td className="px-4 py-3 text-stone-600">
+                  <td className="px-4 py-3 text-fg-muted">
                     {m.occurredAt ? new Date(Number(m.occurredAt.seconds) * 1000).toLocaleString() : ""}
                   </td>
-                  <td className="px-4 py-3 text-stone-600">{bulkMovementReasonLabel(m.reason)}</td>
-                  <td className="px-4 py-3 text-stone-600">
+                  <td className="px-4 py-3 text-fg-muted">{bulkMovementReasonLabel(m.reason)}</td>
+                  <td className="px-4 py-3 text-fg-muted">
                     {isIn
                       ? `← ${m.sourceContainerName || "(new alcohol)"}`
                       : `→ ${m.destinationContainerName || "(loss)"}`}
                   </td>
-                  <td className="px-4 py-3 text-right text-stone-600">{formatQty(m.volumeL)}</td>
-                  <td className="px-4 py-3 text-right text-stone-600">{m.abvPct.toFixed(2)}%</td>
-                  <td className={`px-4 py-3 text-right font-medium ${isIn ? "text-green-700" : "text-stone-600"}`}>
+                  <td className="px-4 py-3 text-right text-fg-muted">{formatQty(m.volumeL)}</td>
+                  <td className="px-4 py-3 text-right text-fg-muted">{m.abvPct.toFixed(2)}%</td>
+                  <td className={`px-4 py-3 text-right font-medium ${isIn ? "text-green-700" : "text-fg-muted"}`}>
                     {isIn ? "+" : "−"}{formatLAA(m.laa)}
                   </td>
                 </tr>
@@ -89,9 +89,9 @@ export function BulkContainerDetailPage() {
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4 shadow-sm">
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-stone-900" : "text-stone-900"}`}>
+    <div className="rounded-lg border border-border bg-surface-2 p-4 shadow-sm">
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-fg" : "text-fg"}`}>
         {value}
       </p>
     </div>

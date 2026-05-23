@@ -48,12 +48,12 @@ export function MashesPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Mashes</h1>
-          <p className="text-sm text-stone-500">Mash runs against a recipe version.</p>
+          <p className="text-sm text-fg-muted">Mash runs against a recipe version.</p>
         </div>
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "New mash"}
           </button>
@@ -63,14 +63,14 @@ export function MashesPage() {
       {showForm && (
         <form
           onSubmit={onSubmit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Recipe</label>
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Recipe</label>
             <select
               name="recipe_version_id"
               required
-              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
             >
               <option value="">Select recipe…</option>
               {recipes.data?.recipes
@@ -83,37 +83,37 @@ export function MashesPage() {
             </select>
             {recipes.data &&
               recipes.data.recipes.filter((r) => r.currentVersionId).length === 0 && (
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-fg-muted">
                   No recipe versions yet. Save a version on a recipe first.
                 </p>
               )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Mash date</label>
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Mash date</label>
             <input
               name="mash_date"
               type="date"
-              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
             />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
             <textarea
               name="notes"
               rows={2}
-              className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
             />
           </div>
           <div className="col-span-2 flex items-center gap-3">
             <button
               type="submit"
               disabled={createMash.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createMash.isPending ? "Creating…" : "Create mash"}
             </button>
             {createMash.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createMash.error instanceof ConnectError
                   ? createMash.error.rawMessage
                   : String(createMash.error)}
@@ -123,9 +123,9 @@ export function MashesPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>
@@ -133,31 +133,31 @@ export function MashesPage() {
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {mashes.isLoading && (
               <tr>
-                <td colSpan={4} className="px-4 py-3 text-stone-500">
+                <td colSpan={4} className="px-4 py-3 text-fg-muted">
                   Loading…
                 </td>
               </tr>
             )}
             {!mashes.isLoading && mashes.data?.mashRuns.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-3 text-stone-500">
+                <td colSpan={4} className="px-4 py-3 text-fg-muted">
                   No mash runs yet.
                 </td>
               </tr>
             )}
             {mashes.data?.mashRuns.map((m) => (
               <tr key={m.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">#{m.mashNo}</td>
-                <td className="px-4 py-3 text-stone-600">{m.mashDate}</td>
+                <td className="px-4 py-3 font-medium text-fg">#{m.mashNo}</td>
+                <td className="px-4 py-3 text-fg-muted">{m.mashDate}</td>
                 <td className="px-4 py-3">
-                  <Link to={`/mashes/${m.id}`} className="text-stone-900 hover:underline">
+                  <Link to={`/mashes/${m.id}`} className="text-fg hover:underline">
                     {m.recipeName} v{m.recipeVersionNo}
                   </Link>
                 </td>
-                <td className="px-4 py-3 text-stone-600">{mashStatusLabel(m.status)}</td>
+                <td className="px-4 py-3 text-fg-muted">{mashStatusLabel(m.status)}</td>
               </tr>
             ))}
           </tbody>

@@ -28,29 +28,32 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-surface px-4">
       <form
         onSubmit={onSubmit}
-        className="w-full max-w-sm space-y-4 rounded-lg bg-white p-8 shadow"
+        className="w-full max-w-sm space-y-5 rounded-xl border border-border bg-surface-2 p-8 shadow-card-dark"
       >
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-stone-900">Stillhouse</h1>
-            <p className="text-sm text-stone-500">
+            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-fg">
+              <span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" />
+              Stillhouse
+            </h1>
+            <p className="mt-1 text-sm text-fg-muted">
               {t("Sign in to continue.", "Connectez-vous pour continuer.")}
             </p>
           </div>
-          <div className="flex items-center gap-1 text-xs text-stone-400">
+          <div className="flex items-center gap-1 text-xs text-fg-subtle">
             <button
               type="button"
-              className={`rounded px-1.5 py-0.5 ${lang === "en" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+              className={`rounded px-1.5 py-0.5 ${lang === "en" ? "bg-surface-3 text-fg" : "hover:text-fg"}`}
               onClick={() => setLang("en")}
             >
               EN
             </button>
             <button
               type="button"
-              className={`rounded px-1.5 py-0.5 ${lang === "fr" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+              className={`rounded px-1.5 py-0.5 ${lang === "fr" ? "bg-surface-3 text-fg" : "hover:text-fg"}`}
               onClick={() => setLang("fr")}
             >
               FR
@@ -59,7 +62,7 @@ export function LoginPage() {
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="email" className="block text-sm font-medium text-stone-700">
+          <label htmlFor="email" className="block text-sm font-medium text-fg">
             {t("Email", "Courriel")}
           </label>
           <input
@@ -69,12 +72,12 @@ export function LoginPage() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
+            className="w-full rounded border border-border-strong px-3 py-2 text-sm focus:border-accent focus:outline-none"
           />
         </div>
 
         <div className="space-y-1">
-          <label htmlFor="password" className="block text-sm font-medium text-stone-700">
+          <label htmlFor="password" className="block text-sm font-medium text-fg">
             {t("Password", "Mot de passe")}
           </label>
           <input
@@ -84,12 +87,12 @@ export function LoginPage() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
+            className="w-full rounded border border-border-strong px-3 py-2 text-sm focus:border-accent focus:outline-none"
           />
         </div>
 
         {login.error && (
-          <p className="text-sm text-red-600">
+          <p className="text-sm text-red-400">
             {login.error instanceof ConnectError
               ? login.error.rawMessage
               : String(login.error)}
@@ -99,7 +102,7 @@ export function LoginPage() {
         <button
           type="submit"
           disabled={login.isPending}
-          className="w-full rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
         >
           {login.isPending ? t("Signing in…", "Connexion…") : t("Sign in", "Se connecter")}
         </button>

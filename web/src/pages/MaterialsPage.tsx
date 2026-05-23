@@ -70,7 +70,7 @@ export function MaterialsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Materials</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             Raw materials master. Fermentable sources (grain, malt) need an extract %
             so recipes can project alcohol yield.
           </p>
@@ -78,7 +78,7 @@ export function MaterialsPage() {
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "Add material"}
           </button>
@@ -88,7 +88,7 @@ export function MaterialsPage() {
       {showForm && (
         <form
           onSubmit={onSubmit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <Field label="Name" name="name" required />
           <Field label="Kind" name="kind" as="select" required>
@@ -123,12 +123,12 @@ export function MaterialsPage() {
             <button
               type="submit"
               disabled={createMaterial.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createMaterial.isPending ? "Saving…" : "Save material"}
             </button>
             {createMaterial.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createMaterial.error instanceof ConnectError
                   ? createMaterial.error.rawMessage
                   : String(createMaterial.error)}
@@ -138,9 +138,9 @@ export function MaterialsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Kind</th>
@@ -149,32 +149,32 @@ export function MaterialsPage() {
               <th className="px-4 py-3">Supplier</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {isLoading && (
               <tr>
-                <td className="px-4 py-3 text-stone-500" colSpan={5}>
+                <td className="px-4 py-3 text-fg-muted" colSpan={5}>
                   Loading…
                 </td>
               </tr>
             )}
             {!isLoading && data?.materials.length === 0 && (
               <tr>
-                <td className="px-4 py-3 text-stone-500" colSpan={5}>
+                <td className="px-4 py-3 text-fg-muted" colSpan={5}>
                   No materials yet. Click <b>Add material</b> to begin.
                 </td>
               </tr>
             )}
             {data?.materials.map((m) => (
               <tr key={m.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">
+                <td className="px-4 py-3 font-medium text-fg">
                   <Link to={`/materials/${m.id}`} className="hover:underline">{m.name}</Link>
                 </td>
-                <td className="px-4 py-3 text-stone-600">{materialKindLabel(m.kind)}</td>
-                <td className="px-4 py-3 text-stone-600">{m.uom}</td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">{materialKindLabel(m.kind)}</td>
+                <td className="px-4 py-3 text-fg-muted">{m.uom}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {m.extractPctSet ? (m.extractPct * 100).toFixed(2) + "%" : "—"}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{m.supplier || "—"}</td>
+                <td className="px-4 py-3 text-fg-muted">{m.supplier || "—"}</td>
               </tr>
             ))}
           </tbody>
@@ -192,10 +192,10 @@ type FieldProps = React.InputHTMLAttributes<HTMLInputElement> & {
 
 function Field({ label, as = "input", className, children, ...rest }: FieldProps) {
   const labelEl = (
-    <label className="mb-1 block text-xs font-medium text-stone-600">{label}</label>
+    <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
   );
   const inputClass =
-    "w-full rounded border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none";
+    "w-full rounded border border-border-strong px-3 py-2 text-sm focus:border-accent focus:outline-none";
   return (
     <div className={className}>
       {labelEl}

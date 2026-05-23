@@ -74,7 +74,7 @@ export function DistillationDetailPage() {
   });
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
-  if (run.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
+  if (run.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
   if (!run.data?.run) return <Shell><p>Not found.</p></Shell>;
 
   const r = run.data.run;
@@ -90,15 +90,15 @@ export function DistillationDetailPage() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Distillation #{r.runNo}</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             {r.runDate} · {r.stillLabel || "no still labelled"} · {distillationStatusLabel(r.status)}
           </p>
         </div>
         {r.gauge && (
           <div className="text-right">
-            <p className="text-xs uppercase text-stone-500">Gauged into</p>
-            <p className="font-medium text-stone-900">{r.gauge.destinationContainerName}</p>
-            <p className="text-2xl font-semibold text-stone-900">{formatLAA(r.gauge.laa)} L LAA</p>
+            <p className="text-xs uppercase text-fg-muted">Gauged into</p>
+            <p className="font-medium text-fg">{r.gauge.destinationContainerName}</p>
+            <p className="text-2xl font-semibold text-fg">{formatLAA(r.gauge.laa)} L LAA</p>
           </div>
         )}
       </header>
@@ -137,8 +137,8 @@ export function DistillationDetailPage() {
         />
       </section>
 
-      <section className="rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Production gauge</h2>
+      <section className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Production gauge</h2>
         {r.gauge ? (
           <dl className="grid grid-cols-2 gap-3 text-sm">
             <Row k="Destination">{r.gauge.destinationContainerName}</Row>
@@ -147,7 +147,7 @@ export function DistillationDetailPage() {
             </Row>
             <Row k="Volume">{formatQty(r.gauge.volumeL)} L</Row>
             <Row k="ABV">{r.gauge.abvPct.toFixed(2)}%</Row>
-            <Row k="LAA"><span className="font-semibold text-stone-900">{formatLAA(r.gauge.laa)} L</span></Row>
+            <Row k="LAA"><span className="font-semibold text-fg">{formatLAA(r.gauge.laa)} L</span></Row>
             {r.gauge.temperatureCSet && <Row k="Temperature">{r.gauge.temperatureC.toFixed(1)}°C</Row>}
           </dl>
         ) : (
@@ -198,7 +198,7 @@ function ChargesPanel({
   }
   return (
     <Panel title="Charges">
-      <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-stone-200 px-4 py-3">
+      <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
         <Field label="Ferment" as="select" value={fermID} onChange={setFermID}>
           <option value="">—</option>
           {ferments.map((f) => (
@@ -212,14 +212,14 @@ function ChargesPanel({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          className="rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
         >
           Add
         </button>
-        {error && <span className="text-xs text-red-600">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
+        {error && <span className="text-xs text-red-400">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
       </form>
-      <table className="min-w-full divide-y divide-stone-200 text-sm">
-        <thead className="text-left text-xs uppercase text-stone-500">
+      <table className="min-w-full divide-y divide-border text-sm">
+        <thead className="text-left text-xs uppercase text-fg-muted">
           <tr>
             <th className="px-3 py-2">Order</th>
             <th className="px-3 py-2">Ferment</th>
@@ -228,17 +228,17 @@ function ChargesPanel({
             <th className="px-3 py-2 text-right">LAA</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-stone-100">
+        <tbody className="divide-y divide-border">
           {run.charges.length === 0 && (
-            <tr><td colSpan={5} className="px-3 py-2 text-stone-500">No charges yet.</td></tr>
+            <tr><td colSpan={5} className="px-3 py-2 text-fg-muted">No charges yet.</td></tr>
           )}
           {run.charges.map((c) => (
             <tr key={c.id}>
-              <td className="px-3 py-2 text-stone-600">{c.chargeOrder}</td>
-              <td className="px-3 py-2 text-stone-900">{c.fermenterLabel} (#{c.mashNo})</td>
-              <td className="px-3 py-2 text-right text-stone-600">{formatQty(c.volumeChargedL)}</td>
-              <td className="px-3 py-2 text-right text-stone-600">{c.abvPct.toFixed(2)}%</td>
-              <td className="px-3 py-2 text-right text-stone-600">{formatLAA(c.laa)}</td>
+              <td className="px-3 py-2 text-fg-muted">{c.chargeOrder}</td>
+              <td className="px-3 py-2 text-fg">{c.fermenterLabel} (#{c.mashNo})</td>
+              <td className="px-3 py-2 text-right text-fg-muted">{formatQty(c.volumeChargedL)}</td>
+              <td className="px-3 py-2 text-right text-fg-muted">{c.abvPct.toFixed(2)}%</td>
+              <td className="px-3 py-2 text-right text-fg-muted">{formatLAA(c.laa)}</td>
             </tr>
           ))}
         </tbody>
@@ -284,7 +284,7 @@ function CutsPanel({
 
   return (
     <Panel title="Cuts">
-      <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-stone-200 px-4 py-3">
+      <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
         <Field label="Kind" as="select" value={kind} onChange={setKind}>
           {cutKindOptions.map((k) => (
             <option key={k.v} value={k.v}>{k.label}</option>
@@ -295,14 +295,14 @@ function CutsPanel({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          className="rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
         >
           Add
         </button>
-        {error && <span className="text-xs text-red-600">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
+        {error && <span className="text-xs text-red-400">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
       </form>
-      <table className="min-w-full divide-y divide-stone-200 text-sm">
-        <thead className="text-left text-xs uppercase text-stone-500">
+      <table className="min-w-full divide-y divide-border text-sm">
+        <thead className="text-left text-xs uppercase text-fg-muted">
           <tr>
             <th className="px-3 py-2">#</th>
             <th className="px-3 py-2">Kind</th>
@@ -312,24 +312,24 @@ function CutsPanel({
             <th className="px-3 py-2"></th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-stone-100">
+        <tbody className="divide-y divide-border">
           {run.cuts.length === 0 && (
-            <tr><td colSpan={6} className="px-3 py-2 text-stone-500">No cuts yet.</td></tr>
+            <tr><td colSpan={6} className="px-3 py-2 text-fg-muted">No cuts yet.</td></tr>
           )}
           {run.cuts.map((c) => (
             <tr key={c.id}>
-              <td className="px-3 py-2 text-stone-600">{c.cutOrder}</td>
-              <td className="px-3 py-2 text-stone-900">{cutKindLabel(c.kind)}</td>
-              <td className="px-3 py-2 text-right text-stone-600">{formatQty(c.volumeL)}</td>
-              <td className="px-3 py-2 text-right text-stone-600">{c.abvPct.toFixed(2)}%</td>
-              <td className="px-3 py-2 text-right text-stone-600">{formatLAA(c.laa)}</td>
+              <td className="px-3 py-2 text-fg-muted">{c.cutOrder}</td>
+              <td className="px-3 py-2 text-fg">{cutKindLabel(c.kind)}</td>
+              <td className="px-3 py-2 text-right text-fg-muted">{formatQty(c.volumeL)}</td>
+              <td className="px-3 py-2 text-right text-fg-muted">{c.abvPct.toFixed(2)}%</td>
+              <td className="px-3 py-2 text-right text-fg-muted">{formatLAA(c.laa)}</td>
               <td className="px-3 py-2 text-right">
                 <button
                   onClick={() => {
                     if (window.confirm(`Delete this ${cutKindLabel(c.kind)} cut?`)) onDelete(c.id);
                   }}
                   disabled={deleting}
-                  className="text-xs text-stone-500 hover:text-red-700 disabled:opacity-50"
+                  className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
                 >
                   Delete
                 </button>
@@ -380,19 +380,19 @@ function GaugeForm({
   return (
     <form onSubmit={submit} className="grid grid-cols-2 gap-3 text-sm">
       <div className="col-span-2">
-        <label className="mb-1 block text-xs font-medium text-stone-600">Destination container</label>
+        <label className="mb-1 block text-xs font-medium text-fg-muted">Destination container</label>
         <select
           value={destID}
           onChange={(e) => setDestID(e.target.value)}
           required
-          className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-border-strong px-3 py-2 text-sm"
         >
           <option value="">Select a container…</option>
           {containers.filter((c) => !c.archived).map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
-        <p className="mt-1 text-xs text-stone-500">
+        <p className="mt-1 text-xs text-fg-muted">
           Recording the gauge creates a BulkMovement into this container and updates its running balance.
         </p>
       </div>
@@ -404,12 +404,12 @@ function GaugeForm({
         <button
           type="submit"
           disabled={submitting}
-          className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+          className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
         >
           {submitting ? "Recording…" : "Record gauge"}
         </button>
         {error && (
-          <span className="text-sm text-red-600">
+          <span className="text-sm text-red-400">
             {error instanceof ConnectError ? error.rawMessage : String(error)}
           </span>
         )}
@@ -422,19 +422,19 @@ function Metric({
   label, value, hint, highlight,
 }: { label: string; value: string; hint?: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-white p-4 shadow-sm ${highlight ? "border-emerald-200" : "border-stone-200"}`}>
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
-      {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>
   );
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-      <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-stone-500">{title}</h2>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
       </header>
       <div className="overflow-x-auto">{children}</div>
     </div>
@@ -443,8 +443,8 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
 
 function Row({ k, children }: { k: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between border-b border-stone-100 py-2 last:border-0">
-      <dt className="text-stone-500">{k}</dt>
+    <div className="flex items-center justify-between border-b border-border py-2 last:border-0">
+      <dt className="text-fg-muted">{k}</dt>
       <dd>{children}</dd>
     </div>
   );
@@ -464,12 +464,12 @@ type FieldProps = {
 function Field({ label, value, onChange, type = "text", step, as = "input", children, width }: FieldProps) {
   return (
     <div>
-      <label className="mb-1 block text-xs text-stone-500">{label}</label>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       {as === "select" ? (
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`${width ?? ""} rounded border border-stone-300 px-2 py-1 text-sm`}
+          className={`${width ?? ""} rounded border border-border-strong px-2 py-1 text-sm`}
         >
           {children}
         </select>
@@ -479,7 +479,7 @@ function Field({ label, value, onChange, type = "text", step, as = "input", chil
           step={step}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`${width ?? "w-full"} rounded border border-stone-300 px-3 py-2 text-sm`}
+          className={`${width ?? "w-full"} rounded border border-border-strong px-3 py-2 text-sm`}
         />
       )}
     </div>

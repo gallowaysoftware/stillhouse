@@ -86,7 +86,7 @@ export function MashDetailPage() {
   });
 
   if (!id) return <Shell><p>Missing mash id.</p></Shell>;
-  if (mash.isLoading) return <Shell><p className="text-stone-500">Loading…</p></Shell>;
+  if (mash.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
   if (!mash.data?.mashRun) return <Shell><p>Mash not found.</p></Shell>;
 
   const m = mash.data.mashRun;
@@ -96,12 +96,12 @@ export function MashDetailPage() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Mash #{m.mashNo}</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             {m.mashDate} · {m.recipeName} v{m.recipeVersionNo}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-stone-500">Status</label>
+          <label className="text-xs text-fg-muted">Status</label>
           <select
             value={m.status}
             onChange={(e) =>
@@ -112,7 +112,7 @@ export function MashDetailPage() {
                 }),
               )
             }
-            className="rounded border border-stone-300 px-2 py-1 text-sm"
+            className="rounded border border-border-strong px-2 py-1 text-sm"
           >
             {statusOptions.map((s) => (
               <option key={s} value={s}>
@@ -123,7 +123,7 @@ export function MashDetailPage() {
         </div>
       </header>
 
-      {m.notes && <p className="mb-6 rounded bg-white p-4 text-sm text-stone-700 shadow-sm">{m.notes}</p>}
+      {m.notes && <p className="mb-6 rounded bg-surface-2 p-4 text-sm text-fg shadow-sm">{m.notes}</p>}
 
       <section className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <ProjStat
@@ -168,18 +168,18 @@ export function MashDetailPage() {
             />
           }
         >
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="text-left text-xs uppercase text-stone-500">
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="text-left text-xs uppercase text-fg-muted">
               <tr>
                 <th className="px-3 py-2">Material / Lot</th>
                 <th className="px-3 py-2 text-right">Qty</th>
                 <th className="px-3 py-2">UoM</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-border">
               {m.ingredients.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-3 py-2 text-stone-500">
+                  <td colSpan={3} className="px-3 py-2 text-fg-muted">
                     None recorded.
                   </td>
                 </tr>
@@ -187,9 +187,9 @@ export function MashDetailPage() {
               {m.ingredients.map((ing) => (
                 <tr key={ing.id}>
                   <td className="px-3 py-2">
-                    <div className="text-stone-900">{ing.materialName}</div>
+                    <div className="text-fg">{ing.materialName}</div>
                     {ing.supplierLot && (
-                      <div className="text-xs text-stone-500">
+                      <div className="text-xs text-fg-muted">
                         lot {ing.supplierLot}
                         {ing.lotReceivedAt && (
                           <> · received {new Date(Number(ing.lotReceivedAt.seconds) * 1000).toLocaleDateString()}</>
@@ -197,8 +197,8 @@ export function MashDetailPage() {
                       </div>
                     )}
                   </td>
-                  <td className="px-3 py-2 text-right text-stone-600">{formatQty(ing.quantityUsed)}</td>
-                  <td className="px-3 py-2 text-stone-600">{ing.uom}</td>
+                  <td className="px-3 py-2 text-right text-fg-muted">{formatQty(ing.quantityUsed)}</td>
+                  <td className="px-3 py-2 text-fg-muted">{ing.uom}</td>
                 </tr>
               ))}
             </tbody>
@@ -238,31 +238,31 @@ export function MashDetailPage() {
             />
           }
         >
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="text-left text-xs uppercase text-stone-500">
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="text-left text-xs uppercase text-fg-muted">
               <tr>
                 <th className="px-3 py-2">When</th>
                 <th className="px-3 py-2">Kind</th>
                 <th className="px-3 py-2 text-right">Value</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-border">
               {m.metrics.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-3 py-2 text-stone-500">
+                  <td colSpan={3} className="px-3 py-2 text-fg-muted">
                     None recorded.
                   </td>
                 </tr>
               )}
               {m.metrics.map((mc) => (
                 <tr key={mc.id}>
-                  <td className="px-3 py-2 text-stone-600">
+                  <td className="px-3 py-2 text-fg-muted">
                     {mc.observedAt
                       ? new Date(Number(mc.observedAt.seconds) * 1000).toLocaleString()
                       : ""}
                   </td>
-                  <td className="px-3 py-2 text-stone-900">{mashMetricKindLabel(mc.kind)}</td>
-                  <td className="px-3 py-2 text-right text-stone-600">
+                  <td className="px-3 py-2 text-fg">{mashMetricKindLabel(mc.kind)}</td>
+                  <td className="px-3 py-2 text-right text-fg-muted">
                     {mc.value} {mc.unit}
                   </td>
                 </tr>
@@ -295,8 +295,8 @@ export function MashDetailPage() {
             />
           }
         >
-          <table className="min-w-full divide-y divide-stone-200 text-sm">
-            <thead className="text-left text-xs uppercase text-stone-500">
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="text-left text-xs uppercase text-fg-muted">
               <tr>
                 <th className="px-3 py-2">Fermenter</th>
                 <th className="px-3 py-2">Pitched</th>
@@ -304,10 +304,10 @@ export function MashDetailPage() {
                 <th className="px-3 py-2">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-border">
               {ferments.data?.runs.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-3 py-2 text-stone-500">
+                  <td colSpan={4} className="px-3 py-2 text-fg-muted">
                     No fermentation runs yet.
                   </td>
                 </tr>
@@ -315,19 +315,19 @@ export function MashDetailPage() {
               {ferments.data?.runs.map((f) => (
                 <tr key={f.id}>
                   <td className="px-3 py-2">
-                    <Link to={`/fermentations/${f.id}`} className="text-stone-900 hover:underline">
+                    <Link to={`/fermentations/${f.id}`} className="text-fg hover:underline">
                       {f.fermenterLabel}
                     </Link>
                   </td>
-                  <td className="px-3 py-2 text-stone-600">
+                  <td className="px-3 py-2 text-fg-muted">
                     {f.pitchAt
                       ? new Date(Number(f.pitchAt.seconds) * 1000).toLocaleString()
                       : ""}
                   </td>
-                  <td className="px-3 py-2 text-right text-stone-600">
+                  <td className="px-3 py-2 text-right text-fg-muted">
                     {f.initialVolumeLSet ? formatQty(f.initialVolumeL) : "—"}
                   </td>
-                  <td className="px-3 py-2 text-stone-600">{fermentationStatusLabel(f.status)}</td>
+                  <td className="px-3 py-2 text-fg-muted">{fermentationStatusLabel(f.status)}</td>
                 </tr>
               ))}
             </tbody>
@@ -394,31 +394,31 @@ function FermentForm({
   return (
     <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Fermenter</label>
+        <label className="mb-1 block text-xs text-fg-muted">Fermenter</label>
         <input
           required
           value={fermenter}
           onChange={(e) => setFermenter(e.target.value)}
           placeholder="FV1"
-          className="w-24 rounded border border-stone-300 px-2 py-1 text-sm"
+          className="w-24 rounded border border-border-strong px-2 py-1 text-sm"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Vol (L)</label>
+        <label className="mb-1 block text-xs text-fg-muted">Vol (L)</label>
         <input
           type="number"
           step="0.1"
           value={vol}
           onChange={(e) => setVol(e.target.value)}
-          className="w-20 rounded border border-stone-300 px-2 py-1 text-sm"
+          className="w-20 rounded border border-border-strong px-2 py-1 text-sm"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Yeast</label>
+        <label className="mb-1 block text-xs text-fg-muted">Yeast</label>
         <select
           value={yeastMatId}
           onChange={(e) => { setYeastMatId(e.target.value); setYeastLotId(""); }}
-          className="rounded border border-stone-300 px-2 py-1 text-sm"
+          className="rounded border border-border-strong px-2 py-1 text-sm"
         >
           <option value="">(none)</option>
           {yeastMaterials.map((m) => (
@@ -427,12 +427,12 @@ function FermentForm({
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Lot</label>
+        <label className="mb-1 block text-xs text-fg-muted">Lot</label>
         <select
           value={yeastLotId}
           onChange={(e) => setYeastLotId(e.target.value)}
           disabled={!yeastMatId || yeastLots.isLoading}
-          className="rounded border border-stone-300 px-2 py-1 text-sm disabled:bg-stone-50"
+          className="rounded border border-border-strong px-2 py-1 text-sm disabled:bg-surface-3"
         >
           <option value="">(not tracked)</option>
           {(yeastLots.data?.lots ?? []).map((l: MaterialLot) => (
@@ -445,12 +445,12 @@ function FermentForm({
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+        className="rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
       >
         {submitting ? "…" : "Pitch"}
       </button>
       {error && (
-        <span className="text-xs text-red-600">
+        <span className="text-xs text-red-400">
           {error instanceof ConnectError ? error.rawMessage : String(error)}
         </span>
       )}
@@ -493,12 +493,12 @@ function IngredientForm({
   return (
     <form onSubmit={submit} className="flex items-end gap-2">
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Material</label>
+        <label className="mb-1 block text-xs text-fg-muted">Material</label>
         <select
           required
           value={materialId}
           onChange={(e) => { setMaterialId(e.target.value); setMaterialLotId(""); }}
-          className="rounded border border-stone-300 px-2 py-1 text-sm"
+          className="rounded border border-border-strong px-2 py-1 text-sm"
         >
           <option value="">—</option>
           {materials.map((mat) => (
@@ -507,12 +507,12 @@ function IngredientForm({
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Lot (optional)</label>
+        <label className="mb-1 block text-xs text-fg-muted">Lot (optional)</label>
         <select
           value={materialLotId}
           onChange={(e) => setMaterialLotId(e.target.value)}
           disabled={!materialId || lots.isLoading}
-          className="rounded border border-stone-300 px-2 py-1 text-sm disabled:bg-stone-50"
+          className="rounded border border-border-strong px-2 py-1 text-sm disabled:bg-surface-3"
         >
           <option value="">(not tracked)</option>
           {(lots.data?.lots ?? []).map((l: MaterialLot) => (
@@ -523,35 +523,35 @@ function IngredientForm({
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-stone-500">Qty</label>
+        <label className="mb-1 block text-xs text-fg-muted">Qty</label>
         <input
           required
           type="number"
           step="0.01"
           value={qty}
           onChange={(e) => setQty(e.target.value)}
-          className="w-24 rounded border border-stone-300 px-2 py-1 text-sm"
+          className="w-24 rounded border border-border-strong px-2 py-1 text-sm"
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-stone-500">UoM</label>
+        <label className="mb-1 block text-xs text-fg-muted">UoM</label>
         <input
           required
           type="text"
           value={uom}
           onChange={(e) => setUom(e.target.value)}
-          className="w-16 rounded border border-stone-300 px-2 py-1 text-sm"
+          className="w-16 rounded border border-border-strong px-2 py-1 text-sm"
         />
       </div>
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+        className="rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
       >
         {submitting ? "…" : "Add"}
       </button>
       {error && (
-        <span className="text-xs text-red-600">
+        <span className="text-xs text-red-400">
           {error instanceof ConnectError ? error.rawMessage : String(error)}
         </span>
       )}
@@ -563,10 +563,10 @@ function ProjStat({
   label, value, hint, highlight,
 }: { label: string; value: string; hint?: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-white p-4 shadow-sm ${highlight ? "border-emerald-200" : "border-stone-200"}`}>
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
-      {hint && <p className="mt-1 text-xs text-stone-400">{hint}</p>}
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
+      {hint && <p className="mt-1 text-xs text-fg-subtle">{hint}</p>}
     </div>
   );
 }
@@ -601,13 +601,13 @@ function InlineForm({
     <form onSubmit={submit} className="flex items-end gap-2">
       {fields.map((f) => (
         <div key={f.name}>
-          <label className="mb-1 block text-xs text-stone-500">{f.label}</label>
+          <label className="mb-1 block text-xs text-fg-muted">{f.label}</label>
           {f.type === "select" ? (
             <select
               required={f.required}
               value={values[f.name]}
               onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-              className="rounded border border-stone-300 px-2 py-1 text-sm"
+              className="rounded border border-border-strong px-2 py-1 text-sm"
             >
               <option value="">—</option>
               {f.options?.map((o) => (
@@ -624,7 +624,7 @@ function InlineForm({
               placeholder={f.placeholder}
               value={values[f.name]}
               onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-              className="w-28 rounded border border-stone-300 px-2 py-1 text-sm"
+              className="w-28 rounded border border-border-strong px-2 py-1 text-sm"
             />
           )}
         </div>
@@ -632,12 +632,12 @@ function InlineForm({
       <button
         type="submit"
         disabled={submitting}
-        className="rounded bg-stone-900 px-3 py-1 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+        className="rounded bg-accent px-3 py-1 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
       >
         {submitting ? "…" : "Add"}
       </button>
       {error && (
-        <span className="text-sm text-red-600">
+        <span className="text-sm text-red-400">
           {error instanceof ConnectError ? error.rawMessage : String(error)}
         </span>
       )}
@@ -655,9 +655,9 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-      <header className="flex items-center justify-between border-b border-stone-200 bg-stone-50 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase text-stone-500">{title}</h2>
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="flex items-center justify-between border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold uppercase text-fg-muted">{title}</h2>
         {right}
       </header>
       <div className="overflow-x-auto">{children}</div>

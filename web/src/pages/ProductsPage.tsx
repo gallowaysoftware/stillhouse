@@ -58,12 +58,12 @@ export function ProductsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Products</h1>
-          <p className="text-sm text-stone-500">Finished-product SKUs: name, bottle size, bottle proof.</p>
+          <p className="text-sm text-fg-muted">Finished-product SKUs: name, bottle size, bottle proof.</p>
         </div>
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "New product"}
           </button>
@@ -73,7 +73,7 @@ export function ProductsPage() {
       {showForm && (
         <form
           onSubmit={submit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <Field label="Name" name="name" required />
           <Field label="Spirit kind" name="spirit_kind" as="select">
@@ -86,12 +86,12 @@ export function ProductsPage() {
             <button
               type="submit"
               disabled={createProduct.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createProduct.isPending ? "Saving…" : "Save"}
             </button>
             {createProduct.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createProduct.error instanceof ConnectError
                   ? createProduct.error.rawMessage
                   : String(createProduct.error)}
@@ -101,9 +101,9 @@ export function ProductsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Spirit</th>
@@ -113,21 +113,21 @@ export function ProductsPage() {
               <th className="px-4 py-3">Notes</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.isLoading && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.products.length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-stone-500">No products yet.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">No products yet.</td></tr>
             )}
             {list.data?.products.map((p) => (
               <tr key={p.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">{p.name}</td>
-                <td className="px-4 py-3 text-stone-600">{spiritKindLabel(p.spiritKind)}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{p.bottleSizeMl}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{p.targetAbvPct.toFixed(1)}%</td>
-                <td className="px-4 py-3 text-right text-stone-600"><CostCell productId={p.id} /></td>
-                <td className="px-4 py-3 text-stone-600">{p.labelNotes}</td>
+                <td className="px-4 py-3 font-medium text-fg">{p.name}</td>
+                <td className="px-4 py-3 text-fg-muted">{spiritKindLabel(p.spiritKind)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{p.bottleSizeMl}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{p.targetAbvPct.toFixed(1)}%</td>
+                <td className="px-4 py-3 text-right text-fg-muted"><CostCell productId={p.id} /></td>
+                <td className="px-4 py-3 text-fg-muted">{p.labelNotes}</td>
               </tr>
             ))}
           </tbody>
@@ -147,14 +147,14 @@ function CostCell({ productId }: { productId: string }) {
     enabled: !!productId,
     staleTime: 60_000,
   });
-  if (isLoading) return <span className="text-stone-300">…</span>;
-  if (error) return <span className="text-stone-400">—</span>;
-  if (!data || data.totalBottles === 0) return <span className="text-stone-400">—</span>;
+  if (isLoading) return <span className="text-fg-subtle">…</span>;
+  if (error) return <span className="text-fg-subtle">—</span>;
+  if (!data || data.totalBottles === 0) return <span className="text-fg-subtle">—</span>;
   return (
     <span title={`${data.runCount} run${data.runCount === 1 ? "" : "s"}, ${data.totalBottles.toLocaleString()} bottles`}>
       ${data.averageMaterialCostPerBottleCad.toFixed(2)}
       {data.runsWithMissingPrices > 0 && (
-        <span className="ml-1 text-amber-700" title={`${data.runsWithMissingPrices} runs missing price data`}>*</span>
+        <span className="ml-1 text-amber-400" title={`${data.runsWithMissingPrices} runs missing price data`}>*</span>
       )}
     </span>
   );
@@ -169,13 +169,13 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-xs font-medium text-stone-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
       {as === "select" ? (
         <select
           name={name}
           required={required}
           defaultValue={defaultValue}
-          className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-border-strong px-3 py-2 text-sm"
         >
           {children}
         </select>
@@ -186,7 +186,7 @@ function Field({
           step={step}
           required={required}
           defaultValue={defaultValue}
-          className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+          className="w-full rounded border border-border-strong px-3 py-2 text-sm"
         />
       )}
     </div>

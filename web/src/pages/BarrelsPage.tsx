@@ -61,7 +61,7 @@ export function BarrelsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Barrels</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             Cooperage inventory + maturation. Canadian Whisky eligibility (FDR B.02.020):
             ≥3 years in small wood (≤700 L).
           </p>
@@ -69,7 +69,7 @@ export function BarrelsPage() {
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "Add barrel"}
           </button>
@@ -92,7 +92,7 @@ export function BarrelsPage() {
       {showForm && (
         <form
           onSubmit={submit}
-          className="mb-6 grid grid-cols-3 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-3 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <FormField name="name" label="Name / serial" required />
           <FormField name="capacity_l" label="Capacity (L)" type="number" step="0.1" placeholder="200" />
@@ -111,12 +111,12 @@ export function BarrelsPage() {
             <button
               type="submit"
               disabled={createBarrel.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createBarrel.isPending ? "Saving…" : "Save barrel"}
             </button>
             {createBarrel.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createBarrel.error instanceof ConnectError
                   ? createBarrel.error.rawMessage
                   : String(createBarrel.error)}
@@ -126,9 +126,9 @@ export function BarrelsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Cooperage</th>
@@ -141,31 +141,31 @@ export function BarrelsPage() {
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.isLoading && (
-              <tr><td colSpan={9} className="px-4 py-3 text-stone-500">Loading…</td></tr>
+              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && summary && summary.barrels.length === 0 && (
-              <tr><td colSpan={9} className="px-4 py-3 text-stone-500">No barrels yet.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">No barrels yet.</td></tr>
             )}
             {summary?.barrels.map((b) => (
               <tr key={b.id}>
                 <td className="px-4 py-3">
-                  <Link to={`/barrels/${b.id}`} className="font-medium text-stone-900 hover:underline">{b.name}</Link>
-                  {b.serialBurnin && <span className="ml-2 text-xs text-stone-500">#{b.serialBurnin}</span>}
+                  <Link to={`/barrels/${b.id}`} className="font-medium text-fg hover:underline">{b.name}</Link>
+                  {b.serialBurnin && <span className="ml-2 text-xs text-fg-muted">#{b.serialBurnin}</span>}
                 </td>
-                <td className="px-4 py-3 text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">
                   {b.cooperageSupplier || "—"}
-                  {b.priorUse && <span className="ml-1 text-xs text-stone-500">({b.priorUse})</span>}
+                  {b.priorUse && <span className="ml-1 text-xs text-fg-muted">({b.priorUse})</span>}
                 </td>
-                <td className="px-4 py-3 text-stone-600">{b.capacityLSet ? formatQty(b.capacityL) : "—"}</td>
-                <td className="px-4 py-3 text-stone-600">{b.fillDate || "—"}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{b.daysAged || "—"}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{formatQty(b.currentVolumeL)}</td>
-                <td className="px-4 py-3 text-right text-stone-600">
+                <td className="px-4 py-3 text-fg-muted">{b.capacityLSet ? formatQty(b.capacityL) : "—"}</td>
+                <td className="px-4 py-3 text-fg-muted">{b.fillDate || "—"}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{b.daysAged || "—"}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{formatQty(b.currentVolumeL)}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">
                   {b.currentAbvPctSet ? b.currentAbvPct.toFixed(2) + "%" : "—"}
                 </td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">{formatLAA(b.currentLaa)}</td>
+                <td className="px-4 py-3 text-right font-medium text-fg">{formatLAA(b.currentLaa)}</td>
                 <td className="px-4 py-3">
                   <MaturationBadge barrel={b} />
                 </td>
@@ -199,16 +199,16 @@ function AgingBuckets({ barrels }: { barrels: { daysAged: number; currentLaa: nu
     return { ...b, count: matching.length, laa: matching.reduce((s, m) => s + m.currentLaa, 0) };
   });
   return (
-    <section className="mb-6 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Aging buckets</h2>
+    <section className="mb-6 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Aging buckets</h2>
       <div className="grid grid-cols-5 gap-3">
         {stats.map((s) => (
-          <div key={s.label} className={`rounded border p-3 ${s.min >= 1095 ? "border-emerald-200 bg-emerald-50" : "border-stone-200"}`}>
-            <p className="text-xs uppercase text-stone-500">{s.label}</p>
-            <p className={`mt-1 text-lg font-semibold ${s.min >= 1095 ? "text-emerald-700" : "text-stone-900"}`}>
+          <div key={s.label} className={`rounded border p-3 ${s.min >= 1095 ? "border-emerald-500/30 bg-emerald-500/10" : "border-border"}`}>
+            <p className="text-xs uppercase text-fg-muted">{s.label}</p>
+            <p className={`mt-1 text-lg font-semibold ${s.min >= 1095 ? "text-emerald-400" : "text-fg"}`}>
               {s.count}
               {s.laa > 0 && (
-                <span className="ml-2 text-xs font-normal text-stone-500">{formatLAA(s.laa)} L LAA</span>
+                <span className="ml-2 text-xs font-normal text-fg-muted">{formatLAA(s.laa)} L LAA</span>
               )}
             </p>
           </div>
@@ -220,16 +220,16 @@ function AgingBuckets({ barrels }: { barrels: { daysAged: number; currentLaa: nu
 
 function MaturationBadge({ barrel }: { barrel: { daysAged: number; canadianWhiskyEligible: boolean; smallWood: boolean; daysToCanadianWhiskyEligible: number; currentVolumeL: number } }) {
   if (barrel.currentVolumeL === 0 && barrel.daysAged === 0) {
-    return <span className="rounded bg-stone-100 px-2 py-0.5 text-xs text-stone-600">Empty</span>;
+    return <span className="rounded bg-surface-3 px-2 py-0.5 text-xs text-fg-muted">Empty</span>;
   }
   if (barrel.canadianWhiskyEligible) {
-    return <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700">CW eligible</span>;
+    return <span className="rounded bg-emerald-500/15 px-2 py-0.5 text-xs text-emerald-400">CW eligible</span>;
   }
   if (!barrel.smallWood) {
-    return <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-700">Aging (not small wood)</span>;
+    return <span className="rounded bg-amber-500/15 px-2 py-0.5 text-xs text-amber-400">Aging (not small wood)</span>;
   }
   return (
-    <span className="rounded bg-blue-100 px-2 py-0.5 text-xs text-blue-700">
+    <span className="rounded bg-blue-500/15 px-2 py-0.5 text-xs text-blue-300">
       Aging ({barrel.daysToCanadianWhiskyEligible} d to CW)
     </span>
   );
@@ -237,9 +237,9 @@ function MaturationBadge({ barrel }: { barrel: { daysAged: number; canadianWhisk
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border bg-white p-4 shadow-sm ${highlight ? "border-emerald-200" : "border-stone-200"}`}>
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-700" : "text-stone-900"}`}>{value}</p>
+    <div className={`rounded-lg border bg-surface-2 p-4 shadow-sm ${highlight ? "border-emerald-500/30" : "border-border"}`}>
+      <p className="text-xs uppercase text-fg-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${highlight ? "text-emerald-400" : "text-fg"}`}>{value}</p>
     </div>
   );
 }
@@ -267,7 +267,7 @@ function FormField({
 }) {
   return (
     <div className={className}>
-      <label className="mb-1 block text-xs font-medium text-stone-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
       <input
         name={name}
         type={type}
@@ -276,7 +276,7 @@ function FormField({
         max={max}
         placeholder={placeholder}
         required={required}
-        className="w-full rounded border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
+        className="w-full rounded border border-border-strong px-3 py-2 text-sm focus:border-accent focus:outline-none"
       />
     </div>
   );

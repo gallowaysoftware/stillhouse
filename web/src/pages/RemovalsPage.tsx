@@ -108,7 +108,7 @@ export function RemovalsPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Removals</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             Removals from the excise warehouse crystallize CRA duty
             ($14.117/LAA for spirits &gt;7%; rate effective April 1, 2026).
           </p>
@@ -116,7 +116,7 @@ export function RemovalsPage() {
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "Record removal"}
           </button>
@@ -124,10 +124,10 @@ export function RemovalsPage() {
       </div>
 
       {showForm && (
-        <form onSubmit={submit} className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm">
+        <form onSubmit={submit} className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-stone-600">Packaged inventory row</label>
-            <select value={piID} onChange={(e) => setPiID(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Packaged inventory row</label>
+            <select value={piID} onChange={(e) => setPiID(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value="">Select…</option>
               {packaged.data?.rows.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -136,43 +136,43 @@ export function RemovalsPage() {
               ))}
             </select>
             {selectedRow && (
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-fg-muted">
                 {selectedRow.bottleSizeMl} mL × {selectedRow.targetAbvPct}% = {((selectedRow.bottleSizeMl * selectedRow.targetAbvPct) / 100000).toFixed(4)} L LAA / bottle
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Bottles</label>
-            <input type="number" min="1" value={bottles} onChange={(e) => setBottles(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Bottles</label>
+            <input type="number" min="1" value={bottles} onChange={(e) => setBottles(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Removal date</label>
-            <input type="date" value={removalDate} onChange={(e) => setRemovalDate(e.target.value)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Removal date</label>
+            <input type="date" value={removalDate} onChange={(e) => setRemovalDate(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Destination kind</label>
-            <select value={dest} onChange={(e) => setDest(Number(e.target.value) as RemovalDestinationKind)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Destination kind</label>
+            <select value={dest} onChange={(e) => setDest(Number(e.target.value) as RemovalDestinationKind)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               {destOptions.map((d) => <option key={d} value={d}>{destLabel[d]}</option>)}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Destination name</label>
-            <input value={destName} onChange={(e) => setDestName(e.target.value)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Destination name</label>
+            <input value={destName} onChange={(e) => setDestName(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-stone-600">Reference (BOL / invoice)</label>
-            <input value={reference} onChange={(e) => setReference(e.target.value)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Reference (BOL / invoice)</label>
+            <input value={reference} onChange={(e) => setReference(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
             <button
               type="submit"
               disabled={create_.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {create_.isPending ? "Saving…" : "Record removal"}
             </button>
             {create_.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {create_.error instanceof ConnectError ? create_.error.rawMessage : String(create_.error)}
               </span>
             )}
@@ -180,9 +180,9 @@ export function RemovalsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>
@@ -195,18 +195,18 @@ export function RemovalsPage() {
               {writeable && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.data?.removals.length === 0 && (
-              <tr><td colSpan={writeable ? 9 : 8} className="px-4 py-3 text-stone-500">No removals yet.</td></tr>
+              <tr><td colSpan={writeable ? 9 : 8} className="px-4 py-3 text-fg-muted">No removals yet.</td></tr>
             )}
             {list.data?.removals.map((r) => {
               const voided = !!r.voidedAt;
               return (
-                <tr key={r.id} className={voided ? "bg-stone-50 text-stone-400" : ""}>
+                <tr key={r.id} className={voided ? "bg-surface-3 text-fg-subtle" : ""}>
                   <td className="px-4 py-3 font-medium">
                     #{r.removalNo}
                     {voided && (
-                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">VOIDED</span>
+                      <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-normal text-red-400">VOIDED</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{r.removalDate}</td>
@@ -220,14 +220,14 @@ export function RemovalsPage() {
                   <td className="px-4 py-3">{destLabel[r.destinationKind]}</td>
                   <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{r.bottlesRemoved.toLocaleString()}</td>
                   <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{formatLAA(r.totalLaa)}</td>
-                  <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-stone-900"}`}>${formatQty(r.dutyAmountCad)}</td>
+                  <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-fg"}`}>${formatQty(r.dutyAmountCad)}</td>
                   {writeable && (
                     <td className="px-4 py-3 text-right">
                       {!voided && (
                         <button
                           onClick={() => onVoid(r.id, r.removalNo, r.bottlesRemoved)}
                           disabled={voidRemoval.isPending}
-                          className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
                         >
                           Void
                         </button>

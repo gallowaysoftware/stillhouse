@@ -96,20 +96,20 @@ export function RecipeDetailPage() {
 
   return (
     <Shell>
-      {recipe.isLoading && <p className="text-stone-500">Loading recipe…</p>}
+      {recipe.isLoading && <p className="text-fg-muted">Loading recipe…</p>}
       {recipe.data?.recipe && (
         <>
           <div className="mb-6 flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-semibold">{recipe.data.recipe.name}</h1>
-              <p className="text-sm text-stone-500">
+              <p className="text-sm text-fg-muted">
                 {spiritKindLabel(recipe.data.recipe.spiritKind)}
                 {recipe.data.currentVersion && (
                   <> · v{recipe.data.currentVersion.versionNo}</>
                 )}
               </p>
               {recipe.data.recipe.notes && (
-                <p className="mt-2 text-sm text-stone-700">{recipe.data.recipe.notes}</p>
+                <p className="mt-2 text-sm text-fg">{recipe.data.recipe.notes}</p>
               )}
             </div>
             <button
@@ -134,7 +134,7 @@ export function RecipeDetailPage() {
                 }
                 setShowEditor((s) => !s);
               }}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
             >
               {showEditor
                 ? "Cancel"
@@ -147,7 +147,7 @@ export function RecipeDetailPage() {
           {showEditor && (
             <form
               onSubmit={onSave}
-              className="mb-8 space-y-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+              className="mb-8 space-y-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
             >
               <h2 className="text-lg font-medium">New version</h2>
 
@@ -160,14 +160,14 @@ export function RecipeDetailPage() {
               <Field label="Version notes" value={versionNotes} onChange={setVersionNotes} />
 
               <div>
-                <p className="mb-2 text-sm font-medium text-stone-700">Ingredients</p>
+                <p className="mb-2 text-sm font-medium text-fg">Ingredients</p>
                 <div className="space-y-2">
                   {rows.map((r, idx) => (
                     <div key={idx} className="flex items-center gap-2">
                       <select
                         value={r.materialId}
                         onChange={(e) => updateRow(idx, { materialId: e.target.value })}
-                        className="flex-1 rounded border border-stone-300 px-3 py-2 text-sm"
+                        className="flex-1 rounded border border-border-strong px-3 py-2 text-sm"
                       >
                         <option value="">Select material…</option>
                         {materials.data?.materials.map((m) => (
@@ -184,19 +184,19 @@ export function RecipeDetailPage() {
                         placeholder="qty"
                         value={r.quantity}
                         onChange={(e) => updateRow(idx, { quantity: e.target.value })}
-                        className="w-28 rounded border border-stone-300 px-3 py-2 text-sm"
+                        className="w-28 rounded border border-border-strong px-3 py-2 text-sm"
                       />
                       <input
                         type="text"
                         placeholder="uom"
                         value={r.uom}
                         onChange={(e) => updateRow(idx, { uom: e.target.value })}
-                        className="w-20 rounded border border-stone-300 px-3 py-2 text-sm"
+                        className="w-20 rounded border border-border-strong px-3 py-2 text-sm"
                       />
                       <button
                         type="button"
                         onClick={() => removeRow(idx)}
-                        className="text-sm text-stone-500 hover:text-red-600"
+                        className="text-sm text-fg-muted hover:text-red-400"
                       >
                         ✕
                       </button>
@@ -207,7 +207,7 @@ export function RecipeDetailPage() {
                     onClick={() =>
                       setRows((rs) => [...rs, { materialId: "", quantity: "", uom: "kg", notes: "" }])
                     }
-                    className="text-sm text-stone-600 underline-offset-2 hover:underline"
+                    className="text-sm text-fg-muted underline-offset-2 hover:underline"
                   >
                     + Add ingredient
                   </button>
@@ -218,12 +218,12 @@ export function RecipeDetailPage() {
                 <button
                   type="submit"
                   disabled={saveVersion.isPending}
-                  className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+                  className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
                 >
                   {saveVersion.isPending ? "Saving…" : "Save version"}
                 </button>
                 {saveVersion.error && (
-                  <span className="text-sm text-red-600">
+                  <span className="text-sm text-red-400">
                     {saveVersion.error instanceof ConnectError
                       ? saveVersion.error.rawMessage
                       : String(saveVersion.error)}
@@ -235,13 +235,13 @@ export function RecipeDetailPage() {
 
           {recipe.data.currentVersion ? (
             <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-                <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase text-stone-500">
+              <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+                <header className="border-b border-border bg-surface-3 px-4 py-3">
+                  <h2 className="text-sm font-semibold uppercase text-fg-muted">
                     Current version
                   </h2>
                 </header>
-                <dl className="divide-y divide-stone-100 text-sm">
+                <dl className="divide-y divide-border text-sm">
                   <DLRow label="Version">v{recipe.data.currentVersion.versionNo}</DLRow>
                   <DLRow label="Mash efficiency">
                     {formatPct(recipe.data.currentVersion.mashEfficiencyPct)}
@@ -260,13 +260,13 @@ export function RecipeDetailPage() {
                 </dl>
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-                <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase text-stone-500">Projection</h2>
+              <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+                <header className="border-b border-border bg-surface-3 px-4 py-3">
+                  <h2 className="text-sm font-semibold uppercase text-fg-muted">Projection</h2>
                 </header>
-                <dl className="divide-y divide-stone-100 text-sm">
+                <dl className="divide-y divide-border text-sm">
                   <DLRow label="Projected LAA">
-                    <span className="font-semibold text-stone-900">
+                    <span className="font-semibold text-fg">
                       {formatLAA(recipe.data.projection?.totalProjectedLaa)} L
                     </span>
                   </DLRow>
@@ -283,14 +283,14 @@ export function RecipeDetailPage() {
                 </dl>
               </div>
 
-              <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm lg:col-span-2">
-                <header className="border-b border-stone-200 bg-stone-50 px-4 py-3">
-                  <h2 className="text-sm font-semibold uppercase text-stone-500">
+              <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm lg:col-span-2">
+                <header className="border-b border-border bg-surface-3 px-4 py-3">
+                  <h2 className="text-sm font-semibold uppercase text-fg-muted">
                     Ingredients
                   </h2>
                 </header>
-                <table className="min-w-full divide-y divide-stone-200 text-sm">
-                  <thead className="bg-white text-left text-xs uppercase text-stone-500">
+                <table className="min-w-full divide-y divide-border text-sm">
+                  <thead className="bg-surface-2 text-left text-xs uppercase text-fg-muted">
                     <tr>
                       <th className="px-4 py-3">Material</th>
                       <th className="px-4 py-3 text-right">Qty</th>
@@ -300,19 +300,19 @@ export function RecipeDetailPage() {
                       <th className="px-4 py-3 text-right">Projected LAA</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100">
+                  <tbody className="divide-y divide-border">
                     {recipe.data.projection?.lines.map((l) => (
                       <tr key={l.materialId}>
-                        <td className="px-4 py-3 font-medium text-stone-900">{l.materialName}</td>
-                        <td className="px-4 py-3 text-right text-stone-600">{formatQty(l.quantity)}</td>
-                        <td className="px-4 py-3 text-stone-600">{l.uom}</td>
-                        <td className="px-4 py-3 text-right text-stone-600">
+                        <td className="px-4 py-3 font-medium text-fg">{l.materialName}</td>
+                        <td className="px-4 py-3 text-right text-fg-muted">{formatQty(l.quantity)}</td>
+                        <td className="px-4 py-3 text-fg-muted">{l.uom}</td>
+                        <td className="px-4 py-3 text-right text-fg-muted">
                           {l.fermentableKg > 0 ? formatQty(l.fermentableKg) : "—"}
                         </td>
-                        <td className="px-4 py-3 text-right text-stone-600">
+                        <td className="px-4 py-3 text-right text-fg-muted">
                           {l.ethanolMassKg > 0 ? formatQty(l.ethanolMassKg) : "—"}
                         </td>
-                        <td className="px-4 py-3 text-right font-medium text-stone-900">
+                        <td className="px-4 py-3 text-right font-medium text-fg">
                           {l.projectedLaa > 0 ? formatLAA(l.projectedLaa) : "—"}
                         </td>
                       </tr>
@@ -322,7 +322,7 @@ export function RecipeDetailPage() {
               </div>
             </section>
           ) : (
-            <p className="text-stone-500">No version yet. Click <b>Add first version</b>.</p>
+            <p className="text-fg-muted">No version yet. Click <b>Add first version</b>.</p>
           )}
 
           <VersionHistory recipeId={id} currentVersionId={recipe.data.recipe.currentVersionId} />
@@ -349,10 +349,10 @@ function VersionHistory({ recipeId, currentVersionId }: { recipeId: string; curr
   if (list.length <= 1) return null;
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Version history</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Version history</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-2">Version</th>
               <th className="px-4 py-2">Saved</th>
@@ -363,23 +363,23 @@ function VersionHistory({ recipeId, currentVersionId }: { recipeId: string; curr
               <th className="px-4 py-2">Notes</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {list.map((v) => (
-              <tr key={v.id} className={v.id === currentVersionId ? "bg-emerald-50" : ""}>
-                <td className="px-4 py-2 font-medium text-stone-900">
+              <tr key={v.id} className={v.id === currentVersionId ? "bg-emerald-500/10" : ""}>
+                <td className="px-4 py-2 font-medium text-fg">
                   v{v.versionNo}
                   {v.id === currentVersionId && (
                     <span className="ml-2 rounded bg-emerald-200 px-2 py-0.5 text-xs text-emerald-800">current</span>
                   )}
                 </td>
-                <td className="px-4 py-2 text-stone-600">
+                <td className="px-4 py-2 text-fg-muted">
                   {v.createdAt ? new Date(Number(v.createdAt.seconds) * 1000).toLocaleString() : ""}
                 </td>
-                <td className="px-4 py-2 text-right text-stone-600">{(v.mashEfficiencyPct * 100).toFixed(1)}%</td>
-                <td className="px-4 py-2 text-right text-stone-600">{(v.fermentEfficiencyPct * 100).toFixed(1)}%</td>
-                <td className="px-4 py-2 text-right text-stone-600">{(v.distillationRecoveryPct * 100).toFixed(1)}%</td>
-                <td className="px-4 py-2 text-right text-stone-600">{v.targetWaterLSet ? v.targetWaterL.toFixed(0) : "—"}</td>
-                <td className="px-4 py-2 text-stone-600">{v.notes}</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{(v.mashEfficiencyPct * 100).toFixed(1)}%</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{(v.fermentEfficiencyPct * 100).toFixed(1)}%</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{(v.distillationRecoveryPct * 100).toFixed(1)}%</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{v.targetWaterLSet ? v.targetWaterL.toFixed(0) : "—"}</td>
+                <td className="px-4 py-2 text-fg-muted">{v.notes}</td>
               </tr>
             ))}
           </tbody>
@@ -402,12 +402,12 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1 block text-xs font-medium text-stone-600">{label}</label>
+      <label className="mb-1 block text-xs font-medium text-fg-muted">{label}</label>
       <input
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
+        className="w-full rounded border border-border-strong px-3 py-2 text-sm focus:border-accent focus:outline-none"
       />
     </div>
   );
@@ -416,8 +416,8 @@ function Field({
 function DLRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between gap-4 px-4 py-3">
-      <dt className="text-stone-500">{label}</dt>
-      <dd className="text-stone-900">{children}</dd>
+      <dt className="text-fg-muted">{label}</dt>
+      <dd className="text-fg">{children}</dd>
     </div>
   );
 }

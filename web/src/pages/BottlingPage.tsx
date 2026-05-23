@@ -119,7 +119,7 @@ export function BottlingPage() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">Bottling</h1>
-          <p className="text-sm text-stone-500">
+          <p className="text-sm text-fg-muted">
             A bottling run debits the source container, applies province-coded stamps,
             and produces packaged inventory.
           </p>
@@ -127,7 +127,7 @@ export function BottlingPage() {
         <WriteOnly>
           <button
             onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800"
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
           >
             {showForm ? "Cancel" : "New bottling run"}
           </button>
@@ -137,11 +137,11 @@ export function BottlingPage() {
       {showForm && (
         <form
           onSubmit={submit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-stone-200 bg-white p-5 shadow-sm"
+          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
         >
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Product</label>
-            <select value={productId} onChange={(e) => setProductId(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Product</label>
+            <select value={productId} onChange={(e) => setProductId(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value="">Select product…</option>
               {products.data?.products.map((p) => (
                 <option key={p.id} value={p.id}>{p.name} ({p.bottleSizeMl} mL @ {p.targetAbvPct}%)</option>
@@ -149,8 +149,8 @@ export function BottlingPage() {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Source container</label>
-            <select value={sourceId} onChange={(e) => setSourceId(e.target.value)} required className="w-full rounded border border-stone-300 px-3 py-2 text-sm">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Source container</label>
+            <select value={sourceId} onChange={(e) => setSourceId(e.target.value)} required className="w-full rounded border border-border-strong px-3 py-2 text-sm">
               <option value="">Select source…</option>
               {containers.data?.containers
                 .filter((c) => !c.archived && c.currentVolumeL > 0)
@@ -161,51 +161,51 @@ export function BottlingPage() {
                 ))}
             </select>
             {source && (
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-fg-muted">
                 {formatLAA(source.currentLaa)} L LAA on hand
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Destination jurisdiction</label>
-            <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Destination jurisdiction</label>
+            <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             {jurisdictionSummary && (
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-fg-muted">
                 {jurisdictionSummary.totalOnHand.toLocaleString()} stamps on hand for {jurisdiction}
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Bottle count</label>
-            <input value={bottleCount} onChange={(e) => setBottleCount(e.target.value)} type="number" min="1" required className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Bottle count</label>
+            <input value={bottleCount} onChange={(e) => setBottleCount(e.target.value)} type="number" min="1" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             {requiredVol !== null && (
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-fg-muted">
                 Will draw {formatQty(requiredVol)} L from {source?.name ?? "source"}
               </p>
             )}
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Lot code</label>
-            <input value={lotCode} onChange={(e) => setLotCode(e.target.value)} required placeholder="L2026-0001" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Lot code</label>
+            <input value={lotCode} onChange={(e) => setLotCode(e.target.value)} required placeholder="L2026-0001" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-stone-600">Bottling loss (L)</label>
-            <input value={bottlingLoss} onChange={(e) => setBottlingLoss(e.target.value)} type="number" step="0.01" min="0" className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Bottling loss (L)</label>
+            <input value={bottlingLoss} onChange={(e) => setBottlingLoss(e.target.value)} type="number" step="0.01" min="0" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2">
-            <label className="mb-1 block text-xs font-medium text-stone-600">Notes</label>
-            <input value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded border border-stone-300 px-3 py-2 text-sm" />
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Notes</label>
+            <input value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
           </div>
           <div className="col-span-2 flex items-center gap-3">
             <button
               type="submit"
               disabled={createRun.isPending}
-              className="rounded bg-stone-900 px-3 py-2 text-sm font-medium text-white hover:bg-stone-800 disabled:bg-stone-400"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
             >
               {createRun.isPending ? "Bottling…" : "Run bottling"}
             </button>
             {createRun.error && (
-              <span className="text-sm text-red-600">
+              <span className="text-sm text-red-400">
                 {createRun.error instanceof ConnectError
                   ? createRun.error.rawMessage
                   : String(createRun.error)}
@@ -215,10 +215,10 @@ export function BottlingPage() {
         </form>
       )}
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Recent bottling runs</h2>
-      <div className="mb-8 overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Recent bottling runs</h2>
+      <div className="mb-8 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">#</th>
               <th className="px-4 py-3">Date</th>
@@ -230,18 +230,18 @@ export function BottlingPage() {
               {writeable && <th className="px-4 py-3"></th>}
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {runs.data?.runs.length === 0 && (
-              <tr><td colSpan={writeable ? 8 : 7} className="px-4 py-3 text-stone-500">No runs yet.</td></tr>
+              <tr><td colSpan={writeable ? 8 : 7} className="px-4 py-3 text-fg-muted">No runs yet.</td></tr>
             )}
             {runs.data?.runs.map((r) => {
               const voided = !!r.voidedAt;
               return (
-                <tr key={r.id} className={voided ? "bg-stone-50 text-stone-400" : ""}>
+                <tr key={r.id} className={voided ? "bg-surface-3 text-fg-subtle" : ""}>
                   <td className="px-4 py-3 font-medium">
                     <Link to={`/bottling/${r.id}`} className="hover:underline">#{r.runNo}</Link>
                     {voided && (
-                      <span className="ml-2 rounded bg-red-100 px-1.5 py-0.5 text-xs font-normal text-red-700">VOIDED</span>
+                      <span className="ml-2 rounded bg-red-500/15 px-1.5 py-0.5 text-xs font-normal text-red-400">VOIDED</span>
                     )}
                   </td>
                   <td className="px-4 py-3">{r.bottlingDate}</td>
@@ -254,14 +254,14 @@ export function BottlingPage() {
                   <td className="px-4 py-3">{r.lotCode}</td>
                   <td className="px-4 py-3">{r.destinationJurisdiction}</td>
                   <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{r.bottleCount.toLocaleString()}</td>
-                  <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-stone-900"}`}>{formatLAA(r.tankGaugeLaa)}</td>
+                  <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-fg"}`}>{formatLAA(r.tankGaugeLaa)}</td>
                   {writeable && (
                     <td className="px-4 py-3 text-right">
                       {!voided && (
                         <button
                           onClick={() => onVoidRun(r.id, r.runNo, r.bottleCount)}
                           disabled={voidRun.isPending}
-                          className="text-xs text-stone-600 hover:text-red-700 disabled:opacity-50"
+                          className="text-xs text-fg-muted hover:text-red-400 disabled:opacity-50"
                         >
                           Void
                         </button>
@@ -281,10 +281,10 @@ export function BottlingPage() {
         onPage={setPage}
       />
 
-      <h2 className="mb-3 text-sm font-semibold uppercase text-stone-500">Packaged inventory</h2>
-      <div className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-sm">
-        <table className="min-w-full divide-y divide-stone-200 text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+      <h2 className="mb-3 text-sm font-semibold uppercase text-fg-muted">Packaged inventory</h2>
+      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs uppercase text-fg-muted">
             <tr>
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Lot</th>
@@ -295,19 +295,19 @@ export function BottlingPage() {
               <th className="px-4 py-3 text-right">Age</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-border">
             {packaged.data?.rows.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-3 text-stone-500">Nothing packaged yet.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-3 text-fg-muted">Nothing packaged yet.</td></tr>
             )}
             {packaged.data?.rows.map((r) => (
               <tr key={r.id}>
-                <td className="px-4 py-3 font-medium text-stone-900">{r.productName}</td>
-                <td className="px-4 py-3 text-stone-600">{r.lotCode}</td>
-                <td className="px-4 py-3 text-stone-600">{r.jurisdiction}</td>
-                <td className="px-4 py-3 text-right font-medium text-stone-900">{r.bottlesOnHand.toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{r.bottlesPackaged.toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-stone-600">{r.bottlesRemoved.toLocaleString()}</td>
-                <td className="px-4 py-3 text-right text-stone-500">
+                <td className="px-4 py-3 font-medium text-fg">{r.productName}</td>
+                <td className="px-4 py-3 text-fg-muted">{r.lotCode}</td>
+                <td className="px-4 py-3 text-fg-muted">{r.jurisdiction}</td>
+                <td className="px-4 py-3 text-right font-medium text-fg">{r.bottlesOnHand.toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{r.bottlesPackaged.toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">{r.bottlesRemoved.toLocaleString()}</td>
+                <td className="px-4 py-3 text-right text-fg-muted">
                   <PackagedAge bottledOn={r.firstBottledDate} />
                 </td>
               </tr>
@@ -332,7 +332,7 @@ function PackagedAge({ bottledOn }: { bottledOn: string }) {
   if (days < 60) label = `${days}d`;
   else if (days < 730) label = `${Math.round(days / 30)}mo`;
   else label = `${(days / 365).toFixed(1)} yr`;
-  return <span className={stale ? "text-amber-700" : ""}>{label}</span>;
+  return <span className={stale ? "text-amber-400" : ""}>{label}</span>;
 }
 
 // Pager renders prev / next + "showing N–M of T" for a server-paginated list.
@@ -345,20 +345,20 @@ export function Pager({
   const from = page * pageSize + 1;
   const to = Math.min((page + 1) * pageSize, total);
   return (
-    <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
+    <div className="mt-3 flex items-center justify-between text-xs text-fg-muted">
       <span>Showing {from.toLocaleString()}–{to.toLocaleString()} of {total.toLocaleString()}</span>
       <div className="flex gap-2">
         <button
           disabled={page === 0}
           onClick={() => onPage(Math.max(0, page - 1))}
-          className="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100 disabled:opacity-40"
+          className="rounded border border-border-strong px-2 py-1 hover:bg-surface-3 disabled:opacity-40"
         >
           ← Prev
         </button>
         <button
           disabled={page >= pageCount - 1}
           onClick={() => onPage(page + 1)}
-          className="rounded border border-stone-300 px-2 py-1 hover:bg-stone-100 disabled:opacity-40"
+          className="rounded border border-border-strong px-2 py-1 hover:bg-surface-3 disabled:opacity-40"
         >
           Next →
         </button>

@@ -42,14 +42,15 @@ export function Shell({ children }: { children: ReactNode }) {
   });
 
   return (
-    <div className="flex min-h-screen bg-stone-50 text-stone-900">
-      <aside data-print-hide className="flex w-56 flex-col border-r border-stone-200 bg-white">
-        <div className="border-b border-stone-200 px-5 py-4">
-          <Link to="/" className="text-lg font-semibold tracking-tight">
+    <div className="flex min-h-screen bg-surface text-fg">
+      <aside data-print-hide className="flex w-60 flex-col border-r border-border bg-surface-2">
+        <div className="border-b border-border px-5 py-5">
+          <Link to="/" className="flex items-center gap-2 text-base font-semibold tracking-tight text-fg">
+            <span className="inline-block h-2 w-2 rounded-full bg-accent" />
             Stillhouse
           </Link>
           {data?.tenant && (
-            <p className="mt-1 text-xs text-stone-500" title={data.tenant.craSpiritsLicenceNumber}>
+            <p className="mt-1 text-xs text-fg-muted" title={data.tenant.craSpiritsLicenceNumber}>
               {data.tenant.name}
             </p>
           )}
@@ -61,10 +62,10 @@ export function Shell({ children }: { children: ReactNode }) {
               to={item.to}
               end={item.to === "/"}
               className={({ isActive }) =>
-                `block rounded px-3 py-2 text-sm ${
+                `mb-0.5 block rounded-md px-3 py-1.5 text-sm transition-colors ${
                   isActive
-                    ? "bg-stone-900 text-white"
-                    : "text-stone-700 hover:bg-stone-100"
+                    ? "bg-accent/15 text-accent-hover font-medium"
+                    : "text-fg-muted hover:bg-surface-3 hover:text-fg"
                 }`
               }
             >
@@ -72,30 +73,30 @@ export function Shell({ children }: { children: ReactNode }) {
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-stone-200 px-3 py-3 text-xs text-stone-500">
+        <div className="border-t border-border px-4 py-4 text-xs text-fg-muted">
           {data?.user && (
             <>
-              <p className="text-stone-900">{data.user.displayName}</p>
+              <p className="text-fg">{data.user.displayName}</p>
               <p>{data.user.email}</p>
             </>
           )}
           <div className="mt-2 flex items-center justify-between">
             <button
               onClick={() => logout.mutate()}
-              className="text-stone-500 hover:text-stone-900"
+              className="text-fg-muted hover:text-fg"
               disabled={logout.isPending}
             >
               {logout.isPending ? t("Signing out…", "Déconnexion…") : t("Sign out", "Déconnexion")}
             </button>
-            <div className="flex items-center gap-1 text-stone-400">
+            <div className="flex items-center gap-1 text-fg-subtle">
               <button
-                className={`rounded px-1.5 py-0.5 ${lang === "en" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+                className={`rounded px-1.5 py-0.5 ${lang === "en" ? "bg-surface-3 text-fg" : "hover:text-fg"}`}
                 onClick={() => setLang("en")}
               >
                 EN
               </button>
               <button
-                className={`rounded px-1.5 py-0.5 ${lang === "fr" ? "bg-stone-200 text-stone-900" : "hover:text-stone-700"}`}
+                className={`rounded px-1.5 py-0.5 ${lang === "fr" ? "bg-surface-3 text-fg" : "hover:text-fg"}`}
                 onClick={() => setLang("fr")}
               >
                 FR
@@ -105,7 +106,7 @@ export function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
       <main className="flex-1 overflow-x-auto">
-        <div className="mx-auto max-w-5xl p-8">{children}</div>
+        <div className="mx-auto max-w-6xl px-8 py-10">{children}</div>
       </main>
     </div>
   );

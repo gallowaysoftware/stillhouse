@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/auth.proto.
  */
 export const file_stillhouse_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEiLwoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJIlkKDUxvZ2luUmVzcG9uc2USIQoEdXNlchgBIAEoCzITLnN0aWxsaG91c2UudjEuVXNlchIlCgZ0ZW5hbnQYAiABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlMpgBCgtBdXRoU2VydmljZRJCCgVMb2dpbhIbLnN0aWxsaG91c2UudjEuTG9naW5SZXF1ZXN0Ghwuc3RpbGxob3VzZS52MS5Mb2dpblJlc3BvbnNlEkUKBkxvZ291dBIcLnN0aWxsaG91c2UudjEuTG9nb3V0UmVxdWVzdBodLnN0aWxsaG91c2UudjEuTG9nb3V0UmVzcG9uc2ViBnByb3RvMw", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEiLwoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJIlkKDUxvZ2luUmVzcG9uc2USIQoEdXNlchgBIAEoCzITLnN0aWxsaG91c2UudjEuVXNlchIlCgZ0ZW5hbnQYAiABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlIiwKG1JlcXVlc3RQYXNzd29yZFJlc2V0UmVxdWVzdBINCgVlbWFpbBgBIAEoCSIeChxSZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlIjsKFFJlc2V0UGFzc3dvcmRSZXF1ZXN0Eg0KBXRva2VuGAEgASgJEhQKDG5ld19wYXNzd29yZBgCIAEoCSIXChVSZXNldFBhc3N3b3JkUmVzcG9uc2Uy5QIKC0F1dGhTZXJ2aWNlEkIKBUxvZ2luEhsuc3RpbGxob3VzZS52MS5Mb2dpblJlcXVlc3QaHC5zdGlsbGhvdXNlLnYxLkxvZ2luUmVzcG9uc2USRQoGTG9nb3V0Ehwuc3RpbGxob3VzZS52MS5Mb2dvdXRSZXF1ZXN0Gh0uc3RpbGxob3VzZS52MS5Mb2dvdXRSZXNwb25zZRJvChRSZXF1ZXN0UGFzc3dvcmRSZXNldBIqLnN0aWxsaG91c2UudjEuUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5SZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlEloKDVJlc2V0UGFzc3dvcmQSIy5zdGlsbGhvdXNlLnYxLlJlc2V0UGFzc3dvcmRSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5SZXNldFBhc3N3b3JkUmVzcG9uc2ViBnByb3RvMw", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
 
 /**
  * @generated from message stillhouse.v1.LoginRequest
@@ -87,6 +87,74 @@ export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_auth, 3);
 
 /**
+ * Public — always returns success. Backend silently skips if the email
+ * isn't on file so we don't leak which addresses are registered.
+ *
+ * @generated from message stillhouse.v1.RequestPasswordResetRequest
+ */
+export type RequestPasswordResetRequest = Message<"stillhouse.v1.RequestPasswordResetRequest"> & {
+  /**
+   * @generated from field: string email = 1;
+   */
+  email: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.RequestPasswordResetRequest.
+ * Use `create(RequestPasswordResetRequestSchema)` to create a new message.
+ */
+export const RequestPasswordResetRequestSchema: GenMessage<RequestPasswordResetRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 4);
+
+/**
+ * @generated from message stillhouse.v1.RequestPasswordResetResponse
+ */
+export type RequestPasswordResetResponse = Message<"stillhouse.v1.RequestPasswordResetResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.RequestPasswordResetResponse.
+ * Use `create(RequestPasswordResetResponseSchema)` to create a new message.
+ */
+export const RequestPasswordResetResponseSchema: GenMessage<RequestPasswordResetResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 5);
+
+/**
+ * @generated from message stillhouse.v1.ResetPasswordRequest
+ */
+export type ResetPasswordRequest = Message<"stillhouse.v1.ResetPasswordRequest"> & {
+  /**
+   * @generated from field: string token = 1;
+   */
+  token: string;
+
+  /**
+   * @generated from field: string new_password = 2;
+   */
+  newPassword: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.ResetPasswordRequest.
+ * Use `create(ResetPasswordRequestSchema)` to create a new message.
+ */
+export const ResetPasswordRequestSchema: GenMessage<ResetPasswordRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 6);
+
+/**
+ * @generated from message stillhouse.v1.ResetPasswordResponse
+ */
+export type ResetPasswordResponse = Message<"stillhouse.v1.ResetPasswordResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.ResetPasswordResponse.
+ * Use `create(ResetPasswordResponseSchema)` to create a new message.
+ */
+export const ResetPasswordResponseSchema: GenMessage<ResetPasswordResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 7);
+
+/**
  * @generated from service stillhouse.v1.AuthService
  */
 export const AuthService: GenService<{
@@ -105,6 +173,22 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof LogoutRequestSchema;
     output: typeof LogoutResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AuthService.RequestPasswordReset
+   */
+  requestPasswordReset: {
+    methodKind: "unary";
+    input: typeof RequestPasswordResetRequestSchema;
+    output: typeof RequestPasswordResetResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AuthService.ResetPassword
+   */
+  resetPassword: {
+    methodKind: "unary";
+    input: typeof ResetPasswordRequestSchema;
+    output: typeof ResetPasswordResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_auth, 0);
