@@ -145,10 +145,11 @@ var procedureMinRole = map[string]minRole{
 
 	// B266Service — generating a draft is operator-level; signing/submitting
 	// the filing is an owner action.
-	"/stillhouse.v1.B266Service/GenerateB266":   roleOperator,
-	"/stillhouse.v1.B266Service/SubmitB266":     roleOwner,
-	"/stillhouse.v1.B266Service/ListB266Periods": roleViewer,
-	"/stillhouse.v1.B266Service/GetB266Period":   roleViewer,
+	"/stillhouse.v1.B266Service/GenerateB266":     roleOperator,
+	"/stillhouse.v1.B266Service/SubmitB266":       roleOwner,
+	"/stillhouse.v1.B266Service/ListB266Periods":  roleViewer,
+	"/stillhouse.v1.B266Service/GetB266Period":    roleViewer,
+	"/stillhouse.v1.B266Service/ReopenB266Period": roleOwner,
 }
 
 // userRoleRank converts a stored user_role enum to its minRole rank for

@@ -269,10 +269,79 @@ function ReportView({
         </div>
         </OwnerOnly>
       )}
-      {submittedStatus === B266Status.SUBMITTED && (
-        <p className="rounded bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">This return is submitted; the snapshot is frozen.</p>
+      {submittedStatus === B266Status.SUBMITTED && period && (
+        <OwnerOnly>
+          <ReopenPanel periodId={period.id} />
+        </OwnerOnly>
       )}
     </section>
+  );
+}
+
+// ReopenPanel — owner-only escape hatch when a filed return genuinely
+// needs to be corrected. Flips status back to draft so backdated voids
+// / inserts pass the period-lock guard. Audit-logged with the reason.
+function ReopenPanel({ periodId }: { periodId: string }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState("");
+  const reopen = useMutation({
+    mutationFn: () => b266Client.reopenB266Period({ id: periodId, reason }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["listB266Periods"] });
+      qc.invalidateQueries({ queryKey: ["getB266Period", periodId] });
+      setOpen(false);
+      setReason("");
+    },
+  });
+  return (
+    <div data-print-hide className="space-y-3">
+      <p className="rounded bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
+        This return is submitted; the snapshot is frozen.
+      </p>
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="rounded border border-amber-500/40 px-3 py-2 text-sm text-amber-400 hover:bg-amber-500/10"
+        >
+          Reopen for correction…
+        </button>
+      ) : (
+        <div className="space-y-3 rounded border border-amber-500/40 bg-amber-500/5 p-4">
+          <p className="text-sm text-fg">
+            Reopening flips this period back to <b>draft</b> so backdated voids and inserts pass the
+            period-lock guard. The snapshot stays for audit, but live numbers may drift from what
+            you filed with CRA — make sure you can square the two before submitting again.
+          </p>
+          <input
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason for reopening (required, audit-logged)"
+            className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
+          />
+          {reopen.error && (
+            <p className="text-sm text-red-400">
+              {reopen.error instanceof ConnectError ? reopen.error.rawMessage : String(reopen.error)}
+            </p>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => reopen.mutate()}
+              disabled={!reason.trim() || reopen.isPending}
+              className="rounded bg-amber-500 px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-amber-400 disabled:opacity-50"
+            >
+              {reopen.isPending ? "Reopening…" : "Reopen period"}
+            </button>
+            <button
+              onClick={() => { setOpen(false); setReason(""); }}
+              className="rounded border border-border-strong px-3 py-2 text-sm text-fg hover:bg-surface-3"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

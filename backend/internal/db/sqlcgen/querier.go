@@ -162,6 +162,11 @@ type Querier interface {
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
 	RedeemInviteCode(ctx context.Context, arg RedeemInviteCodeParams) (InviteCode, error)
+	// Flips a submitted period back to draft. Snapshot stays in place for
+	// audit (auditors can compare frozen vs. live after the reopen). The
+	// WHERE status = 'submitted' guard makes this a no-op on already-draft
+	// periods, returning no rows.
+	ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error

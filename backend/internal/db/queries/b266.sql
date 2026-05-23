@@ -26,6 +26,16 @@ WHERE id = $1
   AND status = 'draft'
 RETURNING *;
 
+-- name: ReopenB266Period :one
+-- Flips a submitted period back to draft. Snapshot stays in place for
+-- audit (auditors can compare frozen vs. live after the reopen). The
+-- WHERE status = 'submitted' guard makes this a no-op on already-draft
+-- periods, returning no rows.
+UPDATE b266_periods
+SET status = 'draft'
+WHERE id = $1 AND status = 'submitted'
+RETURNING *;
+
 -- name: B266PeriodCoveringDate :one
 -- Returns a submitted period that covers the given date, if any. Mutations
 -- whose effective date lands in such a period should be rejected — the

@@ -148,6 +148,56 @@ func (s *B266Service) SubmitB266(
 	}), nil
 }
 
+// ReopenB266Period flips a submitted period back to draft so backdated
+// corrections can pass the period-lock guard (stage 66). The snapshot
+// stays for audit so reviewers can compare frozen-at-submit vs. live.
+// Owner-only; reason is mandatory.
+func (s *B266Service) ReopenB266Period(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.ReopenB266PeriodRequest],
+) (*connect.Response[stillhousev1.ReopenB266PeriodResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	if u.Role != sqlcgen.UserRoleOwner {
+		return nil, connect.NewError(connect.CodePermissionDenied, errors.New("owner role required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	reason := req.Msg.GetReason()
+	if reason == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("reason is required"))
+	}
+	var period sqlcgen.B266Period
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		period, e = q.ReopenB266Period(ctx, id)
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "b266_period", id.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":        "reopened",
+				"period_start": period.PeriodStart.Time.Format("2006-01-02"),
+				"period_end":   period.PeriodEnd.Time.Format("2006-01-02"),
+				"reason":       reason,
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("period not found or not submitted"))
+		}
+		s.logger.Error("ReopenB266Period", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.ReopenB266PeriodResponse{
+		Period: b266PeriodToProto(period),
+	}), nil
+}
+
 func (s *B266Service) GetB266Period(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.GetB266PeriodRequest],

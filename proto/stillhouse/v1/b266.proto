@@ -86,9 +86,20 @@ message GetB266PeriodResponse {
   B266Report snapshot = 2;
 }
 
+// Reopen flips a submitted period back to draft. Owner-only — needed
+// when a genuine correction has to be made to a filed month and the
+// operator wants the period-lock guard (stage 66) to stop blocking
+// backdated mutations. Snapshot stays for audit.
+message ReopenB266PeriodRequest {
+  string id = 1;
+  string reason = 2;
+}
+message ReopenB266PeriodResponse { B266Period period = 1; }
+
 service B266Service {
   rpc GenerateB266(GenerateB266Request) returns (GenerateB266Response);
   rpc SubmitB266(SubmitB266Request) returns (SubmitB266Response);
   rpc ListB266Periods(ListB266PeriodsRequest) returns (ListB266PeriodsResponse);
   rpc GetB266Period(GetB266PeriodRequest) returns (GetB266PeriodResponse);
+  rpc ReopenB266Period(ReopenB266PeriodRequest) returns (ReopenB266PeriodResponse);
 }

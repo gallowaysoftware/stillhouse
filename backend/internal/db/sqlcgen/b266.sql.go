@@ -132,6 +132,36 @@ func (q *Queries) ListB266Periods(ctx context.Context) ([]B266Period, error) {
 	return items, nil
 }
 
+const reopenB266Period = `-- name: ReopenB266Period :one
+UPDATE b266_periods
+SET status = 'draft'
+WHERE id = $1 AND status = 'submitted'
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at
+`
+
+// Flips a submitted period back to draft. Snapshot stays in place for
+// audit (auditors can compare frozen vs. live after the reopen). The
+// WHERE status = 'submitted' guard makes this a no-op on already-draft
+// periods, returning no rows.
+func (q *Queries) ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error) {
+	row := q.db.QueryRow(ctx, reopenB266Period, id)
+	var i B266Period
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.PeriodStart,
+		&i.PeriodEnd,
+		&i.Status,
+		&i.Snapshot,
+		&i.SubmittedAt,
+		&i.SubmittedBy,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const submitB266Period = `-- name: SubmitB266Period :one
 UPDATE b266_periods
 SET status       = 'submitted',

@@ -48,6 +48,9 @@ const (
 	// B266ServiceGetB266PeriodProcedure is the fully-qualified name of the B266Service's GetB266Period
 	// RPC.
 	B266ServiceGetB266PeriodProcedure = "/stillhouse.v1.B266Service/GetB266Period"
+	// B266ServiceReopenB266PeriodProcedure is the fully-qualified name of the B266Service's
+	// ReopenB266Period RPC.
+	B266ServiceReopenB266PeriodProcedure = "/stillhouse.v1.B266Service/ReopenB266Period"
 )
 
 // B266ServiceClient is a client for the stillhouse.v1.B266Service service.
@@ -56,6 +59,7 @@ type B266ServiceClient interface {
 	SubmitB266(context.Context, *connect.Request[v1.SubmitB266Request]) (*connect.Response[v1.SubmitB266Response], error)
 	ListB266Periods(context.Context, *connect.Request[v1.ListB266PeriodsRequest]) (*connect.Response[v1.ListB266PeriodsResponse], error)
 	GetB266Period(context.Context, *connect.Request[v1.GetB266PeriodRequest]) (*connect.Response[v1.GetB266PeriodResponse], error)
+	ReopenB266Period(context.Context, *connect.Request[v1.ReopenB266PeriodRequest]) (*connect.Response[v1.ReopenB266PeriodResponse], error)
 }
 
 // NewB266ServiceClient constructs a client for the stillhouse.v1.B266Service service. By default,
@@ -93,15 +97,22 @@ func NewB266ServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(b266ServiceMethods.ByName("GetB266Period")),
 			connect.WithClientOptions(opts...),
 		),
+		reopenB266Period: connect.NewClient[v1.ReopenB266PeriodRequest, v1.ReopenB266PeriodResponse](
+			httpClient,
+			baseURL+B266ServiceReopenB266PeriodProcedure,
+			connect.WithSchema(b266ServiceMethods.ByName("ReopenB266Period")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // b266ServiceClient implements B266ServiceClient.
 type b266ServiceClient struct {
-	generateB266    *connect.Client[v1.GenerateB266Request, v1.GenerateB266Response]
-	submitB266      *connect.Client[v1.SubmitB266Request, v1.SubmitB266Response]
-	listB266Periods *connect.Client[v1.ListB266PeriodsRequest, v1.ListB266PeriodsResponse]
-	getB266Period   *connect.Client[v1.GetB266PeriodRequest, v1.GetB266PeriodResponse]
+	generateB266     *connect.Client[v1.GenerateB266Request, v1.GenerateB266Response]
+	submitB266       *connect.Client[v1.SubmitB266Request, v1.SubmitB266Response]
+	listB266Periods  *connect.Client[v1.ListB266PeriodsRequest, v1.ListB266PeriodsResponse]
+	getB266Period    *connect.Client[v1.GetB266PeriodRequest, v1.GetB266PeriodResponse]
+	reopenB266Period *connect.Client[v1.ReopenB266PeriodRequest, v1.ReopenB266PeriodResponse]
 }
 
 // GenerateB266 calls stillhouse.v1.B266Service.GenerateB266.
@@ -124,12 +135,18 @@ func (c *b266ServiceClient) GetB266Period(ctx context.Context, req *connect.Requ
 	return c.getB266Period.CallUnary(ctx, req)
 }
 
+// ReopenB266Period calls stillhouse.v1.B266Service.ReopenB266Period.
+func (c *b266ServiceClient) ReopenB266Period(ctx context.Context, req *connect.Request[v1.ReopenB266PeriodRequest]) (*connect.Response[v1.ReopenB266PeriodResponse], error) {
+	return c.reopenB266Period.CallUnary(ctx, req)
+}
+
 // B266ServiceHandler is an implementation of the stillhouse.v1.B266Service service.
 type B266ServiceHandler interface {
 	GenerateB266(context.Context, *connect.Request[v1.GenerateB266Request]) (*connect.Response[v1.GenerateB266Response], error)
 	SubmitB266(context.Context, *connect.Request[v1.SubmitB266Request]) (*connect.Response[v1.SubmitB266Response], error)
 	ListB266Periods(context.Context, *connect.Request[v1.ListB266PeriodsRequest]) (*connect.Response[v1.ListB266PeriodsResponse], error)
 	GetB266Period(context.Context, *connect.Request[v1.GetB266PeriodRequest]) (*connect.Response[v1.GetB266PeriodResponse], error)
+	ReopenB266Period(context.Context, *connect.Request[v1.ReopenB266PeriodRequest]) (*connect.Response[v1.ReopenB266PeriodResponse], error)
 }
 
 // NewB266ServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -163,6 +180,12 @@ func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(b266ServiceMethods.ByName("GetB266Period")),
 		connect.WithHandlerOptions(opts...),
 	)
+	b266ServiceReopenB266PeriodHandler := connect.NewUnaryHandler(
+		B266ServiceReopenB266PeriodProcedure,
+		svc.ReopenB266Period,
+		connect.WithSchema(b266ServiceMethods.ByName("ReopenB266Period")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.B266Service/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case B266ServiceGenerateB266Procedure:
@@ -173,6 +196,8 @@ func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption
 			b266ServiceListB266PeriodsHandler.ServeHTTP(w, r)
 		case B266ServiceGetB266PeriodProcedure:
 			b266ServiceGetB266PeriodHandler.ServeHTTP(w, r)
+		case B266ServiceReopenB266PeriodProcedure:
+			b266ServiceReopenB266PeriodHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -196,4 +221,8 @@ func (UnimplementedB266ServiceHandler) ListB266Periods(context.Context, *connect
 
 func (UnimplementedB266ServiceHandler) GetB266Period(context.Context, *connect.Request[v1.GetB266PeriodRequest]) (*connect.Response[v1.GetB266PeriodResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.B266Service.GetB266Period is not implemented"))
+}
+
+func (UnimplementedB266ServiceHandler) ReopenB266Period(context.Context, *connect.Request[v1.ReopenB266PeriodRequest]) (*connect.Response[v1.ReopenB266PeriodResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.B266Service.ReopenB266Period is not implemented"))
 }
