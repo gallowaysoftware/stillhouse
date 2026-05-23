@@ -347,7 +347,7 @@ function Step({ n, done, to, label }: { n: number; done: boolean; to: string; la
   return (
     <li className="flex items-start gap-3">
       <span className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium ${
-        done ? "bg-emerald-600 text-white" : "bg-stone-200 text-fg-muted"
+        done ? "bg-success text-white" : "bg-surface-3 text-fg-muted"
       }`}>
         {done ? "✓" : n}
       </span>
