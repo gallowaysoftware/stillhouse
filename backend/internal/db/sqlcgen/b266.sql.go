@@ -12,6 +12,37 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const b266PeriodCoveringDate = `-- name: B266PeriodCoveringDate :one
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods
+WHERE status = 'submitted'
+  AND period_start <= $1
+  AND period_end   >= $1
+LIMIT 1
+`
+
+// Returns a submitted period that covers the given date, if any. Mutations
+// whose effective date lands in such a period should be rejected — the
+// snapshot has already been filed with CRA and backdating would create
+// a live-vs-filed discrepancy.
+func (q *Queries) B266PeriodCoveringDate(ctx context.Context, periodStart pgtype.Date) (B266Period, error) {
+	row := q.db.QueryRow(ctx, b266PeriodCoveringDate, periodStart)
+	var i B266Period
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.PeriodStart,
+		&i.PeriodEnd,
+		&i.Status,
+		&i.Snapshot,
+		&i.SubmittedAt,
+		&i.SubmittedBy,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getB266Period = `-- name: GetB266Period :one
 SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods WHERE id = $1
 `

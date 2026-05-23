@@ -18,6 +18,11 @@ type Querier interface {
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
+	// Returns a submitted period that covers the given date, if any. Mutations
+	// whose effective date lands in such a period should be rejected — the
+	// snapshot has already been filed with CRA and backdating would create
+	// a live-vs-filed discrepancy.
+	B266PeriodCoveringDate(ctx context.Context, periodStart pgtype.Date) (B266Period, error)
 	// For a barrel_dump-tagged bulk_movement, return the barrel + its fill
 	// history (so we can include the original distillation behind the fill).
 	BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID) ([]BarrelDumpsForContainerFillRow, error)

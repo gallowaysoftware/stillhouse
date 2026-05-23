@@ -59,6 +59,9 @@ func (s *RemovalService) CreateRemoval(
 		pkg     sqlcgen.PackagedInventory
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := assertDateNotInLockedPeriod(ctx, q, removalDate); e != nil {
+			return e
+		}
 		// Look up the packaged inventory row to derive product info + verify stock.
 		var e error
 		rows, e := q.ListPackagedInventory(ctx, true)
@@ -176,6 +179,9 @@ func (s *RemovalService) VoidRemoval(
 		}
 		if existing.VoidedAt.Valid {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("removal is already voided"))
+		}
+		if e := assertDateNotInLockedPeriod(ctx, q, existing.RemovalDate); e != nil {
+			return e
 		}
 		voided, e = q.VoidRemoval(ctx, sqlcgen.VoidRemovalParams{
 			ID:           id,

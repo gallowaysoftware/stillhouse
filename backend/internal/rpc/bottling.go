@@ -79,6 +79,9 @@ func (s *BottlingService) CreateBottlingRun(
 		productOut sqlcgen.Product
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := assertDateNotInLockedPeriod(ctx, q, bottlingDate); e != nil {
+			return e
+		}
 		product, e := q.GetProduct(ctx, productID)
 		if e != nil {
 			return e
@@ -436,6 +439,9 @@ func (s *BottlingService) VoidBottlingRun(
 		}
 		if existing.VoidedAt.Valid {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("bottling run is already voided"))
+		}
+		if e := assertDateNotInLockedPeriod(ctx, q, existing.BottlingDate); e != nil {
+			return e
 		}
 
 		// 1) Reverse each stamp allocation. If any stamp_order can't be

@@ -26,6 +26,17 @@ WHERE id = $1
   AND status = 'draft'
 RETURNING *;
 
+-- name: B266PeriodCoveringDate :one
+-- Returns a submitted period that covers the given date, if any. Mutations
+-- whose effective date lands in such a period should be rejected — the
+-- snapshot has already been filed with CRA and backdating would create
+-- a live-vs-filed discrepancy.
+SELECT * FROM b266_periods
+WHERE status = 'submitted'
+  AND period_start <= $1
+  AND period_end   >= $1
+LIMIT 1;
+
 -- Aggregation queries for generating B266 sections.
 
 -- name: SumBulkMovementsByReason :many

@@ -418,6 +418,9 @@ func (s *DistillationService) RecordProductionGauge(
 		updated sqlcgen.BulkContainer
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: gaugeTS.Time}); e != nil {
+			return e
+		}
 		// 0. Sanity check: run exists, not already gauged.
 		run, e := q.GetDistillationRun(ctx, runID)
 		if e != nil {
@@ -555,6 +558,9 @@ func (s *DistillationService) VoidDistillationRun(
 		}
 		if existing.VoidedAt.Valid {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("distillation run is already voided"))
+		}
+		if e := assertDateNotInLockedPeriod(ctx, q, existing.RunDate); e != nil {
+			return e
 		}
 
 		// If a production gauge exists, reverse its container deposit.
