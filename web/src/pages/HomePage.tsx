@@ -1,3 +1,4 @@
+import { ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
@@ -75,10 +76,14 @@ export function HomePage() {
           : "Live snapshot of everything Stillhouse is currently tracking."}
       </p>
 
-      <ReadyToDumpCallout barrels={barrels.data?.barrels ?? []} />
-      <B266DueCallout periodEnd={end} hasBottling={hasBottling} />
-      <StampLowStockCallout summaries={stamps.data?.summaries ?? []} />
-      <StagnantBulkCallout containers={bulk.data?.containers ?? []} />
+      <AlertsPanel
+        barrels={barrels.data?.barrels ?? []}
+        containers={bulk.data?.containers ?? []}
+        stampSummaries={stamps.data?.summaries ?? []}
+        periodEnd={end}
+        hasBottling={hasBottling}
+        showAllClear={completedAll}
+      />
       <CWForecastSection barrels={barrels.data?.barrels ?? []} />
 
       {!completedAll && allLoaded && (
@@ -247,21 +252,80 @@ function CWForecastSection({ barrels }: { barrels: { currentLaa: number; canadia
   );
 }
 
-function ReadyToDumpCallout({ barrels }: { barrels: { id: string; name: string; currentLaa: number; canadianWhiskyEligible: boolean; daysAged: number }[] }) {
-  const ready = barrels.filter((b) => b.currentLaa > 0 && b.canadianWhiskyEligible);
-  if (ready.length === 0) return null;
+type BarrelAlertRow = { id: string; name: string; currentLaa: number; canadianWhiskyEligible: boolean; daysAged: number };
+type ContainerAlertRow = { id: string; name: string; kind: number; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean };
+type StampAlertRow = { jurisdiction: string; totalOnHand: number; bottlesPerDay30d: number };
+
+/**
+ * AlertsPanel — single section that consolidates every "you should look
+ * at this" banner. Each child callout is responsible for deciding if it
+ * fires (returns null otherwise). The panel renders an "Alerts" header
+ * with a count when at least one fires, and an "All clear" tile when
+ * the operator has finished onboarding but has nothing to act on.
+ *
+ * Ordering matters: B266 overdue is the most urgent (legal deadline),
+ * then dump-ready (cash conversion), stamps (blocks bottling), stagnant
+ * bulk (slowest-moving signal).
+ */
+function AlertsPanel({
+  barrels,
+  containers,
+  stampSummaries,
+  periodEnd,
+  hasBottling,
+  showAllClear,
+}: {
+  barrels: BarrelAlertRow[];
+  containers: ContainerAlertRow[];
+  stampSummaries: StampAlertRow[];
+  periodEnd: string;
+  hasBottling: boolean;
+  showAllClear: boolean;
+}) {
+  const items: ReactElement[] = [];
+  const b266 = renderB266DueCallout(periodEnd, hasBottling);
+  if (b266) items.push(<div key="b266">{b266}</div>);
+  const dump = renderReadyToDumpCallout(barrels);
+  if (dump) items.push(<div key="dump">{dump}</div>);
+  const stamps = renderStampLowStockCallout(stampSummaries);
+  if (stamps) items.push(<div key="stamps">{stamps}</div>);
+  const stagnant = renderStagnantBulkCallout(containers);
+  if (stagnant) items.push(<div key="stagnant">{stagnant}</div>);
+
+  if (items.length === 0) {
+    if (!showAllClear) return null;
+    return (
+      <section className="mb-8">
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Alerts</h2>
+        <Callout tone="success">
+          All clear — nothing flagged for review.
+        </Callout>
+      </section>
+    );
+  }
   return (
-    <div className="mb-6">
-      <Callout tone="success">
-        <span className="font-semibold text-success-fg">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
-        and still hold alcohol — ready to dump for bottling.{" "}
-        <Link to="/barrels" className="underline">Open barrels →</Link>
-      </Callout>
-    </div>
+    <section className="mb-8">
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
+        Alerts <span className="text-fg-muted">({items.length})</span>
+      </h2>
+      <div className="space-y-2">{items}</div>
+    </section>
   );
 }
 
-function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBottling: boolean }) {
+function renderReadyToDumpCallout(barrels: BarrelAlertRow[]) {
+  const ready = barrels.filter((b) => b.currentLaa > 0 && b.canadianWhiskyEligible);
+  if (ready.length === 0) return null;
+  return (
+    <Callout tone="success">
+      <span className="font-semibold text-success-fg">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
+      and still hold alcohol — ready to dump for bottling.{" "}
+      <Link to="/barrels" className="underline">Open barrels →</Link>
+    </Callout>
+  );
+}
+
+function renderB266DueCallout(periodEnd: string, hasBottling: boolean) {
   if (!hasBottling) return null;
   // B266 is due by the last day of the month following the reporting period.
   const end = new Date(periodEnd + "T00:00:00Z");
@@ -272,14 +336,12 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
   const urgent = daysToDue <= 7 && !overdue;
   const tone = overdue ? "danger" : urgent ? "warning" : "info";
   return (
-    <div className="mb-6">
-      <Callout tone={tone}>
-        {overdue && <span className="mr-2 rounded bg-danger px-1.5 py-0.5 text-xs font-semibold text-white">OVERDUE</span>}
-        <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
-        {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue — file as soon as possible`}).
-        {" "}<Link to="/b266" className="underline">Open the return →</Link>
-      </Callout>
-    </div>
+    <Callout tone={tone}>
+      {overdue && <span className="mr-2 rounded bg-danger px-1.5 py-0.5 text-xs font-semibold text-white">OVERDUE</span>}
+      <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
+      {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue — file as soon as possible`}).
+      {" "}<Link to="/b266" className="underline">Open the return →</Link>
+    </Callout>
   );
 }
 
@@ -287,7 +349,7 @@ function B266DueCallout({ periodEnd, hasBottling }: { periodEnd: string; hasBott
 // spirit receiver, etc.) has had no movement for 90+ days AND holds
 // non-trivial alcohol. Barrels intentionally excluded — long stagnation
 // IS the goal for aging spirit.
-function StagnantBulkCallout({ containers }: { containers: { id: string; name: string; kind: number; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean }[] }) {
+function renderStagnantBulkCallout(containers: ContainerAlertRow[]) {
   const STAGNANT_DAYS = 90;
   const flagged: { id: string; name: string; days: number; currentLaa: number }[] = [];
   for (const c of containers) {
@@ -301,23 +363,21 @@ function StagnantBulkCallout({ containers }: { containers: { id: string; name: s
   flagged.splice(5);
   if (flagged.length === 0) return null;
   return (
-    <div className="mb-6">
-      <Callout tone="warning">
-        <span className="font-semibold">Stagnant bulk inventory:</span>{" "}
-        {flagged.map((c, i) => (
-          <span key={c.id}>
-            {i > 0 && ", "}
-            {c.name} ({c.days}d, {c.currentLaa.toFixed(0)} L LAA)
-          </span>
-        ))} — no movement in 90+ days. Evap losses accrue silently; consider
-        gauging or transferring.{" "}
-        <Link to="/bulk" className="underline">Open bulk →</Link>
-      </Callout>
-    </div>
+    <Callout tone="warning">
+      <span className="font-semibold">Stagnant bulk inventory:</span>{" "}
+      {flagged.map((c, i) => (
+        <span key={c.id}>
+          {i > 0 && ", "}
+          {c.name} ({c.days}d, {c.currentLaa.toFixed(0)} L LAA)
+        </span>
+      ))} — no movement in 90+ days. Evap losses accrue silently; consider
+      gauging or transferring.{" "}
+      <Link to="/bulk" className="underline">Open bulk →</Link>
+    </Callout>
   );
 }
 
-function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string; totalOnHand: number; bottlesPerDay30d: number }[] }) {
+function renderStampLowStockCallout(summaries: StampAlertRow[]) {
   // "Days of stock" = on-hand / 30-day bottling rate. Tighter signal than a
   // static threshold — a 500-stamp safety net is plenty for a quiet province
   // and dangerously low for a busy one.
@@ -328,18 +388,16 @@ function StampLowStockCallout({ summaries }: { summaries: { jurisdiction: string
     .filter((s) => s.daysLeft < WARN_DAYS);
   if (flagged.length === 0) return null;
   return (
-    <div className="mb-6">
-      <Callout tone="warning">
-        <span className="font-semibold">Stamps running low:</span>{" "}
-        {flagged.map((s, i) => (
-          <span key={s.jurisdiction}>
-            {i > 0 && ", "}
-            {s.jurisdiction} (~{Math.floor(s.daysLeft)} day{Math.floor(s.daysLeft) === 1 ? "" : "s"} left at current bottling rate)
-          </span>
-        ))}. CRA orders take weeks — place a replenishment order now.{" "}
-        <Link to="/stamps" className="underline">Open stamps →</Link>
-      </Callout>
-    </div>
+    <Callout tone="warning">
+      <span className="font-semibold">Stamps running low:</span>{" "}
+      {flagged.map((s, i) => (
+        <span key={s.jurisdiction}>
+          {i > 0 && ", "}
+          {s.jurisdiction} (~{Math.floor(s.daysLeft)} day{Math.floor(s.daysLeft) === 1 ? "" : "s"} left at current bottling rate)
+        </span>
+      ))}. CRA orders take weeks — place a replenishment order now.{" "}
+      <Link to="/stamps" className="underline">Open stamps →</Link>
+    </Callout>
   );
 }
 
