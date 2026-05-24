@@ -199,18 +199,32 @@ function ReportView({
 }) {
   const me = useCurrentUser();
   const tenantName = me.data?.tenant?.name ?? "";
+  const craLicence = me.data?.tenant?.craSpiritsLicenceNumber ?? "";
   const periodStart = period?.periodStart ?? report.periodStart;
   const periodEnd = period?.periodEnd ?? report.periodEnd;
+  const isSubmitted = submittedStatus === B266Status.SUBMITTED;
   return (
     <section className="space-y-6">
-      <div data-print-only className="border-b border-border-strong pb-4">
-        <p className="text-xs text-fg-muted">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
-        <h2 className="mt-1 text-xl font-semibold">{tenantName || "Distillery"}</h2>
-        <p className="mt-1 text-sm">
-          Period {periodStart} → {periodEnd}
-          {submittedStatus === B266Status.SUBMITTED
-            ? ` · submitted ${period?.submittedAt ? new Date(Number(period.submittedAt.seconds) * 1000).toLocaleString() : ""}`
-            : ` · DRAFT — printed ${new Date().toLocaleString()}`}
+      <div data-print-only className="border-b-2 border-black pb-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-xs">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
+            <h2 className="mt-1 text-xl font-semibold">{tenantName || "Distillery"}</h2>
+            {craLicence && <p className="mt-0.5 text-xs">Licence {craLicence}</p>}
+            <p className="mt-1 text-sm">Period {periodStart} → {periodEnd}</p>
+          </div>
+          <div
+            className={`rounded border-2 px-3 py-1 text-sm font-bold uppercase tracking-wider ${
+              isSubmitted ? "border-black text-black" : "border-red-600 text-red-600"
+            }`}
+          >
+            {isSubmitted ? "Submitted" : "Draft"}
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-fg-muted">
+          {isSubmitted && period?.submittedAt
+            ? `Snapshot frozen ${new Date(Number(period.submittedAt.seconds) * 1000).toLocaleString()}`
+            : `Printed ${new Date().toLocaleString()} — not yet filed with CRA`}
         </p>
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -346,8 +360,11 @@ function ReopenPanel({ periodId }: { periodId: string }) {
 }
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
+  // break-inside-avoid keeps a card together on a printed page — splitting
+  // "Closing on hand" across two sheets is exactly the wrong place for the
+  // pagebreak to land.
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm print:break-inside-avoid">
       <header className="border-b border-border bg-surface-3 px-4 py-3">
         <h2 className="text-sm font-semibold text-fg-muted">{title}</h2>
       </header>

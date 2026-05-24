@@ -82,5 +82,15 @@
   [data-print-hide] { display: none !important; }
   [data-print-only] { display: block !important; }
   section, .rounded-lg, table { box-shadow: none !important; border-color: #ccc !important; }
+  /* Letter paper with comfortable margins; a footer line with tenant + page
+     numbers keeps every printed sheet self-describing if they get separated
+     from each other in a binder. */
+  @page {
+    size: letter;
+    margin: 0.75in 0.6in 0.85in 0.6in;
+  }
+  /* Repeat the main heading at the top of every page so paginated B266
+     printouts don't lose context. */
+  h1, h2 { break-after: avoid; }
 }
 [data-print-only] { display: none; }
