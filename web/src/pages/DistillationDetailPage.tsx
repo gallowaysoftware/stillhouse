@@ -245,9 +245,9 @@ function ChargesPanel({
             <tr key={c.id}>
               <td className="px-3 py-2 text-fg-muted">{c.chargeOrder}</td>
               <td className="px-3 py-2 text-fg">{c.fermenterLabel} (#{c.mashNo})</td>
-              <td className="px-3 py-2 text-right text-fg-muted">{formatQty(c.volumeChargedL)}</td>
-              <td className="px-3 py-2 text-right text-fg-muted">{c.abvPct.toFixed(2)}%</td>
-              <td className="px-3 py-2 text-right text-fg-muted">{formatLAA(c.laa)}</td>
+              <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{formatQty(c.volumeChargedL)}</td>
+              <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{c.abvPct.toFixed(2)}%</td>
+              <td className="px-3 py-2 text-right tabular-nums font-semibold text-fg">{formatLAA(c.laa)}</td>
             </tr>
           ))}
         </tbody>
@@ -407,9 +407,9 @@ function CutsPanel({
               <tr key={c.id}>
                 <td className="px-3 py-2 text-fg-muted">{c.cutOrder}</td>
                 <td className="px-3 py-2 text-fg">{cutKindLabel(c.kind)}</td>
-                <td className="px-3 py-2 text-right text-fg-muted">{formatQty(c.volumeL)}</td>
-                <td className="px-3 py-2 text-right text-fg-muted">{c.abvPct.toFixed(2)}%</td>
-                <td className="px-3 py-2 text-right text-fg-muted">{formatLAA(c.laa)}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{formatQty(c.volumeL)}</td>
+                <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{c.abvPct.toFixed(2)}%</td>
+                <td className="px-3 py-2 text-right tabular-nums font-semibold text-fg">{formatLAA(c.laa)}</td>
                 <td className="px-3 py-2 text-right space-x-3">
                   <button
                     onClick={() => startEdit(c)}

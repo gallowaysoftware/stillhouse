@@ -231,7 +231,7 @@ export function RemovalsPage() {
                   <td className="px-4 py-3">{r.jurisdiction}</td>
                   <td className="px-4 py-3">{destLabel[r.destinationKind]}</td>
                   <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{r.bottlesRemoved.toLocaleString()}</td>
-                  <td className={`px-4 py-3 text-right ${voided ? "line-through" : ""}`}>{formatLAA(r.totalLaa)}</td>
+                  <td className={`px-4 py-3 text-right tabular-nums font-semibold text-fg ${voided ? "line-through" : ""}`}>{formatLAA(r.totalLaa)}</td>
                   <td className={`px-4 py-3 text-right font-medium ${voided ? "line-through" : "text-fg"}`}>${formatQty(r.dutyAmountCad)}</td>
                   {writeable && (
                     <td className="px-4 py-3 text-right">

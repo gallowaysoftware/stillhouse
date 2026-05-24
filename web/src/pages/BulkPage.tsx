@@ -190,7 +190,7 @@ export function BulkPage() {
                 <td className="px-4 py-3 text-right text-fg-muted">
                   {c.currentAbvPctSet ? c.currentAbvPct.toFixed(2) + "%" : "—"}
                 </td>
-                <td className="px-4 py-3 text-right font-medium text-fg">{formatLAA(c.currentLaa)}</td>
+                <td className="px-4 py-3 text-right tabular-nums font-semibold text-fg">{formatLAA(c.currentLaa)}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">
                   <ActivityCell ts={c.lastMovementAt} fallback={c.createdAt} />
                 </td>
@@ -228,7 +228,7 @@ export function BulkPage() {
                 </td>
                 <td className="px-4 py-3 text-right text-fg-muted">{formatQty(m.volumeL)}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">{m.abvPct.toFixed(2)}%</td>
-                <td className="px-4 py-3 text-right font-medium text-fg">{formatLAA(m.laa)}</td>
+                <td className="px-4 py-3 text-right tabular-nums font-semibold text-fg">{formatLAA(m.laa)}</td>
               </tr>
             ))}
           </tbody>

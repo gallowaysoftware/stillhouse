@@ -180,7 +180,7 @@ export function BarrelsPage() {
                 <td className="px-4 py-3 text-right text-fg-muted">
                   {b.currentAbvPctSet ? b.currentAbvPct.toFixed(2) + "%" : "—"}
                 </td>
-                <td className="px-4 py-3 text-right font-medium text-fg">{formatLAA(b.currentLaa)}</td>
+                <td className="px-4 py-3 text-right tabular-nums font-semibold text-fg">{formatLAA(b.currentLaa)}</td>
                 <td className="px-4 py-3">
                   <MaturationBadge barrel={b} />
                 </td>
