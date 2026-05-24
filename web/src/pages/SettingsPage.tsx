@@ -76,7 +76,7 @@ export function SettingsPage() {
       <h1 className="mb-1 text-3xl font-bold tracking-tight">Settings</h1>
       <p className="mb-6 text-sm text-fg-muted">Tenant metadata — what shows in the sidebar and what gets stamped on records.</p>
 
-      <form onSubmit={submit} className="mb-10 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+      <form onSubmit={submit} className="mb-10 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-lg border border-border bg-surface-2 p-4 sm:p-5 shadow-sm">
         <div className="col-span-2">
           <h2 className="text-sm font-semibold text-fg-muted">Distillery</h2>
         </div>

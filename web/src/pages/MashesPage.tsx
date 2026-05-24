@@ -64,7 +64,7 @@ export function MashesPage() {
       {showForm && (
         <form
           onSubmit={onSubmit}
-          className="mb-6 grid grid-cols-2 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
+          className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 rounded-lg border border-border bg-surface-2 p-4 sm:p-5 shadow-sm"
         >
           <div>
             <label className="mb-2 block text-sm font-medium text-fg-muted">Recipe</label>
