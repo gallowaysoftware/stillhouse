@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { Callout } from "@/components/Callout";
 import { Shell } from "@/components/Shell";
 import { b266Client } from "@/lib/clients";
 import { useCurrentUser } from "@/lib/role";
@@ -264,22 +265,35 @@ function ReportView({
 
       {period && submittedStatus !== B266Status.SUBMITTED && (
         <OwnerOnly>
-        <div data-print-hide className="flex items-center gap-3">
-          <button
-            onClick={onSubmit}
-            disabled={submitting}
-            className="rounded bg-emerald-700 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:bg-accent/50"
-          >
-            {submitting ? "Submitting…" : "Mark submitted (freeze snapshot)"}
-          </button>
-          {submitError && (
-            <span className="text-sm text-danger-fg">
-              {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
-            </span>
-          )}
-          <p className="text-xs text-fg-muted">
-            Marking submitted freezes the values for audit. Make sure you've entered these into the CRA portal first.
-          </p>
+        <div data-print-hide className="space-y-3">
+          <Callout tone="warning" title="Stillhouse does NOT file with CRA">
+            Marking submitted only freezes this snapshot inside Stillhouse for your audit
+            trail. The actual return has to be entered into{" "}
+            <a
+              href="https://www.canada.ca/en/revenue-agency/services/e-services/digital-services-businesses/business-account.html"
+              target="_blank"
+              rel="noreferrer"
+              className="underline"
+            >
+              CRA My Business Account
+            </a>
+            {" "}separately. Confirm the numbers above match what you filed before clicking
+            the button.
+          </Callout>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onSubmit}
+              disabled={submitting}
+              className="rounded bg-success px-3 py-2 text-sm font-medium text-white hover:bg-success/80 disabled:opacity-50"
+            >
+              {submitting ? "Freezing…" : "I've filed in CRA — freeze the snapshot"}
+            </button>
+            {submitError && (
+              <span className="text-sm text-danger-fg">
+                {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
+              </span>
+            )}
+          </div>
         </div>
         </OwnerOnly>
       )}
@@ -310,9 +324,11 @@ function ReopenPanel({ periodId }: { periodId: string }) {
   });
   return (
     <div data-print-hide className="space-y-3">
-      <p className="rounded bg-success/10 px-4 py-2 text-sm text-success-fg">
-        This return is submitted; the snapshot is frozen.
-      </p>
+      <Callout tone="success" title="Snapshot frozen in Stillhouse">
+        Stillhouse has locked the period for backdated changes. The CRA filing itself
+        lives in My Business Account — if you haven't entered it there yet, this lock
+        doesn't change that.
+      </Callout>
       {!open ? (
         <button
           onClick={() => setOpen(true)}
