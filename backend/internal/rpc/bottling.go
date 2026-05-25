@@ -97,14 +97,55 @@ func (s *BottlingService) CreateBottlingRun(
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("source container is empty"))
 		}
 
-		requiredVolume := float64(in.GetBottleCount())*float64(product.BottleSizeMl)/1000 + in.GetBottlingLossL()
-		if source.CurrentVolumeL+1e-6 < requiredVolume {
-			return connect.NewError(connect.CodeFailedPrecondition,
-				fmt.Errorf("source has %.4f L on hand but bottling needs %.4f L", source.CurrentVolumeL, requiredVolume))
-		}
+		// Bottling debit is in LAA terms, not in volume. The packaged
+		// inventory carries product.target_abv_pct on every bottle, so the
+		// alcohol going into bottles is bottleVolume * target_abv. If the
+		// operator is bottling cask-strength spirit at its source ABV,
+		// less liquid is pulled from the source than ends up in bottles —
+		// the difference is water added during bottling (implicit
+		// dilution). Tracking LAA directly conserves alcohol across the
+		// source→packaged transition and keeps B266 figures balanced.
+		// Bottling loss is liquid lost from the finished spirit stream,
+		// so it carries product.target_abv_pct too.
+		bottleVolumeL := float64(in.GetBottleCount()) * float64(product.BottleSizeMl) / 1000
+		bottleLAA := bottleVolumeL * product.TargetAbvPct / 100
+		lossLAA := in.GetBottlingLossL() * product.TargetAbvPct / 100
+		requiredLAA := bottleLAA + lossLAA
 
 		abv := source.CurrentAbvPct.Float64
-		laa := requiredVolume * abv / 100
+		if abv <= 0 {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("source container has no measurable ABV"))
+		}
+		// Reject bottling at a higher ABV than the source — the system
+		// has no way to add ethanol, only to dilute.
+		if product.TargetAbvPct > abv+1e-6 {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("product target ABV (%.2f%%) exceeds source ABV (%.2f%%) — cannot bottle stronger than the source",
+					product.TargetAbvPct, abv))
+		}
+		if source.CurrentLaa+1e-6 < requiredLAA {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("source has %.4f LAA on hand but bottling needs %.4f LAA (%.2f%% of %d × %d ml bottles%s)",
+					source.CurrentLaa, requiredLAA, product.TargetAbvPct, in.GetBottleCount(), product.BottleSizeMl,
+					func() string {
+						if in.GetBottlingLossL() > 0 {
+							return fmt.Sprintf(" + %.3f L loss", in.GetBottlingLossL())
+						}
+						return ""
+					}()))
+		}
+		// Physical volume actually drawn from the source. ≤ bottleVolume
+		// when product target ABV < source ABV (dilution); equal when
+		// they match.
+		requiredVolume := requiredLAA / abv * 100
+		if source.CurrentVolumeL+1e-6 < requiredVolume {
+			// Defensive: LAA check should have caught this, but float math
+			// could theoretically allow a sliver through.
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("source has %.4f L on hand but bottling needs %.4f L of source spirit", source.CurrentVolumeL, requiredVolume))
+		}
+		laa := requiredLAA
 
 		// 3. Allocate stamps FIFO.
 		stampSources, e := q.ListStampOrdersWithAvailable(ctx, in.GetDestinationJurisdiction())
