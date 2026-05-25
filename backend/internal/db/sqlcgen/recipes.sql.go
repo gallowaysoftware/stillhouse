@@ -234,6 +234,33 @@ func (q *Queries) GetRecipeVersionSensory(ctx context.Context, recipeVersionID u
 	return i, err
 }
 
+const getRecipeVersionWhiskySensory = `-- name: GetRecipeVersionWhiskySensory :one
+SELECT recipe_version_id, tenant_id, cereal, estery, floral, peaty, feinty, sulphury, woody, winey, body, finish, overall, tasting_panel, tasted_at FROM recipe_version_whisky_sensory WHERE recipe_version_id = $1
+`
+
+func (q *Queries) GetRecipeVersionWhiskySensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionWhiskySensory, error) {
+	row := q.db.QueryRow(ctx, getRecipeVersionWhiskySensory, recipeVersionID)
+	var i RecipeVersionWhiskySensory
+	err := row.Scan(
+		&i.RecipeVersionID,
+		&i.TenantID,
+		&i.Cereal,
+		&i.Estery,
+		&i.Floral,
+		&i.Peaty,
+		&i.Feinty,
+		&i.Sulphury,
+		&i.Woody,
+		&i.Winey,
+		&i.Body,
+		&i.Finish,
+		&i.Overall,
+		&i.TastingPanel,
+		&i.TastedAt,
+	)
+	return i, err
+}
+
 const listRecipeIngredients = `-- name: ListRecipeIngredients :many
 SELECT ri.id, ri.tenant_id, ri.recipe_version_id, ri.material_id, ri.quantity, ri.uom, ri.notes, ri.sort_order, ri.botanical_role,
        m.name AS material_name,
@@ -310,9 +337,23 @@ SELECT
     s.balance       AS sensory_balance,
     s.overall       AS sensory_overall,
     s.tasting_panel AS sensory_tasting_panel,
-    s.tasted_at     AS sensory_tasted_at
+    s.tasted_at     AS sensory_tasted_at,
+    w.cereal        AS whisky_cereal,
+    w.estery        AS whisky_estery,
+    w.floral        AS whisky_floral,
+    w.peaty         AS whisky_peaty,
+    w.feinty        AS whisky_feinty,
+    w.sulphury      AS whisky_sulphury,
+    w.woody         AS whisky_woody,
+    w.winey         AS whisky_winey,
+    w.body          AS whisky_body,
+    w.finish        AS whisky_finish,
+    w.overall       AS whisky_overall,
+    w.tasting_panel AS whisky_tasting_panel,
+    w.tasted_at     AS whisky_tasted_at
 FROM recipe_versions v
-LEFT JOIN recipe_version_sensory s ON s.recipe_version_id = v.id
+LEFT JOIN recipe_version_sensory        s ON s.recipe_version_id = v.id
+LEFT JOIN recipe_version_whisky_sensory w ON w.recipe_version_id = v.id
 WHERE v.recipe_id = $1
 ORDER BY v.version_no DESC
 `
@@ -345,13 +386,27 @@ type ListRecipeVersionsRow struct {
 	SensoryOverall          pgtype.Int2        `json:"sensory_overall"`
 	SensoryTastingPanel     pgtype.Text        `json:"sensory_tasting_panel"`
 	SensoryTastedAt         pgtype.Timestamptz `json:"sensory_tasted_at"`
+	WhiskyCereal            pgtype.Int2        `json:"whisky_cereal"`
+	WhiskyEstery            pgtype.Int2        `json:"whisky_estery"`
+	WhiskyFloral            pgtype.Int2        `json:"whisky_floral"`
+	WhiskyPeaty             pgtype.Int2        `json:"whisky_peaty"`
+	WhiskyFeinty            pgtype.Int2        `json:"whisky_feinty"`
+	WhiskySulphury          pgtype.Int2        `json:"whisky_sulphury"`
+	WhiskyWoody             pgtype.Int2        `json:"whisky_woody"`
+	WhiskyWiney             pgtype.Int2        `json:"whisky_winey"`
+	WhiskyBody              pgtype.Int2        `json:"whisky_body"`
+	WhiskyFinish            pgtype.Int2        `json:"whisky_finish"`
+	WhiskyOverall           pgtype.Int2        `json:"whisky_overall"`
+	WhiskyTastingPanel      pgtype.Text        `json:"whisky_tasting_panel"`
+	WhiskyTastedAt          pgtype.Timestamptz `json:"whisky_tasted_at"`
 }
 
-// LEFT JOIN sensory so callers can iterate the version history and see
-// each version's tasting scores without N+1 queries. Sensory columns
-// are NULL when a version hasn't been tasted yet. The web Compare view
-// and the MCP list_recipe_versions tool both rely on these columns
-// being populated.
+// LEFT JOIN both sensory tables so callers can iterate the version
+// history and see each version's tasting scores without N+1 queries.
+// Gin recipes populate the s.* columns; whisky/canadian_whisky/rye
+// recipes populate the w.* columns. Per the RPC-layer gate, no version
+// has rows in both. The web Compare view and MCP list_recipe_versions
+// rely on these columns being populated.
 func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]ListRecipeVersionsRow, error) {
 	rows, err := q.db.Query(ctx, listRecipeVersions, recipeID)
 	if err != nil {
@@ -389,6 +444,19 @@ func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([
 			&i.SensoryOverall,
 			&i.SensoryTastingPanel,
 			&i.SensoryTastedAt,
+			&i.WhiskyCereal,
+			&i.WhiskyEstery,
+			&i.WhiskyFloral,
+			&i.WhiskyPeaty,
+			&i.WhiskyFeinty,
+			&i.WhiskySulphury,
+			&i.WhiskyWoody,
+			&i.WhiskyWiney,
+			&i.WhiskyBody,
+			&i.WhiskyFinish,
+			&i.WhiskyOverall,
+			&i.WhiskyTastingPanel,
+			&i.WhiskyTastedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -567,6 +635,94 @@ func (q *Queries) UpsertRecipeVersionSensory(ctx context.Context, arg UpsertReci
 		&i.Body,
 		&i.Heat,
 		&i.Balance,
+		&i.Overall,
+		&i.TastingPanel,
+		&i.TastedAt,
+	)
+	return i, err
+}
+
+const upsertRecipeVersionWhiskySensory = `-- name: UpsertRecipeVersionWhiskySensory :one
+INSERT INTO recipe_version_whisky_sensory (
+    recipe_version_id, tenant_id,
+    cereal, estery, floral, peaty, feinty, sulphury,
+    woody, winey, body, finish, overall,
+    tasting_panel, tasted_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+)
+ON CONFLICT (recipe_version_id) DO UPDATE SET
+    cereal        = COALESCE(EXCLUDED.cereal,        recipe_version_whisky_sensory.cereal),
+    estery        = COALESCE(EXCLUDED.estery,        recipe_version_whisky_sensory.estery),
+    floral        = COALESCE(EXCLUDED.floral,        recipe_version_whisky_sensory.floral),
+    peaty         = COALESCE(EXCLUDED.peaty,         recipe_version_whisky_sensory.peaty),
+    feinty        = COALESCE(EXCLUDED.feinty,        recipe_version_whisky_sensory.feinty),
+    sulphury      = COALESCE(EXCLUDED.sulphury,      recipe_version_whisky_sensory.sulphury),
+    woody         = COALESCE(EXCLUDED.woody,         recipe_version_whisky_sensory.woody),
+    winey         = COALESCE(EXCLUDED.winey,         recipe_version_whisky_sensory.winey),
+    body          = COALESCE(EXCLUDED.body,          recipe_version_whisky_sensory.body),
+    finish        = COALESCE(EXCLUDED.finish,        recipe_version_whisky_sensory.finish),
+    overall       = COALESCE(EXCLUDED.overall,       recipe_version_whisky_sensory.overall),
+    tasting_panel = CASE WHEN EXCLUDED.tasting_panel = '' THEN recipe_version_whisky_sensory.tasting_panel ELSE EXCLUDED.tasting_panel END,
+    tasted_at     = EXCLUDED.tasted_at
+RETURNING recipe_version_id, tenant_id, cereal, estery, floral, peaty, feinty, sulphury, woody, winey, body, finish, overall, tasting_panel, tasted_at
+`
+
+type UpsertRecipeVersionWhiskySensoryParams struct {
+	RecipeVersionID uuid.UUID          `json:"recipe_version_id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	Cereal          pgtype.Int2        `json:"cereal"`
+	Estery          pgtype.Int2        `json:"estery"`
+	Floral          pgtype.Int2        `json:"floral"`
+	Peaty           pgtype.Int2        `json:"peaty"`
+	Feinty          pgtype.Int2        `json:"feinty"`
+	Sulphury        pgtype.Int2        `json:"sulphury"`
+	Woody           pgtype.Int2        `json:"woody"`
+	Winey           pgtype.Int2        `json:"winey"`
+	Body            pgtype.Int2        `json:"body"`
+	Finish          pgtype.Int2        `json:"finish"`
+	Overall         pgtype.Int2        `json:"overall"`
+	TastingPanel    string             `json:"tasting_panel"`
+	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
+}
+
+// Whisky-bench analog of UpsertRecipeVersionSensory. Axes are the 8
+// SWRI Flavour Wheel primary classes (cereal, estery, floral, peaty,
+// feinty, sulphury, woody, winey) plus body / finish / overall.
+// Same partial-update pattern via COALESCE so an MCP / phone caller
+// can tweak a single axis without re-sending the other 10.
+func (q *Queries) UpsertRecipeVersionWhiskySensory(ctx context.Context, arg UpsertRecipeVersionWhiskySensoryParams) (RecipeVersionWhiskySensory, error) {
+	row := q.db.QueryRow(ctx, upsertRecipeVersionWhiskySensory,
+		arg.RecipeVersionID,
+		arg.TenantID,
+		arg.Cereal,
+		arg.Estery,
+		arg.Floral,
+		arg.Peaty,
+		arg.Feinty,
+		arg.Sulphury,
+		arg.Woody,
+		arg.Winey,
+		arg.Body,
+		arg.Finish,
+		arg.Overall,
+		arg.TastingPanel,
+		arg.TastedAt,
+	)
+	var i RecipeVersionWhiskySensory
+	err := row.Scan(
+		&i.RecipeVersionID,
+		&i.TenantID,
+		&i.Cereal,
+		&i.Estery,
+		&i.Floral,
+		&i.Peaty,
+		&i.Feinty,
+		&i.Sulphury,
+		&i.Woody,
+		&i.Winey,
+		&i.Body,
+		&i.Finish,
 		&i.Overall,
 		&i.TastingPanel,
 		&i.TastedAt,

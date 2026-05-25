@@ -79,7 +79,8 @@ message RecipeVersion {
   bool   gin_ngs_input_l_set = 18;
   double gin_ngs_input_abv_pct = 19;
   bool   gin_ngs_input_abv_pct_set = 20;
-  GinSensoryScores sensory = 21;     // unset until first tasting
+  GinSensoryScores sensory = 21;     // unset until first tasting (gin recipes)
+  WhiskySensoryScores whisky_sensory = 22;  // unset until first tasting (whisky family)
 }
 
 // Per-version tasting bench scores, 0-10 on each axis. Field-level
@@ -206,6 +207,40 @@ message SaveRecipeVersionSensoryResponse {
   GinSensoryScores scores = 1;
 }
 
+// Per-version whisky tasting scores. Axes are the 8 SWRI Flavour
+// Wheel primary classes (cereal / estery / floral / peaty / feinty /
+// sulphury / woody / winey — the canonical Scotch Whisky Research
+// Institute vocabulary from the 1970s, taught in the IBD Diploma in
+// Distilling Module 2 Lesson 6) plus body / finish / overall from the
+// standard panel scorecard.
+//
+// All 0-10. `_set` flags disambiguate "scored zero" from "not tasted
+// on this axis." Sulphury is primarily an off-note class — low score
+// = clean spirit, high score = problem.
+message WhiskySensoryScores {
+  int32 cereal   = 1;  bool cereal_set   = 2;   // porridge / husky / malt / biscuit / cracker
+  int32 estery   = 3;  bool estery_set   = 4;   // fruity esters: banana / pear-drop / apple / pineapple / citrus / dried fruit
+  int32 floral   = 5;  bool floral_set   = 6;   // geranium / rose / fragrant / honey
+  int32 peaty    = 7;  bool peaty_set    = 8;   // phenolic / smoky / medicinal / iodine / bonfire
+  int32 feinty   = 9;  bool feinty_set   = 10;  // leather / tobacco / honey-tobacco / horse / cheesy
+  int32 sulphury = 11; bool sulphury_set = 12;  // OFF-note class: rubbery / vegetative / sandy / gunflint / DMS
+  int32 woody    = 13; bool woody_set    = 14;  // vanilla / toasted oak / resinous / coconut / sawdust
+  int32 winey    = 15; bool winey_set    = 16;  // sherry / port / brandy notes (from finishing casks)
+  int32 body     = 17; bool body_set     = 18;  // mouthfeel / weight / texture
+  int32 finish   = 19; bool finish_set   = 20;  // length / persistence / dryness
+  int32 overall  = 21; bool overall_set  = 22;  // gut-call quality / hedonic
+  string tasting_panel = 23;
+  google.protobuf.Timestamp tasted_at = 24;
+}
+
+message SaveRecipeVersionWhiskySensoryRequest {
+  string recipe_version_id = 1;
+  WhiskySensoryScores scores = 2;
+}
+message SaveRecipeVersionWhiskySensoryResponse {
+  WhiskySensoryScores scores = 1;
+}
+
 message ListRecipeVersionsRequest { string recipe_id = 1; }
 message ListRecipeVersionsResponse { repeated RecipeVersion versions = 1; }
 
@@ -224,4 +259,5 @@ service RecipeService {
   rpc SaveRecipeVersion(SaveRecipeVersionRequest) returns (SaveRecipeVersionResponse);
   rpc ListRecipeVersions(ListRecipeVersionsRequest) returns (ListRecipeVersionsResponse);
   rpc SaveRecipeVersionSensory(SaveRecipeVersionSensoryRequest) returns (SaveRecipeVersionSensoryResponse);
+  rpc SaveRecipeVersionWhiskySensory(SaveRecipeVersionWhiskySensoryRequest) returns (SaveRecipeVersionWhiskySensoryResponse);
 }

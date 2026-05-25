@@ -56,6 +56,9 @@ const (
 	// RecipeServiceSaveRecipeVersionSensoryProcedure is the fully-qualified name of the RecipeService's
 	// SaveRecipeVersionSensory RPC.
 	RecipeServiceSaveRecipeVersionSensoryProcedure = "/stillhouse.v1.RecipeService/SaveRecipeVersionSensory"
+	// RecipeServiceSaveRecipeVersionWhiskySensoryProcedure is the fully-qualified name of the
+	// RecipeService's SaveRecipeVersionWhiskySensory RPC.
+	RecipeServiceSaveRecipeVersionWhiskySensoryProcedure = "/stillhouse.v1.RecipeService/SaveRecipeVersionWhiskySensory"
 )
 
 // RecipeServiceClient is a client for the stillhouse.v1.RecipeService service.
@@ -68,6 +71,7 @@ type RecipeServiceClient interface {
 	SaveRecipeVersion(context.Context, *connect.Request[v1.SaveRecipeVersionRequest]) (*connect.Response[v1.SaveRecipeVersionResponse], error)
 	ListRecipeVersions(context.Context, *connect.Request[v1.ListRecipeVersionsRequest]) (*connect.Response[v1.ListRecipeVersionsResponse], error)
 	SaveRecipeVersionSensory(context.Context, *connect.Request[v1.SaveRecipeVersionSensoryRequest]) (*connect.Response[v1.SaveRecipeVersionSensoryResponse], error)
+	SaveRecipeVersionWhiskySensory(context.Context, *connect.Request[v1.SaveRecipeVersionWhiskySensoryRequest]) (*connect.Response[v1.SaveRecipeVersionWhiskySensoryResponse], error)
 }
 
 // NewRecipeServiceClient constructs a client for the stillhouse.v1.RecipeService service. By
@@ -129,19 +133,26 @@ func NewRecipeServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(recipeServiceMethods.ByName("SaveRecipeVersionSensory")),
 			connect.WithClientOptions(opts...),
 		),
+		saveRecipeVersionWhiskySensory: connect.NewClient[v1.SaveRecipeVersionWhiskySensoryRequest, v1.SaveRecipeVersionWhiskySensoryResponse](
+			httpClient,
+			baseURL+RecipeServiceSaveRecipeVersionWhiskySensoryProcedure,
+			connect.WithSchema(recipeServiceMethods.ByName("SaveRecipeVersionWhiskySensory")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // recipeServiceClient implements RecipeServiceClient.
 type recipeServiceClient struct {
-	createRecipe             *connect.Client[v1.CreateRecipeRequest, v1.CreateRecipeResponse]
-	duplicateRecipe          *connect.Client[v1.DuplicateRecipeRequest, v1.DuplicateRecipeResponse]
-	listRecipes              *connect.Client[v1.ListRecipesRequest, v1.ListRecipesResponse]
-	getRecipe                *connect.Client[v1.GetRecipeRequest, v1.GetRecipeResponse]
-	archiveRecipe            *connect.Client[v1.ArchiveRecipeRequest, v1.ArchiveRecipeResponse]
-	saveRecipeVersion        *connect.Client[v1.SaveRecipeVersionRequest, v1.SaveRecipeVersionResponse]
-	listRecipeVersions       *connect.Client[v1.ListRecipeVersionsRequest, v1.ListRecipeVersionsResponse]
-	saveRecipeVersionSensory *connect.Client[v1.SaveRecipeVersionSensoryRequest, v1.SaveRecipeVersionSensoryResponse]
+	createRecipe                   *connect.Client[v1.CreateRecipeRequest, v1.CreateRecipeResponse]
+	duplicateRecipe                *connect.Client[v1.DuplicateRecipeRequest, v1.DuplicateRecipeResponse]
+	listRecipes                    *connect.Client[v1.ListRecipesRequest, v1.ListRecipesResponse]
+	getRecipe                      *connect.Client[v1.GetRecipeRequest, v1.GetRecipeResponse]
+	archiveRecipe                  *connect.Client[v1.ArchiveRecipeRequest, v1.ArchiveRecipeResponse]
+	saveRecipeVersion              *connect.Client[v1.SaveRecipeVersionRequest, v1.SaveRecipeVersionResponse]
+	listRecipeVersions             *connect.Client[v1.ListRecipeVersionsRequest, v1.ListRecipeVersionsResponse]
+	saveRecipeVersionSensory       *connect.Client[v1.SaveRecipeVersionSensoryRequest, v1.SaveRecipeVersionSensoryResponse]
+	saveRecipeVersionWhiskySensory *connect.Client[v1.SaveRecipeVersionWhiskySensoryRequest, v1.SaveRecipeVersionWhiskySensoryResponse]
 }
 
 // CreateRecipe calls stillhouse.v1.RecipeService.CreateRecipe.
@@ -184,6 +195,11 @@ func (c *recipeServiceClient) SaveRecipeVersionSensory(ctx context.Context, req 
 	return c.saveRecipeVersionSensory.CallUnary(ctx, req)
 }
 
+// SaveRecipeVersionWhiskySensory calls stillhouse.v1.RecipeService.SaveRecipeVersionWhiskySensory.
+func (c *recipeServiceClient) SaveRecipeVersionWhiskySensory(ctx context.Context, req *connect.Request[v1.SaveRecipeVersionWhiskySensoryRequest]) (*connect.Response[v1.SaveRecipeVersionWhiskySensoryResponse], error) {
+	return c.saveRecipeVersionWhiskySensory.CallUnary(ctx, req)
+}
+
 // RecipeServiceHandler is an implementation of the stillhouse.v1.RecipeService service.
 type RecipeServiceHandler interface {
 	CreateRecipe(context.Context, *connect.Request[v1.CreateRecipeRequest]) (*connect.Response[v1.CreateRecipeResponse], error)
@@ -194,6 +210,7 @@ type RecipeServiceHandler interface {
 	SaveRecipeVersion(context.Context, *connect.Request[v1.SaveRecipeVersionRequest]) (*connect.Response[v1.SaveRecipeVersionResponse], error)
 	ListRecipeVersions(context.Context, *connect.Request[v1.ListRecipeVersionsRequest]) (*connect.Response[v1.ListRecipeVersionsResponse], error)
 	SaveRecipeVersionSensory(context.Context, *connect.Request[v1.SaveRecipeVersionSensoryRequest]) (*connect.Response[v1.SaveRecipeVersionSensoryResponse], error)
+	SaveRecipeVersionWhiskySensory(context.Context, *connect.Request[v1.SaveRecipeVersionWhiskySensoryRequest]) (*connect.Response[v1.SaveRecipeVersionWhiskySensoryResponse], error)
 }
 
 // NewRecipeServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -251,6 +268,12 @@ func NewRecipeServiceHandler(svc RecipeServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(recipeServiceMethods.ByName("SaveRecipeVersionSensory")),
 		connect.WithHandlerOptions(opts...),
 	)
+	recipeServiceSaveRecipeVersionWhiskySensoryHandler := connect.NewUnaryHandler(
+		RecipeServiceSaveRecipeVersionWhiskySensoryProcedure,
+		svc.SaveRecipeVersionWhiskySensory,
+		connect.WithSchema(recipeServiceMethods.ByName("SaveRecipeVersionWhiskySensory")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.RecipeService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RecipeServiceCreateRecipeProcedure:
@@ -269,6 +292,8 @@ func NewRecipeServiceHandler(svc RecipeServiceHandler, opts ...connect.HandlerOp
 			recipeServiceListRecipeVersionsHandler.ServeHTTP(w, r)
 		case RecipeServiceSaveRecipeVersionSensoryProcedure:
 			recipeServiceSaveRecipeVersionSensoryHandler.ServeHTTP(w, r)
+		case RecipeServiceSaveRecipeVersionWhiskySensoryProcedure:
+			recipeServiceSaveRecipeVersionWhiskySensoryHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -308,4 +333,8 @@ func (UnimplementedRecipeServiceHandler) ListRecipeVersions(context.Context, *co
 
 func (UnimplementedRecipeServiceHandler) SaveRecipeVersionSensory(context.Context, *connect.Request[v1.SaveRecipeVersionSensoryRequest]) (*connect.Response[v1.SaveRecipeVersionSensoryResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RecipeService.SaveRecipeVersionSensory is not implemented"))
+}
+
+func (UnimplementedRecipeServiceHandler) SaveRecipeVersionWhiskySensory(context.Context, *connect.Request[v1.SaveRecipeVersionWhiskySensoryRequest]) (*connect.Response[v1.SaveRecipeVersionWhiskySensoryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RecipeService.SaveRecipeVersionWhiskySensory is not implemented"))
 }

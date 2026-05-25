@@ -340,15 +340,16 @@ type RecipeVersion struct {
 	// (they stay at defaults / unset). See [[BotanicalRole]] and
 	// [[DistillationMethod]] for the per-ingredient and per-version
 	// structure.
-	TastingNotes         string             `protobuf:"bytes,13,opt,name=tasting_notes,json=tastingNotes,proto3" json:"tasting_notes,omitempty"`
-	DistillationMethod   DistillationMethod `protobuf:"varint,14,opt,name=distillation_method,json=distillationMethod,proto3,enum=stillhouse.v1.DistillationMethod" json:"distillation_method,omitempty"`
-	MacerationHours      float64            `protobuf:"fixed64,15,opt,name=maceration_hours,json=macerationHours,proto3" json:"maceration_hours,omitempty"`
-	MacerationHoursSet   bool               `protobuf:"varint,16,opt,name=maceration_hours_set,json=macerationHoursSet,proto3" json:"maceration_hours_set,omitempty"`
-	GinNgsInputL         float64            `protobuf:"fixed64,17,opt,name=gin_ngs_input_l,json=ginNgsInputL,proto3" json:"gin_ngs_input_l,omitempty"`
-	GinNgsInputLSet      bool               `protobuf:"varint,18,opt,name=gin_ngs_input_l_set,json=ginNgsInputLSet,proto3" json:"gin_ngs_input_l_set,omitempty"`
-	GinNgsInputAbvPct    float64            `protobuf:"fixed64,19,opt,name=gin_ngs_input_abv_pct,json=ginNgsInputAbvPct,proto3" json:"gin_ngs_input_abv_pct,omitempty"`
-	GinNgsInputAbvPctSet bool               `protobuf:"varint,20,opt,name=gin_ngs_input_abv_pct_set,json=ginNgsInputAbvPctSet,proto3" json:"gin_ngs_input_abv_pct_set,omitempty"`
-	Sensory              *GinSensoryScores  `protobuf:"bytes,21,opt,name=sensory,proto3" json:"sensory,omitempty"` // unset until first tasting
+	TastingNotes         string               `protobuf:"bytes,13,opt,name=tasting_notes,json=tastingNotes,proto3" json:"tasting_notes,omitempty"`
+	DistillationMethod   DistillationMethod   `protobuf:"varint,14,opt,name=distillation_method,json=distillationMethod,proto3,enum=stillhouse.v1.DistillationMethod" json:"distillation_method,omitempty"`
+	MacerationHours      float64              `protobuf:"fixed64,15,opt,name=maceration_hours,json=macerationHours,proto3" json:"maceration_hours,omitempty"`
+	MacerationHoursSet   bool                 `protobuf:"varint,16,opt,name=maceration_hours_set,json=macerationHoursSet,proto3" json:"maceration_hours_set,omitempty"`
+	GinNgsInputL         float64              `protobuf:"fixed64,17,opt,name=gin_ngs_input_l,json=ginNgsInputL,proto3" json:"gin_ngs_input_l,omitempty"`
+	GinNgsInputLSet      bool                 `protobuf:"varint,18,opt,name=gin_ngs_input_l_set,json=ginNgsInputLSet,proto3" json:"gin_ngs_input_l_set,omitempty"`
+	GinNgsInputAbvPct    float64              `protobuf:"fixed64,19,opt,name=gin_ngs_input_abv_pct,json=ginNgsInputAbvPct,proto3" json:"gin_ngs_input_abv_pct,omitempty"`
+	GinNgsInputAbvPctSet bool                 `protobuf:"varint,20,opt,name=gin_ngs_input_abv_pct_set,json=ginNgsInputAbvPctSet,proto3" json:"gin_ngs_input_abv_pct_set,omitempty"`
+	Sensory              *GinSensoryScores    `protobuf:"bytes,21,opt,name=sensory,proto3" json:"sensory,omitempty"`                                  // unset until first tasting (gin recipes)
+	WhiskySensory        *WhiskySensoryScores `protobuf:"bytes,22,opt,name=whisky_sensory,json=whiskySensory,proto3" json:"whisky_sensory,omitempty"` // unset until first tasting (whisky family)
 	unknownFields        protoimpl.UnknownFields
 	sizeCache            protoimpl.SizeCache
 }
@@ -526,6 +527,13 @@ func (x *RecipeVersion) GetGinNgsInputAbvPctSet() bool {
 func (x *RecipeVersion) GetSensory() *GinSensoryScores {
 	if x != nil {
 		return x.Sensory
+	}
+	return nil
+}
+
+func (x *RecipeVersion) GetWhiskySensory() *WhiskySensoryScores {
+	if x != nil {
+		return x.WhiskySensory
 	}
 	return nil
 }
@@ -1849,6 +1857,340 @@ func (x *SaveRecipeVersionSensoryResponse) GetScores() *GinSensoryScores {
 	return nil
 }
 
+// Per-version whisky tasting scores. Axes are the 8 SWRI Flavour
+// Wheel primary classes (cereal / estery / floral / peaty / feinty /
+// sulphury / woody / winey — the canonical Scotch Whisky Research
+// Institute vocabulary from the 1970s, taught in the IBD Diploma in
+// Distilling Module 2 Lesson 6) plus body / finish / overall from the
+// standard panel scorecard.
+//
+// All 0-10. `_set` flags disambiguate "scored zero" from "not tasted
+// on this axis." Sulphury is primarily an off-note class — low score
+// = clean spirit, high score = problem.
+type WhiskySensoryScores struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Cereal        int32                  `protobuf:"varint,1,opt,name=cereal,proto3" json:"cereal,omitempty"`
+	CerealSet     bool                   `protobuf:"varint,2,opt,name=cereal_set,json=cerealSet,proto3" json:"cereal_set,omitempty"` // porridge / husky / malt / biscuit / cracker
+	Estery        int32                  `protobuf:"varint,3,opt,name=estery,proto3" json:"estery,omitempty"`
+	EsterySet     bool                   `protobuf:"varint,4,opt,name=estery_set,json=esterySet,proto3" json:"estery_set,omitempty"` // fruity esters: banana / pear-drop / apple / pineapple / citrus / dried fruit
+	Floral        int32                  `protobuf:"varint,5,opt,name=floral,proto3" json:"floral,omitempty"`
+	FloralSet     bool                   `protobuf:"varint,6,opt,name=floral_set,json=floralSet,proto3" json:"floral_set,omitempty"` // geranium / rose / fragrant / honey
+	Peaty         int32                  `protobuf:"varint,7,opt,name=peaty,proto3" json:"peaty,omitempty"`
+	PeatySet      bool                   `protobuf:"varint,8,opt,name=peaty_set,json=peatySet,proto3" json:"peaty_set,omitempty"` // phenolic / smoky / medicinal / iodine / bonfire
+	Feinty        int32                  `protobuf:"varint,9,opt,name=feinty,proto3" json:"feinty,omitempty"`
+	FeintySet     bool                   `protobuf:"varint,10,opt,name=feinty_set,json=feintySet,proto3" json:"feinty_set,omitempty"` // leather / tobacco / honey-tobacco / horse / cheesy
+	Sulphury      int32                  `protobuf:"varint,11,opt,name=sulphury,proto3" json:"sulphury,omitempty"`
+	SulphurySet   bool                   `protobuf:"varint,12,opt,name=sulphury_set,json=sulphurySet,proto3" json:"sulphury_set,omitempty"` // OFF-note class: rubbery / vegetative / sandy / gunflint / DMS
+	Woody         int32                  `protobuf:"varint,13,opt,name=woody,proto3" json:"woody,omitempty"`
+	WoodySet      bool                   `protobuf:"varint,14,opt,name=woody_set,json=woodySet,proto3" json:"woody_set,omitempty"` // vanilla / toasted oak / resinous / coconut / sawdust
+	Winey         int32                  `protobuf:"varint,15,opt,name=winey,proto3" json:"winey,omitempty"`
+	WineySet      bool                   `protobuf:"varint,16,opt,name=winey_set,json=wineySet,proto3" json:"winey_set,omitempty"` // sherry / port / brandy notes (from finishing casks)
+	Body          int32                  `protobuf:"varint,17,opt,name=body,proto3" json:"body,omitempty"`
+	BodySet       bool                   `protobuf:"varint,18,opt,name=body_set,json=bodySet,proto3" json:"body_set,omitempty"` // mouthfeel / weight / texture
+	Finish        int32                  `protobuf:"varint,19,opt,name=finish,proto3" json:"finish,omitempty"`
+	FinishSet     bool                   `protobuf:"varint,20,opt,name=finish_set,json=finishSet,proto3" json:"finish_set,omitempty"` // length / persistence / dryness
+	Overall       int32                  `protobuf:"varint,21,opt,name=overall,proto3" json:"overall,omitempty"`
+	OverallSet    bool                   `protobuf:"varint,22,opt,name=overall_set,json=overallSet,proto3" json:"overall_set,omitempty"` // gut-call quality / hedonic
+	TastingPanel  string                 `protobuf:"bytes,23,opt,name=tasting_panel,json=tastingPanel,proto3" json:"tasting_panel,omitempty"`
+	TastedAt      *timestamppb.Timestamp `protobuf:"bytes,24,opt,name=tasted_at,json=tastedAt,proto3" json:"tasted_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WhiskySensoryScores) Reset() {
+	*x = WhiskySensoryScores{}
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WhiskySensoryScores) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WhiskySensoryScores) ProtoMessage() {}
+
+func (x *WhiskySensoryScores) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WhiskySensoryScores.ProtoReflect.Descriptor instead.
+func (*WhiskySensoryScores) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *WhiskySensoryScores) GetCereal() int32 {
+	if x != nil {
+		return x.Cereal
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetCerealSet() bool {
+	if x != nil {
+		return x.CerealSet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetEstery() int32 {
+	if x != nil {
+		return x.Estery
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetEsterySet() bool {
+	if x != nil {
+		return x.EsterySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetFloral() int32 {
+	if x != nil {
+		return x.Floral
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetFloralSet() bool {
+	if x != nil {
+		return x.FloralSet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetPeaty() int32 {
+	if x != nil {
+		return x.Peaty
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetPeatySet() bool {
+	if x != nil {
+		return x.PeatySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetFeinty() int32 {
+	if x != nil {
+		return x.Feinty
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetFeintySet() bool {
+	if x != nil {
+		return x.FeintySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetSulphury() int32 {
+	if x != nil {
+		return x.Sulphury
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetSulphurySet() bool {
+	if x != nil {
+		return x.SulphurySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetWoody() int32 {
+	if x != nil {
+		return x.Woody
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetWoodySet() bool {
+	if x != nil {
+		return x.WoodySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetWiney() int32 {
+	if x != nil {
+		return x.Winey
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetWineySet() bool {
+	if x != nil {
+		return x.WineySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetBody() int32 {
+	if x != nil {
+		return x.Body
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetBodySet() bool {
+	if x != nil {
+		return x.BodySet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetFinish() int32 {
+	if x != nil {
+		return x.Finish
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetFinishSet() bool {
+	if x != nil {
+		return x.FinishSet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetOverall() int32 {
+	if x != nil {
+		return x.Overall
+	}
+	return 0
+}
+
+func (x *WhiskySensoryScores) GetOverallSet() bool {
+	if x != nil {
+		return x.OverallSet
+	}
+	return false
+}
+
+func (x *WhiskySensoryScores) GetTastingPanel() string {
+	if x != nil {
+		return x.TastingPanel
+	}
+	return ""
+}
+
+func (x *WhiskySensoryScores) GetTastedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.TastedAt
+	}
+	return nil
+}
+
+type SaveRecipeVersionWhiskySensoryRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	RecipeVersionId string                 `protobuf:"bytes,1,opt,name=recipe_version_id,json=recipeVersionId,proto3" json:"recipe_version_id,omitempty"`
+	Scores          *WhiskySensoryScores   `protobuf:"bytes,2,opt,name=scores,proto3" json:"scores,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *SaveRecipeVersionWhiskySensoryRequest) Reset() {
+	*x = SaveRecipeVersionWhiskySensoryRequest{}
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveRecipeVersionWhiskySensoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveRecipeVersionWhiskySensoryRequest) ProtoMessage() {}
+
+func (x *SaveRecipeVersionWhiskySensoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveRecipeVersionWhiskySensoryRequest.ProtoReflect.Descriptor instead.
+func (*SaveRecipeVersionWhiskySensoryRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *SaveRecipeVersionWhiskySensoryRequest) GetRecipeVersionId() string {
+	if x != nil {
+		return x.RecipeVersionId
+	}
+	return ""
+}
+
+func (x *SaveRecipeVersionWhiskySensoryRequest) GetScores() *WhiskySensoryScores {
+	if x != nil {
+		return x.Scores
+	}
+	return nil
+}
+
+type SaveRecipeVersionWhiskySensoryResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Scores        *WhiskySensoryScores   `protobuf:"bytes,1,opt,name=scores,proto3" json:"scores,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveRecipeVersionWhiskySensoryResponse) Reset() {
+	*x = SaveRecipeVersionWhiskySensoryResponse{}
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveRecipeVersionWhiskySensoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveRecipeVersionWhiskySensoryResponse) ProtoMessage() {}
+
+func (x *SaveRecipeVersionWhiskySensoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveRecipeVersionWhiskySensoryResponse.ProtoReflect.Descriptor instead.
+func (*SaveRecipeVersionWhiskySensoryResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *SaveRecipeVersionWhiskySensoryResponse) GetScores() *WhiskySensoryScores {
+	if x != nil {
+		return x.Scores
+	}
+	return nil
+}
+
 type ListRecipeVersionsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	RecipeId      string                 `protobuf:"bytes,1,opt,name=recipe_id,json=recipeId,proto3" json:"recipe_id,omitempty"`
@@ -1858,7 +2200,7 @@ type ListRecipeVersionsRequest struct {
 
 func (x *ListRecipeVersionsRequest) Reset() {
 	*x = ListRecipeVersionsRequest{}
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[19]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1870,7 +2212,7 @@ func (x *ListRecipeVersionsRequest) String() string {
 func (*ListRecipeVersionsRequest) ProtoMessage() {}
 
 func (x *ListRecipeVersionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[19]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1883,7 +2225,7 @@ func (x *ListRecipeVersionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRecipeVersionsRequest.ProtoReflect.Descriptor instead.
 func (*ListRecipeVersionsRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{19}
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *ListRecipeVersionsRequest) GetRecipeId() string {
@@ -1902,7 +2244,7 @@ type ListRecipeVersionsResponse struct {
 
 func (x *ListRecipeVersionsResponse) Reset() {
 	*x = ListRecipeVersionsResponse{}
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[20]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1914,7 +2256,7 @@ func (x *ListRecipeVersionsResponse) String() string {
 func (*ListRecipeVersionsResponse) ProtoMessage() {}
 
 func (x *ListRecipeVersionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[20]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1927,7 +2269,7 @@ func (x *ListRecipeVersionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListRecipeVersionsResponse.ProtoReflect.Descriptor instead.
 func (*ListRecipeVersionsResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{20}
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *ListRecipeVersionsResponse) GetVersions() []*RecipeVersion {
@@ -1947,7 +2289,7 @@ type DuplicateRecipeRequest struct {
 
 func (x *DuplicateRecipeRequest) Reset() {
 	*x = DuplicateRecipeRequest{}
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[21]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1959,7 +2301,7 @@ func (x *DuplicateRecipeRequest) String() string {
 func (*DuplicateRecipeRequest) ProtoMessage() {}
 
 func (x *DuplicateRecipeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[21]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1972,7 +2314,7 @@ func (x *DuplicateRecipeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DuplicateRecipeRequest.ProtoReflect.Descriptor instead.
 func (*DuplicateRecipeRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{21}
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *DuplicateRecipeRequest) GetSourceRecipeId() string {
@@ -1998,7 +2340,7 @@ type DuplicateRecipeResponse struct {
 
 func (x *DuplicateRecipeResponse) Reset() {
 	*x = DuplicateRecipeResponse{}
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[22]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2010,7 +2352,7 @@ func (x *DuplicateRecipeResponse) String() string {
 func (*DuplicateRecipeResponse) ProtoMessage() {}
 
 func (x *DuplicateRecipeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_recipe_proto_msgTypes[22]
+	mi := &file_stillhouse_v1_recipe_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2023,7 +2365,7 @@ func (x *DuplicateRecipeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DuplicateRecipeResponse.ProtoReflect.Descriptor instead.
 func (*DuplicateRecipeResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{22}
+	return file_stillhouse_v1_recipe_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *DuplicateRecipeResponse) GetRecipe() *Recipe {
@@ -2050,7 +2392,7 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd2\a\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9d\b\n" +
 	"\rRecipeVersion\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1b\n" +
@@ -2075,7 +2417,8 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\x13gin_ngs_input_l_set\x18\x12 \x01(\bR\x0fginNgsInputLSet\x120\n" +
 	"\x15gin_ngs_input_abv_pct\x18\x13 \x01(\x01R\x11ginNgsInputAbvPct\x127\n" +
 	"\x19gin_ngs_input_abv_pct_set\x18\x14 \x01(\bR\x14ginNgsInputAbvPctSet\x129\n" +
-	"\asensory\x18\x15 \x01(\v2\x1f.stillhouse.v1.GinSensoryScoresR\asensory\"\x8a\x05\n" +
+	"\asensory\x18\x15 \x01(\v2\x1f.stillhouse.v1.GinSensoryScoresR\asensory\x12I\n" +
+	"\x0ewhisky_sensory\x18\x16 \x01(\v2\".stillhouse.v1.WhiskySensoryScoresR\rwhiskySensory\"\x8a\x05\n" +
 	"\x10GinSensoryScores\x12\x18\n" +
 	"\ajuniper\x18\x01 \x01(\x05R\ajuniper\x12\x1f\n" +
 	"\vjuniper_set\x18\x02 \x01(\bR\n" +
@@ -2198,7 +2541,44 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\x11recipe_version_id\x18\x01 \x01(\tR\x0frecipeVersionId\x127\n" +
 	"\x06scores\x18\x02 \x01(\v2\x1f.stillhouse.v1.GinSensoryScoresR\x06scores\"[\n" +
 	" SaveRecipeVersionSensoryResponse\x127\n" +
-	"\x06scores\x18\x01 \x01(\v2\x1f.stillhouse.v1.GinSensoryScoresR\x06scores\"8\n" +
+	"\x06scores\x18\x01 \x01(\v2\x1f.stillhouse.v1.GinSensoryScoresR\x06scores\"\xc8\x05\n" +
+	"\x13WhiskySensoryScores\x12\x16\n" +
+	"\x06cereal\x18\x01 \x01(\x05R\x06cereal\x12\x1d\n" +
+	"\n" +
+	"cereal_set\x18\x02 \x01(\bR\tcerealSet\x12\x16\n" +
+	"\x06estery\x18\x03 \x01(\x05R\x06estery\x12\x1d\n" +
+	"\n" +
+	"estery_set\x18\x04 \x01(\bR\testerySet\x12\x16\n" +
+	"\x06floral\x18\x05 \x01(\x05R\x06floral\x12\x1d\n" +
+	"\n" +
+	"floral_set\x18\x06 \x01(\bR\tfloralSet\x12\x14\n" +
+	"\x05peaty\x18\a \x01(\x05R\x05peaty\x12\x1b\n" +
+	"\tpeaty_set\x18\b \x01(\bR\bpeatySet\x12\x16\n" +
+	"\x06feinty\x18\t \x01(\x05R\x06feinty\x12\x1d\n" +
+	"\n" +
+	"feinty_set\x18\n" +
+	" \x01(\bR\tfeintySet\x12\x1a\n" +
+	"\bsulphury\x18\v \x01(\x05R\bsulphury\x12!\n" +
+	"\fsulphury_set\x18\f \x01(\bR\vsulphurySet\x12\x14\n" +
+	"\x05woody\x18\r \x01(\x05R\x05woody\x12\x1b\n" +
+	"\twoody_set\x18\x0e \x01(\bR\bwoodySet\x12\x14\n" +
+	"\x05winey\x18\x0f \x01(\x05R\x05winey\x12\x1b\n" +
+	"\twiney_set\x18\x10 \x01(\bR\bwineySet\x12\x12\n" +
+	"\x04body\x18\x11 \x01(\x05R\x04body\x12\x19\n" +
+	"\bbody_set\x18\x12 \x01(\bR\abodySet\x12\x16\n" +
+	"\x06finish\x18\x13 \x01(\x05R\x06finish\x12\x1d\n" +
+	"\n" +
+	"finish_set\x18\x14 \x01(\bR\tfinishSet\x12\x18\n" +
+	"\aoverall\x18\x15 \x01(\x05R\aoverall\x12\x1f\n" +
+	"\voverall_set\x18\x16 \x01(\bR\n" +
+	"overallSet\x12#\n" +
+	"\rtasting_panel\x18\x17 \x01(\tR\ftastingPanel\x127\n" +
+	"\ttasted_at\x18\x18 \x01(\v2\x1a.google.protobuf.TimestampR\btastedAt\"\x8f\x01\n" +
+	"%SaveRecipeVersionWhiskySensoryRequest\x12*\n" +
+	"\x11recipe_version_id\x18\x01 \x01(\tR\x0frecipeVersionId\x12:\n" +
+	"\x06scores\x18\x02 \x01(\v2\".stillhouse.v1.WhiskySensoryScoresR\x06scores\"d\n" +
+	"&SaveRecipeVersionWhiskySensoryResponse\x12:\n" +
+	"\x06scores\x18\x01 \x01(\v2\".stillhouse.v1.WhiskySensoryScoresR\x06scores\"8\n" +
 	"\x19ListRecipeVersionsRequest\x12\x1b\n" +
 	"\trecipe_id\x18\x01 \x01(\tR\brecipeId\"V\n" +
 	"\x1aListRecipeVersionsResponse\x128\n" +
@@ -2233,7 +2613,7 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\x1fDISTILLATION_METHOD_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17DISTILLATION_METHOD_POT\x10\x01\x12\x1d\n" +
 	"\x19DISTILLATION_METHOD_VAPOR\x10\x02\x12 \n" +
-	"\x1cDISTILLATION_METHOD_COMBINED\x10\x032\x9c\x06\n" +
+	"\x1cDISTILLATION_METHOD_COMBINED\x10\x032\xac\a\n" +
 	"\rRecipeService\x12W\n" +
 	"\fCreateRecipe\x12\".stillhouse.v1.CreateRecipeRequest\x1a#.stillhouse.v1.CreateRecipeResponse\x12`\n" +
 	"\x0fDuplicateRecipe\x12%.stillhouse.v1.DuplicateRecipeRequest\x1a&.stillhouse.v1.DuplicateRecipeResponse\x12T\n" +
@@ -2242,7 +2622,8 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\rArchiveRecipe\x12#.stillhouse.v1.ArchiveRecipeRequest\x1a$.stillhouse.v1.ArchiveRecipeResponse\x12f\n" +
 	"\x11SaveRecipeVersion\x12'.stillhouse.v1.SaveRecipeVersionRequest\x1a(.stillhouse.v1.SaveRecipeVersionResponse\x12i\n" +
 	"\x12ListRecipeVersions\x12(.stillhouse.v1.ListRecipeVersionsRequest\x1a).stillhouse.v1.ListRecipeVersionsResponse\x12{\n" +
-	"\x18SaveRecipeVersionSensory\x12..stillhouse.v1.SaveRecipeVersionSensoryRequest\x1a/.stillhouse.v1.SaveRecipeVersionSensoryResponseB\xcf\x01\n" +
+	"\x18SaveRecipeVersionSensory\x12..stillhouse.v1.SaveRecipeVersionSensoryRequest\x1a/.stillhouse.v1.SaveRecipeVersionSensoryResponse\x12\x8d\x01\n" +
+	"\x1eSaveRecipeVersionWhiskySensory\x124.stillhouse.v1.SaveRecipeVersionWhiskySensoryRequest\x1a5.stillhouse.v1.SaveRecipeVersionWhiskySensoryResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vRecipeProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -2258,86 +2639,95 @@ func file_stillhouse_v1_recipe_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_recipe_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_stillhouse_v1_recipe_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_stillhouse_v1_recipe_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_stillhouse_v1_recipe_proto_goTypes = []any{
-	(SpiritKind)(0),                          // 0: stillhouse.v1.SpiritKind
-	(BotanicalRole)(0),                       // 1: stillhouse.v1.BotanicalRole
-	(DistillationMethod)(0),                  // 2: stillhouse.v1.DistillationMethod
-	(*Recipe)(nil),                           // 3: stillhouse.v1.Recipe
-	(*RecipeVersion)(nil),                    // 4: stillhouse.v1.RecipeVersion
-	(*GinSensoryScores)(nil),                 // 5: stillhouse.v1.GinSensoryScores
-	(*RecipeIngredient)(nil),                 // 6: stillhouse.v1.RecipeIngredient
-	(*RecipeProjection)(nil),                 // 7: stillhouse.v1.RecipeProjection
-	(*RecipeProjectionLine)(nil),             // 8: stillhouse.v1.RecipeProjectionLine
-	(*CreateRecipeRequest)(nil),              // 9: stillhouse.v1.CreateRecipeRequest
-	(*CreateRecipeResponse)(nil),             // 10: stillhouse.v1.CreateRecipeResponse
-	(*ListRecipesRequest)(nil),               // 11: stillhouse.v1.ListRecipesRequest
-	(*ListRecipesResponse)(nil),              // 12: stillhouse.v1.ListRecipesResponse
-	(*GetRecipeRequest)(nil),                 // 13: stillhouse.v1.GetRecipeRequest
-	(*GetRecipeResponse)(nil),                // 14: stillhouse.v1.GetRecipeResponse
-	(*ArchiveRecipeRequest)(nil),             // 15: stillhouse.v1.ArchiveRecipeRequest
-	(*ArchiveRecipeResponse)(nil),            // 16: stillhouse.v1.ArchiveRecipeResponse
-	(*RecipeIngredientInput)(nil),            // 17: stillhouse.v1.RecipeIngredientInput
-	(*SaveRecipeVersionRequest)(nil),         // 18: stillhouse.v1.SaveRecipeVersionRequest
-	(*SaveRecipeVersionResponse)(nil),        // 19: stillhouse.v1.SaveRecipeVersionResponse
-	(*SaveRecipeVersionSensoryRequest)(nil),  // 20: stillhouse.v1.SaveRecipeVersionSensoryRequest
-	(*SaveRecipeVersionSensoryResponse)(nil), // 21: stillhouse.v1.SaveRecipeVersionSensoryResponse
-	(*ListRecipeVersionsRequest)(nil),        // 22: stillhouse.v1.ListRecipeVersionsRequest
-	(*ListRecipeVersionsResponse)(nil),       // 23: stillhouse.v1.ListRecipeVersionsResponse
-	(*DuplicateRecipeRequest)(nil),           // 24: stillhouse.v1.DuplicateRecipeRequest
-	(*DuplicateRecipeResponse)(nil),          // 25: stillhouse.v1.DuplicateRecipeResponse
-	(*timestamppb.Timestamp)(nil),            // 26: google.protobuf.Timestamp
-	(MaterialKind)(0),                        // 27: stillhouse.v1.MaterialKind
+	(SpiritKind)(0),                                // 0: stillhouse.v1.SpiritKind
+	(BotanicalRole)(0),                             // 1: stillhouse.v1.BotanicalRole
+	(DistillationMethod)(0),                        // 2: stillhouse.v1.DistillationMethod
+	(*Recipe)(nil),                                 // 3: stillhouse.v1.Recipe
+	(*RecipeVersion)(nil),                          // 4: stillhouse.v1.RecipeVersion
+	(*GinSensoryScores)(nil),                       // 5: stillhouse.v1.GinSensoryScores
+	(*RecipeIngredient)(nil),                       // 6: stillhouse.v1.RecipeIngredient
+	(*RecipeProjection)(nil),                       // 7: stillhouse.v1.RecipeProjection
+	(*RecipeProjectionLine)(nil),                   // 8: stillhouse.v1.RecipeProjectionLine
+	(*CreateRecipeRequest)(nil),                    // 9: stillhouse.v1.CreateRecipeRequest
+	(*CreateRecipeResponse)(nil),                   // 10: stillhouse.v1.CreateRecipeResponse
+	(*ListRecipesRequest)(nil),                     // 11: stillhouse.v1.ListRecipesRequest
+	(*ListRecipesResponse)(nil),                    // 12: stillhouse.v1.ListRecipesResponse
+	(*GetRecipeRequest)(nil),                       // 13: stillhouse.v1.GetRecipeRequest
+	(*GetRecipeResponse)(nil),                      // 14: stillhouse.v1.GetRecipeResponse
+	(*ArchiveRecipeRequest)(nil),                   // 15: stillhouse.v1.ArchiveRecipeRequest
+	(*ArchiveRecipeResponse)(nil),                  // 16: stillhouse.v1.ArchiveRecipeResponse
+	(*RecipeIngredientInput)(nil),                  // 17: stillhouse.v1.RecipeIngredientInput
+	(*SaveRecipeVersionRequest)(nil),               // 18: stillhouse.v1.SaveRecipeVersionRequest
+	(*SaveRecipeVersionResponse)(nil),              // 19: stillhouse.v1.SaveRecipeVersionResponse
+	(*SaveRecipeVersionSensoryRequest)(nil),        // 20: stillhouse.v1.SaveRecipeVersionSensoryRequest
+	(*SaveRecipeVersionSensoryResponse)(nil),       // 21: stillhouse.v1.SaveRecipeVersionSensoryResponse
+	(*WhiskySensoryScores)(nil),                    // 22: stillhouse.v1.WhiskySensoryScores
+	(*SaveRecipeVersionWhiskySensoryRequest)(nil),  // 23: stillhouse.v1.SaveRecipeVersionWhiskySensoryRequest
+	(*SaveRecipeVersionWhiskySensoryResponse)(nil), // 24: stillhouse.v1.SaveRecipeVersionWhiskySensoryResponse
+	(*ListRecipeVersionsRequest)(nil),              // 25: stillhouse.v1.ListRecipeVersionsRequest
+	(*ListRecipeVersionsResponse)(nil),             // 26: stillhouse.v1.ListRecipeVersionsResponse
+	(*DuplicateRecipeRequest)(nil),                 // 27: stillhouse.v1.DuplicateRecipeRequest
+	(*DuplicateRecipeResponse)(nil),                // 28: stillhouse.v1.DuplicateRecipeResponse
+	(*timestamppb.Timestamp)(nil),                  // 29: google.protobuf.Timestamp
+	(MaterialKind)(0),                              // 30: stillhouse.v1.MaterialKind
 }
 var file_stillhouse_v1_recipe_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.Recipe.spirit_kind:type_name -> stillhouse.v1.SpiritKind
-	26, // 1: stillhouse.v1.Recipe.created_at:type_name -> google.protobuf.Timestamp
-	26, // 2: stillhouse.v1.Recipe.updated_at:type_name -> google.protobuf.Timestamp
-	26, // 3: stillhouse.v1.RecipeVersion.created_at:type_name -> google.protobuf.Timestamp
+	29, // 1: stillhouse.v1.Recipe.created_at:type_name -> google.protobuf.Timestamp
+	29, // 2: stillhouse.v1.Recipe.updated_at:type_name -> google.protobuf.Timestamp
+	29, // 3: stillhouse.v1.RecipeVersion.created_at:type_name -> google.protobuf.Timestamp
 	6,  // 4: stillhouse.v1.RecipeVersion.ingredients:type_name -> stillhouse.v1.RecipeIngredient
 	2,  // 5: stillhouse.v1.RecipeVersion.distillation_method:type_name -> stillhouse.v1.DistillationMethod
 	5,  // 6: stillhouse.v1.RecipeVersion.sensory:type_name -> stillhouse.v1.GinSensoryScores
-	26, // 7: stillhouse.v1.GinSensoryScores.tasted_at:type_name -> google.protobuf.Timestamp
-	27, // 8: stillhouse.v1.RecipeIngredient.material_kind:type_name -> stillhouse.v1.MaterialKind
-	1,  // 9: stillhouse.v1.RecipeIngredient.botanical_role:type_name -> stillhouse.v1.BotanicalRole
-	8,  // 10: stillhouse.v1.RecipeProjection.lines:type_name -> stillhouse.v1.RecipeProjectionLine
-	0,  // 11: stillhouse.v1.CreateRecipeRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
-	3,  // 12: stillhouse.v1.CreateRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
-	3,  // 13: stillhouse.v1.ListRecipesResponse.recipes:type_name -> stillhouse.v1.Recipe
-	3,  // 14: stillhouse.v1.GetRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
-	4,  // 15: stillhouse.v1.GetRecipeResponse.current_version:type_name -> stillhouse.v1.RecipeVersion
-	7,  // 16: stillhouse.v1.GetRecipeResponse.projection:type_name -> stillhouse.v1.RecipeProjection
-	3,  // 17: stillhouse.v1.ArchiveRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
-	1,  // 18: stillhouse.v1.RecipeIngredientInput.botanical_role:type_name -> stillhouse.v1.BotanicalRole
-	17, // 19: stillhouse.v1.SaveRecipeVersionRequest.ingredients:type_name -> stillhouse.v1.RecipeIngredientInput
-	2,  // 20: stillhouse.v1.SaveRecipeVersionRequest.distillation_method:type_name -> stillhouse.v1.DistillationMethod
-	4,  // 21: stillhouse.v1.SaveRecipeVersionResponse.version:type_name -> stillhouse.v1.RecipeVersion
-	7,  // 22: stillhouse.v1.SaveRecipeVersionResponse.projection:type_name -> stillhouse.v1.RecipeProjection
-	5,  // 23: stillhouse.v1.SaveRecipeVersionSensoryRequest.scores:type_name -> stillhouse.v1.GinSensoryScores
-	5,  // 24: stillhouse.v1.SaveRecipeVersionSensoryResponse.scores:type_name -> stillhouse.v1.GinSensoryScores
-	4,  // 25: stillhouse.v1.ListRecipeVersionsResponse.versions:type_name -> stillhouse.v1.RecipeVersion
-	3,  // 26: stillhouse.v1.DuplicateRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
-	9,  // 27: stillhouse.v1.RecipeService.CreateRecipe:input_type -> stillhouse.v1.CreateRecipeRequest
-	24, // 28: stillhouse.v1.RecipeService.DuplicateRecipe:input_type -> stillhouse.v1.DuplicateRecipeRequest
-	11, // 29: stillhouse.v1.RecipeService.ListRecipes:input_type -> stillhouse.v1.ListRecipesRequest
-	13, // 30: stillhouse.v1.RecipeService.GetRecipe:input_type -> stillhouse.v1.GetRecipeRequest
-	15, // 31: stillhouse.v1.RecipeService.ArchiveRecipe:input_type -> stillhouse.v1.ArchiveRecipeRequest
-	18, // 32: stillhouse.v1.RecipeService.SaveRecipeVersion:input_type -> stillhouse.v1.SaveRecipeVersionRequest
-	22, // 33: stillhouse.v1.RecipeService.ListRecipeVersions:input_type -> stillhouse.v1.ListRecipeVersionsRequest
-	20, // 34: stillhouse.v1.RecipeService.SaveRecipeVersionSensory:input_type -> stillhouse.v1.SaveRecipeVersionSensoryRequest
-	10, // 35: stillhouse.v1.RecipeService.CreateRecipe:output_type -> stillhouse.v1.CreateRecipeResponse
-	25, // 36: stillhouse.v1.RecipeService.DuplicateRecipe:output_type -> stillhouse.v1.DuplicateRecipeResponse
-	12, // 37: stillhouse.v1.RecipeService.ListRecipes:output_type -> stillhouse.v1.ListRecipesResponse
-	14, // 38: stillhouse.v1.RecipeService.GetRecipe:output_type -> stillhouse.v1.GetRecipeResponse
-	16, // 39: stillhouse.v1.RecipeService.ArchiveRecipe:output_type -> stillhouse.v1.ArchiveRecipeResponse
-	19, // 40: stillhouse.v1.RecipeService.SaveRecipeVersion:output_type -> stillhouse.v1.SaveRecipeVersionResponse
-	23, // 41: stillhouse.v1.RecipeService.ListRecipeVersions:output_type -> stillhouse.v1.ListRecipeVersionsResponse
-	21, // 42: stillhouse.v1.RecipeService.SaveRecipeVersionSensory:output_type -> stillhouse.v1.SaveRecipeVersionSensoryResponse
-	35, // [35:43] is the sub-list for method output_type
-	27, // [27:35] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	22, // 7: stillhouse.v1.RecipeVersion.whisky_sensory:type_name -> stillhouse.v1.WhiskySensoryScores
+	29, // 8: stillhouse.v1.GinSensoryScores.tasted_at:type_name -> google.protobuf.Timestamp
+	30, // 9: stillhouse.v1.RecipeIngredient.material_kind:type_name -> stillhouse.v1.MaterialKind
+	1,  // 10: stillhouse.v1.RecipeIngredient.botanical_role:type_name -> stillhouse.v1.BotanicalRole
+	8,  // 11: stillhouse.v1.RecipeProjection.lines:type_name -> stillhouse.v1.RecipeProjectionLine
+	0,  // 12: stillhouse.v1.CreateRecipeRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
+	3,  // 13: stillhouse.v1.CreateRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
+	3,  // 14: stillhouse.v1.ListRecipesResponse.recipes:type_name -> stillhouse.v1.Recipe
+	3,  // 15: stillhouse.v1.GetRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
+	4,  // 16: stillhouse.v1.GetRecipeResponse.current_version:type_name -> stillhouse.v1.RecipeVersion
+	7,  // 17: stillhouse.v1.GetRecipeResponse.projection:type_name -> stillhouse.v1.RecipeProjection
+	3,  // 18: stillhouse.v1.ArchiveRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
+	1,  // 19: stillhouse.v1.RecipeIngredientInput.botanical_role:type_name -> stillhouse.v1.BotanicalRole
+	17, // 20: stillhouse.v1.SaveRecipeVersionRequest.ingredients:type_name -> stillhouse.v1.RecipeIngredientInput
+	2,  // 21: stillhouse.v1.SaveRecipeVersionRequest.distillation_method:type_name -> stillhouse.v1.DistillationMethod
+	4,  // 22: stillhouse.v1.SaveRecipeVersionResponse.version:type_name -> stillhouse.v1.RecipeVersion
+	7,  // 23: stillhouse.v1.SaveRecipeVersionResponse.projection:type_name -> stillhouse.v1.RecipeProjection
+	5,  // 24: stillhouse.v1.SaveRecipeVersionSensoryRequest.scores:type_name -> stillhouse.v1.GinSensoryScores
+	5,  // 25: stillhouse.v1.SaveRecipeVersionSensoryResponse.scores:type_name -> stillhouse.v1.GinSensoryScores
+	29, // 26: stillhouse.v1.WhiskySensoryScores.tasted_at:type_name -> google.protobuf.Timestamp
+	22, // 27: stillhouse.v1.SaveRecipeVersionWhiskySensoryRequest.scores:type_name -> stillhouse.v1.WhiskySensoryScores
+	22, // 28: stillhouse.v1.SaveRecipeVersionWhiskySensoryResponse.scores:type_name -> stillhouse.v1.WhiskySensoryScores
+	4,  // 29: stillhouse.v1.ListRecipeVersionsResponse.versions:type_name -> stillhouse.v1.RecipeVersion
+	3,  // 30: stillhouse.v1.DuplicateRecipeResponse.recipe:type_name -> stillhouse.v1.Recipe
+	9,  // 31: stillhouse.v1.RecipeService.CreateRecipe:input_type -> stillhouse.v1.CreateRecipeRequest
+	27, // 32: stillhouse.v1.RecipeService.DuplicateRecipe:input_type -> stillhouse.v1.DuplicateRecipeRequest
+	11, // 33: stillhouse.v1.RecipeService.ListRecipes:input_type -> stillhouse.v1.ListRecipesRequest
+	13, // 34: stillhouse.v1.RecipeService.GetRecipe:input_type -> stillhouse.v1.GetRecipeRequest
+	15, // 35: stillhouse.v1.RecipeService.ArchiveRecipe:input_type -> stillhouse.v1.ArchiveRecipeRequest
+	18, // 36: stillhouse.v1.RecipeService.SaveRecipeVersion:input_type -> stillhouse.v1.SaveRecipeVersionRequest
+	25, // 37: stillhouse.v1.RecipeService.ListRecipeVersions:input_type -> stillhouse.v1.ListRecipeVersionsRequest
+	20, // 38: stillhouse.v1.RecipeService.SaveRecipeVersionSensory:input_type -> stillhouse.v1.SaveRecipeVersionSensoryRequest
+	23, // 39: stillhouse.v1.RecipeService.SaveRecipeVersionWhiskySensory:input_type -> stillhouse.v1.SaveRecipeVersionWhiskySensoryRequest
+	10, // 40: stillhouse.v1.RecipeService.CreateRecipe:output_type -> stillhouse.v1.CreateRecipeResponse
+	28, // 41: stillhouse.v1.RecipeService.DuplicateRecipe:output_type -> stillhouse.v1.DuplicateRecipeResponse
+	12, // 42: stillhouse.v1.RecipeService.ListRecipes:output_type -> stillhouse.v1.ListRecipesResponse
+	14, // 43: stillhouse.v1.RecipeService.GetRecipe:output_type -> stillhouse.v1.GetRecipeResponse
+	16, // 44: stillhouse.v1.RecipeService.ArchiveRecipe:output_type -> stillhouse.v1.ArchiveRecipeResponse
+	19, // 45: stillhouse.v1.RecipeService.SaveRecipeVersion:output_type -> stillhouse.v1.SaveRecipeVersionResponse
+	26, // 46: stillhouse.v1.RecipeService.ListRecipeVersions:output_type -> stillhouse.v1.ListRecipeVersionsResponse
+	21, // 47: stillhouse.v1.RecipeService.SaveRecipeVersionSensory:output_type -> stillhouse.v1.SaveRecipeVersionSensoryResponse
+	24, // 48: stillhouse.v1.RecipeService.SaveRecipeVersionWhiskySensory:output_type -> stillhouse.v1.SaveRecipeVersionWhiskySensoryResponse
+	40, // [40:49] is the sub-list for method output_type
+	31, // [31:40] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_recipe_proto_init() }
@@ -2352,7 +2742,7 @@ func file_stillhouse_v1_recipe_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_recipe_proto_rawDesc), len(file_stillhouse_v1_recipe_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   23,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

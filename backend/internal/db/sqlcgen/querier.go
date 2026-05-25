@@ -115,6 +115,7 @@ type Querier interface {
 	GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error)
 	GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error)
 	GetRecipeVersionSensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionSensory, error)
+	GetRecipeVersionWhiskySensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionWhiskySensory, error)
 	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
@@ -162,7 +163,13 @@ type Querier interface {
 	ListProducts(ctx context.Context, includeArchived bool) ([]Product, error)
 	ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulkMovementsRow, error)
 	ListRecipeIngredients(ctx context.Context, recipeVersionID uuid.UUID) ([]ListRecipeIngredientsRow, error)
-	ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]RecipeVersion, error)
+	// LEFT JOIN both sensory tables so callers can iterate the version
+	// history and see each version's tasting scores without N+1 queries.
+	// Gin recipes populate the s.* columns; whisky/canadian_whisky/rye
+	// recipes populate the w.* columns. Per the RPC-layer gate, no version
+	// has rows in both. The web Compare view and MCP list_recipe_versions
+	// rely on these columns being populated.
+	ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]ListRecipeVersionsRow, error)
 	ListRecipes(ctx context.Context, includeArchived bool) ([]Recipe, error)
 	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
@@ -233,9 +240,19 @@ type Querier interface {
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
-	// One row per recipe_version. Upsert because edits during recipe
-	// development are the whole point — taste, score, save, retaste.
+	// One row per recipe_version. Partial-update: an axis that's NULL in
+	// the request preserves the existing DB value via COALESCE; an axis
+	// with a value overwrites. This lets an MCP / phone caller send
+	// `{balance: 8}` to tweak one axis without re-typing the other 9.
+	// Tasting panel + tasted_at follow the same rule (empty string is
+	// treated as "no change" for panel).
 	UpsertRecipeVersionSensory(ctx context.Context, arg UpsertRecipeVersionSensoryParams) (RecipeVersionSensory, error)
+	// Whisky-bench analog of UpsertRecipeVersionSensory. Axes are the 8
+	// SWRI Flavour Wheel primary classes (cereal, estery, floral, peaty,
+	// feinty, sulphury, woody, winey) plus body / finish / overall.
+	// Same partial-update pattern via COALESCE so an MCP / phone caller
+	// can tweak a single axis without re-sending the other 10.
+	UpsertRecipeVersionWhiskySensory(ctx context.Context, arg UpsertRecipeVersionWhiskySensoryParams) (RecipeVersionWhiskySensory, error)
 	VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)

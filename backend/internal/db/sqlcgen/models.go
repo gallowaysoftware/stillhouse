@@ -1132,6 +1132,24 @@ type RecipeVersionSensory struct {
 	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
 }
 
+type RecipeVersionWhiskySensory struct {
+	RecipeVersionID uuid.UUID          `json:"recipe_version_id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	Cereal          pgtype.Int2        `json:"cereal"`
+	Estery          pgtype.Int2        `json:"estery"`
+	Floral          pgtype.Int2        `json:"floral"`
+	Peaty           pgtype.Int2        `json:"peaty"`
+	Feinty          pgtype.Int2        `json:"feinty"`
+	Sulphury        pgtype.Int2        `json:"sulphury"`
+	Woody           pgtype.Int2        `json:"woody"`
+	Winey           pgtype.Int2        `json:"winey"`
+	Body            pgtype.Int2        `json:"body"`
+	Finish          pgtype.Int2        `json:"finish"`
+	Overall         pgtype.Int2        `json:"overall"`
+	TastingPanel    string             `json:"tasting_panel"`
+	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
+}
+
 type Session struct {
 	Token  string             `json:"token"`
 	Data   []byte             `json:"data"`

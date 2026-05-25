@@ -39,11 +39,12 @@ INSERT INTO recipe_versions (
 SELECT * FROM recipe_versions WHERE id = $1;
 
 -- name: ListRecipeVersions :many
--- LEFT JOIN sensory so callers can iterate the version history and see
--- each version's tasting scores without N+1 queries. Sensory columns
--- are NULL when a version hasn't been tasted yet. The web Compare view
--- and the MCP list_recipe_versions tool both rely on these columns
--- being populated.
+-- LEFT JOIN both sensory tables so callers can iterate the version
+-- history and see each version's tasting scores without N+1 queries.
+-- Gin recipes populate the s.* columns; whisky/canadian_whisky/rye
+-- recipes populate the w.* columns. Per the RPC-layer gate, no version
+-- has rows in both. The web Compare view and MCP list_recipe_versions
+-- rely on these columns being populated.
 SELECT
     v.*,
     s.juniper       AS sensory_juniper,
@@ -57,9 +58,23 @@ SELECT
     s.balance       AS sensory_balance,
     s.overall       AS sensory_overall,
     s.tasting_panel AS sensory_tasting_panel,
-    s.tasted_at     AS sensory_tasted_at
+    s.tasted_at     AS sensory_tasted_at,
+    w.cereal        AS whisky_cereal,
+    w.estery        AS whisky_estery,
+    w.floral        AS whisky_floral,
+    w.peaty         AS whisky_peaty,
+    w.feinty        AS whisky_feinty,
+    w.sulphury      AS whisky_sulphury,
+    w.woody         AS whisky_woody,
+    w.winey         AS whisky_winey,
+    w.body          AS whisky_body,
+    w.finish        AS whisky_finish,
+    w.overall       AS whisky_overall,
+    w.tasting_panel AS whisky_tasting_panel,
+    w.tasted_at     AS whisky_tasted_at
 FROM recipe_versions v
-LEFT JOIN recipe_version_sensory s ON s.recipe_version_id = v.id
+LEFT JOIN recipe_version_sensory        s ON s.recipe_version_id = v.id
+LEFT JOIN recipe_version_whisky_sensory w ON w.recipe_version_id = v.id
 WHERE v.recipe_id = $1
 ORDER BY v.version_no DESC;
 
@@ -114,3 +129,36 @@ RETURNING *;
 
 -- name: GetRecipeVersionSensory :one
 SELECT * FROM recipe_version_sensory WHERE recipe_version_id = $1;
+
+-- name: UpsertRecipeVersionWhiskySensory :one
+-- Whisky-bench analog of UpsertRecipeVersionSensory. Axes are the 8
+-- SWRI Flavour Wheel primary classes (cereal, estery, floral, peaty,
+-- feinty, sulphury, woody, winey) plus body / finish / overall.
+-- Same partial-update pattern via COALESCE so an MCP / phone caller
+-- can tweak a single axis without re-sending the other 10.
+INSERT INTO recipe_version_whisky_sensory (
+    recipe_version_id, tenant_id,
+    cereal, estery, floral, peaty, feinty, sulphury,
+    woody, winey, body, finish, overall,
+    tasting_panel, tasted_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+)
+ON CONFLICT (recipe_version_id) DO UPDATE SET
+    cereal        = COALESCE(EXCLUDED.cereal,        recipe_version_whisky_sensory.cereal),
+    estery        = COALESCE(EXCLUDED.estery,        recipe_version_whisky_sensory.estery),
+    floral        = COALESCE(EXCLUDED.floral,        recipe_version_whisky_sensory.floral),
+    peaty         = COALESCE(EXCLUDED.peaty,         recipe_version_whisky_sensory.peaty),
+    feinty        = COALESCE(EXCLUDED.feinty,        recipe_version_whisky_sensory.feinty),
+    sulphury      = COALESCE(EXCLUDED.sulphury,      recipe_version_whisky_sensory.sulphury),
+    woody         = COALESCE(EXCLUDED.woody,         recipe_version_whisky_sensory.woody),
+    winey         = COALESCE(EXCLUDED.winey,         recipe_version_whisky_sensory.winey),
+    body          = COALESCE(EXCLUDED.body,          recipe_version_whisky_sensory.body),
+    finish        = COALESCE(EXCLUDED.finish,        recipe_version_whisky_sensory.finish),
+    overall       = COALESCE(EXCLUDED.overall,       recipe_version_whisky_sensory.overall),
+    tasting_panel = CASE WHEN EXCLUDED.tasting_panel = '' THEN recipe_version_whisky_sensory.tasting_panel ELSE EXCLUDED.tasting_panel END,
+    tasted_at     = EXCLUDED.tasted_at
+RETURNING *;
+
+-- name: GetRecipeVersionWhiskySensory :one
+SELECT * FROM recipe_version_whisky_sensory WHERE recipe_version_id = $1;

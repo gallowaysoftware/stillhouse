@@ -119,16 +119,27 @@ func (s *RecipeService) GetRecipe(
 		if dbErr != nil {
 			return dbErr
 		}
-		// Sensory row is optional — only present once the operator has
-		// tasted this version. Missing is fine; only treat other errors as
-		// fatal.
-		sensory, sensoryErr := q.GetRecipeVersionSensory(ctx, v.ID)
-		if sensoryErr != nil && !errors.Is(sensoryErr, pgx.ErrNoRows) {
-			return sensoryErr
-		}
+		// Sensory rows are optional — only present once the operator has
+		// tasted this version. Each spirit family has its own table; load
+		// whichever applies and ignore "no rows" as a benign signal.
 		vp := recipeVersionToProto(v, ingredients)
-		if sensoryErr == nil {
-			vp.Sensory = sensoryToProto(sensory)
+		if r.SpiritKind == sqlcgen.SpiritKindGin {
+			sensory, sensoryErr := q.GetRecipeVersionSensory(ctx, v.ID)
+			if sensoryErr != nil && !errors.Is(sensoryErr, pgx.ErrNoRows) {
+				return sensoryErr
+			}
+			if sensoryErr == nil {
+				vp.Sensory = sensoryToProto(sensory)
+			}
+		}
+		if isWhiskyKind(r.SpiritKind) {
+			ws, wsErr := q.GetRecipeVersionWhiskySensory(ctx, v.ID)
+			if wsErr != nil && !errors.Is(wsErr, pgx.ErrNoRows) {
+				return wsErr
+			}
+			if wsErr == nil {
+				vp.WhiskySensory = whiskySensoryToProto(ws)
+			}
 		}
 		resp.CurrentVersion = vp
 		resp.Projection = projectRecipeVersion(r.SpiritKind, v, ingredients)
@@ -362,6 +373,9 @@ func (s *RecipeService) ListRecipeVersions(
 		if r.SensoryTastedAt.Valid {
 			vp.Sensory = listRowSensoryToProto(r)
 		}
+		if r.WhiskyTastedAt.Valid {
+			vp.WhiskySensory = listRowWhiskySensoryToProto(r)
+		}
 		out = append(out, vp)
 	}
 	return connect.NewResponse(&stillhousev1.ListRecipeVersionsResponse{Versions: out}), nil
@@ -392,6 +406,68 @@ func listRowSensoryToProto(r sqlcgen.ListRecipeVersionsRow) *stillhousev1.GinSen
 	setI(&out.Balance, &out.BalanceSet, r.SensoryBalance)
 	setI(&out.Overall, &out.OverallSet, r.SensoryOverall)
 	return out
+}
+
+// listRowWhiskySensoryToProto carries the whisky LEFT JOIN columns
+// (SWRI Flavour Wheel primary classes + body / finish / overall).
+func listRowWhiskySensoryToProto(r sqlcgen.ListRecipeVersionsRow) *stillhousev1.WhiskySensoryScores {
+	out := &stillhousev1.WhiskySensoryScores{
+		TastingPanel: r.WhiskyTastingPanel.String,
+		TastedAt:     timestamppb.New(r.WhiskyTastedAt.Time),
+	}
+	setI := func(dst *int32, dstSet *bool, src pgtype.Int2) {
+		if src.Valid {
+			*dst = int32(src.Int16)
+			*dstSet = true
+		}
+	}
+	setI(&out.Cereal, &out.CerealSet, r.WhiskyCereal)
+	setI(&out.Estery, &out.EsterySet, r.WhiskyEstery)
+	setI(&out.Floral, &out.FloralSet, r.WhiskyFloral)
+	setI(&out.Peaty, &out.PeatySet, r.WhiskyPeaty)
+	setI(&out.Feinty, &out.FeintySet, r.WhiskyFeinty)
+	setI(&out.Sulphury, &out.SulphurySet, r.WhiskySulphury)
+	setI(&out.Woody, &out.WoodySet, r.WhiskyWoody)
+	setI(&out.Winey, &out.WineySet, r.WhiskyWiney)
+	setI(&out.Body, &out.BodySet, r.WhiskyBody)
+	setI(&out.Finish, &out.FinishSet, r.WhiskyFinish)
+	setI(&out.Overall, &out.OverallSet, r.WhiskyOverall)
+	return out
+}
+
+// whiskySensoryToProto mirrors sensoryToProto for the whisky table row.
+func whiskySensoryToProto(s sqlcgen.RecipeVersionWhiskySensory) *stillhousev1.WhiskySensoryScores {
+	out := &stillhousev1.WhiskySensoryScores{
+		TastingPanel: s.TastingPanel,
+		TastedAt:     timestamppb.New(s.TastedAt.Time),
+	}
+	setI := func(dst *int32, dstSet *bool, src pgtype.Int2) {
+		if src.Valid {
+			*dst = int32(src.Int16)
+			*dstSet = true
+		}
+	}
+	setI(&out.Cereal, &out.CerealSet, s.Cereal)
+	setI(&out.Estery, &out.EsterySet, s.Estery)
+	setI(&out.Floral, &out.FloralSet, s.Floral)
+	setI(&out.Peaty, &out.PeatySet, s.Peaty)
+	setI(&out.Feinty, &out.FeintySet, s.Feinty)
+	setI(&out.Sulphury, &out.SulphurySet, s.Sulphury)
+	setI(&out.Woody, &out.WoodySet, s.Woody)
+	setI(&out.Winey, &out.WineySet, s.Winey)
+	setI(&out.Body, &out.BodySet, s.Body)
+	setI(&out.Finish, &out.FinishSet, s.Finish)
+	setI(&out.Overall, &out.OverallSet, s.Overall)
+	return out
+}
+
+// isWhiskyKind returns true for spirit kinds that get the whisky tasting bench.
+func isWhiskyKind(k sqlcgen.SpiritKind) bool {
+	switch k {
+	case sqlcgen.SpiritKindWhisky, sqlcgen.SpiritKindCanadianWhisky, sqlcgen.SpiritKindRyeWhisky:
+		return true
+	}
+	return false
 }
 
 func (s *RecipeService) DuplicateRecipe(
@@ -626,6 +702,125 @@ func (s *RecipeService) SaveRecipeVersionSensory(
 	}
 	return connect.NewResponse(&stillhousev1.SaveRecipeVersionSensoryResponse{
 		Scores: sensoryToProto(saved),
+	}), nil
+}
+
+// SaveRecipeVersionWhiskySensory upserts the per-version whisky
+// tasting scores. Parallel to SaveRecipeVersionSensory but for whisky-
+// family recipes (whisky / canadian_whisky / rye_whisky) using the
+// SWRI Flavour Wheel axes. Partial upsert via COALESCE — sending a
+// single axis preserves the other 10.
+func (s *RecipeService) SaveRecipeVersionWhiskySensory(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.SaveRecipeVersionWhiskySensoryRequest],
+) (*connect.Response[stillhousev1.SaveRecipeVersionWhiskySensoryResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	versionID, err := uuid.Parse(req.Msg.GetRecipeVersionId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid recipe_version_id"))
+	}
+	in := req.Msg.GetScores()
+	if in == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("scores is required"))
+	}
+
+	score := func(v int32, set bool) (pgtype.Int2, error) {
+		if !set {
+			return pgtype.Int2{}, nil
+		}
+		if v < 0 || v > 10 {
+			return pgtype.Int2{}, fmt.Errorf("score must be in [0, 10], got %d", v)
+		}
+		return pgtype.Int2{Int16: int16(v), Valid: true}, nil
+	}
+	type axis struct {
+		name string
+		v    int32
+		set  bool
+	}
+	axes := []axis{
+		{"cereal", in.GetCereal(), in.GetCerealSet()},
+		{"estery", in.GetEstery(), in.GetEsterySet()},
+		{"floral", in.GetFloral(), in.GetFloralSet()},
+		{"peaty", in.GetPeaty(), in.GetPeatySet()},
+		{"feinty", in.GetFeinty(), in.GetFeintySet()},
+		{"sulphury", in.GetSulphury(), in.GetSulphurySet()},
+		{"woody", in.GetWoody(), in.GetWoodySet()},
+		{"winey", in.GetWiney(), in.GetWineySet()},
+		{"body", in.GetBody(), in.GetBodySet()},
+		{"finish", in.GetFinish(), in.GetFinishSet()},
+		{"overall", in.GetOverall(), in.GetOverallSet()},
+	}
+	vals := make([]pgtype.Int2, len(axes))
+	for i, a := range axes {
+		val, err := score(a.v, a.set)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s: %w", a.name, err))
+		}
+		vals[i] = val
+	}
+
+	tastedAt := timestampOrNow(in.GetTastedAt())
+	var saved sqlcgen.RecipeVersionWhiskySensory
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		v, e := q.GetRecipeVersion(ctx, versionID)
+		if e != nil {
+			return e
+		}
+		// Whisky-family gate — symmetric with the gin gate on
+		// SaveRecipeVersionSensory. The SWRI axes are whisky-shaped;
+		// using them on a vodka or rum recipe would be a category
+		// error (those spirits would need their own benches).
+		r, e := q.GetRecipe(ctx, v.RecipeID)
+		if e != nil {
+			return e
+		}
+		if !isWhiskyKind(r.SpiritKind) {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("whisky sensory bench is for whisky-family recipes only; this recipe is "+string(r.SpiritKind)))
+		}
+		saved, e = q.UpsertRecipeVersionWhiskySensory(ctx, sqlcgen.UpsertRecipeVersionWhiskySensoryParams{
+			RecipeVersionID: versionID,
+			TenantID:        u.TenantID,
+			Cereal:          vals[0],
+			Estery:          vals[1],
+			Floral:          vals[2],
+			Peaty:           vals[3],
+			Feinty:          vals[4],
+			Sulphury:        vals[5],
+			Woody:           vals[6],
+			Winey:           vals[7],
+			Body:            vals[8],
+			Finish:          vals[9],
+			Overall:         vals[10],
+			TastingPanel:    in.GetTastingPanel(),
+			TastedAt:        tastedAt,
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe_version_whisky_sensory", versionID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"tasting_panel": saved.TastingPanel,
+				"overall":       in.GetOverall(),
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("recipe version not found"))
+		}
+		s.logger.Error("SaveRecipeVersionWhiskySensory", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.SaveRecipeVersionWhiskySensoryResponse{
+		Scores: whiskySensoryToProto(saved),
 	}), nil
 }
 

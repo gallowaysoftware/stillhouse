@@ -16,7 +16,9 @@ import {
   RecipeVersion,
   SaveRecipeVersionRequestSchema,
   SaveRecipeVersionSensoryRequestSchema,
+  SaveRecipeVersionWhiskySensoryRequestSchema,
   SpiritKind,
+  WhiskySensoryScoresSchema,
 } from "@/gen/stillhouse/v1/recipe_pb";
 import {
   BOTANICAL_ROLE_OPTIONS,
@@ -51,6 +53,31 @@ const SENSORY_AXES = [
 ] as const;
 type SensoryAxis = (typeof SENSORY_AXES)[number]["key"];
 
+// Whisky tasting axes — Scotch Whisky Research Institute Flavour Wheel
+// (8 primary classes from the SWRI 1979 wheel) plus body / finish /
+// overall from the standard panel scorecard. "Sulphury" is primarily
+// an off-note class (low = clean spirit, high = problem).
+const WHISKY_SENSORY_AXES = [
+  { key: "cereal",   label: "Cereal",   hint: "porridge / husky / malt / biscuit" },
+  { key: "estery",   label: "Estery",   hint: "fruity esters: banana / pear / apple / citrus" },
+  { key: "floral",   label: "Floral",   hint: "geranium / rose / honey" },
+  { key: "peaty",    label: "Peaty",    hint: "phenolic / smoky / medicinal / iodine" },
+  { key: "feinty",   label: "Feinty",   hint: "leather / tobacco / honey-tobacco" },
+  { key: "sulphury", label: "Sulphury", hint: "OFF-note: rubbery / vegetative / DMS — low = clean" },
+  { key: "woody",    label: "Woody",    hint: "vanilla / toasted oak / resinous" },
+  { key: "winey",    label: "Winey",    hint: "sherry / port / brandy (cask-finish notes)" },
+  { key: "body",     label: "Body",     hint: "mouthfeel / weight" },
+  { key: "finish",   label: "Finish",   hint: "length / persistence" },
+  { key: "overall",  label: "Overall",  hint: "gut-call quality" },
+] as const;
+type WhiskySensoryAxis = (typeof WHISKY_SENSORY_AXES)[number]["key"];
+
+const WHISKY_KINDS = new Set<SpiritKind>([
+  SpiritKind.WHISKY,
+  SpiritKind.CANADIAN_WHISKY,
+  SpiritKind.RYE_WHISKY,
+]);
+
 export function RecipeDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
@@ -66,6 +93,7 @@ export function RecipeDetailPage() {
   });
 
   const isGin = recipe.data?.recipe?.spiritKind === SpiritKind.GIN;
+  const isWhisky = recipe.data?.recipe?.spiritKind !== undefined && WHISKY_KINDS.has(recipe.data.recipe.spiritKind);
 
   const [showEditor, setShowEditor] = useState(false);
   // Shared
@@ -502,6 +530,16 @@ export function RecipeDetailPage() {
                   />
                 </div>
               )}
+
+              {isWhisky && (
+                <div className="lg:col-span-2">
+                  <WhiskySensoryPanel
+                    recipeId={id!}
+                    versionId={recipe.data.currentVersion.id}
+                    current={recipe.data.currentVersion.whiskySensory}
+                  />
+                </div>
+              )}
             </section>
           ) : (
             <p className="text-fg-muted">No version yet. Click <b>Add first version</b>.</p>
@@ -511,6 +549,7 @@ export function RecipeDetailPage() {
             recipeId={id}
             currentVersionId={recipe.data.recipe.currentVersionId}
             isGin={isGin}
+            isWhisky={isWhisky}
           />
         </>
       )}
@@ -638,6 +677,131 @@ function SensoryPanel({
   );
 }
 
+// WhiskySensoryPanel — same shape as SensoryPanel but for the SWRI
+// Flavour Wheel axes. Each axis label has a hover hint listing the
+// sub-aromas in that primary class. Sulphury is flagged in muted
+// red because it's primarily an off-note class (a high score = problem).
+function WhiskySensoryPanel({
+  recipeId,
+  versionId,
+  current,
+}: {
+  recipeId: string;
+  versionId: string;
+  current?: ReturnType<typeof recipeWhiskySensory>;
+}) {
+  const qc = useQueryClient();
+
+  function initFrom(s?: ReturnType<typeof recipeWhiskySensory>): Record<WhiskySensoryAxis, string> {
+    const out = {} as Record<WhiskySensoryAxis, string>;
+    for (const a of WHISKY_SENSORY_AXES) {
+      const set = s?.[`${a.key}Set` as `${WhiskySensoryAxis}Set`] as boolean | undefined;
+      const v = s?.[a.key] as number | undefined;
+      out[a.key] = set ? String(v) : "";
+    }
+    return out;
+  }
+
+  const [scores, setScores] = useState<Record<WhiskySensoryAxis, string>>(initFrom(current));
+  const [panel, setPanel] = useState<string>(current?.tastingPanel ?? "");
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  const save = useMutation({
+    mutationFn: () => {
+      const built = create(WhiskySensoryScoresSchema, { tastingPanel: panel });
+      for (const a of WHISKY_SENSORY_AXES) {
+        const raw = scores[a.key].trim();
+        if (raw === "") continue;
+        const v = Math.max(0, Math.min(10, Math.round(Number(raw))));
+        (built as Record<string, unknown>)[a.key] = v;
+        (built as Record<string, unknown>)[`${a.key}Set`] = true;
+      }
+      return recipeClient.saveRecipeVersionWhiskySensory(
+        create(SaveRecipeVersionWhiskySensoryRequestSchema, {
+          recipeVersionId: versionId,
+          scores: built,
+        }),
+      );
+    },
+    onSuccess: () => {
+      setSavedAt(Date.now());
+      qc.invalidateQueries({ queryKey: ["getRecipe", recipeId] });
+      qc.invalidateQueries({ queryKey: ["listRecipeVersions", recipeId] });
+      setTimeout(() => setSavedAt(null), 2500);
+    },
+  });
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold text-fg-muted">
+          Sensory scoring — SWRI Flavour Wheel (0–10)
+        </h2>
+      </header>
+      <div className="space-y-3 p-4">
+        <p className="text-xs text-fg-muted">
+          8 SWRI primary classes + body / finish / overall. Sulphury is an off-note class:
+          low score = clean spirit.
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {WHISKY_SENSORY_AXES.map((a) => (
+            <div key={a.key} title={a.hint}>
+              <label className="mb-1 block text-xs font-medium text-fg-muted">
+                {a.label}
+                {a.key === "sulphury" && (
+                  <span className="ml-1 text-danger-fg/70">(off)</span>
+                )}
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={scores[a.key]}
+                  onChange={(e) => setScores((s) => ({ ...s, [a.key]: e.target.value }))}
+                  className="w-16 rounded border border-border-strong px-2 py-1 text-sm"
+                />
+                <ScoreBar value={Number(scores[a.key]) || 0} hasValue={scores[a.key].trim() !== ""} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[12rem]">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Tasting panel</label>
+            <input
+              value={panel}
+              onChange={(e) => setPanel(e.target.value)}
+              placeholder="self · Kyle · master blender · …"
+              className="w-full rounded border border-border-strong px-2 py-1 text-sm"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
+          >
+            {save.isPending ? "Saving…" : "Save scores"}
+          </button>
+          {savedAt && <span className="text-sm text-success-fg">Saved.</span>}
+          {save.error && (
+            <span className="text-sm text-danger-fg">
+              {save.error instanceof ConnectError ? save.error.rawMessage : String(save.error)}
+            </span>
+          )}
+        </div>
+        {current?.tastedAt && (
+          <p className="text-xs text-fg-muted">
+            Last tasted: {new Date(Number(current.tastedAt.seconds) * 1000).toLocaleString()}
+            {current.tastingPanel && ` · ${current.tastingPanel}`}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ScoreBar({ value, hasValue }: { value: number; hasValue: boolean }) {
   if (!hasValue) return <span className="text-xs text-fg-subtle">—</span>;
   const pct = Math.max(0, Math.min(100, (value / 10) * 100));
@@ -655,10 +819,12 @@ function VersionHistory({
   recipeId,
   currentVersionId,
   isGin,
+  isWhisky,
 }: {
   recipeId: string;
   currentVersionId: string;
   isGin: boolean;
+  isWhisky: boolean;
 }) {
   const versions = useQuery({
     queryKey: ["listRecipeVersions", recipeId],
@@ -761,6 +927,7 @@ function VersionHistory({
             list.find((v) => v.id === selected[1])!,
           ].filter(Boolean) as RecipeVersion[]}
           isGin={isGin}
+          isWhisky={isWhisky}
         />
       )}
     </section>
@@ -770,10 +937,12 @@ function VersionHistory({
 function CompareTwo({
   versions,
   isGin,
+  isWhisky,
 }: {
   recipeId: string;
   versions: RecipeVersion[];
   isGin: boolean;
+  isWhisky: boolean;
 }) {
   if (versions.length !== 2) return null;
   const [a, b] = versions;
@@ -846,26 +1015,41 @@ function CompareTwo({
           </table>
         </div>
 
-        {/* Sensory column */}
+        {/* Sensory column — gin axes for gin, SWRI for whisky */}
         <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
-          <header className="border-b border-border bg-surface-3 px-4 py-2 text-xs font-semibold text-fg-muted">Sensory (0–10)</header>
+          <header className="border-b border-border bg-surface-3 px-4 py-2 text-xs font-semibold text-fg-muted">
+            Sensory {isWhisky ? "— SWRI Flavour Wheel " : ""}(0–10)
+          </header>
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-surface-3 text-left text-xs text-fg-muted">
               <tr><th className="px-3 py-2"></th><th className="px-3 py-2 text-right">{labelOf(a)}</th><th className="px-3 py-2 text-right">{labelOf(b)}</th></tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {SENSORY_AXES.map((axis) => {
-                const va = recipeSensory(a)?.[`${axis.key}Set` as `${SensoryAxis}Set`] ? recipeSensory(a)?.[axis.key] as number : null;
-                const vb = recipeSensory(b)?.[`${axis.key}Set` as `${SensoryAxis}Set`] ? recipeSensory(b)?.[axis.key] as number : null;
-                const diff = va !== null && vb !== null && va !== vb;
-                return (
-                  <tr key={axis.key} className={diff ? "bg-warning/5" : ""}>
-                    <td className="px-3 py-2 text-fg">{axis.label}</td>
-                    <td className="px-3 py-2 text-right text-fg-muted">{va ?? "—"}</td>
-                    <td className="px-3 py-2 text-right text-fg-muted">{vb ?? "—"}</td>
-                  </tr>
-                );
-              })}
+              {isWhisky
+                ? WHISKY_SENSORY_AXES.map((axis) => {
+                    const va = recipeWhiskySensory(a)?.[`${axis.key}Set` as `${WhiskySensoryAxis}Set`] ? recipeWhiskySensory(a)?.[axis.key] as number : null;
+                    const vb = recipeWhiskySensory(b)?.[`${axis.key}Set` as `${WhiskySensoryAxis}Set`] ? recipeWhiskySensory(b)?.[axis.key] as number : null;
+                    const diff = va !== null && vb !== null && va !== vb;
+                    return (
+                      <tr key={axis.key} className={diff ? "bg-warning/5" : ""}>
+                        <td className="px-3 py-2 text-fg">{axis.label}</td>
+                        <td className="px-3 py-2 text-right text-fg-muted">{va ?? "—"}</td>
+                        <td className="px-3 py-2 text-right text-fg-muted">{vb ?? "—"}</td>
+                      </tr>
+                    );
+                  })
+                : SENSORY_AXES.map((axis) => {
+                    const va = recipeSensory(a)?.[`${axis.key}Set` as `${SensoryAxis}Set`] ? recipeSensory(a)?.[axis.key] as number : null;
+                    const vb = recipeSensory(b)?.[`${axis.key}Set` as `${SensoryAxis}Set`] ? recipeSensory(b)?.[axis.key] as number : null;
+                    const diff = va !== null && vb !== null && va !== vb;
+                    return (
+                      <tr key={axis.key} className={diff ? "bg-warning/5" : ""}>
+                        <td className="px-3 py-2 text-fg">{axis.label}</td>
+                        <td className="px-3 py-2 text-right text-fg-muted">{va ?? "—"}</td>
+                        <td className="px-3 py-2 text-right text-fg-muted">{vb ?? "—"}</td>
+                      </tr>
+                    );
+                  })}
             </tbody>
           </table>
         </div>
@@ -885,11 +1069,17 @@ function CmpRow({ label, a, b }: { label: string; a: string; b: string }) {
   );
 }
 
-// recipeSensory pulls the optional sensory message off a RecipeVersion
-// in a typed way. The list endpoint doesn't currently populate it; only
-// GetRecipe does. CompareTwo uses what it has.
+// recipeSensory pulls the optional gin sensory message off a
+// RecipeVersion in a typed way. Stage 113 made list_recipe_versions
+// load this too, so the compare view sees populated data for every
+// version (not just the current one).
 function recipeSensory(v: RecipeVersion) {
   return v.sensory;
+}
+
+// recipeWhiskySensory — same shape, whisky bench.
+function recipeWhiskySensory(v: RecipeVersion) {
+  return v.whiskySensory;
 }
 
 function Field({

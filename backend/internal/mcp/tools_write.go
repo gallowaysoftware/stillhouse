@@ -27,6 +27,7 @@ func registerWriteTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addAddFermentationReading(s, d, user)
 	addAddMashReading(s, d, user)
 	addSaveRecipeVersionSensory(s, d, user)
+	addSaveRecipeVersionWhiskySensory(s, d, user)
 }
 
 func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
@@ -248,6 +249,61 @@ func addSaveRecipeVersionSensory(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			scores.OverallSet = true
 		}
 		resp, err := d.Recipe.SaveRecipeVersionSensory(ctx, connect.NewRequest(&pb.SaveRecipeVersionSensoryRequest{
+			RecipeVersionId: args.RecipeVersionID,
+			Scores:          scores,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+// addSaveRecipeVersionWhiskySensory — parallel to the gin tool, but
+// the axes are the 8 SWRI Flavour Wheel primary classes plus body /
+// finish / overall. Sulphury is primarily an off-note class (low score
+// = clean spirit). Pointer-typed scores so a literal 0 means "scored
+// zero," not "didn't score."
+func addSaveRecipeVersionWhiskySensory(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		RecipeVersionID string `json:"recipe_version_id" jsonschema:"UUID of the whisky-family recipe version you just tasted"`
+		Cereal          *int32 `json:"cereal,omitempty"   jsonschema:"0-10 — porridge / husky / malt / biscuit / cracker"`
+		Estery          *int32 `json:"estery,omitempty"   jsonschema:"0-10 — fruity esters: banana / pear-drop / apple / pineapple / citrus / dried fruit"`
+		Floral          *int32 `json:"floral,omitempty"   jsonschema:"0-10 — geranium / rose / fragrant / honey"`
+		Peaty           *int32 `json:"peaty,omitempty"    jsonschema:"0-10 — phenolic / smoky / medicinal / iodine / bonfire"`
+		Feinty          *int32 `json:"feinty,omitempty"   jsonschema:"0-10 — leather / tobacco / honey-tobacco / horse / cheesy"`
+		Sulphury        *int32 `json:"sulphury,omitempty" jsonschema:"0-10 — OFF-note class: rubbery / vegetative / sandy / gunflint / DMS. Low score = clean spirit"`
+		Woody           *int32 `json:"woody,omitempty"    jsonschema:"0-10 — vanilla / toasted oak / resinous / coconut / sawdust"`
+		Winey           *int32 `json:"winey,omitempty"    jsonschema:"0-10 — sherry / port / brandy notes (from finishing casks)"`
+		Body            *int32 `json:"body,omitempty"     jsonschema:"0-10 — mouthfeel / weight / texture"`
+		Finish          *int32 `json:"finish,omitempty"   jsonschema:"0-10 — length / persistence / dryness"`
+		Overall         *int32 `json:"overall,omitempty"  jsonschema:"0-10 — gut-call quality / hedonic"`
+		TastingPanel    string `json:"tasting_panel,omitempty" jsonschema:"who tasted — 'self', 'Kyle + Jane', etc."`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "save_recipe_version_whisky_sensory",
+		Description: "Score a whisky-family (whisky / canadian_whisky / rye_whisky) recipe version on the 11-axis tasting bench. Axes are the 8 SWRI Flavour Wheel primary classes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) plus body / finish / overall from the standard panel scorecard. Each 0-10. Upsert with partial-update semantics — sending a single axis preserves the others. Sulphury is primarily an off-note class (low = clean).",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		scores := &pb.WhiskySensoryScores{TastingPanel: args.TastingPanel}
+		setInt := func(field *int32, src *int32, setFlag *bool) {
+			if src != nil {
+				*field = *src
+				*setFlag = true
+			}
+		}
+		setInt(&scores.Cereal, args.Cereal, &scores.CerealSet)
+		setInt(&scores.Estery, args.Estery, &scores.EsterySet)
+		setInt(&scores.Floral, args.Floral, &scores.FloralSet)
+		setInt(&scores.Peaty, args.Peaty, &scores.PeatySet)
+		setInt(&scores.Feinty, args.Feinty, &scores.FeintySet)
+		setInt(&scores.Sulphury, args.Sulphury, &scores.SulphurySet)
+		setInt(&scores.Woody, args.Woody, &scores.WoodySet)
+		setInt(&scores.Winey, args.Winey, &scores.WineySet)
+		setInt(&scores.Body, args.Body, &scores.BodySet)
+		setInt(&scores.Finish, args.Finish, &scores.FinishSet)
+		setInt(&scores.Overall, args.Overall, &scores.OverallSet)
+		resp, err := d.Recipe.SaveRecipeVersionWhiskySensory(ctx, connect.NewRequest(&pb.SaveRecipeVersionWhiskySensoryRequest{
 			RecipeVersionId: args.RecipeVersionID,
 			Scores:          scores,
 		}))

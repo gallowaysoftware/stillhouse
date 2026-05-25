@@ -38,6 +38,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 113 | Gin-bench QA fixes — list_recipe_versions joins sensory (compare workflow works end-to-end on MCP + web), sensory upsert is partial-update so single-axis tweaks don't null the other 9 |
 | 114 | Close P3 backlog — LAA/ABV/duty/CAD rounded at display, sensory bench gated to gin recipes, FillBarrel rejects overfill, write tools emit full schema (no more `_set: true` with no value) |
 | 115 | Sensory gin-only gate now surfaces as failed_precondition (was getting swallowed as internal error by the handler's catch-all) |
+| 116 | Whisky tasting bench — SWRI Flavour Wheel axes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) + body / finish / overall; backend + MCP `save_recipe_version_whisky_sensory` + web UI for whisky-family recipes |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
