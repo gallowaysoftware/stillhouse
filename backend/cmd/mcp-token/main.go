@@ -1,0 +1,93 @@
+// Command mcp-token issues a personal access token for a user, prints
+// it once to stdout, and exits. Tokens authenticate non-browser clients
+// (the MCP server, future scripts, etc.) without going through the
+// cookie-session flow.
+//
+// The plaintext token is shown ONCE — only the SHA-256 hash is stored.
+// Usage:
+//
+//	make mcp-token EMAIL=kyle@example.com NAME="phone"
+//
+// Connects with the admin DSN so it can write through api_tokens'
+// GRANTs. Falls back to DATABASE_URL when ADMIN_DATABASE_URL is unset.
+package main
+
+import (
+	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"errors"
+	"flag"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
+)
+
+func main() {
+	email := flag.String("email", "", "email of the user to issue the token for")
+	name := flag.String("name", "mcp", "human label for the token (shown when listing)")
+	flag.Parse()
+	if *email == "" {
+		log.Fatal("--email is required")
+	}
+
+	dsn := os.Getenv("ADMIN_DATABASE_URL")
+	if dsn == "" {
+		dsn = os.Getenv("DATABASE_URL")
+	}
+	if dsn == "" {
+		log.Fatal("ADMIN_DATABASE_URL or DATABASE_URL must be set")
+	}
+
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		log.Fatalf("pool: %v", err)
+	}
+	defer pool.Close()
+
+	q := sqlcgen.New(pool)
+	u, err := q.GetUserByEmail(ctx, *email)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			log.Fatalf("no user with email %q", *email)
+		}
+		log.Fatalf("get user: %v", err)
+	}
+
+	tok, hash := newToken()
+	if _, err := q.CreateAPIToken(ctx, sqlcgen.CreateAPITokenParams{
+		TokenHash: hash,
+		TenantID:  u.TenantID,
+		UserID:    u.ID,
+		Name:      *name,
+	}); err != nil {
+		log.Fatalf("insert token: %v", err)
+	}
+
+	fmt.Printf("Issued token %q for %s\n", *name, u.Email)
+	fmt.Println()
+	fmt.Println("*** Personal access token (shown once) ***")
+	fmt.Println(tok)
+	fmt.Println()
+	fmt.Println("Use it with:  Authorization: Bearer " + tok)
+}
+
+// newToken returns (plaintext, sha256-of-plaintext). 32 bytes of
+// randomness encoded as URL-safe base64 → 43 chars + the "sh_" prefix.
+func newToken() (string, []byte) {
+	b := make([]byte, 32)
+	if _, err := rand.Read(b); err != nil {
+		log.Fatalf("rand: %v", err)
+	}
+	tok := rpc.APITokenPrefix + base64.RawURLEncoding.EncodeToString(b)
+	sum := sha256.Sum256([]byte(tok))
+	return tok, sum[:]
+}

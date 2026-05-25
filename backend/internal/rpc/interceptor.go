@@ -32,12 +32,22 @@ var publicProcedures = map[string]bool{
 
 // NewAuthInterceptor returns a Connect unary interceptor that:
 //  1. Lets public procedures through without a session.
-//  2. For all other procedures, reads the session, loads the user, and
-//     attaches them to the request context (accessible via CurrentUser).
+//  2. If an Authorization: Bearer header is present, treats it as a
+//     personal access token (api_tokens table).
+//  3. Otherwise reads the session, loads the user, and attaches them to
+//     the request context (accessible via CurrentUser).
 func NewAuthInterceptor(sm *scs.SessionManager, q *sqlcgen.Queries) connect.UnaryInterceptorFunc {
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
 			if publicProcedures[req.Spec().Procedure] {
+				return next(ctx, req)
+			}
+			if tok, err := ExtractBearer(req.Header()); err == nil {
+				user, err := LookupBearer(ctx, q, tok)
+				if err != nil {
+					return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid bearer token"))
+				}
+				ctx = WithUser(ctx, user)
 				return next(ctx, req)
 			}
 			userIDStr := sm.GetString(ctx, "user_id")
@@ -52,7 +62,7 @@ func NewAuthInterceptor(sm *scs.SessionManager, q *sqlcgen.Queries) connect.Unar
 			if err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("session refers to missing user"))
 			}
-			ctx = context.WithValue(ctx, ctxUser, user)
+			ctx = WithUser(ctx, user)
 			return next(ctx, req)
 		}
 	}

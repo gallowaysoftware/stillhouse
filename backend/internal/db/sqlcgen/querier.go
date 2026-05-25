@@ -47,6 +47,7 @@ type Querier interface {
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
 	CountTenants(ctx context.Context) (int64, error)
+	CreateAPIToken(ctx context.Context, arg CreateAPITokenParams) (ApiToken, error)
 	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
 	CreateBottlingRun(ctx context.Context, arg CreateBottlingRunParams) (BottlingRun, error)
 	CreateBottlingRunStampUsage(ctx context.Context, arg CreateBottlingRunStampUsageParams) (BottlingRunStampUsage, error)
@@ -86,6 +87,10 @@ type Querier interface {
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
 	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error)
+	// Returns the token row + the owning user in one round trip. revoked_at
+	// IS NULL is enforced inline so a revoked token is indistinguishable
+	// from a missing one at the SQL layer.
+	GetAPITokenByHash(ctx context.Context, tokenHash []byte) (GetAPITokenByHashRow, error)
 	GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByDatesParams) (B266Period, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
@@ -117,6 +122,7 @@ type Querier interface {
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
 	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
+	ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
 	ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]ListAuditEventsRow, error)
 	ListB266Periods(ctx context.Context) ([]B266Period, error)
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
@@ -167,6 +173,7 @@ type Querier interface {
 	// WHERE status = 'submitted' guard makes this a no-op on already-draft
 	// periods, returning no rows.
 	ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
+	RevokeAPIToken(ctx context.Context, tokenHash []byte) error
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
@@ -200,6 +207,7 @@ type Querier interface {
 	SumPackagedOnHandLAA(ctx context.Context) (SumPackagedOnHandLAARow, error)
 	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)
 	SumStampInventory(ctx context.Context) ([]SumStampInventoryRow, error)
+	TouchAPIToken(ctx context.Context, tokenHash []byte) error
 	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	UpdateBulkContainer(ctx context.Context, arg UpdateBulkContainerParams) (BulkContainer, error)
 	UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulkContainerBalanceParams) (BulkContainer, error)

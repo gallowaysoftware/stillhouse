@@ -83,6 +83,11 @@ migrate-force: ## Force migration version (recovery). Usage: make migrate-force 
 seed: ## Seed a test tenant + admin user. Prints generated credentials.
 	cd backend && DATABASE_URL="$(PG_ADMIN_DSN)" go run ./cmd/seed
 
+mcp-token: ## Issue an MCP personal access token. Usage: make mcp-token EMAIL=foo@bar.com [NAME="phone"]
+	@test -n "$(EMAIL)" || (echo "EMAIL is required (e.g. make mcp-token EMAIL=admin@example.com NAME=phone)"; exit 1)
+	cd backend && ADMIN_DATABASE_URL="$(PG_ADMIN_DSN)" \
+	    go run ./cmd/mcp-token --email "$(EMAIL)" --name "$(or $(NAME),mcp)"
+
 # ----- Run --------------------------------------------------------------------
 
 backend-dev: ## Run the Go backend (uses PG_APP_DSN so RLS enforces).
@@ -141,6 +146,6 @@ image-info: ## Print the image coordinates that would be built / pushed.
 	@echo "IMAGE_TAG = $(IMAGE_TAG)"
 
 .PHONY: help tools generate buf-generate sqlc-generate dev-up dev-down dev-logs \
-	migrate-up migrate-down migrate-new migrate-force seed backend-dev web-dev \
+	migrate-up migrate-down migrate-new migrate-force seed mcp-token backend-dev web-dev \
 	build build-web build-backend test lint fmt \
 	image push image-push image-info

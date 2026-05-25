@@ -27,6 +27,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 11 | Integration test that verifies tenant isolation |
 | 12 | Unit tests for the load-bearing alcohol-math functions |
 | 13 | Audit log extended to barrel fill / dump / regauge |
+| 105 | MCP server — operate Stillhouse from Claude (phone/desktop) over Streamable HTTP |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
@@ -104,6 +105,45 @@ tenant sees only its own rows). Requires `make dev-up`.
 ```sh
 make test-integration
 ```
+
+## MCP server
+
+Stillhouse exposes a [Model Context Protocol](https://modelcontextprotocol.io)
+server at `/mcp`, so an LLM (e.g. Claude on your phone) can read the
+ledger and capture activity while you have wet hands at the still.
+
+It reuses the same RPC service implementations as the web UI, so RLS
+tenant isolation, audit-log writes, and role gating all behave
+identically — an MCP-driven barrel fill leaves the same trail as a
+web-driven one.
+
+### Issue a token
+
+Tokens are per-user. The plaintext value is printed once; only its
+SHA-256 hash is stored.
+
+```sh
+make mcp-token EMAIL=you@example.com NAME="phone"
+```
+
+### Connect from a client
+
+Configure a remote MCP server pointing at your Stillhouse install:
+
+- **URL:** `https://stillhouse.example.com/mcp`
+- **Header:** `Authorization: Bearer sh_…` (the token printed above)
+
+### Tools
+
+- **Read** — `get_dashboard`, `list_bulk_containers`, `get_bulk_container`,
+  `list_barrels`, `get_barrel`, `list_recent_bulk_movements`,
+  `list_recipes`, `list_products`, `list_b266_periods`
+- **Capture** — `fill_barrel`, `regauge_barrel`, `dump_barrel`,
+  `add_fermentation_reading`, `add_mash_reading`
+
+Back-office work (distillation runs with cuts, bottling, removals,
+B266 generation) stays in the web UI — those flows have multi-row
+inputs that don't translate cleanly to a chat interface.
 
 ## License
 

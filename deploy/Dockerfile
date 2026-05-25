@@ -30,17 +30,20 @@ COPY backend /src/backend
 # Generated Go code is committed, so no buf generate step needed here.
 RUN cd backend && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-server ./cmd/server && \
+    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-server    ./cmd/server && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-seed   ./cmd/seed
+    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-seed      ./cmd/seed && \
+    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-mcp-token ./cmd/mcp-token
 
 # ----- Stage 3: minimal runtime ----------------------------------------------
 FROM gcr.io/distroless/static-debian12:nonroot
 WORKDIR /app
 
-COPY --from=go-builder /out/stillhouse-server /app/stillhouse-server
-COPY --from=go-builder /out/stillhouse-seed   /app/stillhouse-seed
-COPY --from=web-builder /src/web/dist         /app/static
+COPY --from=go-builder /out/stillhouse-server    /app/stillhouse-server
+COPY --from=go-builder /out/stillhouse-seed      /app/stillhouse-seed
+COPY --from=go-builder /out/stillhouse-mcp-token /app/stillhouse-mcp-token
+COPY --from=web-builder /src/web/dist            /app/static
 
 ENV STILLHOUSE_STATIC_DIR=/app/static
 ENV STILLHOUSE_ADDR=:8080

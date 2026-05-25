@@ -17,6 +17,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1connect "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1/stillhousev1connect"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/mailer"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/mcp"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
@@ -109,6 +110,21 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewInviteServiceHandler(inviteSvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
 	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
+	// MCP endpoint — non-browser clients (e.g. Claude.ai mobile) speak
+	// JSON-RPC over Streamable HTTP here. Auth is Authorization: Bearer
+	// sh_..., issued by cmd/mcp-token; the cookie-session middleware
+	// further down the chain is a no-op for these requests.
+	mux.Handle("/mcp", mcp.NewHandler(mcp.Deps{
+		Queries:      queries,
+		Bulk:         bulkSvc,
+		Barrel:       barrelSvc,
+		Recipe:       recipeSvc,
+		Product:      productSvc,
+		Fermentation: fermentationSvc,
+		Mash:         mashSvc,
+		B266:         b266Svc,
+		Logger:       logger,
+	}))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)

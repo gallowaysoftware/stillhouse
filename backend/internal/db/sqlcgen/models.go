@@ -699,6 +699,16 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type ApiToken struct {
+	TokenHash  []byte             `json:"token_hash"`
+	TenantID   uuid.UUID          `json:"tenant_id"`
+	UserID     uuid.UUID          `json:"user_id"`
+	Name       string             `json:"name"`
+	LastUsedAt pgtype.Timestamptz `json:"last_used_at"`
+	RevokedAt  pgtype.Timestamptz `json:"revoked_at"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
 type AuditEvent struct {
 	ID         uuid.UUID          `json:"id"`
 	TenantID   uuid.UUID          `json:"tenant_id"`
