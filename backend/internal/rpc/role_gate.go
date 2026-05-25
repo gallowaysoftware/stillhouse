@@ -119,8 +119,9 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.RecipeService/ListRecipes":        roleViewer,
 	"/stillhouse.v1.RecipeService/GetRecipe":          roleViewer,
 	"/stillhouse.v1.RecipeService/ArchiveRecipe":      roleOperator,
-	"/stillhouse.v1.RecipeService/SaveRecipeVersion":  roleOperator,
-	"/stillhouse.v1.RecipeService/ListRecipeVersions": roleViewer,
+	"/stillhouse.v1.RecipeService/SaveRecipeVersion":         roleOperator,
+	"/stillhouse.v1.RecipeService/ListRecipeVersions":        roleViewer,
+	"/stillhouse.v1.RecipeService/SaveRecipeVersionSensory":  roleOperator,
 
 	// RemovalService
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,

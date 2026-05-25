@@ -114,6 +114,7 @@ type Querier interface {
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
 	GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error)
 	GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error)
+	GetRecipeVersionSensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionSensory, error)
 	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
@@ -232,6 +233,9 @@ type Querier interface {
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
+	// One row per recipe_version. Upsert because edits during recipe
+	// development are the whole point — taste, score, save, retaste.
+	UpsertRecipeVersionSensory(ctx context.Context, arg UpsertRecipeVersionSensoryParams) (RecipeVersionSensory, error)
 	VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)

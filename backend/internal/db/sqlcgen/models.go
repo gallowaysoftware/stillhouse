@@ -1094,6 +1094,7 @@ type RecipeIngredient struct {
 	Uom             string    `json:"uom"`
 	Notes           string    `json:"notes"`
 	SortOrder       int32     `json:"sort_order"`
+	BotanicalRole   string    `json:"botanical_role"`
 }
 
 type RecipeVersion struct {
@@ -1107,6 +1108,28 @@ type RecipeVersion struct {
 	DistillationRecoveryPct float64            `json:"distillation_recovery_pct"`
 	TargetWaterL            pgtype.Float8      `json:"target_water_l"`
 	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	TastingNotes            string             `json:"tasting_notes"`
+	DistillationMethod      string             `json:"distillation_method"`
+	MacerationHours         pgtype.Float8      `json:"maceration_hours"`
+	GinNgsInputL            pgtype.Float8      `json:"gin_ngs_input_l"`
+	GinNgsInputAbvPct       pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
+}
+
+type RecipeVersionSensory struct {
+	RecipeVersionID uuid.UUID          `json:"recipe_version_id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	Juniper         pgtype.Int2        `json:"juniper"`
+	Citrus          pgtype.Int2        `json:"citrus"`
+	Herbal          pgtype.Int2        `json:"herbal"`
+	Spice           pgtype.Int2        `json:"spice"`
+	Floral          pgtype.Int2        `json:"floral"`
+	Earth           pgtype.Int2        `json:"earth"`
+	Body            pgtype.Int2        `json:"body"`
+	Heat            pgtype.Int2        `json:"heat"`
+	Balance         pgtype.Int2        `json:"balance"`
+	Overall         pgtype.Int2        `json:"overall"`
+	TastingPanel    string             `json:"tasting_panel"`
+	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
 }
 
 type Session struct {

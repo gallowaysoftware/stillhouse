@@ -18,6 +18,30 @@ enum SpiritKind {
   SPIRIT_KIND_OTHER = 9;
 }
 
+// Where a botanical sits in the gin recipe's structure. Optional on
+// every ingredient; ignored for non-gin recipes (and for non-botanical
+// materials within a gin recipe — NGS, water, etc.).
+enum BotanicalRole {
+  BOTANICAL_ROLE_UNSPECIFIED = 0;
+  BOTANICAL_ROLE_JUNIPER = 1;     // the defining note — every gin needs this
+  BOTANICAL_ROLE_CITRUS = 2;      // lemon/lime/orange peels, grapefruit
+  BOTANICAL_ROLE_HERBAL = 3;      // coriander, basil, sage
+  BOTANICAL_ROLE_SPICE = 4;       // cardamom, cassia, black pepper
+  BOTANICAL_ROLE_FLORAL = 5;      // rose, chamomile, elderflower
+  BOTANICAL_ROLE_ROOT = 6;        // orris, angelica root, licorice
+  BOTANICAL_ROLE_OTHER = 7;
+}
+
+// How the botanicals meet the spirit during distillation. Pot = full
+// maceration in the still charge; vapor = botanicals in a gin basket
+// extracted by ethanol vapor on the way up; combined = both.
+enum DistillationMethod {
+  DISTILLATION_METHOD_UNSPECIFIED = 0;
+  DISTILLATION_METHOD_POT = 1;
+  DISTILLATION_METHOD_VAPOR = 2;
+  DISTILLATION_METHOD_COMBINED = 3;
+}
+
 message Recipe {
   string id = 1;
   string tenant_id = 2;
@@ -43,6 +67,38 @@ message RecipeVersion {
   bool   target_water_l_set = 10;
   google.protobuf.Timestamp created_at = 11;
   repeated RecipeIngredient ingredients = 12;
+  // Gin / botanical-bill fields. Optional for whisky-style recipes
+  // (they stay at defaults / unset). See [[BotanicalRole]] and
+  // [[DistillationMethod]] for the per-ingredient and per-version
+  // structure.
+  string tasting_notes = 13;
+  DistillationMethod distillation_method = 14;
+  double maceration_hours = 15;
+  bool   maceration_hours_set = 16;
+  double gin_ngs_input_l = 17;
+  bool   gin_ngs_input_l_set = 18;
+  double gin_ngs_input_abv_pct = 19;
+  bool   gin_ngs_input_abv_pct_set = 20;
+  GinSensoryScores sensory = 21;     // unset until first tasting
+}
+
+// Per-version tasting bench scores, 0-10 on each axis. Field-level
+// "_set" flags disambiguate "scored as 0" from "not tasted on this
+// axis." All scores live in a child table (recipe_version_sensory) so
+// editing a score doesn't churn the version's history.
+message GinSensoryScores {
+  int32 juniper = 1;  bool juniper_set = 2;
+  int32 citrus  = 3;  bool citrus_set  = 4;
+  int32 herbal  = 5;  bool herbal_set  = 6;
+  int32 spice   = 7;  bool spice_set   = 8;
+  int32 floral  = 9;  bool floral_set  = 10;
+  int32 earth   = 11; bool earth_set   = 12;
+  int32 body    = 13; bool body_set    = 14;
+  int32 heat    = 15; bool heat_set    = 16;
+  int32 balance = 17; bool balance_set = 18;
+  int32 overall = 19; bool overall_set = 20;
+  string tasting_panel = 21;            // "self", "Kyle + Jane", etc.
+  google.protobuf.Timestamp tasted_at = 22;
 }
 
 message RecipeIngredient {
@@ -57,6 +113,9 @@ message RecipeIngredient {
   string uom = 9;
   string notes = 10;
   int32  sort_order = 11;
+  // Botanical role on a gin recipe — defaults to UNSPECIFIED for
+  // non-botanical ingredients (grain, NGS, water).
+  BotanicalRole botanical_role = 12;
 }
 
 // Projection breakdown produced from a RecipeVersion + a per-stage efficiency
@@ -110,6 +169,7 @@ message RecipeIngredientInput {
   string uom = 3;
   string notes = 4;
   int32  sort_order = 5;
+  BotanicalRole botanical_role = 6;     // optional; gin recipes use it
 }
 
 message SaveRecipeVersionRequest {
@@ -121,10 +181,29 @@ message SaveRecipeVersionRequest {
   double target_water_l = 6;
   bool   target_water_l_set = 7;
   repeated RecipeIngredientInput ingredients = 8;
+  // Gin-specific. Whisky recipes leave these unset.
+  string tasting_notes = 9;
+  DistillationMethod distillation_method = 10;
+  double maceration_hours = 11;
+  bool   maceration_hours_set = 12;
+  double gin_ngs_input_l = 13;
+  bool   gin_ngs_input_l_set = 14;
+  double gin_ngs_input_abv_pct = 15;
+  bool   gin_ngs_input_abv_pct_set = 16;
 }
 message SaveRecipeVersionResponse {
   RecipeVersion version = 1;
   RecipeProjection projection = 2;
+}
+
+// Set / replace the per-version sensory scores. Upsert semantics — call
+// this every time you taste, scores from the latest call win.
+message SaveRecipeVersionSensoryRequest {
+  string recipe_version_id = 1;
+  GinSensoryScores scores = 2;
+}
+message SaveRecipeVersionSensoryResponse {
+  GinSensoryScores scores = 1;
 }
 
 message ListRecipeVersionsRequest { string recipe_id = 1; }
@@ -144,4 +223,5 @@ service RecipeService {
   rpc ArchiveRecipe(ArchiveRecipeRequest) returns (ArchiveRecipeResponse);
   rpc SaveRecipeVersion(SaveRecipeVersionRequest) returns (SaveRecipeVersionResponse);
   rpc ListRecipeVersions(ListRecipeVersionsRequest) returns (ListRecipeVersionsResponse);
+  rpc SaveRecipeVersionSensory(SaveRecipeVersionSensoryRequest) returns (SaveRecipeVersionSensoryResponse);
 }

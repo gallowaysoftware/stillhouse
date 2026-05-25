@@ -119,9 +119,19 @@ func (s *RecipeService) GetRecipe(
 		if dbErr != nil {
 			return dbErr
 		}
+		// Sensory row is optional — only present once the operator has
+		// tasted this version. Missing is fine; only treat other errors as
+		// fatal.
+		sensory, sensoryErr := q.GetRecipeVersionSensory(ctx, v.ID)
+		if sensoryErr != nil && !errors.Is(sensoryErr, pgx.ErrNoRows) {
+			return sensoryErr
+		}
 		vp := recipeVersionToProto(v, ingredients)
+		if sensoryErr == nil {
+			vp.Sensory = sensoryToProto(sensory)
+		}
 		resp.CurrentVersion = vp
-		resp.Projection = projectRecipeVersion(v, ingredients)
+		resp.Projection = projectRecipeVersion(r.SpiritKind, v, ingredients)
 		return nil
 	})
 	if err != nil {
@@ -193,7 +203,8 @@ func (s *RecipeService) SaveRecipeVersion(
 	resp := &stillhousev1.SaveRecipeVersionResponse{}
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		// Confirm the recipe exists in this tenant.
-		if _, e := q.GetRecipe(ctx, recipeID); e != nil {
+		r, e := q.GetRecipe(ctx, recipeID)
+		if e != nil {
 			return e
 		}
 		nextNo, e := q.NextRecipeVersionNo(ctx, recipeID)
@@ -205,6 +216,18 @@ func (s *RecipeService) SaveRecipeVersion(
 		if in.GetTargetWaterLSet() {
 			waterL = pgtype.Float8{Float64: in.GetTargetWaterL(), Valid: true}
 		}
+		var macerationHours pgtype.Float8
+		if in.GetMacerationHoursSet() {
+			macerationHours = pgtype.Float8{Float64: in.GetMacerationHours(), Valid: true}
+		}
+		var ngsInputL pgtype.Float8
+		if in.GetGinNgsInputLSet() {
+			ngsInputL = pgtype.Float8{Float64: in.GetGinNgsInputL(), Valid: true}
+		}
+		var ngsInputAbv pgtype.Float8
+		if in.GetGinNgsInputAbvPctSet() {
+			ngsInputAbv = pgtype.Float8{Float64: in.GetGinNgsInputAbvPct(), Valid: true}
+		}
 
 		v, e := q.CreateRecipeVersion(ctx, sqlcgen.CreateRecipeVersionParams{
 			TenantID:                u.TenantID,
@@ -215,6 +238,11 @@ func (s *RecipeService) SaveRecipeVersion(
 			FermentEfficiencyPct:    in.GetFermentEfficiencyPct(),
 			DistillationRecoveryPct: in.GetDistillationRecoveryPct(),
 			TargetWaterL:            waterL,
+			TastingNotes:            in.GetTastingNotes(),
+			DistillationMethod:      distillationMethodToDB(in.GetDistillationMethod()),
+			MacerationHours:         macerationHours,
+			GinNgsInputL:            ngsInputL,
+			GinNgsInputAbvPct:       ngsInputAbv,
 		})
 		if e != nil {
 			return e
@@ -239,6 +267,7 @@ func (s *RecipeService) SaveRecipeVersion(
 				Uom:             ing.GetUom(),
 				Notes:           ing.GetNotes(),
 				SortOrder:       ing.GetSortOrder(),
+				BotanicalRole:   botanicalRoleToDB(ing.GetBotanicalRole()),
 			}); e != nil {
 				return e
 			}
@@ -257,7 +286,7 @@ func (s *RecipeService) SaveRecipeVersion(
 			return e
 		}
 		resp.Version = recipeVersionToProto(v, ingredients)
-		resp.Projection = projectRecipeVersion(v, ingredients)
+		resp.Projection = projectRecipeVersion(r.SpiritKind, v, ingredients)
 		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe_version", v.ID.String(),
 			sqlcgen.AuditActionCreate, map[string]any{
 				"recipe_id":      recipeID.String(),
@@ -380,6 +409,11 @@ func (s *RecipeService) DuplicateRecipe(
 			FermentEfficiencyPct:    srcVersion.FermentEfficiencyPct,
 			DistillationRecoveryPct: srcVersion.DistillationRecoveryPct,
 			TargetWaterL:            srcVersion.TargetWaterL,
+			TastingNotes:            srcVersion.TastingNotes,
+			DistillationMethod:      srcVersion.DistillationMethod,
+			MacerationHours:         srcVersion.MacerationHours,
+			GinNgsInputL:            srcVersion.GinNgsInputL,
+			GinNgsInputAbvPct:       srcVersion.GinNgsInputAbvPct,
 		})
 		if e != nil {
 			return e
@@ -393,6 +427,7 @@ func (s *RecipeService) DuplicateRecipe(
 				Uom:             ing.Uom,
 				Notes:           ing.Notes,
 				SortOrder:       ing.SortOrder,
+				BotanicalRole:   ing.BotanicalRole,
 			}); e != nil {
 				return e
 			}
@@ -424,6 +459,107 @@ func (s *RecipeService) DuplicateRecipe(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.DuplicateRecipeResponse{Recipe: recipeToProto(newRecipe)}), nil
+}
+
+// SaveRecipeVersionSensory upserts the per-version tasting scores. The
+// recipe development workflow is: distill a small test batch, taste,
+// score, tweak, save a new version, repeat. Scoring overwrites — every
+// call replaces the prior scores for that version.
+func (s *RecipeService) SaveRecipeVersionSensory(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.SaveRecipeVersionSensoryRequest],
+) (*connect.Response[stillhousev1.SaveRecipeVersionSensoryResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	versionID, err := uuid.Parse(req.Msg.GetRecipeVersionId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid recipe_version_id"))
+	}
+	in := req.Msg.GetScores()
+	if in == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("scores is required"))
+	}
+
+	score := func(v int32, set bool) (pgtype.Int2, error) {
+		if !set {
+			return pgtype.Int2{}, nil
+		}
+		if v < 0 || v > 10 {
+			return pgtype.Int2{}, fmt.Errorf("score must be in [0, 10], got %d", v)
+		}
+		return pgtype.Int2{Int16: int16(v), Valid: true}, nil
+	}
+	type axis struct {
+		name string
+		v    int32
+		set  bool
+	}
+	axes := []axis{
+		{"juniper", in.GetJuniper(), in.GetJuniperSet()},
+		{"citrus", in.GetCitrus(), in.GetCitrusSet()},
+		{"herbal", in.GetHerbal(), in.GetHerbalSet()},
+		{"spice", in.GetSpice(), in.GetSpiceSet()},
+		{"floral", in.GetFloral(), in.GetFloralSet()},
+		{"earth", in.GetEarth(), in.GetEarthSet()},
+		{"body", in.GetBody(), in.GetBodySet()},
+		{"heat", in.GetHeat(), in.GetHeatSet()},
+		{"balance", in.GetBalance(), in.GetBalanceSet()},
+		{"overall", in.GetOverall(), in.GetOverallSet()},
+	}
+	vals := make([]pgtype.Int2, len(axes))
+	for i, a := range axes {
+		val, err := score(a.v, a.set)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s: %w", a.name, err))
+		}
+		vals[i] = val
+	}
+
+	tastedAt := timestampOrNow(in.GetTastedAt())
+	var saved sqlcgen.RecipeVersionSensory
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		// Confirm the version exists in this tenant before upserting.
+		if _, e := q.GetRecipeVersion(ctx, versionID); e != nil {
+			return e
+		}
+		var e error
+		saved, e = q.UpsertRecipeVersionSensory(ctx, sqlcgen.UpsertRecipeVersionSensoryParams{
+			RecipeVersionID: versionID,
+			TenantID:        u.TenantID,
+			Juniper:         vals[0],
+			Citrus:          vals[1],
+			Herbal:          vals[2],
+			Spice:           vals[3],
+			Floral:          vals[4],
+			Earth:           vals[5],
+			Body:            vals[6],
+			Heat:            vals[7],
+			Balance:         vals[8],
+			Overall:         vals[9],
+			TastingPanel:    in.GetTastingPanel(),
+			TastedAt:        tastedAt,
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe_version_sensory", versionID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"tasting_panel": saved.TastingPanel,
+				"overall":       in.GetOverall(),
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("recipe version not found"))
+		}
+		s.logger.Error("SaveRecipeVersionSensory", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.SaveRecipeVersionSensoryResponse{
+		Scores: sensoryToProto(saved),
+	}), nil
 }
 
 // --- helpers ---
@@ -463,10 +599,24 @@ func recipeVersionToProto(v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRec
 		FermentEfficiencyPct:    v.FermentEfficiencyPct,
 		DistillationRecoveryPct: v.DistillationRecoveryPct,
 		CreatedAt:               timestamppb.New(v.CreatedAt.Time),
+		TastingNotes:            v.TastingNotes,
+		DistillationMethod:      distillationMethodToProto(v.DistillationMethod),
 	}
 	if v.TargetWaterL.Valid {
 		out.TargetWaterL = v.TargetWaterL.Float64
 		out.TargetWaterLSet = true
+	}
+	if v.MacerationHours.Valid {
+		out.MacerationHours = v.MacerationHours.Float64
+		out.MacerationHoursSet = true
+	}
+	if v.GinNgsInputL.Valid {
+		out.GinNgsInputL = v.GinNgsInputL.Float64
+		out.GinNgsInputLSet = true
+	}
+	if v.GinNgsInputAbvPct.Valid {
+		out.GinNgsInputAbvPct = v.GinNgsInputAbvPct.Float64
+		out.GinNgsInputAbvPctSet = true
 	}
 	for _, ing := range ingredients {
 		out.Ingredients = append(out.Ingredients, recipeIngredientRowToProto(ing))
@@ -485,6 +635,7 @@ func recipeIngredientRowToProto(r sqlcgen.ListRecipeIngredientsRow) *stillhousev
 		Uom:             r.Uom,
 		Notes:           r.Notes,
 		SortOrder:       r.SortOrder,
+		BotanicalRole:   botanicalRoleToProto(r.BotanicalRole),
 	}
 	if r.MaterialExtractPct.Valid {
 		out.MaterialExtractPct = r.MaterialExtractPct.Float64
@@ -493,10 +644,106 @@ func recipeIngredientRowToProto(r sqlcgen.ListRecipeIngredientsRow) *stillhousev
 	return out
 }
 
-func projectRecipeVersion(v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRecipeIngredientsRow) *stillhousev1.RecipeProjection {
-	// Only fermentable sources (those with a non-null extract_pct) contribute
-	// to projected LAA. Water, yeast, botanicals etc. are tracked in the
-	// recipe but pass through the projection as zero-LAA lines.
+func sensoryToProto(s sqlcgen.RecipeVersionSensory) *stillhousev1.GinSensoryScores {
+	out := &stillhousev1.GinSensoryScores{
+		TastingPanel: s.TastingPanel,
+		TastedAt:     timestamppb.New(s.TastedAt.Time),
+	}
+	setI := func(dst *int32, dstSet *bool, src pgtype.Int2) {
+		if src.Valid {
+			*dst = int32(src.Int16)
+			*dstSet = true
+		}
+	}
+	setI(&out.Juniper, &out.JuniperSet, s.Juniper)
+	setI(&out.Citrus, &out.CitrusSet, s.Citrus)
+	setI(&out.Herbal, &out.HerbalSet, s.Herbal)
+	setI(&out.Spice, &out.SpiceSet, s.Spice)
+	setI(&out.Floral, &out.FloralSet, s.Floral)
+	setI(&out.Earth, &out.EarthSet, s.Earth)
+	setI(&out.Body, &out.BodySet, s.Body)
+	setI(&out.Heat, &out.HeatSet, s.Heat)
+	setI(&out.Balance, &out.BalanceSet, s.Balance)
+	setI(&out.Overall, &out.OverallSet, s.Overall)
+	return out
+}
+
+func botanicalRoleToDB(r stillhousev1.BotanicalRole) string {
+	switch r {
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_JUNIPER:
+		return "juniper"
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_CITRUS:
+		return "citrus"
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_HERBAL:
+		return "herbal"
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_SPICE:
+		return "spice"
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_FLORAL:
+		return "floral"
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_ROOT:
+		return "root"
+	case stillhousev1.BotanicalRole_BOTANICAL_ROLE_OTHER:
+		return "other"
+	}
+	return ""
+}
+
+func botanicalRoleToProto(s string) stillhousev1.BotanicalRole {
+	switch s {
+	case "juniper":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_JUNIPER
+	case "citrus":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_CITRUS
+	case "herbal":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_HERBAL
+	case "spice":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_SPICE
+	case "floral":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_FLORAL
+	case "root":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_ROOT
+	case "other":
+		return stillhousev1.BotanicalRole_BOTANICAL_ROLE_OTHER
+	}
+	return stillhousev1.BotanicalRole_BOTANICAL_ROLE_UNSPECIFIED
+}
+
+func distillationMethodToDB(m stillhousev1.DistillationMethod) string {
+	switch m {
+	case stillhousev1.DistillationMethod_DISTILLATION_METHOD_POT:
+		return "pot"
+	case stillhousev1.DistillationMethod_DISTILLATION_METHOD_VAPOR:
+		return "vapor"
+	case stillhousev1.DistillationMethod_DISTILLATION_METHOD_COMBINED:
+		return "combined"
+	}
+	return ""
+}
+
+func distillationMethodToProto(s string) stillhousev1.DistillationMethod {
+	switch s {
+	case "pot":
+		return stillhousev1.DistillationMethod_DISTILLATION_METHOD_POT
+	case "vapor":
+		return stillhousev1.DistillationMethod_DISTILLATION_METHOD_VAPOR
+	case "combined":
+		return stillhousev1.DistillationMethod_DISTILLATION_METHOD_COMBINED
+	}
+	return stillhousev1.DistillationMethod_DISTILLATION_METHOD_UNSPECIFIED
+}
+
+func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRecipeIngredientsRow) *stillhousev1.RecipeProjection {
+	// Gin runs a different math: the recipe IS the botanical bill +
+	// per-version NGS input. LAA comes entirely from the NGS carrier,
+	// passed through the redistillation recovery. Botanicals contribute
+	// flavor, not alcohol — they appear as zero-LAA projection lines.
+	if spiritKind == sqlcgen.SpiritKindGin {
+		return projectGinRecipe(v, ingredients)
+	}
+
+	// Whisky-style: walk fermentable grains/malt through mash → ferment
+	// → distill. Anything without an extract_pct (water, yeast,
+	// botanicals) passes through as a zero-LAA line.
 	inputs := make([]distilling.Ingredient, 0, len(ingredients))
 	for _, ing := range ingredients {
 		if !ing.MaterialExtractPct.Valid {
@@ -551,6 +798,28 @@ func projectRecipeVersion(v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRec
 		w := distilling.ProjectWash(inputs, eff, v.TargetWaterL.Float64)
 		out.ProjectedWashVolumeL = w.VolumeL
 		out.ProjectedWashAbvPct = w.ABVPct
+	}
+	return out
+}
+
+// projectGinRecipe computes the projection for a gin recipe. The LAA
+// math collapses to NGS_LAA * distillation_recovery. Each ingredient
+// gets a zero-LAA line; the carrier (the NGS volume + ABV stored on
+// the version itself) is what produces the projected output.
+func projectGinRecipe(v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRecipeIngredientsRow) *stillhousev1.RecipeProjection {
+	lines := make([]*stillhousev1.RecipeProjectionLine, 0, len(ingredients))
+	for _, ing := range ingredients {
+		lines = append(lines, &stillhousev1.RecipeProjectionLine{
+			MaterialId:   ing.MaterialID.String(),
+			MaterialName: ing.MaterialName,
+			Quantity:     ing.Quantity,
+			Uom:          ing.Uom,
+		})
+	}
+	out := &stillhousev1.RecipeProjection{Lines: lines}
+	if v.GinNgsInputL.Valid && v.GinNgsInputAbvPct.Valid {
+		ngsLAA := v.GinNgsInputL.Float64 * v.GinNgsInputAbvPct.Float64 / 100
+		out.TotalProjectedLaa = ngsLAA * v.DistillationRecoveryPct
 	}
 	return out
 }

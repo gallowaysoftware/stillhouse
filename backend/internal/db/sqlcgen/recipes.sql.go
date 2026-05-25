@@ -51,10 +51,11 @@ func (q *Queries) CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Rec
 
 const createRecipeIngredient = `-- name: CreateRecipeIngredient :one
 INSERT INTO recipe_ingredients (
-    tenant_id, recipe_version_id, material_id, quantity, uom, notes, sort_order
+    tenant_id, recipe_version_id, material_id, quantity, uom, notes, sort_order,
+    botanical_role
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
-) RETURNING id, tenant_id, recipe_version_id, material_id, quantity, uom, notes, sort_order
+    $1, $2, $3, $4, $5, $6, $7, $8
+) RETURNING id, tenant_id, recipe_version_id, material_id, quantity, uom, notes, sort_order, botanical_role
 `
 
 type CreateRecipeIngredientParams struct {
@@ -65,6 +66,7 @@ type CreateRecipeIngredientParams struct {
 	Uom             string    `json:"uom"`
 	Notes           string    `json:"notes"`
 	SortOrder       int32     `json:"sort_order"`
+	BotanicalRole   string    `json:"botanical_role"`
 }
 
 func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error) {
@@ -76,6 +78,7 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 		arg.Uom,
 		arg.Notes,
 		arg.SortOrder,
+		arg.BotanicalRole,
 	)
 	var i RecipeIngredient
 	err := row.Scan(
@@ -87,6 +90,7 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 		&i.Uom,
 		&i.Notes,
 		&i.SortOrder,
+		&i.BotanicalRole,
 	)
 	return i, err
 }
@@ -95,10 +99,12 @@ const createRecipeVersion = `-- name: CreateRecipeVersion :one
 INSERT INTO recipe_versions (
     tenant_id, recipe_id, version_no, notes,
     mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct,
-    target_water_l
+    target_water_l,
+    tasting_notes, distillation_method, maceration_hours,
+    gin_ngs_input_l, gin_ngs_input_abv_pct
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
-) RETURNING id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+) RETURNING id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct
 `
 
 type CreateRecipeVersionParams struct {
@@ -110,6 +116,11 @@ type CreateRecipeVersionParams struct {
 	FermentEfficiencyPct    float64       `json:"ferment_efficiency_pct"`
 	DistillationRecoveryPct float64       `json:"distillation_recovery_pct"`
 	TargetWaterL            pgtype.Float8 `json:"target_water_l"`
+	TastingNotes            string        `json:"tasting_notes"`
+	DistillationMethod      string        `json:"distillation_method"`
+	MacerationHours         pgtype.Float8 `json:"maceration_hours"`
+	GinNgsInputL            pgtype.Float8 `json:"gin_ngs_input_l"`
+	GinNgsInputAbvPct       pgtype.Float8 `json:"gin_ngs_input_abv_pct"`
 }
 
 func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error) {
@@ -122,6 +133,11 @@ func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersi
 		arg.FermentEfficiencyPct,
 		arg.DistillationRecoveryPct,
 		arg.TargetWaterL,
+		arg.TastingNotes,
+		arg.DistillationMethod,
+		arg.MacerationHours,
+		arg.GinNgsInputL,
+		arg.GinNgsInputAbvPct,
 	)
 	var i RecipeVersion
 	err := row.Scan(
@@ -135,6 +151,11 @@ func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersi
 		&i.DistillationRecoveryPct,
 		&i.TargetWaterL,
 		&i.CreatedAt,
+		&i.TastingNotes,
+		&i.DistillationMethod,
+		&i.MacerationHours,
+		&i.GinNgsInputL,
+		&i.GinNgsInputAbvPct,
 	)
 	return i, err
 }
@@ -161,7 +182,7 @@ func (q *Queries) GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error) {
 }
 
 const getRecipeVersion = `-- name: GetRecipeVersion :one
-SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at FROM recipe_versions WHERE id = $1
+SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct FROM recipe_versions WHERE id = $1
 `
 
 func (q *Queries) GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error) {
@@ -178,12 +199,43 @@ func (q *Queries) GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVer
 		&i.DistillationRecoveryPct,
 		&i.TargetWaterL,
 		&i.CreatedAt,
+		&i.TastingNotes,
+		&i.DistillationMethod,
+		&i.MacerationHours,
+		&i.GinNgsInputL,
+		&i.GinNgsInputAbvPct,
+	)
+	return i, err
+}
+
+const getRecipeVersionSensory = `-- name: GetRecipeVersionSensory :one
+SELECT recipe_version_id, tenant_id, juniper, citrus, herbal, spice, floral, earth, body, heat, balance, overall, tasting_panel, tasted_at FROM recipe_version_sensory WHERE recipe_version_id = $1
+`
+
+func (q *Queries) GetRecipeVersionSensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionSensory, error) {
+	row := q.db.QueryRow(ctx, getRecipeVersionSensory, recipeVersionID)
+	var i RecipeVersionSensory
+	err := row.Scan(
+		&i.RecipeVersionID,
+		&i.TenantID,
+		&i.Juniper,
+		&i.Citrus,
+		&i.Herbal,
+		&i.Spice,
+		&i.Floral,
+		&i.Earth,
+		&i.Body,
+		&i.Heat,
+		&i.Balance,
+		&i.Overall,
+		&i.TastingPanel,
+		&i.TastedAt,
 	)
 	return i, err
 }
 
 const listRecipeIngredients = `-- name: ListRecipeIngredients :many
-SELECT ri.id, ri.tenant_id, ri.recipe_version_id, ri.material_id, ri.quantity, ri.uom, ri.notes, ri.sort_order,
+SELECT ri.id, ri.tenant_id, ri.recipe_version_id, ri.material_id, ri.quantity, ri.uom, ri.notes, ri.sort_order, ri.botanical_role,
        m.name AS material_name,
        m.kind AS material_kind,
        m.uom  AS material_uom,
@@ -203,6 +255,7 @@ type ListRecipeIngredientsRow struct {
 	Uom                string        `json:"uom"`
 	Notes              string        `json:"notes"`
 	SortOrder          int32         `json:"sort_order"`
+	BotanicalRole      string        `json:"botanical_role"`
 	MaterialName       string        `json:"material_name"`
 	MaterialKind       MaterialKind  `json:"material_kind"`
 	MaterialUom        string        `json:"material_uom"`
@@ -227,6 +280,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uui
 			&i.Uom,
 			&i.Notes,
 			&i.SortOrder,
+			&i.BotanicalRole,
 			&i.MaterialName,
 			&i.MaterialKind,
 			&i.MaterialUom,
@@ -243,7 +297,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uui
 }
 
 const listRecipeVersions = `-- name: ListRecipeVersions :many
-SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at FROM recipe_versions
+SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct FROM recipe_versions
 WHERE recipe_id = $1
 ORDER BY version_no DESC
 `
@@ -268,6 +322,11 @@ func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([
 			&i.DistillationRecoveryPct,
 			&i.TargetWaterL,
 			&i.CreatedAt,
+			&i.TastingNotes,
+			&i.DistillationMethod,
+			&i.MacerationHours,
+			&i.GinNgsInputL,
+			&i.GinNgsInputAbvPct,
 		); err != nil {
 			return nil, err
 		}
@@ -366,4 +425,85 @@ type SetRecipeCurrentVersionParams struct {
 func (q *Queries) SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error {
 	_, err := q.db.Exec(ctx, setRecipeCurrentVersion, arg.ID, arg.CurrentVersionID)
 	return err
+}
+
+const upsertRecipeVersionSensory = `-- name: UpsertRecipeVersionSensory :one
+INSERT INTO recipe_version_sensory (
+    recipe_version_id, tenant_id,
+    juniper, citrus, herbal, spice, floral, earth,
+    body, heat, balance, overall,
+    tasting_panel, tasted_at
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+)
+ON CONFLICT (recipe_version_id) DO UPDATE SET
+    juniper       = EXCLUDED.juniper,
+    citrus        = EXCLUDED.citrus,
+    herbal        = EXCLUDED.herbal,
+    spice         = EXCLUDED.spice,
+    floral        = EXCLUDED.floral,
+    earth         = EXCLUDED.earth,
+    body          = EXCLUDED.body,
+    heat          = EXCLUDED.heat,
+    balance       = EXCLUDED.balance,
+    overall       = EXCLUDED.overall,
+    tasting_panel = EXCLUDED.tasting_panel,
+    tasted_at     = EXCLUDED.tasted_at
+RETURNING recipe_version_id, tenant_id, juniper, citrus, herbal, spice, floral, earth, body, heat, balance, overall, tasting_panel, tasted_at
+`
+
+type UpsertRecipeVersionSensoryParams struct {
+	RecipeVersionID uuid.UUID          `json:"recipe_version_id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	Juniper         pgtype.Int2        `json:"juniper"`
+	Citrus          pgtype.Int2        `json:"citrus"`
+	Herbal          pgtype.Int2        `json:"herbal"`
+	Spice           pgtype.Int2        `json:"spice"`
+	Floral          pgtype.Int2        `json:"floral"`
+	Earth           pgtype.Int2        `json:"earth"`
+	Body            pgtype.Int2        `json:"body"`
+	Heat            pgtype.Int2        `json:"heat"`
+	Balance         pgtype.Int2        `json:"balance"`
+	Overall         pgtype.Int2        `json:"overall"`
+	TastingPanel    string             `json:"tasting_panel"`
+	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
+}
+
+// One row per recipe_version. Upsert because edits during recipe
+// development are the whole point — taste, score, save, retaste.
+func (q *Queries) UpsertRecipeVersionSensory(ctx context.Context, arg UpsertRecipeVersionSensoryParams) (RecipeVersionSensory, error) {
+	row := q.db.QueryRow(ctx, upsertRecipeVersionSensory,
+		arg.RecipeVersionID,
+		arg.TenantID,
+		arg.Juniper,
+		arg.Citrus,
+		arg.Herbal,
+		arg.Spice,
+		arg.Floral,
+		arg.Earth,
+		arg.Body,
+		arg.Heat,
+		arg.Balance,
+		arg.Overall,
+		arg.TastingPanel,
+		arg.TastedAt,
+	)
+	var i RecipeVersionSensory
+	err := row.Scan(
+		&i.RecipeVersionID,
+		&i.TenantID,
+		&i.Juniper,
+		&i.Citrus,
+		&i.Herbal,
+		&i.Spice,
+		&i.Floral,
+		&i.Earth,
+		&i.Body,
+		&i.Heat,
+		&i.Balance,
+		&i.Overall,
+		&i.TastingPanel,
+		&i.TastedAt,
+	)
+	return i, err
 }

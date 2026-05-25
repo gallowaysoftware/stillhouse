@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/recipe.proto.
  */
 export const file_stillhouse_v1_recipe: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3JlY2lwZS5wcm90bxINc3RpbGxob3VzZS52MSKCAgoGUmVjaXBlEgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEi4KC3NwaXJpdF9raW5kGAQgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEhAKCGFyY2hpdmVkGAUgASgIEhoKEmN1cnJlbnRfdmVyc2lvbl9pZBgGIAEoCRINCgVub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLeAgoNUmVjaXBlVmVyc2lvbhIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEQoJcmVjaXBlX2lkGAMgASgJEhIKCnZlcnNpb25fbm8YBCABKAUSDQoFbm90ZXMYBSABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgGIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAcgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYCCABKAESFgoOdGFyZ2V0X3dhdGVyX2wYCSABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAogASgIEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKC2luZ3JlZGllbnRzGAwgAygLMh8uc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50IpsCChBSZWNpcGVJbmdyZWRpZW50EgoKAmlkGAEgASgJEhkKEXJlY2lwZV92ZXJzaW9uX2lkGAIgASgJEhMKC21hdGVyaWFsX2lkGAMgASgJEhUKDW1hdGVyaWFsX25hbWUYBCABKAkSMgoNbWF0ZXJpYWxfa2luZBgFIAEoDjIbLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxLaW5kEhwKFG1hdGVyaWFsX2V4dHJhY3RfcGN0GAYgASgBEiAKGG1hdGVyaWFsX2V4dHJhY3RfcGN0X3NldBgHIAEoCBIQCghxdWFudGl0eRgIIAEoARILCgN1b20YCSABKAkSDQoFbm90ZXMYCiABKAkSEgoKc29ydF9vcmRlchgLIAEoBSKkAQoQUmVjaXBlUHJvamVjdGlvbhIyCgVsaW5lcxgBIAMoCzIjLnN0aWxsaG91c2UudjEuUmVjaXBlUHJvamVjdGlvbkxpbmUSGwoTdG90YWxfcHJvamVjdGVkX2xhYRgCIAEoARIfChdwcm9qZWN0ZWRfd2FzaF92b2x1bWVfbBgDIAEoARIeChZwcm9qZWN0ZWRfd2FzaF9hYnZfcGN0GAQgASgBIt0BChRSZWNpcGVQcm9qZWN0aW9uTGluZRITCgttYXRlcmlhbF9pZBgBIAEoCRIVCg1tYXRlcmlhbF9uYW1lGAIgASgJEhAKCHF1YW50aXR5GAMgASgBEgsKA3VvbRgEIAEoCRIWCg5mZXJtZW50YWJsZV9rZxgFIAEoARIYChBleHRyYWN0X2ZyZWVkX2tnGAYgASgBEhcKD2V0aGFub2xfbWFzc19rZxgHIAEoARIYChBldGhhbm9sX3ZvbHVtZV9sGAggASgBEhUKDXByb2plY3RlZF9sYWEYCSABKAEiYgoTQ3JlYXRlUmVjaXBlUmVxdWVzdBIMCgRuYW1lGAEgASgJEi4KC3NwaXJpdF9raW5kGAIgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEg0KBW5vdGVzGAMgASgJIj0KFENyZWF0ZVJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlIi4KEkxpc3RSZWNpcGVzUmVxdWVzdBIYChBpbmNsdWRlX2FyY2hpdmVkGAEgASgIIj0KE0xpc3RSZWNpcGVzUmVzcG9uc2USJgoHcmVjaXBlcxgBIAMoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlIh4KEEdldFJlY2lwZVJlcXVlc3QSCgoCaWQYASABKAkipgEKEUdldFJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlEjUKD2N1cnJlbnRfdmVyc2lvbhgCIAEoCzIcLnN0aWxsaG91c2UudjEuUmVjaXBlVmVyc2lvbhIzCgpwcm9qZWN0aW9uGAMgASgLMh8uc3RpbGxob3VzZS52MS5SZWNpcGVQcm9qZWN0aW9uIjQKFEFyY2hpdmVSZWNpcGVSZXF1ZXN0EgoKAmlkGAEgASgJEhAKCGFyY2hpdmVkGAIgASgIIj4KFUFyY2hpdmVSZWNpcGVSZXNwb25zZRIlCgZyZWNpcGUYASABKAsyFS5zdGlsbGhvdXNlLnYxLlJlY2lwZSJuChVSZWNpcGVJbmdyZWRpZW50SW5wdXQSEwoLbWF0ZXJpYWxfaWQYASABKAkSEAoIcXVhbnRpdHkYAiABKAESCwoDdW9tGAMgASgJEg0KBW5vdGVzGAQgASgJEhIKCnNvcnRfb3JkZXIYBSABKAUiiwIKGFNhdmVSZWNpcGVWZXJzaW9uUmVxdWVzdBIRCglyZWNpcGVfaWQYASABKAkSDQoFbm90ZXMYAiABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgDIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAQgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYBSABKAESFgoOdGFyZ2V0X3dhdGVyX2wYBiABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAcgASgIEjkKC2luZ3JlZGllbnRzGAggAygLMiQuc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50SW5wdXQifwoZU2F2ZVJlY2lwZVZlcnNpb25SZXNwb25zZRItCgd2ZXJzaW9uGAEgASgLMhwuc3RpbGxob3VzZS52MS5SZWNpcGVWZXJzaW9uEjMKCnByb2plY3Rpb24YAiABKAsyHy5zdGlsbGhvdXNlLnYxLlJlY2lwZVByb2plY3Rpb24iLgoZTGlzdFJlY2lwZVZlcnNpb25zUmVxdWVzdBIRCglyZWNpcGVfaWQYASABKAkiTAoaTGlzdFJlY2lwZVZlcnNpb25zUmVzcG9uc2USLgoIdmVyc2lvbnMYASADKAsyHC5zdGlsbGhvdXNlLnYxLlJlY2lwZVZlcnNpb24iRAoWRHVwbGljYXRlUmVjaXBlUmVxdWVzdBIYChBzb3VyY2VfcmVjaXBlX2lkGAEgASgJEhAKCG5ld19uYW1lGAIgASgJIkAKF0R1cGxpY2F0ZVJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlKocCCgpTcGlyaXRLaW5kEhsKF1NQSVJJVF9LSU5EX1VOU1BFQ0lGSUVEEAASFgoSU1BJUklUX0tJTkRfV0hJU0tZEAESHwobU1BJUklUX0tJTkRfQ0FOQURJQU5fV0hJU0tZEAISGgoWU1BJUklUX0tJTkRfUllFX1dISVNLWRADEhMKD1NQSVJJVF9LSU5EX0dJThAEEhUKEVNQSVJJVF9LSU5EX1ZPREtBEAUSEwoPU1BJUklUX0tJTkRfUlVNEAYSFgoSU1BJUklUX0tJTkRfQlJBTkRZEAcSFwoTU1BJUklUX0tJTkRfTElRVUVVUhAIEhUKEVNQSVJJVF9LSU5EX09USEVSEAkynwUKDVJlY2lwZVNlcnZpY2USVwoMQ3JlYXRlUmVjaXBlEiIuc3RpbGxob3VzZS52MS5DcmVhdGVSZWNpcGVSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5DcmVhdGVSZWNpcGVSZXNwb25zZRJgCg9EdXBsaWNhdGVSZWNpcGUSJS5zdGlsbGhvdXNlLnYxLkR1cGxpY2F0ZVJlY2lwZVJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkR1cGxpY2F0ZVJlY2lwZVJlc3BvbnNlElQKC0xpc3RSZWNpcGVzEiEuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlc1JlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkxpc3RSZWNpcGVzUmVzcG9uc2USTgoJR2V0UmVjaXBlEh8uc3RpbGxob3VzZS52MS5HZXRSZWNpcGVSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRSZWNpcGVSZXNwb25zZRJaCg1BcmNoaXZlUmVjaXBlEiMuc3RpbGxob3VzZS52MS5BcmNoaXZlUmVjaXBlUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQXJjaGl2ZVJlY2lwZVJlc3BvbnNlEmYKEVNhdmVSZWNpcGVWZXJzaW9uEicuc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvblJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uUmVzcG9uc2USaQoSTGlzdFJlY2lwZVZlcnNpb25zEiguc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlVmVyc2lvbnNSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlVmVyc2lvbnNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_material]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3JlY2lwZS5wcm90bxINc3RpbGxob3VzZS52MSKCAgoGUmVjaXBlEgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEi4KC3NwaXJpdF9raW5kGAQgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEhAKCGFyY2hpdmVkGAUgASgIEhoKEmN1cnJlbnRfdmVyc2lvbl9pZBgGIAEoCRINCgVub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKXBQoNUmVjaXBlVmVyc2lvbhIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEQoJcmVjaXBlX2lkGAMgASgJEhIKCnZlcnNpb25fbm8YBCABKAUSDQoFbm90ZXMYBSABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgGIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAcgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYCCABKAESFgoOdGFyZ2V0X3dhdGVyX2wYCSABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAogASgIEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKC2luZ3JlZGllbnRzGAwgAygLMh8uc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50EhUKDXRhc3Rpbmdfbm90ZXMYDSABKAkSPgoTZGlzdGlsbGF0aW9uX21ldGhvZBgOIAEoDjIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uTWV0aG9kEhgKEG1hY2VyYXRpb25faG91cnMYDyABKAESHAoUbWFjZXJhdGlvbl9ob3Vyc19zZXQYECABKAgSFwoPZ2luX25nc19pbnB1dF9sGBEgASgBEhsKE2dpbl9uZ3NfaW5wdXRfbF9zZXQYEiABKAgSHQoVZ2luX25nc19pbnB1dF9hYnZfcGN0GBMgASgBEiEKGWdpbl9uZ3NfaW5wdXRfYWJ2X3BjdF9zZXQYFCABKAgSMAoHc2Vuc29yeRgVIAEoCzIfLnN0aWxsaG91c2UudjEuR2luU2Vuc29yeVNjb3JlcyK6AwoQR2luU2Vuc29yeVNjb3JlcxIPCgdqdW5pcGVyGAEgASgFEhMKC2p1bmlwZXJfc2V0GAIgASgIEg4KBmNpdHJ1cxgDIAEoBRISCgpjaXRydXNfc2V0GAQgASgIEg4KBmhlcmJhbBgFIAEoBRISCgpoZXJiYWxfc2V0GAYgASgIEg0KBXNwaWNlGAcgASgFEhEKCXNwaWNlX3NldBgIIAEoCBIOCgZmbG9yYWwYCSABKAUSEgoKZmxvcmFsX3NldBgKIAEoCBINCgVlYXJ0aBgLIAEoBRIRCgllYXJ0aF9zZXQYDCABKAgSDAoEYm9keRgNIAEoBRIQCghib2R5X3NldBgOIAEoCBIMCgRoZWF0GA8gASgFEhAKCGhlYXRfc2V0GBAgASgIEg8KB2JhbGFuY2UYESABKAUSEwoLYmFsYW5jZV9zZXQYEiABKAgSDwoHb3ZlcmFsbBgTIAEoBRITCgtvdmVyYWxsX3NldBgUIAEoCBIVCg10YXN0aW5nX3BhbmVsGBUgASgJEi0KCXRhc3RlZF9hdBgWIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi0QIKEFJlY2lwZUluZ3JlZGllbnQSCgoCaWQYASABKAkSGQoRcmVjaXBlX3ZlcnNpb25faWQYAiABKAkSEwoLbWF0ZXJpYWxfaWQYAyABKAkSFQoNbWF0ZXJpYWxfbmFtZRgEIAEoCRIyCg1tYXRlcmlhbF9raW5kGAUgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSHAoUbWF0ZXJpYWxfZXh0cmFjdF9wY3QYBiABKAESIAoYbWF0ZXJpYWxfZXh0cmFjdF9wY3Rfc2V0GAcgASgIEhAKCHF1YW50aXR5GAggASgBEgsKA3VvbRgJIAEoCRINCgVub3RlcxgKIAEoCRISCgpzb3J0X29yZGVyGAsgASgFEjQKDmJvdGFuaWNhbF9yb2xlGAwgASgOMhwuc3RpbGxob3VzZS52MS5Cb3RhbmljYWxSb2xlIqQBChBSZWNpcGVQcm9qZWN0aW9uEjIKBWxpbmVzGAEgAygLMiMuc3RpbGxob3VzZS52MS5SZWNpcGVQcm9qZWN0aW9uTGluZRIbChN0b3RhbF9wcm9qZWN0ZWRfbGFhGAIgASgBEh8KF3Byb2plY3RlZF93YXNoX3ZvbHVtZV9sGAMgASgBEh4KFnByb2plY3RlZF93YXNoX2Fidl9wY3QYBCABKAEi3QEKFFJlY2lwZVByb2plY3Rpb25MaW5lEhMKC21hdGVyaWFsX2lkGAEgASgJEhUKDW1hdGVyaWFsX25hbWUYAiABKAkSEAoIcXVhbnRpdHkYAyABKAESCwoDdW9tGAQgASgJEhYKDmZlcm1lbnRhYmxlX2tnGAUgASgBEhgKEGV4dHJhY3RfZnJlZWRfa2cYBiABKAESFwoPZXRoYW5vbF9tYXNzX2tnGAcgASgBEhgKEGV0aGFub2xfdm9sdW1lX2wYCCABKAESFQoNcHJvamVjdGVkX2xhYRgJIAEoASJiChNDcmVhdGVSZWNpcGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSLgoLc3Bpcml0X2tpbmQYAiABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSDQoFbm90ZXMYAyABKAkiPQoUQ3JlYXRlUmVjaXBlUmVzcG9uc2USJQoGcmVjaXBlGAEgASgLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUiLgoSTGlzdFJlY2lwZXNSZXF1ZXN0EhgKEGluY2x1ZGVfYXJjaGl2ZWQYASABKAgiPQoTTGlzdFJlY2lwZXNSZXNwb25zZRImCgdyZWNpcGVzGAEgAygLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUiHgoQR2V0UmVjaXBlUmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoRR2V0UmVjaXBlUmVzcG9uc2USJQoGcmVjaXBlGAEgASgLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUSNQoPY3VycmVudF92ZXJzaW9uGAIgASgLMhwuc3RpbGxob3VzZS52MS5SZWNpcGVWZXJzaW9uEjMKCnByb2plY3Rpb24YAyABKAsyHy5zdGlsbGhvdXNlLnYxLlJlY2lwZVByb2plY3Rpb24iNAoUQXJjaGl2ZVJlY2lwZVJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiPgoVQXJjaGl2ZVJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlIqQBChVSZWNpcGVJbmdyZWRpZW50SW5wdXQSEwoLbWF0ZXJpYWxfaWQYASABKAkSEAoIcXVhbnRpdHkYAiABKAESCwoDdW9tGAMgASgJEg0KBW5vdGVzGAQgASgJEhIKCnNvcnRfb3JkZXIYBSABKAUSNAoOYm90YW5pY2FsX3JvbGUYBiABKA4yHC5zdGlsbGhvdXNlLnYxLkJvdGFuaWNhbFJvbGUikgQKGFNhdmVSZWNpcGVWZXJzaW9uUmVxdWVzdBIRCglyZWNpcGVfaWQYASABKAkSDQoFbm90ZXMYAiABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgDIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAQgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYBSABKAESFgoOdGFyZ2V0X3dhdGVyX2wYBiABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAcgASgIEjkKC2luZ3JlZGllbnRzGAggAygLMiQuc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50SW5wdXQSFQoNdGFzdGluZ19ub3RlcxgJIAEoCRI+ChNkaXN0aWxsYXRpb25fbWV0aG9kGAogASgOMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25NZXRob2QSGAoQbWFjZXJhdGlvbl9ob3VycxgLIAEoARIcChRtYWNlcmF0aW9uX2hvdXJzX3NldBgMIAEoCBIXCg9naW5fbmdzX2lucHV0X2wYDSABKAESGwoTZ2luX25nc19pbnB1dF9sX3NldBgOIAEoCBIdChVnaW5fbmdzX2lucHV0X2Fidl9wY3QYDyABKAESIQoZZ2luX25nc19pbnB1dF9hYnZfcGN0X3NldBgQIAEoCCJ/ChlTYXZlUmVjaXBlVmVyc2lvblJlc3BvbnNlEi0KB3ZlcnNpb24YASABKAsyHC5zdGlsbGhvdXNlLnYxLlJlY2lwZVZlcnNpb24SMwoKcHJvamVjdGlvbhgCIAEoCzIfLnN0aWxsaG91c2UudjEuUmVjaXBlUHJvamVjdGlvbiJtCh9TYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXF1ZXN0EhkKEXJlY2lwZV92ZXJzaW9uX2lkGAEgASgJEi8KBnNjb3JlcxgCIAEoCzIfLnN0aWxsaG91c2UudjEuR2luU2Vuc29yeVNjb3JlcyJTCiBTYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXNwb25zZRIvCgZzY29yZXMYASABKAsyHy5zdGlsbGhvdXNlLnYxLkdpblNlbnNvcnlTY29yZXMiLgoZTGlzdFJlY2lwZVZlcnNpb25zUmVxdWVzdBIRCglyZWNpcGVfaWQYASABKAkiTAoaTGlzdFJlY2lwZVZlcnNpb25zUmVzcG9uc2USLgoIdmVyc2lvbnMYASADKAsyHC5zdGlsbGhvdXNlLnYxLlJlY2lwZVZlcnNpb24iRAoWRHVwbGljYXRlUmVjaXBlUmVxdWVzdBIYChBzb3VyY2VfcmVjaXBlX2lkGAEgASgJEhAKCG5ld19uYW1lGAIgASgJIkAKF0R1cGxpY2F0ZVJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlKocCCgpTcGlyaXRLaW5kEhsKF1NQSVJJVF9LSU5EX1VOU1BFQ0lGSUVEEAASFgoSU1BJUklUX0tJTkRfV0hJU0tZEAESHwobU1BJUklUX0tJTkRfQ0FOQURJQU5fV0hJU0tZEAISGgoWU1BJUklUX0tJTkRfUllFX1dISVNLWRADEhMKD1NQSVJJVF9LSU5EX0dJThAEEhUKEVNQSVJJVF9LSU5EX1ZPREtBEAUSEwoPU1BJUklUX0tJTkRfUlVNEAYSFgoSU1BJUklUX0tJTkRfQlJBTkRZEAcSFwoTU1BJUklUX0tJTkRfTElRVUVVUhAIEhUKEVNQSVJJVF9LSU5EX09USEVSEAkq6QEKDUJvdGFuaWNhbFJvbGUSHgoaQk9UQU5JQ0FMX1JPTEVfVU5TUEVDSUZJRUQQABIaChZCT1RBTklDQUxfUk9MRV9KVU5JUEVSEAESGQoVQk9UQU5JQ0FMX1JPTEVfQ0lUUlVTEAISGQoVQk9UQU5JQ0FMX1JPTEVfSEVSQkFMEAMSGAoUQk9UQU5JQ0FMX1JPTEVfU1BJQ0UQBBIZChVCT1RBTklDQUxfUk9MRV9GTE9SQUwQBRIXChNCT1RBTklDQUxfUk9MRV9ST09UEAYSGAoUQk9UQU5JQ0FMX1JPTEVfT1RIRVIQByqXAQoSRGlzdGlsbGF0aW9uTWV0aG9kEiMKH0RJU1RJTExBVElPTl9NRVRIT0RfVU5TUEVDSUZJRUQQABIbChdESVNUSUxMQVRJT05fTUVUSE9EX1BPVBABEh0KGURJU1RJTExBVElPTl9NRVRIT0RfVkFQT1IQAhIgChxESVNUSUxMQVRJT05fTUVUSE9EX0NPTUJJTkVEEAMynAYKDVJlY2lwZVNlcnZpY2USVwoMQ3JlYXRlUmVjaXBlEiIuc3RpbGxob3VzZS52MS5DcmVhdGVSZWNpcGVSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5DcmVhdGVSZWNpcGVSZXNwb25zZRJgCg9EdXBsaWNhdGVSZWNpcGUSJS5zdGlsbGhvdXNlLnYxLkR1cGxpY2F0ZVJlY2lwZVJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkR1cGxpY2F0ZVJlY2lwZVJlc3BvbnNlElQKC0xpc3RSZWNpcGVzEiEuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlc1JlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkxpc3RSZWNpcGVzUmVzcG9uc2USTgoJR2V0UmVjaXBlEh8uc3RpbGxob3VzZS52MS5HZXRSZWNpcGVSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRSZWNpcGVSZXNwb25zZRJaCg1BcmNoaXZlUmVjaXBlEiMuc3RpbGxob3VzZS52MS5BcmNoaXZlUmVjaXBlUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQXJjaGl2ZVJlY2lwZVJlc3BvbnNlEmYKEVNhdmVSZWNpcGVWZXJzaW9uEicuc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvblJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uUmVzcG9uc2USaQoSTGlzdFJlY2lwZVZlcnNpb25zEiguc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlVmVyc2lvbnNSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlVmVyc2lvbnNSZXNwb25zZRJ7ChhTYXZlUmVjaXBlVmVyc2lvblNlbnNvcnkSLi5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uU2Vuc29yeVJlcXVlc3QaLy5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uU2Vuc29yeVJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_material]);
 
 /**
  * @generated from message stillhouse.v1.Recipe
@@ -138,6 +138,58 @@ export type RecipeVersion = Message<"stillhouse.v1.RecipeVersion"> & {
    * @generated from field: repeated stillhouse.v1.RecipeIngredient ingredients = 12;
    */
   ingredients: RecipeIngredient[];
+
+  /**
+   * Gin / botanical-bill fields. Optional for whisky-style recipes
+   * (they stay at defaults / unset). See [[BotanicalRole]] and
+   * [[DistillationMethod]] for the per-ingredient and per-version
+   * structure.
+   *
+   * @generated from field: string tasting_notes = 13;
+   */
+  tastingNotes: string;
+
+  /**
+   * @generated from field: stillhouse.v1.DistillationMethod distillation_method = 14;
+   */
+  distillationMethod: DistillationMethod;
+
+  /**
+   * @generated from field: double maceration_hours = 15;
+   */
+  macerationHours: number;
+
+  /**
+   * @generated from field: bool maceration_hours_set = 16;
+   */
+  macerationHoursSet: boolean;
+
+  /**
+   * @generated from field: double gin_ngs_input_l = 17;
+   */
+  ginNgsInputL: number;
+
+  /**
+   * @generated from field: bool gin_ngs_input_l_set = 18;
+   */
+  ginNgsInputLSet: boolean;
+
+  /**
+   * @generated from field: double gin_ngs_input_abv_pct = 19;
+   */
+  ginNgsInputAbvPct: number;
+
+  /**
+   * @generated from field: bool gin_ngs_input_abv_pct_set = 20;
+   */
+  ginNgsInputAbvPctSet: boolean;
+
+  /**
+   * unset until first tasting
+   *
+   * @generated from field: stillhouse.v1.GinSensoryScores sensory = 21;
+   */
+  sensory?: GinSensoryScores | undefined;
 };
 
 /**
@@ -146,6 +198,135 @@ export type RecipeVersion = Message<"stillhouse.v1.RecipeVersion"> & {
  */
 export const RecipeVersionSchema: GenMessage<RecipeVersion> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_recipe, 1);
+
+/**
+ * Per-version tasting bench scores, 0-10 on each axis. Field-level
+ * "_set" flags disambiguate "scored as 0" from "not tasted on this
+ * axis." All scores live in a child table (recipe_version_sensory) so
+ * editing a score doesn't churn the version's history.
+ *
+ * @generated from message stillhouse.v1.GinSensoryScores
+ */
+export type GinSensoryScores = Message<"stillhouse.v1.GinSensoryScores"> & {
+  /**
+   * @generated from field: int32 juniper = 1;
+   */
+  juniper: number;
+
+  /**
+   * @generated from field: bool juniper_set = 2;
+   */
+  juniperSet: boolean;
+
+  /**
+   * @generated from field: int32 citrus = 3;
+   */
+  citrus: number;
+
+  /**
+   * @generated from field: bool citrus_set = 4;
+   */
+  citrusSet: boolean;
+
+  /**
+   * @generated from field: int32 herbal = 5;
+   */
+  herbal: number;
+
+  /**
+   * @generated from field: bool herbal_set = 6;
+   */
+  herbalSet: boolean;
+
+  /**
+   * @generated from field: int32 spice = 7;
+   */
+  spice: number;
+
+  /**
+   * @generated from field: bool spice_set = 8;
+   */
+  spiceSet: boolean;
+
+  /**
+   * @generated from field: int32 floral = 9;
+   */
+  floral: number;
+
+  /**
+   * @generated from field: bool floral_set = 10;
+   */
+  floralSet: boolean;
+
+  /**
+   * @generated from field: int32 earth = 11;
+   */
+  earth: number;
+
+  /**
+   * @generated from field: bool earth_set = 12;
+   */
+  earthSet: boolean;
+
+  /**
+   * @generated from field: int32 body = 13;
+   */
+  body: number;
+
+  /**
+   * @generated from field: bool body_set = 14;
+   */
+  bodySet: boolean;
+
+  /**
+   * @generated from field: int32 heat = 15;
+   */
+  heat: number;
+
+  /**
+   * @generated from field: bool heat_set = 16;
+   */
+  heatSet: boolean;
+
+  /**
+   * @generated from field: int32 balance = 17;
+   */
+  balance: number;
+
+  /**
+   * @generated from field: bool balance_set = 18;
+   */
+  balanceSet: boolean;
+
+  /**
+   * @generated from field: int32 overall = 19;
+   */
+  overall: number;
+
+  /**
+   * @generated from field: bool overall_set = 20;
+   */
+  overallSet: boolean;
+
+  /**
+   * "self", "Kyle + Jane", etc.
+   *
+   * @generated from field: string tasting_panel = 21;
+   */
+  tastingPanel: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp tasted_at = 22;
+   */
+  tastedAt?: Timestamp | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.GinSensoryScores.
+ * Use `create(GinSensoryScoresSchema)` to create a new message.
+ */
+export const GinSensoryScoresSchema: GenMessage<GinSensoryScores> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_recipe, 2);
 
 /**
  * @generated from message stillhouse.v1.RecipeIngredient
@@ -209,6 +390,14 @@ export type RecipeIngredient = Message<"stillhouse.v1.RecipeIngredient"> & {
    * @generated from field: int32 sort_order = 11;
    */
   sortOrder: number;
+
+  /**
+   * Botanical role on a gin recipe — defaults to UNSPECIFIED for
+   * non-botanical ingredients (grain, NGS, water).
+   *
+   * @generated from field: stillhouse.v1.BotanicalRole botanical_role = 12;
+   */
+  botanicalRole: BotanicalRole;
 };
 
 /**
@@ -216,7 +405,7 @@ export type RecipeIngredient = Message<"stillhouse.v1.RecipeIngredient"> & {
  * Use `create(RecipeIngredientSchema)` to create a new message.
  */
 export const RecipeIngredientSchema: GenMessage<RecipeIngredient> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 2);
+  messageDesc(file_stillhouse_v1_recipe, 3);
 
 /**
  * Projection breakdown produced from a RecipeVersion + a per-stage efficiency
@@ -251,7 +440,7 @@ export type RecipeProjection = Message<"stillhouse.v1.RecipeProjection"> & {
  * Use `create(RecipeProjectionSchema)` to create a new message.
  */
 export const RecipeProjectionSchema: GenMessage<RecipeProjection> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 3);
+  messageDesc(file_stillhouse_v1_recipe, 4);
 
 /**
  * @generated from message stillhouse.v1.RecipeProjectionLine
@@ -308,7 +497,7 @@ export type RecipeProjectionLine = Message<"stillhouse.v1.RecipeProjectionLine">
  * Use `create(RecipeProjectionLineSchema)` to create a new message.
  */
 export const RecipeProjectionLineSchema: GenMessage<RecipeProjectionLine> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 4);
+  messageDesc(file_stillhouse_v1_recipe, 5);
 
 /**
  * @generated from message stillhouse.v1.CreateRecipeRequest
@@ -335,7 +524,7 @@ export type CreateRecipeRequest = Message<"stillhouse.v1.CreateRecipeRequest"> &
  * Use `create(CreateRecipeRequestSchema)` to create a new message.
  */
 export const CreateRecipeRequestSchema: GenMessage<CreateRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 5);
+  messageDesc(file_stillhouse_v1_recipe, 6);
 
 /**
  * @generated from message stillhouse.v1.CreateRecipeResponse
@@ -352,7 +541,7 @@ export type CreateRecipeResponse = Message<"stillhouse.v1.CreateRecipeResponse">
  * Use `create(CreateRecipeResponseSchema)` to create a new message.
  */
 export const CreateRecipeResponseSchema: GenMessage<CreateRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 6);
+  messageDesc(file_stillhouse_v1_recipe, 7);
 
 /**
  * @generated from message stillhouse.v1.ListRecipesRequest
@@ -369,7 +558,7 @@ export type ListRecipesRequest = Message<"stillhouse.v1.ListRecipesRequest"> & {
  * Use `create(ListRecipesRequestSchema)` to create a new message.
  */
 export const ListRecipesRequestSchema: GenMessage<ListRecipesRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 7);
+  messageDesc(file_stillhouse_v1_recipe, 8);
 
 /**
  * @generated from message stillhouse.v1.ListRecipesResponse
@@ -386,7 +575,7 @@ export type ListRecipesResponse = Message<"stillhouse.v1.ListRecipesResponse"> &
  * Use `create(ListRecipesResponseSchema)` to create a new message.
  */
 export const ListRecipesResponseSchema: GenMessage<ListRecipesResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 8);
+  messageDesc(file_stillhouse_v1_recipe, 9);
 
 /**
  * @generated from message stillhouse.v1.GetRecipeRequest
@@ -403,7 +592,7 @@ export type GetRecipeRequest = Message<"stillhouse.v1.GetRecipeRequest"> & {
  * Use `create(GetRecipeRequestSchema)` to create a new message.
  */
 export const GetRecipeRequestSchema: GenMessage<GetRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 9);
+  messageDesc(file_stillhouse_v1_recipe, 10);
 
 /**
  * @generated from message stillhouse.v1.GetRecipeResponse
@@ -434,7 +623,7 @@ export type GetRecipeResponse = Message<"stillhouse.v1.GetRecipeResponse"> & {
  * Use `create(GetRecipeResponseSchema)` to create a new message.
  */
 export const GetRecipeResponseSchema: GenMessage<GetRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 10);
+  messageDesc(file_stillhouse_v1_recipe, 11);
 
 /**
  * @generated from message stillhouse.v1.ArchiveRecipeRequest
@@ -456,7 +645,7 @@ export type ArchiveRecipeRequest = Message<"stillhouse.v1.ArchiveRecipeRequest">
  * Use `create(ArchiveRecipeRequestSchema)` to create a new message.
  */
 export const ArchiveRecipeRequestSchema: GenMessage<ArchiveRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 11);
+  messageDesc(file_stillhouse_v1_recipe, 12);
 
 /**
  * @generated from message stillhouse.v1.ArchiveRecipeResponse
@@ -473,7 +662,7 @@ export type ArchiveRecipeResponse = Message<"stillhouse.v1.ArchiveRecipeResponse
  * Use `create(ArchiveRecipeResponseSchema)` to create a new message.
  */
 export const ArchiveRecipeResponseSchema: GenMessage<ArchiveRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 12);
+  messageDesc(file_stillhouse_v1_recipe, 13);
 
 /**
  * @generated from message stillhouse.v1.RecipeIngredientInput
@@ -503,6 +692,13 @@ export type RecipeIngredientInput = Message<"stillhouse.v1.RecipeIngredientInput
    * @generated from field: int32 sort_order = 5;
    */
   sortOrder: number;
+
+  /**
+   * optional; gin recipes use it
+   *
+   * @generated from field: stillhouse.v1.BotanicalRole botanical_role = 6;
+   */
+  botanicalRole: BotanicalRole;
 };
 
 /**
@@ -510,7 +706,7 @@ export type RecipeIngredientInput = Message<"stillhouse.v1.RecipeIngredientInput
  * Use `create(RecipeIngredientInputSchema)` to create a new message.
  */
 export const RecipeIngredientInputSchema: GenMessage<RecipeIngredientInput> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 13);
+  messageDesc(file_stillhouse_v1_recipe, 14);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionRequest
@@ -555,6 +751,48 @@ export type SaveRecipeVersionRequest = Message<"stillhouse.v1.SaveRecipeVersionR
    * @generated from field: repeated stillhouse.v1.RecipeIngredientInput ingredients = 8;
    */
   ingredients: RecipeIngredientInput[];
+
+  /**
+   * Gin-specific. Whisky recipes leave these unset.
+   *
+   * @generated from field: string tasting_notes = 9;
+   */
+  tastingNotes: string;
+
+  /**
+   * @generated from field: stillhouse.v1.DistillationMethod distillation_method = 10;
+   */
+  distillationMethod: DistillationMethod;
+
+  /**
+   * @generated from field: double maceration_hours = 11;
+   */
+  macerationHours: number;
+
+  /**
+   * @generated from field: bool maceration_hours_set = 12;
+   */
+  macerationHoursSet: boolean;
+
+  /**
+   * @generated from field: double gin_ngs_input_l = 13;
+   */
+  ginNgsInputL: number;
+
+  /**
+   * @generated from field: bool gin_ngs_input_l_set = 14;
+   */
+  ginNgsInputLSet: boolean;
+
+  /**
+   * @generated from field: double gin_ngs_input_abv_pct = 15;
+   */
+  ginNgsInputAbvPct: number;
+
+  /**
+   * @generated from field: bool gin_ngs_input_abv_pct_set = 16;
+   */
+  ginNgsInputAbvPctSet: boolean;
 };
 
 /**
@@ -562,7 +800,7 @@ export type SaveRecipeVersionRequest = Message<"stillhouse.v1.SaveRecipeVersionR
  * Use `create(SaveRecipeVersionRequestSchema)` to create a new message.
  */
 export const SaveRecipeVersionRequestSchema: GenMessage<SaveRecipeVersionRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 14);
+  messageDesc(file_stillhouse_v1_recipe, 15);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionResponse
@@ -584,7 +822,49 @@ export type SaveRecipeVersionResponse = Message<"stillhouse.v1.SaveRecipeVersion
  * Use `create(SaveRecipeVersionResponseSchema)` to create a new message.
  */
 export const SaveRecipeVersionResponseSchema: GenMessage<SaveRecipeVersionResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 15);
+  messageDesc(file_stillhouse_v1_recipe, 16);
+
+/**
+ * Set / replace the per-version sensory scores. Upsert semantics — call
+ * this every time you taste, scores from the latest call win.
+ *
+ * @generated from message stillhouse.v1.SaveRecipeVersionSensoryRequest
+ */
+export type SaveRecipeVersionSensoryRequest = Message<"stillhouse.v1.SaveRecipeVersionSensoryRequest"> & {
+  /**
+   * @generated from field: string recipe_version_id = 1;
+   */
+  recipeVersionId: string;
+
+  /**
+   * @generated from field: stillhouse.v1.GinSensoryScores scores = 2;
+   */
+  scores?: GinSensoryScores | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.SaveRecipeVersionSensoryRequest.
+ * Use `create(SaveRecipeVersionSensoryRequestSchema)` to create a new message.
+ */
+export const SaveRecipeVersionSensoryRequestSchema: GenMessage<SaveRecipeVersionSensoryRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_recipe, 17);
+
+/**
+ * @generated from message stillhouse.v1.SaveRecipeVersionSensoryResponse
+ */
+export type SaveRecipeVersionSensoryResponse = Message<"stillhouse.v1.SaveRecipeVersionSensoryResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.GinSensoryScores scores = 1;
+   */
+  scores?: GinSensoryScores | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.SaveRecipeVersionSensoryResponse.
+ * Use `create(SaveRecipeVersionSensoryResponseSchema)` to create a new message.
+ */
+export const SaveRecipeVersionSensoryResponseSchema: GenMessage<SaveRecipeVersionSensoryResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_recipe, 18);
 
 /**
  * @generated from message stillhouse.v1.ListRecipeVersionsRequest
@@ -601,7 +881,7 @@ export type ListRecipeVersionsRequest = Message<"stillhouse.v1.ListRecipeVersion
  * Use `create(ListRecipeVersionsRequestSchema)` to create a new message.
  */
 export const ListRecipeVersionsRequestSchema: GenMessage<ListRecipeVersionsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 16);
+  messageDesc(file_stillhouse_v1_recipe, 19);
 
 /**
  * @generated from message stillhouse.v1.ListRecipeVersionsResponse
@@ -618,7 +898,7 @@ export type ListRecipeVersionsResponse = Message<"stillhouse.v1.ListRecipeVersio
  * Use `create(ListRecipeVersionsResponseSchema)` to create a new message.
  */
 export const ListRecipeVersionsResponseSchema: GenMessage<ListRecipeVersionsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 17);
+  messageDesc(file_stillhouse_v1_recipe, 20);
 
 /**
  * @generated from message stillhouse.v1.DuplicateRecipeRequest
@@ -640,7 +920,7 @@ export type DuplicateRecipeRequest = Message<"stillhouse.v1.DuplicateRecipeReque
  * Use `create(DuplicateRecipeRequestSchema)` to create a new message.
  */
 export const DuplicateRecipeRequestSchema: GenMessage<DuplicateRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 18);
+  messageDesc(file_stillhouse_v1_recipe, 21);
 
 /**
  * @generated from message stillhouse.v1.DuplicateRecipeResponse
@@ -657,7 +937,7 @@ export type DuplicateRecipeResponse = Message<"stillhouse.v1.DuplicateRecipeResp
  * Use `create(DuplicateRecipeResponseSchema)` to create a new message.
  */
 export const DuplicateRecipeResponseSchema: GenMessage<DuplicateRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 19);
+  messageDesc(file_stillhouse_v1_recipe, 22);
 
 /**
  * @generated from enum stillhouse.v1.SpiritKind
@@ -721,6 +1001,108 @@ export const SpiritKindSchema: GenEnum<SpiritKind> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_recipe, 0);
 
 /**
+ * Where a botanical sits in the gin recipe's structure. Optional on
+ * every ingredient; ignored for non-gin recipes (and for non-botanical
+ * materials within a gin recipe — NGS, water, etc.).
+ *
+ * @generated from enum stillhouse.v1.BotanicalRole
+ */
+export enum BotanicalRole {
+  /**
+   * @generated from enum value: BOTANICAL_ROLE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * the defining note — every gin needs this
+   *
+   * @generated from enum value: BOTANICAL_ROLE_JUNIPER = 1;
+   */
+  JUNIPER = 1,
+
+  /**
+   * lemon/lime/orange peels, grapefruit
+   *
+   * @generated from enum value: BOTANICAL_ROLE_CITRUS = 2;
+   */
+  CITRUS = 2,
+
+  /**
+   * coriander, basil, sage
+   *
+   * @generated from enum value: BOTANICAL_ROLE_HERBAL = 3;
+   */
+  HERBAL = 3,
+
+  /**
+   * cardamom, cassia, black pepper
+   *
+   * @generated from enum value: BOTANICAL_ROLE_SPICE = 4;
+   */
+  SPICE = 4,
+
+  /**
+   * rose, chamomile, elderflower
+   *
+   * @generated from enum value: BOTANICAL_ROLE_FLORAL = 5;
+   */
+  FLORAL = 5,
+
+  /**
+   * orris, angelica root, licorice
+   *
+   * @generated from enum value: BOTANICAL_ROLE_ROOT = 6;
+   */
+  ROOT = 6,
+
+  /**
+   * @generated from enum value: BOTANICAL_ROLE_OTHER = 7;
+   */
+  OTHER = 7,
+}
+
+/**
+ * Describes the enum stillhouse.v1.BotanicalRole.
+ */
+export const BotanicalRoleSchema: GenEnum<BotanicalRole> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_recipe, 1);
+
+/**
+ * How the botanicals meet the spirit during distillation. Pot = full
+ * maceration in the still charge; vapor = botanicals in a gin basket
+ * extracted by ethanol vapor on the way up; combined = both.
+ *
+ * @generated from enum stillhouse.v1.DistillationMethod
+ */
+export enum DistillationMethod {
+  /**
+   * @generated from enum value: DISTILLATION_METHOD_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: DISTILLATION_METHOD_POT = 1;
+   */
+  POT = 1,
+
+  /**
+   * @generated from enum value: DISTILLATION_METHOD_VAPOR = 2;
+   */
+  VAPOR = 2,
+
+  /**
+   * @generated from enum value: DISTILLATION_METHOD_COMBINED = 3;
+   */
+  COMBINED = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.DistillationMethod.
+ */
+export const DistillationMethodSchema: GenEnum<DistillationMethod> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_recipe, 2);
+
+/**
  * @generated from service stillhouse.v1.RecipeService
  */
 export const RecipeService: GenService<{
@@ -779,6 +1161,14 @@ export const RecipeService: GenService<{
     methodKind: "unary";
     input: typeof ListRecipeVersionsRequestSchema;
     output: typeof ListRecipeVersionsResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.RecipeService.SaveRecipeVersionSensory
+   */
+  saveRecipeVersionSensory: {
+    methodKind: "unary";
+    input: typeof SaveRecipeVersionSensoryRequestSchema;
+    output: typeof SaveRecipeVersionSensoryResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_recipe, 0);
