@@ -533,6 +533,17 @@ func (s *BarrelService) RegaugeBarrel(
 			return connect.NewError(connect.CodeInvalidArgument,
 				errors.New("new LAA cannot exceed current LAA — regauges record losses only"))
 		}
+		// A regauge that drains a non-empty barrel to zero is almost
+		// always a misclassified dump — the entire contents would be
+		// posted as evaporation rather than as a transfer to a
+		// destination container. Force the operator to use dump_barrel,
+		// which preserves the audit trail (destination, days_aged) and
+		// keeps the bulk ledger reconcilable. Empty→empty regauges (no-op
+		// snapshots) are still allowed.
+		if in.GetNewVolumeL() == 0 && barrel.CurrentVolumeL > 0 {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("regauge cannot fully drain a non-empty barrel — use dump_barrel to record a transfer"))
+		}
 		lossVol := barrel.CurrentVolumeL - in.GetNewVolumeL()
 		lossLAA := barrel.CurrentLaa - newLAA
 		lostLAA = lossLAA

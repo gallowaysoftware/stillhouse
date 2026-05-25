@@ -230,10 +230,25 @@ func (s *BulkService) GetBulkContainer(
 		if e != nil {
 			return e
 		}
+		// Mirror GetBarrel's symmetric check: barrels and bulk containers
+		// share the same id space (a barrel IS a bulk_container row + a
+		// barrel_attributes row), but the two RPCs return different
+		// shapes. Sending a barrel id here would return a half-populated
+		// "container" with kind=UNSPECIFIED (since the proto enum has no
+		// BARREL case in the bulk surface), inviting an LLM to mistake it
+		// for a tank and pick it as a transfer endpoint.
+		if c.Kind == sqlcgen.BulkContainerKindBarrel {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("container is a barrel — use get_barrel instead"))
+		}
 		moves, e = q.ListBulkMovementsByContainer(ctx, uuid.NullUUID{UUID: id, Valid: true})
 		return e
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("container not found"))
 		}

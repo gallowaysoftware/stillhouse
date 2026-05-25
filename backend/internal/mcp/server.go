@@ -123,6 +123,26 @@ func jsonResultRaw(v any) *mcpsdk.CallToolResult {
 	}
 }
 
+// jsonResultSlim is the write-tool variant of jsonResult: it omits
+// unpopulated fields. For confirmation responses after fill/regauge/
+// dump/add_*_reading, an LLM already knows what it asked for and just
+// needs the key changed values (event id, updated balances). Emitting
+// every default-valued field (the read tools' answer to QA finding F3)
+// doubles the response size for no caller benefit.
+func jsonResultSlim(m proto.Message) *mcpsdk.CallToolResult {
+	b, err := protojson.MarshalOptions{
+		EmitUnpopulated: false,
+		UseProtoNames:   true,
+		Indent:          "  ",
+	}.Marshal(m)
+	if err != nil {
+		return errResult(err)
+	}
+	return &mcpsdk.CallToolResult{
+		Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: string(b)}},
+	}
+}
+
 // errResult turns an error into an MCP-visible failure. Setting IsError
 // lets the model see the failure and retry / report it.
 //

@@ -30,6 +30,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 105 | MCP server — operate Stillhouse from Claude (phone/desktop) over Streamable HTTP |
 | 106 | API token management moves into the web UI |
 | 107 | MCP polish from first-pass QA: filter barrels out of bulk lists, FK→NotFound on ferment/mash log, emit empty arrays + zero numerics, prefix Connect code in MCP errors |
+| 108 | MCP polish round 2: `get_bulk_container` rejects barrel ids, regauge can't fully drain a non-empty barrel, fermentation reading keeps real `0` measurements, slim write-tool responses |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

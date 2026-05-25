@@ -51,20 +51,20 @@ func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResult(resp.Msg), nil, nil
+		return jsonResultSlim(resp.Msg), nil, nil
 	})
 }
 
 func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	type in struct {
 		BarrelID    string  `json:"barrel_id" jsonschema:"UUID of the barrel"`
-		NewVolumeL  float64 `json:"new_volume_l" jsonschema:"measured current volume in litres; must be ≤ recorded current volume"`
+		NewVolumeL  float64 `json:"new_volume_l" jsonschema:"measured current volume in litres; must be ≤ recorded current volume. Cannot be 0 if the barrel is non-empty — use dump_barrel for transfers"`
 		NewAbvPct   float64 `json:"new_abv_pct" jsonschema:"measured current ABV percentage (0-100); resulting LAA must be ≤ recorded LAA"`
 		Notes       string  `json:"notes,omitempty" jsonschema:"optional free-text notes"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "regauge_barrel",
-		Description: "Record actual barrel contents on inspection (e.g. after sampling or evaporation loss). The lost LAA is written to the journal as a loss_evaporation movement. Regauges can only record losses, not gains.",
+		Description: "Record actual barrel contents on inspection (e.g. after sampling or evaporation loss). The lost LAA is written to the journal as a loss_evaporation movement. Regauges can only record losses, not gains, and cannot zero out a non-empty barrel — use dump_barrel for that.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
 		resp, err := d.Barrel.RegaugeBarrel(ctx, connect.NewRequest(&pb.RegaugeBarrelRequest{
@@ -76,7 +76,7 @@ func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResult(resp.Msg), nil, nil
+		return jsonResultSlim(resp.Msg), nil, nil
 	})
 }
 
@@ -103,45 +103,48 @@ func addDumpBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResult(resp.Msg), nil, nil
+		return jsonResultSlim(resp.Msg), nil, nil
 	})
 }
 
 func addAddFermentationReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	// Pointer fields so we can tell "operator measured 0" from "operator
+	// didn't measure this." A literal 0 °C wort is a real (cold-crash)
+	// reading; pH=0 is theoretical but possible; SG can't realistically
+	// be 0 but the same shape applies uniformly.
 	type in struct {
-		FermentationRunID string  `json:"fermentation_run_id" jsonschema:"UUID of the active fermentation run"`
-		SpecificGravity   float64 `json:"specific_gravity,omitempty" jsonschema:"e.g. 1.052 — omit if not taken"`
-		PH                float64 `json:"ph,omitempty" jsonschema:"e.g. 4.3 — omit if not taken"`
-		TemperatureC      float64 `json:"temperature_c,omitempty" jsonschema:"degrees Celsius — omit if not taken"`
-		Notes             string  `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		FermentationRunID string   `json:"fermentation_run_id" jsonschema:"UUID of the active fermentation run"`
+		SpecificGravity   *float64 `json:"specific_gravity,omitempty" jsonschema:"e.g. 1.052 — omit if not taken"`
+		PH                *float64 `json:"ph,omitempty" jsonschema:"e.g. 4.3 — omit if not taken"`
+		TemperatureC      *float64 `json:"temperature_c,omitempty" jsonschema:"degrees Celsius — omit if not taken (0 is a valid reading)"`
+		Notes             string   `json:"notes,omitempty" jsonschema:"optional free-text notes"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "add_fermentation_reading",
-		Description: "Log a point-in-time reading on an active fermentation: SG, pH, and/or temperature. Any field can be omitted if not measured.",
+		Description: "Log a point-in-time reading on an active fermentation: SG, pH, and/or temperature. Any field can be omitted if not measured; a literal 0 is treated as a measurement, not as 'omitted'.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
-		// Convert "omitted" (zero) into the explicit Set flags the proto uses.
 		req := &pb.AddFermentationLogRequest{
 			FermentationRunId: args.FermentationRunID,
 			Notes:             args.Notes,
 		}
-		if args.SpecificGravity != 0 {
-			req.SpecificGravity = args.SpecificGravity
+		if args.SpecificGravity != nil {
+			req.SpecificGravity = *args.SpecificGravity
 			req.SpecificGravitySet = true
 		}
-		if args.PH != 0 {
-			req.Ph = args.PH
+		if args.PH != nil {
+			req.Ph = *args.PH
 			req.PhSet = true
 		}
-		if args.TemperatureC != 0 {
-			req.TemperatureC = args.TemperatureC
+		if args.TemperatureC != nil {
+			req.TemperatureC = *args.TemperatureC
 			req.TemperatureCSet = true
 		}
 		resp, err := d.Fermentation.AddFermentationLog(ctx, connect.NewRequest(req))
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResult(resp.Msg), nil, nil
+		return jsonResultSlim(resp.Msg), nil, nil
 	})
 }
 
@@ -155,7 +158,7 @@ func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "add_mash_reading",
-		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, strike_temp_c, other.",
+		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, strike_temp_c, other. (value is required; 0 is a valid reading.)",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
 		kind, err := parseMashMetricKind(args.Kind)
@@ -172,7 +175,7 @@ func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResult(resp.Msg), nil, nil
+		return jsonResultSlim(resp.Msg), nil, nil
 	})
 }
 
