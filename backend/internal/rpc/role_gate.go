@@ -25,6 +25,12 @@ const (
 // downgrade. Public (no-auth) procedures are skipped via publicProcedures and
 // never reach this gate.
 var procedureMinRole = map[string]minRole{
+	// APITokenService — every user manages their own tokens, so viewer is
+	// the floor even for mutations. Ownership is enforced inside the RPCs.
+	"/stillhouse.v1.APITokenService/IssueAPIToken":  roleViewer,
+	"/stillhouse.v1.APITokenService/ListAPITokens":  roleViewer,
+	"/stillhouse.v1.APITokenService/RevokeAPIToken": roleViewer,
+
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 

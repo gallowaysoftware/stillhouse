@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 
+import { APITokenService } from "@/gen/stillhouse/v1/api_token_pb";
 import { AuditService } from "@/gen/stillhouse/v1/audit_pb";
 import { AuthService } from "@/gen/stillhouse/v1/auth_pb";
 import { B266Service } from "@/gen/stillhouse/v1/b266_pb";
@@ -41,3 +42,4 @@ export const auditClient = createClient(AuditService, transport);
 export const pricingClient = createClient(PricingService, transport);
 export const traceabilityClient = createClient(TraceabilityService, transport);
 export const inviteClient = createClient(InviteService, transport);
+export const apiTokenClient = createClient(APITokenService, transport);

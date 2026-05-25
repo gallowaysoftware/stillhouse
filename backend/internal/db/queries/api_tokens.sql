@@ -28,11 +28,19 @@ UPDATE api_tokens
 SET last_used_at = NOW()
 WHERE token_hash = $1;
 
--- name: RevokeAPIToken :exec
+-- name: GetAPITokenRowByHash :one
+-- Like GetAPITokenByHash but doesn't filter on revoked_at; used by the
+-- token-management RPC to ownership-check before revoke.
+SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
+FROM api_tokens
+WHERE token_hash = $1;
+
+-- name: RevokeAPIToken :one
 UPDATE api_tokens
 SET revoked_at = NOW()
 WHERE token_hash = $1
-  AND revoked_at IS NULL;
+  AND revoked_at IS NULL
+RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at;
 
 -- name: ListAPITokensForUser :many
 SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at

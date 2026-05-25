@@ -1,0 +1,43 @@
+// Personal access tokens for non-browser clients (MCP, scripts).
+// Each user manages their own. The plaintext value is shown ONCE at
+// issue time and never again — only the SHA-256 hash lives in the DB.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message APIToken {
+  // Stable per-token identifier. The base64-encoded SHA-256 of the
+  // plaintext token; safe to expose to the UI because it cannot be
+  // reversed to the token value. Used as the handle for RevokeToken.
+  string id = 1;
+  string name = 2;                            // human label, e.g. "phone"
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp last_used_at = 4; // unset until first use
+  google.protobuf.Timestamp revoked_at = 5;   // unset = active
+}
+
+message IssueAPITokenRequest {
+  string name = 1;
+}
+
+// IssueAPITokenResponse carries the plaintext token exactly once. The
+// caller must show it to the user immediately and warn them that it
+// won't be retrievable later.
+message IssueAPITokenResponse {
+  APIToken token = 1;
+  string   plaintext = 2;
+}
+
+message ListAPITokensRequest {}
+message ListAPITokensResponse { repeated APIToken tokens = 1; }
+
+message RevokeAPITokenRequest { string id = 1; }
+message RevokeAPITokenResponse { APIToken token = 1; }
+
+service APITokenService {
+  rpc IssueAPIToken(IssueAPITokenRequest)   returns (IssueAPITokenResponse);
+  rpc ListAPITokens(ListAPITokensRequest)   returns (ListAPITokensResponse);
+  rpc RevokeAPIToken(RevokeAPITokenRequest) returns (RevokeAPITokenResponse);
+}

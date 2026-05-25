@@ -97,6 +97,29 @@ func (q *Queries) GetAPITokenByHash(ctx context.Context, tokenHash []byte) (GetA
 	return i, err
 }
 
+const getAPITokenRowByHash = `-- name: GetAPITokenRowByHash :one
+SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
+FROM api_tokens
+WHERE token_hash = $1
+`
+
+// Like GetAPITokenByHash but doesn't filter on revoked_at; used by the
+// token-management RPC to ownership-check before revoke.
+func (q *Queries) GetAPITokenRowByHash(ctx context.Context, tokenHash []byte) (ApiToken, error) {
+	row := q.db.QueryRow(ctx, getAPITokenRowByHash, tokenHash)
+	var i ApiToken
+	err := row.Scan(
+		&i.TokenHash,
+		&i.TenantID,
+		&i.UserID,
+		&i.Name,
+		&i.LastUsedAt,
+		&i.RevokedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listAPITokensForUser = `-- name: ListAPITokensForUser :many
 SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
 FROM api_tokens
@@ -132,16 +155,27 @@ func (q *Queries) ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([
 	return items, nil
 }
 
-const revokeAPIToken = `-- name: RevokeAPIToken :exec
+const revokeAPIToken = `-- name: RevokeAPIToken :one
 UPDATE api_tokens
 SET revoked_at = NOW()
 WHERE token_hash = $1
   AND revoked_at IS NULL
+RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
 `
 
-func (q *Queries) RevokeAPIToken(ctx context.Context, tokenHash []byte) error {
-	_, err := q.db.Exec(ctx, revokeAPIToken, tokenHash)
-	return err
+func (q *Queries) RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error) {
+	row := q.db.QueryRow(ctx, revokeAPIToken, tokenHash)
+	var i ApiToken
+	err := row.Scan(
+		&i.TokenHash,
+		&i.TenantID,
+		&i.UserID,
+		&i.Name,
+		&i.LastUsedAt,
+		&i.RevokedAt,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const touchAPIToken = `-- name: TouchAPIToken :exec

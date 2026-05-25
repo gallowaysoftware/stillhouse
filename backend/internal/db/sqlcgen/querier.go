@@ -91,6 +91,9 @@ type Querier interface {
 	// IS NULL is enforced inline so a revoked token is indistinguishable
 	// from a missing one at the SQL layer.
 	GetAPITokenByHash(ctx context.Context, tokenHash []byte) (GetAPITokenByHashRow, error)
+	// Like GetAPITokenByHash but doesn't filter on revoked_at; used by the
+	// token-management RPC to ownership-check before revoke.
+	GetAPITokenRowByHash(ctx context.Context, tokenHash []byte) (ApiToken, error)
 	GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByDatesParams) (B266Period, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
@@ -173,7 +176,7 @@ type Querier interface {
 	// WHERE status = 'submitted' guard makes this a no-op on already-draft
 	// periods, returning no rows.
 	ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
-	RevokeAPIToken(ctx context.Context, tokenHash []byte) error
+	RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error)
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error

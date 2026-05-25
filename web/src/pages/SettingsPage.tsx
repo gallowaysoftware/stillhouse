@@ -5,7 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
-import { inviteClient, tenantClient, userClient } from "@/lib/clients";
+import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
 import { UpdateTenantRequestSchema } from "@/gen/stillhouse/v1/tenant_pb";
 import { ChangeMyPasswordRequestSchema, CreateUserRequestSchema, UserRole } from "@/gen/stillhouse/v1/user_pb";
 
@@ -124,6 +124,8 @@ export function SettingsPage() {
       />
 
       {isOwner && <InvitesPanel />}
+
+      <APITokensPanel />
 
       {isOwner && (
         <section className="mt-10">
@@ -526,6 +528,161 @@ function InvitesPanel() {
                           Revoke
                         </button>
                       </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+// APITokensPanel — every user manages their own personal access tokens.
+// Tokens are how non-browser clients (the MCP server, future scripts)
+// authenticate. The plaintext value is shown once at issue time and
+// never again; the row in the table only carries the hash-derived id.
+function APITokensPanel() {
+  const qc = useQueryClient();
+  const list = useQuery({
+    queryKey: ["listAPITokens"],
+    queryFn: () => apiTokenClient.listAPITokens({}),
+  });
+  const [name, setName] = useState("");
+  const [justIssued, setJustIssued] = useState<{ name: string; plaintext: string } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const issue = useMutation({
+    mutationFn: (n: string) => apiTokenClient.issueAPIToken({ name: n }),
+    onSuccess: (resp) => {
+      setJustIssued({ name: resp.token?.name ?? "", plaintext: resp.plaintext });
+      setName("");
+      qc.invalidateQueries({ queryKey: ["listAPITokens"] });
+    },
+  });
+  const revoke = useMutation({
+    mutationFn: (id: string) => apiTokenClient.revokeAPIToken({ id }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["listAPITokens"] }),
+  });
+
+  function copyPlaintext() {
+    if (!justIssued) return;
+    void navigator.clipboard.writeText(justIssued.plaintext);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const mcpURL = `${window.location.origin}/mcp`;
+
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-sm font-semibold text-fg-muted">API tokens (MCP &amp; scripts)</h2>
+      <div className="rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+        <p className="mb-4 text-sm text-fg-muted">
+          Personal access tokens authenticate non-browser clients — most importantly the
+          built-in Model Context Protocol server, so an LLM like Claude (on your phone or
+          desktop) can read the ledger and capture activity from the still floor. Tokens
+          are per-user; revoke them when a device is lost.
+        </p>
+        <div className="mb-4 rounded border border-border bg-surface p-3 text-sm">
+          <p className="mb-1 font-medium text-fg">Connect Claude to this Stillhouse install</p>
+          <p className="text-fg-muted">
+            In Claude's MCP server settings, add a remote server at:
+          </p>
+          <p className="mt-1 break-all rounded bg-surface-3 px-2 py-1 font-mono text-xs text-fg">{mcpURL}</p>
+          <p className="mt-2 text-fg-muted">
+            With header <span className="font-mono text-fg">Authorization: Bearer &lt;your token&gt;</span>.
+          </p>
+        </div>
+
+        <form
+          onSubmit={(e) => { e.preventDefault(); if (name.trim()) issue.mutate(name.trim()); }}
+          className="mb-4 flex flex-wrap items-end gap-3 border-b border-border pb-4"
+        >
+          <div className="flex-1 min-w-[12rem]">
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Token name</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="phone, laptop, MCP, …"
+              required
+              maxLength={100}
+              className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={issue.isPending || !name.trim()}
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
+          >
+            {issue.isPending ? "Issuing…" : "Issue token"}
+          </button>
+          {issue.error && (
+            <span className="text-sm text-danger-fg">
+              {issue.error instanceof ConnectError ? issue.error.rawMessage : String(issue.error)}
+            </span>
+          )}
+        </form>
+
+        {justIssued && (
+          <div className="mb-4 rounded border border-warning/40 bg-warning/10 p-3 text-sm">
+            <p className="font-medium text-fg">New token "{justIssued.name}" — shown once.</p>
+            <p className="mt-1 text-fg-muted">
+              Copy it now. We only store the hash; if you lose it you'll have to issue a new one.
+            </p>
+            <p className="mt-2 break-all rounded bg-surface px-2 py-1 font-mono text-xs text-fg">
+              {justIssued.plaintext}
+            </p>
+            <div className="mt-2 flex items-center gap-3">
+              <button onClick={copyPlaintext} className="text-xs text-fg-muted hover:text-fg">
+                Copy to clipboard
+              </button>
+              {copied && <span className="text-xs text-success-fg">Copied.</span>}
+              <button
+                onClick={() => { setJustIssued(null); setCopied(false); }}
+                className="ml-auto text-xs text-fg-muted hover:text-fg"
+              >
+                I've saved it
+              </button>
+            </div>
+          </div>
+        )}
+
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="text-left text-xs text-fg-muted">
+            <tr>
+              <th className="px-2 py-2">Name</th>
+              <th className="px-2 py-2">Created</th>
+              <th className="px-2 py-2">Last used</th>
+              <th className="px-2 py-2">Status</th>
+              <th className="px-2 py-2 text-right"></th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {list.data?.tokens.length === 0 && (
+              <tr><td colSpan={5} className="px-2 py-3 text-fg-muted">No tokens yet.</td></tr>
+            )}
+            {list.data?.tokens.map((t) => {
+              const created = t.createdAt ? new Date(Number(t.createdAt.seconds) * 1000) : null;
+              const lastUsed = t.lastUsedAt ? new Date(Number(t.lastUsedAt.seconds) * 1000) : null;
+              const revoked = !!t.revokedAt;
+              return (
+                <tr key={t.id} className={revoked ? "opacity-60" : ""}>
+                  <td className="px-2 py-2 text-fg">{t.name}</td>
+                  <td className="px-2 py-2 text-fg-muted">{created ? created.toLocaleDateString() : "—"}</td>
+                  <td className="px-2 py-2 text-fg-muted">{lastUsed ? lastUsed.toLocaleString() : <span className="text-fg-subtle">never</span>}</td>
+                  <td className="px-2 py-2 text-fg-muted">{revoked ? "Revoked" : "Active"}</td>
+                  <td className="px-2 py-2 text-right">
+                    {!revoked && (
+                      <button
+                        onClick={() => revoke.mutate(t.id)}
+                        disabled={revoke.isPending}
+                        className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
+                      >
+                        Revoke
+                      </button>
                     )}
                   </td>
                 </tr>

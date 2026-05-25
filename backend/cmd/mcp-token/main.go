@@ -1,7 +1,9 @@
-// Command mcp-token issues a personal access token for a user, prints
-// it once to stdout, and exits. Tokens authenticate non-browser clients
-// (the MCP server, future scripts, etc.) without going through the
-// cookie-session flow.
+// Command mcp-token is a recovery / bootstrap path for issuing personal
+// access tokens directly from the database. The normal way to manage
+// tokens is the web UI at /settings/api-tokens. This binary exists for
+// the cases where the UI isn't available: first-run admin setup before
+// anyone has logged in, or recovery if all admin tokens have been
+// revoked and the operator needs to issue a new one without a session.
 //
 // The plaintext token is shown ONCE — only the SHA-256 hash is stored.
 // Usage:
