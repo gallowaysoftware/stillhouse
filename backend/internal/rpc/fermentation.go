@@ -308,6 +308,9 @@ func (s *FermentationService) AddFermentationLog(
 			})
 	})
 	if err != nil {
+		if ce := classifyWriteErr(err, "fermentation run not found"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("AddFermentationLog", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}

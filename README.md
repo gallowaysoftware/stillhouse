@@ -28,6 +28,8 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 12 | Unit tests for the load-bearing alcohol-math functions |
 | 13 | Audit log extended to barrel fill / dump / regauge |
 | 105 | MCP server — operate Stillhouse from Claude (phone/desktop) over Streamable HTTP |
+| 106 | API token management moves into the web UI |
+| 107 | MCP polish from first-pass QA: filter barrels out of bulk lists, FK→NotFound on ferment/mash log, emit empty arrays + zero numerics, prefix Connect code in MCP errors |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

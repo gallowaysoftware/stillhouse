@@ -398,6 +398,9 @@ func (s *MashService) AddMashMetric(
 			})
 	})
 	if err != nil {
+		if ce := classifyWriteErr(err, "mash run not found"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("AddMashMetric", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}

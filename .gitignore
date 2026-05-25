@@ -43,3 +43,6 @@ Thumbs.db
 # Coverage
 *.lcov
 coverage/
+
+# Claude Code project-local state (settings.local.json, scheduled_tasks.lock, ...)
+.claude/

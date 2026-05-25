@@ -91,9 +91,15 @@ func withUser(ctx context.Context, user sqlcgen.User) context.Context {
 // emit protojson rather than plain encoding/json so enum values render
 // as their string names ("BARREL_EVENT_KIND_FILL") rather than ints,
 // and oneofs/optional fields behave correctly.
+//
+// EmitUnpopulated is on so empty arrays and zero numerics render
+// explicitly ("recipes": [], "volume_l": 0). An LLM that sees `{}` has
+// no way to tell "no rows" from "field doesn't exist", and `_set:
+// true` flags paired with elided zero values were the source of QA
+// finding F8 — both go away when we emit zero values directly.
 func jsonResult(m proto.Message) *mcpsdk.CallToolResult {
 	b, err := protojson.MarshalOptions{
-		EmitUnpopulated: false,
+		EmitUnpopulated: true,
 		UseProtoNames:   true,
 		Indent:          "  ",
 	}.Marshal(m)
@@ -119,11 +125,17 @@ func jsonResultRaw(v any) *mcpsdk.CallToolResult {
 
 // errResult turns an error into an MCP-visible failure. Setting IsError
 // lets the model see the failure and retry / report it.
+//
+// When the underlying error is a typed *connect.Error we prefix the
+// code (e.g. "NotFound: fermentation run not found") so the model can
+// distinguish retryable problems (Internal, Unavailable) from caller
+// mistakes (InvalidArgument, NotFound, FailedPrecondition) without
+// regex-matching the message text.
 func errResult(err error) *mcpsdk.CallToolResult {
 	msg := err.Error()
 	var ce *connect.Error
 	if errors.As(err, &ce) {
-		msg = ce.Message()
+		msg = ce.Code().String() + ": " + ce.Message()
 	}
 	return &mcpsdk.CallToolResult{
 		IsError: true,

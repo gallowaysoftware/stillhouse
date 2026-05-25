@@ -184,9 +184,15 @@ func (q *Queries) InsertBulkMovement(ctx context.Context, arg InsertBulkMovement
 const listBulkContainers = `-- name: ListBulkContainers :many
 SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at FROM bulk_containers
 WHERE ($1::boolean OR NOT archived)
+  AND kind != 'barrel'
 ORDER BY archived, name
 `
 
+// Excludes barrels — they have their own dedicated list/get RPCs that
+// expose the maturation clock + barrel attributes. Including them here
+// would double-count vessels in the dashboard rollup and surface them
+// with no kind label (the proto enum has no BARREL case in the bulk
+// list response).
 func (q *Queries) ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error) {
 	rows, err := q.db.Query(ctx, listBulkContainers, includeArchived)
 	if err != nil {
@@ -387,8 +393,12 @@ const sumBulkLAA = `-- name: SumBulkLAA :one
 SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
 FROM bulk_containers
 WHERE NOT archived
+  AND kind != 'barrel'
 `
 
+// Bulk LAA excludes barrels for the same reason ListBulkContainers
+// does — barrel LAA is reported separately so summing both would
+// double-count the alcohol on hand.
 func (q *Queries) SumBulkLAA(ctx context.Context) (float64, error) {
 	row := q.db.QueryRow(ctx, sumBulkLAA)
 	var total_laa float64

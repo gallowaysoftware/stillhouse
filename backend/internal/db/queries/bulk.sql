@@ -22,8 +22,14 @@ UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING *;
 SELECT * FROM bulk_containers WHERE id = $1;
 
 -- name: ListBulkContainers :many
+-- Excludes barrels — they have their own dedicated list/get RPCs that
+-- expose the maturation clock + barrel attributes. Including them here
+-- would double-count vessels in the dashboard rollup and surface them
+-- with no kind label (the proto enum has no BARREL case in the bulk
+-- list response).
 SELECT * FROM bulk_containers
 WHERE (sqlc.arg('include_archived')::boolean OR NOT archived)
+  AND kind != 'barrel'
 ORDER BY archived, name;
 
 -- name: UpdateBulkContainerBalance :one
@@ -82,6 +88,10 @@ FROM (
 GROUP BY container_id;
 
 -- name: SumBulkLAA :one
+-- Bulk LAA excludes barrels for the same reason ListBulkContainers
+-- does — barrel LAA is reported separately so summing both would
+-- double-count the alcohol on hand.
 SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
 FROM bulk_containers
-WHERE NOT archived;
+WHERE NOT archived
+  AND kind != 'barrel';

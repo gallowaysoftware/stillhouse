@@ -135,6 +135,11 @@ type Querier interface {
 	// Active (non-voided) bottling runs for a product, oldest first so the
 	// cost rollup walks them in chronological order.
 	ListBottlingRunsForProduct(ctx context.Context, productID uuid.UUID) ([]ListBottlingRunsForProductRow, error)
+	// Excludes barrels — they have their own dedicated list/get RPCs that
+	// expose the maturation clock + barrel attributes. Including them here
+	// would double-count vessels in the dashboard rollup and surface them
+	// with no kind label (the proto enum has no BARREL case in the bulk
+	// list response).
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
@@ -189,6 +194,9 @@ type Querier interface {
 	// packaged_inventory and bulk separately, so they shouldn't count toward
 	// either the packaging or production lines on B266.
 	SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error)
+	// Bulk LAA excludes barrels for the same reason ListBulkContainers
+	// does — barrel LAA is reported separately so summing both would
+	// double-count the alcohol on hand.
 	SumBulkLAA(ctx context.Context) (float64, error)
 	// Aggregation queries for generating B266 sections.
 	// Excludes production_gauge movements whose underlying distillation_run is
