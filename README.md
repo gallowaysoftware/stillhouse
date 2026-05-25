@@ -33,6 +33,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 108 | MCP polish round 2: `get_bulk_container` rejects barrel ids, regauge can't fully drain a non-empty barrel, fermentation reading keeps real `0` measurements, slim write-tool responses |
 | 109 | Bottling conserves LAA — debits source by `bottleLAA` rather than physical volume × source ABV, handles implicit dilution at bottling time, rejects bottling stronger than the source |
 | 110 | Gin recipe backend — botanical roles, per-version sensory scores (10 axes), NGS input + maceration + distillation method, gin-aware LAA projection |
+| 111 | Gin recipe UI — form branches on spirit kind, botanical-role pickers, tasting notes, sensory scoring bench (0–10 on 10 axes), version-compare with quantity & score diff highlighting |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

@@ -9,7 +9,7 @@ import {
 import { FermentationStatus } from "@/gen/stillhouse/v1/fermentation_pb";
 import { MashMetricKind, MashStatus } from "@/gen/stillhouse/v1/mash_pb";
 import { MaterialKind } from "@/gen/stillhouse/v1/material_pb";
-import { SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
+import { BotanicalRole, DistillationMethod, SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
 
 const laaFormatter = new Intl.NumberFormat("en-CA", {
   minimumFractionDigits: 4,
@@ -71,6 +71,50 @@ const spiritKindLabels = new Map<SpiritKind, string>([
 export function spiritKindLabel(k: SpiritKind): string {
   return spiritKindLabels.get(k) ?? "Unknown";
 }
+
+const botanicalRoleLabels = new Map<BotanicalRole, string>([
+  [BotanicalRole.UNSPECIFIED, "—"],
+  [BotanicalRole.JUNIPER, "Juniper"],
+  [BotanicalRole.CITRUS, "Citrus"],
+  [BotanicalRole.HERBAL, "Herbal"],
+  [BotanicalRole.SPICE, "Spice"],
+  [BotanicalRole.FLORAL, "Floral"],
+  [BotanicalRole.ROOT, "Root"],
+  [BotanicalRole.OTHER, "Other"],
+]);
+
+export function botanicalRoleLabel(r: BotanicalRole): string {
+  return botanicalRoleLabels.get(r) ?? "—";
+}
+
+export const BOTANICAL_ROLE_OPTIONS: Array<{ value: BotanicalRole; label: string }> = [
+  { value: BotanicalRole.UNSPECIFIED, label: "— none —" },
+  { value: BotanicalRole.JUNIPER, label: "Juniper" },
+  { value: BotanicalRole.CITRUS, label: "Citrus" },
+  { value: BotanicalRole.HERBAL, label: "Herbal" },
+  { value: BotanicalRole.SPICE, label: "Spice" },
+  { value: BotanicalRole.FLORAL, label: "Floral" },
+  { value: BotanicalRole.ROOT, label: "Root" },
+  { value: BotanicalRole.OTHER, label: "Other" },
+];
+
+const distillationMethodLabels = new Map<DistillationMethod, string>([
+  [DistillationMethod.UNSPECIFIED, "—"],
+  [DistillationMethod.POT, "Pot (full maceration)"],
+  [DistillationMethod.VAPOR, "Vapor infusion (gin basket)"],
+  [DistillationMethod.COMBINED, "Combined pot + vapor"],
+]);
+
+export function distillationMethodLabel(m: DistillationMethod): string {
+  return distillationMethodLabels.get(m) ?? "—";
+}
+
+export const DISTILLATION_METHOD_OPTIONS: Array<{ value: DistillationMethod; label: string }> = [
+  { value: DistillationMethod.UNSPECIFIED, label: "— not set —" },
+  { value: DistillationMethod.POT, label: "Pot (full maceration in still)" },
+  { value: DistillationMethod.VAPOR, label: "Vapor (gin basket)" },
+  { value: DistillationMethod.COMBINED, label: "Combined pot + vapor" },
+];
 
 const mashStatusLabels = new Map<MashStatus, string>([
   [MashStatus.PLANNED, "Planned"],

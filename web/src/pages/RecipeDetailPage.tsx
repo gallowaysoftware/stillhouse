@@ -6,21 +6,50 @@ import { create } from "@bufbuild/protobuf";
 
 import { Shell } from "@/components/Shell";
 import { materialClient, recipeClient } from "@/lib/clients";
+import { MaterialKind } from "@/gen/stillhouse/v1/material_pb";
 import {
-  MaterialKind,
-} from "@/gen/stillhouse/v1/material_pb";
-import {
+  BotanicalRole,
+  DistillationMethod,
+  GinSensoryScoresSchema,
+  RecipeIngredient,
   RecipeIngredientInputSchema,
+  RecipeVersion,
   SaveRecipeVersionRequestSchema,
+  SaveRecipeVersionSensoryRequestSchema,
+  SpiritKind,
 } from "@/gen/stillhouse/v1/recipe_pb";
-import { formatLAA, formatPct, formatQty, spiritKindLabel } from "@/lib/format";
+import {
+  BOTANICAL_ROLE_OPTIONS,
+  DISTILLATION_METHOD_OPTIONS,
+  botanicalRoleLabel,
+  distillationMethodLabel,
+  formatLAA,
+  formatPct,
+  formatQty,
+  spiritKindLabel,
+} from "@/lib/format";
 
 type IngredientRow = {
   materialId: string;
-  quantity: string; // user input as text
+  quantity: string;
   uom: string;
   notes: string;
+  botanicalRole: BotanicalRole;
 };
+
+const SENSORY_AXES = [
+  { key: "juniper", label: "Juniper" },
+  { key: "citrus", label: "Citrus" },
+  { key: "herbal", label: "Herbal" },
+  { key: "spice", label: "Spice" },
+  { key: "floral", label: "Floral" },
+  { key: "earth", label: "Earth / root" },
+  { key: "body", label: "Body" },
+  { key: "heat", label: "Heat" },
+  { key: "balance", label: "Balance" },
+  { key: "overall", label: "Overall" },
+] as const;
+type SensoryAxis = (typeof SENSORY_AXES)[number]["key"];
 
 export function RecipeDetailPage() {
   const { id } = useParams();
@@ -36,14 +65,27 @@ export function RecipeDetailPage() {
     queryFn: () => materialClient.listMaterials({}),
   });
 
+  const isGin = recipe.data?.recipe?.spiritKind === SpiritKind.GIN;
+
   const [showEditor, setShowEditor] = useState(false);
+  // Shared
+  const [versionNotes, setVersionNotes] = useState("");
+  const [tastingNotes, setTastingNotes] = useState("");
+  const [distillEff, setDistillEff] = useState("0.90");
+  // Whisky-only
   const [mashEff, setMashEff] = useState("0.85");
   const [fermentEff, setFermentEff] = useState("0.92");
-  const [distillEff, setDistillEff] = useState("0.90");
   const [waterL, setWaterL] = useState("");
-  const [versionNotes, setVersionNotes] = useState("");
+  // Gin-only
+  const [ngsInputL, setNgsInputL] = useState("");
+  const [ngsInputAbv, setNgsInputAbv] = useState("");
+  const [macerationHours, setMacerationHours] = useState("");
+  const [distillationMethod, setDistillationMethod] = useState<DistillationMethod>(
+    DistillationMethod.UNSPECIFIED,
+  );
+
   const [rows, setRows] = useState<IngredientRow[]>([
-    { materialId: "", quantity: "", uom: "kg", notes: "" },
+    { materialId: "", quantity: "", uom: "kg", notes: "", botanicalRole: BotanicalRole.UNSPECIFIED },
   ]);
 
   const fermentableMaterialIds = useMemo(() => {
@@ -54,12 +96,21 @@ export function RecipeDetailPage() {
     return set;
   }, [materials.data]);
 
+  const botanicalMaterialIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const m of materials.data?.materials ?? []) {
+      if (m.kind === MaterialKind.BOTANICAL) set.add(m.id);
+    }
+    return set;
+  }, [materials.data]);
+
   const saveVersion = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof SaveRecipeVersionRequestSchema>>) =>
       recipeClient.saveRecipeVersion(msg),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["getRecipe", id] });
       qc.invalidateQueries({ queryKey: ["listRecipes"] });
+      qc.invalidateQueries({ queryKey: ["listRecipeVersions", id] });
       setShowEditor(false);
     },
   });
@@ -75,21 +126,61 @@ export function RecipeDetailPage() {
           uom: r.uom,
           notes: r.notes,
           sortOrder: idx + 1,
+          botanicalRole: r.botanicalRole,
         }),
       );
     const water = waterL.trim();
+    const ngsL = ngsInputL.trim();
+    const ngsAbv = ngsInputAbv.trim();
+    const mac = macerationHours.trim();
     saveVersion.mutate(
       create(SaveRecipeVersionRequestSchema, {
         recipeId: id!,
         notes: versionNotes,
-        mashEfficiencyPct: Number(mashEff),
-        fermentEfficiencyPct: Number(fermentEff),
-        distillationRecoveryPct: Number(distillEff),
+        tastingNotes: tastingNotes,
+        mashEfficiencyPct: Number(mashEff || "1"),
+        fermentEfficiencyPct: Number(fermentEff || "1"),
+        distillationRecoveryPct: Number(distillEff || "0.9"),
         targetWaterL: water ? Number(water) : 0,
         targetWaterLSet: !!water,
+        distillationMethod,
+        macerationHours: mac ? Number(mac) : 0,
+        macerationHoursSet: !!mac,
+        ginNgsInputL: ngsL ? Number(ngsL) : 0,
+        ginNgsInputLSet: !!ngsL,
+        ginNgsInputAbvPct: ngsAbv ? Number(ngsAbv) : 0,
+        ginNgsInputAbvPctSet: !!ngsAbv,
         ingredients,
       }),
     );
+  }
+
+  function openEditor() {
+    if (!showEditor && recipe.data?.currentVersion) {
+      const cv = recipe.data.currentVersion;
+      setMashEff(String(cv.mashEfficiencyPct));
+      setFermentEff(String(cv.fermentEfficiencyPct));
+      setDistillEff(String(cv.distillationRecoveryPct));
+      setWaterL(cv.targetWaterLSet ? String(cv.targetWaterL) : "");
+      setVersionNotes("");
+      setTastingNotes(cv.tastingNotes ?? "");
+      setDistillationMethod(cv.distillationMethod);
+      setMacerationHours(cv.macerationHoursSet ? String(cv.macerationHours) : "");
+      setNgsInputL(cv.ginNgsInputLSet ? String(cv.ginNgsInputL) : "");
+      setNgsInputAbv(cv.ginNgsInputAbvPctSet ? String(cv.ginNgsInputAbvPct) : "");
+      setRows(
+        cv.ingredients.length > 0
+          ? cv.ingredients.map((ing) => ({
+              materialId: ing.materialId,
+              quantity: String(ing.quantity),
+              uom: ing.uom,
+              notes: ing.notes,
+              botanicalRole: ing.botanicalRole,
+            }))
+          : [{ materialId: "", quantity: "", uom: "kg", notes: "", botanicalRole: BotanicalRole.UNSPECIFIED }],
+      );
+    }
+    setShowEditor((s) => !s);
   }
 
   if (!id) return <Shell><p>Missing recipe id.</p></Shell>;
@@ -113,27 +204,7 @@ export function RecipeDetailPage() {
               )}
             </div>
             <button
-              onClick={() => {
-                if (!showEditor && recipe.data.currentVersion) {
-                  const cv = recipe.data.currentVersion;
-                  setMashEff(String(cv.mashEfficiencyPct));
-                  setFermentEff(String(cv.fermentEfficiencyPct));
-                  setDistillEff(String(cv.distillationRecoveryPct));
-                  setWaterL(cv.targetWaterLSet ? String(cv.targetWaterL) : "");
-                  setVersionNotes("");
-                  setRows(
-                    cv.ingredients.length > 0
-                      ? cv.ingredients.map((ing) => ({
-                          materialId: ing.materialId,
-                          quantity: String(ing.quantity),
-                          uom: ing.uom,
-                          notes: ing.notes,
-                        }))
-                      : [{ materialId: "", quantity: "", uom: "kg", notes: "" }],
-                  );
-                }
-                setShowEditor((s) => !s);
-              }}
+              onClick={openEditor}
               className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
             >
               {showEditor
@@ -151,65 +222,120 @@ export function RecipeDetailPage() {
             >
               <h2 className="text-lg font-medium">New version</h2>
 
-              <div className="grid grid-cols-4 gap-4">
-                <Field label="Mash efficiency (0..1)" value={mashEff} onChange={setMashEff} />
-                <Field label="Ferment efficiency (0..1)" value={fermentEff} onChange={setFermentEff} />
-                <Field label="Distillation recovery (0..1)" value={distillEff} onChange={setDistillEff} />
-                <Field label="Water (L)" value={waterL} onChange={setWaterL} placeholder="optional" />
-              </div>
+              {isGin ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <Field label="NGS input (L)" value={ngsInputL} onChange={setNgsInputL} placeholder="e.g. 100" />
+                  <Field label="NGS input ABV (%)" value={ngsInputAbv} onChange={setNgsInputAbv} placeholder="e.g. 96" />
+                  <Field label="Maceration (h)" value={macerationHours} onChange={setMacerationHours} placeholder="e.g. 12" />
+                  <Field label="Distillation recovery (0..1)" value={distillEff} onChange={setDistillEff} />
+                  <div className="col-span-1 sm:col-span-2 lg:col-span-2">
+                    <label className="mb-2 block text-sm font-medium text-fg-muted">Distillation method</label>
+                    <select
+                      value={distillationMethod}
+                      onChange={(e) => setDistillationMethod(Number(e.target.value) as DistillationMethod)}
+                      className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+                    >
+                      {DISTILLATION_METHOD_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>{o.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-4 gap-4">
+                  <Field label="Mash efficiency (0..1)" value={mashEff} onChange={setMashEff} />
+                  <Field label="Ferment efficiency (0..1)" value={fermentEff} onChange={setFermentEff} />
+                  <Field label="Distillation recovery (0..1)" value={distillEff} onChange={setDistillEff} />
+                  <Field label="Water (L)" value={waterL} onChange={setWaterL} placeholder="optional" />
+                </div>
+              )}
+
               <Field label="Version notes" value={versionNotes} onChange={setVersionNotes} />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-fg-muted">Tasting notes</label>
+                <textarea
+                  value={tastingNotes}
+                  onChange={(e) => setTastingNotes(e.target.value)}
+                  rows={3}
+                  placeholder={isGin
+                    ? "Aroma: juniper-forward, citrus on the nose. Palate: …"
+                    : "Optional — flavor / smell notes on this version."}
+                  className="w-full rounded border border-border-strong px-3 py-2 text-sm focus:border-accent focus:outline-none"
+                />
+              </div>
 
               <div>
-                <p className="mb-2 text-sm font-medium text-fg">Ingredients</p>
+                <p className="mb-2 text-sm font-medium text-fg">
+                  {isGin ? "Botanicals" : "Ingredients"}
+                </p>
                 <div className="space-y-2">
-                  {rows.map((r, idx) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <select
-                        value={r.materialId}
-                        onChange={(e) => updateRow(idx, { materialId: e.target.value })}
-                        className="flex-1 rounded border border-border-strong px-3 py-2 text-sm"
-                      >
-                        <option value="">Select material…</option>
-                        {materials.data?.materials.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                            {fermentableMaterialIds.has(m.id) ? "" : "  (no LAA contribution)"}
-                          </option>
-                        ))}
-                      </select>
-                      <input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="qty"
-                        value={r.quantity}
-                        onChange={(e) => updateRow(idx, { quantity: e.target.value })}
-                        className="w-28 rounded border border-border-strong px-3 py-2 text-sm"
-                      />
-                      <input
-                        type="text"
-                        placeholder="uom"
-                        value={r.uom}
-                        onChange={(e) => updateRow(idx, { uom: e.target.value })}
-                        className="w-20 rounded border border-border-strong px-3 py-2 text-sm"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeRow(idx)}
-                        className="text-sm text-fg-muted hover:text-danger-fg"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  ))}
+                  {rows.map((r, idx) => {
+                    const isBotanical = botanicalMaterialIds.has(r.materialId);
+                    return (
+                      <div key={idx} className="flex flex-wrap items-center gap-2">
+                        <select
+                          value={r.materialId}
+                          onChange={(e) => updateRow(idx, { materialId: e.target.value })}
+                          className="flex-1 min-w-[12rem] rounded border border-border-strong px-3 py-2 text-sm"
+                        >
+                          <option value="">Select material…</option>
+                          {materials.data?.materials.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name}
+                              {isGin
+                                ? botanicalMaterialIds.has(m.id) ? "" : "  (non-botanical)"
+                                : fermentableMaterialIds.has(m.id) ? "" : "  (no LAA contribution)"}
+                            </option>
+                          ))}
+                        </select>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="qty"
+                          value={r.quantity}
+                          onChange={(e) => updateRow(idx, { quantity: e.target.value })}
+                          className="w-24 rounded border border-border-strong px-3 py-2 text-sm"
+                        />
+                        <input
+                          type="text"
+                          placeholder="uom"
+                          value={r.uom}
+                          onChange={(e) => updateRow(idx, { uom: e.target.value })}
+                          className="w-20 rounded border border-border-strong px-3 py-2 text-sm"
+                        />
+                        {isGin && isBotanical && (
+                          <select
+                            value={r.botanicalRole}
+                            onChange={(e) => updateRow(idx, { botanicalRole: Number(e.target.value) as BotanicalRole })}
+                            className="w-32 rounded border border-border-strong px-3 py-2 text-sm"
+                          >
+                            {BOTANICAL_ROLE_OPTIONS.map((o) => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </select>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => removeRow(idx)}
+                          className="text-sm text-fg-muted hover:text-danger-fg"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
                   <button
                     type="button"
                     onClick={() =>
-                      setRows((rs) => [...rs, { materialId: "", quantity: "", uom: "kg", notes: "" }])
+                      setRows((rs) => [
+                        ...rs,
+                        { materialId: "", quantity: "", uom: isGin ? "g" : "kg", notes: "", botanicalRole: BotanicalRole.UNSPECIFIED },
+                      ])
                     }
                     className="text-sm text-fg-muted underline-offset-2 hover:underline"
                   >
-                    + Add ingredient
+                    + Add {isGin ? "botanical" : "ingredient"}
                   </button>
                 </div>
               </div>
@@ -237,25 +363,42 @@ export function RecipeDetailPage() {
             <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
               <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
                 <header className="border-b border-border bg-surface-3 px-4 py-3">
-                  <h2 className="text-sm font-semibold text-fg-muted">
-                    Current version
-                  </h2>
+                  <h2 className="text-sm font-semibold text-fg-muted">Current version</h2>
                 </header>
                 <dl className="divide-y divide-border text-sm">
                   <DLRow label="Version">v{recipe.data.currentVersion.versionNo}</DLRow>
-                  <DLRow label="Mash efficiency">
-                    {formatPct(recipe.data.currentVersion.mashEfficiencyPct)}
-                  </DLRow>
-                  <DLRow label="Ferment efficiency">
-                    {formatPct(recipe.data.currentVersion.fermentEfficiencyPct)}
-                  </DLRow>
-                  <DLRow label="Distillation recovery">
-                    {formatPct(recipe.data.currentVersion.distillationRecoveryPct)}
-                  </DLRow>
-                  {recipe.data.currentVersion.targetWaterLSet && (
-                    <DLRow label="Target water">
-                      {formatQty(recipe.data.currentVersion.targetWaterL)} L
-                    </DLRow>
+                  {isGin ? (
+                    <>
+                      {recipe.data.currentVersion.ginNgsInputLSet && (
+                        <DLRow label="NGS input">
+                          {formatQty(recipe.data.currentVersion.ginNgsInputL)} L
+                          {recipe.data.currentVersion.ginNgsInputAbvPctSet &&
+                            ` @ ${recipe.data.currentVersion.ginNgsInputAbvPct.toFixed(1)}%`}
+                        </DLRow>
+                      )}
+                      <DLRow label="Distillation recovery">
+                        {formatPct(recipe.data.currentVersion.distillationRecoveryPct)}
+                      </DLRow>
+                      <DLRow label="Distillation method">
+                        {distillationMethodLabel(recipe.data.currentVersion.distillationMethod)}
+                      </DLRow>
+                      {recipe.data.currentVersion.macerationHoursSet && (
+                        <DLRow label="Maceration">
+                          {recipe.data.currentVersion.macerationHours.toFixed(1)} h
+                        </DLRow>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <DLRow label="Mash efficiency">{formatPct(recipe.data.currentVersion.mashEfficiencyPct)}</DLRow>
+                      <DLRow label="Ferment efficiency">{formatPct(recipe.data.currentVersion.fermentEfficiencyPct)}</DLRow>
+                      <DLRow label="Distillation recovery">{formatPct(recipe.data.currentVersion.distillationRecoveryPct)}</DLRow>
+                      {recipe.data.currentVersion.targetWaterLSet && (
+                        <DLRow label="Target water">
+                          {formatQty(recipe.data.currentVersion.targetWaterL)} L
+                        </DLRow>
+                      )}
+                    </>
                   )}
                 </dl>
               </div>
@@ -270,7 +413,7 @@ export function RecipeDetailPage() {
                       {formatLAA(recipe.data.projection?.totalProjectedLaa)} L
                     </span>
                   </DLRow>
-                  {(recipe.data.projection?.projectedWashVolumeL ?? 0) > 0 && (
+                  {!isGin && (recipe.data.projection?.projectedWashVolumeL ?? 0) > 0 && (
                     <>
                       <DLRow label="Projected wash volume">
                         {formatQty(recipe.data.projection?.projectedWashVolumeL)} L
@@ -280,52 +423,95 @@ export function RecipeDetailPage() {
                       </DLRow>
                     </>
                   )}
+                  {isGin && (
+                    <DLRow label="Math">
+                      <span className="text-xs text-fg-muted">NGS LAA × recovery</span>
+                    </DLRow>
+                  )}
                 </dl>
               </div>
+
+              {recipe.data.currentVersion.tastingNotes && (
+                <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm lg:col-span-2">
+                  <header className="border-b border-border bg-surface-3 px-4 py-3">
+                    <h2 className="text-sm font-semibold text-fg-muted">Tasting notes</h2>
+                  </header>
+                  <p className="whitespace-pre-wrap px-4 py-3 text-sm text-fg">
+                    {recipe.data.currentVersion.tastingNotes}
+                  </p>
+                </div>
+              )}
 
               <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm lg:col-span-2">
                 <header className="border-b border-border bg-surface-3 px-4 py-3">
                   <h2 className="text-sm font-semibold text-fg-muted">
-                    Ingredients
+                    {isGin ? "Botanical bill" : "Ingredients"}
                   </h2>
                 </header>
                 <table className="min-w-full divide-y divide-border text-sm">
                   <thead className="bg-surface-2 text-left text-xs text-fg-muted">
                     <tr>
                       <th className="px-4 py-3">Material</th>
+                      {isGin && <th className="px-4 py-3">Role</th>}
                       <th className="px-4 py-3 text-right">Qty</th>
                       <th className="px-4 py-3">UoM</th>
-                      <th className="px-4 py-3 text-right">Fermentable kg</th>
-                      <th className="px-4 py-3 text-right">Ethanol kg</th>
-                      <th className="px-4 py-3 text-right">Projected LAA</th>
+                      {!isGin && (
+                        <>
+                          <th className="px-4 py-3 text-right">Fermentable kg</th>
+                          <th className="px-4 py-3 text-right">Ethanol kg</th>
+                          <th className="px-4 py-3 text-right">Projected LAA</th>
+                        </>
+                      )}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-                    {recipe.data.projection?.lines.map((l) => (
-                      <tr key={l.materialId}>
-                        <td className="px-4 py-3 font-medium text-fg">{l.materialName}</td>
-                        <td className="px-4 py-3 text-right text-fg-muted">{formatQty(l.quantity)}</td>
-                        <td className="px-4 py-3 text-fg-muted">{l.uom}</td>
-                        <td className="px-4 py-3 text-right text-fg-muted">
-                          {l.fermentableKg > 0 ? formatQty(l.fermentableKg) : "—"}
-                        </td>
-                        <td className="px-4 py-3 text-right text-fg-muted">
-                          {l.ethanolMassKg > 0 ? formatQty(l.ethanolMassKg) : "—"}
-                        </td>
-                        <td className="px-4 py-3 text-right font-medium text-fg">
-                          {l.projectedLaa > 0 ? formatLAA(l.projectedLaa) : "—"}
-                        </td>
-                      </tr>
-                    ))}
+                    {recipe.data.projection?.lines.map((l) => {
+                      const ing = recipe.data?.currentVersion?.ingredients.find((i) => i.materialId === l.materialId);
+                      return (
+                        <tr key={l.materialId}>
+                          <td className="px-4 py-3 font-medium text-fg">{l.materialName}</td>
+                          {isGin && (
+                            <td className="px-4 py-3 text-fg-muted">
+                              {ing && ing.botanicalRole !== BotanicalRole.UNSPECIFIED
+                                ? botanicalRoleLabel(ing.botanicalRole)
+                                : <span className="text-fg-subtle">—</span>}
+                            </td>
+                          )}
+                          <td className="px-4 py-3 text-right text-fg-muted">{formatQty(l.quantity)}</td>
+                          <td className="px-4 py-3 text-fg-muted">{l.uom}</td>
+                          {!isGin && (
+                            <>
+                              <td className="px-4 py-3 text-right text-fg-muted">{l.fermentableKg > 0 ? formatQty(l.fermentableKg) : "—"}</td>
+                              <td className="px-4 py-3 text-right text-fg-muted">{l.ethanolMassKg > 0 ? formatQty(l.ethanolMassKg) : "—"}</td>
+                              <td className="px-4 py-3 text-right font-medium text-fg">{l.projectedLaa > 0 ? formatLAA(l.projectedLaa) : "—"}</td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
+
+              {isGin && (
+                <div className="lg:col-span-2">
+                  <SensoryPanel
+                    recipeId={id!}
+                    versionId={recipe.data.currentVersion.id}
+                    current={recipe.data.currentVersion.sensory}
+                  />
+                </div>
+              )}
             </section>
           ) : (
             <p className="text-fg-muted">No version yet. Click <b>Add first version</b>.</p>
           )}
 
-          <VersionHistory recipeId={id} currentVersionId={recipe.data.recipe.currentVersionId} />
+          <VersionHistory
+            recipeId={id}
+            currentVersionId={recipe.data.recipe.currentVersionId}
+            isGin={isGin}
+          />
         </>
       )}
     </Shell>
@@ -339,54 +525,371 @@ export function RecipeDetailPage() {
   }
 }
 
-function VersionHistory({ recipeId, currentVersionId }: { recipeId: string; currentVersionId: string }) {
+// SensoryPanel — only rendered for gin recipes. Edit-in-place: every
+// axis is a 0–10 number input; blank means "not tasted on this axis."
+// Save = upsert. Reload pulls fresh scores into the form.
+function SensoryPanel({
+  recipeId,
+  versionId,
+  current,
+}: {
+  recipeId: string;
+  versionId: string;
+  current?: ReturnType<typeof recipeSensory>;
+}) {
+  const qc = useQueryClient();
+
+  function initFrom(s?: ReturnType<typeof recipeSensory>): Record<SensoryAxis, string> {
+    const out = {} as Record<SensoryAxis, string>;
+    for (const a of SENSORY_AXES) {
+      const set = s?.[`${a.key}Set` as `${SensoryAxis}Set`] as boolean | undefined;
+      const v = s?.[a.key] as number | undefined;
+      out[a.key] = set ? String(v) : "";
+    }
+    return out;
+  }
+
+  const [scores, setScores] = useState<Record<SensoryAxis, string>>(initFrom(current));
+  const [panel, setPanel] = useState<string>(current?.tastingPanel ?? "");
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  const save = useMutation({
+    mutationFn: () => {
+      const built = create(GinSensoryScoresSchema, { tastingPanel: panel });
+      for (const a of SENSORY_AXES) {
+        const raw = scores[a.key].trim();
+        if (raw === "") continue;
+        const v = Math.max(0, Math.min(10, Math.round(Number(raw))));
+        (built as Record<string, unknown>)[a.key] = v;
+        (built as Record<string, unknown>)[`${a.key}Set`] = true;
+      }
+      return recipeClient.saveRecipeVersionSensory(
+        create(SaveRecipeVersionSensoryRequestSchema, {
+          recipeVersionId: versionId,
+          scores: built,
+        }),
+      );
+    },
+    onSuccess: () => {
+      setSavedAt(Date.now());
+      qc.invalidateQueries({ queryKey: ["getRecipe", recipeId] });
+      qc.invalidateQueries({ queryKey: ["listRecipeVersions", recipeId] });
+      setTimeout(() => setSavedAt(null), 2500);
+    },
+  });
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold text-fg-muted">Sensory scoring (0–10)</h2>
+      </header>
+      <div className="space-y-3 p-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {SENSORY_AXES.map((a) => (
+            <div key={a.key}>
+              <label className="mb-1 block text-xs font-medium text-fg-muted">{a.label}</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={scores[a.key]}
+                  onChange={(e) => setScores((s) => ({ ...s, [a.key]: e.target.value }))}
+                  className="w-16 rounded border border-border-strong px-2 py-1 text-sm"
+                />
+                <ScoreBar value={Number(scores[a.key]) || 0} hasValue={scores[a.key].trim() !== ""} />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[12rem]">
+            <label className="mb-1 block text-xs font-medium text-fg-muted">Tasting panel</label>
+            <input
+              value={panel}
+              onChange={(e) => setPanel(e.target.value)}
+              placeholder="self · Kyle + Jane · …"
+              className="w-full rounded border border-border-strong px-2 py-1 text-sm"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
+          >
+            {save.isPending ? "Saving…" : "Save scores"}
+          </button>
+          {savedAt && <span className="text-sm text-success-fg">Saved.</span>}
+          {save.error && (
+            <span className="text-sm text-danger-fg">
+              {save.error instanceof ConnectError ? save.error.rawMessage : String(save.error)}
+            </span>
+          )}
+        </div>
+        {current?.tastedAt && (
+          <p className="text-xs text-fg-muted">
+            Last tasted: {new Date(Number(current.tastedAt.seconds) * 1000).toLocaleString()}
+            {current.tastingPanel && ` · ${current.tastingPanel}`}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ScoreBar({ value, hasValue }: { value: number; hasValue: boolean }) {
+  if (!hasValue) return <span className="text-xs text-fg-subtle">—</span>;
+  const pct = Math.max(0, Math.min(100, (value / 10) * 100));
+  return (
+    <div className="h-2 flex-1 rounded bg-surface-3" title={`${value}/10`}>
+      <div className="h-2 rounded bg-accent" style={{ width: `${pct}%` }} />
+    </div>
+  );
+}
+
+// VersionHistory — with optional compare view. Pick 2 versions to see
+// side-by-side ingredients + sensory + projection. Stays collapsed
+// until the user opts in.
+function VersionHistory({
+  recipeId,
+  currentVersionId,
+  isGin,
+}: {
+  recipeId: string;
+  currentVersionId: string;
+  isGin: boolean;
+}) {
   const versions = useQuery({
     queryKey: ["listRecipeVersions", recipeId],
     queryFn: () => recipeClient.listRecipeVersions({ recipeId }),
   });
+  const [selected, setSelected] = useState<string[]>([]);
+
   if (versions.isLoading) return null;
   const list = versions.data?.versions ?? [];
   if (list.length <= 1) return null;
+
+  function toggle(id: string) {
+    setSelected((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 2) return [prev[1], id];
+      return [...prev, id];
+    });
+  }
+
   return (
     <section className="mt-8">
-      <h2 className="mb-3 text-sm font-semibold text-fg-muted">Version history</h2>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-fg-muted">Version history</h2>
+        {selected.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setSelected([])}
+            className="text-xs text-fg-muted hover:text-fg"
+          >
+            Clear selection
+          </button>
+        )}
+      </div>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
+              <th className="px-3 py-2 w-10">Compare</th>
               <th className="px-4 py-2">Version</th>
               <th className="px-4 py-2">Saved</th>
-              <th className="px-4 py-2 text-right">Mash %</th>
-              <th className="px-4 py-2 text-right">Ferment %</th>
+              {!isGin && (
+                <>
+                  <th className="px-4 py-2 text-right">Mash %</th>
+                  <th className="px-4 py-2 text-right">Ferment %</th>
+                </>
+              )}
               <th className="px-4 py-2 text-right">Distill %</th>
-              <th className="px-4 py-2 text-right">Target water (L)</th>
+              {isGin && <th className="px-4 py-2 text-right">NGS LAA</th>}
               <th className="px-4 py-2">Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {list.map((v) => (
-              <tr key={v.id} className={v.id === currentVersionId ? "bg-success/10" : ""}>
-                <td className="px-4 py-2 font-medium text-fg">
-                  v{v.versionNo}
-                  {v.id === currentVersionId && (
-                    <span className="ml-2 rounded bg-emerald-200 px-2 py-0.5 text-xs text-emerald-800">current</span>
+            {list.map((v) => {
+              const isSelected = selected.includes(v.id);
+              const ngsLAA = v.ginNgsInputLSet && v.ginNgsInputAbvPctSet
+                ? (v.ginNgsInputL * v.ginNgsInputAbvPct / 100).toFixed(2)
+                : null;
+              return (
+                <tr key={v.id} className={v.id === currentVersionId ? "bg-success/10" : isSelected ? "bg-accent/10" : ""}>
+                  <td className="px-3 py-2">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggle(v.id)}
+                      aria-label={`Select v${v.versionNo} for compare`}
+                    />
+                  </td>
+                  <td className="px-4 py-2 font-medium text-fg">
+                    v{v.versionNo}
+                    {v.id === currentVersionId && (
+                      <span className="ml-2 rounded bg-emerald-200 px-2 py-0.5 text-xs text-emerald-800">current</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2 text-fg-muted">
+                    {v.createdAt ? new Date(Number(v.createdAt.seconds) * 1000).toLocaleString() : ""}
+                  </td>
+                  {!isGin && (
+                    <>
+                      <td className="px-4 py-2 text-right text-fg-muted">{(v.mashEfficiencyPct * 100).toFixed(1)}%</td>
+                      <td className="px-4 py-2 text-right text-fg-muted">{(v.fermentEfficiencyPct * 100).toFixed(1)}%</td>
+                    </>
                   )}
-                </td>
-                <td className="px-4 py-2 text-fg-muted">
-                  {v.createdAt ? new Date(Number(v.createdAt.seconds) * 1000).toLocaleString() : ""}
-                </td>
-                <td className="px-4 py-2 text-right text-fg-muted">{(v.mashEfficiencyPct * 100).toFixed(1)}%</td>
-                <td className="px-4 py-2 text-right text-fg-muted">{(v.fermentEfficiencyPct * 100).toFixed(1)}%</td>
-                <td className="px-4 py-2 text-right text-fg-muted">{(v.distillationRecoveryPct * 100).toFixed(1)}%</td>
-                <td className="px-4 py-2 text-right text-fg-muted">{v.targetWaterLSet ? v.targetWaterL.toFixed(0) : "—"}</td>
-                <td className="px-4 py-2 text-fg-muted">{v.notes}</td>
-              </tr>
-            ))}
+                  <td className="px-4 py-2 text-right text-fg-muted">{(v.distillationRecoveryPct * 100).toFixed(1)}%</td>
+                  {isGin && (
+                    <td className="px-4 py-2 text-right text-fg-muted">{ngsLAA ?? "—"}</td>
+                  )}
+                  <td className="px-4 py-2 text-fg-muted">{v.notes}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {selected.length === 2 && (
+        <CompareTwo
+          recipeId={recipeId}
+          versions={[
+            list.find((v) => v.id === selected[0])!,
+            list.find((v) => v.id === selected[1])!,
+          ].filter(Boolean) as RecipeVersion[]}
+          isGin={isGin}
+        />
+      )}
     </section>
   );
+}
+
+function CompareTwo({
+  versions,
+  isGin,
+}: {
+  recipeId: string;
+  versions: RecipeVersion[];
+  isGin: boolean;
+}) {
+  if (versions.length !== 2) return null;
+  const [a, b] = versions;
+  // Pull a stable union of axes used in either version's ingredients.
+  const allMaterialIds: string[] = [];
+  const seen = new Set<string>();
+  for (const v of [a, b]) {
+    for (const ing of v.ingredients) {
+      if (!seen.has(ing.materialId)) {
+        seen.add(ing.materialId);
+        allMaterialIds.push(ing.materialId);
+      }
+    }
+  }
+  const labelOf = (v: RecipeVersion) => `v${v.versionNo}`;
+
+  return (
+    <section className="mt-6">
+      <h3 className="mb-3 text-sm font-semibold text-fg-muted">Compare {labelOf(a)} ↔ {labelOf(b)}</h3>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Process column */}
+        <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+          <header className="border-b border-border bg-surface-3 px-4 py-2 text-xs font-semibold text-fg-muted">Process</header>
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="bg-surface-3 text-left text-xs text-fg-muted">
+              <tr><th className="px-3 py-2"></th><th className="px-3 py-2">{labelOf(a)}</th><th className="px-3 py-2">{labelOf(b)}</th></tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {isGin ? (
+                <>
+                  <CmpRow label="NGS input (L)" a={a.ginNgsInputLSet ? formatQty(a.ginNgsInputL) : "—"} b={b.ginNgsInputLSet ? formatQty(b.ginNgsInputL) : "—"} />
+                  <CmpRow label="NGS ABV" a={a.ginNgsInputAbvPctSet ? `${a.ginNgsInputAbvPct.toFixed(1)}%` : "—"} b={b.ginNgsInputAbvPctSet ? `${b.ginNgsInputAbvPct.toFixed(1)}%` : "—"} />
+                  <CmpRow label="Method" a={distillationMethodLabel(a.distillationMethod)} b={distillationMethodLabel(b.distillationMethod)} />
+                  <CmpRow label="Maceration" a={a.macerationHoursSet ? `${a.macerationHours}h` : "—"} b={b.macerationHoursSet ? `${b.macerationHours}h` : "—"} />
+                </>
+              ) : (
+                <>
+                  <CmpRow label="Mash" a={`${(a.mashEfficiencyPct * 100).toFixed(1)}%`} b={`${(b.mashEfficiencyPct * 100).toFixed(1)}%`} />
+                  <CmpRow label="Ferment" a={`${(a.fermentEfficiencyPct * 100).toFixed(1)}%`} b={`${(b.fermentEfficiencyPct * 100).toFixed(1)}%`} />
+                </>
+              )}
+              <CmpRow label="Recovery" a={`${(a.distillationRecoveryPct * 100).toFixed(1)}%`} b={`${(b.distillationRecoveryPct * 100).toFixed(1)}%`} />
+            </tbody>
+          </table>
+        </div>
+
+        {/* Ingredients column */}
+        <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+          <header className="border-b border-border bg-surface-3 px-4 py-2 text-xs font-semibold text-fg-muted">{isGin ? "Botanicals" : "Ingredients"}</header>
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="bg-surface-3 text-left text-xs text-fg-muted">
+              <tr><th className="px-3 py-2">Material</th><th className="px-3 py-2 text-right">{labelOf(a)}</th><th className="px-3 py-2 text-right">{labelOf(b)}</th></tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {allMaterialIds.map((mid) => {
+                const ia = a.ingredients.find((i: RecipeIngredient) => i.materialId === mid);
+                const ib = b.ingredients.find((i: RecipeIngredient) => i.materialId === mid);
+                const name = ia?.materialName ?? ib?.materialName ?? mid;
+                const fmt = (i?: RecipeIngredient) => (i ? `${formatQty(i.quantity)} ${i.uom}` : "—");
+                const diff = ia && ib && ia.quantity !== ib.quantity;
+                return (
+                  <tr key={mid} className={diff ? "bg-warning/5" : ""}>
+                    <td className="px-3 py-2 text-fg">{name}</td>
+                    <td className="px-3 py-2 text-right text-fg-muted">{fmt(ia)}</td>
+                    <td className="px-3 py-2 text-right text-fg-muted">{fmt(ib)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Sensory column */}
+        <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+          <header className="border-b border-border bg-surface-3 px-4 py-2 text-xs font-semibold text-fg-muted">Sensory (0–10)</header>
+          <table className="min-w-full divide-y divide-border text-sm">
+            <thead className="bg-surface-3 text-left text-xs text-fg-muted">
+              <tr><th className="px-3 py-2"></th><th className="px-3 py-2 text-right">{labelOf(a)}</th><th className="px-3 py-2 text-right">{labelOf(b)}</th></tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {SENSORY_AXES.map((axis) => {
+                const va = recipeSensory(a)?.[`${axis.key}Set` as `${SensoryAxis}Set`] ? recipeSensory(a)?.[axis.key] as number : null;
+                const vb = recipeSensory(b)?.[`${axis.key}Set` as `${SensoryAxis}Set`] ? recipeSensory(b)?.[axis.key] as number : null;
+                const diff = va !== null && vb !== null && va !== vb;
+                return (
+                  <tr key={axis.key} className={diff ? "bg-warning/5" : ""}>
+                    <td className="px-3 py-2 text-fg">{axis.label}</td>
+                    <td className="px-3 py-2 text-right text-fg-muted">{va ?? "—"}</td>
+                    <td className="px-3 py-2 text-right text-fg-muted">{vb ?? "—"}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CmpRow({ label, a, b }: { label: string; a: string; b: string }) {
+  const diff = a !== b;
+  return (
+    <tr className={diff ? "bg-warning/5" : ""}>
+      <td className="px-3 py-2 text-fg-muted">{label}</td>
+      <td className="px-3 py-2 text-fg">{a}</td>
+      <td className="px-3 py-2 text-fg">{b}</td>
+    </tr>
+  );
+}
+
+// recipeSensory pulls the optional sensory message off a RecipeVersion
+// in a typed way. The list endpoint doesn't currently populate it; only
+// GetRecipe does. CompareTwo uses what it has.
+function recipeSensory(v: RecipeVersion) {
+  return v.sensory;
 }
 
 function Field({
