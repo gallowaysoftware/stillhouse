@@ -203,7 +203,7 @@ func (s *BulkService) ListBulkContainers(
 	}
 	return connect.NewResponse(&stillhousev1.ListBulkContainersResponse{
 		Containers: out,
-		Summary:    &stillhousev1.BulkSummary{TotalLaa: totalLAA, ContainerCount: activeCount},
+		Summary:    &stillhousev1.BulkSummary{TotalLaa: round4(totalLAA), ContainerCount: activeCount},
 	}), nil
 }
 
@@ -446,9 +446,9 @@ func (s *BulkService) ListRecentBulkMovements(
 			SourceContainerName:      r.SourceName.String,
 			DestinationContainerId:   nullUUIDString(r.DestinationContainerID),
 			DestinationContainerName: r.DestinationName.String,
-			VolumeL:                  r.VolumeL,
-			AbvPct:                   r.AbvPct,
-			Laa:                      r.Laa,
+			VolumeL:                  round4(r.VolumeL),
+			AbvPct:                   round2(r.AbvPct),
+			Laa:                      round4(r.Laa),
 			Reason:                   bulkMovementReasonToProto(r.Reason),
 			ReferenceType:            r.ReferenceType,
 			ReferenceId:              nullUUIDString(r.ReferenceID),
@@ -471,17 +471,17 @@ func bulkContainerToProto(c sqlcgen.BulkContainer) *stillhousev1.BulkContainer {
 		Location:       c.Location,
 		Notes:          c.Notes,
 		Archived:       c.Archived,
-		CurrentVolumeL: c.CurrentVolumeL,
-		CurrentLaa:     c.CurrentLaa,
+		CurrentVolumeL: round4(c.CurrentVolumeL),
+		CurrentLaa:     round4(c.CurrentLaa),
 		CreatedAt:      timestamppb.New(c.CreatedAt.Time),
 		UpdatedAt:      timestamppb.New(c.UpdatedAt.Time),
 	}
 	if c.CapacityL.Valid {
-		out.CapacityL = c.CapacityL.Float64
+		out.CapacityL = round4(c.CapacityL.Float64)
 		out.CapacityLSet = true
 	}
 	if c.CurrentAbvPct.Valid {
-		out.CurrentAbvPct = c.CurrentAbvPct.Float64
+		out.CurrentAbvPct = round2(c.CurrentAbvPct.Float64)
 		out.CurrentAbvPctSet = true
 	}
 	return out
@@ -494,9 +494,9 @@ func bulkMovementRowToProto(r sqlcgen.ListBulkMovementsByContainerRow) *stillhou
 		SourceContainerName:      r.SourceName.String,
 		DestinationContainerId:   nullUUIDString(r.DestinationContainerID),
 		DestinationContainerName: r.DestinationName.String,
-		VolumeL:                  r.VolumeL,
-		AbvPct:                   r.AbvPct,
-		Laa:                      r.Laa,
+		VolumeL:                  round4(r.VolumeL),
+		AbvPct:                   round2(r.AbvPct),
+		Laa:                      round4(r.Laa),
 		Reason:                   bulkMovementReasonToProto(r.Reason),
 		ReferenceType:            r.ReferenceType,
 		ReferenceId:              nullUUIDString(r.ReferenceID),
@@ -511,9 +511,9 @@ func bulkMovementToProto(m sqlcgen.BulkMovement) *stillhousev1.BulkMovement {
 		Id:                     m.ID.String(),
 		SourceContainerId:      nullUUIDString(m.SourceContainerID),
 		DestinationContainerId: nullUUIDString(m.DestinationContainerID),
-		VolumeL:                m.VolumeL,
-		AbvPct:                 m.AbvPct,
-		Laa:                    m.Laa,
+		VolumeL:                round4(m.VolumeL),
+		AbvPct:                 round2(m.AbvPct),
+		Laa:                    round4(m.Laa),
 		Reason:                 bulkMovementReasonToProto(m.Reason),
 		ReferenceType:          m.ReferenceType,
 		ReferenceId:            nullUUIDString(m.ReferenceID),

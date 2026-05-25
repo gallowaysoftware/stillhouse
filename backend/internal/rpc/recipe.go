@@ -571,10 +571,23 @@ func (s *RecipeService) SaveRecipeVersionSensory(
 	var saved sqlcgen.RecipeVersionSensory
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		// Confirm the version exists in this tenant before upserting.
-		if _, e := q.GetRecipeVersion(ctx, versionID); e != nil {
+		v, e := q.GetRecipeVersion(ctx, versionID)
+		if e != nil {
 			return e
 		}
-		var e error
+		// Gate to gin recipes — the 10 axes (juniper, citrus, herbal,
+		// spice, floral, earth, body, heat, balance, overall) are
+		// gin-shaped. A whisky tasting bench would need different axes
+		// (caramel, vanilla, oak, smoke, …); whoever wants that should
+		// add a separate RPC rather than overloading this one.
+		r, e := q.GetRecipe(ctx, v.RecipeID)
+		if e != nil {
+			return e
+		}
+		if r.SpiritKind != sqlcgen.SpiritKindGin {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("sensory bench is gin-only; this recipe is " + string(r.SpiritKind)))
+		}
 		saved, e = q.UpsertRecipeVersionSensory(ctx, sqlcgen.UpsertRecipeVersionSensoryParams{
 			RecipeVersionID: versionID,
 			TenantID:        u.TenantID,

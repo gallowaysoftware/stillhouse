@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math"
 	"time"
@@ -222,6 +223,17 @@ func (s *BarrelService) FillBarrel(
 		}
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
+		}
+		// Reject overfills. Recorded capacity is in litres; the small
+		// tolerance covers float rounding when filling to exactly the
+		// brim. If no capacity is recorded on the barrel we skip the
+		// check — operator opted out of capacity hygiene for that vessel.
+		if barrel.CapacityL.Valid {
+			if barrel.CurrentVolumeL+in.GetVolumeL() > barrel.CapacityL.Float64+1e-6 {
+				return connect.NewError(connect.CodeFailedPrecondition,
+					fmt.Errorf("fill would overflow barrel: %.4f L on hand + %.4f L fill > %.4f L capacity",
+						barrel.CurrentVolumeL, in.GetVolumeL(), barrel.CapacityL.Float64))
+			}
 		}
 		source, e := q.GetBulkContainer(ctx, sourceID)
 		if e != nil {
@@ -629,7 +641,7 @@ func (s *BarrelService) RegaugeBarrel(
 	return connect.NewResponse(&stillhousev1.RegaugeBarrelResponse{
 		Event:   barrelEventToProto(event),
 		Barrel:  barrelToProto(barrelContainer, attrs),
-		LostLaa: lostLAA,
+		LostLaa: round4(lostLAA),
 	}), nil
 }
 
@@ -776,8 +788,8 @@ func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute) *stillhou
 		Location:          c.Location,
 		Notes:             c.Notes,
 		Archived:          c.Archived,
-		CurrentVolumeL:    c.CurrentVolumeL,
-		CurrentLaa:        c.CurrentLaa,
+		CurrentVolumeL:    round4(c.CurrentVolumeL),
+		CurrentLaa:        round4(c.CurrentLaa),
 		CreatedAt:         timestamppb.New(c.CreatedAt.Time),
 		UpdatedAt:         timestamppb.New(c.UpdatedAt.Time),
 		CooperageSupplier: a.CooperageSupplier,
@@ -790,12 +802,12 @@ func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute) *stillhou
 		ColumnPosition:    a.ColumnPosition,
 	}
 	if c.CapacityL.Valid {
-		b.CapacityL = c.CapacityL.Float64
+		b.CapacityL = round4(c.CapacityL.Float64)
 		b.CapacityLSet = true
 		b.SmallWood = c.CapacityL.Float64 <= smallWoodCapacityL
 	}
 	if c.CurrentAbvPct.Valid {
-		b.CurrentAbvPct = c.CurrentAbvPct.Float64
+		b.CurrentAbvPct = round2(c.CurrentAbvPct.Float64)
 		b.CurrentAbvPctSet = true
 	}
 	if a.CharLevel.Valid {
@@ -869,15 +881,15 @@ func barrelEventToProto(e sqlcgen.BarrelEvent) *stillhousev1.BarrelEvent {
 		CreatedAt:      timestamppb.New(e.CreatedAt.Time),
 	}
 	if e.VolumeL.Valid {
-		out.VolumeL = e.VolumeL.Float64
+		out.VolumeL = round4(e.VolumeL.Float64)
 		out.VolumeLSet = true
 	}
 	if e.AbvPct.Valid {
-		out.AbvPct = e.AbvPct.Float64
+		out.AbvPct = round2(e.AbvPct.Float64)
 		out.AbvPctSet = true
 	}
 	if e.Laa.Valid {
-		out.Laa = e.Laa.Float64
+		out.Laa = round4(e.Laa.Float64)
 		out.LaaSet = true
 	}
 	return out

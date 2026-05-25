@@ -36,6 +36,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 111 | Gin recipe UI — form branches on spirit kind, botanical-role pickers, tasting notes, sensory scoring bench (0–10 on 10 axes), version-compare with quantity & score diff highlighting |
 | 112 | MCP gin-bench tools — get_recipe, list_recipe_versions, save_recipe_version_sensory; lets an LLM read the recipe + iteration history and score a fresh tasting from the still floor |
 | 113 | Gin-bench QA fixes — list_recipe_versions joins sensory (compare workflow works end-to-end on MCP + web), sensory upsert is partial-update so single-axis tweaks don't null the other 9 |
+| 114 | Close P3 backlog — LAA/ABV/duty/CAD rounded at display, sensory bench gated to gin recipes, FillBarrel rejects overfill, write tools emit full schema (no more `_set: true` with no value) |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

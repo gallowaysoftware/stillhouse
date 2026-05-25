@@ -52,7 +52,7 @@ func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResultSlim(resp.Msg), nil, nil
+		return jsonResult(resp.Msg), nil, nil
 	})
 }
 
@@ -77,7 +77,7 @@ func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResultSlim(resp.Msg), nil, nil
+		return jsonResult(resp.Msg), nil, nil
 	})
 }
 
@@ -104,7 +104,7 @@ func addDumpBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResultSlim(resp.Msg), nil, nil
+		return jsonResult(resp.Msg), nil, nil
 	})
 }
 
@@ -145,7 +145,7 @@ func addAddFermentationReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResultSlim(resp.Msg), nil, nil
+		return jsonResult(resp.Msg), nil, nil
 	})
 }
 
@@ -176,7 +176,7 @@ func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResultSlim(resp.Msg), nil, nil
+		return jsonResult(resp.Msg), nil, nil
 	})
 }
 
@@ -254,7 +254,7 @@ func addSaveRecipeVersionSensory(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		return jsonResultSlim(resp.Msg), nil, nil
+		return jsonResult(resp.Msg), nil, nil
 	})
 }
 
