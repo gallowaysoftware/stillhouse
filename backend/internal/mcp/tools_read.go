@@ -21,6 +21,8 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addGetBarrel(s, d, user)
 	addListRecentBulkMovements(s, d, user)
 	addListRecipes(s, d, user)
+	addGetRecipe(s, d, user)
+	addListRecipeVersions(s, d, user)
 	addListProducts(s, d, user)
 	addListB266Periods(s, d, user)
 }
@@ -161,6 +163,42 @@ func addListRecipes(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		ctx = withUser(ctx, user)
 		resp, err := d.Recipe.ListRecipes(ctx, connect.NewRequest(&pb.ListRecipesRequest{
 			IncludeArchived: args.IncludeArchived,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addGetRecipe(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		ID string `json:"id" jsonschema:"UUID of the recipe"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name:        "get_recipe",
+		Description: "Drill into one recipe: the recipe row, its current version (mash bill for whisky or botanical bill + NGS/maceration/method for gin), the projected LAA, and the latest sensory scores if any. Use this to inspect a recipe before scoring it or before iterating to a new version.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		resp, err := d.Recipe.GetRecipe(ctx, connect.NewRequest(&pb.GetRecipeRequest{Id: args.ID}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListRecipeVersions(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		RecipeID string `json:"recipe_id" jsonschema:"UUID of the recipe"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name:        "list_recipe_versions",
+		Description: "List every saved version of a recipe (newest first) — the iteration history. Returns version metadata (no ingredient bill); call get_recipe for the current version's full ingredient + sensory drill-down.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		resp, err := d.Recipe.ListRecipeVersions(ctx, connect.NewRequest(&pb.ListRecipeVersionsRequest{
+			RecipeId: args.RecipeID,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil

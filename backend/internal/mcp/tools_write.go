@@ -26,6 +26,7 @@ func registerWriteTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addDumpBarrel(s, d, user)
 	addAddFermentationReading(s, d, user)
 	addAddMashReading(s, d, user)
+	addSaveRecipeVersionSensory(s, d, user)
 }
 
 func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
@@ -171,6 +172,84 @@ func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			Value:     args.Value,
 			Unit:      args.Unit,
 			Notes:     args.Notes,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResultSlim(resp.Msg), nil, nil
+	})
+}
+
+// addSaveRecipeVersionSensory wires the gin tasting-bench write. Every
+// pointer-typed score uses nil = "not measured on this axis", so a
+// literal `0` is treated as a real reading (you can score floral=0 on
+// a gin that has none and have it persist). Upsert semantics: the
+// underlying RPC replaces the prior score row.
+func addSaveRecipeVersionSensory(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		RecipeVersionID string   `json:"recipe_version_id" jsonschema:"UUID of the recipe version you just tasted"`
+		Juniper         *int32   `json:"juniper,omitempty" jsonschema:"0-10; omit if not scored on this axis"`
+		Citrus          *int32   `json:"citrus,omitempty" jsonschema:"0-10"`
+		Herbal          *int32   `json:"herbal,omitempty" jsonschema:"0-10"`
+		Spice           *int32   `json:"spice,omitempty" jsonschema:"0-10"`
+		Floral          *int32   `json:"floral,omitempty" jsonschema:"0-10"`
+		Earth           *int32   `json:"earth,omitempty" jsonschema:"0-10 (root / earthy notes)"`
+		Body            *int32   `json:"body,omitempty" jsonschema:"0-10 (mouthfeel / weight)"`
+		Heat            *int32   `json:"heat,omitempty" jsonschema:"0-10 (perceived ABV burn)"`
+		Balance         *int32   `json:"balance,omitempty" jsonschema:"0-10 (how well the whole hangs together)"`
+		Overall         *int32   `json:"overall,omitempty" jsonschema:"0-10 (gut-call rating)"`
+		TastingPanel    string   `json:"tasting_panel,omitempty" jsonschema:"who tasted — 'self', 'Kyle + Jane', etc."`
+		Notes           string   `json:"notes,omitempty" jsonschema:"optional — appended to the recipe version's tasting notes by future iterations; for now serves as a panel comment"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "save_recipe_version_sensory",
+		Description: "Score a gin recipe version on the 10-axis tasting bench (juniper / citrus / herbal / spice / floral / earth / body / heat / balance / overall, each 0-10). Upsert — running this replaces any prior scores for the same version. Use after distilling a small test batch and tasting; combine with get_recipe + list_recipe_versions to iterate.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		scores := &pb.GinSensoryScores{TastingPanel: args.TastingPanel}
+		if args.Juniper != nil {
+			scores.Juniper = *args.Juniper
+			scores.JuniperSet = true
+		}
+		if args.Citrus != nil {
+			scores.Citrus = *args.Citrus
+			scores.CitrusSet = true
+		}
+		if args.Herbal != nil {
+			scores.Herbal = *args.Herbal
+			scores.HerbalSet = true
+		}
+		if args.Spice != nil {
+			scores.Spice = *args.Spice
+			scores.SpiceSet = true
+		}
+		if args.Floral != nil {
+			scores.Floral = *args.Floral
+			scores.FloralSet = true
+		}
+		if args.Earth != nil {
+			scores.Earth = *args.Earth
+			scores.EarthSet = true
+		}
+		if args.Body != nil {
+			scores.Body = *args.Body
+			scores.BodySet = true
+		}
+		if args.Heat != nil {
+			scores.Heat = *args.Heat
+			scores.HeatSet = true
+		}
+		if args.Balance != nil {
+			scores.Balance = *args.Balance
+			scores.BalanceSet = true
+		}
+		if args.Overall != nil {
+			scores.Overall = *args.Overall
+			scores.OverallSet = true
+		}
+		resp, err := d.Recipe.SaveRecipeVersionSensory(ctx, connect.NewRequest(&pb.SaveRecipeVersionSensoryRequest{
+			RecipeVersionId: args.RecipeVersionID,
+			Scores:          scores,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil
