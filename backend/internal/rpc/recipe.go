@@ -325,23 +325,73 @@ func (s *RecipeService) ListRecipeVersions(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid recipe_id"))
 	}
 
-	var versions []sqlcgen.RecipeVersion
+	var rows []sqlcgen.ListRecipeVersionsRow
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var dbErr error
-		versions, dbErr = q.ListRecipeVersions(ctx, recipeID)
+		rows, dbErr = q.ListRecipeVersions(ctx, recipeID)
 		return dbErr
 	})
 	if err != nil {
 		s.logger.Error("ListRecipeVersions", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	out := make([]*stillhousev1.RecipeVersion, 0, len(versions))
-	for _, v := range versions {
-		// We don't load ingredients here for list view — clients call GetRecipe
-		// or a future GetRecipeVersion if they need the full breakdown.
-		out = append(out, recipeVersionToProto(v, nil))
+	out := make([]*stillhousev1.RecipeVersion, 0, len(rows))
+	for _, r := range rows {
+		// Reuse recipeVersionToProto by reconstructing the version row;
+		// then layer sensory on top from the joined columns when present.
+		// Ingredients aren't loaded by the list query — callers needing
+		// the full breakdown call GetRecipe for the current version.
+		v := sqlcgen.RecipeVersion{
+			ID:                      r.ID,
+			TenantID:                r.TenantID,
+			RecipeID:                r.RecipeID,
+			VersionNo:               r.VersionNo,
+			Notes:                   r.Notes,
+			MashEfficiencyPct:       r.MashEfficiencyPct,
+			FermentEfficiencyPct:    r.FermentEfficiencyPct,
+			DistillationRecoveryPct: r.DistillationRecoveryPct,
+			TargetWaterL:            r.TargetWaterL,
+			CreatedAt:               r.CreatedAt,
+			TastingNotes:            r.TastingNotes,
+			DistillationMethod:      r.DistillationMethod,
+			MacerationHours:         r.MacerationHours,
+			GinNgsInputL:            r.GinNgsInputL,
+			GinNgsInputAbvPct:       r.GinNgsInputAbvPct,
+		}
+		vp := recipeVersionToProto(v, nil)
+		if r.SensoryTastedAt.Valid {
+			vp.Sensory = listRowSensoryToProto(r)
+		}
+		out = append(out, vp)
 	}
 	return connect.NewResponse(&stillhousev1.ListRecipeVersionsResponse{Versions: out}), nil
+}
+
+// listRowSensoryToProto carries the LEFT JOIN columns from
+// ListRecipeVersionsRow into the GinSensoryScores proto. Mirrors
+// sensoryToProto but operates on the row's prefixed column names.
+func listRowSensoryToProto(r sqlcgen.ListRecipeVersionsRow) *stillhousev1.GinSensoryScores {
+	out := &stillhousev1.GinSensoryScores{
+		TastingPanel: r.SensoryTastingPanel.String,
+		TastedAt:     timestamppb.New(r.SensoryTastedAt.Time),
+	}
+	setI := func(dst *int32, dstSet *bool, src pgtype.Int2) {
+		if src.Valid {
+			*dst = int32(src.Int16)
+			*dstSet = true
+		}
+	}
+	setI(&out.Juniper, &out.JuniperSet, r.SensoryJuniper)
+	setI(&out.Citrus, &out.CitrusSet, r.SensoryCitrus)
+	setI(&out.Herbal, &out.HerbalSet, r.SensoryHerbal)
+	setI(&out.Spice, &out.SpiceSet, r.SensorySpice)
+	setI(&out.Floral, &out.FloralSet, r.SensoryFloral)
+	setI(&out.Earth, &out.EarthSet, r.SensoryEarth)
+	setI(&out.Body, &out.BodySet, r.SensoryBody)
+	setI(&out.Heat, &out.HeatSet, r.SensoryHeat)
+	setI(&out.Balance, &out.BalanceSet, r.SensoryBalance)
+	setI(&out.Overall, &out.OverallSet, r.SensoryOverall)
+	return out
 }
 
 func (s *RecipeService) DuplicateRecipe(

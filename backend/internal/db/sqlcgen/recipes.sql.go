@@ -297,20 +297,70 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uui
 }
 
 const listRecipeVersions = `-- name: ListRecipeVersions :many
-SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct FROM recipe_versions
-WHERE recipe_id = $1
-ORDER BY version_no DESC
+SELECT
+    v.id, v.tenant_id, v.recipe_id, v.version_no, v.notes, v.mash_efficiency_pct, v.ferment_efficiency_pct, v.distillation_recovery_pct, v.target_water_l, v.created_at, v.tasting_notes, v.distillation_method, v.maceration_hours, v.gin_ngs_input_l, v.gin_ngs_input_abv_pct,
+    s.juniper       AS sensory_juniper,
+    s.citrus        AS sensory_citrus,
+    s.herbal        AS sensory_herbal,
+    s.spice         AS sensory_spice,
+    s.floral        AS sensory_floral,
+    s.earth         AS sensory_earth,
+    s.body          AS sensory_body,
+    s.heat          AS sensory_heat,
+    s.balance       AS sensory_balance,
+    s.overall       AS sensory_overall,
+    s.tasting_panel AS sensory_tasting_panel,
+    s.tasted_at     AS sensory_tasted_at
+FROM recipe_versions v
+LEFT JOIN recipe_version_sensory s ON s.recipe_version_id = v.id
+WHERE v.recipe_id = $1
+ORDER BY v.version_no DESC
 `
 
-func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]RecipeVersion, error) {
+type ListRecipeVersionsRow struct {
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	RecipeID                uuid.UUID          `json:"recipe_id"`
+	VersionNo               int32              `json:"version_no"`
+	Notes                   string             `json:"notes"`
+	MashEfficiencyPct       float64            `json:"mash_efficiency_pct"`
+	FermentEfficiencyPct    float64            `json:"ferment_efficiency_pct"`
+	DistillationRecoveryPct float64            `json:"distillation_recovery_pct"`
+	TargetWaterL            pgtype.Float8      `json:"target_water_l"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	TastingNotes            string             `json:"tasting_notes"`
+	DistillationMethod      string             `json:"distillation_method"`
+	MacerationHours         pgtype.Float8      `json:"maceration_hours"`
+	GinNgsInputL            pgtype.Float8      `json:"gin_ngs_input_l"`
+	GinNgsInputAbvPct       pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
+	SensoryJuniper          pgtype.Int2        `json:"sensory_juniper"`
+	SensoryCitrus           pgtype.Int2        `json:"sensory_citrus"`
+	SensoryHerbal           pgtype.Int2        `json:"sensory_herbal"`
+	SensorySpice            pgtype.Int2        `json:"sensory_spice"`
+	SensoryFloral           pgtype.Int2        `json:"sensory_floral"`
+	SensoryEarth            pgtype.Int2        `json:"sensory_earth"`
+	SensoryBody             pgtype.Int2        `json:"sensory_body"`
+	SensoryHeat             pgtype.Int2        `json:"sensory_heat"`
+	SensoryBalance          pgtype.Int2        `json:"sensory_balance"`
+	SensoryOverall          pgtype.Int2        `json:"sensory_overall"`
+	SensoryTastingPanel     pgtype.Text        `json:"sensory_tasting_panel"`
+	SensoryTastedAt         pgtype.Timestamptz `json:"sensory_tasted_at"`
+}
+
+// LEFT JOIN sensory so callers can iterate the version history and see
+// each version's tasting scores without N+1 queries. Sensory columns
+// are NULL when a version hasn't been tasted yet. The web Compare view
+// and the MCP list_recipe_versions tool both rely on these columns
+// being populated.
+func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]ListRecipeVersionsRow, error) {
 	rows, err := q.db.Query(ctx, listRecipeVersions, recipeID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []RecipeVersion{}
+	items := []ListRecipeVersionsRow{}
 	for rows.Next() {
-		var i RecipeVersion
+		var i ListRecipeVersionsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.TenantID,
@@ -327,6 +377,18 @@ func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([
 			&i.MacerationHours,
 			&i.GinNgsInputL,
 			&i.GinNgsInputAbvPct,
+			&i.SensoryJuniper,
+			&i.SensoryCitrus,
+			&i.SensoryHerbal,
+			&i.SensorySpice,
+			&i.SensoryFloral,
+			&i.SensoryEarth,
+			&i.SensoryBody,
+			&i.SensoryHeat,
+			&i.SensoryBalance,
+			&i.SensoryOverall,
+			&i.SensoryTastingPanel,
+			&i.SensoryTastedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -437,17 +499,17 @@ INSERT INTO recipe_version_sensory (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 )
 ON CONFLICT (recipe_version_id) DO UPDATE SET
-    juniper       = EXCLUDED.juniper,
-    citrus        = EXCLUDED.citrus,
-    herbal        = EXCLUDED.herbal,
-    spice         = EXCLUDED.spice,
-    floral        = EXCLUDED.floral,
-    earth         = EXCLUDED.earth,
-    body          = EXCLUDED.body,
-    heat          = EXCLUDED.heat,
-    balance       = EXCLUDED.balance,
-    overall       = EXCLUDED.overall,
-    tasting_panel = EXCLUDED.tasting_panel,
+    juniper       = COALESCE(EXCLUDED.juniper,       recipe_version_sensory.juniper),
+    citrus        = COALESCE(EXCLUDED.citrus,        recipe_version_sensory.citrus),
+    herbal        = COALESCE(EXCLUDED.herbal,        recipe_version_sensory.herbal),
+    spice         = COALESCE(EXCLUDED.spice,         recipe_version_sensory.spice),
+    floral        = COALESCE(EXCLUDED.floral,        recipe_version_sensory.floral),
+    earth         = COALESCE(EXCLUDED.earth,         recipe_version_sensory.earth),
+    body          = COALESCE(EXCLUDED.body,          recipe_version_sensory.body),
+    heat          = COALESCE(EXCLUDED.heat,          recipe_version_sensory.heat),
+    balance       = COALESCE(EXCLUDED.balance,       recipe_version_sensory.balance),
+    overall       = COALESCE(EXCLUDED.overall,       recipe_version_sensory.overall),
+    tasting_panel = CASE WHEN EXCLUDED.tasting_panel = '' THEN recipe_version_sensory.tasting_panel ELSE EXCLUDED.tasting_panel END,
     tasted_at     = EXCLUDED.tasted_at
 RETURNING recipe_version_id, tenant_id, juniper, citrus, herbal, spice, floral, earth, body, heat, balance, overall, tasting_panel, tasted_at
 `
@@ -469,8 +531,12 @@ type UpsertRecipeVersionSensoryParams struct {
 	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
 }
 
-// One row per recipe_version. Upsert because edits during recipe
-// development are the whole point — taste, score, save, retaste.
+// One row per recipe_version. Partial-update: an axis that's NULL in
+// the request preserves the existing DB value via COALESCE; an axis
+// with a value overwrites. This lets an MCP / phone caller send
+// `{balance: 8}` to tweak one axis without re-typing the other 9.
+// Tasting panel + tasted_at follow the same rule (empty string is
+// treated as "no change" for panel).
 func (q *Queries) UpsertRecipeVersionSensory(ctx context.Context, arg UpsertRecipeVersionSensoryParams) (RecipeVersionSensory, error) {
 	row := q.db.QueryRow(ctx, upsertRecipeVersionSensory,
 		arg.RecipeVersionID,
