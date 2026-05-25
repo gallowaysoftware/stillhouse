@@ -614,6 +614,10 @@ func (s *RecipeService) SaveRecipeVersionSensory(
 			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("recipe version not found"))
 		}
