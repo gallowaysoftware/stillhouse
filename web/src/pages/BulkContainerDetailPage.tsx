@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
+import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
 import { bulkClient } from "@/lib/clients";
 import {
@@ -42,6 +43,18 @@ export function BulkContainerDetailPage() {
         <Stat label="Movements" value={String(detail.data.movements.length)} />
       </section>
 
+      {/* Prefilled from the tank in front of you — reducing this vessel is
+          the reason you're on this page. */}
+      {c.currentVolumeL > 0 && c.currentAbvPctSet && (
+        <section className="mb-8 max-w-xl">
+          <ReductionCalculator
+            title={`Reduce ${c.name}`}
+            defaultFromVolumeL={String(c.currentVolumeL)}
+            defaultFromStrength={c.currentAbvPct.toFixed(2)}
+          />
+        </section>
+      )}
+
       <h2 className="mb-3 text-sm font-semibold text-fg-muted">Movement history</h2>
       <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
@@ -74,7 +87,7 @@ export function BulkContainerDetailPage() {
                   </td>
                   <td className="px-4 py-3 text-right text-fg-muted">{formatQty(m.volumeL)}</td>
                   <td className="px-4 py-3 text-right text-fg-muted">{m.abvPct.toFixed(2)}%</td>
-                  <td className={`px-4 py-3 text-right font-medium ${isIn ? "text-green-700" : "text-fg-muted"}`}>
+                  <td className={`px-4 py-3 text-right font-medium ${isIn ? "text-success-fg" : "text-fg-muted"}`}>
                     {isIn ? "+" : "−"}{formatLAA(m.laa)}
                   </td>
                 </tr>

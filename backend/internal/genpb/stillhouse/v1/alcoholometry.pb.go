@@ -475,6 +475,201 @@ func (x *TablesInfoResponse) GetReferenceTemperatureC() float64 {
 	return 0
 }
 
+// PlanReduction works out how to proof spirit down to a target strength.
+//
+// The final volume follows from conservation of alcohol. The water figure
+// does not: ethanol and water contract on mixing, so a blend holds less
+// than its parts did apart, and the water actually needed is more than
+// (final volume − starting volume). Because the published tables carry
+// density, that correction is computed rather than estimated.
+type PlanReductionRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Supply the starting charge either way. A weighed charge is the more
+	// accurate input — a scale doesn't care about temperature and mass
+	// doesn't contract — so from_mass_kg wins when both are set.
+	FromVolumeL     float64 `protobuf:"fixed64,1,opt,name=from_volume_l,json=fromVolumeL,proto3" json:"from_volume_l,omitempty"`
+	FromStrengthPct float64 `protobuf:"fixed64,2,opt,name=from_strength_pct,json=fromStrengthPct,proto3" json:"from_strength_pct,omitempty"` // at 20 °C
+	ToStrengthPct   float64 `protobuf:"fixed64,3,opt,name=to_strength_pct,json=toStrengthPct,proto3" json:"to_strength_pct,omitempty"`       // at 20 °C
+	FromMassKg      float64 `protobuf:"fixed64,4,opt,name=from_mass_kg,json=fromMassKg,proto3" json:"from_mass_kg,omitempty"`                // kilograms weighed in air
+	FromMassKgSet   bool    `protobuf:"varint,5,opt,name=from_mass_kg_set,json=fromMassKgSet,proto3" json:"from_mass_kg_set,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *PlanReductionRequest) Reset() {
+	*x = PlanReductionRequest{}
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanReductionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanReductionRequest) ProtoMessage() {}
+
+func (x *PlanReductionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanReductionRequest.ProtoReflect.Descriptor instead.
+func (*PlanReductionRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_alcoholometry_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *PlanReductionRequest) GetFromVolumeL() float64 {
+	if x != nil {
+		return x.FromVolumeL
+	}
+	return 0
+}
+
+func (x *PlanReductionRequest) GetFromStrengthPct() float64 {
+	if x != nil {
+		return x.FromStrengthPct
+	}
+	return 0
+}
+
+func (x *PlanReductionRequest) GetToStrengthPct() float64 {
+	if x != nil {
+		return x.ToStrengthPct
+	}
+	return 0
+}
+
+func (x *PlanReductionRequest) GetFromMassKg() float64 {
+	if x != nil {
+		return x.FromMassKg
+	}
+	return 0
+}
+
+func (x *PlanReductionRequest) GetFromMassKgSet() bool {
+	if x != nil {
+		return x.FromMassKgSet
+	}
+	return false
+}
+
+type PlanReductionResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// What the vessel holds when the reduction is done — the mark to fill to.
+	FinalVolumeL float64 `protobuf:"fixed64,1,opt,name=final_volume_l,json=finalVolumeL,proto3" json:"final_volume_l,omitempty"`
+	// Water to meter in, with contraction accounted for.
+	WaterToAddL float64 `protobuf:"fixed64,2,opt,name=water_to_add_l,json=waterToAddL,proto3" json:"water_to_add_l,omitempty"`
+	// What a plain volume balance would have said, carried so the operator
+	// can see the difference rather than being asked to trust a number.
+	NaiveWaterL  float64 `protobuf:"fixed64,3,opt,name=naive_water_l,json=naiveWaterL,proto3" json:"naive_water_l,omitempty"`
+	ContractionL float64 `protobuf:"fixed64,4,opt,name=contraction_l,json=contractionL,proto3" json:"contraction_l,omitempty"`
+	// Absolute alcohol, unchanged by the reduction — the invariant.
+	Laa float64 `protobuf:"fixed64,5,opt,name=laa,proto3" json:"laa,omitempty"`
+	// The same plan by weight, in kilograms weighed in air. Adding
+	// water_to_add_kg is exact: mass is strictly additive, so there is no
+	// contraction term and no temperature correction. If the vessel is on
+	// a scale, use these figures in preference to the volumes.
+	FromMassKg    float64 `protobuf:"fixed64,6,opt,name=from_mass_kg,json=fromMassKg,proto3" json:"from_mass_kg,omitempty"`
+	FinalMassKg   float64 `protobuf:"fixed64,7,opt,name=final_mass_kg,json=finalMassKg,proto3" json:"final_mass_kg,omitempty"`
+	WaterToAddKg  float64 `protobuf:"fixed64,8,opt,name=water_to_add_kg,json=waterToAddKg,proto3" json:"water_to_add_kg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlanReductionResponse) Reset() {
+	*x = PlanReductionResponse{}
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanReductionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanReductionResponse) ProtoMessage() {}
+
+func (x *PlanReductionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanReductionResponse.ProtoReflect.Descriptor instead.
+func (*PlanReductionResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_alcoholometry_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *PlanReductionResponse) GetFinalVolumeL() float64 {
+	if x != nil {
+		return x.FinalVolumeL
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetWaterToAddL() float64 {
+	if x != nil {
+		return x.WaterToAddL
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetNaiveWaterL() float64 {
+	if x != nil {
+		return x.NaiveWaterL
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetContractionL() float64 {
+	if x != nil {
+		return x.ContractionL
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetLaa() float64 {
+	if x != nil {
+		return x.Laa
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetFromMassKg() float64 {
+	if x != nil {
+		return x.FromMassKg
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetFinalMassKg() float64 {
+	if x != nil {
+		return x.FinalMassKg
+	}
+	return 0
+}
+
+func (x *PlanReductionResponse) GetWaterToAddKg() float64 {
+	if x != nil {
+		return x.WaterToAddKg
+	}
+	return 0
+}
+
 var File_stillhouse_v1_alcoholometry_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_alcoholometry_proto_rawDesc = "" +
@@ -509,16 +704,34 @@ const file_stillhouse_v1_alcoholometry_proto_rawDesc = "" +
 	"\rsource_sha256\x18\x03 \x01(\tR\fsourceSha256\x12*\n" +
 	"\x11temperature_min_c\x18\x04 \x01(\x01R\x0ftemperatureMinC\x12*\n" +
 	"\x11temperature_max_c\x18\x05 \x01(\x01R\x0ftemperatureMaxC\x126\n" +
-	"\x17reference_temperature_c\x18\x06 \x01(\x01R\x15referenceTemperatureC*\x99\x01\n" +
+	"\x17reference_temperature_c\x18\x06 \x01(\x01R\x15referenceTemperatureC\"\xd9\x01\n" +
+	"\x14PlanReductionRequest\x12\"\n" +
+	"\rfrom_volume_l\x18\x01 \x01(\x01R\vfromVolumeL\x12*\n" +
+	"\x11from_strength_pct\x18\x02 \x01(\x01R\x0ffromStrengthPct\x12&\n" +
+	"\x0fto_strength_pct\x18\x03 \x01(\x01R\rtoStrengthPct\x12 \n" +
+	"\ffrom_mass_kg\x18\x04 \x01(\x01R\n" +
+	"fromMassKg\x12'\n" +
+	"\x10from_mass_kg_set\x18\x05 \x01(\bR\rfromMassKgSet\"\xaa\x02\n" +
+	"\x15PlanReductionResponse\x12$\n" +
+	"\x0efinal_volume_l\x18\x01 \x01(\x01R\ffinalVolumeL\x12#\n" +
+	"\x0ewater_to_add_l\x18\x02 \x01(\x01R\vwaterToAddL\x12\"\n" +
+	"\rnaive_water_l\x18\x03 \x01(\x01R\vnaiveWaterL\x12#\n" +
+	"\rcontraction_l\x18\x04 \x01(\x01R\fcontractionL\x12\x10\n" +
+	"\x03laa\x18\x05 \x01(\x01R\x03laa\x12 \n" +
+	"\ffrom_mass_kg\x18\x06 \x01(\x01R\n" +
+	"fromMassKg\x12\"\n" +
+	"\rfinal_mass_kg\x18\a \x01(\x01R\vfinalMassKg\x12%\n" +
+	"\x0fwater_to_add_kg\x18\b \x01(\x01R\fwaterToAddKg*\x99\x01\n" +
 	"\x0eStrengthSource\x12\x1f\n" +
 	"\x1bSTRENGTH_SOURCE_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bSTRENGTH_SOURCE_UNCORRECTED\x10\x01\x12!\n" +
 	"\x1dSTRENGTH_SOURCE_TABLE_DENSITY\x10\x02\x12\"\n" +
-	"\x1eSTRENGTH_SOURCE_TABLE_STRENGTH\x10\x032\xcb\x01\n" +
+	"\x1eSTRENGTH_SOURCE_TABLE_STRENGTH\x10\x032\xa7\x02\n" +
 	"\x14AlcoholometryService\x12`\n" +
 	"\x0fResolveStrength\x12%.stillhouse.v1.ResolveStrengthRequest\x1a&.stillhouse.v1.ResolveStrengthResponse\x12Q\n" +
 	"\n" +
-	"TablesInfo\x12 .stillhouse.v1.TablesInfoRequest\x1a!.stillhouse.v1.TablesInfoResponseB\xd6\x01\n" +
+	"TablesInfo\x12 .stillhouse.v1.TablesInfoRequest\x1a!.stillhouse.v1.TablesInfoResponse\x12Z\n" +
+	"\rPlanReduction\x12#.stillhouse.v1.PlanReductionRequest\x1a$.stillhouse.v1.PlanReductionResponseB\xd6\x01\n" +
 	"\x11com.stillhouse.v1B\x12AlcoholometryProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -534,7 +747,7 @@ func file_stillhouse_v1_alcoholometry_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_alcoholometry_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_alcoholometry_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stillhouse_v1_alcoholometry_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_stillhouse_v1_alcoholometry_proto_goTypes = []any{
 	(StrengthSource)(0),             // 0: stillhouse.v1.StrengthSource
 	(*AlcoholometryReading)(nil),    // 1: stillhouse.v1.AlcoholometryReading
@@ -542,16 +755,20 @@ var file_stillhouse_v1_alcoholometry_proto_goTypes = []any{
 	(*ResolveStrengthResponse)(nil), // 3: stillhouse.v1.ResolveStrengthResponse
 	(*TablesInfoRequest)(nil),       // 4: stillhouse.v1.TablesInfoRequest
 	(*TablesInfoResponse)(nil),      // 5: stillhouse.v1.TablesInfoResponse
+	(*PlanReductionRequest)(nil),    // 6: stillhouse.v1.PlanReductionRequest
+	(*PlanReductionResponse)(nil),   // 7: stillhouse.v1.PlanReductionResponse
 }
 var file_stillhouse_v1_alcoholometry_proto_depIdxs = []int32{
 	1, // 0: stillhouse.v1.ResolveStrengthResponse.reading:type_name -> stillhouse.v1.AlcoholometryReading
 	0, // 1: stillhouse.v1.ResolveStrengthResponse.source:type_name -> stillhouse.v1.StrengthSource
 	2, // 2: stillhouse.v1.AlcoholometryService.ResolveStrength:input_type -> stillhouse.v1.ResolveStrengthRequest
 	4, // 3: stillhouse.v1.AlcoholometryService.TablesInfo:input_type -> stillhouse.v1.TablesInfoRequest
-	3, // 4: stillhouse.v1.AlcoholometryService.ResolveStrength:output_type -> stillhouse.v1.ResolveStrengthResponse
-	5, // 5: stillhouse.v1.AlcoholometryService.TablesInfo:output_type -> stillhouse.v1.TablesInfoResponse
-	4, // [4:6] is the sub-list for method output_type
-	2, // [2:4] is the sub-list for method input_type
+	6, // 4: stillhouse.v1.AlcoholometryService.PlanReduction:input_type -> stillhouse.v1.PlanReductionRequest
+	3, // 5: stillhouse.v1.AlcoholometryService.ResolveStrength:output_type -> stillhouse.v1.ResolveStrengthResponse
+	5, // 6: stillhouse.v1.AlcoholometryService.TablesInfo:output_type -> stillhouse.v1.TablesInfoResponse
+	7, // 7: stillhouse.v1.AlcoholometryService.PlanReduction:output_type -> stillhouse.v1.PlanReductionResponse
+	5, // [5:8] is the sub-list for method output_type
+	2, // [2:5] is the sub-list for method input_type
 	2, // [2:2] is the sub-list for extension type_name
 	2, // [2:2] is the sub-list for extension extendee
 	0, // [0:2] is the sub-list for field type_name
@@ -568,7 +785,7 @@ func file_stillhouse_v1_alcoholometry_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_alcoholometry_proto_rawDesc), len(file_stillhouse_v1_alcoholometry_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

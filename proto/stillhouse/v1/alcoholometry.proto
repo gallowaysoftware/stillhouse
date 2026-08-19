@@ -82,7 +82,46 @@ message TablesInfoResponse {
   double reference_temperature_c = 6;  // 20
 }
 
+// PlanReduction works out how to proof spirit down to a target strength.
+//
+// The final volume follows from conservation of alcohol. The water figure
+// does not: ethanol and water contract on mixing, so a blend holds less
+// than its parts did apart, and the water actually needed is more than
+// (final volume − starting volume). Because the published tables carry
+// density, that correction is computed rather than estimated.
+message PlanReductionRequest {
+  // Supply the starting charge either way. A weighed charge is the more
+  // accurate input — a scale doesn't care about temperature and mass
+  // doesn't contract — so from_mass_kg wins when both are set.
+  double from_volume_l = 1;
+  double from_strength_pct = 2;   // at 20 °C
+  double to_strength_pct = 3;     // at 20 °C
+  double from_mass_kg = 4;        // kilograms weighed in air
+  bool   from_mass_kg_set = 5;
+}
+message PlanReductionResponse {
+  // What the vessel holds when the reduction is done — the mark to fill to.
+  double final_volume_l = 1;
+  // Water to meter in, with contraction accounted for.
+  double water_to_add_l = 2;
+  // What a plain volume balance would have said, carried so the operator
+  // can see the difference rather than being asked to trust a number.
+  double naive_water_l = 3;
+  double contraction_l = 4;
+  // Absolute alcohol, unchanged by the reduction — the invariant.
+  double laa = 5;
+
+  // The same plan by weight, in kilograms weighed in air. Adding
+  // water_to_add_kg is exact: mass is strictly additive, so there is no
+  // contraction term and no temperature correction. If the vessel is on
+  // a scale, use these figures in preference to the volumes.
+  double from_mass_kg = 6;
+  double final_mass_kg = 7;
+  double water_to_add_kg = 8;
+}
+
 service AlcoholometryService {
   rpc ResolveStrength(ResolveStrengthRequest) returns (ResolveStrengthResponse);
   rpc TablesInfo(TablesInfoRequest) returns (TablesInfoResponse);
+  rpc PlanReduction(PlanReductionRequest) returns (PlanReductionResponse);
 }

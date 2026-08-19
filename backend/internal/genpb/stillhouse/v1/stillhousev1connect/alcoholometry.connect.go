@@ -50,12 +50,16 @@ const (
 	// AlcoholometryServiceTablesInfoProcedure is the fully-qualified name of the AlcoholometryService's
 	// TablesInfo RPC.
 	AlcoholometryServiceTablesInfoProcedure = "/stillhouse.v1.AlcoholometryService/TablesInfo"
+	// AlcoholometryServicePlanReductionProcedure is the fully-qualified name of the
+	// AlcoholometryService's PlanReduction RPC.
+	AlcoholometryServicePlanReductionProcedure = "/stillhouse.v1.AlcoholometryService/PlanReduction"
 )
 
 // AlcoholometryServiceClient is a client for the stillhouse.v1.AlcoholometryService service.
 type AlcoholometryServiceClient interface {
 	ResolveStrength(context.Context, *connect.Request[v1.ResolveStrengthRequest]) (*connect.Response[v1.ResolveStrengthResponse], error)
 	TablesInfo(context.Context, *connect.Request[v1.TablesInfoRequest]) (*connect.Response[v1.TablesInfoResponse], error)
+	PlanReduction(context.Context, *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error)
 }
 
 // NewAlcoholometryServiceClient constructs a client for the stillhouse.v1.AlcoholometryService
@@ -81,6 +85,12 @@ func NewAlcoholometryServiceClient(httpClient connect.HTTPClient, baseURL string
 			connect.WithSchema(alcoholometryServiceMethods.ByName("TablesInfo")),
 			connect.WithClientOptions(opts...),
 		),
+		planReduction: connect.NewClient[v1.PlanReductionRequest, v1.PlanReductionResponse](
+			httpClient,
+			baseURL+AlcoholometryServicePlanReductionProcedure,
+			connect.WithSchema(alcoholometryServiceMethods.ByName("PlanReduction")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -88,6 +98,7 @@ func NewAlcoholometryServiceClient(httpClient connect.HTTPClient, baseURL string
 type alcoholometryServiceClient struct {
 	resolveStrength *connect.Client[v1.ResolveStrengthRequest, v1.ResolveStrengthResponse]
 	tablesInfo      *connect.Client[v1.TablesInfoRequest, v1.TablesInfoResponse]
+	planReduction   *connect.Client[v1.PlanReductionRequest, v1.PlanReductionResponse]
 }
 
 // ResolveStrength calls stillhouse.v1.AlcoholometryService.ResolveStrength.
@@ -100,11 +111,17 @@ func (c *alcoholometryServiceClient) TablesInfo(ctx context.Context, req *connec
 	return c.tablesInfo.CallUnary(ctx, req)
 }
 
+// PlanReduction calls stillhouse.v1.AlcoholometryService.PlanReduction.
+func (c *alcoholometryServiceClient) PlanReduction(ctx context.Context, req *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error) {
+	return c.planReduction.CallUnary(ctx, req)
+}
+
 // AlcoholometryServiceHandler is an implementation of the stillhouse.v1.AlcoholometryService
 // service.
 type AlcoholometryServiceHandler interface {
 	ResolveStrength(context.Context, *connect.Request[v1.ResolveStrengthRequest]) (*connect.Response[v1.ResolveStrengthResponse], error)
 	TablesInfo(context.Context, *connect.Request[v1.TablesInfoRequest]) (*connect.Response[v1.TablesInfoResponse], error)
+	PlanReduction(context.Context, *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error)
 }
 
 // NewAlcoholometryServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -126,12 +143,20 @@ func NewAlcoholometryServiceHandler(svc AlcoholometryServiceHandler, opts ...con
 		connect.WithSchema(alcoholometryServiceMethods.ByName("TablesInfo")),
 		connect.WithHandlerOptions(opts...),
 	)
+	alcoholometryServicePlanReductionHandler := connect.NewUnaryHandler(
+		AlcoholometryServicePlanReductionProcedure,
+		svc.PlanReduction,
+		connect.WithSchema(alcoholometryServiceMethods.ByName("PlanReduction")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.AlcoholometryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AlcoholometryServiceResolveStrengthProcedure:
 			alcoholometryServiceResolveStrengthHandler.ServeHTTP(w, r)
 		case AlcoholometryServiceTablesInfoProcedure:
 			alcoholometryServiceTablesInfoHandler.ServeHTTP(w, r)
+		case AlcoholometryServicePlanReductionProcedure:
+			alcoholometryServicePlanReductionHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -147,4 +172,8 @@ func (UnimplementedAlcoholometryServiceHandler) ResolveStrength(context.Context,
 
 func (UnimplementedAlcoholometryServiceHandler) TablesInfo(context.Context, *connect.Request[v1.TablesInfoRequest]) (*connect.Response[v1.TablesInfoResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AlcoholometryService.TablesInfo is not implemented"))
+}
+
+func (UnimplementedAlcoholometryServiceHandler) PlanReduction(context.Context, *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AlcoholometryService.PlanReduction is not implemented"))
 }

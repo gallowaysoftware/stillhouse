@@ -41,6 +41,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 116 | Whisky tasting bench — SWRI Flavour Wheel axes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) + body / finish / overall; backend + MCP `save_recipe_version_whisky_sensory` + web UI for whisky-family recipes |
 | 117 | Strength at 20 °C — gauges resolve through the CRA Canadian Alcoholometric Tables 1980; hydrometer indication + temperature determine both strength and volume, the as-observed reading is kept for audit, and every reading records which determination path produced it |
 | 118 | Mash bench — cereal species on materials drives gelatinisation guidance off the real grain bill; flags when maize or rice force a separate cereal cook, checks mash temp / pH / thickness against the amylase bands, computes conversion efficiency from OG, and calculates strike temperature. MCP `get_mash` + `plan_strike` |
+| 119 | Reduction calculator — proofing down by volume *or by weight*, with the ethanol/water volume contraction computed from the CRA density column instead of estimated. Weighing is exact (mass is additive); the volume figure carries the correction. On tank pages, the bottling page, and MCP `plan_reduction` |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
@@ -166,7 +167,8 @@ Configure a remote MCP server pointing at your Stillhouse install:
 - **Capture** — `fill_barrel`, `regauge_barrel`, `dump_barrel`,
   `add_fermentation_reading`, `add_mash_reading`
 - **Bench** — `get_mash` (grain bill + readings + mash guidance),
-  `plan_strike` (strike temperature for a target rest)
+  `plan_strike` (strike temperature for a target rest),
+  `plan_reduction` (proofing down, by volume or by weight)
 
 Barrel fill / regauge / dump and the production gauge accept a hydrometer
 indication (`density_kg_m3`) plus `temperature_c`; supply both and the

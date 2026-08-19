@@ -229,3 +229,43 @@ func strengthSourceToProto(s sqlcgen.StrengthSource) stillhousev1.StrengthSource
 		return stillhousev1.StrengthSource_STRENGTH_SOURCE_UNCORRECTED
 	}
 }
+
+// PlanReduction computes a proofing-down plan. See the alcoholometry
+// package for why the water figure is a mass balance rather than a
+// subtraction.
+func (s *AlcoholometryService) PlanReduction(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.PlanReductionRequest],
+) (*connect.Response[stillhousev1.PlanReductionResponse], error) {
+	if _, ok := CurrentUser(ctx); !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	in := req.Msg
+	// A weighed charge is the better input, so it wins when both arrive.
+	var (
+		plan alcoholometry.Reduction
+		err  error
+	)
+	if in.GetFromMassKgSet() {
+		plan, err = alcoholometry.PlanReductionFromMass(
+			in.GetFromMassKg(), in.GetFromStrengthPct(), in.GetToStrengthPct())
+	} else {
+		plan, err = alcoholometry.PlanReduction(
+			in.GetFromVolumeL(), in.GetFromStrengthPct(), in.GetToStrengthPct())
+	}
+	if err != nil {
+		// Every failure here is the operator asking for something
+		// impossible (water can't raise strength) or out of range.
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	return connect.NewResponse(&stillhousev1.PlanReductionResponse{
+		FinalVolumeL: round4(plan.FinalVolumeL),
+		WaterToAddL:  round4(plan.WaterToAddL),
+		NaiveWaterL:  round4(plan.NaiveWaterL),
+		ContractionL: round4(plan.ContractionL),
+		Laa:          round4(plan.LAA),
+		FromMassKg:   round4(plan.FromMassKg),
+		FinalMassKg:  round4(plan.FinalMassKg),
+		WaterToAddKg: round4(plan.WaterToAddKg),
+	}), nil
+}

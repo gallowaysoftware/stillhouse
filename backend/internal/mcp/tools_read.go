@@ -27,6 +27,7 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addListB266Periods(s, d, user)
 	addGetMash(s, d, user)
 	addPlanStrike(s, d, user)
+	addPlanReduction(s, d, user)
 }
 
 // dashboardOutput is a compact rollup useful as the "what's the state
@@ -291,6 +292,38 @@ func addPlanStrike(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			GrainTempC:      args.GrainTempC,
 			ThicknessLPerKg: args.ThicknessLPerKg,
 			GrainKg:         args.GrainKg,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+// addPlanReduction exposes the proofing-down calculator. Read-only — it
+// computes a plan, it doesn't move any alcohol.
+func addPlanReduction(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		FromVolumeL     float64  `json:"from_volume_l,omitempty" jsonschema:"volume of spirit you're starting with, in litres at 20 °C. Use from_mass_kg instead if the vessel is on a scale"`
+		FromMassKg      *float64 `json:"from_mass_kg,omitempty" jsonschema:"weight of the spirit you're starting with, in kilograms. More accurate than volume — a scale ignores temperature and mass doesn't contract on mixing. Wins over from_volume_l when both are given"`
+		FromStrengthPct float64  `json:"from_strength_pct" jsonschema:"current strength as a percentage (0-100) at 20 °C"`
+		ToStrengthPct   float64  `json:"to_strength_pct" jsonschema:"strength you want to land on, as a percentage at 20 °C. Must be lower than from_strength_pct — water only dilutes"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "plan_reduction",
+		Description: "Work out how to proof spirit down to a target strength: the final volume to fill to, and the water " +
+			"to add. The water figure accounts for the volume contraction that happens when ethanol and water mix " +
+			"(a blend holds less than its parts did apart), so it is larger than a plain volume balance suggests — " +
+			"the response carries both figures and the difference. It also gives the plan by weight, which is exact — " +
+			"mass is strictly additive, so there is no contraction to correct for and no temperature to compensate.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		resp, err := d.Alcoholometry.PlanReduction(ctx, connect.NewRequest(&pb.PlanReductionRequest{
+			FromVolumeL:     args.FromVolumeL,
+			FromStrengthPct: args.FromStrengthPct,
+			ToStrengthPct:   args.ToStrengthPct,
+			FromMassKg:      derefFloat(args.FromMassKg),
+			FromMassKgSet:   args.FromMassKg != nil,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil

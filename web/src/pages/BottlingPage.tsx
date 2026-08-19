@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { Button } from "@/components/Button";
+import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
 import {
   bottlingClient,
@@ -47,6 +49,7 @@ export function BottlingPage() {
   });
 
   const [showForm, setShowForm] = useState(false);
+  const [showReduce, setShowReduce] = useState(false);
   const [productId, setProductId] = useState("");
   const [sourceId, setSourceId] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
@@ -134,14 +137,24 @@ export function BottlingPage() {
           </p>
         </div>
         <WriteOnly>
-          <button
-            onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
-          >
-            {showForm ? "Cancel" : "New bottling run"}
-          </button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={() => setShowReduce((s) => !s)}>
+              {showReduce ? "Hide calculator" : "Reduce to strength"}
+            </Button>
+            <Button onClick={() => setShowForm((s) => !s)}>
+              {showForm ? "Cancel" : "New bottling run"}
+            </Button>
+          </div>
         </WriteOnly>
       </div>
+
+      {/* Proofing down is the step before a bottling run, so it lives here
+          rather than making the operator go find a tank page. */}
+      {showReduce && (
+        <section className="mb-6 max-w-xl">
+          <ReductionCalculator title="Reduce to bottling strength" />
+        </section>
+      )}
 
       {showForm && (
         <form

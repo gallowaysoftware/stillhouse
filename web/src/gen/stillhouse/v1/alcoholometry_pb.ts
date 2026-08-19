@@ -21,7 +21,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/alcoholometry.proto.
  */
 export const file_stillhouse_v1_alcoholometry: GenFile = /*@__PURE__*/
-  fileDesc("CiFzdGlsbGhvdXNlL3YxL2FsY29ob2xvbWV0cnkucHJvdG8SDXN0aWxsaG91c2UudjEiYAoUQWxjb2hvbG9tZXRyeVJlYWRpbmcSGAoQc3RyZW5ndGhfcGN0XzIwYxgBIAEoARIXCg92b2x1bWVfZmFjdG9yX2MYAiABKAESFQoNbGl0cmVzX3Blcl9rZxgDIAEoASLTAQoWUmVzb2x2ZVN0cmVuZ3RoUmVxdWVzdBIVCg10ZW1wZXJhdHVyZV9jGAEgASgBEhUKDWRlbnNpdHlfa2dfbTMYAiABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYAyABKAgSGAoQc3RyZW5ndGhfcGN0XzIwYxgEIAEoARIcChRzdHJlbmd0aF9wY3RfMjBjX3NldBgFIAEoCBIZChFvYnNlcnZlZF92b2x1bWVfbBgGIAEoARIdChVvYnNlcnZlZF92b2x1bWVfbF9zZXQYByABKAgi8AEKF1Jlc29sdmVTdHJlbmd0aFJlc3BvbnNlEjQKB3JlYWRpbmcYASABKAsyIy5zdGlsbGhvdXNlLnYxLkFsY29ob2xvbWV0cnlSZWFkaW5nEi0KBnNvdXJjZRgCIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USFAoMdm9sdW1lX2xfMjBjGAMgASgBEgsKA2xhYRgEIAEoARIXCg92b2x1bWVfcmVzb2x2ZWQYBSABKAgSGQoRZGVuc2l0eV9taW5fa2dfbTMYBiABKAESGQoRZGVuc2l0eV9tYXhfa2dfbTMYByABKAEiEwoRVGFibGVzSW5mb1JlcXVlc3QipAEKElRhYmxlc0luZm9SZXNwb25zZRIMCgRuYW1lGAEgASgJEhIKCnNvdXJjZV91cmwYAiABKAkSFQoNc291cmNlX3NoYTI1NhgDIAEoCRIZChF0ZW1wZXJhdHVyZV9taW5fYxgEIAEoARIZChF0ZW1wZXJhdHVyZV9tYXhfYxgFIAEoARIfChdyZWZlcmVuY2VfdGVtcGVyYXR1cmVfYxgGIAEoASqZAQoOU3RyZW5ndGhTb3VyY2USHwobU1RSRU5HVEhfU09VUkNFX1VOU1BFQ0lGSUVEEAASHwobU1RSRU5HVEhfU09VUkNFX1VOQ09SUkVDVEVEEAESIQodU1RSRU5HVEhfU09VUkNFX1RBQkxFX0RFTlNJVFkQAhIiCh5TVFJFTkdUSF9TT1VSQ0VfVEFCTEVfU1RSRU5HVEgQAzLLAQoUQWxjb2hvbG9tZXRyeVNlcnZpY2USYAoPUmVzb2x2ZVN0cmVuZ3RoEiUuc3RpbGxob3VzZS52MS5SZXNvbHZlU3RyZW5ndGhSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5SZXNvbHZlU3RyZW5ndGhSZXNwb25zZRJRCgpUYWJsZXNJbmZvEiAuc3RpbGxob3VzZS52MS5UYWJsZXNJbmZvUmVxdWVzdBohLnN0aWxsaG91c2UudjEuVGFibGVzSW5mb1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("CiFzdGlsbGhvdXNlL3YxL2FsY29ob2xvbWV0cnkucHJvdG8SDXN0aWxsaG91c2UudjEiYAoUQWxjb2hvbG9tZXRyeVJlYWRpbmcSGAoQc3RyZW5ndGhfcGN0XzIwYxgBIAEoARIXCg92b2x1bWVfZmFjdG9yX2MYAiABKAESFQoNbGl0cmVzX3Blcl9rZxgDIAEoASLTAQoWUmVzb2x2ZVN0cmVuZ3RoUmVxdWVzdBIVCg10ZW1wZXJhdHVyZV9jGAEgASgBEhUKDWRlbnNpdHlfa2dfbTMYAiABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYAyABKAgSGAoQc3RyZW5ndGhfcGN0XzIwYxgEIAEoARIcChRzdHJlbmd0aF9wY3RfMjBjX3NldBgFIAEoCBIZChFvYnNlcnZlZF92b2x1bWVfbBgGIAEoARIdChVvYnNlcnZlZF92b2x1bWVfbF9zZXQYByABKAgi8AEKF1Jlc29sdmVTdHJlbmd0aFJlc3BvbnNlEjQKB3JlYWRpbmcYASABKAsyIy5zdGlsbGhvdXNlLnYxLkFsY29ob2xvbWV0cnlSZWFkaW5nEi0KBnNvdXJjZRgCIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USFAoMdm9sdW1lX2xfMjBjGAMgASgBEgsKA2xhYRgEIAEoARIXCg92b2x1bWVfcmVzb2x2ZWQYBSABKAgSGQoRZGVuc2l0eV9taW5fa2dfbTMYBiABKAESGQoRZGVuc2l0eV9tYXhfa2dfbTMYByABKAEiEwoRVGFibGVzSW5mb1JlcXVlc3QipAEKElRhYmxlc0luZm9SZXNwb25zZRIMCgRuYW1lGAEgASgJEhIKCnNvdXJjZV91cmwYAiABKAkSFQoNc291cmNlX3NoYTI1NhgDIAEoCRIZChF0ZW1wZXJhdHVyZV9taW5fYxgEIAEoARIZChF0ZW1wZXJhdHVyZV9tYXhfYxgFIAEoARIfChdyZWZlcmVuY2VfdGVtcGVyYXR1cmVfYxgGIAEoASKRAQoUUGxhblJlZHVjdGlvblJlcXVlc3QSFQoNZnJvbV92b2x1bWVfbBgBIAEoARIZChFmcm9tX3N0cmVuZ3RoX3BjdBgCIAEoARIXCg90b19zdHJlbmd0aF9wY3QYAyABKAESFAoMZnJvbV9tYXNzX2tnGAQgASgBEhgKEGZyb21fbWFzc19rZ19zZXQYBSABKAgiyAEKFVBsYW5SZWR1Y3Rpb25SZXNwb25zZRIWCg5maW5hbF92b2x1bWVfbBgBIAEoARIWCg53YXRlcl90b19hZGRfbBgCIAEoARIVCg1uYWl2ZV93YXRlcl9sGAMgASgBEhUKDWNvbnRyYWN0aW9uX2wYBCABKAESCwoDbGFhGAUgASgBEhQKDGZyb21fbWFzc19rZxgGIAEoARIVCg1maW5hbF9tYXNzX2tnGAcgASgBEhcKD3dhdGVyX3RvX2FkZF9rZxgIIAEoASqZAQoOU3RyZW5ndGhTb3VyY2USHwobU1RSRU5HVEhfU09VUkNFX1VOU1BFQ0lGSUVEEAASHwobU1RSRU5HVEhfU09VUkNFX1VOQ09SUkVDVEVEEAESIQodU1RSRU5HVEhfU09VUkNFX1RBQkxFX0RFTlNJVFkQAhIiCh5TVFJFTkdUSF9TT1VSQ0VfVEFCTEVfU1RSRU5HVEgQAzKnAgoUQWxjb2hvbG9tZXRyeVNlcnZpY2USYAoPUmVzb2x2ZVN0cmVuZ3RoEiUuc3RpbGxob3VzZS52MS5SZXNvbHZlU3RyZW5ndGhSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5SZXNvbHZlU3RyZW5ndGhSZXNwb25zZRJRCgpUYWJsZXNJbmZvEiAuc3RpbGxob3VzZS52MS5UYWJsZXNJbmZvUmVxdWVzdBohLnN0aWxsaG91c2UudjEuVGFibGVzSW5mb1Jlc3BvbnNlEloKDVBsYW5SZWR1Y3Rpb24SIy5zdGlsbGhvdXNlLnYxLlBsYW5SZWR1Y3Rpb25SZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5QbGFuUmVkdWN0aW9uUmVzcG9uc2ViBnByb3RvMw");
 
 /**
  * One resolved row of the tables, in CRA's column notation.
@@ -235,6 +235,127 @@ export const TablesInfoResponseSchema: GenMessage<TablesInfoResponse> = /*@__PUR
   messageDesc(file_stillhouse_v1_alcoholometry, 4);
 
 /**
+ * PlanReduction works out how to proof spirit down to a target strength.
+ *
+ * The final volume follows from conservation of alcohol. The water figure
+ * does not: ethanol and water contract on mixing, so a blend holds less
+ * than its parts did apart, and the water actually needed is more than
+ * (final volume − starting volume). Because the published tables carry
+ * density, that correction is computed rather than estimated.
+ *
+ * @generated from message stillhouse.v1.PlanReductionRequest
+ */
+export type PlanReductionRequest = Message<"stillhouse.v1.PlanReductionRequest"> & {
+  /**
+   * Supply the starting charge either way. A weighed charge is the more
+   * accurate input — a scale doesn't care about temperature and mass
+   * doesn't contract — so from_mass_kg wins when both are set.
+   *
+   * @generated from field: double from_volume_l = 1;
+   */
+  fromVolumeL: number;
+
+  /**
+   * at 20 °C
+   *
+   * @generated from field: double from_strength_pct = 2;
+   */
+  fromStrengthPct: number;
+
+  /**
+   * at 20 °C
+   *
+   * @generated from field: double to_strength_pct = 3;
+   */
+  toStrengthPct: number;
+
+  /**
+   * kilograms weighed in air
+   *
+   * @generated from field: double from_mass_kg = 4;
+   */
+  fromMassKg: number;
+
+  /**
+   * @generated from field: bool from_mass_kg_set = 5;
+   */
+  fromMassKgSet: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanReductionRequest.
+ * Use `create(PlanReductionRequestSchema)` to create a new message.
+ */
+export const PlanReductionRequestSchema: GenMessage<PlanReductionRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_alcoholometry, 5);
+
+/**
+ * @generated from message stillhouse.v1.PlanReductionResponse
+ */
+export type PlanReductionResponse = Message<"stillhouse.v1.PlanReductionResponse"> & {
+  /**
+   * What the vessel holds when the reduction is done — the mark to fill to.
+   *
+   * @generated from field: double final_volume_l = 1;
+   */
+  finalVolumeL: number;
+
+  /**
+   * Water to meter in, with contraction accounted for.
+   *
+   * @generated from field: double water_to_add_l = 2;
+   */
+  waterToAddL: number;
+
+  /**
+   * What a plain volume balance would have said, carried so the operator
+   * can see the difference rather than being asked to trust a number.
+   *
+   * @generated from field: double naive_water_l = 3;
+   */
+  naiveWaterL: number;
+
+  /**
+   * @generated from field: double contraction_l = 4;
+   */
+  contractionL: number;
+
+  /**
+   * Absolute alcohol, unchanged by the reduction — the invariant.
+   *
+   * @generated from field: double laa = 5;
+   */
+  laa: number;
+
+  /**
+   * The same plan by weight, in kilograms weighed in air. Adding
+   * water_to_add_kg is exact: mass is strictly additive, so there is no
+   * contraction term and no temperature correction. If the vessel is on
+   * a scale, use these figures in preference to the volumes.
+   *
+   * @generated from field: double from_mass_kg = 6;
+   */
+  fromMassKg: number;
+
+  /**
+   * @generated from field: double final_mass_kg = 7;
+   */
+  finalMassKg: number;
+
+  /**
+   * @generated from field: double water_to_add_kg = 8;
+   */
+  waterToAddKg: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanReductionResponse.
+ * Use `create(PlanReductionResponseSchema)` to create a new message.
+ */
+export const PlanReductionResponseSchema: GenMessage<PlanReductionResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_alcoholometry, 6);
+
+/**
  * How a 20 °C strength was arrived at. Recorded on every gauge so a
  * reading can be audited back to the instrument that produced it.
  *
@@ -297,6 +418,14 @@ export const AlcoholometryService: GenService<{
     methodKind: "unary";
     input: typeof TablesInfoRequestSchema;
     output: typeof TablesInfoResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AlcoholometryService.PlanReduction
+   */
+  planReduction: {
+    methodKind: "unary";
+    input: typeof PlanReductionRequestSchema;
+    output: typeof PlanReductionResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_alcoholometry, 0);

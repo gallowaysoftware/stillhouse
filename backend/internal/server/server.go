@@ -120,15 +120,16 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	// sh_..., issued by cmd/mcp-token; the cookie-session middleware
 	// further down the chain is a no-op for these requests.
 	mux.Handle("/mcp", mcp.NewHandler(mcp.Deps{
-		Queries:      queries,
-		Bulk:         bulkSvc,
-		Barrel:       barrelSvc,
-		Recipe:       recipeSvc,
-		Product:      productSvc,
-		Fermentation: fermentationSvc,
-		Mash:         mashSvc,
-		B266:         b266Svc,
-		Logger:       logger,
+		Queries:       queries,
+		Bulk:          bulkSvc,
+		Barrel:        barrelSvc,
+		Recipe:        recipeSvc,
+		Product:       productSvc,
+		Fermentation:  fermentationSvc,
+		Mash:          mashSvc,
+		B266:          b266Svc,
+		Alcoholometry: alcoholometrySvc,
+		Logger:        logger,
 	}))
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {

@@ -32,15 +32,16 @@ import (
 // Deps bundles every RPC service the MCP tools call into. Same instances
 // the ConnectRPC mux uses, so audit/RLS/role-gate behaviour is identical.
 type Deps struct {
-	Queries      *sqlcgen.Queries
-	Bulk         *rpc.BulkService
-	Barrel       *rpc.BarrelService
-	Recipe       *rpc.RecipeService
-	Product      *rpc.ProductService
-	Fermentation *rpc.FermentationService
-	Mash         *rpc.MashService
-	B266         *rpc.B266Service
-	Logger       *slog.Logger
+	Queries       *sqlcgen.Queries
+	Bulk          *rpc.BulkService
+	Barrel        *rpc.BarrelService
+	Recipe        *rpc.RecipeService
+	Product       *rpc.ProductService
+	Fermentation  *rpc.FermentationService
+	Mash          *rpc.MashService
+	B266          *rpc.B266Service
+	Alcoholometry *rpc.AlcoholometryService
+	Logger        *slog.Logger
 }
 
 // NewHandler returns an http.Handler that speaks MCP over Streamable
