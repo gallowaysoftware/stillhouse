@@ -207,6 +207,7 @@ const (
 	BulkMovementReasonLossUnaccounted     BulkMovementReason = "loss_unaccounted"
 	BulkMovementReasonRegaugeCorrection   BulkMovementReason = "regauge_correction"
 	BulkMovementReasonDestruction         BulkMovementReason = "destruction"
+	BulkMovementReasonOpeningInventory    BulkMovementReason = "opening_inventory"
 )
 
 func (e *BulkMovementReason) Scan(src interface{}) error {

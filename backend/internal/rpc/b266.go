@@ -326,6 +326,12 @@ func computeB266Report(
 		BulkLossesLaa:                 byReason["loss_evaporation"] + byReason["loss_unaccounted"],
 		BulkDestroyedLaa:              byReason["destruction"],
 		BulkClosingLaa:                round4(currentBulk),
+		// Adopted stock is reported but deliberately NOT counted among the
+		// receipts below, so the reverse-walk puts it in the opening
+		// balance. It was in the warehouse before the period; only the
+		// bookkeeping is new. Counting it as a receipt would overstate what
+		// the distillery made, on a return CRA reads.
+		BulkOpeningInventoryAdoptedLaa: round4(byReason["opening_inventory"]),
 
 		PackagedPackagedLaa:            round4(bottlingTotals.TotalLaa),
 		PackagedPackagedBottles:        bottlingTotals.TotalBottles,

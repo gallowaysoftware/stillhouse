@@ -199,6 +199,12 @@ type B266Report struct {
 	BulkLossesLaa                 float64 `protobuf:"fixed64,16,opt,name=bulk_losses_laa,json=bulkLossesLaa,proto3" json:"bulk_losses_laa,omitempty"` // evaporation + unaccounted
 	BulkDestroyedLaa              float64 `protobuf:"fixed64,17,opt,name=bulk_destroyed_laa,json=bulkDestroyedLaa,proto3" json:"bulk_destroyed_laa,omitempty"`
 	BulkClosingLaa                float64 `protobuf:"fixed64,18,opt,name=bulk_closing_laa,json=bulkClosingLaa,proto3" json:"bulk_closing_laa,omitempty"`
+	// Stock adopted into Stillhouse during this period — alcohol that was
+	// already in the warehouse before the distillery started using the
+	// system. It is NOT production, and is already inside bulk_opening_laa;
+	// it is reported separately so an adopted balance is never invisible on
+	// the return it affects.
+	BulkOpeningInventoryAdoptedLaa float64 `protobuf:"fixed64,19,opt,name=bulk_opening_inventory_adopted_laa,json=bulkOpeningInventoryAdoptedLaa,proto3" json:"bulk_opening_inventory_adopted_laa,omitempty"`
 	// Packaged spirits section.
 	PackagedOpeningLaa             float64 `protobuf:"fixed64,30,opt,name=packaged_opening_laa,json=packagedOpeningLaa,proto3" json:"packaged_opening_laa,omitempty"`
 	PackagedPackagedLaa            float64 `protobuf:"fixed64,31,opt,name=packaged_packaged_laa,json=packagedPackagedLaa,proto3" json:"packaged_packaged_laa,omitempty"` // produced by bottling runs
@@ -318,6 +324,13 @@ func (x *B266Report) GetBulkDestroyedLaa() float64 {
 func (x *B266Report) GetBulkClosingLaa() float64 {
 	if x != nil {
 		return x.BulkClosingLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkOpeningInventoryAdoptedLaa() float64 {
+	if x != nil {
+		return x.BulkOpeningInventoryAdoptedLaa
 	}
 	return 0
 }
@@ -888,7 +901,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xd0\b\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9c\t\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -903,7 +916,8 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	" bulk_transferred_out_in_bond_laa\x18\x0f \x01(\x01R\x1bbulkTransferredOutInBondLaa\x12&\n" +
 	"\x0fbulk_losses_laa\x18\x10 \x01(\x01R\rbulkLossesLaa\x12,\n" +
 	"\x12bulk_destroyed_laa\x18\x11 \x01(\x01R\x10bulkDestroyedLaa\x12(\n" +
-	"\x10bulk_closing_laa\x18\x12 \x01(\x01R\x0ebulkClosingLaa\x120\n" +
+	"\x10bulk_closing_laa\x18\x12 \x01(\x01R\x0ebulkClosingLaa\x12J\n" +
+	"\"bulk_opening_inventory_adopted_laa\x18\x13 \x01(\x01R\x1ebulkOpeningInventoryAdoptedLaa\x120\n" +
 	"\x14packaged_opening_laa\x18\x1e \x01(\x01R\x12packagedOpeningLaa\x122\n" +
 	"\x15packaged_packaged_laa\x18\x1f \x01(\x01R\x13packagedPackagedLaa\x12:\n" +
 	"\x19packaged_packaged_bottles\x18  \x01(\x05R\x17packagedPackagedBottles\x12B\n" +

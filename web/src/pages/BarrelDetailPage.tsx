@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { AdoptStockCard } from "@/components/AdoptStockCard";
 import { Button } from "@/components/Button";
 import { Callout } from "@/components/Callout";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -167,6 +168,8 @@ export function BarrelDetailPage() {
 
       <section className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {b.currentVolumeL === 0 ? (
+          <>
+          <AdoptStockCard containerId={b.id} containerName={b.name} isBarrel />
           <FillCard
             barrelId={b.id}
             containers={nonBarrelContainers}
@@ -174,6 +177,7 @@ export function BarrelDetailPage() {
             submitting={fill.isPending}
             error={fill.error}
           />
+          </>
         ) : (
           <>
             <RegaugeCard

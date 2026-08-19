@@ -235,6 +235,16 @@ function ReportView({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card title="Bulk spirits (LAA)">
           <Row k="Opening on hand" v={formatLAA(report.bulkOpeningLaa)} />
+          {report.bulkOpeningInventoryAdoptedLaa > 0 && (
+            /* Already inside the opening balance above, not added to it.
+               Shown so an adopted balance is never invisible on the return
+               it affects. */
+            <Row
+              k="  of which adopted into Stillhouse"
+              v={formatLAA(report.bulkOpeningInventoryAdoptedLaa)}
+              dim
+            />
+          )}
           <Row k="Production"             v={formatLAA(report.bulkProductionLaa)} />
           <Row k="Received in bond"       v={formatLAA(report.bulkReceivedInBondLaa)} />
           <Row k="Blend in"               v={formatLAA(report.bulkBlendInLaa)} />

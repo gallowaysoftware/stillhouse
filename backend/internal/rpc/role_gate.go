@@ -51,7 +51,14 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.BottlingService/VoidBottlingRun":       roleOperator,
 
 	// BulkService
-	"/stillhouse.v1.BulkService/CreateBulkContainer":      roleOperator,
+	"/stillhouse.v1.BulkService/CreateBulkContainer": roleOperator,
+	// Adopting stock puts alcohol into the ledger with no upstream
+	// production behind it. A legitimate day-one operation, and a powerful
+	// one, so it sits with the back office rather than with the operator
+	// capturing readings at the still. (Anything absent from this map fails
+	// closed at roleOwner anyway; listed explicitly so the intent is on the
+	// page rather than implied.)
+	"/stillhouse.v1.BulkService/AdoptOpeningInventory":    roleOwner,
 	"/stillhouse.v1.BulkService/UpdateBulkContainer":      roleOperator,
 	"/stillhouse.v1.BulkService/SetBulkContainerArchived": roleOperator,
 	"/stillhouse.v1.BulkService/ListBulkContainers":       roleViewer,

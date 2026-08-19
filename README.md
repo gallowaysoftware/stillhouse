@@ -46,6 +46,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 121 | Angel's share — measured annual loss against the band a cool, humid warehouse should hold to, with the shelf height deciding which way the strength ought to drift. Flags a probable leak, and flags strength moving against its position as a likely gauge error. Dashboard alert + barrel panel |
 | 122 | Money is not a quantity — `formatCAD` renders CAD at two decimals with grouping everywhere (duty payable was showing four); plus a real bug where the stagnant-inventory alert compared against the wrong enum value and silently skipped every "Other" container, and the last of the hardcoded palette names |
 | 123 | Tests for the arithmetic that had none — pricing, password hashing, and the deposit/blend maths. Caught a rounding bug: the `int(x+0.5)` idiom in the rpc helpers rounds negatives the wrong way, and negatives reach it |
+| 124 | Adopt existing stock — bring a working distillery's casks into the ledger from a scale reading and a hydrometer, with no batch history behind them. CRA's Mass/Density Procedure; keeps the cask's real age so adopted whisky doesn't lose its CW eligibility; books as opening inventory, never as production |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

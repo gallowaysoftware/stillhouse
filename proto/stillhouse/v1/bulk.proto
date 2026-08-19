@@ -30,6 +30,10 @@ enum BulkMovementReason {
   BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED = 8;
   BULK_MOVEMENT_REASON_REGAUGE_CORRECTION = 9;
   BULK_MOVEMENT_REASON_DESTRUCTION = 10;
+  // Alcohol already on hand when the distillery adopted Stillhouse. Not
+  // production — it flows into the B266's opening balance rather than
+  // into what the distillery made this period.
+  BULK_MOVEMENT_REASON_OPENING_INVENTORY = 11;
 }
 
 message BulkContainer {
@@ -136,6 +140,55 @@ message CreateBlendResponse {
   repeated BulkMovement movements = 2;         // one per source
 }
 
+// AdoptOpeningInventory books stock that was already in the warehouse when
+// the distillery started using Stillhouse — casks with no mash, no
+// fermentation and no distillation run behind them.
+//
+// The measurement follows CRA's Mass/Density Procedure where a scale is
+// available, because that is both the more accurate route and the one the
+// published tables are built for: kilograms × A gives litres at 20 °C, and
+// the hydrometer indication gives the strength. A dipped volume works too.
+message AdoptOpeningInventoryRequest {
+  string container_id = 1;
+
+  // Scale reading in kilograms. Preferred: mass needs no temperature
+  // correction of its own and doesn't contract.
+  double mass_kg = 2;
+  bool   mass_kg_set = 3;
+  // Or a dipped volume, in litres as measured.
+  double volume_l = 4;
+  bool   volume_l_set = 5;
+
+  // Hydrometer indication in kg/m³, read at temperature_c. CRA's approved
+  // instrument reads density, not %ABV.
+  double density_kg_m3 = 6;
+  bool   density_kg_m3_set = 7;
+  // Strength at 20 °C, when the instrument already corrects. Ignored when
+  // density_kg_m3 is supplied.
+  double abv_pct = 8;
+  double temperature_c = 9;
+  bool   temperature_c_set = 10;
+
+  // ISO date the cask was originally filled. Sets the maturation clock, so
+  // adopted whisky keeps the age it actually has — without this a
+  // three-year-old cask would restart at zero and lose its Canadian Whisky
+  // eligibility.
+  string fill_date = 11;
+  // When this stock was on hand. Defaults to now; back-date it to the
+  // start of your first reporting period.
+  google.protobuf.Timestamp as_of = 12;
+  string notes = 13;
+}
+message AdoptOpeningInventoryResponse {
+  BulkContainer container = 1;
+  BulkMovement movement = 2;
+  // What the measurement resolved to, so the operator can check it against
+  // their own paperwork before trusting the balance.
+  double volume_l_20c = 3;
+  double strength_pct_20c = 4;
+  double laa = 5;
+}
+
 service BulkService {
   rpc CreateBulkContainer(CreateBulkContainerRequest) returns (CreateBulkContainerResponse);
   rpc UpdateBulkContainer(UpdateBulkContainerRequest) returns (UpdateBulkContainerResponse);
@@ -144,4 +197,5 @@ service BulkService {
   rpc GetBulkContainer(GetBulkContainerRequest) returns (GetBulkContainerResponse);
   rpc ListRecentBulkMovements(ListRecentBulkMovementsRequest) returns (ListRecentBulkMovementsResponse);
   rpc CreateBlend(CreateBlendRequest) returns (CreateBlendResponse);
+  rpc AdoptOpeningInventory(AdoptOpeningInventoryRequest) returns (AdoptOpeningInventoryResponse);
 }

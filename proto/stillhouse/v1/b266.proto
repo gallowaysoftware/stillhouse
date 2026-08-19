@@ -41,6 +41,12 @@ message B266Report {
   double bulk_losses_laa = 16;            // evaporation + unaccounted
   double bulk_destroyed_laa = 17;
   double bulk_closing_laa = 18;
+  // Stock adopted into Stillhouse during this period — alcohol that was
+  // already in the warehouse before the distillery started using the
+  // system. It is NOT production, and is already inside bulk_opening_laa;
+  // it is reported separately so an adopted balance is never invisible on
+  // the return it affects.
+  double bulk_opening_inventory_adopted_laa = 19;
 
   // Packaged spirits section.
   double packaged_opening_laa = 30;

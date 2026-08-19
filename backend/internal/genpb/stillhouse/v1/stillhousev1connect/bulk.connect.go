@@ -57,6 +57,9 @@ const (
 	BulkServiceListRecentBulkMovementsProcedure = "/stillhouse.v1.BulkService/ListRecentBulkMovements"
 	// BulkServiceCreateBlendProcedure is the fully-qualified name of the BulkService's CreateBlend RPC.
 	BulkServiceCreateBlendProcedure = "/stillhouse.v1.BulkService/CreateBlend"
+	// BulkServiceAdoptOpeningInventoryProcedure is the fully-qualified name of the BulkService's
+	// AdoptOpeningInventory RPC.
+	BulkServiceAdoptOpeningInventoryProcedure = "/stillhouse.v1.BulkService/AdoptOpeningInventory"
 )
 
 // BulkServiceClient is a client for the stillhouse.v1.BulkService service.
@@ -68,6 +71,7 @@ type BulkServiceClient interface {
 	GetBulkContainer(context.Context, *connect.Request[v1.GetBulkContainerRequest]) (*connect.Response[v1.GetBulkContainerResponse], error)
 	ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error)
 	CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error)
+	AdoptOpeningInventory(context.Context, *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error)
 }
 
 // NewBulkServiceClient constructs a client for the stillhouse.v1.BulkService service. By default,
@@ -123,6 +127,12 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(bulkServiceMethods.ByName("CreateBlend")),
 			connect.WithClientOptions(opts...),
 		),
+		adoptOpeningInventory: connect.NewClient[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse](
+			httpClient,
+			baseURL+BulkServiceAdoptOpeningInventoryProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("AdoptOpeningInventory")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -135,6 +145,7 @@ type bulkServiceClient struct {
 	getBulkContainer         *connect.Client[v1.GetBulkContainerRequest, v1.GetBulkContainerResponse]
 	listRecentBulkMovements  *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
 	createBlend              *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
+	adoptOpeningInventory    *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
 }
 
 // CreateBulkContainer calls stillhouse.v1.BulkService.CreateBulkContainer.
@@ -172,6 +183,11 @@ func (c *bulkServiceClient) CreateBlend(ctx context.Context, req *connect.Reques
 	return c.createBlend.CallUnary(ctx, req)
 }
 
+// AdoptOpeningInventory calls stillhouse.v1.BulkService.AdoptOpeningInventory.
+func (c *bulkServiceClient) AdoptOpeningInventory(ctx context.Context, req *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error) {
+	return c.adoptOpeningInventory.CallUnary(ctx, req)
+}
+
 // BulkServiceHandler is an implementation of the stillhouse.v1.BulkService service.
 type BulkServiceHandler interface {
 	CreateBulkContainer(context.Context, *connect.Request[v1.CreateBulkContainerRequest]) (*connect.Response[v1.CreateBulkContainerResponse], error)
@@ -181,6 +197,7 @@ type BulkServiceHandler interface {
 	GetBulkContainer(context.Context, *connect.Request[v1.GetBulkContainerRequest]) (*connect.Response[v1.GetBulkContainerResponse], error)
 	ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error)
 	CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error)
+	AdoptOpeningInventory(context.Context, *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error)
 }
 
 // NewBulkServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -232,6 +249,12 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(bulkServiceMethods.ByName("CreateBlend")),
 		connect.WithHandlerOptions(opts...),
 	)
+	bulkServiceAdoptOpeningInventoryHandler := connect.NewUnaryHandler(
+		BulkServiceAdoptOpeningInventoryProcedure,
+		svc.AdoptOpeningInventory,
+		connect.WithSchema(bulkServiceMethods.ByName("AdoptOpeningInventory")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.BulkService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BulkServiceCreateBulkContainerProcedure:
@@ -248,6 +271,8 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 			bulkServiceListRecentBulkMovementsHandler.ServeHTTP(w, r)
 		case BulkServiceCreateBlendProcedure:
 			bulkServiceCreateBlendHandler.ServeHTTP(w, r)
+		case BulkServiceAdoptOpeningInventoryProcedure:
+			bulkServiceAdoptOpeningInventoryHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -283,4 +308,8 @@ func (UnimplementedBulkServiceHandler) ListRecentBulkMovements(context.Context, 
 
 func (UnimplementedBulkServiceHandler) CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.CreateBlend is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) AdoptOpeningInventory(context.Context, *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.AdoptOpeningInventory is not implemented"))
 }

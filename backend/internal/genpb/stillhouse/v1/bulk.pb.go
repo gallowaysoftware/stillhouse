@@ -104,6 +104,10 @@ const (
 	BulkMovementReason_BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED      BulkMovementReason = 8
 	BulkMovementReason_BULK_MOVEMENT_REASON_REGAUGE_CORRECTION    BulkMovementReason = 9
 	BulkMovementReason_BULK_MOVEMENT_REASON_DESTRUCTION           BulkMovementReason = 10
+	// Alcohol already on hand when the distillery adopted Stillhouse. Not
+	// production — it flows into the B266's opening balance rather than
+	// into what the distillery made this period.
+	BulkMovementReason_BULK_MOVEMENT_REASON_OPENING_INVENTORY BulkMovementReason = 11
 )
 
 // Enum value maps for BulkMovementReason.
@@ -120,6 +124,7 @@ var (
 		8:  "BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED",
 		9:  "BULK_MOVEMENT_REASON_REGAUGE_CORRECTION",
 		10: "BULK_MOVEMENT_REASON_DESTRUCTION",
+		11: "BULK_MOVEMENT_REASON_OPENING_INVENTORY",
 	}
 	BulkMovementReason_value = map[string]int32{
 		"BULK_MOVEMENT_REASON_UNSPECIFIED":           0,
@@ -133,6 +138,7 @@ var (
 		"BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED":      8,
 		"BULK_MOVEMENT_REASON_REGAUGE_CORRECTION":    9,
 		"BULK_MOVEMENT_REASON_DESTRUCTION":           10,
+		"BULK_MOVEMENT_REASON_OPENING_INVENTORY":     11,
 	}
 )
 
@@ -1335,6 +1341,245 @@ func (x *CreateBlendResponse) GetMovements() []*BulkMovement {
 	return nil
 }
 
+// AdoptOpeningInventory books stock that was already in the warehouse when
+// the distillery started using Stillhouse — casks with no mash, no
+// fermentation and no distillation run behind them.
+//
+// The measurement follows CRA's Mass/Density Procedure where a scale is
+// available, because that is both the more accurate route and the one the
+// published tables are built for: kilograms × A gives litres at 20 °C, and
+// the hydrometer indication gives the strength. A dipped volume works too.
+type AdoptOpeningInventoryRequest struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ContainerId string                 `protobuf:"bytes,1,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	// Scale reading in kilograms. Preferred: mass needs no temperature
+	// correction of its own and doesn't contract.
+	MassKg    float64 `protobuf:"fixed64,2,opt,name=mass_kg,json=massKg,proto3" json:"mass_kg,omitempty"`
+	MassKgSet bool    `protobuf:"varint,3,opt,name=mass_kg_set,json=massKgSet,proto3" json:"mass_kg_set,omitempty"`
+	// Or a dipped volume, in litres as measured.
+	VolumeL    float64 `protobuf:"fixed64,4,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"`
+	VolumeLSet bool    `protobuf:"varint,5,opt,name=volume_l_set,json=volumeLSet,proto3" json:"volume_l_set,omitempty"`
+	// Hydrometer indication in kg/m³, read at temperature_c. CRA's approved
+	// instrument reads density, not %ABV.
+	DensityKgM3    float64 `protobuf:"fixed64,6,opt,name=density_kg_m3,json=densityKgM3,proto3" json:"density_kg_m3,omitempty"`
+	DensityKgM3Set bool    `protobuf:"varint,7,opt,name=density_kg_m3_set,json=densityKgM3Set,proto3" json:"density_kg_m3_set,omitempty"`
+	// Strength at 20 °C, when the instrument already corrects. Ignored when
+	// density_kg_m3 is supplied.
+	AbvPct          float64 `protobuf:"fixed64,8,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`
+	TemperatureC    float64 `protobuf:"fixed64,9,opt,name=temperature_c,json=temperatureC,proto3" json:"temperature_c,omitempty"`
+	TemperatureCSet bool    `protobuf:"varint,10,opt,name=temperature_c_set,json=temperatureCSet,proto3" json:"temperature_c_set,omitempty"`
+	// ISO date the cask was originally filled. Sets the maturation clock, so
+	// adopted whisky keeps the age it actually has — without this a
+	// three-year-old cask would restart at zero and lose its Canadian Whisky
+	// eligibility.
+	FillDate string `protobuf:"bytes,11,opt,name=fill_date,json=fillDate,proto3" json:"fill_date,omitempty"`
+	// When this stock was on hand. Defaults to now; back-date it to the
+	// start of your first reporting period.
+	AsOf          *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=as_of,json=asOf,proto3" json:"as_of,omitempty"`
+	Notes         string                 `protobuf:"bytes,13,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AdoptOpeningInventoryRequest) Reset() {
+	*x = AdoptOpeningInventoryRequest{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdoptOpeningInventoryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdoptOpeningInventoryRequest) ProtoMessage() {}
+
+func (x *AdoptOpeningInventoryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdoptOpeningInventoryRequest.ProtoReflect.Descriptor instead.
+func (*AdoptOpeningInventoryRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *AdoptOpeningInventoryRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+func (x *AdoptOpeningInventoryRequest) GetMassKg() float64 {
+	if x != nil {
+		return x.MassKg
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryRequest) GetMassKgSet() bool {
+	if x != nil {
+		return x.MassKgSet
+	}
+	return false
+}
+
+func (x *AdoptOpeningInventoryRequest) GetVolumeL() float64 {
+	if x != nil {
+		return x.VolumeL
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryRequest) GetVolumeLSet() bool {
+	if x != nil {
+		return x.VolumeLSet
+	}
+	return false
+}
+
+func (x *AdoptOpeningInventoryRequest) GetDensityKgM3() float64 {
+	if x != nil {
+		return x.DensityKgM3
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryRequest) GetDensityKgM3Set() bool {
+	if x != nil {
+		return x.DensityKgM3Set
+	}
+	return false
+}
+
+func (x *AdoptOpeningInventoryRequest) GetAbvPct() float64 {
+	if x != nil {
+		return x.AbvPct
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryRequest) GetTemperatureC() float64 {
+	if x != nil {
+		return x.TemperatureC
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryRequest) GetTemperatureCSet() bool {
+	if x != nil {
+		return x.TemperatureCSet
+	}
+	return false
+}
+
+func (x *AdoptOpeningInventoryRequest) GetFillDate() string {
+	if x != nil {
+		return x.FillDate
+	}
+	return ""
+}
+
+func (x *AdoptOpeningInventoryRequest) GetAsOf() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AsOf
+	}
+	return nil
+}
+
+func (x *AdoptOpeningInventoryRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+type AdoptOpeningInventoryResponse struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Container *BulkContainer         `protobuf:"bytes,1,opt,name=container,proto3" json:"container,omitempty"`
+	Movement  *BulkMovement          `protobuf:"bytes,2,opt,name=movement,proto3" json:"movement,omitempty"`
+	// What the measurement resolved to, so the operator can check it against
+	// their own paperwork before trusting the balance.
+	VolumeL_20C     float64 `protobuf:"fixed64,3,opt,name=volume_l_20c,json=volumeL20c,proto3" json:"volume_l_20c,omitempty"`
+	StrengthPct_20C float64 `protobuf:"fixed64,4,opt,name=strength_pct_20c,json=strengthPct20c,proto3" json:"strength_pct_20c,omitempty"`
+	Laa             float64 `protobuf:"fixed64,5,opt,name=laa,proto3" json:"laa,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *AdoptOpeningInventoryResponse) Reset() {
+	*x = AdoptOpeningInventoryResponse{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AdoptOpeningInventoryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdoptOpeningInventoryResponse) ProtoMessage() {}
+
+func (x *AdoptOpeningInventoryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdoptOpeningInventoryResponse.ProtoReflect.Descriptor instead.
+func (*AdoptOpeningInventoryResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *AdoptOpeningInventoryResponse) GetContainer() *BulkContainer {
+	if x != nil {
+		return x.Container
+	}
+	return nil
+}
+
+func (x *AdoptOpeningInventoryResponse) GetMovement() *BulkMovement {
+	if x != nil {
+		return x.Movement
+	}
+	return nil
+}
+
+func (x *AdoptOpeningInventoryResponse) GetVolumeL_20C() float64 {
+	if x != nil {
+		return x.VolumeL_20C
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryResponse) GetStrengthPct_20C() float64 {
+	if x != nil {
+		return x.StrengthPct_20C
+	}
+	return 0
+}
+
+func (x *AdoptOpeningInventoryResponse) GetLaa() float64 {
+	if x != nil {
+		return x.Laa
+	}
+	return 0
+}
+
 var File_stillhouse_v1_bulk_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_bulk_proto_rawDesc = "" +
@@ -1435,7 +1680,30 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"occurredAt\"\x90\x01\n" +
 	"\x13CreateBlendResponse\x12>\n" +
 	"\vdestination\x18\x01 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\vdestination\x129\n" +
-	"\tmovements\x18\x02 \x03(\v2\x1b.stillhouse.v1.BulkMovementR\tmovements*\xa4\x02\n" +
+	"\tmovements\x18\x02 \x03(\v2\x1b.stillhouse.v1.BulkMovementR\tmovements\"\xd4\x03\n" +
+	"\x1cAdoptOpeningInventoryRequest\x12!\n" +
+	"\fcontainer_id\x18\x01 \x01(\tR\vcontainerId\x12\x17\n" +
+	"\amass_kg\x18\x02 \x01(\x01R\x06massKg\x12\x1e\n" +
+	"\vmass_kg_set\x18\x03 \x01(\bR\tmassKgSet\x12\x19\n" +
+	"\bvolume_l\x18\x04 \x01(\x01R\avolumeL\x12 \n" +
+	"\fvolume_l_set\x18\x05 \x01(\bR\n" +
+	"volumeLSet\x12\"\n" +
+	"\rdensity_kg_m3\x18\x06 \x01(\x01R\vdensityKgM3\x12)\n" +
+	"\x11density_kg_m3_set\x18\a \x01(\bR\x0edensityKgM3Set\x12\x17\n" +
+	"\aabv_pct\x18\b \x01(\x01R\x06abvPct\x12#\n" +
+	"\rtemperature_c\x18\t \x01(\x01R\ftemperatureC\x12*\n" +
+	"\x11temperature_c_set\x18\n" +
+	" \x01(\bR\x0ftemperatureCSet\x12\x1b\n" +
+	"\tfill_date\x18\v \x01(\tR\bfillDate\x12/\n" +
+	"\x05as_of\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\x04asOf\x12\x14\n" +
+	"\x05notes\x18\r \x01(\tR\x05notes\"\xf2\x01\n" +
+	"\x1dAdoptOpeningInventoryResponse\x12:\n" +
+	"\tcontainer\x18\x01 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\tcontainer\x127\n" +
+	"\bmovement\x18\x02 \x01(\v2\x1b.stillhouse.v1.BulkMovementR\bmovement\x12 \n" +
+	"\fvolume_l_20c\x18\x03 \x01(\x01R\n" +
+	"volumeL20c\x12(\n" +
+	"\x10strength_pct_20c\x18\x04 \x01(\x01R\x0estrengthPct20c\x12\x10\n" +
+	"\x03laa\x18\x05 \x01(\x01R\x03laa*\xa4\x02\n" +
 	"\x11BulkContainerKind\x12#\n" +
 	"\x1fBULK_CONTAINER_KIND_UNSPECIFIED\x10\x00\x12'\n" +
 	"#BULK_CONTAINER_KIND_SPIRIT_RECEIVER\x10\x01\x12\x1c\n" +
@@ -1444,7 +1712,7 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\x18BULK_CONTAINER_KIND_TOTE\x10\x04\x12\"\n" +
 	"\x1eBULK_CONTAINER_KIND_BLEND_TANK\x10\x05\x12%\n" +
 	"!BULK_CONTAINER_KIND_BOTTLING_TANK\x10\x06\x12\x1d\n" +
-	"\x19BULK_CONTAINER_KIND_OTHER\x10\a*\xe6\x03\n" +
+	"\x19BULK_CONTAINER_KIND_OTHER\x10\a*\x92\x04\n" +
 	"\x12BulkMovementReason\x12$\n" +
 	" BULK_MOVEMENT_REASON_UNSPECIFIED\x10\x00\x12)\n" +
 	"%BULK_MOVEMENT_REASON_PRODUCTION_GAUGE\x10\x01\x12,\n" +
@@ -1457,7 +1725,8 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"%BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED\x10\b\x12+\n" +
 	"'BULK_MOVEMENT_REASON_REGAUGE_CORRECTION\x10\t\x12$\n" +
 	" BULK_MOVEMENT_REASON_DESTRUCTION\x10\n" +
-	"2\x86\x06\n" +
+	"\x12*\n" +
+	"&BULK_MOVEMENT_REASON_OPENING_INVENTORY\x10\v2\xfa\x06\n" +
 	"\vBulkService\x12l\n" +
 	"\x13CreateBulkContainer\x12).stillhouse.v1.CreateBulkContainerRequest\x1a*.stillhouse.v1.CreateBulkContainerResponse\x12l\n" +
 	"\x13UpdateBulkContainer\x12).stillhouse.v1.UpdateBulkContainerRequest\x1a*.stillhouse.v1.UpdateBulkContainerResponse\x12{\n" +
@@ -1465,7 +1734,8 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\x12ListBulkContainers\x12(.stillhouse.v1.ListBulkContainersRequest\x1a).stillhouse.v1.ListBulkContainersResponse\x12c\n" +
 	"\x10GetBulkContainer\x12&.stillhouse.v1.GetBulkContainerRequest\x1a'.stillhouse.v1.GetBulkContainerResponse\x12x\n" +
 	"\x17ListRecentBulkMovements\x12-.stillhouse.v1.ListRecentBulkMovementsRequest\x1a..stillhouse.v1.ListRecentBulkMovementsResponse\x12T\n" +
-	"\vCreateBlend\x12!.stillhouse.v1.CreateBlendRequest\x1a\".stillhouse.v1.CreateBlendResponseB\xcd\x01\n" +
+	"\vCreateBlend\x12!.stillhouse.v1.CreateBlendRequest\x1a\".stillhouse.v1.CreateBlendResponse\x12r\n" +
+	"\x15AdoptOpeningInventory\x12+.stillhouse.v1.AdoptOpeningInventoryRequest\x1a,.stillhouse.v1.AdoptOpeningInventoryResponseB\xcd\x01\n" +
 	"\x11com.stillhouse.v1B\tBulkProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1481,7 +1751,7 @@ func file_stillhouse_v1_bulk_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_bulk_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_bulk_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_stillhouse_v1_bulk_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_stillhouse_v1_bulk_proto_goTypes = []any{
 	(BulkContainerKind)(0),                   // 0: stillhouse.v1.BulkContainerKind
 	(BulkMovementReason)(0),                  // 1: stillhouse.v1.BulkMovementReason
@@ -1503,16 +1773,18 @@ var file_stillhouse_v1_bulk_proto_goTypes = []any{
 	(*BlendSourceInput)(nil),                 // 17: stillhouse.v1.BlendSourceInput
 	(*CreateBlendRequest)(nil),               // 18: stillhouse.v1.CreateBlendRequest
 	(*CreateBlendResponse)(nil),              // 19: stillhouse.v1.CreateBlendResponse
-	(*timestamppb.Timestamp)(nil),            // 20: google.protobuf.Timestamp
+	(*AdoptOpeningInventoryRequest)(nil),     // 20: stillhouse.v1.AdoptOpeningInventoryRequest
+	(*AdoptOpeningInventoryResponse)(nil),    // 21: stillhouse.v1.AdoptOpeningInventoryResponse
+	(*timestamppb.Timestamp)(nil),            // 22: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_bulk_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.BulkContainer.kind:type_name -> stillhouse.v1.BulkContainerKind
-	20, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
-	20, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
-	20, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
+	22, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
+	22, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
+	22, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: stillhouse.v1.BulkMovement.reason:type_name -> stillhouse.v1.BulkMovementReason
-	20, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
-	20, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
+	22, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
+	22, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 7: stillhouse.v1.CreateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
 	2,  // 8: stillhouse.v1.CreateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
 	0,  // 9: stillhouse.v1.UpdateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
@@ -1524,28 +1796,33 @@ var file_stillhouse_v1_bulk_proto_depIdxs = []int32{
 	3,  // 15: stillhouse.v1.GetBulkContainerResponse.movements:type_name -> stillhouse.v1.BulkMovement
 	3,  // 16: stillhouse.v1.ListRecentBulkMovementsResponse.movements:type_name -> stillhouse.v1.BulkMovement
 	17, // 17: stillhouse.v1.CreateBlendRequest.sources:type_name -> stillhouse.v1.BlendSourceInput
-	20, // 18: stillhouse.v1.CreateBlendRequest.occurred_at:type_name -> google.protobuf.Timestamp
+	22, // 18: stillhouse.v1.CreateBlendRequest.occurred_at:type_name -> google.protobuf.Timestamp
 	2,  // 19: stillhouse.v1.CreateBlendResponse.destination:type_name -> stillhouse.v1.BulkContainer
 	3,  // 20: stillhouse.v1.CreateBlendResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	5,  // 21: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
-	7,  // 22: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
-	9,  // 23: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
-	11, // 24: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
-	13, // 25: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
-	15, // 26: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
-	18, // 27: stillhouse.v1.BulkService.CreateBlend:input_type -> stillhouse.v1.CreateBlendRequest
-	6,  // 28: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
-	8,  // 29: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
-	10, // 30: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
-	12, // 31: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
-	14, // 32: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
-	16, // 33: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
-	19, // 34: stillhouse.v1.BulkService.CreateBlend:output_type -> stillhouse.v1.CreateBlendResponse
-	28, // [28:35] is the sub-list for method output_type
-	21, // [21:28] is the sub-list for method input_type
-	21, // [21:21] is the sub-list for extension type_name
-	21, // [21:21] is the sub-list for extension extendee
-	0,  // [0:21] is the sub-list for field type_name
+	22, // 21: stillhouse.v1.AdoptOpeningInventoryRequest.as_of:type_name -> google.protobuf.Timestamp
+	2,  // 22: stillhouse.v1.AdoptOpeningInventoryResponse.container:type_name -> stillhouse.v1.BulkContainer
+	3,  // 23: stillhouse.v1.AdoptOpeningInventoryResponse.movement:type_name -> stillhouse.v1.BulkMovement
+	5,  // 24: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
+	7,  // 25: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
+	9,  // 26: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
+	11, // 27: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
+	13, // 28: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
+	15, // 29: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
+	18, // 30: stillhouse.v1.BulkService.CreateBlend:input_type -> stillhouse.v1.CreateBlendRequest
+	20, // 31: stillhouse.v1.BulkService.AdoptOpeningInventory:input_type -> stillhouse.v1.AdoptOpeningInventoryRequest
+	6,  // 32: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
+	8,  // 33: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
+	10, // 34: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
+	12, // 35: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
+	14, // 36: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
+	16, // 37: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
+	19, // 38: stillhouse.v1.BulkService.CreateBlend:output_type -> stillhouse.v1.CreateBlendResponse
+	21, // 39: stillhouse.v1.BulkService.AdoptOpeningInventory:output_type -> stillhouse.v1.AdoptOpeningInventoryResponse
+	32, // [32:40] is the sub-list for method output_type
+	24, // [24:32] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_bulk_proto_init() }
@@ -1559,7 +1836,7 @@ func file_stillhouse_v1_bulk_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_bulk_proto_rawDesc), len(file_stillhouse_v1_bulk_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

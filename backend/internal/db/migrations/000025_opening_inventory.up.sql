@@ -1,0 +1,16 @@
+-- Opening inventory: alcohol that was already on hand when the distillery
+-- started using Stillhouse.
+--
+-- A distillery adopting this system has casks in the warehouse with no
+-- mash, no fermentation and no distillation run behind them — that history
+-- lives in whatever they kept records in before. The alcohol is real and
+-- has to enter the ledger, but it is emphatically NOT production: booking
+-- it as a production gauge would overstate what the distillery made in the
+-- period, on a return that CRA reads.
+--
+-- Because computeB266Report derives the opening balance by reverse-walking
+-- (opening = closing - receipts + withdrawals), a movement that is not
+-- counted among the receipts lands in the opening balance instead. That is
+-- exactly right: the stock was on hand before the period, whatever date the
+-- operator got round to recording it.
+ALTER TYPE bulk_movement_reason ADD VALUE IF NOT EXISTS 'opening_inventory';

@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
+import { AdoptStockCard } from "@/components/AdoptStockCard";
 import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
 import { bulkClient } from "@/lib/clients";
@@ -42,6 +43,12 @@ export function BulkContainerDetailPage() {
         <Stat label="Current LAA" value={`${formatLAA(c.currentLaa)} L`} highlight />
         <Stat label="Movements" value={String(detail.data.movements.length)} />
       </section>
+
+      {c.currentVolumeL === 0 && (
+        <section className="mb-8 max-w-xl">
+          <AdoptStockCard containerId={c.id} containerName={c.name} isBarrel={false} />
+        </section>
+      )}
 
       {/* Prefilled from the tank in front of you — reducing this vessel is
           the reason you're on this page. */}
