@@ -28,6 +28,7 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addGetMash(s, d, user)
 	addPlanStrike(s, d, user)
 	addPlanReduction(s, d, user)
+	addPlanBlend(s, d, user)
 }
 
 // dashboardOutput is a compact rollup useful as the "what's the state
@@ -324,6 +325,43 @@ func addPlanReduction(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			ToStrengthPct:   args.ToStrengthPct,
 			FromMassKg:      derefFloat(args.FromMassKg),
 			FromMassKgSet:   args.FromMassKg != nil,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+// addPlanBlend exposes the vatting planner. Read-only — it computes a
+// plan; CreateBlend in the web UI is what actually moves the alcohol.
+func addPlanBlend(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type source struct {
+		Label       string  `json:"label,omitempty" jsonschema:"optional name for the parcel, e.g. the cask number"`
+		VolumeL     float64 `json:"volume_l" jsonschema:"volume in litres at 20 °C"`
+		StrengthPct float64 `json:"strength_pct" jsonschema:"strength as a percentage (0-100) at 20 °C"`
+	}
+	type in struct {
+		Sources           []source `json:"sources" jsonschema:"the parcels being vatted together; at least two"`
+		TargetStrengthPct float64  `json:"target_strength_pct,omitempty" jsonschema:"optional bottling strength to bring the vatting down to; must be below the blend's own strength"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "plan_blend",
+		Description: "Vat parcels together and see what comes out: the blend's volume, its strength, and — if a target " +
+			"is given — the water needed to reduce it. The result is NOT the sum of the volumes or the weighted " +
+			"average of the strengths: ethanol and water contract on mixing, so the parcels occupy less together " +
+			"than apart. The response carries both the true figure and what simple addition would have said.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		srcs := make([]*pb.PlanBlendRequest_Source, 0, len(args.Sources))
+		for _, s := range args.Sources {
+			srcs = append(srcs, &pb.PlanBlendRequest_Source{
+				Label: s.Label, VolumeL: s.VolumeL, StrengthPct: s.StrengthPct,
+			})
+		}
+		resp, err := d.Alcoholometry.PlanBlend(ctx, connect.NewRequest(&pb.PlanBlendRequest{
+			Sources:           srcs,
+			TargetStrengthPct: args.TargetStrengthPct,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil

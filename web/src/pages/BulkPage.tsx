@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { BlendPlanner } from "@/components/BlendPlanner";
+import { Button } from "@/components/Button";
 import { Shell } from "@/components/Shell";
 import { bulkClient } from "@/lib/clients";
 import { WriteOnly } from "@/lib/role";
@@ -43,6 +45,7 @@ export function BulkPage() {
 
   const [showForm, setShowForm] = useState(false);
   const [showBlend, setShowBlend] = useState(false);
+  const [showPlanner, setShowPlanner] = useState(false);
   const createContainer = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof CreateBulkContainerRequestSchema>>) =>
       bulkClient.createBulkContainer(msg),
@@ -85,20 +88,26 @@ export function BulkPage() {
           </p>
         </div>
         <WriteOnly>
-          <button
-            onClick={() => setShowForm((s) => !s)}
-            className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
-          >
-            {showForm ? "Cancel" : "Add container"}
-          </button>
-          <button
-            onClick={() => setShowBlend((s) => !s)}
-            className="ml-2 rounded border border-border-strong px-3 py-2 text-sm font-medium text-fg hover:bg-surface-3"
-          >
-            {showBlend ? "Cancel blend" : "New blend"}
-          </button>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={() => setShowPlanner((s) => !s)}>
+              {showPlanner ? "Hide planner" : "Plan a vatting"}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowBlend((s) => !s)}>
+              {showBlend ? "Cancel blend" : "New blend"}
+            </Button>
+            <Button onClick={() => setShowForm((s) => !s)}>
+              {showForm ? "Cancel" : "Add container"}
+            </Button>
+          </div>
         </WriteOnly>
       </div>
+
+
+      {showPlanner && (
+        <section className="mb-6 max-w-2xl">
+          <BlendPlanner containers={list.data?.containers ?? []} />
+        </section>
+      )}
 
       {showBlend && <BlendForm
         containers={list.data?.containers ?? []}

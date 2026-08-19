@@ -269,3 +269,42 @@ func (s *AlcoholometryService) PlanReduction(
 		WaterToAddKg: round4(plan.WaterToAddKg),
 	}), nil
 }
+
+// PlanBlend vats parcels together. See the alcoholometry package for why
+// the result is neither the sum of the volumes nor the weighted mean of
+// the strengths.
+func (s *AlcoholometryService) PlanBlend(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.PlanBlendRequest],
+) (*connect.Response[stillhousev1.PlanBlendResponse], error) {
+	if _, ok := CurrentUser(ctx); !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	sources := make([]alcoholometry.BlendSource, 0, len(req.Msg.GetSources()))
+	for _, in := range req.Msg.GetSources() {
+		sources = append(sources, alcoholometry.BlendSource{
+			Label:       in.GetLabel(),
+			VolumeL:     in.GetVolumeL(),
+			StrengthPct: in.GetStrengthPct(),
+		})
+	}
+	plan, err := alcoholometry.PlanBlend(sources, req.Msg.GetTargetStrengthPct())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	out := &stillhousev1.PlanBlendResponse{
+		TotalLaa:         round4(plan.TotalLAA),
+		TotalMassKg:      round4(plan.TotalMassKg),
+		BlendVolumeL:     round4(plan.BlendVolumeL),
+		BlendStrengthPct: round2(plan.BlendStrengthPct),
+		NaiveVolumeL:     round4(plan.NaiveVolumeL),
+		ContractionL:     round4(plan.ContractionL),
+		ReductionSet:     plan.ReductionSet,
+	}
+	if plan.ReductionSet {
+		out.WaterToAddL = round4(plan.Reduction.WaterToAddL)
+		out.WaterToAddKg = round4(plan.Reduction.WaterToAddKg)
+		out.FinalVolumeL = round4(plan.Reduction.FinalVolumeL)
+	}
+	return connect.NewResponse(out), nil
+}

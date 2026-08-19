@@ -670,6 +670,246 @@ func (x *PlanReductionResponse) GetWaterToAddKg() float64 {
 	return 0
 }
 
+// PlanBlend vats parcels together and, optionally, reduces the result to
+// a bottling strength.
+//
+// The blend's strength is NOT the volume-weighted mean of its parts, and
+// its volume is not their sum: ethanol and water contract on mixing, so
+// the parcels occupy less together than they did apart. Running the
+// balance in mass and converting back through the tables gets both right.
+type PlanBlendRequest struct {
+	state   protoimpl.MessageState     `protogen:"open.v1"`
+	Sources []*PlanBlendRequest_Source `protobuf:"bytes,1,rep,name=sources,proto3" json:"sources,omitempty"`
+	// Optional. When set, the response carries the water needed to bring
+	// the vatting down to it.
+	TargetStrengthPct float64 `protobuf:"fixed64,2,opt,name=target_strength_pct,json=targetStrengthPct,proto3" json:"target_strength_pct,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *PlanBlendRequest) Reset() {
+	*x = PlanBlendRequest{}
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanBlendRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanBlendRequest) ProtoMessage() {}
+
+func (x *PlanBlendRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanBlendRequest.ProtoReflect.Descriptor instead.
+func (*PlanBlendRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_alcoholometry_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PlanBlendRequest) GetSources() []*PlanBlendRequest_Source {
+	if x != nil {
+		return x.Sources
+	}
+	return nil
+}
+
+func (x *PlanBlendRequest) GetTargetStrengthPct() float64 {
+	if x != nil {
+		return x.TargetStrengthPct
+	}
+	return 0
+}
+
+type PlanBlendResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	TotalLaa         float64                `protobuf:"fixed64,1,opt,name=total_laa,json=totalLaa,proto3" json:"total_laa,omitempty"`
+	TotalMassKg      float64                `protobuf:"fixed64,2,opt,name=total_mass_kg,json=totalMassKg,proto3" json:"total_mass_kg,omitempty"`
+	BlendVolumeL     float64                `protobuf:"fixed64,3,opt,name=blend_volume_l,json=blendVolumeL,proto3" json:"blend_volume_l,omitempty"`
+	BlendStrengthPct float64                `protobuf:"fixed64,4,opt,name=blend_strength_pct,json=blendStrengthPct,proto3" json:"blend_strength_pct,omitempty"`
+	// What simply adding the source volumes would have given, and the
+	// difference, so the shrinkage is shown rather than asserted.
+	NaiveVolumeL float64 `protobuf:"fixed64,5,opt,name=naive_volume_l,json=naiveVolumeL,proto3" json:"naive_volume_l,omitempty"`
+	ContractionL float64 `protobuf:"fixed64,6,opt,name=contraction_l,json=contractionL,proto3" json:"contraction_l,omitempty"`
+	// Populated when target_strength_pct was set.
+	ReductionSet  bool    `protobuf:"varint,7,opt,name=reduction_set,json=reductionSet,proto3" json:"reduction_set,omitempty"`
+	WaterToAddL   float64 `protobuf:"fixed64,8,opt,name=water_to_add_l,json=waterToAddL,proto3" json:"water_to_add_l,omitempty"`
+	WaterToAddKg  float64 `protobuf:"fixed64,9,opt,name=water_to_add_kg,json=waterToAddKg,proto3" json:"water_to_add_kg,omitempty"`
+	FinalVolumeL  float64 `protobuf:"fixed64,10,opt,name=final_volume_l,json=finalVolumeL,proto3" json:"final_volume_l,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlanBlendResponse) Reset() {
+	*x = PlanBlendResponse{}
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanBlendResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanBlendResponse) ProtoMessage() {}
+
+func (x *PlanBlendResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanBlendResponse.ProtoReflect.Descriptor instead.
+func (*PlanBlendResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_alcoholometry_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PlanBlendResponse) GetTotalLaa() float64 {
+	if x != nil {
+		return x.TotalLaa
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetTotalMassKg() float64 {
+	if x != nil {
+		return x.TotalMassKg
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetBlendVolumeL() float64 {
+	if x != nil {
+		return x.BlendVolumeL
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetBlendStrengthPct() float64 {
+	if x != nil {
+		return x.BlendStrengthPct
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetNaiveVolumeL() float64 {
+	if x != nil {
+		return x.NaiveVolumeL
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetContractionL() float64 {
+	if x != nil {
+		return x.ContractionL
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetReductionSet() bool {
+	if x != nil {
+		return x.ReductionSet
+	}
+	return false
+}
+
+func (x *PlanBlendResponse) GetWaterToAddL() float64 {
+	if x != nil {
+		return x.WaterToAddL
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetWaterToAddKg() float64 {
+	if x != nil {
+		return x.WaterToAddKg
+	}
+	return 0
+}
+
+func (x *PlanBlendResponse) GetFinalVolumeL() float64 {
+	if x != nil {
+		return x.FinalVolumeL
+	}
+	return 0
+}
+
+type PlanBlendRequest_Source struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Label         string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	VolumeL       float64                `protobuf:"fixed64,2,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"`             // at 20 °C
+	StrengthPct   float64                `protobuf:"fixed64,3,opt,name=strength_pct,json=strengthPct,proto3" json:"strength_pct,omitempty"` // at 20 °C
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlanBlendRequest_Source) Reset() {
+	*x = PlanBlendRequest_Source{}
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanBlendRequest_Source) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanBlendRequest_Source) ProtoMessage() {}
+
+func (x *PlanBlendRequest_Source) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_alcoholometry_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanBlendRequest_Source.ProtoReflect.Descriptor instead.
+func (*PlanBlendRequest_Source) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_alcoholometry_proto_rawDescGZIP(), []int{7, 0}
+}
+
+func (x *PlanBlendRequest_Source) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *PlanBlendRequest_Source) GetVolumeL() float64 {
+	if x != nil {
+		return x.VolumeL
+	}
+	return 0
+}
+
+func (x *PlanBlendRequest_Source) GetStrengthPct() float64 {
+	if x != nil {
+		return x.StrengthPct
+	}
+	return 0
+}
+
 var File_stillhouse_v1_alcoholometry_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_alcoholometry_proto_rawDesc = "" +
@@ -721,17 +961,37 @@ const file_stillhouse_v1_alcoholometry_proto_rawDesc = "" +
 	"\ffrom_mass_kg\x18\x06 \x01(\x01R\n" +
 	"fromMassKg\x12\"\n" +
 	"\rfinal_mass_kg\x18\a \x01(\x01R\vfinalMassKg\x12%\n" +
-	"\x0fwater_to_add_kg\x18\b \x01(\x01R\fwaterToAddKg*\x99\x01\n" +
+	"\x0fwater_to_add_kg\x18\b \x01(\x01R\fwaterToAddKg\"\xe2\x01\n" +
+	"\x10PlanBlendRequest\x12@\n" +
+	"\asources\x18\x01 \x03(\v2&.stillhouse.v1.PlanBlendRequest.SourceR\asources\x12.\n" +
+	"\x13target_strength_pct\x18\x02 \x01(\x01R\x11targetStrengthPct\x1a\\\n" +
+	"\x06Source\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\x12\x19\n" +
+	"\bvolume_l\x18\x02 \x01(\x01R\avolumeL\x12!\n" +
+	"\fstrength_pct\x18\x03 \x01(\x01R\vstrengthPct\"\x8a\x03\n" +
+	"\x11PlanBlendResponse\x12\x1b\n" +
+	"\ttotal_laa\x18\x01 \x01(\x01R\btotalLaa\x12\"\n" +
+	"\rtotal_mass_kg\x18\x02 \x01(\x01R\vtotalMassKg\x12$\n" +
+	"\x0eblend_volume_l\x18\x03 \x01(\x01R\fblendVolumeL\x12,\n" +
+	"\x12blend_strength_pct\x18\x04 \x01(\x01R\x10blendStrengthPct\x12$\n" +
+	"\x0enaive_volume_l\x18\x05 \x01(\x01R\fnaiveVolumeL\x12#\n" +
+	"\rcontraction_l\x18\x06 \x01(\x01R\fcontractionL\x12#\n" +
+	"\rreduction_set\x18\a \x01(\bR\freductionSet\x12#\n" +
+	"\x0ewater_to_add_l\x18\b \x01(\x01R\vwaterToAddL\x12%\n" +
+	"\x0fwater_to_add_kg\x18\t \x01(\x01R\fwaterToAddKg\x12$\n" +
+	"\x0efinal_volume_l\x18\n" +
+	" \x01(\x01R\ffinalVolumeL*\x99\x01\n" +
 	"\x0eStrengthSource\x12\x1f\n" +
 	"\x1bSTRENGTH_SOURCE_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bSTRENGTH_SOURCE_UNCORRECTED\x10\x01\x12!\n" +
 	"\x1dSTRENGTH_SOURCE_TABLE_DENSITY\x10\x02\x12\"\n" +
-	"\x1eSTRENGTH_SOURCE_TABLE_STRENGTH\x10\x032\xa7\x02\n" +
+	"\x1eSTRENGTH_SOURCE_TABLE_STRENGTH\x10\x032\xf7\x02\n" +
 	"\x14AlcoholometryService\x12`\n" +
 	"\x0fResolveStrength\x12%.stillhouse.v1.ResolveStrengthRequest\x1a&.stillhouse.v1.ResolveStrengthResponse\x12Q\n" +
 	"\n" +
 	"TablesInfo\x12 .stillhouse.v1.TablesInfoRequest\x1a!.stillhouse.v1.TablesInfoResponse\x12Z\n" +
-	"\rPlanReduction\x12#.stillhouse.v1.PlanReductionRequest\x1a$.stillhouse.v1.PlanReductionResponseB\xd6\x01\n" +
+	"\rPlanReduction\x12#.stillhouse.v1.PlanReductionRequest\x1a$.stillhouse.v1.PlanReductionResponse\x12N\n" +
+	"\tPlanBlend\x12\x1f.stillhouse.v1.PlanBlendRequest\x1a .stillhouse.v1.PlanBlendResponseB\xd6\x01\n" +
 	"\x11com.stillhouse.v1B\x12AlcoholometryProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -747,7 +1007,7 @@ func file_stillhouse_v1_alcoholometry_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_alcoholometry_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_alcoholometry_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_stillhouse_v1_alcoholometry_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_stillhouse_v1_alcoholometry_proto_goTypes = []any{
 	(StrengthSource)(0),             // 0: stillhouse.v1.StrengthSource
 	(*AlcoholometryReading)(nil),    // 1: stillhouse.v1.AlcoholometryReading
@@ -757,21 +1017,27 @@ var file_stillhouse_v1_alcoholometry_proto_goTypes = []any{
 	(*TablesInfoResponse)(nil),      // 5: stillhouse.v1.TablesInfoResponse
 	(*PlanReductionRequest)(nil),    // 6: stillhouse.v1.PlanReductionRequest
 	(*PlanReductionResponse)(nil),   // 7: stillhouse.v1.PlanReductionResponse
+	(*PlanBlendRequest)(nil),        // 8: stillhouse.v1.PlanBlendRequest
+	(*PlanBlendResponse)(nil),       // 9: stillhouse.v1.PlanBlendResponse
+	(*PlanBlendRequest_Source)(nil), // 10: stillhouse.v1.PlanBlendRequest.Source
 }
 var file_stillhouse_v1_alcoholometry_proto_depIdxs = []int32{
-	1, // 0: stillhouse.v1.ResolveStrengthResponse.reading:type_name -> stillhouse.v1.AlcoholometryReading
-	0, // 1: stillhouse.v1.ResolveStrengthResponse.source:type_name -> stillhouse.v1.StrengthSource
-	2, // 2: stillhouse.v1.AlcoholometryService.ResolveStrength:input_type -> stillhouse.v1.ResolveStrengthRequest
-	4, // 3: stillhouse.v1.AlcoholometryService.TablesInfo:input_type -> stillhouse.v1.TablesInfoRequest
-	6, // 4: stillhouse.v1.AlcoholometryService.PlanReduction:input_type -> stillhouse.v1.PlanReductionRequest
-	3, // 5: stillhouse.v1.AlcoholometryService.ResolveStrength:output_type -> stillhouse.v1.ResolveStrengthResponse
-	5, // 6: stillhouse.v1.AlcoholometryService.TablesInfo:output_type -> stillhouse.v1.TablesInfoResponse
-	7, // 7: stillhouse.v1.AlcoholometryService.PlanReduction:output_type -> stillhouse.v1.PlanReductionResponse
-	5, // [5:8] is the sub-list for method output_type
-	2, // [2:5] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1,  // 0: stillhouse.v1.ResolveStrengthResponse.reading:type_name -> stillhouse.v1.AlcoholometryReading
+	0,  // 1: stillhouse.v1.ResolveStrengthResponse.source:type_name -> stillhouse.v1.StrengthSource
+	10, // 2: stillhouse.v1.PlanBlendRequest.sources:type_name -> stillhouse.v1.PlanBlendRequest.Source
+	2,  // 3: stillhouse.v1.AlcoholometryService.ResolveStrength:input_type -> stillhouse.v1.ResolveStrengthRequest
+	4,  // 4: stillhouse.v1.AlcoholometryService.TablesInfo:input_type -> stillhouse.v1.TablesInfoRequest
+	6,  // 5: stillhouse.v1.AlcoholometryService.PlanReduction:input_type -> stillhouse.v1.PlanReductionRequest
+	8,  // 6: stillhouse.v1.AlcoholometryService.PlanBlend:input_type -> stillhouse.v1.PlanBlendRequest
+	3,  // 7: stillhouse.v1.AlcoholometryService.ResolveStrength:output_type -> stillhouse.v1.ResolveStrengthResponse
+	5,  // 8: stillhouse.v1.AlcoholometryService.TablesInfo:output_type -> stillhouse.v1.TablesInfoResponse
+	7,  // 9: stillhouse.v1.AlcoholometryService.PlanReduction:output_type -> stillhouse.v1.PlanReductionResponse
+	9,  // 10: stillhouse.v1.AlcoholometryService.PlanBlend:output_type -> stillhouse.v1.PlanBlendResponse
+	7,  // [7:11] is the sub-list for method output_type
+	3,  // [3:7] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_alcoholometry_proto_init() }
@@ -785,7 +1051,7 @@ func file_stillhouse_v1_alcoholometry_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_alcoholometry_proto_rawDesc), len(file_stillhouse_v1_alcoholometry_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   7,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -21,7 +21,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/alcoholometry.proto.
  */
 export const file_stillhouse_v1_alcoholometry: GenFile = /*@__PURE__*/
-  fileDesc("CiFzdGlsbGhvdXNlL3YxL2FsY29ob2xvbWV0cnkucHJvdG8SDXN0aWxsaG91c2UudjEiYAoUQWxjb2hvbG9tZXRyeVJlYWRpbmcSGAoQc3RyZW5ndGhfcGN0XzIwYxgBIAEoARIXCg92b2x1bWVfZmFjdG9yX2MYAiABKAESFQoNbGl0cmVzX3Blcl9rZxgDIAEoASLTAQoWUmVzb2x2ZVN0cmVuZ3RoUmVxdWVzdBIVCg10ZW1wZXJhdHVyZV9jGAEgASgBEhUKDWRlbnNpdHlfa2dfbTMYAiABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYAyABKAgSGAoQc3RyZW5ndGhfcGN0XzIwYxgEIAEoARIcChRzdHJlbmd0aF9wY3RfMjBjX3NldBgFIAEoCBIZChFvYnNlcnZlZF92b2x1bWVfbBgGIAEoARIdChVvYnNlcnZlZF92b2x1bWVfbF9zZXQYByABKAgi8AEKF1Jlc29sdmVTdHJlbmd0aFJlc3BvbnNlEjQKB3JlYWRpbmcYASABKAsyIy5zdGlsbGhvdXNlLnYxLkFsY29ob2xvbWV0cnlSZWFkaW5nEi0KBnNvdXJjZRgCIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USFAoMdm9sdW1lX2xfMjBjGAMgASgBEgsKA2xhYRgEIAEoARIXCg92b2x1bWVfcmVzb2x2ZWQYBSABKAgSGQoRZGVuc2l0eV9taW5fa2dfbTMYBiABKAESGQoRZGVuc2l0eV9tYXhfa2dfbTMYByABKAEiEwoRVGFibGVzSW5mb1JlcXVlc3QipAEKElRhYmxlc0luZm9SZXNwb25zZRIMCgRuYW1lGAEgASgJEhIKCnNvdXJjZV91cmwYAiABKAkSFQoNc291cmNlX3NoYTI1NhgDIAEoCRIZChF0ZW1wZXJhdHVyZV9taW5fYxgEIAEoARIZChF0ZW1wZXJhdHVyZV9tYXhfYxgFIAEoARIfChdyZWZlcmVuY2VfdGVtcGVyYXR1cmVfYxgGIAEoASKRAQoUUGxhblJlZHVjdGlvblJlcXVlc3QSFQoNZnJvbV92b2x1bWVfbBgBIAEoARIZChFmcm9tX3N0cmVuZ3RoX3BjdBgCIAEoARIXCg90b19zdHJlbmd0aF9wY3QYAyABKAESFAoMZnJvbV9tYXNzX2tnGAQgASgBEhgKEGZyb21fbWFzc19rZ19zZXQYBSABKAgiyAEKFVBsYW5SZWR1Y3Rpb25SZXNwb25zZRIWCg5maW5hbF92b2x1bWVfbBgBIAEoARIWCg53YXRlcl90b19hZGRfbBgCIAEoARIVCg1uYWl2ZV93YXRlcl9sGAMgASgBEhUKDWNvbnRyYWN0aW9uX2wYBCABKAESCwoDbGFhGAUgASgBEhQKDGZyb21fbWFzc19rZxgGIAEoARIVCg1maW5hbF9tYXNzX2tnGAcgASgBEhcKD3dhdGVyX3RvX2FkZF9rZxgIIAEoASqZAQoOU3RyZW5ndGhTb3VyY2USHwobU1RSRU5HVEhfU09VUkNFX1VOU1BFQ0lGSUVEEAASHwobU1RSRU5HVEhfU09VUkNFX1VOQ09SUkVDVEVEEAESIQodU1RSRU5HVEhfU09VUkNFX1RBQkxFX0RFTlNJVFkQAhIiCh5TVFJFTkdUSF9TT1VSQ0VfVEFCTEVfU1RSRU5HVEgQAzKnAgoUQWxjb2hvbG9tZXRyeVNlcnZpY2USYAoPUmVzb2x2ZVN0cmVuZ3RoEiUuc3RpbGxob3VzZS52MS5SZXNvbHZlU3RyZW5ndGhSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5SZXNvbHZlU3RyZW5ndGhSZXNwb25zZRJRCgpUYWJsZXNJbmZvEiAuc3RpbGxob3VzZS52MS5UYWJsZXNJbmZvUmVxdWVzdBohLnN0aWxsaG91c2UudjEuVGFibGVzSW5mb1Jlc3BvbnNlEloKDVBsYW5SZWR1Y3Rpb24SIy5zdGlsbGhvdXNlLnYxLlBsYW5SZWR1Y3Rpb25SZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5QbGFuUmVkdWN0aW9uUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("CiFzdGlsbGhvdXNlL3YxL2FsY29ob2xvbWV0cnkucHJvdG8SDXN0aWxsaG91c2UudjEiYAoUQWxjb2hvbG9tZXRyeVJlYWRpbmcSGAoQc3RyZW5ndGhfcGN0XzIwYxgBIAEoARIXCg92b2x1bWVfZmFjdG9yX2MYAiABKAESFQoNbGl0cmVzX3Blcl9rZxgDIAEoASLTAQoWUmVzb2x2ZVN0cmVuZ3RoUmVxdWVzdBIVCg10ZW1wZXJhdHVyZV9jGAEgASgBEhUKDWRlbnNpdHlfa2dfbTMYAiABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYAyABKAgSGAoQc3RyZW5ndGhfcGN0XzIwYxgEIAEoARIcChRzdHJlbmd0aF9wY3RfMjBjX3NldBgFIAEoCBIZChFvYnNlcnZlZF92b2x1bWVfbBgGIAEoARIdChVvYnNlcnZlZF92b2x1bWVfbF9zZXQYByABKAgi8AEKF1Jlc29sdmVTdHJlbmd0aFJlc3BvbnNlEjQKB3JlYWRpbmcYASABKAsyIy5zdGlsbGhvdXNlLnYxLkFsY29ob2xvbWV0cnlSZWFkaW5nEi0KBnNvdXJjZRgCIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USFAoMdm9sdW1lX2xfMjBjGAMgASgBEgsKA2xhYRgEIAEoARIXCg92b2x1bWVfcmVzb2x2ZWQYBSABKAgSGQoRZGVuc2l0eV9taW5fa2dfbTMYBiABKAESGQoRZGVuc2l0eV9tYXhfa2dfbTMYByABKAEiEwoRVGFibGVzSW5mb1JlcXVlc3QipAEKElRhYmxlc0luZm9SZXNwb25zZRIMCgRuYW1lGAEgASgJEhIKCnNvdXJjZV91cmwYAiABKAkSFQoNc291cmNlX3NoYTI1NhgDIAEoCRIZChF0ZW1wZXJhdHVyZV9taW5fYxgEIAEoARIZChF0ZW1wZXJhdHVyZV9tYXhfYxgFIAEoARIfChdyZWZlcmVuY2VfdGVtcGVyYXR1cmVfYxgGIAEoASKRAQoUUGxhblJlZHVjdGlvblJlcXVlc3QSFQoNZnJvbV92b2x1bWVfbBgBIAEoARIZChFmcm9tX3N0cmVuZ3RoX3BjdBgCIAEoARIXCg90b19zdHJlbmd0aF9wY3QYAyABKAESFAoMZnJvbV9tYXNzX2tnGAQgASgBEhgKEGZyb21fbWFzc19rZ19zZXQYBSABKAgiyAEKFVBsYW5SZWR1Y3Rpb25SZXNwb25zZRIWCg5maW5hbF92b2x1bWVfbBgBIAEoARIWCg53YXRlcl90b19hZGRfbBgCIAEoARIVCg1uYWl2ZV93YXRlcl9sGAMgASgBEhUKDWNvbnRyYWN0aW9uX2wYBCABKAESCwoDbGFhGAUgASgBEhQKDGZyb21fbWFzc19rZxgGIAEoARIVCg1maW5hbF9tYXNzX2tnGAcgASgBEhcKD3dhdGVyX3RvX2FkZF9rZxgIIAEoASKpAQoQUGxhbkJsZW5kUmVxdWVzdBI3Cgdzb3VyY2VzGAEgAygLMiYuc3RpbGxob3VzZS52MS5QbGFuQmxlbmRSZXF1ZXN0LlNvdXJjZRIbChN0YXJnZXRfc3RyZW5ndGhfcGN0GAIgASgBGj8KBlNvdXJjZRINCgVsYWJlbBgBIAEoCRIQCgh2b2x1bWVfbBgCIAEoARIUCgxzdHJlbmd0aF9wY3QYAyABKAEigAIKEVBsYW5CbGVuZFJlc3BvbnNlEhEKCXRvdGFsX2xhYRgBIAEoARIVCg10b3RhbF9tYXNzX2tnGAIgASgBEhYKDmJsZW5kX3ZvbHVtZV9sGAMgASgBEhoKEmJsZW5kX3N0cmVuZ3RoX3BjdBgEIAEoARIWCg5uYWl2ZV92b2x1bWVfbBgFIAEoARIVCg1jb250cmFjdGlvbl9sGAYgASgBEhUKDXJlZHVjdGlvbl9zZXQYByABKAgSFgoOd2F0ZXJfdG9fYWRkX2wYCCABKAESFwoPd2F0ZXJfdG9fYWRkX2tnGAkgASgBEhYKDmZpbmFsX3ZvbHVtZV9sGAogASgBKpkBCg5TdHJlbmd0aFNvdXJjZRIfChtTVFJFTkdUSF9TT1VSQ0VfVU5TUEVDSUZJRUQQABIfChtTVFJFTkdUSF9TT1VSQ0VfVU5DT1JSRUNURUQQARIhCh1TVFJFTkdUSF9TT1VSQ0VfVEFCTEVfREVOU0lUWRACEiIKHlNUUkVOR1RIX1NPVVJDRV9UQUJMRV9TVFJFTkdUSBADMvcCChRBbGNvaG9sb21ldHJ5U2VydmljZRJgCg9SZXNvbHZlU3RyZW5ndGgSJS5zdGlsbGhvdXNlLnYxLlJlc29sdmVTdHJlbmd0aFJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLlJlc29sdmVTdHJlbmd0aFJlc3BvbnNlElEKClRhYmxlc0luZm8SIC5zdGlsbGhvdXNlLnYxLlRhYmxlc0luZm9SZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5UYWJsZXNJbmZvUmVzcG9uc2USWgoNUGxhblJlZHVjdGlvbhIjLnN0aWxsaG91c2UudjEuUGxhblJlZHVjdGlvblJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlBsYW5SZWR1Y3Rpb25SZXNwb25zZRJOCglQbGFuQmxlbmQSHy5zdGlsbGhvdXNlLnYxLlBsYW5CbGVuZFJlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLlBsYW5CbGVuZFJlc3BvbnNlYgZwcm90bzM");
 
 /**
  * One resolved row of the tables, in CRA's column notation.
@@ -356,6 +356,137 @@ export const PlanReductionResponseSchema: GenMessage<PlanReductionResponse> = /*
   messageDesc(file_stillhouse_v1_alcoholometry, 6);
 
 /**
+ * PlanBlend vats parcels together and, optionally, reduces the result to
+ * a bottling strength.
+ *
+ * The blend's strength is NOT the volume-weighted mean of its parts, and
+ * its volume is not their sum: ethanol and water contract on mixing, so
+ * the parcels occupy less together than they did apart. Running the
+ * balance in mass and converting back through the tables gets both right.
+ *
+ * @generated from message stillhouse.v1.PlanBlendRequest
+ */
+export type PlanBlendRequest = Message<"stillhouse.v1.PlanBlendRequest"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.PlanBlendRequest.Source sources = 1;
+   */
+  sources: PlanBlendRequest_Source[];
+
+  /**
+   * Optional. When set, the response carries the water needed to bring
+   * the vatting down to it.
+   *
+   * @generated from field: double target_strength_pct = 2;
+   */
+  targetStrengthPct: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanBlendRequest.
+ * Use `create(PlanBlendRequestSchema)` to create a new message.
+ */
+export const PlanBlendRequestSchema: GenMessage<PlanBlendRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_alcoholometry, 7);
+
+/**
+ * @generated from message stillhouse.v1.PlanBlendRequest.Source
+ */
+export type PlanBlendRequest_Source = Message<"stillhouse.v1.PlanBlendRequest.Source"> & {
+  /**
+   * @generated from field: string label = 1;
+   */
+  label: string;
+
+  /**
+   * at 20 °C
+   *
+   * @generated from field: double volume_l = 2;
+   */
+  volumeL: number;
+
+  /**
+   * at 20 °C
+   *
+   * @generated from field: double strength_pct = 3;
+   */
+  strengthPct: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanBlendRequest.Source.
+ * Use `create(PlanBlendRequest_SourceSchema)` to create a new message.
+ */
+export const PlanBlendRequest_SourceSchema: GenMessage<PlanBlendRequest_Source> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_alcoholometry, 7, 0);
+
+/**
+ * @generated from message stillhouse.v1.PlanBlendResponse
+ */
+export type PlanBlendResponse = Message<"stillhouse.v1.PlanBlendResponse"> & {
+  /**
+   * @generated from field: double total_laa = 1;
+   */
+  totalLaa: number;
+
+  /**
+   * @generated from field: double total_mass_kg = 2;
+   */
+  totalMassKg: number;
+
+  /**
+   * @generated from field: double blend_volume_l = 3;
+   */
+  blendVolumeL: number;
+
+  /**
+   * @generated from field: double blend_strength_pct = 4;
+   */
+  blendStrengthPct: number;
+
+  /**
+   * What simply adding the source volumes would have given, and the
+   * difference, so the shrinkage is shown rather than asserted.
+   *
+   * @generated from field: double naive_volume_l = 5;
+   */
+  naiveVolumeL: number;
+
+  /**
+   * @generated from field: double contraction_l = 6;
+   */
+  contractionL: number;
+
+  /**
+   * Populated when target_strength_pct was set.
+   *
+   * @generated from field: bool reduction_set = 7;
+   */
+  reductionSet: boolean;
+
+  /**
+   * @generated from field: double water_to_add_l = 8;
+   */
+  waterToAddL: number;
+
+  /**
+   * @generated from field: double water_to_add_kg = 9;
+   */
+  waterToAddKg: number;
+
+  /**
+   * @generated from field: double final_volume_l = 10;
+   */
+  finalVolumeL: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanBlendResponse.
+ * Use `create(PlanBlendResponseSchema)` to create a new message.
+ */
+export const PlanBlendResponseSchema: GenMessage<PlanBlendResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_alcoholometry, 8);
+
+/**
  * How a 20 °C strength was arrived at. Recorded on every gauge so a
  * reading can be audited back to the instrument that produced it.
  *
@@ -426,6 +557,14 @@ export const AlcoholometryService: GenService<{
     methodKind: "unary";
     input: typeof PlanReductionRequestSchema;
     output: typeof PlanReductionResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AlcoholometryService.PlanBlend
+   */
+  planBlend: {
+    methodKind: "unary";
+    input: typeof PlanBlendRequestSchema;
+    output: typeof PlanBlendResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_alcoholometry, 0);

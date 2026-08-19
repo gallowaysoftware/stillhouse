@@ -120,8 +120,44 @@ message PlanReductionResponse {
   double water_to_add_kg = 8;
 }
 
+// PlanBlend vats parcels together and, optionally, reduces the result to
+// a bottling strength.
+//
+// The blend's strength is NOT the volume-weighted mean of its parts, and
+// its volume is not their sum: ethanol and water contract on mixing, so
+// the parcels occupy less together than they did apart. Running the
+// balance in mass and converting back through the tables gets both right.
+message PlanBlendRequest {
+  message Source {
+    string label = 1;
+    double volume_l = 2;        // at 20 °C
+    double strength_pct = 3;    // at 20 °C
+  }
+  repeated Source sources = 1;
+  // Optional. When set, the response carries the water needed to bring
+  // the vatting down to it.
+  double target_strength_pct = 2;
+}
+message PlanBlendResponse {
+  double total_laa = 1;
+  double total_mass_kg = 2;
+  double blend_volume_l = 3;
+  double blend_strength_pct = 4;
+  // What simply adding the source volumes would have given, and the
+  // difference, so the shrinkage is shown rather than asserted.
+  double naive_volume_l = 5;
+  double contraction_l = 6;
+
+  // Populated when target_strength_pct was set.
+  bool   reduction_set = 7;
+  double water_to_add_l = 8;
+  double water_to_add_kg = 9;
+  double final_volume_l = 10;
+}
+
 service AlcoholometryService {
   rpc ResolveStrength(ResolveStrengthRequest) returns (ResolveStrengthResponse);
   rpc TablesInfo(TablesInfoRequest) returns (TablesInfoResponse);
   rpc PlanReduction(PlanReductionRequest) returns (PlanReductionResponse);
+  rpc PlanBlend(PlanBlendRequest) returns (PlanBlendResponse);
 }

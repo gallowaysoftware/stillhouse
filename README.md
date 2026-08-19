@@ -50,6 +50,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 125 | Cut profile — where a run's alcohol went, as an emphasis chart with hearts against the rest, plus the mass balance (you cannot collect more than you charged) and a strength-falls-through-the-run check. Also stops a repeated fermenter charge reporting as a 500 |
 | 126 | Yield sanity — a recipe's projection expressed as L/tonne against what the grain can actually give, so efficiencies left at 1.0 stop producing a confident impossible number. Separates "physically impossible" from "ahead of industry" |
 | 127 | Fermentation curve — gravity and temperature over time as two plots sharing an x-axis (never a dual axis), plus phase inference and findings for a stuck ferment, thermal stress, and the pH crash that signals contamination |
+| 128 | Vatting planner — what actually comes out when parcels are blended, since a blend is neither the sum of its volumes nor the weighted mean of its strengths, then optionally reduced to bottling strength. Web + MCP `plan_blend` |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
@@ -176,7 +177,8 @@ Configure a remote MCP server pointing at your Stillhouse install:
   `add_fermentation_reading`, `add_mash_reading`
 - **Bench** — `get_mash` (grain bill + readings + mash guidance),
   `plan_strike` (strike temperature for a target rest),
-  `plan_reduction` (proofing down, by volume or by weight)
+  `plan_reduction` (proofing down, by volume or by weight),
+  `plan_blend` (vatting parcels together, optionally reduced)
 
 Barrel fill / regauge / dump and the production gauge accept a hydrometer
 indication (`density_kg_m3`) plus `temperature_c`; supply both and the

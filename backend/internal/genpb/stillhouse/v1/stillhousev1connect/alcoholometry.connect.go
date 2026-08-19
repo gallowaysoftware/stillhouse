@@ -53,6 +53,9 @@ const (
 	// AlcoholometryServicePlanReductionProcedure is the fully-qualified name of the
 	// AlcoholometryService's PlanReduction RPC.
 	AlcoholometryServicePlanReductionProcedure = "/stillhouse.v1.AlcoholometryService/PlanReduction"
+	// AlcoholometryServicePlanBlendProcedure is the fully-qualified name of the AlcoholometryService's
+	// PlanBlend RPC.
+	AlcoholometryServicePlanBlendProcedure = "/stillhouse.v1.AlcoholometryService/PlanBlend"
 )
 
 // AlcoholometryServiceClient is a client for the stillhouse.v1.AlcoholometryService service.
@@ -60,6 +63,7 @@ type AlcoholometryServiceClient interface {
 	ResolveStrength(context.Context, *connect.Request[v1.ResolveStrengthRequest]) (*connect.Response[v1.ResolveStrengthResponse], error)
 	TablesInfo(context.Context, *connect.Request[v1.TablesInfoRequest]) (*connect.Response[v1.TablesInfoResponse], error)
 	PlanReduction(context.Context, *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error)
+	PlanBlend(context.Context, *connect.Request[v1.PlanBlendRequest]) (*connect.Response[v1.PlanBlendResponse], error)
 }
 
 // NewAlcoholometryServiceClient constructs a client for the stillhouse.v1.AlcoholometryService
@@ -91,6 +95,12 @@ func NewAlcoholometryServiceClient(httpClient connect.HTTPClient, baseURL string
 			connect.WithSchema(alcoholometryServiceMethods.ByName("PlanReduction")),
 			connect.WithClientOptions(opts...),
 		),
+		planBlend: connect.NewClient[v1.PlanBlendRequest, v1.PlanBlendResponse](
+			httpClient,
+			baseURL+AlcoholometryServicePlanBlendProcedure,
+			connect.WithSchema(alcoholometryServiceMethods.ByName("PlanBlend")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -99,6 +109,7 @@ type alcoholometryServiceClient struct {
 	resolveStrength *connect.Client[v1.ResolveStrengthRequest, v1.ResolveStrengthResponse]
 	tablesInfo      *connect.Client[v1.TablesInfoRequest, v1.TablesInfoResponse]
 	planReduction   *connect.Client[v1.PlanReductionRequest, v1.PlanReductionResponse]
+	planBlend       *connect.Client[v1.PlanBlendRequest, v1.PlanBlendResponse]
 }
 
 // ResolveStrength calls stillhouse.v1.AlcoholometryService.ResolveStrength.
@@ -116,12 +127,18 @@ func (c *alcoholometryServiceClient) PlanReduction(ctx context.Context, req *con
 	return c.planReduction.CallUnary(ctx, req)
 }
 
+// PlanBlend calls stillhouse.v1.AlcoholometryService.PlanBlend.
+func (c *alcoholometryServiceClient) PlanBlend(ctx context.Context, req *connect.Request[v1.PlanBlendRequest]) (*connect.Response[v1.PlanBlendResponse], error) {
+	return c.planBlend.CallUnary(ctx, req)
+}
+
 // AlcoholometryServiceHandler is an implementation of the stillhouse.v1.AlcoholometryService
 // service.
 type AlcoholometryServiceHandler interface {
 	ResolveStrength(context.Context, *connect.Request[v1.ResolveStrengthRequest]) (*connect.Response[v1.ResolveStrengthResponse], error)
 	TablesInfo(context.Context, *connect.Request[v1.TablesInfoRequest]) (*connect.Response[v1.TablesInfoResponse], error)
 	PlanReduction(context.Context, *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error)
+	PlanBlend(context.Context, *connect.Request[v1.PlanBlendRequest]) (*connect.Response[v1.PlanBlendResponse], error)
 }
 
 // NewAlcoholometryServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -149,6 +166,12 @@ func NewAlcoholometryServiceHandler(svc AlcoholometryServiceHandler, opts ...con
 		connect.WithSchema(alcoholometryServiceMethods.ByName("PlanReduction")),
 		connect.WithHandlerOptions(opts...),
 	)
+	alcoholometryServicePlanBlendHandler := connect.NewUnaryHandler(
+		AlcoholometryServicePlanBlendProcedure,
+		svc.PlanBlend,
+		connect.WithSchema(alcoholometryServiceMethods.ByName("PlanBlend")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.AlcoholometryService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AlcoholometryServiceResolveStrengthProcedure:
@@ -157,6 +180,8 @@ func NewAlcoholometryServiceHandler(svc AlcoholometryServiceHandler, opts ...con
 			alcoholometryServiceTablesInfoHandler.ServeHTTP(w, r)
 		case AlcoholometryServicePlanReductionProcedure:
 			alcoholometryServicePlanReductionHandler.ServeHTTP(w, r)
+		case AlcoholometryServicePlanBlendProcedure:
+			alcoholometryServicePlanBlendHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -176,4 +201,8 @@ func (UnimplementedAlcoholometryServiceHandler) TablesInfo(context.Context, *con
 
 func (UnimplementedAlcoholometryServiceHandler) PlanReduction(context.Context, *connect.Request[v1.PlanReductionRequest]) (*connect.Response[v1.PlanReductionResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AlcoholometryService.PlanReduction is not implemented"))
+}
+
+func (UnimplementedAlcoholometryServiceHandler) PlanBlend(context.Context, *connect.Request[v1.PlanBlendRequest]) (*connect.Response[v1.PlanBlendResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AlcoholometryService.PlanBlend is not implemented"))
 }
