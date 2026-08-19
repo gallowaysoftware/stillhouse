@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/recipe.proto.
  */
 export const file_stillhouse_v1_recipe: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3JlY2lwZS5wcm90bxINc3RpbGxob3VzZS52MSKCAgoGUmVjaXBlEgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEi4KC3NwaXJpdF9raW5kGAQgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEhAKCGFyY2hpdmVkGAUgASgIEhoKEmN1cnJlbnRfdmVyc2lvbl9pZBgGIAEoCRINCgVub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLTBQoNUmVjaXBlVmVyc2lvbhIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEQoJcmVjaXBlX2lkGAMgASgJEhIKCnZlcnNpb25fbm8YBCABKAUSDQoFbm90ZXMYBSABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgGIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAcgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYCCABKAESFgoOdGFyZ2V0X3dhdGVyX2wYCSABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAogASgIEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKC2luZ3JlZGllbnRzGAwgAygLMh8uc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50EhUKDXRhc3Rpbmdfbm90ZXMYDSABKAkSPgoTZGlzdGlsbGF0aW9uX21ldGhvZBgOIAEoDjIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uTWV0aG9kEhgKEG1hY2VyYXRpb25faG91cnMYDyABKAESHAoUbWFjZXJhdGlvbl9ob3Vyc19zZXQYECABKAgSFwoPZ2luX25nc19pbnB1dF9sGBEgASgBEhsKE2dpbl9uZ3NfaW5wdXRfbF9zZXQYEiABKAgSHQoVZ2luX25nc19pbnB1dF9hYnZfcGN0GBMgASgBEiEKGWdpbl9uZ3NfaW5wdXRfYWJ2X3BjdF9zZXQYFCABKAgSMAoHc2Vuc29yeRgVIAEoCzIfLnN0aWxsaG91c2UudjEuR2luU2Vuc29yeVNjb3JlcxI6Cg53aGlza3lfc2Vuc29yeRgWIAEoCzIiLnN0aWxsaG91c2UudjEuV2hpc2t5U2Vuc29yeVNjb3JlcyK6AwoQR2luU2Vuc29yeVNjb3JlcxIPCgdqdW5pcGVyGAEgASgFEhMKC2p1bmlwZXJfc2V0GAIgASgIEg4KBmNpdHJ1cxgDIAEoBRISCgpjaXRydXNfc2V0GAQgASgIEg4KBmhlcmJhbBgFIAEoBRISCgpoZXJiYWxfc2V0GAYgASgIEg0KBXNwaWNlGAcgASgFEhEKCXNwaWNlX3NldBgIIAEoCBIOCgZmbG9yYWwYCSABKAUSEgoKZmxvcmFsX3NldBgKIAEoCBINCgVlYXJ0aBgLIAEoBRIRCgllYXJ0aF9zZXQYDCABKAgSDAoEYm9keRgNIAEoBRIQCghib2R5X3NldBgOIAEoCBIMCgRoZWF0GA8gASgFEhAKCGhlYXRfc2V0GBAgASgIEg8KB2JhbGFuY2UYESABKAUSEwoLYmFsYW5jZV9zZXQYEiABKAgSDwoHb3ZlcmFsbBgTIAEoBRITCgtvdmVyYWxsX3NldBgUIAEoCBIVCg10YXN0aW5nX3BhbmVsGBUgASgJEi0KCXRhc3RlZF9hdBgWIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi0QIKEFJlY2lwZUluZ3JlZGllbnQSCgoCaWQYASABKAkSGQoRcmVjaXBlX3ZlcnNpb25faWQYAiABKAkSEwoLbWF0ZXJpYWxfaWQYAyABKAkSFQoNbWF0ZXJpYWxfbmFtZRgEIAEoCRIyCg1tYXRlcmlhbF9raW5kGAUgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSHAoUbWF0ZXJpYWxfZXh0cmFjdF9wY3QYBiABKAESIAoYbWF0ZXJpYWxfZXh0cmFjdF9wY3Rfc2V0GAcgASgIEhAKCHF1YW50aXR5GAggASgBEgsKA3VvbRgJIAEoCRINCgVub3RlcxgKIAEoCRISCgpzb3J0X29yZGVyGAsgASgFEjQKDmJvdGFuaWNhbF9yb2xlGAwgASgOMhwuc3RpbGxob3VzZS52MS5Cb3RhbmljYWxSb2xlIqQBChBSZWNpcGVQcm9qZWN0aW9uEjIKBWxpbmVzGAEgAygLMiMuc3RpbGxob3VzZS52MS5SZWNpcGVQcm9qZWN0aW9uTGluZRIbChN0b3RhbF9wcm9qZWN0ZWRfbGFhGAIgASgBEh8KF3Byb2plY3RlZF93YXNoX3ZvbHVtZV9sGAMgASgBEh4KFnByb2plY3RlZF93YXNoX2Fidl9wY3QYBCABKAEi3QEKFFJlY2lwZVByb2plY3Rpb25MaW5lEhMKC21hdGVyaWFsX2lkGAEgASgJEhUKDW1hdGVyaWFsX25hbWUYAiABKAkSEAoIcXVhbnRpdHkYAyABKAESCwoDdW9tGAQgASgJEhYKDmZlcm1lbnRhYmxlX2tnGAUgASgBEhgKEGV4dHJhY3RfZnJlZWRfa2cYBiABKAESFwoPZXRoYW5vbF9tYXNzX2tnGAcgASgBEhgKEGV0aGFub2xfdm9sdW1lX2wYCCABKAESFQoNcHJvamVjdGVkX2xhYRgJIAEoASJiChNDcmVhdGVSZWNpcGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSLgoLc3Bpcml0X2tpbmQYAiABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSDQoFbm90ZXMYAyABKAkiPQoUQ3JlYXRlUmVjaXBlUmVzcG9uc2USJQoGcmVjaXBlGAEgASgLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUiLgoSTGlzdFJlY2lwZXNSZXF1ZXN0EhgKEGluY2x1ZGVfYXJjaGl2ZWQYASABKAgiPQoTTGlzdFJlY2lwZXNSZXNwb25zZRImCgdyZWNpcGVzGAEgAygLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUiHgoQR2V0UmVjaXBlUmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoRR2V0UmVjaXBlUmVzcG9uc2USJQoGcmVjaXBlGAEgASgLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUSNQoPY3VycmVudF92ZXJzaW9uGAIgASgLMhwuc3RpbGxob3VzZS52MS5SZWNpcGVWZXJzaW9uEjMKCnByb2plY3Rpb24YAyABKAsyHy5zdGlsbGhvdXNlLnYxLlJlY2lwZVByb2plY3Rpb24iNAoUQXJjaGl2ZVJlY2lwZVJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiPgoVQXJjaGl2ZVJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlIqQBChVSZWNpcGVJbmdyZWRpZW50SW5wdXQSEwoLbWF0ZXJpYWxfaWQYASABKAkSEAoIcXVhbnRpdHkYAiABKAESCwoDdW9tGAMgASgJEg0KBW5vdGVzGAQgASgJEhIKCnNvcnRfb3JkZXIYBSABKAUSNAoOYm90YW5pY2FsX3JvbGUYBiABKA4yHC5zdGlsbGhvdXNlLnYxLkJvdGFuaWNhbFJvbGUikgQKGFNhdmVSZWNpcGVWZXJzaW9uUmVxdWVzdBIRCglyZWNpcGVfaWQYASABKAkSDQoFbm90ZXMYAiABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgDIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAQgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYBSABKAESFgoOdGFyZ2V0X3dhdGVyX2wYBiABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAcgASgIEjkKC2luZ3JlZGllbnRzGAggAygLMiQuc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50SW5wdXQSFQoNdGFzdGluZ19ub3RlcxgJIAEoCRI+ChNkaXN0aWxsYXRpb25fbWV0aG9kGAogASgOMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25NZXRob2QSGAoQbWFjZXJhdGlvbl9ob3VycxgLIAEoARIcChRtYWNlcmF0aW9uX2hvdXJzX3NldBgMIAEoCBIXCg9naW5fbmdzX2lucHV0X2wYDSABKAESGwoTZ2luX25nc19pbnB1dF9sX3NldBgOIAEoCBIdChVnaW5fbmdzX2lucHV0X2Fidl9wY3QYDyABKAESIQoZZ2luX25nc19pbnB1dF9hYnZfcGN0X3NldBgQIAEoCCJ/ChlTYXZlUmVjaXBlVmVyc2lvblJlc3BvbnNlEi0KB3ZlcnNpb24YASABKAsyHC5zdGlsbGhvdXNlLnYxLlJlY2lwZVZlcnNpb24SMwoKcHJvamVjdGlvbhgCIAEoCzIfLnN0aWxsaG91c2UudjEuUmVjaXBlUHJvamVjdGlvbiJtCh9TYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXF1ZXN0EhkKEXJlY2lwZV92ZXJzaW9uX2lkGAEgASgJEi8KBnNjb3JlcxgCIAEoCzIfLnN0aWxsaG91c2UudjEuR2luU2Vuc29yeVNjb3JlcyJTCiBTYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXNwb25zZRIvCgZzY29yZXMYASABKAsyHy5zdGlsbGhvdXNlLnYxLkdpblNlbnNvcnlTY29yZXMi4wMKE1doaXNreVNlbnNvcnlTY29yZXMSDgoGY2VyZWFsGAEgASgFEhIKCmNlcmVhbF9zZXQYAiABKAgSDgoGZXN0ZXJ5GAMgASgFEhIKCmVzdGVyeV9zZXQYBCABKAgSDgoGZmxvcmFsGAUgASgFEhIKCmZsb3JhbF9zZXQYBiABKAgSDQoFcGVhdHkYByABKAUSEQoJcGVhdHlfc2V0GAggASgIEg4KBmZlaW50eRgJIAEoBRISCgpmZWludHlfc2V0GAogASgIEhAKCHN1bHBodXJ5GAsgASgFEhQKDHN1bHBodXJ5X3NldBgMIAEoCBINCgV3b29keRgNIAEoBRIRCgl3b29keV9zZXQYDiABKAgSDQoFd2luZXkYDyABKAUSEQoJd2luZXlfc2V0GBAgASgIEgwKBGJvZHkYESABKAUSEAoIYm9keV9zZXQYEiABKAgSDgoGZmluaXNoGBMgASgFEhIKCmZpbmlzaF9zZXQYFCABKAgSDwoHb3ZlcmFsbBgVIAEoBRITCgtvdmVyYWxsX3NldBgWIAEoCBIVCg10YXN0aW5nX3BhbmVsGBcgASgJEi0KCXRhc3RlZF9hdBgYIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAidgolU2F2ZVJlY2lwZVZlcnNpb25XaGlza3lTZW5zb3J5UmVxdWVzdBIZChFyZWNpcGVfdmVyc2lvbl9pZBgBIAEoCRIyCgZzY29yZXMYAiABKAsyIi5zdGlsbGhvdXNlLnYxLldoaXNreVNlbnNvcnlTY29yZXMiXAomU2F2ZVJlY2lwZVZlcnNpb25XaGlza3lTZW5zb3J5UmVzcG9uc2USMgoGc2NvcmVzGAEgASgLMiIuc3RpbGxob3VzZS52MS5XaGlza3lTZW5zb3J5U2NvcmVzIi4KGUxpc3RSZWNpcGVWZXJzaW9uc1JlcXVlc3QSEQoJcmVjaXBlX2lkGAEgASgJIkwKGkxpc3RSZWNpcGVWZXJzaW9uc1Jlc3BvbnNlEi4KCHZlcnNpb25zGAEgAygLMhwuc3RpbGxob3VzZS52MS5SZWNpcGVWZXJzaW9uIkQKFkR1cGxpY2F0ZVJlY2lwZVJlcXVlc3QSGAoQc291cmNlX3JlY2lwZV9pZBgBIAEoCRIQCghuZXdfbmFtZRgCIAEoCSJAChdEdXBsaWNhdGVSZWNpcGVSZXNwb25zZRIlCgZyZWNpcGUYASABKAsyFS5zdGlsbGhvdXNlLnYxLlJlY2lwZSqHAgoKU3Bpcml0S2luZBIbChdTUElSSVRfS0lORF9VTlNQRUNJRklFRBAAEhYKElNQSVJJVF9LSU5EX1dISVNLWRABEh8KG1NQSVJJVF9LSU5EX0NBTkFESUFOX1dISVNLWRACEhoKFlNQSVJJVF9LSU5EX1JZRV9XSElTS1kQAxITCg9TUElSSVRfS0lORF9HSU4QBBIVChFTUElSSVRfS0lORF9WT0RLQRAFEhMKD1NQSVJJVF9LSU5EX1JVTRAGEhYKElNQSVJJVF9LSU5EX0JSQU5EWRAHEhcKE1NQSVJJVF9LSU5EX0xJUVVFVVIQCBIVChFTUElSSVRfS0lORF9PVEhFUhAJKukBCg1Cb3RhbmljYWxSb2xlEh4KGkJPVEFOSUNBTF9ST0xFX1VOU1BFQ0lGSUVEEAASGgoWQk9UQU5JQ0FMX1JPTEVfSlVOSVBFUhABEhkKFUJPVEFOSUNBTF9ST0xFX0NJVFJVUxACEhkKFUJPVEFOSUNBTF9ST0xFX0hFUkJBTBADEhgKFEJPVEFOSUNBTF9ST0xFX1NQSUNFEAQSGQoVQk9UQU5JQ0FMX1JPTEVfRkxPUkFMEAUSFwoTQk9UQU5JQ0FMX1JPTEVfUk9PVBAGEhgKFEJPVEFOSUNBTF9ST0xFX09USEVSEAcqlwEKEkRpc3RpbGxhdGlvbk1ldGhvZBIjCh9ESVNUSUxMQVRJT05fTUVUSE9EX1VOU1BFQ0lGSUVEEAASGwoXRElTVElMTEFUSU9OX01FVEhPRF9QT1QQARIdChlESVNUSUxMQVRJT05fTUVUSE9EX1ZBUE9SEAISIAocRElTVElMTEFUSU9OX01FVEhPRF9DT01CSU5FRBADMqwHCg1SZWNpcGVTZXJ2aWNlElcKDENyZWF0ZVJlY2lwZRIiLnN0aWxsaG91c2UudjEuQ3JlYXRlUmVjaXBlUmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlUmVjaXBlUmVzcG9uc2USYAoPRHVwbGljYXRlUmVjaXBlEiUuc3RpbGxob3VzZS52MS5EdXBsaWNhdGVSZWNpcGVSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5EdXBsaWNhdGVSZWNpcGVSZXNwb25zZRJUCgtMaXN0UmVjaXBlcxIhLnN0aWxsaG91c2UudjEuTGlzdFJlY2lwZXNSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlc1Jlc3BvbnNlEk4KCUdldFJlY2lwZRIfLnN0aWxsaG91c2UudjEuR2V0UmVjaXBlUmVxdWVzdBogLnN0aWxsaG91c2UudjEuR2V0UmVjaXBlUmVzcG9uc2USWgoNQXJjaGl2ZVJlY2lwZRIjLnN0aWxsaG91c2UudjEuQXJjaGl2ZVJlY2lwZVJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLkFyY2hpdmVSZWNpcGVSZXNwb25zZRJmChFTYXZlUmVjaXBlVmVyc2lvbhInLnN0aWxsaG91c2UudjEuU2F2ZVJlY2lwZVZlcnNpb25SZXF1ZXN0Giguc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvblJlc3BvbnNlEmkKEkxpc3RSZWNpcGVWZXJzaW9ucxIoLnN0aWxsaG91c2UudjEuTGlzdFJlY2lwZVZlcnNpb25zUmVxdWVzdBopLnN0aWxsaG91c2UudjEuTGlzdFJlY2lwZVZlcnNpb25zUmVzcG9uc2USewoYU2F2ZVJlY2lwZVZlcnNpb25TZW5zb3J5Ei4uc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXF1ZXN0Gi8uc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXNwb25zZRKNAQoeU2F2ZVJlY2lwZVZlcnNpb25XaGlza3lTZW5zb3J5EjQuc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvbldoaXNreVNlbnNvcnlSZXF1ZXN0GjUuc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvbldoaXNreVNlbnNvcnlSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_material]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3JlY2lwZS5wcm90bxINc3RpbGxob3VzZS52MSKCAgoGUmVjaXBlEgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEi4KC3NwaXJpdF9raW5kGAQgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEhAKCGFyY2hpdmVkGAUgASgIEhoKEmN1cnJlbnRfdmVyc2lvbl9pZBgGIAEoCRINCgVub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCLTBQoNUmVjaXBlVmVyc2lvbhIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEQoJcmVjaXBlX2lkGAMgASgJEhIKCnZlcnNpb25fbm8YBCABKAUSDQoFbm90ZXMYBSABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgGIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAcgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYCCABKAESFgoOdGFyZ2V0X3dhdGVyX2wYCSABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAogASgIEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKC2luZ3JlZGllbnRzGAwgAygLMh8uc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50EhUKDXRhc3Rpbmdfbm90ZXMYDSABKAkSPgoTZGlzdGlsbGF0aW9uX21ldGhvZBgOIAEoDjIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uTWV0aG9kEhgKEG1hY2VyYXRpb25faG91cnMYDyABKAESHAoUbWFjZXJhdGlvbl9ob3Vyc19zZXQYECABKAgSFwoPZ2luX25nc19pbnB1dF9sGBEgASgBEhsKE2dpbl9uZ3NfaW5wdXRfbF9zZXQYEiABKAgSHQoVZ2luX25nc19pbnB1dF9hYnZfcGN0GBMgASgBEiEKGWdpbl9uZ3NfaW5wdXRfYWJ2X3BjdF9zZXQYFCABKAgSMAoHc2Vuc29yeRgVIAEoCzIfLnN0aWxsaG91c2UudjEuR2luU2Vuc29yeVNjb3JlcxI6Cg53aGlza3lfc2Vuc29yeRgWIAEoCzIiLnN0aWxsaG91c2UudjEuV2hpc2t5U2Vuc29yeVNjb3JlcyK6AwoQR2luU2Vuc29yeVNjb3JlcxIPCgdqdW5pcGVyGAEgASgFEhMKC2p1bmlwZXJfc2V0GAIgASgIEg4KBmNpdHJ1cxgDIAEoBRISCgpjaXRydXNfc2V0GAQgASgIEg4KBmhlcmJhbBgFIAEoBRISCgpoZXJiYWxfc2V0GAYgASgIEg0KBXNwaWNlGAcgASgFEhEKCXNwaWNlX3NldBgIIAEoCBIOCgZmbG9yYWwYCSABKAUSEgoKZmxvcmFsX3NldBgKIAEoCBINCgVlYXJ0aBgLIAEoBRIRCgllYXJ0aF9zZXQYDCABKAgSDAoEYm9keRgNIAEoBRIQCghib2R5X3NldBgOIAEoCBIMCgRoZWF0GA8gASgFEhAKCGhlYXRfc2V0GBAgASgIEg8KB2JhbGFuY2UYESABKAUSEwoLYmFsYW5jZV9zZXQYEiABKAgSDwoHb3ZlcmFsbBgTIAEoBRITCgtvdmVyYWxsX3NldBgUIAEoCBIVCg10YXN0aW5nX3BhbmVsGBUgASgJEi0KCXRhc3RlZF9hdBgWIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi0QIKEFJlY2lwZUluZ3JlZGllbnQSCgoCaWQYASABKAkSGQoRcmVjaXBlX3ZlcnNpb25faWQYAiABKAkSEwoLbWF0ZXJpYWxfaWQYAyABKAkSFQoNbWF0ZXJpYWxfbmFtZRgEIAEoCRIyCg1tYXRlcmlhbF9raW5kGAUgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSHAoUbWF0ZXJpYWxfZXh0cmFjdF9wY3QYBiABKAESIAoYbWF0ZXJpYWxfZXh0cmFjdF9wY3Rfc2V0GAcgASgIEhAKCHF1YW50aXR5GAggASgBEgsKA3VvbRgJIAEoCRINCgVub3RlcxgKIAEoCRISCgpzb3J0X29yZGVyGAsgASgFEjQKDmJvdGFuaWNhbF9yb2xlGAwgASgOMhwuc3RpbGxob3VzZS52MS5Cb3RhbmljYWxSb2xlItQBChBSZWNpcGVQcm9qZWN0aW9uEjIKBWxpbmVzGAEgAygLMiMuc3RpbGxob3VzZS52MS5SZWNpcGVQcm9qZWN0aW9uTGluZRIbChN0b3RhbF9wcm9qZWN0ZWRfbGFhGAIgASgBEh8KF3Byb2plY3RlZF93YXNoX3ZvbHVtZV9sGAMgASgBEh4KFnByb2plY3RlZF93YXNoX2Fidl9wY3QYBCABKAESLgoLeWllbGRfY2hlY2sYBSABKAsyGS5zdGlsbGhvdXNlLnYxLllpZWxkQ2hlY2sicgoMWWllbGRGaW5kaW5nEjUKCHNldmVyaXR5GAEgASgOMiMuc3RpbGxob3VzZS52MS5ZaWVsZEZpbmRpbmdTZXZlcml0eRIMCgRjb2RlGAIgASgJEg0KBXRpdGxlGAMgASgJEg4KBmRldGFpbBgEIAEoCSLZAQoKWWllbGRDaGVjaxISCgptZWFzdXJhYmxlGAEgASgIEhAKCGdyYWluX2tnGAIgASgBEhMKC2xfcGVyX3Rvbm5lGAMgASgBEhwKFHdlaWdodGVkX2V4dHJhY3RfcGN0GAQgASgBEiMKG3RoZW9yZXRpY2FsX21heF9sX3Blcl90b25uZRgFIAEoARIeChZhY2hpZXZhYmxlX2xfcGVyX3Rvbm5lGAYgASgBEi0KCGZpbmRpbmdzGAcgAygLMhsuc3RpbGxob3VzZS52MS5ZaWVsZEZpbmRpbmci3QEKFFJlY2lwZVByb2plY3Rpb25MaW5lEhMKC21hdGVyaWFsX2lkGAEgASgJEhUKDW1hdGVyaWFsX25hbWUYAiABKAkSEAoIcXVhbnRpdHkYAyABKAESCwoDdW9tGAQgASgJEhYKDmZlcm1lbnRhYmxlX2tnGAUgASgBEhgKEGV4dHJhY3RfZnJlZWRfa2cYBiABKAESFwoPZXRoYW5vbF9tYXNzX2tnGAcgASgBEhgKEGV0aGFub2xfdm9sdW1lX2wYCCABKAESFQoNcHJvamVjdGVkX2xhYRgJIAEoASJiChNDcmVhdGVSZWNpcGVSZXF1ZXN0EgwKBG5hbWUYASABKAkSLgoLc3Bpcml0X2tpbmQYAiABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSDQoFbm90ZXMYAyABKAkiPQoUQ3JlYXRlUmVjaXBlUmVzcG9uc2USJQoGcmVjaXBlGAEgASgLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUiLgoSTGlzdFJlY2lwZXNSZXF1ZXN0EhgKEGluY2x1ZGVfYXJjaGl2ZWQYASABKAgiPQoTTGlzdFJlY2lwZXNSZXNwb25zZRImCgdyZWNpcGVzGAEgAygLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUiHgoQR2V0UmVjaXBlUmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoRR2V0UmVjaXBlUmVzcG9uc2USJQoGcmVjaXBlGAEgASgLMhUuc3RpbGxob3VzZS52MS5SZWNpcGUSNQoPY3VycmVudF92ZXJzaW9uGAIgASgLMhwuc3RpbGxob3VzZS52MS5SZWNpcGVWZXJzaW9uEjMKCnByb2plY3Rpb24YAyABKAsyHy5zdGlsbGhvdXNlLnYxLlJlY2lwZVByb2plY3Rpb24iNAoUQXJjaGl2ZVJlY2lwZVJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiPgoVQXJjaGl2ZVJlY2lwZVJlc3BvbnNlEiUKBnJlY2lwZRgBIAEoCzIVLnN0aWxsaG91c2UudjEuUmVjaXBlIqQBChVSZWNpcGVJbmdyZWRpZW50SW5wdXQSEwoLbWF0ZXJpYWxfaWQYASABKAkSEAoIcXVhbnRpdHkYAiABKAESCwoDdW9tGAMgASgJEg0KBW5vdGVzGAQgASgJEhIKCnNvcnRfb3JkZXIYBSABKAUSNAoOYm90YW5pY2FsX3JvbGUYBiABKA4yHC5zdGlsbGhvdXNlLnYxLkJvdGFuaWNhbFJvbGUikgQKGFNhdmVSZWNpcGVWZXJzaW9uUmVxdWVzdBIRCglyZWNpcGVfaWQYASABKAkSDQoFbm90ZXMYAiABKAkSGwoTbWFzaF9lZmZpY2llbmN5X3BjdBgDIAEoARIeChZmZXJtZW50X2VmZmljaWVuY3lfcGN0GAQgASgBEiEKGWRpc3RpbGxhdGlvbl9yZWNvdmVyeV9wY3QYBSABKAESFgoOdGFyZ2V0X3dhdGVyX2wYBiABKAESGgoSdGFyZ2V0X3dhdGVyX2xfc2V0GAcgASgIEjkKC2luZ3JlZGllbnRzGAggAygLMiQuc3RpbGxob3VzZS52MS5SZWNpcGVJbmdyZWRpZW50SW5wdXQSFQoNdGFzdGluZ19ub3RlcxgJIAEoCRI+ChNkaXN0aWxsYXRpb25fbWV0aG9kGAogASgOMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25NZXRob2QSGAoQbWFjZXJhdGlvbl9ob3VycxgLIAEoARIcChRtYWNlcmF0aW9uX2hvdXJzX3NldBgMIAEoCBIXCg9naW5fbmdzX2lucHV0X2wYDSABKAESGwoTZ2luX25nc19pbnB1dF9sX3NldBgOIAEoCBIdChVnaW5fbmdzX2lucHV0X2Fidl9wY3QYDyABKAESIQoZZ2luX25nc19pbnB1dF9hYnZfcGN0X3NldBgQIAEoCCJ/ChlTYXZlUmVjaXBlVmVyc2lvblJlc3BvbnNlEi0KB3ZlcnNpb24YASABKAsyHC5zdGlsbGhvdXNlLnYxLlJlY2lwZVZlcnNpb24SMwoKcHJvamVjdGlvbhgCIAEoCzIfLnN0aWxsaG91c2UudjEuUmVjaXBlUHJvamVjdGlvbiJtCh9TYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXF1ZXN0EhkKEXJlY2lwZV92ZXJzaW9uX2lkGAEgASgJEi8KBnNjb3JlcxgCIAEoCzIfLnN0aWxsaG91c2UudjEuR2luU2Vuc29yeVNjb3JlcyJTCiBTYXZlUmVjaXBlVmVyc2lvblNlbnNvcnlSZXNwb25zZRIvCgZzY29yZXMYASABKAsyHy5zdGlsbGhvdXNlLnYxLkdpblNlbnNvcnlTY29yZXMi4wMKE1doaXNreVNlbnNvcnlTY29yZXMSDgoGY2VyZWFsGAEgASgFEhIKCmNlcmVhbF9zZXQYAiABKAgSDgoGZXN0ZXJ5GAMgASgFEhIKCmVzdGVyeV9zZXQYBCABKAgSDgoGZmxvcmFsGAUgASgFEhIKCmZsb3JhbF9zZXQYBiABKAgSDQoFcGVhdHkYByABKAUSEQoJcGVhdHlfc2V0GAggASgIEg4KBmZlaW50eRgJIAEoBRISCgpmZWludHlfc2V0GAogASgIEhAKCHN1bHBodXJ5GAsgASgFEhQKDHN1bHBodXJ5X3NldBgMIAEoCBINCgV3b29keRgNIAEoBRIRCgl3b29keV9zZXQYDiABKAgSDQoFd2luZXkYDyABKAUSEQoJd2luZXlfc2V0GBAgASgIEgwKBGJvZHkYESABKAUSEAoIYm9keV9zZXQYEiABKAgSDgoGZmluaXNoGBMgASgFEhIKCmZpbmlzaF9zZXQYFCABKAgSDwoHb3ZlcmFsbBgVIAEoBRITCgtvdmVyYWxsX3NldBgWIAEoCBIVCg10YXN0aW5nX3BhbmVsGBcgASgJEi0KCXRhc3RlZF9hdBgYIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAidgolU2F2ZVJlY2lwZVZlcnNpb25XaGlza3lTZW5zb3J5UmVxdWVzdBIZChFyZWNpcGVfdmVyc2lvbl9pZBgBIAEoCRIyCgZzY29yZXMYAiABKAsyIi5zdGlsbGhvdXNlLnYxLldoaXNreVNlbnNvcnlTY29yZXMiXAomU2F2ZVJlY2lwZVZlcnNpb25XaGlza3lTZW5zb3J5UmVzcG9uc2USMgoGc2NvcmVzGAEgASgLMiIuc3RpbGxob3VzZS52MS5XaGlza3lTZW5zb3J5U2NvcmVzIi4KGUxpc3RSZWNpcGVWZXJzaW9uc1JlcXVlc3QSEQoJcmVjaXBlX2lkGAEgASgJIkwKGkxpc3RSZWNpcGVWZXJzaW9uc1Jlc3BvbnNlEi4KCHZlcnNpb25zGAEgAygLMhwuc3RpbGxob3VzZS52MS5SZWNpcGVWZXJzaW9uIkQKFkR1cGxpY2F0ZVJlY2lwZVJlcXVlc3QSGAoQc291cmNlX3JlY2lwZV9pZBgBIAEoCRIQCghuZXdfbmFtZRgCIAEoCSJAChdEdXBsaWNhdGVSZWNpcGVSZXNwb25zZRIlCgZyZWNpcGUYASABKAsyFS5zdGlsbGhvdXNlLnYxLlJlY2lwZSqHAgoKU3Bpcml0S2luZBIbChdTUElSSVRfS0lORF9VTlNQRUNJRklFRBAAEhYKElNQSVJJVF9LSU5EX1dISVNLWRABEh8KG1NQSVJJVF9LSU5EX0NBTkFESUFOX1dISVNLWRACEhoKFlNQSVJJVF9LSU5EX1JZRV9XSElTS1kQAxITCg9TUElSSVRfS0lORF9HSU4QBBIVChFTUElSSVRfS0lORF9WT0RLQRAFEhMKD1NQSVJJVF9LSU5EX1JVTRAGEhYKElNQSVJJVF9LSU5EX0JSQU5EWRAHEhcKE1NQSVJJVF9LSU5EX0xJUVVFVVIQCBIVChFTUElSSVRfS0lORF9PVEhFUhAJKukBCg1Cb3RhbmljYWxSb2xlEh4KGkJPVEFOSUNBTF9ST0xFX1VOU1BFQ0lGSUVEEAASGgoWQk9UQU5JQ0FMX1JPTEVfSlVOSVBFUhABEhkKFUJPVEFOSUNBTF9ST0xFX0NJVFJVUxACEhkKFUJPVEFOSUNBTF9ST0xFX0hFUkJBTBADEhgKFEJPVEFOSUNBTF9ST0xFX1NQSUNFEAQSGQoVQk9UQU5JQ0FMX1JPTEVfRkxPUkFMEAUSFwoTQk9UQU5JQ0FMX1JPTEVfUk9PVBAGEhgKFEJPVEFOSUNBTF9ST0xFX09USEVSEAcqlwEKEkRpc3RpbGxhdGlvbk1ldGhvZBIjCh9ESVNUSUxMQVRJT05fTUVUSE9EX1VOU1BFQ0lGSUVEEAASGwoXRElTVElMTEFUSU9OX01FVEhPRF9QT1QQARIdChlESVNUSUxMQVRJT05fTUVUSE9EX1ZBUE9SEAISIAocRElTVElMTEFUSU9OX01FVEhPRF9DT01CSU5FRBADKqcBChRZaWVsZEZpbmRpbmdTZXZlcml0eRImCiJZSUVMRF9GSU5ESU5HX1NFVkVSSVRZX1VOU1BFQ0lGSUVEEAASHwobWUlFTERfRklORElOR19TRVZFUklUWV9JTkZPEAESIgoeWUlFTERfRklORElOR19TRVZFUklUWV9XQVJOSU5HEAISIgoeWUlFTERfRklORElOR19TRVZFUklUWV9QUk9CTEVNEAMyrAcKDVJlY2lwZVNlcnZpY2USVwoMQ3JlYXRlUmVjaXBlEiIuc3RpbGxob3VzZS52MS5DcmVhdGVSZWNpcGVSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5DcmVhdGVSZWNpcGVSZXNwb25zZRJgCg9EdXBsaWNhdGVSZWNpcGUSJS5zdGlsbGhvdXNlLnYxLkR1cGxpY2F0ZVJlY2lwZVJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkR1cGxpY2F0ZVJlY2lwZVJlc3BvbnNlElQKC0xpc3RSZWNpcGVzEiEuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlc1JlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkxpc3RSZWNpcGVzUmVzcG9uc2USTgoJR2V0UmVjaXBlEh8uc3RpbGxob3VzZS52MS5HZXRSZWNpcGVSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRSZWNpcGVSZXNwb25zZRJaCg1BcmNoaXZlUmVjaXBlEiMuc3RpbGxob3VzZS52MS5BcmNoaXZlUmVjaXBlUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQXJjaGl2ZVJlY2lwZVJlc3BvbnNlEmYKEVNhdmVSZWNpcGVWZXJzaW9uEicuc3RpbGxob3VzZS52MS5TYXZlUmVjaXBlVmVyc2lvblJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uUmVzcG9uc2USaQoSTGlzdFJlY2lwZVZlcnNpb25zEiguc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlVmVyc2lvbnNSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5MaXN0UmVjaXBlVmVyc2lvbnNSZXNwb25zZRJ7ChhTYXZlUmVjaXBlVmVyc2lvblNlbnNvcnkSLi5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uU2Vuc29yeVJlcXVlc3QaLy5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uU2Vuc29yeVJlc3BvbnNlEo0BCh5TYXZlUmVjaXBlVmVyc2lvbldoaXNreVNlbnNvcnkSNC5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uV2hpc2t5U2Vuc29yeVJlcXVlc3QaNS5zdGlsbGhvdXNlLnYxLlNhdmVSZWNpcGVWZXJzaW9uV2hpc2t5U2Vuc29yeVJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_material]);
 
 /**
  * @generated from message stillhouse.v1.Recipe
@@ -440,6 +440,15 @@ export type RecipeProjection = Message<"stillhouse.v1.RecipeProjection"> & {
    * @generated from field: double projected_wash_abv_pct = 4;
    */
   projectedWashAbvPct: number;
+
+  /**
+   * Whether the projection is physically possible. The efficiencies are
+   * typed in by hand, and nothing previously asked whether their product
+   * described something grain can actually do.
+   *
+   * @generated from field: stillhouse.v1.YieldCheck yield_check = 5;
+   */
+  yieldCheck?: YieldCheck | undefined;
 };
 
 /**
@@ -448,6 +457,95 @@ export type RecipeProjection = Message<"stillhouse.v1.RecipeProjection"> & {
  */
 export const RecipeProjectionSchema: GenMessage<RecipeProjection> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_recipe, 4);
+
+/**
+ * @generated from message stillhouse.v1.YieldFinding
+ */
+export type YieldFinding = Message<"stillhouse.v1.YieldFinding"> & {
+  /**
+   * @generated from field: stillhouse.v1.YieldFindingSeverity severity = 1;
+   */
+  severity: YieldFindingSeverity;
+
+  /**
+   * @generated from field: string code = 2;
+   */
+  code: string;
+
+  /**
+   * @generated from field: string title = 3;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string detail = 4;
+   */
+  detail: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.YieldFinding.
+ * Use `create(YieldFindingSchema)` to create a new message.
+ */
+export const YieldFindingSchema: GenMessage<YieldFinding> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_recipe, 5);
+
+/**
+ * YieldCheck puts a projection next to what grain can actually give,
+ * expressed the way the industry quotes yield so it can be compared with a
+ * published figure.
+ *
+ * @generated from message stillhouse.v1.YieldCheck
+ */
+export type YieldCheck = Message<"stillhouse.v1.YieldCheck"> & {
+  /**
+   * @generated from field: bool measurable = 1;
+   */
+  measurable: boolean;
+
+  /**
+   * @generated from field: double grain_kg = 2;
+   */
+  grainKg: number;
+
+  /**
+   * @generated from field: double l_per_tonne = 3;
+   */
+  lPerTonne: number;
+
+  /**
+   * @generated from field: double weighted_extract_pct = 4;
+   */
+  weightedExtractPct: number;
+
+  /**
+   * Every gram of extract converted and fermented, nothing lost anywhere.
+   * Physically unreachable — a projection above it means the inputs are
+   * wrong.
+   *
+   * @generated from field: double theoretical_max_l_per_tonne = 5;
+   */
+  theoreticalMaxLPerTonne: number;
+
+  /**
+   * What a competent distillery should actually get from this bill.
+   *
+   * @generated from field: double achievable_l_per_tonne = 6;
+   */
+  achievableLPerTonne: number;
+
+  /**
+   * @generated from field: repeated stillhouse.v1.YieldFinding findings = 7;
+   */
+  findings: YieldFinding[];
+};
+
+/**
+ * Describes the message stillhouse.v1.YieldCheck.
+ * Use `create(YieldCheckSchema)` to create a new message.
+ */
+export const YieldCheckSchema: GenMessage<YieldCheck> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_recipe, 6);
 
 /**
  * @generated from message stillhouse.v1.RecipeProjectionLine
@@ -504,7 +602,7 @@ export type RecipeProjectionLine = Message<"stillhouse.v1.RecipeProjectionLine">
  * Use `create(RecipeProjectionLineSchema)` to create a new message.
  */
 export const RecipeProjectionLineSchema: GenMessage<RecipeProjectionLine> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 5);
+  messageDesc(file_stillhouse_v1_recipe, 7);
 
 /**
  * @generated from message stillhouse.v1.CreateRecipeRequest
@@ -531,7 +629,7 @@ export type CreateRecipeRequest = Message<"stillhouse.v1.CreateRecipeRequest"> &
  * Use `create(CreateRecipeRequestSchema)` to create a new message.
  */
 export const CreateRecipeRequestSchema: GenMessage<CreateRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 6);
+  messageDesc(file_stillhouse_v1_recipe, 8);
 
 /**
  * @generated from message stillhouse.v1.CreateRecipeResponse
@@ -548,7 +646,7 @@ export type CreateRecipeResponse = Message<"stillhouse.v1.CreateRecipeResponse">
  * Use `create(CreateRecipeResponseSchema)` to create a new message.
  */
 export const CreateRecipeResponseSchema: GenMessage<CreateRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 7);
+  messageDesc(file_stillhouse_v1_recipe, 9);
 
 /**
  * @generated from message stillhouse.v1.ListRecipesRequest
@@ -565,7 +663,7 @@ export type ListRecipesRequest = Message<"stillhouse.v1.ListRecipesRequest"> & {
  * Use `create(ListRecipesRequestSchema)` to create a new message.
  */
 export const ListRecipesRequestSchema: GenMessage<ListRecipesRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 8);
+  messageDesc(file_stillhouse_v1_recipe, 10);
 
 /**
  * @generated from message stillhouse.v1.ListRecipesResponse
@@ -582,7 +680,7 @@ export type ListRecipesResponse = Message<"stillhouse.v1.ListRecipesResponse"> &
  * Use `create(ListRecipesResponseSchema)` to create a new message.
  */
 export const ListRecipesResponseSchema: GenMessage<ListRecipesResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 9);
+  messageDesc(file_stillhouse_v1_recipe, 11);
 
 /**
  * @generated from message stillhouse.v1.GetRecipeRequest
@@ -599,7 +697,7 @@ export type GetRecipeRequest = Message<"stillhouse.v1.GetRecipeRequest"> & {
  * Use `create(GetRecipeRequestSchema)` to create a new message.
  */
 export const GetRecipeRequestSchema: GenMessage<GetRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 10);
+  messageDesc(file_stillhouse_v1_recipe, 12);
 
 /**
  * @generated from message stillhouse.v1.GetRecipeResponse
@@ -630,7 +728,7 @@ export type GetRecipeResponse = Message<"stillhouse.v1.GetRecipeResponse"> & {
  * Use `create(GetRecipeResponseSchema)` to create a new message.
  */
 export const GetRecipeResponseSchema: GenMessage<GetRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 11);
+  messageDesc(file_stillhouse_v1_recipe, 13);
 
 /**
  * @generated from message stillhouse.v1.ArchiveRecipeRequest
@@ -652,7 +750,7 @@ export type ArchiveRecipeRequest = Message<"stillhouse.v1.ArchiveRecipeRequest">
  * Use `create(ArchiveRecipeRequestSchema)` to create a new message.
  */
 export const ArchiveRecipeRequestSchema: GenMessage<ArchiveRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 12);
+  messageDesc(file_stillhouse_v1_recipe, 14);
 
 /**
  * @generated from message stillhouse.v1.ArchiveRecipeResponse
@@ -669,7 +767,7 @@ export type ArchiveRecipeResponse = Message<"stillhouse.v1.ArchiveRecipeResponse
  * Use `create(ArchiveRecipeResponseSchema)` to create a new message.
  */
 export const ArchiveRecipeResponseSchema: GenMessage<ArchiveRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 13);
+  messageDesc(file_stillhouse_v1_recipe, 15);
 
 /**
  * @generated from message stillhouse.v1.RecipeIngredientInput
@@ -713,7 +811,7 @@ export type RecipeIngredientInput = Message<"stillhouse.v1.RecipeIngredientInput
  * Use `create(RecipeIngredientInputSchema)` to create a new message.
  */
 export const RecipeIngredientInputSchema: GenMessage<RecipeIngredientInput> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 14);
+  messageDesc(file_stillhouse_v1_recipe, 16);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionRequest
@@ -807,7 +905,7 @@ export type SaveRecipeVersionRequest = Message<"stillhouse.v1.SaveRecipeVersionR
  * Use `create(SaveRecipeVersionRequestSchema)` to create a new message.
  */
 export const SaveRecipeVersionRequestSchema: GenMessage<SaveRecipeVersionRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 15);
+  messageDesc(file_stillhouse_v1_recipe, 17);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionResponse
@@ -829,7 +927,7 @@ export type SaveRecipeVersionResponse = Message<"stillhouse.v1.SaveRecipeVersion
  * Use `create(SaveRecipeVersionResponseSchema)` to create a new message.
  */
 export const SaveRecipeVersionResponseSchema: GenMessage<SaveRecipeVersionResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 16);
+  messageDesc(file_stillhouse_v1_recipe, 18);
 
 /**
  * Set / replace the per-version sensory scores. Upsert semantics — call
@@ -854,7 +952,7 @@ export type SaveRecipeVersionSensoryRequest = Message<"stillhouse.v1.SaveRecipeV
  * Use `create(SaveRecipeVersionSensoryRequestSchema)` to create a new message.
  */
 export const SaveRecipeVersionSensoryRequestSchema: GenMessage<SaveRecipeVersionSensoryRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 17);
+  messageDesc(file_stillhouse_v1_recipe, 19);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionSensoryResponse
@@ -871,7 +969,7 @@ export type SaveRecipeVersionSensoryResponse = Message<"stillhouse.v1.SaveRecipe
  * Use `create(SaveRecipeVersionSensoryResponseSchema)` to create a new message.
  */
 export const SaveRecipeVersionSensoryResponseSchema: GenMessage<SaveRecipeVersionSensoryResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 18);
+  messageDesc(file_stillhouse_v1_recipe, 20);
 
 /**
  * Per-version whisky tasting scores. Axes are the 8 SWRI Flavour
@@ -1036,7 +1134,7 @@ export type WhiskySensoryScores = Message<"stillhouse.v1.WhiskySensoryScores"> &
  * Use `create(WhiskySensoryScoresSchema)` to create a new message.
  */
 export const WhiskySensoryScoresSchema: GenMessage<WhiskySensoryScores> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 19);
+  messageDesc(file_stillhouse_v1_recipe, 21);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionWhiskySensoryRequest
@@ -1058,7 +1156,7 @@ export type SaveRecipeVersionWhiskySensoryRequest = Message<"stillhouse.v1.SaveR
  * Use `create(SaveRecipeVersionWhiskySensoryRequestSchema)` to create a new message.
  */
 export const SaveRecipeVersionWhiskySensoryRequestSchema: GenMessage<SaveRecipeVersionWhiskySensoryRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 20);
+  messageDesc(file_stillhouse_v1_recipe, 22);
 
 /**
  * @generated from message stillhouse.v1.SaveRecipeVersionWhiskySensoryResponse
@@ -1075,7 +1173,7 @@ export type SaveRecipeVersionWhiskySensoryResponse = Message<"stillhouse.v1.Save
  * Use `create(SaveRecipeVersionWhiskySensoryResponseSchema)` to create a new message.
  */
 export const SaveRecipeVersionWhiskySensoryResponseSchema: GenMessage<SaveRecipeVersionWhiskySensoryResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 21);
+  messageDesc(file_stillhouse_v1_recipe, 23);
 
 /**
  * @generated from message stillhouse.v1.ListRecipeVersionsRequest
@@ -1092,7 +1190,7 @@ export type ListRecipeVersionsRequest = Message<"stillhouse.v1.ListRecipeVersion
  * Use `create(ListRecipeVersionsRequestSchema)` to create a new message.
  */
 export const ListRecipeVersionsRequestSchema: GenMessage<ListRecipeVersionsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 22);
+  messageDesc(file_stillhouse_v1_recipe, 24);
 
 /**
  * @generated from message stillhouse.v1.ListRecipeVersionsResponse
@@ -1109,7 +1207,7 @@ export type ListRecipeVersionsResponse = Message<"stillhouse.v1.ListRecipeVersio
  * Use `create(ListRecipeVersionsResponseSchema)` to create a new message.
  */
 export const ListRecipeVersionsResponseSchema: GenMessage<ListRecipeVersionsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 23);
+  messageDesc(file_stillhouse_v1_recipe, 25);
 
 /**
  * @generated from message stillhouse.v1.DuplicateRecipeRequest
@@ -1131,7 +1229,7 @@ export type DuplicateRecipeRequest = Message<"stillhouse.v1.DuplicateRecipeReque
  * Use `create(DuplicateRecipeRequestSchema)` to create a new message.
  */
 export const DuplicateRecipeRequestSchema: GenMessage<DuplicateRecipeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 24);
+  messageDesc(file_stillhouse_v1_recipe, 26);
 
 /**
  * @generated from message stillhouse.v1.DuplicateRecipeResponse
@@ -1148,7 +1246,7 @@ export type DuplicateRecipeResponse = Message<"stillhouse.v1.DuplicateRecipeResp
  * Use `create(DuplicateRecipeResponseSchema)` to create a new message.
  */
 export const DuplicateRecipeResponseSchema: GenMessage<DuplicateRecipeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_recipe, 25);
+  messageDesc(file_stillhouse_v1_recipe, 27);
 
 /**
  * @generated from enum stillhouse.v1.SpiritKind
@@ -1312,6 +1410,37 @@ export enum DistillationMethod {
  */
 export const DistillationMethodSchema: GenEnum<DistillationMethod> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_recipe, 2);
+
+/**
+ * @generated from enum stillhouse.v1.YieldFindingSeverity
+ */
+export enum YieldFindingSeverity {
+  /**
+   * @generated from enum value: YIELD_FINDING_SEVERITY_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: YIELD_FINDING_SEVERITY_INFO = 1;
+   */
+  INFO = 1,
+
+  /**
+   * @generated from enum value: YIELD_FINDING_SEVERITY_WARNING = 2;
+   */
+  WARNING = 2,
+
+  /**
+   * @generated from enum value: YIELD_FINDING_SEVERITY_PROBLEM = 3;
+   */
+  PROBLEM = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.YieldFindingSeverity.
+ */
+export const YieldFindingSeveritySchema: GenEnum<YieldFindingSeverity> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_recipe, 3);
 
 /**
  * @generated from service stillhouse.v1.RecipeService

@@ -126,6 +126,41 @@ message RecipeProjection {
   double total_projected_laa = 2;
   double projected_wash_volume_l = 3;
   double projected_wash_abv_pct = 4;
+  // Whether the projection is physically possible. The efficiencies are
+  // typed in by hand, and nothing previously asked whether their product
+  // described something grain can actually do.
+  YieldCheck yield_check = 5;
+}
+
+enum YieldFindingSeverity {
+  YIELD_FINDING_SEVERITY_UNSPECIFIED = 0;
+  YIELD_FINDING_SEVERITY_INFO = 1;
+  YIELD_FINDING_SEVERITY_WARNING = 2;
+  YIELD_FINDING_SEVERITY_PROBLEM = 3;
+}
+
+message YieldFinding {
+  YieldFindingSeverity severity = 1;
+  string code = 2;
+  string title = 3;
+  string detail = 4;
+}
+
+// YieldCheck puts a projection next to what grain can actually give,
+// expressed the way the industry quotes yield so it can be compared with a
+// published figure.
+message YieldCheck {
+  bool   measurable = 1;
+  double grain_kg = 2;
+  double l_per_tonne = 3;
+  double weighted_extract_pct = 4;
+  // Every gram of extract converted and fermented, nothing lost anywhere.
+  // Physically unreachable — a projection above it means the inputs are
+  // wrong.
+  double theoretical_max_l_per_tonne = 5;
+  // What a competent distillery should actually get from this bill.
+  double achievable_l_per_tonne = 6;
+  repeated YieldFinding findings = 7;
 }
 
 message RecipeProjectionLine {

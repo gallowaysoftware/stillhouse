@@ -20,6 +20,7 @@ import {
   SaveRecipeVersionWhiskySensoryRequestSchema,
   SpiritKind,
   WhiskySensoryScoresSchema,
+  YieldFindingSeverity,
 } from "@/gen/stillhouse/v1/recipe_pb";
 import {
   BOTANICAL_ROLE_OPTIONS,
@@ -457,7 +458,50 @@ export function RecipeDetailPage() {
                       <span className="text-xs text-fg-muted">NGS LAA × recovery</span>
                     </DLRow>
                   )}
+                  {/* Yield per tonne is how the industry quotes this, so
+                      it can be checked against a published figure rather
+                      than taken on faith. */}
+                  {recipe.data.projection?.yieldCheck?.measurable && (
+                    <DLRow label="Yield">
+                      <span className="tabular-nums text-fg">
+                        {recipe.data.projection.yieldCheck.lPerTonne.toFixed(0)} L/tonne
+                      </span>
+                      <span className="ml-2 text-xs text-fg-subtle">
+                        this bill should give ~
+                        {recipe.data.projection.yieldCheck.achievableLPerTonne.toFixed(0)}
+                      </span>
+                    </DLRow>
+                  )}
                 </dl>
+                {(recipe.data.projection?.yieldCheck?.findings.length ?? 0) > 0 && (
+                  <div className="space-y-2 border-t border-border p-3">
+                    {recipe.data.projection!.yieldCheck!.findings.map((f, i) => (
+                      <div
+                        key={`${f.code}-${i}`}
+                        className={`rounded-md border border-l-4 px-3 py-2 ${
+                          f.severity === YieldFindingSeverity.PROBLEM
+                            ? "border-danger/40 border-l-danger bg-danger/10"
+                            : f.severity === YieldFindingSeverity.WARNING
+                              ? "border-warning/40 border-l-warning bg-warning/10"
+                              : "border-border border-l-border-strong bg-surface-3/50"
+                        }`}
+                      >
+                        <p
+                          className={`text-sm font-medium ${
+                            f.severity === YieldFindingSeverity.PROBLEM
+                              ? "text-danger-fg"
+                              : f.severity === YieldFindingSeverity.WARNING
+                                ? "text-warning-fg"
+                                : "text-fg"
+                          }`}
+                        >
+                          {f.title}
+                        </p>
+                        {f.detail && <p className="mt-0.5 text-xs text-fg-muted">{f.detail}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {recipe.data.currentVersion.tastingNotes && (

@@ -1055,6 +1055,9 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 	out := &stillhousev1.RecipeProjection{
 		Lines:             lines,
 		TotalProjectedLaa: batch.TotalProjectedLAA,
+		// Only meaningful for a grain bill — a gin's alcohol comes from
+		// bought-in NGS, so there is no yield per tonne to check.
+		YieldCheck: yieldCheckToProto(distilling.CheckYield(inputs, batch.TotalProjectedLAA)),
 	}
 	if v.TargetWaterL.Valid {
 		w := distilling.ProjectWash(inputs, eff, v.TargetWaterL.Float64)
@@ -1062,6 +1065,40 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 		out.ProjectedWashAbvPct = w.ABVPct
 	}
 	return out
+}
+
+func yieldCheckToProto(y distilling.YieldCheck) *stillhousev1.YieldCheck {
+	if !y.Measurable {
+		return nil
+	}
+	out := &stillhousev1.YieldCheck{
+		Measurable:              true,
+		GrainKg:                 round2(y.GrainKg),
+		LPerTonne:               round2(y.LPerTonne),
+		WeightedExtractPct:      y.WeightedExtractPct,
+		TheoreticalMaxLPerTonne: round2(y.TheoreticalMaxLPerTonne),
+		AchievableLPerTonne:     round2(y.AchievableLPerTonne),
+	}
+	for _, f := range y.Findings {
+		out.Findings = append(out.Findings, &stillhousev1.YieldFinding{
+			Severity: yieldSeverityToProto(f.Severity),
+			Code:     f.Code,
+			Title:    f.Title,
+			Detail:   f.Detail,
+		})
+	}
+	return out
+}
+
+func yieldSeverityToProto(s distilling.Severity) stillhousev1.YieldFindingSeverity {
+	switch s {
+	case distilling.SeverityProblem:
+		return stillhousev1.YieldFindingSeverity_YIELD_FINDING_SEVERITY_PROBLEM
+	case distilling.SeverityWarning:
+		return stillhousev1.YieldFindingSeverity_YIELD_FINDING_SEVERITY_WARNING
+	default:
+		return stillhousev1.YieldFindingSeverity_YIELD_FINDING_SEVERITY_INFO
+	}
 }
 
 // projectGinRecipe computes the projection for a gin recipe. The LAA
