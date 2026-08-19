@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"math"
 	"time"
 
 	"connectrpc.com/connect"
@@ -381,10 +382,19 @@ func b266StatusToProto(s sqlcgen.B266Status) stillhousev1.B266Status {
 	return stillhousev1.B266Status_B266_STATUS_UNSPECIFIED
 }
 
+// The `int(x*N + 0.5)` idiom these used to spell rounds correctly only for
+// positive numbers: int() truncates toward zero, so on a negative the +0.5
+// bias pushes the result the wrong way. round4(-0.12345) came out -0.1234
+// against +0.1235 for the positive, and round4(-1.5) came out -1.4999.
+//
+// Negatives do reach here — a cask's strength drift is negative in a cool,
+// humid warehouse, which is the normal Canadian case. math.Round rounds
+// half away from zero symmetrically and is identical for positives, so
+// nothing already recorded moves.
 func round2cents(x float64) float64 {
-	return float64(int(x*100+0.5)) / 100
+	return math.Round(x*100) / 100
 }
 
 func round4(x float64) float64 {
-	return float64(int(x*10000+0.5)) / 10000
+	return math.Round(x*10000) / 10000
 }

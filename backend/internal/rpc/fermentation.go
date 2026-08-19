@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"math"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -444,7 +445,10 @@ func findLatestOG(metrics []sqlcgen.MashMetric) float64 {
 }
 
 func round2(x float64) float64 {
-	// Local to rpc package; intentionally duplicates distilling.round2 to avoid
-	// pulling a runtime dep into a tiny helper.
-	return float64(int(x*100+0.5)) / 100
+	// Local to the rpc package to avoid pulling a runtime dep in for a tiny
+	// helper. This used to claim it duplicated distilling.round2 while
+	// actually diverging from it — distilling uses math.Round, this used
+	// the int(x+0.5) idiom, which rounds negatives the wrong way. Now it
+	// really does match. See round4 in b266.go.
+	return math.Round(x*100) / 100
 }
