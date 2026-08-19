@@ -14,7 +14,197 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/mash.proto.
  */
 export const file_stillhouse_v1_mash: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL21hc2gucHJvdG8SDXN0aWxsaG91c2UudjEiygMKB01hc2hSdW4SCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhkKEXJlY2lwZV92ZXJzaW9uX2lkGAMgASgJEg8KB21hc2hfbm8YBCABKAUSEQoJbWFzaF9kYXRlGAUgASgJEikKBnN0YXR1cxgGIAEoDjIZLnN0aWxsaG91c2UudjEuTWFzaFN0YXR1cxINCgVub3RlcxgHIAEoCRIuCgpjcmVhdGVkX2F0GAggASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBITCgtyZWNpcGVfbmFtZRgKIAEoCRIZChFyZWNpcGVfdmVyc2lvbl9ubxgLIAEoBRI3CgtpbmdyZWRpZW50cxgMIAMoCzIiLnN0aWxsaG91c2UudjEuTWFzaEluZ3JlZGllbnRVc2FnZRIqCgdtZXRyaWNzGA0gAygLMhkuc3RpbGxob3VzZS52MS5NYXNoTWV0cmljEhUKDXByb2plY3RlZF9sYWEYDiABKAESGwoTYWN0dWFsX2NhcHR1cmVkX2xhYRgPIAEoASKdAwoTTWFzaEluZ3JlZGllbnRVc2FnZRIKCgJpZBgBIAEoCRITCgttYXNoX3J1bl9pZBgCIAEoCRITCgttYXRlcmlhbF9pZBgDIAEoCRIVCg1tYXRlcmlhbF9uYW1lGAQgASgJEjIKDW1hdGVyaWFsX2tpbmQYBSABKA4yGy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsS2luZBIcChRtYXRlcmlhbF9leHRyYWN0X3BjdBgGIAEoARIgChhtYXRlcmlhbF9leHRyYWN0X3BjdF9zZXQYByABKAgSFQoNcXVhbnRpdHlfdXNlZBgIIAEoARILCgN1b20YCSABKAkSDQoFbm90ZXMYCiABKAkSLgoKY3JlYXRlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFwoPbWF0ZXJpYWxfbG90X2lkGAwgASgJEhQKDHN1cHBsaWVyX2xvdBgNIAEoCRIzCg9sb3RfcmVjZWl2ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIrcBCgpNYXNoTWV0cmljEgoKAmlkGAEgASgJEhMKC21hc2hfcnVuX2lkGAIgASgJEisKBGtpbmQYAyABKA4yHS5zdGlsbGhvdXNlLnYxLk1hc2hNZXRyaWNLaW5kEg0KBXZhbHVlGAQgASgBEgwKBHVuaXQYBSABKAkSLwoLb2JzZXJ2ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBW5vdGVzGAcgASgJIlMKFENyZWF0ZU1hc2hSdW5SZXF1ZXN0EhkKEXJlY2lwZV92ZXJzaW9uX2lkGAEgASgJEhEKCW1hc2hfZGF0ZRgCIAEoCRINCgVub3RlcxgDIAEoCSJBChVDcmVhdGVNYXNoUnVuUmVzcG9uc2USKAoIbWFzaF9ydW4YASABKAsyFi5zdGlsbGhvdXNlLnYxLk1hc2hSdW4iHwoRR2V0TWFzaFJ1blJlcXVlc3QSCgoCaWQYASABKAkiPgoSR2V0TWFzaFJ1blJlc3BvbnNlEigKCG1hc2hfcnVuGAEgASgLMhYuc3RpbGxob3VzZS52MS5NYXNoUnVuIlMKE0xpc3RNYXNoUnVuc1JlcXVlc3QSEQoJcmVjaXBlX2lkGAEgASgJEikKBnN0YXR1cxgCIAEoDjIZLnN0aWxsaG91c2UudjEuTWFzaFN0YXR1cyJBChRMaXN0TWFzaFJ1bnNSZXNwb25zZRIpCgltYXNoX3J1bnMYASADKAsyFi5zdGlsbGhvdXNlLnYxLk1hc2hSdW4iUAoXVXBkYXRlTWFzaFN0YXR1c1JlcXVlc3QSCgoCaWQYASABKAkSKQoGc3RhdHVzGAIgASgOMhkuc3RpbGxob3VzZS52MS5NYXNoU3RhdHVzIkQKGFVwZGF0ZU1hc2hTdGF0dXNSZXNwb25zZRIoCghtYXNoX3J1bhgBIAEoCzIWLnN0aWxsaG91c2UudjEuTWFzaFJ1biKQAQoYQWRkTWFzaEluZ3JlZGllbnRSZXF1ZXN0EhMKC21hc2hfcnVuX2lkGAEgASgJEhMKC21hdGVyaWFsX2lkGAIgASgJEhUKDXF1YW50aXR5X3VzZWQYAyABKAESCwoDdW9tGAQgASgJEg0KBW5vdGVzGAUgASgJEhcKD21hdGVyaWFsX2xvdF9pZBgGIAEoCSJOChlBZGRNYXNoSW5ncmVkaWVudFJlc3BvbnNlEjEKBXVzYWdlGAEgASgLMiIuc3RpbGxob3VzZS52MS5NYXNoSW5ncmVkaWVudFVzYWdlIrUBChRBZGRNYXNoTWV0cmljUmVxdWVzdBITCgttYXNoX3J1bl9pZBgBIAEoCRIrCgRraW5kGAIgASgOMh0uc3RpbGxob3VzZS52MS5NYXNoTWV0cmljS2luZBINCgV2YWx1ZRgDIAEoARIMCgR1bml0GAQgASgJEi8KC29ic2VydmVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCSJCChVBZGRNYXNoTWV0cmljUmVzcG9uc2USKQoGbWV0cmljGAEgASgLMhkuc3RpbGxob3VzZS52MS5NYXNoTWV0cmljKrEBCgpNYXNoU3RhdHVzEhsKF01BU0hfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFwoTTUFTSF9TVEFUVVNfUExBTk5FRBABEhsKF01BU0hfU1RBVFVTX0lOX1BST0dSRVNTEAISGgoWTUFTSF9TVEFUVVNfRkVSTUVOVElORxADEhkKFU1BU0hfU1RBVFVTX0RJU1RJTExFRBAEEhkKFU1BU0hfU1RBVFVTX0NBTkNFTExFRBAFKv4BCg5NYXNoTWV0cmljS2luZBIgChxNQVNIX01FVFJJQ19LSU5EX1VOU1BFQ0lGSUVEEAASJQohTUFTSF9NRVRSSUNfS0lORF9PUklHSU5BTF9HUkFWSVRZEAESHAoYTUFTSF9NRVRSSUNfS0lORF9NQVNIX1BIEAISIAocTUFTSF9NRVRSSUNfS0lORF9NQVNIX1RFTVBfQxADEiMKH01BU0hfTUVUUklDX0tJTkRfV0FURVJfVk9MVU1FX0wQBBIiCh5NQVNIX01FVFJJQ19LSU5EX1NUUklLRV9URU1QX0MQBRIaChZNQVNIX01FVFJJQ19LSU5EX09USEVSEAYyvgQKC01hc2hTZXJ2aWNlEloKDUNyZWF0ZU1hc2hSdW4SIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZU1hc2hSdW5SZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5DcmVhdGVNYXNoUnVuUmVzcG9uc2USUQoKR2V0TWFzaFJ1bhIgLnN0aWxsaG91c2UudjEuR2V0TWFzaFJ1blJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkdldE1hc2hSdW5SZXNwb25zZRJXCgxMaXN0TWFzaFJ1bnMSIi5zdGlsbGhvdXNlLnYxLkxpc3RNYXNoUnVuc1JlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkxpc3RNYXNoUnVuc1Jlc3BvbnNlEmMKEFVwZGF0ZU1hc2hTdGF0dXMSJi5zdGlsbGhvdXNlLnYxLlVwZGF0ZU1hc2hTdGF0dXNSZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5VcGRhdGVNYXNoU3RhdHVzUmVzcG9uc2USZgoRQWRkTWFzaEluZ3JlZGllbnQSJy5zdGlsbGhvdXNlLnYxLkFkZE1hc2hJbmdyZWRpZW50UmVxdWVzdBooLnN0aWxsaG91c2UudjEuQWRkTWFzaEluZ3JlZGllbnRSZXNwb25zZRJaCg1BZGRNYXNoTWV0cmljEiMuc3RpbGxob3VzZS52MS5BZGRNYXNoTWV0cmljUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQWRkTWFzaE1ldHJpY1Jlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_material]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL21hc2gucHJvdG8SDXN0aWxsaG91c2UudjEicAoLTWFzaEZpbmRpbmcSNAoIc2V2ZXJpdHkYASABKA4yIi5zdGlsbGhvdXNlLnYxLk1hc2hGaW5kaW5nU2V2ZXJpdHkSDAoEY29kZRgCIAEoCRINCgV0aXRsZRgDIAEoCRIOCgZkZXRhaWwYBCABKAkiMAoQVGVtcGVyYXR1cmVSYW5nZRINCgVtaW5fYxgBIAEoARINCgVtYXhfYxgCIAEoASK3AQoOTWFzaEVmZmljaWVuY3kSGAoQb3JpZ2luYWxfZ3Jhdml0eRgBIAEoARINCgVwbGF0bxgCIAEoARIVCg13YXNoX3ZvbHVtZV9sGAMgASgBEh0KFXdhc2hfdm9sdW1lX2VzdGltYXRlZBgEIAEoCBIbChNleHRyYWN0X21lYXN1cmVkX2tnGAUgASgBEhwKFGV4dHJhY3RfYXZhaWxhYmxlX2tnGAYgASgBEgsKA3BjdBgHIAEoASKGAwoJTWFzaEJlbmNoEjkKEGdlbGF0aW5pc2F0aW9uX2MYASABKAsyHy5zdGlsbGhvdXNlLnYxLlRlbXBlcmF0dXJlUmFuZ2USHAoUZ2VsYXRpbmlzYXRpb25fa25vd24YAiABKAgSNQoMY29udmVyc2lvbl9jGAMgASgLMh8uc3RpbGxob3VzZS52MS5UZW1wZXJhdHVyZVJhbmdlEhwKFGNlcmVhbF9jb29rX3JlcXVpcmVkGAQgASgIEhoKEnRoaWNrbmVzc19sX3Blcl9rZxgFIAEoARIeChZ0aGlja25lc3NfbF9wZXJfa2dfc2V0GAYgASgIEjEKCmVmZmljaWVuY3kYByABKAsyHS5zdGlsbGhvdXNlLnYxLk1hc2hFZmZpY2llbmN5EhYKDmVmZmljaWVuY3lfc2V0GAggASgIEhYKDnRvdGFsX2dyYWluX2tnGAkgASgBEiwKCGZpbmRpbmdzGAogAygLMhouc3RpbGxob3VzZS52MS5NYXNoRmluZGluZyLzAwoHTWFzaFJ1bhIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSGQoRcmVjaXBlX3ZlcnNpb25faWQYAyABKAkSDwoHbWFzaF9ubxgEIAEoBRIRCgltYXNoX2RhdGUYBSABKAkSKQoGc3RhdHVzGAYgASgOMhkuc3RpbGxob3VzZS52MS5NYXNoU3RhdHVzEg0KBW5vdGVzGAcgASgJEi4KCmNyZWF0ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhMKC3JlY2lwZV9uYW1lGAogASgJEhkKEXJlY2lwZV92ZXJzaW9uX25vGAsgASgFEjcKC2luZ3JlZGllbnRzGAwgAygLMiIuc3RpbGxob3VzZS52MS5NYXNoSW5ncmVkaWVudFVzYWdlEioKB21ldHJpY3MYDSADKAsyGS5zdGlsbGhvdXNlLnYxLk1hc2hNZXRyaWMSFQoNcHJvamVjdGVkX2xhYRgOIAEoARIbChNhY3R1YWxfY2FwdHVyZWRfbGFhGA8gASgBEicKBWJlbmNoGBAgASgLMhguc3RpbGxob3VzZS52MS5NYXNoQmVuY2ginQMKE01hc2hJbmdyZWRpZW50VXNhZ2USCgoCaWQYASABKAkSEwoLbWFzaF9ydW5faWQYAiABKAkSEwoLbWF0ZXJpYWxfaWQYAyABKAkSFQoNbWF0ZXJpYWxfbmFtZRgEIAEoCRIyCg1tYXRlcmlhbF9raW5kGAUgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSHAoUbWF0ZXJpYWxfZXh0cmFjdF9wY3QYBiABKAESIAoYbWF0ZXJpYWxfZXh0cmFjdF9wY3Rfc2V0GAcgASgIEhUKDXF1YW50aXR5X3VzZWQYCCABKAESCwoDdW9tGAkgASgJEg0KBW5vdGVzGAogASgJEi4KCmNyZWF0ZWRfYXQYCyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhcKD21hdGVyaWFsX2xvdF9pZBgMIAEoCRIUCgxzdXBwbGllcl9sb3QYDSABKAkSMwoPbG90X3JlY2VpdmVkX2F0GA4gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCK3AQoKTWFzaE1ldHJpYxIKCgJpZBgBIAEoCRITCgttYXNoX3J1bl9pZBgCIAEoCRIrCgRraW5kGAMgASgOMh0uc3RpbGxob3VzZS52MS5NYXNoTWV0cmljS2luZBINCgV2YWx1ZRgEIAEoARIMCgR1bml0GAUgASgJEi8KC29ic2VydmVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgHIAEoCSJTChRDcmVhdGVNYXNoUnVuUmVxdWVzdBIZChFyZWNpcGVfdmVyc2lvbl9pZBgBIAEoCRIRCgltYXNoX2RhdGUYAiABKAkSDQoFbm90ZXMYAyABKAkiQQoVQ3JlYXRlTWFzaFJ1blJlc3BvbnNlEigKCG1hc2hfcnVuGAEgASgLMhYuc3RpbGxob3VzZS52MS5NYXNoUnVuIh8KEUdldE1hc2hSdW5SZXF1ZXN0EgoKAmlkGAEgASgJIj4KEkdldE1hc2hSdW5SZXNwb25zZRIoCghtYXNoX3J1bhgBIAEoCzIWLnN0aWxsaG91c2UudjEuTWFzaFJ1biJTChNMaXN0TWFzaFJ1bnNSZXF1ZXN0EhEKCXJlY2lwZV9pZBgBIAEoCRIpCgZzdGF0dXMYAiABKA4yGS5zdGlsbGhvdXNlLnYxLk1hc2hTdGF0dXMiQQoUTGlzdE1hc2hSdW5zUmVzcG9uc2USKQoJbWFzaF9ydW5zGAEgAygLMhYuc3RpbGxob3VzZS52MS5NYXNoUnVuIlAKF1VwZGF0ZU1hc2hTdGF0dXNSZXF1ZXN0EgoKAmlkGAEgASgJEikKBnN0YXR1cxgCIAEoDjIZLnN0aWxsaG91c2UudjEuTWFzaFN0YXR1cyJEChhVcGRhdGVNYXNoU3RhdHVzUmVzcG9uc2USKAoIbWFzaF9ydW4YASABKAsyFi5zdGlsbGhvdXNlLnYxLk1hc2hSdW4ikAEKGEFkZE1hc2hJbmdyZWRpZW50UmVxdWVzdBITCgttYXNoX3J1bl9pZBgBIAEoCRITCgttYXRlcmlhbF9pZBgCIAEoCRIVCg1xdWFudGl0eV91c2VkGAMgASgBEgsKA3VvbRgEIAEoCRINCgVub3RlcxgFIAEoCRIXCg9tYXRlcmlhbF9sb3RfaWQYBiABKAkiTgoZQWRkTWFzaEluZ3JlZGllbnRSZXNwb25zZRIxCgV1c2FnZRgBIAEoCzIiLnN0aWxsaG91c2UudjEuTWFzaEluZ3JlZGllbnRVc2FnZSK1AQoUQWRkTWFzaE1ldHJpY1JlcXVlc3QSEwoLbWFzaF9ydW5faWQYASABKAkSKwoEa2luZBgCIAEoDjIdLnN0aWxsaG91c2UudjEuTWFzaE1ldHJpY0tpbmQSDQoFdmFsdWUYAyABKAESDAoEdW5pdBgEIAEoCRIvCgtvYnNlcnZlZF9hdBgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBiABKAkiQgoVQWRkTWFzaE1ldHJpY1Jlc3BvbnNlEikKBm1ldHJpYxgBIAEoCzIZLnN0aWxsaG91c2UudjEuTWFzaE1ldHJpYyJuChFQbGFuU3RyaWtlUmVxdWVzdBIVCg10YXJnZXRfdGVtcF9jGAEgASgBEhQKDGdyYWluX3RlbXBfYxgCIAEoARIaChJ0aGlja25lc3NfbF9wZXJfa2cYAyABKAESEAoIZ3JhaW5fa2cYBCABKAEicQoSUGxhblN0cmlrZVJlc3BvbnNlEhUKDXN0cmlrZV90ZW1wX2MYASABKAESFgoOd2F0ZXJfdm9sdW1lX2wYAiABKAESLAoIZmluZGluZ3MYAyADKAsyGi5zdGlsbGhvdXNlLnYxLk1hc2hGaW5kaW5nKrEBCgpNYXNoU3RhdHVzEhsKF01BU0hfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFwoTTUFTSF9TVEFUVVNfUExBTk5FRBABEhsKF01BU0hfU1RBVFVTX0lOX1BST0dSRVNTEAISGgoWTUFTSF9TVEFUVVNfRkVSTUVOVElORxADEhkKFU1BU0hfU1RBVFVTX0RJU1RJTExFRBAEEhkKFU1BU0hfU1RBVFVTX0NBTkNFTExFRBAFKqICCg5NYXNoTWV0cmljS2luZBIgChxNQVNIX01FVFJJQ19LSU5EX1VOU1BFQ0lGSUVEEAASJQohTUFTSF9NRVRSSUNfS0lORF9PUklHSU5BTF9HUkFWSVRZEAESHAoYTUFTSF9NRVRSSUNfS0lORF9NQVNIX1BIEAISIAocTUFTSF9NRVRSSUNfS0lORF9NQVNIX1RFTVBfQxADEiMKH01BU0hfTUVUUklDX0tJTkRfV0FURVJfVk9MVU1FX0wQBBIiCh5NQVNIX01FVFJJQ19LSU5EX1NUUklLRV9URU1QX0MQBRIaChZNQVNIX01FVFJJQ19LSU5EX09USEVSEAYSIgoeTUFTSF9NRVRSSUNfS0lORF9XQVNIX1ZPTFVNRV9MEAcqogEKE01hc2hGaW5kaW5nU2V2ZXJpdHkSJQohTUFTSF9GSU5ESU5HX1NFVkVSSVRZX1VOU1BFQ0lGSUVEEAASHgoaTUFTSF9GSU5ESU5HX1NFVkVSSVRZX0lORk8QARIhCh1NQVNIX0ZJTkRJTkdfU0VWRVJJVFlfV0FSTklORxACEiEKHU1BU0hfRklORElOR19TRVZFUklUWV9QUk9CTEVNEAMykQUKC01hc2hTZXJ2aWNlEloKDUNyZWF0ZU1hc2hSdW4SIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZU1hc2hSdW5SZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5DcmVhdGVNYXNoUnVuUmVzcG9uc2USUQoKR2V0TWFzaFJ1bhIgLnN0aWxsaG91c2UudjEuR2V0TWFzaFJ1blJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkdldE1hc2hSdW5SZXNwb25zZRJXCgxMaXN0TWFzaFJ1bnMSIi5zdGlsbGhvdXNlLnYxLkxpc3RNYXNoUnVuc1JlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkxpc3RNYXNoUnVuc1Jlc3BvbnNlEmMKEFVwZGF0ZU1hc2hTdGF0dXMSJi5zdGlsbGhvdXNlLnYxLlVwZGF0ZU1hc2hTdGF0dXNSZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5VcGRhdGVNYXNoU3RhdHVzUmVzcG9uc2USZgoRQWRkTWFzaEluZ3JlZGllbnQSJy5zdGlsbGhvdXNlLnYxLkFkZE1hc2hJbmdyZWRpZW50UmVxdWVzdBooLnN0aWxsaG91c2UudjEuQWRkTWFzaEluZ3JlZGllbnRSZXNwb25zZRJaCg1BZGRNYXNoTWV0cmljEiMuc3RpbGxob3VzZS52MS5BZGRNYXNoTWV0cmljUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQWRkTWFzaE1ldHJpY1Jlc3BvbnNlElEKClBsYW5TdHJpa2USIC5zdGlsbGhvdXNlLnYxLlBsYW5TdHJpa2VSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5QbGFuU3RyaWtlUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_stillhouse_v1_material]);
+
+/**
+ * @generated from message stillhouse.v1.MashFinding
+ */
+export type MashFinding = Message<"stillhouse.v1.MashFinding"> & {
+  /**
+   * @generated from field: stillhouse.v1.MashFindingSeverity severity = 1;
+   */
+  severity: MashFindingSeverity;
+
+  /**
+   * Stable identifier so the UI can style or link a finding without
+   * matching on prose.
+   *
+   * @generated from field: string code = 2;
+   */
+  code: string;
+
+  /**
+   * @generated from field: string title = 3;
+   */
+  title: string;
+
+  /**
+   * The consequence — the part that changes what an operator does.
+   *
+   * @generated from field: string detail = 4;
+   */
+  detail: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.MashFinding.
+ * Use `create(MashFindingSchema)` to create a new message.
+ */
+export const MashFindingSchema: GenMessage<MashFinding> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_mash, 0);
+
+/**
+ * Inclusive temperature band, °C.
+ *
+ * @generated from message stillhouse.v1.TemperatureRange
+ */
+export type TemperatureRange = Message<"stillhouse.v1.TemperatureRange"> & {
+  /**
+   * @generated from field: double min_c = 1;
+   */
+  minC: number;
+
+  /**
+   * @generated from field: double max_c = 2;
+   */
+  maxC: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.TemperatureRange.
+ * Use `create(TemperatureRangeSchema)` to create a new message.
+ */
+export const TemperatureRangeSchema: GenMessage<TemperatureRange> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_mash, 1);
+
+/**
+ * MashEfficiency is conversion measured at the tun from original gravity,
+ * rather than inferred weeks later from what the still gave back.
+ *
+ * @generated from message stillhouse.v1.MashEfficiency
+ */
+export type MashEfficiency = Message<"stillhouse.v1.MashEfficiency"> & {
+  /**
+   * @generated from field: double original_gravity = 1;
+   */
+  originalGravity: number;
+
+  /**
+   * @generated from field: double plato = 2;
+   */
+  plato: number;
+
+  /**
+   * @generated from field: double wash_volume_l = 3;
+   */
+  washVolumeL: number;
+
+  /**
+   * True when wash_volume_l was estimated from water + grain displacement
+   * rather than measured.
+   *
+   * @generated from field: bool wash_volume_estimated = 4;
+   */
+  washVolumeEstimated: boolean;
+
+  /**
+   * @generated from field: double extract_measured_kg = 5;
+   */
+  extractMeasuredKg: number;
+
+  /**
+   * @generated from field: double extract_available_kg = 6;
+   */
+  extractAvailableKg: number;
+
+  /**
+   * @generated from field: double pct = 7;
+   */
+  pct: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.MashEfficiency.
+ * Use `create(MashEfficiencySchema)` to create a new message.
+ */
+export const MashEfficiencySchema: GenMessage<MashEfficiency> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_mash, 2);
+
+/**
+ * MashBench is the guidance derived from a mash's actual grain bill and
+ * recorded readings. Sourced from the IBD/CIBD distilling curriculum.
+ *
+ * @generated from message stillhouse.v1.MashBench
+ */
+export type MashBench = Message<"stillhouse.v1.MashBench"> & {
+  /**
+   * The band the bill as a whole must reach to gelatinise: the hottest
+   * requirement across its cereals.
+   *
+   * @generated from field: stillhouse.v1.TemperatureRange gelatinisation_c = 1;
+   */
+  gelatinisationC?: TemperatureRange | undefined;
+
+  /**
+   * False when a fermentable has no published gelatinisation range, so
+   * the requirement above may be understated.
+   *
+   * @generated from field: bool gelatinisation_known = 2;
+   */
+  gelatinisationKnown: boolean;
+
+  /**
+   * Where the amylases work.
+   *
+   * @generated from field: stillhouse.v1.TemperatureRange conversion_c = 3;
+   */
+  conversionC?: TemperatureRange | undefined;
+
+  /**
+   * Set when the bill can't be gelatinised and converted in one rest —
+   * maize and rice force a separate cereal cook.
+   *
+   * @generated from field: bool cereal_cook_required = 4;
+   */
+  cerealCookRequired: boolean;
+
+  /**
+   * @generated from field: double thickness_l_per_kg = 5;
+   */
+  thicknessLPerKg: number;
+
+  /**
+   * @generated from field: bool thickness_l_per_kg_set = 6;
+   */
+  thicknessLPerKgSet: boolean;
+
+  /**
+   * @generated from field: stillhouse.v1.MashEfficiency efficiency = 7;
+   */
+  efficiency?: MashEfficiency | undefined;
+
+  /**
+   * @generated from field: bool efficiency_set = 8;
+   */
+  efficiencySet: boolean;
+
+  /**
+   * @generated from field: double total_grain_kg = 9;
+   */
+  totalGrainKg: number;
+
+  /**
+   * @generated from field: repeated stillhouse.v1.MashFinding findings = 10;
+   */
+  findings: MashFinding[];
+};
+
+/**
+ * Describes the message stillhouse.v1.MashBench.
+ * Use `create(MashBenchSchema)` to create a new message.
+ */
+export const MashBenchSchema: GenMessage<MashBench> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_mash, 3);
 
 /**
  * @generated from message stillhouse.v1.MashRun
@@ -110,6 +300,14 @@ export type MashRun = Message<"stillhouse.v1.MashRun"> & {
    * @generated from field: double actual_captured_laa = 15;
    */
   actualCapturedLaa: number;
+
+  /**
+   * Mash bench guidance, populated by GetMashRun from the grain bill and
+   * recorded metrics.
+   *
+   * @generated from field: stillhouse.v1.MashBench bench = 16;
+   */
+  bench?: MashBench | undefined;
 };
 
 /**
@@ -117,7 +315,7 @@ export type MashRun = Message<"stillhouse.v1.MashRun"> & {
  * Use `create(MashRunSchema)` to create a new message.
  */
 export const MashRunSchema: GenMessage<MashRun> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 0);
+  messageDesc(file_stillhouse_v1_mash, 4);
 
 /**
  * @generated from message stillhouse.v1.MashIngredientUsage
@@ -203,7 +401,7 @@ export type MashIngredientUsage = Message<"stillhouse.v1.MashIngredientUsage"> &
  * Use `create(MashIngredientUsageSchema)` to create a new message.
  */
 export const MashIngredientUsageSchema: GenMessage<MashIngredientUsage> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 1);
+  messageDesc(file_stillhouse_v1_mash, 5);
 
 /**
  * @generated from message stillhouse.v1.MashMetric
@@ -250,7 +448,7 @@ export type MashMetric = Message<"stillhouse.v1.MashMetric"> & {
  * Use `create(MashMetricSchema)` to create a new message.
  */
 export const MashMetricSchema: GenMessage<MashMetric> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 2);
+  messageDesc(file_stillhouse_v1_mash, 6);
 
 /**
  * @generated from message stillhouse.v1.CreateMashRunRequest
@@ -279,7 +477,7 @@ export type CreateMashRunRequest = Message<"stillhouse.v1.CreateMashRunRequest">
  * Use `create(CreateMashRunRequestSchema)` to create a new message.
  */
 export const CreateMashRunRequestSchema: GenMessage<CreateMashRunRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 3);
+  messageDesc(file_stillhouse_v1_mash, 7);
 
 /**
  * @generated from message stillhouse.v1.CreateMashRunResponse
@@ -296,7 +494,7 @@ export type CreateMashRunResponse = Message<"stillhouse.v1.CreateMashRunResponse
  * Use `create(CreateMashRunResponseSchema)` to create a new message.
  */
 export const CreateMashRunResponseSchema: GenMessage<CreateMashRunResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 4);
+  messageDesc(file_stillhouse_v1_mash, 8);
 
 /**
  * @generated from message stillhouse.v1.GetMashRunRequest
@@ -313,7 +511,7 @@ export type GetMashRunRequest = Message<"stillhouse.v1.GetMashRunRequest"> & {
  * Use `create(GetMashRunRequestSchema)` to create a new message.
  */
 export const GetMashRunRequestSchema: GenMessage<GetMashRunRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 5);
+  messageDesc(file_stillhouse_v1_mash, 9);
 
 /**
  * @generated from message stillhouse.v1.GetMashRunResponse
@@ -330,7 +528,7 @@ export type GetMashRunResponse = Message<"stillhouse.v1.GetMashRunResponse"> & {
  * Use `create(GetMashRunResponseSchema)` to create a new message.
  */
 export const GetMashRunResponseSchema: GenMessage<GetMashRunResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 6);
+  messageDesc(file_stillhouse_v1_mash, 10);
 
 /**
  * @generated from message stillhouse.v1.ListMashRunsRequest
@@ -356,7 +554,7 @@ export type ListMashRunsRequest = Message<"stillhouse.v1.ListMashRunsRequest"> &
  * Use `create(ListMashRunsRequestSchema)` to create a new message.
  */
 export const ListMashRunsRequestSchema: GenMessage<ListMashRunsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 7);
+  messageDesc(file_stillhouse_v1_mash, 11);
 
 /**
  * @generated from message stillhouse.v1.ListMashRunsResponse
@@ -373,7 +571,7 @@ export type ListMashRunsResponse = Message<"stillhouse.v1.ListMashRunsResponse">
  * Use `create(ListMashRunsResponseSchema)` to create a new message.
  */
 export const ListMashRunsResponseSchema: GenMessage<ListMashRunsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 8);
+  messageDesc(file_stillhouse_v1_mash, 12);
 
 /**
  * @generated from message stillhouse.v1.UpdateMashStatusRequest
@@ -395,7 +593,7 @@ export type UpdateMashStatusRequest = Message<"stillhouse.v1.UpdateMashStatusReq
  * Use `create(UpdateMashStatusRequestSchema)` to create a new message.
  */
 export const UpdateMashStatusRequestSchema: GenMessage<UpdateMashStatusRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 9);
+  messageDesc(file_stillhouse_v1_mash, 13);
 
 /**
  * @generated from message stillhouse.v1.UpdateMashStatusResponse
@@ -412,7 +610,7 @@ export type UpdateMashStatusResponse = Message<"stillhouse.v1.UpdateMashStatusRe
  * Use `create(UpdateMashStatusResponseSchema)` to create a new message.
  */
 export const UpdateMashStatusResponseSchema: GenMessage<UpdateMashStatusResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 10);
+  messageDesc(file_stillhouse_v1_mash, 14);
 
 /**
  * @generated from message stillhouse.v1.AddMashIngredientRequest
@@ -456,7 +654,7 @@ export type AddMashIngredientRequest = Message<"stillhouse.v1.AddMashIngredientR
  * Use `create(AddMashIngredientRequestSchema)` to create a new message.
  */
 export const AddMashIngredientRequestSchema: GenMessage<AddMashIngredientRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 11);
+  messageDesc(file_stillhouse_v1_mash, 15);
 
 /**
  * @generated from message stillhouse.v1.AddMashIngredientResponse
@@ -473,7 +671,7 @@ export type AddMashIngredientResponse = Message<"stillhouse.v1.AddMashIngredient
  * Use `create(AddMashIngredientResponseSchema)` to create a new message.
  */
 export const AddMashIngredientResponseSchema: GenMessage<AddMashIngredientResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 12);
+  messageDesc(file_stillhouse_v1_mash, 16);
 
 /**
  * @generated from message stillhouse.v1.AddMashMetricRequest
@@ -517,7 +715,7 @@ export type AddMashMetricRequest = Message<"stillhouse.v1.AddMashMetricRequest">
  * Use `create(AddMashMetricRequestSchema)` to create a new message.
  */
 export const AddMashMetricRequestSchema: GenMessage<AddMashMetricRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 13);
+  messageDesc(file_stillhouse_v1_mash, 17);
 
 /**
  * @generated from message stillhouse.v1.AddMashMetricResponse
@@ -534,7 +732,71 @@ export type AddMashMetricResponse = Message<"stillhouse.v1.AddMashMetricResponse
  * Use `create(AddMashMetricResponseSchema)` to create a new message.
  */
 export const AddMashMetricResponseSchema: GenMessage<AddMashMetricResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_mash, 14);
+  messageDesc(file_stillhouse_v1_mash, 18);
+
+/**
+ * PlanStrike answers the question asked while the liquor is heating: how
+ * hot does the water need to be so the grain lands on the rest temperature?
+ *
+ * @generated from message stillhouse.v1.PlanStrikeRequest
+ */
+export type PlanStrikeRequest = Message<"stillhouse.v1.PlanStrikeRequest"> & {
+  /**
+   * @generated from field: double target_temp_c = 1;
+   */
+  targetTempC: number;
+
+  /**
+   * @generated from field: double grain_temp_c = 2;
+   */
+  grainTempC: number;
+
+  /**
+   * @generated from field: double thickness_l_per_kg = 3;
+   */
+  thicknessLPerKg: number;
+
+  /**
+   * Optional. When set, the response carries the liquor volume needed.
+   *
+   * @generated from field: double grain_kg = 4;
+   */
+  grainKg: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanStrikeRequest.
+ * Use `create(PlanStrikeRequestSchema)` to create a new message.
+ */
+export const PlanStrikeRequestSchema: GenMessage<PlanStrikeRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_mash, 19);
+
+/**
+ * @generated from message stillhouse.v1.PlanStrikeResponse
+ */
+export type PlanStrikeResponse = Message<"stillhouse.v1.PlanStrikeResponse"> & {
+  /**
+   * @generated from field: double strike_temp_c = 1;
+   */
+  strikeTempC: number;
+
+  /**
+   * @generated from field: double water_volume_l = 2;
+   */
+  waterVolumeL: number;
+
+  /**
+   * @generated from field: repeated stillhouse.v1.MashFinding findings = 3;
+   */
+  findings: MashFinding[];
+};
+
+/**
+ * Describes the message stillhouse.v1.PlanStrikeResponse.
+ * Use `create(PlanStrikeResponseSchema)` to create a new message.
+ */
+export const PlanStrikeResponseSchema: GenMessage<PlanStrikeResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_mash, 20);
 
 /**
  * @generated from enum stillhouse.v1.MashStatus
@@ -615,6 +877,16 @@ export enum MashMetricKind {
    * @generated from enum value: MASH_METRIC_KIND_OTHER = 6;
    */
   OTHER = 6,
+
+  /**
+   * Measured total volume of the mash/wash. A distilling wash isn't
+   * lautered and boiled, so it's close to water + grain displacement —
+   * but conversion efficiency is computed against it, so a measurement
+   * beats an estimate.
+   *
+   * @generated from enum value: MASH_METRIC_KIND_WASH_VOLUME_L = 7;
+   */
+  WASH_VOLUME_L = 7,
 }
 
 /**
@@ -622,6 +894,40 @@ export enum MashMetricKind {
  */
 export const MashMetricKindSchema: GenEnum<MashMetricKind> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_mash, 1);
+
+/**
+ * How serious a bench finding is. Advisory only — nothing here blocks a
+ * write.
+ *
+ * @generated from enum stillhouse.v1.MashFindingSeverity
+ */
+export enum MashFindingSeverity {
+  /**
+   * @generated from enum value: MASH_FINDING_SEVERITY_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: MASH_FINDING_SEVERITY_INFO = 1;
+   */
+  INFO = 1,
+
+  /**
+   * @generated from enum value: MASH_FINDING_SEVERITY_WARNING = 2;
+   */
+  WARNING = 2,
+
+  /**
+   * @generated from enum value: MASH_FINDING_SEVERITY_PROBLEM = 3;
+   */
+  PROBLEM = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.MashFindingSeverity.
+ */
+export const MashFindingSeveritySchema: GenEnum<MashFindingSeverity> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_mash, 2);
 
 /**
  * @generated from service stillhouse.v1.MashService
@@ -674,6 +980,14 @@ export const MashService: GenService<{
     methodKind: "unary";
     input: typeof AddMashMetricRequestSchema;
     output: typeof AddMashMetricResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.MashService.PlanStrike
+   */
+  planStrike: {
+    methodKind: "unary";
+    input: typeof PlanStrikeRequestSchema;
+    output: typeof PlanStrikeResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_mash, 0);

@@ -15,6 +15,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/mashing"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
@@ -56,6 +57,7 @@ func (s *MaterialService) CreateMaterial(
 			Notes:       in.GetNotes(),
 			ExtractPct:  optionalFloat(in.GetExtractPctSet(), in.GetExtractPct()),
 			MoisturePct: optionalFloat(in.GetMoisturePctSet(), in.GetMoisturePct()),
+			Cereal:      cerealToDB(in.GetCereal()),
 		})
 		if dbErr != nil {
 			return dbErr
@@ -101,6 +103,7 @@ func (s *MaterialService) UpdateMaterial(
 			Notes:       in.GetNotes(),
 			ExtractPct:  optionalFloat(in.GetExtractPctSet(), in.GetExtractPct()),
 			MoisturePct: optionalFloat(in.GetMoisturePctSet(), in.GetMoisturePct()),
+			Cereal:      cerealToDB(in.GetCereal()),
 		})
 		return dbErr
 	})
@@ -541,6 +544,7 @@ func materialToProto(m sqlcgen.Material) *stillhousev1.Material {
 		Archived:  m.Archived,
 		CreatedAt: timestamppb.New(m.CreatedAt.Time),
 		UpdatedAt: timestamppb.New(m.UpdatedAt.Time),
+		Cereal:    cerealToProto(m.Cereal),
 	}
 	if m.ExtractPct.Valid {
 		out.ExtractPct = m.ExtractPct.Float64
@@ -615,4 +619,78 @@ func materialKindToProto(k sqlcgen.MaterialKind) stillhousev1.MaterialKind {
 		return stillhousev1.MaterialKind_MATERIAL_KIND_OTHER
 	}
 	return stillhousev1.MaterialKind_MATERIAL_KIND_UNSPECIFIED
+}
+
+// cerealToDB / cerealToProto bridge the Cereal enum. UNSPECIFIED maps to a
+// NULL column rather than a sentinel value: "we don't know this grain's
+// species" is a real state, and the mash bench reports it as unknown rather
+// than assuming a gelatinisation range.
+func cerealToDB(c stillhousev1.Cereal) sqlcgen.NullCereal {
+	var v sqlcgen.Cereal
+	switch c {
+	case stillhousev1.Cereal_CEREAL_BARLEY:
+		v = sqlcgen.CerealBarley
+	case stillhousev1.Cereal_CEREAL_WHEAT:
+		v = sqlcgen.CerealWheat
+	case stillhousev1.Cereal_CEREAL_RYE:
+		v = sqlcgen.CerealRye
+	case stillhousev1.Cereal_CEREAL_MAIZE:
+		v = sqlcgen.CerealMaize
+	case stillhousev1.Cereal_CEREAL_RICE:
+		v = sqlcgen.CerealRice
+	case stillhousev1.Cereal_CEREAL_OAT:
+		v = sqlcgen.CerealOat
+	case stillhousev1.Cereal_CEREAL_OTHER:
+		v = sqlcgen.CerealOther
+	default:
+		return sqlcgen.NullCereal{Valid: false}
+	}
+	return sqlcgen.NullCereal{Cereal: v, Valid: true}
+}
+
+func cerealToProto(c sqlcgen.NullCereal) stillhousev1.Cereal {
+	if !c.Valid {
+		return stillhousev1.Cereal_CEREAL_UNSPECIFIED
+	}
+	switch c.Cereal {
+	case sqlcgen.CerealBarley:
+		return stillhousev1.Cereal_CEREAL_BARLEY
+	case sqlcgen.CerealWheat:
+		return stillhousev1.Cereal_CEREAL_WHEAT
+	case sqlcgen.CerealRye:
+		return stillhousev1.Cereal_CEREAL_RYE
+	case sqlcgen.CerealMaize:
+		return stillhousev1.Cereal_CEREAL_MAIZE
+	case sqlcgen.CerealRice:
+		return stillhousev1.Cereal_CEREAL_RICE
+	case sqlcgen.CerealOat:
+		return stillhousev1.Cereal_CEREAL_OAT
+	case sqlcgen.CerealOther:
+		return stillhousev1.Cereal_CEREAL_OTHER
+	default:
+		return stillhousev1.Cereal_CEREAL_UNSPECIFIED
+	}
+}
+
+// cerealToMashing maps the wire enum onto the domain package's own type so
+// internal/mashing stays free of protobuf imports.
+func cerealToMashing(c stillhousev1.Cereal) mashing.Cereal {
+	switch c {
+	case stillhousev1.Cereal_CEREAL_BARLEY:
+		return mashing.CerealBarley
+	case stillhousev1.Cereal_CEREAL_WHEAT:
+		return mashing.CerealWheat
+	case stillhousev1.Cereal_CEREAL_RYE:
+		return mashing.CerealRye
+	case stillhousev1.Cereal_CEREAL_MAIZE:
+		return mashing.CerealMaize
+	case stillhousev1.Cereal_CEREAL_RICE:
+		return mashing.CerealRice
+	case stillhousev1.Cereal_CEREAL_OAT:
+		return mashing.CerealOat
+	case stillhousev1.Cereal_CEREAL_OTHER:
+		return mashing.CerealOther
+	default:
+		return mashing.CerealUnspecified
+	}
 }

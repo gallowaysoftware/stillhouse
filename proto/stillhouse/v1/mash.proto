@@ -22,6 +22,73 @@ enum MashMetricKind {
   MASH_METRIC_KIND_WATER_VOLUME_L = 4;
   MASH_METRIC_KIND_STRIKE_TEMP_C = 5;
   MASH_METRIC_KIND_OTHER = 6;
+  // Measured total volume of the mash/wash. A distilling wash isn't
+  // lautered and boiled, so it's close to water + grain displacement —
+  // but conversion efficiency is computed against it, so a measurement
+  // beats an estimate.
+  MASH_METRIC_KIND_WASH_VOLUME_L = 7;
+}
+
+// How serious a bench finding is. Advisory only — nothing here blocks a
+// write.
+enum MashFindingSeverity {
+  MASH_FINDING_SEVERITY_UNSPECIFIED = 0;
+  MASH_FINDING_SEVERITY_INFO = 1;
+  MASH_FINDING_SEVERITY_WARNING = 2;
+  MASH_FINDING_SEVERITY_PROBLEM = 3;
+}
+
+message MashFinding {
+  MashFindingSeverity severity = 1;
+  // Stable identifier so the UI can style or link a finding without
+  // matching on prose.
+  string code = 2;
+  string title = 3;
+  // The consequence — the part that changes what an operator does.
+  string detail = 4;
+}
+
+// Inclusive temperature band, °C.
+message TemperatureRange {
+  double min_c = 1;
+  double max_c = 2;
+}
+
+// MashEfficiency is conversion measured at the tun from original gravity,
+// rather than inferred weeks later from what the still gave back.
+message MashEfficiency {
+  double original_gravity = 1;
+  double plato = 2;
+  double wash_volume_l = 3;
+  // True when wash_volume_l was estimated from water + grain displacement
+  // rather than measured.
+  bool   wash_volume_estimated = 4;
+  double extract_measured_kg = 5;
+  double extract_available_kg = 6;
+  double pct = 7;
+}
+
+// MashBench is the guidance derived from a mash's actual grain bill and
+// recorded readings. Sourced from the IBD/CIBD distilling curriculum.
+message MashBench {
+  // The band the bill as a whole must reach to gelatinise: the hottest
+  // requirement across its cereals.
+  TemperatureRange gelatinisation_c = 1;
+  // False when a fermentable has no published gelatinisation range, so
+  // the requirement above may be understated.
+  bool gelatinisation_known = 2;
+  // Where the amylases work.
+  TemperatureRange conversion_c = 3;
+  // Set when the bill can't be gelatinised and converted in one rest —
+  // maize and rice force a separate cereal cook.
+  bool cereal_cook_required = 4;
+
+  double thickness_l_per_kg = 5;
+  bool   thickness_l_per_kg_set = 6;
+  MashEfficiency efficiency = 7;
+  bool   efficiency_set = 8;
+  double total_grain_kg = 9;
+  repeated MashFinding findings = 10;
 }
 
 message MashRun {
@@ -53,6 +120,10 @@ message MashRun {
   // that charged from any fermentation_run belonging to this mash. Zero
   // until the downstream distillation has been gauged.
   double actual_captured_laa = 15;
+
+  // Mash bench guidance, populated by GetMashRun from the grain bill and
+  // recorded metrics.
+  MashBench bench = 16;
 }
 
 message MashIngredientUsage {
@@ -123,6 +194,21 @@ message AddMashMetricRequest {
 }
 message AddMashMetricResponse { MashMetric metric = 1; }
 
+// PlanStrike answers the question asked while the liquor is heating: how
+// hot does the water need to be so the grain lands on the rest temperature?
+message PlanStrikeRequest {
+  double target_temp_c = 1;
+  double grain_temp_c = 2;
+  double thickness_l_per_kg = 3;
+  // Optional. When set, the response carries the liquor volume needed.
+  double grain_kg = 4;
+}
+message PlanStrikeResponse {
+  double strike_temp_c = 1;
+  double water_volume_l = 2;
+  repeated MashFinding findings = 3;
+}
+
 service MashService {
   rpc CreateMashRun(CreateMashRunRequest) returns (CreateMashRunResponse);
   rpc GetMashRun(GetMashRunRequest) returns (GetMashRunResponse);
@@ -130,4 +216,5 @@ service MashService {
   rpc UpdateMashStatus(UpdateMashStatusRequest) returns (UpdateMashStatusResponse);
   rpc AddMashIngredient(AddMashIngredientRequest) returns (AddMashIngredientResponse);
   rpc AddMashMetric(AddMashMetricRequest) returns (AddMashMetricResponse);
+  rpc PlanStrike(PlanStrikeRequest) returns (PlanStrikeResponse);
 }

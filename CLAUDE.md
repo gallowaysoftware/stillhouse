@@ -115,6 +115,14 @@ network, private).
   `go run gentable.go -src ALC_TAB.TXT -out alctab.bin` from the CRA ZIP;
   the 5.2 MB source is deliberately not committed, and its SHA-256 is
   pinned in the package test.
+- **Cite the curriculum, or say you can't.** Domain constants in
+  `internal/mashing` carry the CIBD passage they came from on the
+  constant itself. Where the curriculum has no figure (oat
+  gelatinisation, say), the code returns "unknown" and the UI says so —
+  never interpolate a plausible-looking number into operator guidance.
+- **Don't `gofmt -w` a whole directory.** Several files under
+  `internal/rpc/` aren't gofmt-clean; formatting them sweeps unrelated
+  churn into a stage commit. Format the specific files you edited.
 - **Float display.** LAA / volume / duty values get full IEEE-754
   noise on the wire (`0.8399999999999999`). Not pretty — known issue
   (QA finding F17). Display rounding lives in `web/src/lib/format.ts`.
@@ -149,6 +157,8 @@ wouldn't have surfaced it.
   load-bearing math
 - `backend/internal/alcoholometry/` — CRA Canadian Alcoholometric
   Tables 1980; every strength/volume lands at 20 °C through here
+- `backend/internal/mashing/` — cereal gelatinisation, amylase windows,
+  strike temperature, conversion efficiency (CIBD-sourced, cited inline)
 - `backend/internal/distilling/` — projection math (whisky spine)
 - `backend/internal/mcp/` — MCP tool registrations
 - `web/src/pages/RecipeDetailPage.tsx` — the most feature-dense page

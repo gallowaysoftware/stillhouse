@@ -244,6 +244,53 @@ func (ns NullBulkMovementReason) Value() (driver.Value, error) {
 	return string(ns.BulkMovementReason), nil
 }
 
+type Cereal string
+
+const (
+	CerealBarley Cereal = "barley"
+	CerealWheat  Cereal = "wheat"
+	CerealRye    Cereal = "rye"
+	CerealMaize  Cereal = "maize"
+	CerealRice   Cereal = "rice"
+	CerealOat    Cereal = "oat"
+	CerealOther  Cereal = "other"
+)
+
+func (e *Cereal) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Cereal(s)
+	case string:
+		*e = Cereal(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Cereal: %T", src)
+	}
+	return nil
+}
+
+type NullCereal struct {
+	Cereal Cereal `json:"cereal"`
+	Valid  bool   `json:"valid"` // Valid is true if Cereal is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCereal) Scan(value interface{}) error {
+	if value == nil {
+		ns.Cereal, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Cereal.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCereal) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Cereal), nil
+}
+
 type DistillationCutKind string
 
 const (
@@ -431,6 +478,7 @@ const (
 	MashMetricKindWaterVolumeL    MashMetricKind = "water_volume_l"
 	MashMetricKindStrikeTempC     MashMetricKind = "strike_temp_c"
 	MashMetricKindOther           MashMetricKind = "other"
+	MashMetricKindWashVolumeL     MashMetricKind = "wash_volume_l"
 )
 
 func (e *MashMetricKind) Scan(src interface{}) error {
@@ -1031,6 +1079,8 @@ type Material struct {
 	Archived    bool               `json:"archived"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	// Grain species, for gelatinisation guidance. NULL = unknown; the mash bench reports unknown rather than assuming a range.
+	Cereal NullCereal `json:"cereal"`
 }
 
 type MaterialLot struct {

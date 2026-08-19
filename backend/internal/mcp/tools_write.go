@@ -171,14 +171,14 @@ func addAddFermentationReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	type in struct {
 		MashRunID string  `json:"mash_run_id" jsonschema:"UUID of the active mash run"`
-		Kind      string  `json:"kind" jsonschema:"one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, strike_temp_c, other"`
+		Kind      string  `json:"kind" jsonschema:"one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, wash_volume_l, strike_temp_c, other"`
 		Value     float64 `json:"value" jsonschema:"numeric reading; units implied by kind (or set via unit for 'other')"`
 		Unit      string  `json:"unit,omitempty" jsonschema:"optional unit label, primarily for kind=other"`
 		Notes     string  `json:"notes,omitempty" jsonschema:"optional free-text notes"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "add_mash_reading",
-		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, strike_temp_c, other. (value is required; 0 is a valid reading.)",
+		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, wash volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, wash_volume_l, strike_temp_c, other. (value is required; 0 is a valid reading.) OG plus a water or wash volume unlocks the conversion-efficiency figure on get_mash.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
 		kind, err := parseMashMetricKind(args.Kind)
@@ -342,6 +342,8 @@ func parseMashMetricKind(s string) (pb.MashMetricKind, error) {
 		return pb.MashMetricKind_MASH_METRIC_KIND_MASH_TEMP_C, nil
 	case "water_volume_l", "water":
 		return pb.MashMetricKind_MASH_METRIC_KIND_WATER_VOLUME_L, nil
+	case "wash_volume_l", "wash":
+		return pb.MashMetricKind_MASH_METRIC_KIND_WASH_VOLUME_L, nil
 	case "strike_temp_c", "strike":
 		return pb.MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C, nil
 	case "other":

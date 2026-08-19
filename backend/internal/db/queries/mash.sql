@@ -37,6 +37,7 @@ SELECT miu.*,
        m.name AS material_name,
        m.kind AS material_kind,
        m.extract_pct AS material_extract_pct,
+       m.cereal AS material_cereal,
        ml.supplier_lot AS supplier_lot,
        ml.received_at  AS lot_received_at
 FROM mash_ingredient_usage miu

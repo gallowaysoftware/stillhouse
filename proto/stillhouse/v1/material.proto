@@ -16,6 +16,22 @@ enum MaterialKind {
   MATERIAL_KIND_OTHER = 8;
 }
 
+// Cereal is the grain species. Gelatinisation temperature is a property of
+// the starch granule — barley is fully gelatinised by 62 °C, maize needs
+// 80 °C — so the species, not the malted/unmalted kind, drives mash
+// temperature guidance. UNSPECIFIED means "not recorded", and the mash
+// bench reports that rather than assuming a range.
+enum Cereal {
+  CEREAL_UNSPECIFIED = 0;
+  CEREAL_BARLEY = 1;
+  CEREAL_WHEAT = 2;
+  CEREAL_RYE = 3;
+  CEREAL_MAIZE = 4;
+  CEREAL_RICE = 5;
+  CEREAL_OAT = 6;
+  CEREAL_OTHER = 7;
+}
+
 message Material {
   string id = 1;
   string tenant_id = 2;
@@ -32,6 +48,9 @@ message Material {
   double moisture_pct = 10;
   bool   moisture_pct_set = 11;
   bool   archived = 12;
+  // Grain species, for mash temperature guidance. Only meaningful for
+  // kind in (GRAIN, MALT).
+  Cereal cereal = 15;
   google.protobuf.Timestamp created_at = 13;
   google.protobuf.Timestamp updated_at = 14;
 }
@@ -65,6 +84,7 @@ message CreateMaterialRequest {
   bool   extract_pct_set = 7;
   double moisture_pct = 8;
   bool   moisture_pct_set = 9;
+  Cereal cereal = 10;
 }
 message CreateMaterialResponse { Material material = 1; }
 
@@ -78,6 +98,7 @@ message UpdateMaterialRequest {
   bool   extract_pct_set = 7;
   double moisture_pct = 8;
   bool   moisture_pct_set = 9;
+  Cereal cereal = 10;
 }
 message UpdateMaterialResponse { Material material = 1; }
 

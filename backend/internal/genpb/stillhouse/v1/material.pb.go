@@ -89,6 +89,75 @@ func (MaterialKind) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{0}
 }
 
+// Cereal is the grain species. Gelatinisation temperature is a property of
+// the starch granule — barley is fully gelatinised by 62 °C, maize needs
+// 80 °C — so the species, not the malted/unmalted kind, drives mash
+// temperature guidance. UNSPECIFIED means "not recorded", and the mash
+// bench reports that rather than assuming a range.
+type Cereal int32
+
+const (
+	Cereal_CEREAL_UNSPECIFIED Cereal = 0
+	Cereal_CEREAL_BARLEY      Cereal = 1
+	Cereal_CEREAL_WHEAT       Cereal = 2
+	Cereal_CEREAL_RYE         Cereal = 3
+	Cereal_CEREAL_MAIZE       Cereal = 4
+	Cereal_CEREAL_RICE        Cereal = 5
+	Cereal_CEREAL_OAT         Cereal = 6
+	Cereal_CEREAL_OTHER       Cereal = 7
+)
+
+// Enum value maps for Cereal.
+var (
+	Cereal_name = map[int32]string{
+		0: "CEREAL_UNSPECIFIED",
+		1: "CEREAL_BARLEY",
+		2: "CEREAL_WHEAT",
+		3: "CEREAL_RYE",
+		4: "CEREAL_MAIZE",
+		5: "CEREAL_RICE",
+		6: "CEREAL_OAT",
+		7: "CEREAL_OTHER",
+	}
+	Cereal_value = map[string]int32{
+		"CEREAL_UNSPECIFIED": 0,
+		"CEREAL_BARLEY":      1,
+		"CEREAL_WHEAT":       2,
+		"CEREAL_RYE":         3,
+		"CEREAL_MAIZE":       4,
+		"CEREAL_RICE":        5,
+		"CEREAL_OAT":         6,
+		"CEREAL_OTHER":       7,
+	}
+)
+
+func (x Cereal) Enum() *Cereal {
+	p := new(Cereal)
+	*p = x
+	return p
+}
+
+func (x Cereal) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Cereal) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_material_proto_enumTypes[1].Descriptor()
+}
+
+func (Cereal) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_material_proto_enumTypes[1]
+}
+
+func (x Cereal) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Cereal.Descriptor instead.
+func (Cereal) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{1}
+}
+
 type Material struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Id       string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -101,15 +170,18 @@ type Material struct {
 	// Fermentable-source parameters; only meaningful for kind in (GRAIN, MALT).
 	// Both are fractions in [0,1]. Use the optional `_set` flags to disambiguate
 	// "set to zero" from "not provided" on writes.
-	ExtractPct     float64                `protobuf:"fixed64,8,opt,name=extract_pct,json=extractPct,proto3" json:"extract_pct,omitempty"`
-	ExtractPctSet  bool                   `protobuf:"varint,9,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
-	MoisturePct    float64                `protobuf:"fixed64,10,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
-	MoisturePctSet bool                   `protobuf:"varint,11,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
-	Archived       bool                   `protobuf:"varint,12,opt,name=archived,proto3" json:"archived,omitempty"`
-	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt      *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	ExtractPct     float64 `protobuf:"fixed64,8,opt,name=extract_pct,json=extractPct,proto3" json:"extract_pct,omitempty"`
+	ExtractPctSet  bool    `protobuf:"varint,9,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
+	MoisturePct    float64 `protobuf:"fixed64,10,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
+	MoisturePctSet bool    `protobuf:"varint,11,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
+	Archived       bool    `protobuf:"varint,12,opt,name=archived,proto3" json:"archived,omitempty"`
+	// Grain species, for mash temperature guidance. Only meaningful for
+	// kind in (GRAIN, MALT).
+	Cereal        Cereal                 `protobuf:"varint,15,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Material) Reset() {
@@ -224,6 +296,13 @@ func (x *Material) GetArchived() bool {
 		return x.Archived
 	}
 	return false
+}
+
+func (x *Material) GetCereal() Cereal {
+	if x != nil {
+		return x.Cereal
+	}
+	return Cereal_CEREAL_UNSPECIFIED
 }
 
 func (x *Material) GetCreatedAt() *timestamppb.Timestamp {
@@ -383,6 +462,7 @@ type CreateMaterialRequest struct {
 	ExtractPctSet  bool                   `protobuf:"varint,7,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
 	MoisturePct    float64                `protobuf:"fixed64,8,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
 	MoisturePctSet bool                   `protobuf:"varint,9,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
+	Cereal         Cereal                 `protobuf:"varint,10,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -480,6 +560,13 @@ func (x *CreateMaterialRequest) GetMoisturePctSet() bool {
 	return false
 }
 
+func (x *CreateMaterialRequest) GetCereal() Cereal {
+	if x != nil {
+		return x.Cereal
+	}
+	return Cereal_CEREAL_UNSPECIFIED
+}
+
 type CreateMaterialResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Material      *Material              `protobuf:"bytes,1,opt,name=material,proto3" json:"material,omitempty"`
@@ -535,6 +622,7 @@ type UpdateMaterialRequest struct {
 	ExtractPctSet  bool                   `protobuf:"varint,7,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
 	MoisturePct    float64                `protobuf:"fixed64,8,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
 	MoisturePctSet bool                   `protobuf:"varint,9,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
+	Cereal         Cereal                 `protobuf:"varint,10,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -630,6 +718,13 @@ func (x *UpdateMaterialRequest) GetMoisturePctSet() bool {
 		return x.MoisturePctSet
 	}
 	return false
+}
+
+func (x *UpdateMaterialRequest) GetCereal() Cereal {
+	if x != nil {
+		return x.Cereal
+	}
+	return Cereal_CEREAL_UNSPECIFIED
 }
 
 type UpdateMaterialResponse struct {
@@ -1529,7 +1624,7 @@ var File_stillhouse_v1_material_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\n" +
-	"\x1cstillhouse/v1/material.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe8\x03\n" +
+	"\x1cstillhouse/v1/material.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x97\x04\n" +
 	"\bMaterial\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x12\n" +
@@ -1544,7 +1639,8 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\fmoisture_pct\x18\n" +
 	" \x01(\x01R\vmoisturePct\x12(\n" +
 	"\x10moisture_pct_set\x18\v \x01(\bR\x0emoisturePctSet\x12\x1a\n" +
-	"\barchived\x18\f \x01(\bR\barchived\x129\n" +
+	"\barchived\x18\f \x01(\bR\barchived\x12-\n" +
+	"\x06cereal\x18\x0f \x01(\x0e2\x15.stillhouse.v1.CerealR\x06cereal\x129\n" +
 	"\n" +
 	"created_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
@@ -1566,7 +1662,7 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"updated_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\"\n" +
 	"\runit_cost_cad\x18\v \x01(\x01R\vunitCostCad\x12)\n" +
-	"\x11unit_cost_cad_set\x18\f \x01(\bR\x0eunitCostCadSet\"\xb6\x02\n" +
+	"\x11unit_cost_cad_set\x18\f \x01(\bR\x0eunitCostCadSet\"\xe5\x02\n" +
 	"\x15CreateMaterialRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
 	"\x04kind\x18\x02 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\x04kind\x12\x10\n" +
@@ -1577,9 +1673,11 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"extractPct\x12&\n" +
 	"\x0fextract_pct_set\x18\a \x01(\bR\rextractPctSet\x12!\n" +
 	"\fmoisture_pct\x18\b \x01(\x01R\vmoisturePct\x12(\n" +
-	"\x10moisture_pct_set\x18\t \x01(\bR\x0emoisturePctSet\"M\n" +
+	"\x10moisture_pct_set\x18\t \x01(\bR\x0emoisturePctSet\x12-\n" +
+	"\x06cereal\x18\n" +
+	" \x01(\x0e2\x15.stillhouse.v1.CerealR\x06cereal\"M\n" +
 	"\x16CreateMaterialResponse\x123\n" +
-	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"\x95\x02\n" +
+	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"\xc4\x02\n" +
 	"\x15UpdateMaterialRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x10\n" +
@@ -1590,7 +1688,9 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"extractPct\x12&\n" +
 	"\x0fextract_pct_set\x18\a \x01(\bR\rextractPctSet\x12!\n" +
 	"\fmoisture_pct\x18\b \x01(\x01R\vmoisturePct\x12(\n" +
-	"\x10moisture_pct_set\x18\t \x01(\bR\x0emoisturePctSet\"M\n" +
+	"\x10moisture_pct_set\x18\t \x01(\bR\x0emoisturePctSet\x12-\n" +
+	"\x06cereal\x18\n" +
+	" \x01(\x0e2\x15.stillhouse.v1.CerealR\x06cereal\"M\n" +
 	"\x16UpdateMaterialResponse\x123\n" +
 	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"$\n" +
 	"\x12GetMaterialRequest\x12\x0e\n" +
@@ -1661,7 +1761,18 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x11MATERIAL_KIND_NGS\x10\x05\x12\x1b\n" +
 	"\x17MATERIAL_KIND_BOTANICAL\x10\x06\x12\x1b\n" +
 	"\x17MATERIAL_KIND_PACKAGING\x10\a\x12\x17\n" +
-	"\x13MATERIAL_KIND_OTHER\x10\b2\x89\a\n" +
+	"\x13MATERIAL_KIND_OTHER\x10\b*\x9a\x01\n" +
+	"\x06Cereal\x12\x16\n" +
+	"\x12CEREAL_UNSPECIFIED\x10\x00\x12\x11\n" +
+	"\rCEREAL_BARLEY\x10\x01\x12\x10\n" +
+	"\fCEREAL_WHEAT\x10\x02\x12\x0e\n" +
+	"\n" +
+	"CEREAL_RYE\x10\x03\x12\x10\n" +
+	"\fCEREAL_MAIZE\x10\x04\x12\x0f\n" +
+	"\vCEREAL_RICE\x10\x05\x12\x0e\n" +
+	"\n" +
+	"CEREAL_OAT\x10\x06\x12\x10\n" +
+	"\fCEREAL_OTHER\x10\a2\x89\a\n" +
 	"\x0fMaterialService\x12]\n" +
 	"\x0eCreateMaterial\x12$.stillhouse.v1.CreateMaterialRequest\x1a%.stillhouse.v1.CreateMaterialResponse\x12]\n" +
 	"\x0eUpdateMaterial\x12$.stillhouse.v1.UpdateMaterialRequest\x1a%.stillhouse.v1.UpdateMaterialResponse\x12T\n" +
@@ -1686,74 +1797,78 @@ func file_stillhouse_v1_material_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_material_proto_rawDescData
 }
 
-var file_stillhouse_v1_material_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_stillhouse_v1_material_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
 var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_stillhouse_v1_material_proto_goTypes = []any{
 	(MaterialKind)(0),                     // 0: stillhouse.v1.MaterialKind
-	(*Material)(nil),                      // 1: stillhouse.v1.Material
-	(*MaterialLot)(nil),                   // 2: stillhouse.v1.MaterialLot
-	(*CreateMaterialRequest)(nil),         // 3: stillhouse.v1.CreateMaterialRequest
-	(*CreateMaterialResponse)(nil),        // 4: stillhouse.v1.CreateMaterialResponse
-	(*UpdateMaterialRequest)(nil),         // 5: stillhouse.v1.UpdateMaterialRequest
-	(*UpdateMaterialResponse)(nil),        // 6: stillhouse.v1.UpdateMaterialResponse
-	(*GetMaterialRequest)(nil),            // 7: stillhouse.v1.GetMaterialRequest
-	(*GetMaterialResponse)(nil),           // 8: stillhouse.v1.GetMaterialResponse
-	(*ListMaterialsRequest)(nil),          // 9: stillhouse.v1.ListMaterialsRequest
-	(*ListMaterialsResponse)(nil),         // 10: stillhouse.v1.ListMaterialsResponse
-	(*ArchiveMaterialRequest)(nil),        // 11: stillhouse.v1.ArchiveMaterialRequest
-	(*ArchiveMaterialResponse)(nil),       // 12: stillhouse.v1.ArchiveMaterialResponse
-	(*RecordMaterialReceiptRequest)(nil),  // 13: stillhouse.v1.RecordMaterialReceiptRequest
-	(*RecordMaterialReceiptResponse)(nil), // 14: stillhouse.v1.RecordMaterialReceiptResponse
-	(*ListMaterialLotsRequest)(nil),       // 15: stillhouse.v1.ListMaterialLotsRequest
-	(*ListMaterialLotsResponse)(nil),      // 16: stillhouse.v1.ListMaterialLotsResponse
-	(*ProductCostSummaryRequest)(nil),     // 17: stillhouse.v1.ProductCostSummaryRequest
-	(*ProductCostSummaryResponse)(nil),    // 18: stillhouse.v1.ProductCostSummaryResponse
-	(*BottlingRunCostRequest)(nil),        // 19: stillhouse.v1.BottlingRunCostRequest
-	(*BottlingRunCostLine)(nil),           // 20: stillhouse.v1.BottlingRunCostLine
-	(*BottlingRunCostResponse)(nil),       // 21: stillhouse.v1.BottlingRunCostResponse
-	(*timestamppb.Timestamp)(nil),         // 22: google.protobuf.Timestamp
+	(Cereal)(0),                           // 1: stillhouse.v1.Cereal
+	(*Material)(nil),                      // 2: stillhouse.v1.Material
+	(*MaterialLot)(nil),                   // 3: stillhouse.v1.MaterialLot
+	(*CreateMaterialRequest)(nil),         // 4: stillhouse.v1.CreateMaterialRequest
+	(*CreateMaterialResponse)(nil),        // 5: stillhouse.v1.CreateMaterialResponse
+	(*UpdateMaterialRequest)(nil),         // 6: stillhouse.v1.UpdateMaterialRequest
+	(*UpdateMaterialResponse)(nil),        // 7: stillhouse.v1.UpdateMaterialResponse
+	(*GetMaterialRequest)(nil),            // 8: stillhouse.v1.GetMaterialRequest
+	(*GetMaterialResponse)(nil),           // 9: stillhouse.v1.GetMaterialResponse
+	(*ListMaterialsRequest)(nil),          // 10: stillhouse.v1.ListMaterialsRequest
+	(*ListMaterialsResponse)(nil),         // 11: stillhouse.v1.ListMaterialsResponse
+	(*ArchiveMaterialRequest)(nil),        // 12: stillhouse.v1.ArchiveMaterialRequest
+	(*ArchiveMaterialResponse)(nil),       // 13: stillhouse.v1.ArchiveMaterialResponse
+	(*RecordMaterialReceiptRequest)(nil),  // 14: stillhouse.v1.RecordMaterialReceiptRequest
+	(*RecordMaterialReceiptResponse)(nil), // 15: stillhouse.v1.RecordMaterialReceiptResponse
+	(*ListMaterialLotsRequest)(nil),       // 16: stillhouse.v1.ListMaterialLotsRequest
+	(*ListMaterialLotsResponse)(nil),      // 17: stillhouse.v1.ListMaterialLotsResponse
+	(*ProductCostSummaryRequest)(nil),     // 18: stillhouse.v1.ProductCostSummaryRequest
+	(*ProductCostSummaryResponse)(nil),    // 19: stillhouse.v1.ProductCostSummaryResponse
+	(*BottlingRunCostRequest)(nil),        // 20: stillhouse.v1.BottlingRunCostRequest
+	(*BottlingRunCostLine)(nil),           // 21: stillhouse.v1.BottlingRunCostLine
+	(*BottlingRunCostResponse)(nil),       // 22: stillhouse.v1.BottlingRunCostResponse
+	(*timestamppb.Timestamp)(nil),         // 23: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.Material.kind:type_name -> stillhouse.v1.MaterialKind
-	22, // 1: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
-	22, // 2: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
-	22, // 3: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
-	22, // 4: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
-	22, // 5: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: stillhouse.v1.CreateMaterialRequest.kind:type_name -> stillhouse.v1.MaterialKind
-	1,  // 7: stillhouse.v1.CreateMaterialResponse.material:type_name -> stillhouse.v1.Material
-	1,  // 8: stillhouse.v1.UpdateMaterialResponse.material:type_name -> stillhouse.v1.Material
-	1,  // 9: stillhouse.v1.GetMaterialResponse.material:type_name -> stillhouse.v1.Material
-	0,  // 10: stillhouse.v1.ListMaterialsRequest.kind:type_name -> stillhouse.v1.MaterialKind
-	1,  // 11: stillhouse.v1.ListMaterialsResponse.materials:type_name -> stillhouse.v1.Material
-	1,  // 12: stillhouse.v1.ArchiveMaterialResponse.material:type_name -> stillhouse.v1.Material
-	22, // 13: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
-	2,  // 14: stillhouse.v1.RecordMaterialReceiptResponse.lot:type_name -> stillhouse.v1.MaterialLot
-	2,  // 15: stillhouse.v1.ListMaterialLotsResponse.lots:type_name -> stillhouse.v1.MaterialLot
-	20, // 16: stillhouse.v1.BottlingRunCostResponse.lines:type_name -> stillhouse.v1.BottlingRunCostLine
-	3,  // 17: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
-	5,  // 18: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
-	7,  // 19: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
-	9,  // 20: stillhouse.v1.MaterialService.ListMaterials:input_type -> stillhouse.v1.ListMaterialsRequest
-	11, // 21: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
-	13, // 22: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
-	15, // 23: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
-	19, // 24: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
-	17, // 25: stillhouse.v1.MaterialService.ProductCostSummary:input_type -> stillhouse.v1.ProductCostSummaryRequest
-	4,  // 26: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
-	6,  // 27: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
-	8,  // 28: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
-	10, // 29: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
-	12, // 30: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
-	14, // 31: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
-	16, // 32: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
-	21, // 33: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
-	18, // 34: stillhouse.v1.MaterialService.ProductCostSummary:output_type -> stillhouse.v1.ProductCostSummaryResponse
-	26, // [26:35] is the sub-list for method output_type
-	17, // [17:26] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	1,  // 1: stillhouse.v1.Material.cereal:type_name -> stillhouse.v1.Cereal
+	23, // 2: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
+	23, // 3: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
+	23, // 4: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
+	23, // 5: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
+	23, // 6: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 7: stillhouse.v1.CreateMaterialRequest.kind:type_name -> stillhouse.v1.MaterialKind
+	1,  // 8: stillhouse.v1.CreateMaterialRequest.cereal:type_name -> stillhouse.v1.Cereal
+	2,  // 9: stillhouse.v1.CreateMaterialResponse.material:type_name -> stillhouse.v1.Material
+	1,  // 10: stillhouse.v1.UpdateMaterialRequest.cereal:type_name -> stillhouse.v1.Cereal
+	2,  // 11: stillhouse.v1.UpdateMaterialResponse.material:type_name -> stillhouse.v1.Material
+	2,  // 12: stillhouse.v1.GetMaterialResponse.material:type_name -> stillhouse.v1.Material
+	0,  // 13: stillhouse.v1.ListMaterialsRequest.kind:type_name -> stillhouse.v1.MaterialKind
+	2,  // 14: stillhouse.v1.ListMaterialsResponse.materials:type_name -> stillhouse.v1.Material
+	2,  // 15: stillhouse.v1.ArchiveMaterialResponse.material:type_name -> stillhouse.v1.Material
+	23, // 16: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
+	3,  // 17: stillhouse.v1.RecordMaterialReceiptResponse.lot:type_name -> stillhouse.v1.MaterialLot
+	3,  // 18: stillhouse.v1.ListMaterialLotsResponse.lots:type_name -> stillhouse.v1.MaterialLot
+	21, // 19: stillhouse.v1.BottlingRunCostResponse.lines:type_name -> stillhouse.v1.BottlingRunCostLine
+	4,  // 20: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
+	6,  // 21: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
+	8,  // 22: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
+	10, // 23: stillhouse.v1.MaterialService.ListMaterials:input_type -> stillhouse.v1.ListMaterialsRequest
+	12, // 24: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
+	14, // 25: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
+	16, // 26: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
+	20, // 27: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
+	18, // 28: stillhouse.v1.MaterialService.ProductCostSummary:input_type -> stillhouse.v1.ProductCostSummaryRequest
+	5,  // 29: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
+	7,  // 30: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
+	9,  // 31: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
+	11, // 32: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
+	13, // 33: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
+	15, // 34: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
+	17, // 35: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
+	22, // 36: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
+	19, // 37: stillhouse.v1.MaterialService.ProductCostSummary:output_type -> stillhouse.v1.ProductCostSummaryResponse
+	29, // [29:38] is the sub-list for method output_type
+	20, // [20:29] is the sub-list for method input_type
+	20, // [20:20] is the sub-list for extension type_name
+	20, // [20:20] is the sub-list for extension extendee
+	0,  // [0:20] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_material_proto_init() }
@@ -1766,7 +1881,7 @@ func file_stillhouse_v1_material_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_material_proto_rawDesc), len(file_stillhouse_v1_material_proto_rawDesc)),
-			NumEnums:      1,
+			NumEnums:      2,
 			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,

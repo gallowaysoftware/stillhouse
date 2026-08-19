@@ -25,6 +25,8 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addListRecipeVersions(s, d, user)
 	addListProducts(s, d, user)
 	addListB266Periods(s, d, user)
+	addGetMash(s, d, user)
+	addPlanStrike(s, d, user)
 }
 
 // dashboardOutput is a compact rollup useful as the "what's the state
@@ -234,6 +236,62 @@ func addListB266Periods(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
 		resp, err := d.B266.ListB266Periods(ctx, connect.NewRequest(&pb.ListB266PeriodsRequest{}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+// addGetMash exposes the mash bench: the grain bill, the readings taken so
+// far, and the guidance derived from them — gelatinisation requirement,
+// conversion window, whether the bill forces a separate cereal cook, mash
+// thickness, and conversion efficiency once an OG is recorded.
+//
+// This is the read an operator wants mid-mash, and the one an LLM needs
+// before it can answer "is this mash going the way it should?".
+func addGetMash(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		MashRunID string `json:"mash_run_id" jsonschema:"UUID of the mash run"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "get_mash",
+		Description: "Read a mash run: grain bill, recorded metrics, projected vs captured LAA, and the mash bench — " +
+			"gelatinisation range required by the bill's cereals, the 60–70 °C conversion window, whether a separate " +
+			"cereal cook is required (maize and rice force one), mash thickness, conversion efficiency from OG, and " +
+			"any findings about temperature, pH or thickness being out of band.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		resp, err := d.Mash.GetMashRun(ctx, connect.NewRequest(&pb.GetMashRunRequest{
+			Id: args.MashRunID,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+// addPlanStrike answers the question asked while the liquor is heating.
+func addPlanStrike(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		TargetTempC     float64 `json:"target_temp_c" jsonschema:"the rest temperature you want the mash to land on, °C"`
+		GrainTempC      float64 `json:"grain_temp_c" jsonschema:"current temperature of the grain, °C (ambient store temperature is usually right)"`
+		ThicknessLPerKg float64 `json:"thickness_l_per_kg" jsonschema:"mash thickness in litres of liquor per kilogram of grain; 2.5-3.5 is the usual band"`
+		GrainKg         float64 `json:"grain_kg,omitempty" jsonschema:"optional grain mass; when supplied the response also gives the liquor volume needed"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "plan_strike",
+		Description: "Calculate the strike temperature: how hot to heat the mash liquor so the grain lands on the target " +
+			"rest temperature. Flags the case where the required liquor temperature would denature the amylases on contact.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx = withUser(ctx, user)
+		resp, err := d.Mash.PlanStrike(ctx, connect.NewRequest(&pb.PlanStrikeRequest{
+			TargetTempC:     args.TargetTempC,
+			GrainTempC:      args.GrainTempC,
+			ThicknessLPerKg: args.ThicknessLPerKg,
+			GrainKg:         args.GrainKg,
+		}))
 		if err != nil {
 			return errResult(err), nil, nil
 		}

@@ -8,7 +8,7 @@ import {
 } from "@/gen/stillhouse/v1/distillation_pb";
 import { FermentationStatus } from "@/gen/stillhouse/v1/fermentation_pb";
 import { MashMetricKind, MashStatus } from "@/gen/stillhouse/v1/mash_pb";
-import { MaterialKind } from "@/gen/stillhouse/v1/material_pb";
+import { Cereal, MaterialKind } from "@/gen/stillhouse/v1/material_pb";
 import { BotanicalRole, DistillationMethod, SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
 
 const laaFormatter = new Intl.NumberFormat("en-CA", {
@@ -134,6 +134,7 @@ const mashMetricKindLabels = new Map<MashMetricKind, string>([
   [MashMetricKind.MASH_TEMP_C, "Mash temp (°C)"],
   [MashMetricKind.WATER_VOLUME_L, "Water volume (L)"],
   [MashMetricKind.STRIKE_TEMP_C, "Strike temp (°C)"],
+  [MashMetricKind.WASH_VOLUME_L, "Wash volume (L)"],
   [MashMetricKind.OTHER, "Other"],
 ]);
 
@@ -207,3 +208,33 @@ const cutKindLabels = new Map<DistillationCutKind, string>([
 export function cutKindLabel(k: DistillationCutKind): string {
   return cutKindLabels.get(k) ?? "Unknown";
 }
+
+// Cereal — grain species. Gelatinisation temperature is a property of the
+// starch granule, so this (not malted/unmalted) is what drives the mash
+// bench's temperature guidance. The hints carry the published range so the
+// operator can see why the choice matters while making it.
+const cerealLabels = new Map<Cereal, string>([
+  [Cereal.UNSPECIFIED, "—"],
+  [Cereal.BARLEY, "Barley"],
+  [Cereal.WHEAT, "Wheat"],
+  [Cereal.RYE, "Rye"],
+  [Cereal.MAIZE, "Maize / corn"],
+  [Cereal.RICE, "Rice"],
+  [Cereal.OAT, "Oat"],
+  [Cereal.OTHER, "Other"],
+]);
+
+export function cerealLabel(c: Cereal): string {
+  return cerealLabels.get(c) ?? "—";
+}
+
+export const CEREAL_OPTIONS: Array<{ value: Cereal; label: string; hint?: string }> = [
+  { value: Cereal.UNSPECIFIED, label: "— not set —", hint: "no temperature guidance" },
+  { value: Cereal.BARLEY, label: "Barley", hint: "gelatinises 61–62 °C" },
+  { value: Cereal.WHEAT, label: "Wheat", hint: "gelatinises 52–65 °C" },
+  { value: Cereal.RYE, label: "Rye", hint: "gelatinises 60–65 °C" },
+  { value: Cereal.MAIZE, label: "Maize / corn", hint: "70–80 °C — needs a cereal cook" },
+  { value: Cereal.RICE, label: "Rice", hint: "70–80 °C — needs a cereal cook" },
+  { value: Cereal.OAT, label: "Oat", hint: "no published range" },
+  { value: Cereal.OTHER, label: "Other", hint: "no published range" },
+];

@@ -143,6 +143,7 @@ func (s *MashService) GetMashRun(
 	out := mashRunToProto(mash, recipeName, versionNo, ingredients, metrics)
 	out.ProjectedLaa = projectMashLAA(ingredients, recipeVer)
 	out.ActualCapturedLaa = capturedLAA
+	out.Bench = buildMashBench(ingredients, metrics)
 	return connect.NewResponse(&stillhousev1.GetMashRunResponse{
 		MashRun: out,
 	}), nil
@@ -324,8 +325,8 @@ func (s *MashService) AddMashIngredient(
 		// stock surfaces as a clean FailedPrecondition rather than a 500.
 		if lotID.Valid {
 			if _, e := q.DebitMaterialLot(ctx, sqlcgen.DebitMaterialLotParams{
-				ID:              lotID.UUID,
-				QuantityOnHand:  req.Msg.GetQuantityUsed(),
+				ID:             lotID.UUID,
+				QuantityOnHand: req.Msg.GetQuantityUsed(),
 			}); e != nil {
 				if errors.Is(e, pgx.ErrNoRows) {
 					return connect.NewError(connect.CodeFailedPrecondition,

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { MashBench } from "@/components/MashBench";
 import { Shell } from "@/components/Shell";
 import { fermentationClient, mashClient, materialClient } from "@/lib/clients";
 import type { Material, MaterialLot } from "@/gen/stillhouse/v1/material_pb";
@@ -28,6 +29,7 @@ const metricKindOptions = [
   { value: MashMetricKind.MASH_PH, label: "Mash pH", unit: "" },
   { value: MashMetricKind.MASH_TEMP_C, label: "Mash temp (°C)", unit: "°C" },
   { value: MashMetricKind.WATER_VOLUME_L, label: "Water volume (L)", unit: "L" },
+  { value: MashMetricKind.WASH_VOLUME_L, label: "Wash volume (L)", unit: "L" },
   { value: MashMetricKind.STRIKE_TEMP_C, label: "Strike temp (°C)", unit: "°C" },
   { value: MashMetricKind.OTHER, label: "Other", unit: "" },
 ];
@@ -124,6 +126,8 @@ export function MashDetailPage() {
       </header>
 
       {m.notes && <p className="mb-6 rounded bg-surface-2 p-4 text-sm text-fg shadow-sm">{m.notes}</p>}
+
+      {m.bench && <MashBench bench={m.bench} />}
 
       <section className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <ProjStat

@@ -40,6 +40,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 115 | Sensory gin-only gate now surfaces as failed_precondition (was getting swallowed as internal error by the handler's catch-all) |
 | 116 | Whisky tasting bench — SWRI Flavour Wheel axes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) + body / finish / overall; backend + MCP `save_recipe_version_whisky_sensory` + web UI for whisky-family recipes |
 | 117 | Strength at 20 °C — gauges resolve through the CRA Canadian Alcoholometric Tables 1980; hydrometer indication + temperature determine both strength and volume, the as-observed reading is kept for audit, and every reading records which determination path produced it |
+| 118 | Mash bench — cereal species on materials drives gelatinisation guidance off the real grain bill; flags when maize or rice force a separate cereal cook, checks mash temp / pH / thickness against the amylase bands, computes conversion efficiency from OG, and calculates strike temperature. MCP `get_mash` + `plan_strike` |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
@@ -56,6 +57,12 @@ month.* Achieved at Stage 7.
   per-request `app.current_tenant_id` GUC. Migrations run as a superuser;
   the application connects as a separate non-super role (`stillhouse_app`)
   so the RLS policies actually enforce. One tenant = one CRA spirits licence.
+- **Mash guidance** — gelatinisation ranges, amylase activity windows, pH
+  and thickness bands come from the IBD/CIBD distilling curriculum and are
+  cited on the constant that carries them
+  ([backend/internal/mashing](backend/internal/mashing/)). Where the
+  curriculum gives no figure for a cereal, Stillhouse reports it as unknown
+  rather than interpolating.
 - **Alcoholometry** — strength and volume are resolved to 20 °C against the
   CRA [Canadian Alcoholometric Tables 1980](https://www.canada.ca/en/revenue-agency/services/tax/technical-information/excise-duty/tables-alcoholometry/canadian-alcoholometric-tables-1980.html),
   computed from the OIML general formula (International Recommendation
@@ -158,6 +165,13 @@ Configure a remote MCP server pointing at your Stillhouse install:
   `list_recipes`, `list_products`, `list_b266_periods`
 - **Capture** — `fill_barrel`, `regauge_barrel`, `dump_barrel`,
   `add_fermentation_reading`, `add_mash_reading`
+- **Bench** — `get_mash` (grain bill + readings + mash guidance),
+  `plan_strike` (strike temperature for a target rest)
+
+Barrel fill / regauge / dump and the production gauge accept a hydrometer
+indication (`density_kg_m3`) plus `temperature_c`; supply both and the
+strength and volume are resolved to 20 °C through the published CRA tables
+rather than taken as typed.
 
 Back-office work (distillation runs with cuts, bottling, removals,
 B266 generation) stays in the web UI — those flows have multi-row

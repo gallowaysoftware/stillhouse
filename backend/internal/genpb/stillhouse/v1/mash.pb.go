@@ -90,6 +90,11 @@ const (
 	MashMetricKind_MASH_METRIC_KIND_WATER_VOLUME_L   MashMetricKind = 4
 	MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C    MashMetricKind = 5
 	MashMetricKind_MASH_METRIC_KIND_OTHER            MashMetricKind = 6
+	// Measured total volume of the mash/wash. A distilling wash isn't
+	// lautered and boiled, so it's close to water + grain displacement —
+	// but conversion efficiency is computed against it, so a measurement
+	// beats an estimate.
+	MashMetricKind_MASH_METRIC_KIND_WASH_VOLUME_L MashMetricKind = 7
 )
 
 // Enum value maps for MashMetricKind.
@@ -102,6 +107,7 @@ var (
 		4: "MASH_METRIC_KIND_WATER_VOLUME_L",
 		5: "MASH_METRIC_KIND_STRIKE_TEMP_C",
 		6: "MASH_METRIC_KIND_OTHER",
+		7: "MASH_METRIC_KIND_WASH_VOLUME_L",
 	}
 	MashMetricKind_value = map[string]int32{
 		"MASH_METRIC_KIND_UNSPECIFIED":      0,
@@ -111,6 +117,7 @@ var (
 		"MASH_METRIC_KIND_WATER_VOLUME_L":   4,
 		"MASH_METRIC_KIND_STRIKE_TEMP_C":    5,
 		"MASH_METRIC_KIND_OTHER":            6,
+		"MASH_METRIC_KIND_WASH_VOLUME_L":    7,
 	}
 )
 
@@ -139,6 +146,405 @@ func (x MashMetricKind) Number() protoreflect.EnumNumber {
 // Deprecated: Use MashMetricKind.Descriptor instead.
 func (MashMetricKind) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{1}
+}
+
+// How serious a bench finding is. Advisory only — nothing here blocks a
+// write.
+type MashFindingSeverity int32
+
+const (
+	MashFindingSeverity_MASH_FINDING_SEVERITY_UNSPECIFIED MashFindingSeverity = 0
+	MashFindingSeverity_MASH_FINDING_SEVERITY_INFO        MashFindingSeverity = 1
+	MashFindingSeverity_MASH_FINDING_SEVERITY_WARNING     MashFindingSeverity = 2
+	MashFindingSeverity_MASH_FINDING_SEVERITY_PROBLEM     MashFindingSeverity = 3
+)
+
+// Enum value maps for MashFindingSeverity.
+var (
+	MashFindingSeverity_name = map[int32]string{
+		0: "MASH_FINDING_SEVERITY_UNSPECIFIED",
+		1: "MASH_FINDING_SEVERITY_INFO",
+		2: "MASH_FINDING_SEVERITY_WARNING",
+		3: "MASH_FINDING_SEVERITY_PROBLEM",
+	}
+	MashFindingSeverity_value = map[string]int32{
+		"MASH_FINDING_SEVERITY_UNSPECIFIED": 0,
+		"MASH_FINDING_SEVERITY_INFO":        1,
+		"MASH_FINDING_SEVERITY_WARNING":     2,
+		"MASH_FINDING_SEVERITY_PROBLEM":     3,
+	}
+)
+
+func (x MashFindingSeverity) Enum() *MashFindingSeverity {
+	p := new(MashFindingSeverity)
+	*p = x
+	return p
+}
+
+func (x MashFindingSeverity) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MashFindingSeverity) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_mash_proto_enumTypes[2].Descriptor()
+}
+
+func (MashFindingSeverity) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_mash_proto_enumTypes[2]
+}
+
+func (x MashFindingSeverity) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MashFindingSeverity.Descriptor instead.
+func (MashFindingSeverity) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{2}
+}
+
+type MashFinding struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Severity MashFindingSeverity    `protobuf:"varint,1,opt,name=severity,proto3,enum=stillhouse.v1.MashFindingSeverity" json:"severity,omitempty"`
+	// Stable identifier so the UI can style or link a finding without
+	// matching on prose.
+	Code  string `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Title string `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	// The consequence — the part that changes what an operator does.
+	Detail        string `protobuf:"bytes,4,opt,name=detail,proto3" json:"detail,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MashFinding) Reset() {
+	*x = MashFinding{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MashFinding) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MashFinding) ProtoMessage() {}
+
+func (x *MashFinding) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MashFinding.ProtoReflect.Descriptor instead.
+func (*MashFinding) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *MashFinding) GetSeverity() MashFindingSeverity {
+	if x != nil {
+		return x.Severity
+	}
+	return MashFindingSeverity_MASH_FINDING_SEVERITY_UNSPECIFIED
+}
+
+func (x *MashFinding) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *MashFinding) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *MashFinding) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+// Inclusive temperature band, °C.
+type TemperatureRange struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MinC          float64                `protobuf:"fixed64,1,opt,name=min_c,json=minC,proto3" json:"min_c,omitempty"`
+	MaxC          float64                `protobuf:"fixed64,2,opt,name=max_c,json=maxC,proto3" json:"max_c,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TemperatureRange) Reset() {
+	*x = TemperatureRange{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TemperatureRange) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TemperatureRange) ProtoMessage() {}
+
+func (x *TemperatureRange) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TemperatureRange.ProtoReflect.Descriptor instead.
+func (*TemperatureRange) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TemperatureRange) GetMinC() float64 {
+	if x != nil {
+		return x.MinC
+	}
+	return 0
+}
+
+func (x *TemperatureRange) GetMaxC() float64 {
+	if x != nil {
+		return x.MaxC
+	}
+	return 0
+}
+
+// MashEfficiency is conversion measured at the tun from original gravity,
+// rather than inferred weeks later from what the still gave back.
+type MashEfficiency struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	OriginalGravity float64                `protobuf:"fixed64,1,opt,name=original_gravity,json=originalGravity,proto3" json:"original_gravity,omitempty"`
+	Plato           float64                `protobuf:"fixed64,2,opt,name=plato,proto3" json:"plato,omitempty"`
+	WashVolumeL     float64                `protobuf:"fixed64,3,opt,name=wash_volume_l,json=washVolumeL,proto3" json:"wash_volume_l,omitempty"`
+	// True when wash_volume_l was estimated from water + grain displacement
+	// rather than measured.
+	WashVolumeEstimated bool    `protobuf:"varint,4,opt,name=wash_volume_estimated,json=washVolumeEstimated,proto3" json:"wash_volume_estimated,omitempty"`
+	ExtractMeasuredKg   float64 `protobuf:"fixed64,5,opt,name=extract_measured_kg,json=extractMeasuredKg,proto3" json:"extract_measured_kg,omitempty"`
+	ExtractAvailableKg  float64 `protobuf:"fixed64,6,opt,name=extract_available_kg,json=extractAvailableKg,proto3" json:"extract_available_kg,omitempty"`
+	Pct                 float64 `protobuf:"fixed64,7,opt,name=pct,proto3" json:"pct,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *MashEfficiency) Reset() {
+	*x = MashEfficiency{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MashEfficiency) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MashEfficiency) ProtoMessage() {}
+
+func (x *MashEfficiency) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MashEfficiency.ProtoReflect.Descriptor instead.
+func (*MashEfficiency) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *MashEfficiency) GetOriginalGravity() float64 {
+	if x != nil {
+		return x.OriginalGravity
+	}
+	return 0
+}
+
+func (x *MashEfficiency) GetPlato() float64 {
+	if x != nil {
+		return x.Plato
+	}
+	return 0
+}
+
+func (x *MashEfficiency) GetWashVolumeL() float64 {
+	if x != nil {
+		return x.WashVolumeL
+	}
+	return 0
+}
+
+func (x *MashEfficiency) GetWashVolumeEstimated() bool {
+	if x != nil {
+		return x.WashVolumeEstimated
+	}
+	return false
+}
+
+func (x *MashEfficiency) GetExtractMeasuredKg() float64 {
+	if x != nil {
+		return x.ExtractMeasuredKg
+	}
+	return 0
+}
+
+func (x *MashEfficiency) GetExtractAvailableKg() float64 {
+	if x != nil {
+		return x.ExtractAvailableKg
+	}
+	return 0
+}
+
+func (x *MashEfficiency) GetPct() float64 {
+	if x != nil {
+		return x.Pct
+	}
+	return 0
+}
+
+// MashBench is the guidance derived from a mash's actual grain bill and
+// recorded readings. Sourced from the IBD/CIBD distilling curriculum.
+type MashBench struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The band the bill as a whole must reach to gelatinise: the hottest
+	// requirement across its cereals.
+	GelatinisationC *TemperatureRange `protobuf:"bytes,1,opt,name=gelatinisation_c,json=gelatinisationC,proto3" json:"gelatinisation_c,omitempty"`
+	// False when a fermentable has no published gelatinisation range, so
+	// the requirement above may be understated.
+	GelatinisationKnown bool `protobuf:"varint,2,opt,name=gelatinisation_known,json=gelatinisationKnown,proto3" json:"gelatinisation_known,omitempty"`
+	// Where the amylases work.
+	ConversionC *TemperatureRange `protobuf:"bytes,3,opt,name=conversion_c,json=conversionC,proto3" json:"conversion_c,omitempty"`
+	// Set when the bill can't be gelatinised and converted in one rest —
+	// maize and rice force a separate cereal cook.
+	CerealCookRequired bool            `protobuf:"varint,4,opt,name=cereal_cook_required,json=cerealCookRequired,proto3" json:"cereal_cook_required,omitempty"`
+	ThicknessLPerKg    float64         `protobuf:"fixed64,5,opt,name=thickness_l_per_kg,json=thicknessLPerKg,proto3" json:"thickness_l_per_kg,omitempty"`
+	ThicknessLPerKgSet bool            `protobuf:"varint,6,opt,name=thickness_l_per_kg_set,json=thicknessLPerKgSet,proto3" json:"thickness_l_per_kg_set,omitempty"`
+	Efficiency         *MashEfficiency `protobuf:"bytes,7,opt,name=efficiency,proto3" json:"efficiency,omitempty"`
+	EfficiencySet      bool            `protobuf:"varint,8,opt,name=efficiency_set,json=efficiencySet,proto3" json:"efficiency_set,omitempty"`
+	TotalGrainKg       float64         `protobuf:"fixed64,9,opt,name=total_grain_kg,json=totalGrainKg,proto3" json:"total_grain_kg,omitempty"`
+	Findings           []*MashFinding  `protobuf:"bytes,10,rep,name=findings,proto3" json:"findings,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *MashBench) Reset() {
+	*x = MashBench{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MashBench) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MashBench) ProtoMessage() {}
+
+func (x *MashBench) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MashBench.ProtoReflect.Descriptor instead.
+func (*MashBench) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *MashBench) GetGelatinisationC() *TemperatureRange {
+	if x != nil {
+		return x.GelatinisationC
+	}
+	return nil
+}
+
+func (x *MashBench) GetGelatinisationKnown() bool {
+	if x != nil {
+		return x.GelatinisationKnown
+	}
+	return false
+}
+
+func (x *MashBench) GetConversionC() *TemperatureRange {
+	if x != nil {
+		return x.ConversionC
+	}
+	return nil
+}
+
+func (x *MashBench) GetCerealCookRequired() bool {
+	if x != nil {
+		return x.CerealCookRequired
+	}
+	return false
+}
+
+func (x *MashBench) GetThicknessLPerKg() float64 {
+	if x != nil {
+		return x.ThicknessLPerKg
+	}
+	return 0
+}
+
+func (x *MashBench) GetThicknessLPerKgSet() bool {
+	if x != nil {
+		return x.ThicknessLPerKgSet
+	}
+	return false
+}
+
+func (x *MashBench) GetEfficiency() *MashEfficiency {
+	if x != nil {
+		return x.Efficiency
+	}
+	return nil
+}
+
+func (x *MashBench) GetEfficiencySet() bool {
+	if x != nil {
+		return x.EfficiencySet
+	}
+	return false
+}
+
+func (x *MashBench) GetTotalGrainKg() float64 {
+	if x != nil {
+		return x.TotalGrainKg
+	}
+	return 0
+}
+
+func (x *MashBench) GetFindings() []*MashFinding {
+	if x != nil {
+		return x.Findings
+	}
+	return nil
 }
 
 type MashRun struct {
@@ -170,13 +576,16 @@ type MashRun struct {
 	// that charged from any fermentation_run belonging to this mash. Zero
 	// until the downstream distillation has been gauged.
 	ActualCapturedLaa float64 `protobuf:"fixed64,15,opt,name=actual_captured_laa,json=actualCapturedLaa,proto3" json:"actual_captured_laa,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// Mash bench guidance, populated by GetMashRun from the grain bill and
+	// recorded metrics.
+	Bench         *MashBench `protobuf:"bytes,16,opt,name=bench,proto3" json:"bench,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *MashRun) Reset() {
 	*x = MashRun{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -188,7 +597,7 @@ func (x *MashRun) String() string {
 func (*MashRun) ProtoMessage() {}
 
 func (x *MashRun) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -201,7 +610,7 @@ func (x *MashRun) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MashRun.ProtoReflect.Descriptor instead.
 func (*MashRun) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{0}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *MashRun) GetId() string {
@@ -309,6 +718,13 @@ func (x *MashRun) GetActualCapturedLaa() float64 {
 	return 0
 }
 
+func (x *MashRun) GetBench() *MashBench {
+	if x != nil {
+		return x.Bench
+	}
+	return nil
+}
+
 type MashIngredientUsage struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -331,7 +747,7 @@ type MashIngredientUsage struct {
 
 func (x *MashIngredientUsage) Reset() {
 	*x = MashIngredientUsage{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -343,7 +759,7 @@ func (x *MashIngredientUsage) String() string {
 func (*MashIngredientUsage) ProtoMessage() {}
 
 func (x *MashIngredientUsage) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -356,7 +772,7 @@ func (x *MashIngredientUsage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MashIngredientUsage.ProtoReflect.Descriptor instead.
 func (*MashIngredientUsage) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *MashIngredientUsage) GetId() string {
@@ -472,7 +888,7 @@ type MashMetric struct {
 
 func (x *MashMetric) Reset() {
 	*x = MashMetric{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -484,7 +900,7 @@ func (x *MashMetric) String() string {
 func (*MashMetric) ProtoMessage() {}
 
 func (x *MashMetric) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -497,7 +913,7 @@ func (x *MashMetric) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MashMetric.ProtoReflect.Descriptor instead.
 func (*MashMetric) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *MashMetric) GetId() string {
@@ -560,7 +976,7 @@ type CreateMashRunRequest struct {
 
 func (x *CreateMashRunRequest) Reset() {
 	*x = CreateMashRunRequest{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -572,7 +988,7 @@ func (x *CreateMashRunRequest) String() string {
 func (*CreateMashRunRequest) ProtoMessage() {}
 
 func (x *CreateMashRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -585,7 +1001,7 @@ func (x *CreateMashRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMashRunRequest.ProtoReflect.Descriptor instead.
 func (*CreateMashRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateMashRunRequest) GetRecipeVersionId() string {
@@ -618,7 +1034,7 @@ type CreateMashRunResponse struct {
 
 func (x *CreateMashRunResponse) Reset() {
 	*x = CreateMashRunResponse{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -630,7 +1046,7 @@ func (x *CreateMashRunResponse) String() string {
 func (*CreateMashRunResponse) ProtoMessage() {}
 
 func (x *CreateMashRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -643,7 +1059,7 @@ func (x *CreateMashRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateMashRunResponse.ProtoReflect.Descriptor instead.
 func (*CreateMashRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreateMashRunResponse) GetMashRun() *MashRun {
@@ -662,7 +1078,7 @@ type GetMashRunRequest struct {
 
 func (x *GetMashRunRequest) Reset() {
 	*x = GetMashRunRequest{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -674,7 +1090,7 @@ func (x *GetMashRunRequest) String() string {
 func (*GetMashRunRequest) ProtoMessage() {}
 
 func (x *GetMashRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -687,7 +1103,7 @@ func (x *GetMashRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMashRunRequest.ProtoReflect.Descriptor instead.
 func (*GetMashRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetMashRunRequest) GetId() string {
@@ -706,7 +1122,7 @@ type GetMashRunResponse struct {
 
 func (x *GetMashRunResponse) Reset() {
 	*x = GetMashRunResponse{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -718,7 +1134,7 @@ func (x *GetMashRunResponse) String() string {
 func (*GetMashRunResponse) ProtoMessage() {}
 
 func (x *GetMashRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -731,7 +1147,7 @@ func (x *GetMashRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMashRunResponse.ProtoReflect.Descriptor instead.
 func (*GetMashRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetMashRunResponse) GetMashRun() *MashRun {
@@ -751,7 +1167,7 @@ type ListMashRunsRequest struct {
 
 func (x *ListMashRunsRequest) Reset() {
 	*x = ListMashRunsRequest{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -763,7 +1179,7 @@ func (x *ListMashRunsRequest) String() string {
 func (*ListMashRunsRequest) ProtoMessage() {}
 
 func (x *ListMashRunsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -776,7 +1192,7 @@ func (x *ListMashRunsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMashRunsRequest.ProtoReflect.Descriptor instead.
 func (*ListMashRunsRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListMashRunsRequest) GetRecipeId() string {
@@ -802,7 +1218,7 @@ type ListMashRunsResponse struct {
 
 func (x *ListMashRunsResponse) Reset() {
 	*x = ListMashRunsResponse{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -814,7 +1230,7 @@ func (x *ListMashRunsResponse) String() string {
 func (*ListMashRunsResponse) ProtoMessage() {}
 
 func (x *ListMashRunsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -827,7 +1243,7 @@ func (x *ListMashRunsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListMashRunsResponse.ProtoReflect.Descriptor instead.
 func (*ListMashRunsResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListMashRunsResponse) GetMashRuns() []*MashRun {
@@ -847,7 +1263,7 @@ type UpdateMashStatusRequest struct {
 
 func (x *UpdateMashStatusRequest) Reset() {
 	*x = UpdateMashStatusRequest{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -859,7 +1275,7 @@ func (x *UpdateMashStatusRequest) String() string {
 func (*UpdateMashStatusRequest) ProtoMessage() {}
 
 func (x *UpdateMashStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -872,7 +1288,7 @@ func (x *UpdateMashStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMashStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMashStatusRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UpdateMashStatusRequest) GetId() string {
@@ -898,7 +1314,7 @@ type UpdateMashStatusResponse struct {
 
 func (x *UpdateMashStatusResponse) Reset() {
 	*x = UpdateMashStatusResponse{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -910,7 +1326,7 @@ func (x *UpdateMashStatusResponse) String() string {
 func (*UpdateMashStatusResponse) ProtoMessage() {}
 
 func (x *UpdateMashStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -923,7 +1339,7 @@ func (x *UpdateMashStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMashStatusResponse.ProtoReflect.Descriptor instead.
 func (*UpdateMashStatusResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateMashStatusResponse) GetMashRun() *MashRun {
@@ -947,7 +1363,7 @@ type AddMashIngredientRequest struct {
 
 func (x *AddMashIngredientRequest) Reset() {
 	*x = AddMashIngredientRequest{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -959,7 +1375,7 @@ func (x *AddMashIngredientRequest) String() string {
 func (*AddMashIngredientRequest) ProtoMessage() {}
 
 func (x *AddMashIngredientRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -972,7 +1388,7 @@ func (x *AddMashIngredientRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMashIngredientRequest.ProtoReflect.Descriptor instead.
 func (*AddMashIngredientRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *AddMashIngredientRequest) GetMashRunId() string {
@@ -1026,7 +1442,7 @@ type AddMashIngredientResponse struct {
 
 func (x *AddMashIngredientResponse) Reset() {
 	*x = AddMashIngredientResponse{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1038,7 +1454,7 @@ func (x *AddMashIngredientResponse) String() string {
 func (*AddMashIngredientResponse) ProtoMessage() {}
 
 func (x *AddMashIngredientResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1051,7 +1467,7 @@ func (x *AddMashIngredientResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMashIngredientResponse.ProtoReflect.Descriptor instead.
 func (*AddMashIngredientResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{12}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *AddMashIngredientResponse) GetUsage() *MashIngredientUsage {
@@ -1075,7 +1491,7 @@ type AddMashMetricRequest struct {
 
 func (x *AddMashMetricRequest) Reset() {
 	*x = AddMashMetricRequest{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1087,7 +1503,7 @@ func (x *AddMashMetricRequest) String() string {
 func (*AddMashMetricRequest) ProtoMessage() {}
 
 func (x *AddMashMetricRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1100,7 +1516,7 @@ func (x *AddMashMetricRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMashMetricRequest.ProtoReflect.Descriptor instead.
 func (*AddMashMetricRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{13}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *AddMashMetricRequest) GetMashRunId() string {
@@ -1154,7 +1570,7 @@ type AddMashMetricResponse struct {
 
 func (x *AddMashMetricResponse) Reset() {
 	*x = AddMashMetricResponse{}
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1166,7 +1582,7 @@ func (x *AddMashMetricResponse) String() string {
 func (*AddMashMetricResponse) ProtoMessage() {}
 
 func (x *AddMashMetricResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_mash_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1179,7 +1595,7 @@ func (x *AddMashMetricResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMashMetricResponse.ProtoReflect.Descriptor instead.
 func (*AddMashMetricResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{14}
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *AddMashMetricResponse) GetMetric() *MashMetric {
@@ -1189,11 +1605,172 @@ func (x *AddMashMetricResponse) GetMetric() *MashMetric {
 	return nil
 }
 
+// PlanStrike answers the question asked while the liquor is heating: how
+// hot does the water need to be so the grain lands on the rest temperature?
+type PlanStrikeRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	TargetTempC     float64                `protobuf:"fixed64,1,opt,name=target_temp_c,json=targetTempC,proto3" json:"target_temp_c,omitempty"`
+	GrainTempC      float64                `protobuf:"fixed64,2,opt,name=grain_temp_c,json=grainTempC,proto3" json:"grain_temp_c,omitempty"`
+	ThicknessLPerKg float64                `protobuf:"fixed64,3,opt,name=thickness_l_per_kg,json=thicknessLPerKg,proto3" json:"thickness_l_per_kg,omitempty"`
+	// Optional. When set, the response carries the liquor volume needed.
+	GrainKg       float64 `protobuf:"fixed64,4,opt,name=grain_kg,json=grainKg,proto3" json:"grain_kg,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlanStrikeRequest) Reset() {
+	*x = PlanStrikeRequest{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanStrikeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanStrikeRequest) ProtoMessage() {}
+
+func (x *PlanStrikeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanStrikeRequest.ProtoReflect.Descriptor instead.
+func (*PlanStrikeRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *PlanStrikeRequest) GetTargetTempC() float64 {
+	if x != nil {
+		return x.TargetTempC
+	}
+	return 0
+}
+
+func (x *PlanStrikeRequest) GetGrainTempC() float64 {
+	if x != nil {
+		return x.GrainTempC
+	}
+	return 0
+}
+
+func (x *PlanStrikeRequest) GetThicknessLPerKg() float64 {
+	if x != nil {
+		return x.ThicknessLPerKg
+	}
+	return 0
+}
+
+func (x *PlanStrikeRequest) GetGrainKg() float64 {
+	if x != nil {
+		return x.GrainKg
+	}
+	return 0
+}
+
+type PlanStrikeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StrikeTempC   float64                `protobuf:"fixed64,1,opt,name=strike_temp_c,json=strikeTempC,proto3" json:"strike_temp_c,omitempty"`
+	WaterVolumeL  float64                `protobuf:"fixed64,2,opt,name=water_volume_l,json=waterVolumeL,proto3" json:"water_volume_l,omitempty"`
+	Findings      []*MashFinding         `protobuf:"bytes,3,rep,name=findings,proto3" json:"findings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlanStrikeResponse) Reset() {
+	*x = PlanStrikeResponse{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlanStrikeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlanStrikeResponse) ProtoMessage() {}
+
+func (x *PlanStrikeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlanStrikeResponse.ProtoReflect.Descriptor instead.
+func (*PlanStrikeResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *PlanStrikeResponse) GetStrikeTempC() float64 {
+	if x != nil {
+		return x.StrikeTempC
+	}
+	return 0
+}
+
+func (x *PlanStrikeResponse) GetWaterVolumeL() float64 {
+	if x != nil {
+		return x.WaterVolumeL
+	}
+	return 0
+}
+
+func (x *PlanStrikeResponse) GetFindings() []*MashFinding {
+	if x != nil {
+		return x.Findings
+	}
+	return nil
+}
+
 var File_stillhouse_v1_mash_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/mash.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cstillhouse/v1/material.proto\"\xf4\x04\n" +
+	"\x18stillhouse/v1/mash.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cstillhouse/v1/material.proto\"\x8f\x01\n" +
+	"\vMashFinding\x12>\n" +
+	"\bseverity\x18\x01 \x01(\x0e2\".stillhouse.v1.MashFindingSeverityR\bseverity\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
+	"\x06detail\x18\x04 \x01(\tR\x06detail\"<\n" +
+	"\x10TemperatureRange\x12\x13\n" +
+	"\x05min_c\x18\x01 \x01(\x01R\x04minC\x12\x13\n" +
+	"\x05max_c\x18\x02 \x01(\x01R\x04maxC\"\x9d\x02\n" +
+	"\x0eMashEfficiency\x12)\n" +
+	"\x10original_gravity\x18\x01 \x01(\x01R\x0foriginalGravity\x12\x14\n" +
+	"\x05plato\x18\x02 \x01(\x01R\x05plato\x12\"\n" +
+	"\rwash_volume_l\x18\x03 \x01(\x01R\vwashVolumeL\x122\n" +
+	"\x15wash_volume_estimated\x18\x04 \x01(\bR\x13washVolumeEstimated\x12.\n" +
+	"\x13extract_measured_kg\x18\x05 \x01(\x01R\x11extractMeasuredKg\x120\n" +
+	"\x14extract_available_kg\x18\x06 \x01(\x01R\x12extractAvailableKg\x12\x10\n" +
+	"\x03pct\x18\a \x01(\x01R\x03pct\"\xa5\x04\n" +
+	"\tMashBench\x12J\n" +
+	"\x10gelatinisation_c\x18\x01 \x01(\v2\x1f.stillhouse.v1.TemperatureRangeR\x0fgelatinisationC\x121\n" +
+	"\x14gelatinisation_known\x18\x02 \x01(\bR\x13gelatinisationKnown\x12B\n" +
+	"\fconversion_c\x18\x03 \x01(\v2\x1f.stillhouse.v1.TemperatureRangeR\vconversionC\x120\n" +
+	"\x14cereal_cook_required\x18\x04 \x01(\bR\x12cerealCookRequired\x12+\n" +
+	"\x12thickness_l_per_kg\x18\x05 \x01(\x01R\x0fthicknessLPerKg\x122\n" +
+	"\x16thickness_l_per_kg_set\x18\x06 \x01(\bR\x12thicknessLPerKgSet\x12=\n" +
+	"\n" +
+	"efficiency\x18\a \x01(\v2\x1d.stillhouse.v1.MashEfficiencyR\n" +
+	"efficiency\x12%\n" +
+	"\x0eefficiency_set\x18\b \x01(\bR\refficiencySet\x12$\n" +
+	"\x0etotal_grain_kg\x18\t \x01(\x01R\ftotalGrainKg\x126\n" +
+	"\bfindings\x18\n" +
+	" \x03(\v2\x1a.stillhouse.v1.MashFindingR\bfindings\"\xa4\x05\n" +
 	"\aMashRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12*\n" +
@@ -1213,7 +1790,8 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\vingredients\x18\f \x03(\v2\".stillhouse.v1.MashIngredientUsageR\vingredients\x123\n" +
 	"\ametrics\x18\r \x03(\v2\x19.stillhouse.v1.MashMetricR\ametrics\x12#\n" +
 	"\rprojected_laa\x18\x0e \x01(\x01R\fprojectedLaa\x12.\n" +
-	"\x13actual_captured_laa\x18\x0f \x01(\x01R\x11actualCapturedLaa\"\xcf\x04\n" +
+	"\x13actual_captured_laa\x18\x0f \x01(\x01R\x11actualCapturedLaa\x12.\n" +
+	"\x05bench\x18\x10 \x01(\v2\x18.stillhouse.v1.MashBenchR\x05bench\"\xcf\x04\n" +
 	"\x13MashIngredientUsage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
 	"\vmash_run_id\x18\x02 \x01(\tR\tmashRunId\x12\x1f\n" +
@@ -1281,7 +1859,17 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"observedAt\x12\x14\n" +
 	"\x05notes\x18\x06 \x01(\tR\x05notes\"J\n" +
 	"\x15AddMashMetricResponse\x121\n" +
-	"\x06metric\x18\x01 \x01(\v2\x19.stillhouse.v1.MashMetricR\x06metric*\xb1\x01\n" +
+	"\x06metric\x18\x01 \x01(\v2\x19.stillhouse.v1.MashMetricR\x06metric\"\xa1\x01\n" +
+	"\x11PlanStrikeRequest\x12\"\n" +
+	"\rtarget_temp_c\x18\x01 \x01(\x01R\vtargetTempC\x12 \n" +
+	"\fgrain_temp_c\x18\x02 \x01(\x01R\n" +
+	"grainTempC\x12+\n" +
+	"\x12thickness_l_per_kg\x18\x03 \x01(\x01R\x0fthicknessLPerKg\x12\x19\n" +
+	"\bgrain_kg\x18\x04 \x01(\x01R\agrainKg\"\x96\x01\n" +
+	"\x12PlanStrikeResponse\x12\"\n" +
+	"\rstrike_temp_c\x18\x01 \x01(\x01R\vstrikeTempC\x12$\n" +
+	"\x0ewater_volume_l\x18\x02 \x01(\x01R\fwaterVolumeL\x126\n" +
+	"\bfindings\x18\x03 \x03(\v2\x1a.stillhouse.v1.MashFindingR\bfindings*\xb1\x01\n" +
 	"\n" +
 	"MashStatus\x12\x1b\n" +
 	"\x17MASH_STATUS_UNSPECIFIED\x10\x00\x12\x17\n" +
@@ -1289,7 +1877,7 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\x17MASH_STATUS_IN_PROGRESS\x10\x02\x12\x1a\n" +
 	"\x16MASH_STATUS_FERMENTING\x10\x03\x12\x19\n" +
 	"\x15MASH_STATUS_DISTILLED\x10\x04\x12\x19\n" +
-	"\x15MASH_STATUS_CANCELLED\x10\x05*\xfe\x01\n" +
+	"\x15MASH_STATUS_CANCELLED\x10\x05*\xa2\x02\n" +
 	"\x0eMashMetricKind\x12 \n" +
 	"\x1cMASH_METRIC_KIND_UNSPECIFIED\x10\x00\x12%\n" +
 	"!MASH_METRIC_KIND_ORIGINAL_GRAVITY\x10\x01\x12\x1c\n" +
@@ -1297,7 +1885,13 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\x1cMASH_METRIC_KIND_MASH_TEMP_C\x10\x03\x12#\n" +
 	"\x1fMASH_METRIC_KIND_WATER_VOLUME_L\x10\x04\x12\"\n" +
 	"\x1eMASH_METRIC_KIND_STRIKE_TEMP_C\x10\x05\x12\x1a\n" +
-	"\x16MASH_METRIC_KIND_OTHER\x10\x062\xbe\x04\n" +
+	"\x16MASH_METRIC_KIND_OTHER\x10\x06\x12\"\n" +
+	"\x1eMASH_METRIC_KIND_WASH_VOLUME_L\x10\a*\xa2\x01\n" +
+	"\x13MashFindingSeverity\x12%\n" +
+	"!MASH_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aMASH_FINDING_SEVERITY_INFO\x10\x01\x12!\n" +
+	"\x1dMASH_FINDING_SEVERITY_WARNING\x10\x02\x12!\n" +
+	"\x1dMASH_FINDING_SEVERITY_PROBLEM\x10\x032\x91\x05\n" +
 	"\vMashService\x12Z\n" +
 	"\rCreateMashRun\x12#.stillhouse.v1.CreateMashRunRequest\x1a$.stillhouse.v1.CreateMashRunResponse\x12Q\n" +
 	"\n" +
@@ -1305,7 +1899,9 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\fListMashRuns\x12\".stillhouse.v1.ListMashRunsRequest\x1a#.stillhouse.v1.ListMashRunsResponse\x12c\n" +
 	"\x10UpdateMashStatus\x12&.stillhouse.v1.UpdateMashStatusRequest\x1a'.stillhouse.v1.UpdateMashStatusResponse\x12f\n" +
 	"\x11AddMashIngredient\x12'.stillhouse.v1.AddMashIngredientRequest\x1a(.stillhouse.v1.AddMashIngredientResponse\x12Z\n" +
-	"\rAddMashMetric\x12#.stillhouse.v1.AddMashMetricRequest\x1a$.stillhouse.v1.AddMashMetricResponseB\xcd\x01\n" +
+	"\rAddMashMetric\x12#.stillhouse.v1.AddMashMetricRequest\x1a$.stillhouse.v1.AddMashMetricResponse\x12Q\n" +
+	"\n" +
+	"PlanStrike\x12 .stillhouse.v1.PlanStrikeRequest\x1a!.stillhouse.v1.PlanStrikeResponseB\xcd\x01\n" +
 	"\x11com.stillhouse.v1B\tMashProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1320,67 +1916,83 @@ func file_stillhouse_v1_mash_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_mash_proto_rawDescData
 }
 
-var file_stillhouse_v1_mash_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_mash_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_stillhouse_v1_mash_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_stillhouse_v1_mash_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_stillhouse_v1_mash_proto_goTypes = []any{
 	(MashStatus)(0),                   // 0: stillhouse.v1.MashStatus
 	(MashMetricKind)(0),               // 1: stillhouse.v1.MashMetricKind
-	(*MashRun)(nil),                   // 2: stillhouse.v1.MashRun
-	(*MashIngredientUsage)(nil),       // 3: stillhouse.v1.MashIngredientUsage
-	(*MashMetric)(nil),                // 4: stillhouse.v1.MashMetric
-	(*CreateMashRunRequest)(nil),      // 5: stillhouse.v1.CreateMashRunRequest
-	(*CreateMashRunResponse)(nil),     // 6: stillhouse.v1.CreateMashRunResponse
-	(*GetMashRunRequest)(nil),         // 7: stillhouse.v1.GetMashRunRequest
-	(*GetMashRunResponse)(nil),        // 8: stillhouse.v1.GetMashRunResponse
-	(*ListMashRunsRequest)(nil),       // 9: stillhouse.v1.ListMashRunsRequest
-	(*ListMashRunsResponse)(nil),      // 10: stillhouse.v1.ListMashRunsResponse
-	(*UpdateMashStatusRequest)(nil),   // 11: stillhouse.v1.UpdateMashStatusRequest
-	(*UpdateMashStatusResponse)(nil),  // 12: stillhouse.v1.UpdateMashStatusResponse
-	(*AddMashIngredientRequest)(nil),  // 13: stillhouse.v1.AddMashIngredientRequest
-	(*AddMashIngredientResponse)(nil), // 14: stillhouse.v1.AddMashIngredientResponse
-	(*AddMashMetricRequest)(nil),      // 15: stillhouse.v1.AddMashMetricRequest
-	(*AddMashMetricResponse)(nil),     // 16: stillhouse.v1.AddMashMetricResponse
-	(*timestamppb.Timestamp)(nil),     // 17: google.protobuf.Timestamp
-	(MaterialKind)(0),                 // 18: stillhouse.v1.MaterialKind
+	(MashFindingSeverity)(0),          // 2: stillhouse.v1.MashFindingSeverity
+	(*MashFinding)(nil),               // 3: stillhouse.v1.MashFinding
+	(*TemperatureRange)(nil),          // 4: stillhouse.v1.TemperatureRange
+	(*MashEfficiency)(nil),            // 5: stillhouse.v1.MashEfficiency
+	(*MashBench)(nil),                 // 6: stillhouse.v1.MashBench
+	(*MashRun)(nil),                   // 7: stillhouse.v1.MashRun
+	(*MashIngredientUsage)(nil),       // 8: stillhouse.v1.MashIngredientUsage
+	(*MashMetric)(nil),                // 9: stillhouse.v1.MashMetric
+	(*CreateMashRunRequest)(nil),      // 10: stillhouse.v1.CreateMashRunRequest
+	(*CreateMashRunResponse)(nil),     // 11: stillhouse.v1.CreateMashRunResponse
+	(*GetMashRunRequest)(nil),         // 12: stillhouse.v1.GetMashRunRequest
+	(*GetMashRunResponse)(nil),        // 13: stillhouse.v1.GetMashRunResponse
+	(*ListMashRunsRequest)(nil),       // 14: stillhouse.v1.ListMashRunsRequest
+	(*ListMashRunsResponse)(nil),      // 15: stillhouse.v1.ListMashRunsResponse
+	(*UpdateMashStatusRequest)(nil),   // 16: stillhouse.v1.UpdateMashStatusRequest
+	(*UpdateMashStatusResponse)(nil),  // 17: stillhouse.v1.UpdateMashStatusResponse
+	(*AddMashIngredientRequest)(nil),  // 18: stillhouse.v1.AddMashIngredientRequest
+	(*AddMashIngredientResponse)(nil), // 19: stillhouse.v1.AddMashIngredientResponse
+	(*AddMashMetricRequest)(nil),      // 20: stillhouse.v1.AddMashMetricRequest
+	(*AddMashMetricResponse)(nil),     // 21: stillhouse.v1.AddMashMetricResponse
+	(*PlanStrikeRequest)(nil),         // 22: stillhouse.v1.PlanStrikeRequest
+	(*PlanStrikeResponse)(nil),        // 23: stillhouse.v1.PlanStrikeResponse
+	(*timestamppb.Timestamp)(nil),     // 24: google.protobuf.Timestamp
+	(MaterialKind)(0),                 // 25: stillhouse.v1.MaterialKind
 }
 var file_stillhouse_v1_mash_proto_depIdxs = []int32{
-	0,  // 0: stillhouse.v1.MashRun.status:type_name -> stillhouse.v1.MashStatus
-	17, // 1: stillhouse.v1.MashRun.created_at:type_name -> google.protobuf.Timestamp
-	17, // 2: stillhouse.v1.MashRun.updated_at:type_name -> google.protobuf.Timestamp
-	3,  // 3: stillhouse.v1.MashRun.ingredients:type_name -> stillhouse.v1.MashIngredientUsage
-	4,  // 4: stillhouse.v1.MashRun.metrics:type_name -> stillhouse.v1.MashMetric
-	18, // 5: stillhouse.v1.MashIngredientUsage.material_kind:type_name -> stillhouse.v1.MaterialKind
-	17, // 6: stillhouse.v1.MashIngredientUsage.created_at:type_name -> google.protobuf.Timestamp
-	17, // 7: stillhouse.v1.MashIngredientUsage.lot_received_at:type_name -> google.protobuf.Timestamp
-	1,  // 8: stillhouse.v1.MashMetric.kind:type_name -> stillhouse.v1.MashMetricKind
-	17, // 9: stillhouse.v1.MashMetric.observed_at:type_name -> google.protobuf.Timestamp
-	2,  // 10: stillhouse.v1.CreateMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
-	2,  // 11: stillhouse.v1.GetMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
-	0,  // 12: stillhouse.v1.ListMashRunsRequest.status:type_name -> stillhouse.v1.MashStatus
-	2,  // 13: stillhouse.v1.ListMashRunsResponse.mash_runs:type_name -> stillhouse.v1.MashRun
-	0,  // 14: stillhouse.v1.UpdateMashStatusRequest.status:type_name -> stillhouse.v1.MashStatus
-	2,  // 15: stillhouse.v1.UpdateMashStatusResponse.mash_run:type_name -> stillhouse.v1.MashRun
-	3,  // 16: stillhouse.v1.AddMashIngredientResponse.usage:type_name -> stillhouse.v1.MashIngredientUsage
-	1,  // 17: stillhouse.v1.AddMashMetricRequest.kind:type_name -> stillhouse.v1.MashMetricKind
-	17, // 18: stillhouse.v1.AddMashMetricRequest.observed_at:type_name -> google.protobuf.Timestamp
-	4,  // 19: stillhouse.v1.AddMashMetricResponse.metric:type_name -> stillhouse.v1.MashMetric
-	5,  // 20: stillhouse.v1.MashService.CreateMashRun:input_type -> stillhouse.v1.CreateMashRunRequest
-	7,  // 21: stillhouse.v1.MashService.GetMashRun:input_type -> stillhouse.v1.GetMashRunRequest
-	9,  // 22: stillhouse.v1.MashService.ListMashRuns:input_type -> stillhouse.v1.ListMashRunsRequest
-	11, // 23: stillhouse.v1.MashService.UpdateMashStatus:input_type -> stillhouse.v1.UpdateMashStatusRequest
-	13, // 24: stillhouse.v1.MashService.AddMashIngredient:input_type -> stillhouse.v1.AddMashIngredientRequest
-	15, // 25: stillhouse.v1.MashService.AddMashMetric:input_type -> stillhouse.v1.AddMashMetricRequest
-	6,  // 26: stillhouse.v1.MashService.CreateMashRun:output_type -> stillhouse.v1.CreateMashRunResponse
-	8,  // 27: stillhouse.v1.MashService.GetMashRun:output_type -> stillhouse.v1.GetMashRunResponse
-	10, // 28: stillhouse.v1.MashService.ListMashRuns:output_type -> stillhouse.v1.ListMashRunsResponse
-	12, // 29: stillhouse.v1.MashService.UpdateMashStatus:output_type -> stillhouse.v1.UpdateMashStatusResponse
-	14, // 30: stillhouse.v1.MashService.AddMashIngredient:output_type -> stillhouse.v1.AddMashIngredientResponse
-	16, // 31: stillhouse.v1.MashService.AddMashMetric:output_type -> stillhouse.v1.AddMashMetricResponse
-	26, // [26:32] is the sub-list for method output_type
-	20, // [20:26] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	2,  // 0: stillhouse.v1.MashFinding.severity:type_name -> stillhouse.v1.MashFindingSeverity
+	4,  // 1: stillhouse.v1.MashBench.gelatinisation_c:type_name -> stillhouse.v1.TemperatureRange
+	4,  // 2: stillhouse.v1.MashBench.conversion_c:type_name -> stillhouse.v1.TemperatureRange
+	5,  // 3: stillhouse.v1.MashBench.efficiency:type_name -> stillhouse.v1.MashEfficiency
+	3,  // 4: stillhouse.v1.MashBench.findings:type_name -> stillhouse.v1.MashFinding
+	0,  // 5: stillhouse.v1.MashRun.status:type_name -> stillhouse.v1.MashStatus
+	24, // 6: stillhouse.v1.MashRun.created_at:type_name -> google.protobuf.Timestamp
+	24, // 7: stillhouse.v1.MashRun.updated_at:type_name -> google.protobuf.Timestamp
+	8,  // 8: stillhouse.v1.MashRun.ingredients:type_name -> stillhouse.v1.MashIngredientUsage
+	9,  // 9: stillhouse.v1.MashRun.metrics:type_name -> stillhouse.v1.MashMetric
+	6,  // 10: stillhouse.v1.MashRun.bench:type_name -> stillhouse.v1.MashBench
+	25, // 11: stillhouse.v1.MashIngredientUsage.material_kind:type_name -> stillhouse.v1.MaterialKind
+	24, // 12: stillhouse.v1.MashIngredientUsage.created_at:type_name -> google.protobuf.Timestamp
+	24, // 13: stillhouse.v1.MashIngredientUsage.lot_received_at:type_name -> google.protobuf.Timestamp
+	1,  // 14: stillhouse.v1.MashMetric.kind:type_name -> stillhouse.v1.MashMetricKind
+	24, // 15: stillhouse.v1.MashMetric.observed_at:type_name -> google.protobuf.Timestamp
+	7,  // 16: stillhouse.v1.CreateMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
+	7,  // 17: stillhouse.v1.GetMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
+	0,  // 18: stillhouse.v1.ListMashRunsRequest.status:type_name -> stillhouse.v1.MashStatus
+	7,  // 19: stillhouse.v1.ListMashRunsResponse.mash_runs:type_name -> stillhouse.v1.MashRun
+	0,  // 20: stillhouse.v1.UpdateMashStatusRequest.status:type_name -> stillhouse.v1.MashStatus
+	7,  // 21: stillhouse.v1.UpdateMashStatusResponse.mash_run:type_name -> stillhouse.v1.MashRun
+	8,  // 22: stillhouse.v1.AddMashIngredientResponse.usage:type_name -> stillhouse.v1.MashIngredientUsage
+	1,  // 23: stillhouse.v1.AddMashMetricRequest.kind:type_name -> stillhouse.v1.MashMetricKind
+	24, // 24: stillhouse.v1.AddMashMetricRequest.observed_at:type_name -> google.protobuf.Timestamp
+	9,  // 25: stillhouse.v1.AddMashMetricResponse.metric:type_name -> stillhouse.v1.MashMetric
+	3,  // 26: stillhouse.v1.PlanStrikeResponse.findings:type_name -> stillhouse.v1.MashFinding
+	10, // 27: stillhouse.v1.MashService.CreateMashRun:input_type -> stillhouse.v1.CreateMashRunRequest
+	12, // 28: stillhouse.v1.MashService.GetMashRun:input_type -> stillhouse.v1.GetMashRunRequest
+	14, // 29: stillhouse.v1.MashService.ListMashRuns:input_type -> stillhouse.v1.ListMashRunsRequest
+	16, // 30: stillhouse.v1.MashService.UpdateMashStatus:input_type -> stillhouse.v1.UpdateMashStatusRequest
+	18, // 31: stillhouse.v1.MashService.AddMashIngredient:input_type -> stillhouse.v1.AddMashIngredientRequest
+	20, // 32: stillhouse.v1.MashService.AddMashMetric:input_type -> stillhouse.v1.AddMashMetricRequest
+	22, // 33: stillhouse.v1.MashService.PlanStrike:input_type -> stillhouse.v1.PlanStrikeRequest
+	11, // 34: stillhouse.v1.MashService.CreateMashRun:output_type -> stillhouse.v1.CreateMashRunResponse
+	13, // 35: stillhouse.v1.MashService.GetMashRun:output_type -> stillhouse.v1.GetMashRunResponse
+	15, // 36: stillhouse.v1.MashService.ListMashRuns:output_type -> stillhouse.v1.ListMashRunsResponse
+	17, // 37: stillhouse.v1.MashService.UpdateMashStatus:output_type -> stillhouse.v1.UpdateMashStatusResponse
+	19, // 38: stillhouse.v1.MashService.AddMashIngredient:output_type -> stillhouse.v1.AddMashIngredientResponse
+	21, // 39: stillhouse.v1.MashService.AddMashMetric:output_type -> stillhouse.v1.AddMashMetricResponse
+	23, // 40: stillhouse.v1.MashService.PlanStrike:output_type -> stillhouse.v1.PlanStrikeResponse
+	34, // [34:41] is the sub-list for method output_type
+	27, // [27:34] is the sub-list for method input_type
+	27, // [27:27] is the sub-list for extension type_name
+	27, // [27:27] is the sub-list for extension extendee
+	0,  // [0:27] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_mash_proto_init() }
@@ -1394,8 +2006,8 @@ func file_stillhouse_v1_mash_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_mash_proto_rawDesc), len(file_stillhouse_v1_mash_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   15,
+			NumEnums:      3,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

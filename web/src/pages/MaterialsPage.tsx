@@ -7,11 +7,12 @@ import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { materialClient } from "@/lib/clients";
 import {
+  Cereal,
   CreateMaterialRequestSchema,
   MaterialKind,
 } from "@/gen/stillhouse/v1/material_pb";
 import { create } from "@bufbuild/protobuf";
-import { materialKindLabel } from "@/lib/format";
+import { CEREAL_OPTIONS, cerealLabel, materialKindLabel } from "@/lib/format";
 import { WriteOnly } from "@/lib/role";
 
 const kindOptions: { value: MaterialKind; label: string }[] = [
@@ -52,6 +53,9 @@ export function MaterialsPage() {
       kindVal === MaterialKind.GRAIN || kindVal === MaterialKind.MALT;
     const extractPctRaw = fd.get("extract_pct")?.toString().trim() ?? "";
     const moisturePctRaw = fd.get("moisture_pct")?.toString().trim() ?? "";
+    // Cereal only means anything for a fermentable; it drives the mash
+    // bench's gelatinisation guidance.
+    const cerealRaw = fd.get("cereal")?.toString() ?? "";
     const req = create(CreateMaterialRequestSchema, {
       name: fd.get("name")?.toString() ?? "",
       kind: kindVal,
@@ -62,6 +66,7 @@ export function MaterialsPage() {
       extractPctSet: !!(isFermentable && extractPctRaw),
       moisturePct: isFermentable && moisturePctRaw ? Number(moisturePctRaw) : 0,
       moisturePctSet: !!(isFermentable && moisturePctRaw),
+      cereal: isFermentable && cerealRaw ? (Number(cerealRaw) as Cereal) : Cereal.UNSPECIFIED,
     });
     createMaterial.mutate(req);
   }
@@ -110,6 +115,14 @@ export function MaterialsPage() {
             max="1"
             placeholder="0.78"
           />
+          <Field label="Cereal" name="cereal" as="select">
+            {CEREAL_OPTIONS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+                {c.hint ? ` — ${c.hint}` : ""}
+              </option>
+            ))}
+          </Field>
           <Field
             label="Moisture % (0..1)"
             name="moisture_pct"
@@ -146,6 +159,7 @@ export function MaterialsPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Kind</th>
               <th className="px-4 py-3">UoM</th>
+              <th className="px-4 py-3">Cereal</th>
               <th className="px-4 py-3 text-right">Extract %</th>
               <th className="px-4 py-3">Supplier</th>
             </tr>
@@ -180,6 +194,13 @@ export function MaterialsPage() {
                 </td>
                 <td className="px-4 py-3 text-fg-muted">{materialKindLabel(m.kind)}</td>
                 <td className="px-4 py-3 text-fg-muted">{m.uom}</td>
+                <td className="px-4 py-3 text-fg-muted">
+                  {m.cereal === Cereal.UNSPECIFIED ? (
+                    <span className="text-fg-subtle">—</span>
+                  ) : (
+                    cerealLabel(m.cereal)
+                  )}
+                </td>
                 <td className="px-4 py-3 text-right text-fg-muted">
                   {m.extractPctSet ? (m.extractPct * 100).toFixed(2) + "%" : "—"}
                 </td>

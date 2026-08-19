@@ -197,6 +197,7 @@ SELECT miu.id, miu.tenant_id, miu.mash_run_id, miu.material_id, miu.quantity_use
        m.name AS material_name,
        m.kind AS material_kind,
        m.extract_pct AS material_extract_pct,
+       m.cereal AS material_cereal,
        ml.supplier_lot AS supplier_lot,
        ml.received_at  AS lot_received_at
 FROM mash_ingredient_usage miu
@@ -219,6 +220,7 @@ type ListMashIngredientsRow struct {
 	MaterialName       string             `json:"material_name"`
 	MaterialKind       MaterialKind       `json:"material_kind"`
 	MaterialExtractPct pgtype.Float8      `json:"material_extract_pct"`
+	MaterialCereal     NullCereal         `json:"material_cereal"`
 	SupplierLot        pgtype.Text        `json:"supplier_lot"`
 	LotReceivedAt      pgtype.Timestamptz `json:"lot_received_at"`
 }
@@ -245,6 +247,7 @@ func (q *Queries) ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) 
 			&i.MaterialName,
 			&i.MaterialKind,
 			&i.MaterialExtractPct,
+			&i.MaterialCereal,
 			&i.SupplierLot,
 			&i.LotReceivedAt,
 		); err != nil {

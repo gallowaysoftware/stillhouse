@@ -50,6 +50,8 @@ const (
 	// MashServiceAddMashMetricProcedure is the fully-qualified name of the MashService's AddMashMetric
 	// RPC.
 	MashServiceAddMashMetricProcedure = "/stillhouse.v1.MashService/AddMashMetric"
+	// MashServicePlanStrikeProcedure is the fully-qualified name of the MashService's PlanStrike RPC.
+	MashServicePlanStrikeProcedure = "/stillhouse.v1.MashService/PlanStrike"
 )
 
 // MashServiceClient is a client for the stillhouse.v1.MashService service.
@@ -60,6 +62,7 @@ type MashServiceClient interface {
 	UpdateMashStatus(context.Context, *connect.Request[v1.UpdateMashStatusRequest]) (*connect.Response[v1.UpdateMashStatusResponse], error)
 	AddMashIngredient(context.Context, *connect.Request[v1.AddMashIngredientRequest]) (*connect.Response[v1.AddMashIngredientResponse], error)
 	AddMashMetric(context.Context, *connect.Request[v1.AddMashMetricRequest]) (*connect.Response[v1.AddMashMetricResponse], error)
+	PlanStrike(context.Context, *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error)
 }
 
 // NewMashServiceClient constructs a client for the stillhouse.v1.MashService service. By default,
@@ -109,6 +112,12 @@ func NewMashServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(mashServiceMethods.ByName("AddMashMetric")),
 			connect.WithClientOptions(opts...),
 		),
+		planStrike: connect.NewClient[v1.PlanStrikeRequest, v1.PlanStrikeResponse](
+			httpClient,
+			baseURL+MashServicePlanStrikeProcedure,
+			connect.WithSchema(mashServiceMethods.ByName("PlanStrike")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -120,6 +129,7 @@ type mashServiceClient struct {
 	updateMashStatus  *connect.Client[v1.UpdateMashStatusRequest, v1.UpdateMashStatusResponse]
 	addMashIngredient *connect.Client[v1.AddMashIngredientRequest, v1.AddMashIngredientResponse]
 	addMashMetric     *connect.Client[v1.AddMashMetricRequest, v1.AddMashMetricResponse]
+	planStrike        *connect.Client[v1.PlanStrikeRequest, v1.PlanStrikeResponse]
 }
 
 // CreateMashRun calls stillhouse.v1.MashService.CreateMashRun.
@@ -152,6 +162,11 @@ func (c *mashServiceClient) AddMashMetric(ctx context.Context, req *connect.Requ
 	return c.addMashMetric.CallUnary(ctx, req)
 }
 
+// PlanStrike calls stillhouse.v1.MashService.PlanStrike.
+func (c *mashServiceClient) PlanStrike(ctx context.Context, req *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error) {
+	return c.planStrike.CallUnary(ctx, req)
+}
+
 // MashServiceHandler is an implementation of the stillhouse.v1.MashService service.
 type MashServiceHandler interface {
 	CreateMashRun(context.Context, *connect.Request[v1.CreateMashRunRequest]) (*connect.Response[v1.CreateMashRunResponse], error)
@@ -160,6 +175,7 @@ type MashServiceHandler interface {
 	UpdateMashStatus(context.Context, *connect.Request[v1.UpdateMashStatusRequest]) (*connect.Response[v1.UpdateMashStatusResponse], error)
 	AddMashIngredient(context.Context, *connect.Request[v1.AddMashIngredientRequest]) (*connect.Response[v1.AddMashIngredientResponse], error)
 	AddMashMetric(context.Context, *connect.Request[v1.AddMashMetricRequest]) (*connect.Response[v1.AddMashMetricResponse], error)
+	PlanStrike(context.Context, *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error)
 }
 
 // NewMashServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -205,6 +221,12 @@ func NewMashServiceHandler(svc MashServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(mashServiceMethods.ByName("AddMashMetric")),
 		connect.WithHandlerOptions(opts...),
 	)
+	mashServicePlanStrikeHandler := connect.NewUnaryHandler(
+		MashServicePlanStrikeProcedure,
+		svc.PlanStrike,
+		connect.WithSchema(mashServiceMethods.ByName("PlanStrike")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.MashService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case MashServiceCreateMashRunProcedure:
@@ -219,6 +241,8 @@ func NewMashServiceHandler(svc MashServiceHandler, opts ...connect.HandlerOption
 			mashServiceAddMashIngredientHandler.ServeHTTP(w, r)
 		case MashServiceAddMashMetricProcedure:
 			mashServiceAddMashMetricHandler.ServeHTTP(w, r)
+		case MashServicePlanStrikeProcedure:
+			mashServicePlanStrikeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -250,4 +274,8 @@ func (UnimplementedMashServiceHandler) AddMashIngredient(context.Context, *conne
 
 func (UnimplementedMashServiceHandler) AddMashMetric(context.Context, *connect.Request[v1.AddMashMetricRequest]) (*connect.Response[v1.AddMashMetricResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MashService.AddMashMetric is not implemented"))
+}
+
+func (UnimplementedMashServiceHandler) PlanStrike(context.Context, *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MashService.PlanStrike is not implemented"))
 }
