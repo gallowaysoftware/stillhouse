@@ -656,6 +656,49 @@ func (ns NullSpiritKind) Value() (driver.Value, error) {
 	return string(ns.SpiritKind), nil
 }
 
+type StrengthSource string
+
+const (
+	StrengthSourceUncorrected   StrengthSource = "uncorrected"
+	StrengthSourceTableDensity  StrengthSource = "table_density"
+	StrengthSourceTableStrength StrengthSource = "table_strength"
+)
+
+func (e *StrengthSource) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StrengthSource(s)
+	case string:
+		*e = StrengthSource(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StrengthSource: %T", src)
+	}
+	return nil
+}
+
+type NullStrengthSource struct {
+	StrengthSource StrengthSource `json:"strength_source"`
+	Valid          bool           `json:"valid"` // Valid is true if StrengthSource is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStrengthSource) Scan(value interface{}) error {
+	if value == nil {
+		ns.StrengthSource, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StrengthSource.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStrengthSource) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StrengthSource), nil
+}
+
 type UserRole string
 
 const (
@@ -751,22 +794,27 @@ type BarrelAttribute struct {
 }
 
 type BarrelEvent struct {
-	ID             uuid.UUID          `json:"id"`
-	TenantID       uuid.UUID          `json:"tenant_id"`
-	ContainerID    uuid.UUID          `json:"container_id"`
-	Kind           BarrelEventKind    `json:"kind"`
-	EventDate      pgtype.Timestamptz `json:"event_date"`
-	VolumeL        pgtype.Float8      `json:"volume_l"`
-	AbvPct         pgtype.Float8      `json:"abv_pct"`
-	Laa            pgtype.Float8      `json:"laa"`
-	BulkMovementID uuid.NullUUID      `json:"bulk_movement_id"`
-	LocationAfter  string             `json:"location_after"`
-	Notes          string             `json:"notes"`
-	UserID         uuid.NullUUID      `json:"user_id"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	VoidedAt       pgtype.Timestamptz `json:"voided_at"`
-	VoidedBy       uuid.NullUUID      `json:"voided_by"`
-	VoidedReason   string             `json:"voided_reason"`
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	ContainerID         uuid.UUID          `json:"container_id"`
+	Kind                BarrelEventKind    `json:"kind"`
+	EventDate           pgtype.Timestamptz `json:"event_date"`
+	VolumeL             pgtype.Float8      `json:"volume_l"`
+	AbvPct              pgtype.Float8      `json:"abv_pct"`
+	Laa                 pgtype.Float8      `json:"laa"`
+	BulkMovementID      uuid.NullUUID      `json:"bulk_movement_id"`
+	LocationAfter       string             `json:"location_after"`
+	Notes               string             `json:"notes"`
+	UserID              uuid.NullUUID      `json:"user_id"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	VoidedAt            pgtype.Timestamptz `json:"voided_at"`
+	VoidedBy            uuid.NullUUID      `json:"voided_by"`
+	VoidedReason        string             `json:"voided_reason"`
+	TemperatureC        pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL     pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3 pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC       float64            `json:"volume_factor_c"`
+	StrengthSource      StrengthSource     `json:"strength_source"`
 }
 
 type BottlingRun struct {
@@ -1071,6 +1119,10 @@ type ProductionGauge struct {
 	GaugerUserID           uuid.UUID          `json:"gauger_user_id"`
 	Notes                  string             `json:"notes"`
 	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	ObservedVolumeL        pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3    pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC          float64            `json:"volume_factor_c"`
+	StrengthSource         StrengthSource     `json:"strength_source"`
 }
 
 type Recipe struct {

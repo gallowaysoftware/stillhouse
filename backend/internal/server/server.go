@@ -83,6 +83,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
 	inviteSvc := rpc.NewInviteService(queries, tdb, sm, mailerImpl, logger)
 	apiTokenSvc := rpc.NewAPITokenService(queries, logger)
+	// Pure computation against the embedded CRA tables — no DB, no tenant.
+	alcoholometrySvc := rpc.NewAlcoholometryService(logger)
 
 	interceptors := connect.WithInterceptors(
 		rpc.NewAuthInterceptor(sm, queries),
@@ -110,6 +112,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewTraceabilityServiceHandler(traceabilitySvc, interceptors))
 	mux.Handle(stillhousev1connect.NewInviteServiceHandler(inviteSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAPITokenServiceHandler(apiTokenSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewAlcoholometryServiceHandler(alcoholometrySvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
 	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
 	// MCP endpoint — non-browser clients (e.g. Claude.ai mobile) speak

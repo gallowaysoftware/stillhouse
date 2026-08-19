@@ -10,13 +10,15 @@ import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobu
 import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
+import type { StrengthSource } from "./alcoholometry_pb.js";
+import { file_stillhouse_v1_alcoholometry } from "./alcoholometry_pb.js";
 import type { Message } from "@bufbuild/protobuf";
 
 /**
  * Describes the file stillhouse/v1/barrel.proto.
  */
 export const file_stillhouse_v1_barrel: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL2JhcnJlbC5wcm90bxINc3RpbGxob3VzZS52MSLoBQoGQmFycmVsEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY2FwYWNpdHlfbBgDIAEoARIWCg5jYXBhY2l0eV9sX3NldBgEIAEoCBIQCghsb2NhdGlvbhgFIAEoCRINCgVub3RlcxgGIAEoCRIQCghhcmNoaXZlZBgHIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAggASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgJIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAogASgIEhMKC2N1cnJlbnRfbGFhGAsgASgBEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmNvb3BlcmFnZV9zdXBwbGllchgUIAEoCRISCgpjaGFyX2xldmVsGBUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GBYgASgIEhQKDHdvb2Rfc3BlY2llcxgXIAEoCRIRCglwcmlvcl91c2UYGCABKAkSFQoNc2VyaWFsX2J1cm5pbhgZIAEoCRIRCglyaWNraG91c2UYGiABKAkSFAoMcm93X3Bvc2l0aW9uGBsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGBwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgdIAEoCRIRCglmaWxsX2RhdGUYKCABKAkSEQoJZGF5c19hZ2VkGCkgASgFEhkKEWRheXNfYWdlZF9hdF9kdW1wGCogASgFEh0KFWRheXNfYWdlZF9hdF9kdW1wX3NldBgrIAEoCBISCgpzbWFsbF93b29kGDIgASgIEiAKGGNhbmFkaWFuX3doaXNreV9lbGlnaWJsZRgzIAEoCBIoCiBkYXlzX3RvX2NhbmFkaWFuX3doaXNreV9lbGlnaWJsZRg0IAEoBSL7AgoLQmFycmVsRXZlbnQSCgoCaWQYASABKAkSFAoMY29udGFpbmVyX2lkGAIgASgJEiwKBGtpbmQYAyABKA4yHi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50S2luZBIuCgpldmVudF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIQCgh2b2x1bWVfbBgFIAEoARIUCgx2b2x1bWVfbF9zZXQYBiABKAgSDwoHYWJ2X3BjdBgHIAEoARITCgthYnZfcGN0X3NldBgIIAEoCBILCgNsYWEYCSABKAESDwoHbGFhX3NldBgKIAEoCBIYChBidWxrX21vdmVtZW50X2lkGAsgASgJEhYKDmxvY2F0aW9uX2FmdGVyGAwgASgJEg0KBW5vdGVzGA0gASgJEg8KB3VzZXJfaWQYDiABKAkSLgoKY3JlYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAi0gIKE0NyZWF0ZUJhcnJlbFJlcXVlc3QSDAoEbmFtZRgBIAEoCRISCgpjYXBhY2l0eV9sGAIgASgBEhYKDmNhcGFjaXR5X2xfc2V0GAMgASgIEhoKEmNvb3BlcmFnZV9zdXBwbGllchgEIAEoCRISCgpjaGFyX2xldmVsGAUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GAYgASgIEhQKDHdvb2Rfc3BlY2llcxgHIAEoCRIRCglwcmlvcl91c2UYCCABKAkSFQoNc2VyaWFsX2J1cm5pbhgJIAEoCRIRCglyaWNraG91c2UYCiABKAkSFAoMcm93X3Bvc2l0aW9uGAsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGAwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgNIAEoCRIQCghsb2NhdGlvbhgOIAEoCRINCgVub3RlcxgPIAEoCSI9ChRDcmVhdGVCYXJyZWxSZXNwb25zZRIlCgZiYXJyZWwYASABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbCIuChJMaXN0QmFycmVsc1JlcXVlc3QSGAoQaW5jbHVkZV9hcmNoaXZlZBgBIAEoCCKSAQoTTGlzdEJhcnJlbHNSZXNwb25zZRImCgdiYXJyZWxzGAEgAygLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSEwoLdG90YWxfY291bnQYAiABKAUSEwoLYWdpbmdfY291bnQYAyABKAUSFgoOZWxpZ2libGVfY291bnQYBCABKAUSEQoJdG90YWxfbGFhGAUgASgBIh4KEEdldEJhcnJlbFJlcXVlc3QSCgoCaWQYASABKAkiZgoRR2V0QmFycmVsUmVzcG9uc2USJQoGYmFycmVsGAEgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSKgoGZXZlbnRzGAIgAygLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudCKlAQoRRmlsbEJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhsKE3NvdXJjZV9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCSJmChJGaWxsQmFycmVsUmVzcG9uc2USKQoFZXZlbnQYASABKAsyGi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50EiUKBmJhcnJlbBgCIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsIqoBChFEdW1wQmFycmVsUmVxdWVzdBIRCgliYXJyZWxfaWQYASABKAkSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAIgASgJEhAKCHZvbHVtZV9sGAMgASgBEg8KB2Fidl9wY3QYBCABKAESLgoKZXZlbnRfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBiABKAkiZgoSRHVtcEJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbCKTAQoUUmVnYXVnZUJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhQKDG5ld192b2x1bWVfbBgCIAEoARITCgtuZXdfYWJ2X3BjdBgDIAEoARIuCgpldmVudF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgFIAEoCSJ7ChVSZWdhdWdlQmFycmVsUmVzcG9uc2USKQoFZXZlbnQYASABKAsyGi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50EiUKBmJhcnJlbBgCIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsEhAKCGxvc3RfbGFhGAMgASgBIjQKFlZvaWRCYXJyZWxFdmVudFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIhkKF1ZvaWRCYXJyZWxFdmVudFJlc3BvbnNlKuQBCg9CYXJyZWxFdmVudEtpbmQSIQodQkFSUkVMX0VWRU5UX0tJTkRfVU5TUEVDSUZJRUQQABIaChZCQVJSRUxfRVZFTlRfS0lORF9GSUxMEAESHQoZQkFSUkVMX0VWRU5UX0tJTkRfUkVHQVVHRRACEhwKGEJBUlJFTF9FVkVOVF9LSU5EX1NBTVBMRRADEhoKFkJBUlJFTF9FVkVOVF9LSU5EX0RVTVAQBBIaChZCQVJSRUxfRVZFTlRfS0lORF9NT1ZFEAUSHQoZQkFSUkVMX0VWRU5UX0tJTkRfREVTVFJPWRAGMvIECg1CYXJyZWxTZXJ2aWNlElcKDENyZWF0ZUJhcnJlbBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlQmFycmVsUmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlQmFycmVsUmVzcG9uc2USVAoLTGlzdEJhcnJlbHMSIS5zdGlsbGhvdXNlLnYxLkxpc3RCYXJyZWxzUmVxdWVzdBoiLnN0aWxsaG91c2UudjEuTGlzdEJhcnJlbHNSZXNwb25zZRJOCglHZXRCYXJyZWwSHy5zdGlsbGhvdXNlLnYxLkdldEJhcnJlbFJlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLkdldEJhcnJlbFJlc3BvbnNlElEKCkZpbGxCYXJyZWwSIC5zdGlsbGhvdXNlLnYxLkZpbGxCYXJyZWxSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5GaWxsQmFycmVsUmVzcG9uc2USUQoKRHVtcEJhcnJlbBIgLnN0aWxsaG91c2UudjEuRHVtcEJhcnJlbFJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkR1bXBCYXJyZWxSZXNwb25zZRJaCg1SZWdhdWdlQmFycmVsEiMuc3RpbGxob3VzZS52MS5SZWdhdWdlQmFycmVsUmVxdWVzdBokLnN0aWxsaG91c2UudjEuUmVnYXVnZUJhcnJlbFJlc3BvbnNlEmAKD1ZvaWRCYXJyZWxFdmVudBIlLnN0aWxsaG91c2UudjEuVm9pZEJhcnJlbEV2ZW50UmVxdWVzdBomLnN0aWxsaG91c2UudjEuVm9pZEJhcnJlbEV2ZW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL2JhcnJlbC5wcm90bxINc3RpbGxob3VzZS52MSLoBQoGQmFycmVsEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY2FwYWNpdHlfbBgDIAEoARIWCg5jYXBhY2l0eV9sX3NldBgEIAEoCBIQCghsb2NhdGlvbhgFIAEoCRINCgVub3RlcxgGIAEoCRIQCghhcmNoaXZlZBgHIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAggASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgJIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAogASgIEhMKC2N1cnJlbnRfbGFhGAsgASgBEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmNvb3BlcmFnZV9zdXBwbGllchgUIAEoCRISCgpjaGFyX2xldmVsGBUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GBYgASgIEhQKDHdvb2Rfc3BlY2llcxgXIAEoCRIRCglwcmlvcl91c2UYGCABKAkSFQoNc2VyaWFsX2J1cm5pbhgZIAEoCRIRCglyaWNraG91c2UYGiABKAkSFAoMcm93X3Bvc2l0aW9uGBsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGBwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgdIAEoCRIRCglmaWxsX2RhdGUYKCABKAkSEQoJZGF5c19hZ2VkGCkgASgFEhkKEWRheXNfYWdlZF9hdF9kdW1wGCogASgFEh0KFWRheXNfYWdlZF9hdF9kdW1wX3NldBgrIAEoCBISCgpzbWFsbF93b29kGDIgASgIEiAKGGNhbmFkaWFuX3doaXNreV9lbGlnaWJsZRgzIAEoCBIoCiBkYXlzX3RvX2NhbmFkaWFuX3doaXNreV9lbGlnaWJsZRg0IAEoBSLdBAoLQmFycmVsRXZlbnQSCgoCaWQYASABKAkSFAoMY29udGFpbmVyX2lkGAIgASgJEiwKBGtpbmQYAyABKA4yHi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50S2luZBIuCgpldmVudF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIQCgh2b2x1bWVfbBgFIAEoARIUCgx2b2x1bWVfbF9zZXQYBiABKAgSDwoHYWJ2X3BjdBgHIAEoARITCgthYnZfcGN0X3NldBgIIAEoCBILCgNsYWEYCSABKAESDwoHbGFhX3NldBgKIAEoCBIYChBidWxrX21vdmVtZW50X2lkGAsgASgJEhYKDmxvY2F0aW9uX2FmdGVyGAwgASgJEg0KBW5vdGVzGA0gASgJEg8KB3VzZXJfaWQYDiABKAkSLgoKY3JlYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFQoNdGVtcGVyYXR1cmVfYxgQIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgRIAEoCBIZChFvYnNlcnZlZF92b2x1bWVfbBgSIAEoARIeChZvYnNlcnZlZF9kZW5zaXR5X2tnX20zGBMgASgBEiIKGm9ic2VydmVkX2RlbnNpdHlfa2dfbTNfc2V0GBQgASgIEhcKD3ZvbHVtZV9mYWN0b3JfYxgVIAEoARI2Cg9zdHJlbmd0aF9zb3VyY2UYFiABKA4yHS5zdGlsbGhvdXNlLnYxLlN0cmVuZ3RoU291cmNlItICChNDcmVhdGVCYXJyZWxSZXF1ZXN0EgwKBG5hbWUYASABKAkSEgoKY2FwYWNpdHlfbBgCIAEoARIWCg5jYXBhY2l0eV9sX3NldBgDIAEoCBIaChJjb29wZXJhZ2Vfc3VwcGxpZXIYBCABKAkSEgoKY2hhcl9sZXZlbBgFIAEoBRIWCg5jaGFyX2xldmVsX3NldBgGIAEoCBIUCgx3b29kX3NwZWNpZXMYByABKAkSEQoJcHJpb3JfdXNlGAggASgJEhUKDXNlcmlhbF9idXJuaW4YCSABKAkSEQoJcmlja2hvdXNlGAogASgJEhQKDHJvd19wb3NpdGlvbhgLIAEoCRIWCg5sZXZlbF9wb3NpdGlvbhgMIAEoCRIXCg9jb2x1bW5fcG9zaXRpb24YDSABKAkSEAoIbG9jYXRpb24YDiABKAkSDQoFbm90ZXMYDyABKAkiPQoUQ3JlYXRlQmFycmVsUmVzcG9uc2USJQoGYmFycmVsGAEgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwiLgoSTGlzdEJhcnJlbHNSZXF1ZXN0EhgKEGluY2x1ZGVfYXJjaGl2ZWQYASABKAgikgEKE0xpc3RCYXJyZWxzUmVzcG9uc2USJgoHYmFycmVscxgBIAMoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsEhMKC3RvdGFsX2NvdW50GAIgASgFEhMKC2FnaW5nX2NvdW50GAMgASgFEhYKDmVsaWdpYmxlX2NvdW50GAQgASgFEhEKCXRvdGFsX2xhYRgFIAEoASIeChBHZXRCYXJyZWxSZXF1ZXN0EgoKAmlkGAEgASgJImYKEUdldEJhcnJlbFJlc3BvbnNlEiUKBmJhcnJlbBgBIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsEioKBmV2ZW50cxgCIAMoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQiiQIKEUZpbGxCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIbChNzb3VyY2VfY29udGFpbmVyX2lkGAIgASgJEhAKCHZvbHVtZV9sGAMgASgBEg8KB2Fidl9wY3QYBCABKAESLgoKZXZlbnRfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBiABKAkSFQoNdGVtcGVyYXR1cmVfYxgHIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgIIAEoCBIVCg1kZW5zaXR5X2tnX20zGAkgASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAogASgIImYKEkZpbGxCYXJyZWxSZXNwb25zZRIpCgVldmVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQSJQoGYmFycmVsGAIgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwijgIKEUR1bXBCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIgChhkZXN0aW5hdGlvbl9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgiZgoSRHVtcEJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbCL3AQoUUmVnYXVnZUJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhQKDG5ld192b2x1bWVfbBgCIAEoARITCgtuZXdfYWJ2X3BjdBgDIAEoARIuCgpldmVudF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgFIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAYgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAcgASgIEhUKDWRlbnNpdHlfa2dfbTMYCCABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCSABKAgiewoVUmVnYXVnZUJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBIQCghsb3N0X2xhYRgDIAEoASI0ChZWb2lkQmFycmVsRXZlbnRSZXF1ZXN0EgoKAmlkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSIZChdWb2lkQmFycmVsRXZlbnRSZXNwb25zZSrkAQoPQmFycmVsRXZlbnRLaW5kEiEKHUJBUlJFTF9FVkVOVF9LSU5EX1VOU1BFQ0lGSUVEEAASGgoWQkFSUkVMX0VWRU5UX0tJTkRfRklMTBABEh0KGUJBUlJFTF9FVkVOVF9LSU5EX1JFR0FVR0UQAhIcChhCQVJSRUxfRVZFTlRfS0lORF9TQU1QTEUQAxIaChZCQVJSRUxfRVZFTlRfS0lORF9EVU1QEAQSGgoWQkFSUkVMX0VWRU5UX0tJTkRfTU9WRRAFEh0KGUJBUlJFTF9FVkVOVF9LSU5EX0RFU1RST1kQBjLyBAoNQmFycmVsU2VydmljZRJXCgxDcmVhdGVCYXJyZWwSIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJhcnJlbFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJhcnJlbFJlc3BvbnNlElQKC0xpc3RCYXJyZWxzEiEuc3RpbGxob3VzZS52MS5MaXN0QmFycmVsc1JlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkxpc3RCYXJyZWxzUmVzcG9uc2USTgoJR2V0QmFycmVsEh8uc3RpbGxob3VzZS52MS5HZXRCYXJyZWxSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRCYXJyZWxSZXNwb25zZRJRCgpGaWxsQmFycmVsEiAuc3RpbGxob3VzZS52MS5GaWxsQmFycmVsUmVxdWVzdBohLnN0aWxsaG91c2UudjEuRmlsbEJhcnJlbFJlc3BvbnNlElEKCkR1bXBCYXJyZWwSIC5zdGlsbGhvdXNlLnYxLkR1bXBCYXJyZWxSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5EdW1wQmFycmVsUmVzcG9uc2USWgoNUmVnYXVnZUJhcnJlbBIjLnN0aWxsaG91c2UudjEuUmVnYXVnZUJhcnJlbFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlJlZ2F1Z2VCYXJyZWxSZXNwb25zZRJgCg9Wb2lkQmFycmVsRXZlbnQSJS5zdGlsbGhvdXNlLnYxLlZvaWRCYXJyZWxFdmVudFJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLlZvaWRCYXJyZWxFdmVudFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_alcoholometry]);
 
 /**
  * Barrel is the joined view of a bulk_container (kind=barrel) + barrel_attributes
@@ -223,6 +225,10 @@ export type BarrelEvent = Message<"stillhouse.v1.BarrelEvent"> & {
   eventDate?: Timestamp | undefined;
 
   /**
+   * volume_l / abv_pct / laa are the values AT 20 °C. A warehouse is the
+   * place a reading is least likely to be taken at 20 °C, so observed_*
+   * below keep what the operator actually saw.
+   *
    * @generated from field: double volume_l = 5;
    */
   volumeL: number;
@@ -278,6 +284,41 @@ export type BarrelEvent = Message<"stillhouse.v1.BarrelEvent"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 15;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: double temperature_c = 16;
+   */
+  temperatureC: number;
+
+  /**
+   * @generated from field: bool temperature_c_set = 17;
+   */
+  temperatureCSet: boolean;
+
+  /**
+   * @generated from field: double observed_volume_l = 18;
+   */
+  observedVolumeL: number;
+
+  /**
+   * @generated from field: double observed_density_kg_m3 = 19;
+   */
+  observedDensityKgM3: number;
+
+  /**
+   * @generated from field: bool observed_density_kg_m3_set = 20;
+   */
+  observedDensityKgM3Set: boolean;
+
+  /**
+   * @generated from field: double volume_factor_c = 21;
+   */
+  volumeFactorC: number;
+
+  /**
+   * @generated from field: stillhouse.v1.StrengthSource strength_source = 22;
+   */
+  strengthSource: StrengthSource;
 };
 
 /**
@@ -517,6 +558,26 @@ export type FillBarrelRequest = Message<"stillhouse.v1.FillBarrelRequest"> & {
    * @generated from field: string notes = 6;
    */
   notes: string;
+
+  /**
+   * @generated from field: double temperature_c = 7;
+   */
+  temperatureC: number;
+
+  /**
+   * @generated from field: bool temperature_c_set = 8;
+   */
+  temperatureCSet: boolean;
+
+  /**
+   * @generated from field: double density_kg_m3 = 9;
+   */
+  densityKgM3: number;
+
+  /**
+   * @generated from field: bool density_kg_m3_set = 10;
+   */
+  densityKgM3Set: boolean;
 };
 
 /**
@@ -585,6 +646,26 @@ export type DumpBarrelRequest = Message<"stillhouse.v1.DumpBarrelRequest"> & {
    * @generated from field: string notes = 6;
    */
   notes: string;
+
+  /**
+   * @generated from field: double temperature_c = 7;
+   */
+  temperatureC: number;
+
+  /**
+   * @generated from field: bool temperature_c_set = 8;
+   */
+  temperatureCSet: boolean;
+
+  /**
+   * @generated from field: double density_kg_m3 = 9;
+   */
+  densityKgM3: number;
+
+  /**
+   * @generated from field: bool density_kg_m3_set = 10;
+   */
+  densityKgM3Set: boolean;
 };
 
 /**
@@ -626,11 +707,16 @@ export type RegaugeBarrelRequest = Message<"stillhouse.v1.RegaugeBarrelRequest">
   barrelId: string;
 
   /**
+   * new_volume_l is the volume as gauged, at temperature_c.
+   *
    * @generated from field: double new_volume_l = 2;
    */
   newVolumeL: number;
 
   /**
+   * Strength at 20 °C, or leave unset and send density_kg_m3 to have the
+   * published tables resolve it.
+   *
    * @generated from field: double new_abv_pct = 3;
    */
   newAbvPct: number;
@@ -644,6 +730,26 @@ export type RegaugeBarrelRequest = Message<"stillhouse.v1.RegaugeBarrelRequest">
    * @generated from field: string notes = 5;
    */
   notes: string;
+
+  /**
+   * @generated from field: double temperature_c = 6;
+   */
+  temperatureC: number;
+
+  /**
+   * @generated from field: bool temperature_c_set = 7;
+   */
+  temperatureCSet: boolean;
+
+  /**
+   * @generated from field: double density_kg_m3 = 8;
+   */
+  densityKgM3: number;
+
+  /**
+   * @generated from field: bool density_kg_m3_set = 9;
+   */
+  densityKgM3Set: boolean;
 };
 
 /**

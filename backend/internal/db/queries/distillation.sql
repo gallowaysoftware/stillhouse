@@ -67,11 +67,14 @@ RETURNING *;
 DELETE FROM distillation_cuts WHERE id = $1;
 
 -- name: CreateProductionGauge :one
+-- volume_l / abv_pct are the values AT 20 °C; observed_* preserve what the
+-- operator read off the instrument. See migration 000023.
 INSERT INTO production_gauges (
     tenant_id, distillation_run_id, destination_container_id, bulk_movement_id,
-    gauge_date, volume_l, abv_pct, temperature_c, gauger_user_id, notes
+    gauge_date, volume_l, abv_pct, temperature_c, gauger_user_id, notes,
+    observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 ) RETURNING *;
 
 -- name: GetProductionGaugeByRun :one

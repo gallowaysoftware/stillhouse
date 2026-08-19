@@ -209,6 +209,23 @@ func (s *BarrelService) FillBarrel(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("abv_pct must be in [0, 100]"))
 	}
 
+	// Resolve the reading to 20 °C before anything is written. A warehouse
+	// is the least likely place on site for a gauge to be taken at the
+	// reference temperature, so the correction matters most here.
+	corrected, err := resolveStrength(strengthInput{
+		ObservedVolumeL: in.GetVolumeL(),
+		AbvPct:          in.GetAbvPct(),
+		DensityKgM3:     in.GetDensityKgM3(),
+		DensityIsSet:    in.GetDensityKgM3Set(),
+		TemperatureC:    in.GetTemperatureC(),
+		TemperatureSet:  in.GetTemperatureCSet(),
+	})
+	if err != nil {
+		return nil, alcoholometryError(err)
+	}
+	// Everything below works in litres and strength at 20 °C.
+	volume, abv := corrected.VolumeL20C, corrected.StrengthPct20C
+
 	eventTime := timestampOrNow(in.GetEventDate())
 
 	var (
@@ -229,28 +246,28 @@ func (s *BarrelService) FillBarrel(
 		// brim. If no capacity is recorded on the barrel we skip the
 		// check — operator opted out of capacity hygiene for that vessel.
 		if barrel.CapacityL.Valid {
-			if barrel.CurrentVolumeL+in.GetVolumeL() > barrel.CapacityL.Float64+1e-6 {
+			if barrel.CurrentVolumeL+volume > barrel.CapacityL.Float64+1e-6 {
 				return connect.NewError(connect.CodeFailedPrecondition,
 					fmt.Errorf("fill would overflow barrel: %.4f L on hand + %.4f L fill > %.4f L capacity",
-						barrel.CurrentVolumeL, in.GetVolumeL(), barrel.CapacityL.Float64))
+						barrel.CurrentVolumeL, volume, barrel.CapacityL.Float64))
 			}
 		}
 		source, e := q.GetBulkContainer(ctx, sourceID)
 		if e != nil {
 			return e
 		}
-		if source.CurrentVolumeL < in.GetVolumeL() {
+		if source.CurrentVolumeL < volume {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("source container has insufficient volume"))
 		}
 
-		laa := in.GetVolumeL() * in.GetAbvPct() / 100
+		laa := volume * abv / 100
 
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 			TenantID:               u.TenantID,
 			SourceContainerID:      uuid.NullUUID{UUID: sourceID, Valid: true},
 			DestinationContainerID: uuid.NullUUID{UUID: barrelID, Valid: true},
-			VolumeL:                in.GetVolumeL(),
-			AbvPct:                 in.GetAbvPct(),
+			VolumeL:                volume,
+			AbvPct:                 abv,
 			Laa:                    laa,
 			Reason:                 sqlcgen.BulkMovementReasonInterTankTransfer,
 			ReferenceType:          "barrel_fill",
@@ -263,7 +280,7 @@ func (s *BarrelService) FillBarrel(
 		}
 
 		// Update source (withdraw at source's existing ABV).
-		newSrcVol := source.CurrentVolumeL - in.GetVolumeL()
+		newSrcVol := source.CurrentVolumeL - volume
 		newSrcAbv := source.CurrentAbvPct
 		newSrcLAA := 0.0
 		if newSrcVol > 0 && newSrcAbv.Valid {
@@ -283,7 +300,7 @@ func (s *BarrelService) FillBarrel(
 		// Update barrel (deposit at fill ABV).
 		newBarrelVol, newBarrelAbv, newBarrelLAA := applyDeposit(
 			barrel.CurrentVolumeL, barrel.CurrentAbvPct,
-			in.GetVolumeL(), in.GetAbvPct(),
+			volume, abv,
 		)
 		barrelContainer, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
 			ID:             barrelID,
@@ -296,17 +313,22 @@ func (s *BarrelService) FillBarrel(
 		}
 
 		event, e = q.InsertBarrelEvent(ctx, sqlcgen.InsertBarrelEventParams{
-			TenantID:        u.TenantID,
-			ContainerID:     barrelID,
-			Kind:            sqlcgen.BarrelEventKindFill,
-			EventDate:       eventTime,
-			VolumeL:         pgtype.Float8{Float64: in.GetVolumeL(), Valid: true},
-			AbvPct:          pgtype.Float8{Float64: in.GetAbvPct(), Valid: true},
-			Laa:             pgtype.Float8{Float64: laa, Valid: true},
-			BulkMovementID:  uuid.NullUUID{UUID: mv.ID, Valid: true},
-			LocationAfter:   "",
-			Notes:           in.GetNotes(),
-			UserID:          uuid.NullUUID{UUID: u.ID, Valid: true},
+			TemperatureC:        optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			ObservedVolumeL:     optionalFloat(true, in.GetVolumeL()),
+			ObservedDensityKgM3: optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:       corrected.VolumeFactorC,
+			StrengthSource:      strengthSourceToDB(corrected.Source),
+			TenantID:            u.TenantID,
+			ContainerID:         barrelID,
+			Kind:                sqlcgen.BarrelEventKindFill,
+			EventDate:           eventTime,
+			VolumeL:             pgtype.Float8{Float64: volume, Valid: true},
+			AbvPct:              pgtype.Float8{Float64: abv, Valid: true},
+			Laa:                 pgtype.Float8{Float64: laa, Valid: true},
+			BulkMovementID:      uuid.NullUUID{UUID: mv.ID, Valid: true},
+			LocationAfter:       "",
+			Notes:               in.GetNotes(),
+			UserID:              uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
 		if e != nil {
 			return e
@@ -332,8 +354,8 @@ func (s *BarrelService) FillBarrel(
 				"event":     "fill",
 				"barrel":    barrelContainer.Name,
 				"source_id": sourceID.String(),
-				"volume_l":  in.GetVolumeL(),
-				"abv_pct":   in.GetAbvPct(),
+				"volume_l":  volume,
+				"abv_pct":   abv,
 				"laa":       laa,
 				"fill_date": attrs.FillDate.Time.Format("2006-01-02"),
 			})
@@ -376,6 +398,23 @@ func (s *BarrelService) DumpBarrel(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid volume_l / abv_pct"))
 	}
 
+	// Resolve the reading to 20 °C before anything is written. A warehouse
+	// is the least likely place on site for a gauge to be taken at the
+	// reference temperature, so the correction matters most here.
+	corrected, err := resolveStrength(strengthInput{
+		ObservedVolumeL: in.GetVolumeL(),
+		AbvPct:          in.GetAbvPct(),
+		DensityKgM3:     in.GetDensityKgM3(),
+		DensityIsSet:    in.GetDensityKgM3Set(),
+		TemperatureC:    in.GetTemperatureC(),
+		TemperatureSet:  in.GetTemperatureCSet(),
+	})
+	if err != nil {
+		return nil, alcoholometryError(err)
+	}
+	// Everything below works in litres and strength at 20 °C.
+	volume, abv := corrected.VolumeL20C, corrected.StrengthPct20C
+
 	eventTime := timestampOrNow(in.GetEventDate())
 
 	var (
@@ -399,14 +438,14 @@ func (s *BarrelService) DumpBarrel(
 			return e
 		}
 
-		laa := in.GetVolumeL() * in.GetAbvPct() / 100
+		laa := volume * abv / 100
 
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 			TenantID:               u.TenantID,
 			SourceContainerID:      uuid.NullUUID{UUID: barrelID, Valid: true},
 			DestinationContainerID: uuid.NullUUID{UUID: destID, Valid: true},
-			VolumeL:                in.GetVolumeL(),
-			AbvPct:                 in.GetAbvPct(),
+			VolumeL:                volume,
+			AbvPct:                 abv,
 			Laa:                    laa,
 			Reason:                 sqlcgen.BulkMovementReasonInterTankTransfer,
 			ReferenceType:          "barrel_dump",
@@ -432,7 +471,7 @@ func (s *BarrelService) DumpBarrel(
 		// Deposit into destination.
 		newDestVol, newDestAbv, newDestLAA := applyDeposit(
 			dest.CurrentVolumeL, dest.CurrentAbvPct,
-			in.GetVolumeL(), in.GetAbvPct(),
+			volume, abv,
 		)
 		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
 			ID:             destID,
@@ -444,16 +483,21 @@ func (s *BarrelService) DumpBarrel(
 		}
 
 		event, e = q.InsertBarrelEvent(ctx, sqlcgen.InsertBarrelEventParams{
-			TenantID:       u.TenantID,
-			ContainerID:    barrelID,
-			Kind:           sqlcgen.BarrelEventKindDump,
-			EventDate:      eventTime,
-			VolumeL:        pgtype.Float8{Float64: in.GetVolumeL(), Valid: true},
-			AbvPct:         pgtype.Float8{Float64: in.GetAbvPct(), Valid: true},
-			Laa:            pgtype.Float8{Float64: laa, Valid: true},
-			BulkMovementID: uuid.NullUUID{UUID: mv.ID, Valid: true},
-			Notes:          in.GetNotes(),
-			UserID:         uuid.NullUUID{UUID: u.ID, Valid: true},
+			TemperatureC:        optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			ObservedVolumeL:     optionalFloat(true, in.GetVolumeL()),
+			ObservedDensityKgM3: optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:       corrected.VolumeFactorC,
+			StrengthSource:      strengthSourceToDB(corrected.Source),
+			TenantID:            u.TenantID,
+			ContainerID:         barrelID,
+			Kind:                sqlcgen.BarrelEventKindDump,
+			EventDate:           eventTime,
+			VolumeL:             pgtype.Float8{Float64: volume, Valid: true},
+			AbvPct:              pgtype.Float8{Float64: abv, Valid: true},
+			Laa:                 pgtype.Float8{Float64: laa, Valid: true},
+			BulkMovementID:      uuid.NullUUID{UUID: mv.ID, Valid: true},
+			Notes:               in.GetNotes(),
+			UserID:              uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
 		if e != nil {
 			return e
@@ -469,8 +513,8 @@ func (s *BarrelService) DumpBarrel(
 			daysAged = int32(eventTime.Time.UTC().Sub(attrs.FillDate.Time).Hours() / 24)
 		}
 		if e := q.SetBarrelDumpedClock(ctx, sqlcgen.SetBarrelDumpedClockParams{
-			ContainerID:      barrelID,
-			DaysAgedAtDump:   pgtype.Int4{Int32: daysAged, Valid: true},
+			ContainerID:    barrelID,
+			DaysAgedAtDump: pgtype.Int4{Int32: daysAged, Valid: true},
 		}); e != nil {
 			return e
 		}
@@ -481,8 +525,8 @@ func (s *BarrelService) DumpBarrel(
 				"event":          "dump",
 				"barrel":         barrelContainer.Name,
 				"destination_id": destID.String(),
-				"volume_l":       in.GetVolumeL(),
-				"abv_pct":        in.GetAbvPct(),
+				"volume_l":       volume,
+				"abv_pct":        abv,
 				"laa":            laa,
 				"days_aged":      daysAged,
 			})
@@ -524,6 +568,23 @@ func (s *BarrelService) RegaugeBarrel(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid new_volume_l / new_abv_pct"))
 	}
 
+	// Resolve the reading to 20 °C before anything is written. A warehouse
+	// is the least likely place on site for a gauge to be taken at the
+	// reference temperature, so the correction matters most here.
+	corrected, err := resolveStrength(strengthInput{
+		ObservedVolumeL: in.GetNewVolumeL(),
+		AbvPct:          in.GetNewAbvPct(),
+		DensityKgM3:     in.GetDensityKgM3(),
+		DensityIsSet:    in.GetDensityKgM3Set(),
+		TemperatureC:    in.GetTemperatureC(),
+		TemperatureSet:  in.GetTemperatureCSet(),
+	})
+	if err != nil {
+		return nil, alcoholometryError(err)
+	}
+	// Everything below works in litres and strength at 20 °C.
+	volume, abv := corrected.VolumeL20C, corrected.StrengthPct20C
+
 	eventTime := timestampOrNow(in.GetEventDate())
 
 	var (
@@ -540,7 +601,7 @@ func (s *BarrelService) RegaugeBarrel(
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
-		newLAA := in.GetNewVolumeL() * in.GetNewAbvPct() / 100
+		newLAA := volume * abv / 100
 		if newLAA > barrel.CurrentLaa+1e-6 {
 			return connect.NewError(connect.CodeInvalidArgument,
 				errors.New("new LAA cannot exceed current LAA — regauges record losses only"))
@@ -552,11 +613,11 @@ func (s *BarrelService) RegaugeBarrel(
 		// which preserves the audit trail (destination, days_aged) and
 		// keeps the bulk ledger reconcilable. Empty→empty regauges (no-op
 		// snapshots) are still allowed.
-		if in.GetNewVolumeL() == 0 && barrel.CurrentVolumeL > 0 {
+		if volume == 0 && barrel.CurrentVolumeL > 0 {
 			return connect.NewError(connect.CodeFailedPrecondition,
 				errors.New("regauge cannot fully drain a non-empty barrel — use dump_barrel to record a transfer"))
 		}
-		lossVol := barrel.CurrentVolumeL - in.GetNewVolumeL()
+		lossVol := barrel.CurrentVolumeL - volume
 		lossLAA := barrel.CurrentLaa - newLAA
 		lostLAA = lossLAA
 
@@ -584,12 +645,12 @@ func (s *BarrelService) RegaugeBarrel(
 
 		// Update barrel to new measurements.
 		var newAbv pgtype.Float8
-		if in.GetNewVolumeL() > 0 {
-			newAbv = pgtype.Float8{Float64: in.GetNewAbvPct(), Valid: true}
+		if volume > 0 {
+			newAbv = pgtype.Float8{Float64: abv, Valid: true}
 		}
 		barrelContainer, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
 			ID:             barrelID,
-			CurrentVolumeL: in.GetNewVolumeL(),
+			CurrentVolumeL: volume,
 			CurrentAbvPct:  newAbv,
 			CurrentLaa:     newLAA,
 		})
@@ -598,16 +659,21 @@ func (s *BarrelService) RegaugeBarrel(
 		}
 
 		event, e = q.InsertBarrelEvent(ctx, sqlcgen.InsertBarrelEventParams{
-			TenantID:       u.TenantID,
-			ContainerID:    barrelID,
-			Kind:           sqlcgen.BarrelEventKindRegauge,
-			EventDate:      eventTime,
-			VolumeL:        pgtype.Float8{Float64: in.GetNewVolumeL(), Valid: true},
-			AbvPct:         pgtype.Float8{Float64: in.GetNewAbvPct(), Valid: true},
-			Laa:            pgtype.Float8{Float64: newLAA, Valid: true},
-			BulkMovementID: mvID,
-			Notes:          in.GetNotes(),
-			UserID:         uuid.NullUUID{UUID: u.ID, Valid: true},
+			TemperatureC:        optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			ObservedVolumeL:     optionalFloat(true, in.GetNewVolumeL()),
+			ObservedDensityKgM3: optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:       corrected.VolumeFactorC,
+			StrengthSource:      strengthSourceToDB(corrected.Source),
+			TenantID:            u.TenantID,
+			ContainerID:         barrelID,
+			Kind:                sqlcgen.BarrelEventKindRegauge,
+			EventDate:           eventTime,
+			VolumeL:             pgtype.Float8{Float64: volume, Valid: true},
+			AbvPct:              pgtype.Float8{Float64: abv, Valid: true},
+			Laa:                 pgtype.Float8{Float64: newLAA, Valid: true},
+			BulkMovementID:      mvID,
+			Notes:               in.GetNotes(),
+			UserID:              uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
 		if e != nil {
 			return e
@@ -621,8 +687,8 @@ func (s *BarrelService) RegaugeBarrel(
 			sqlcgen.AuditActionUpdate, map[string]any{
 				"event":        "regauge",
 				"barrel":       barrelContainer.Name,
-				"new_volume_l": in.GetNewVolumeL(),
-				"new_abv_pct":  in.GetNewAbvPct(),
+				"new_volume_l": volume,
+				"new_abv_pct":  abv,
 				"new_laa":      newLAA,
 				"lost_laa":     lostLAA,
 			})
@@ -892,6 +958,19 @@ func barrelEventToProto(e sqlcgen.BarrelEvent) *stillhousev1.BarrelEvent {
 		out.Laa = round4(e.Laa.Float64)
 		out.LaaSet = true
 	}
+	if e.TemperatureC.Valid {
+		out.TemperatureC = e.TemperatureC.Float64
+		out.TemperatureCSet = true
+	}
+	if e.ObservedVolumeL.Valid {
+		out.ObservedVolumeL = round4(e.ObservedVolumeL.Float64)
+	}
+	if e.ObservedDensityKgM3.Valid {
+		out.ObservedDensityKgM3 = e.ObservedDensityKgM3.Float64
+		out.ObservedDensityKgM3Set = true
+	}
+	out.VolumeFactorC = e.VolumeFactorC
+	out.StrengthSource = strengthSourceToProto(e.StrengthSource)
 	return out
 }
 

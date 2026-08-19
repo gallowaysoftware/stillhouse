@@ -381,13 +381,13 @@ func (s *DistillationService) DeleteDistillationCut(
 // RecordProductionGauge is the bridge from operational records to the bulk
 // alcohol ledger. It runs in one transaction:
 //
-//	1. Insert a BulkMovement (reason=production_gauge) into the destination
-//	   container; that movement is the canonical source of truth for the new
-//	   alcohol.
-//	2. Insert a ProductionGauge row linked to the movement.
-//	3. Update the destination container's running balance (volume / weighted
-//	   ABV / LAA).
-//	4. Bump the distillation run's status to GAUGED.
+//  1. Insert a BulkMovement (reason=production_gauge) into the destination
+//     container; that movement is the canonical source of truth for the new
+//     alcohol.
+//  2. Insert a ProductionGauge row linked to the movement.
+//  3. Update the destination container's running balance (volume / weighted
+//     ABV / LAA).
+//  4. Bump the distillation run's status to GAUGED.
 func (s *DistillationService) RecordProductionGauge(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.RecordProductionGaugeRequest],
@@ -410,6 +410,21 @@ func (s *DistillationService) RecordProductionGauge(
 	}
 	if in.GetAbvPct() < 0 || in.GetAbvPct() > 100 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("abv_pct must be in [0, 100]"))
+	}
+	// Resolve the reading to 20 °C before anything is written. What the
+	// operator measured (volume at tank temperature, hydrometer
+	// indication) is not what the B266 is built from — see the
+	// alcoholometry package.
+	corrected, err := resolveStrength(strengthInput{
+		ObservedVolumeL: in.GetVolumeL(),
+		AbvPct:          in.GetAbvPct(),
+		DensityKgM3:     in.GetDensityKgM3(),
+		DensityIsSet:    in.GetDensityKgM3Set(),
+		TemperatureC:    in.GetTemperatureC(),
+		TemperatureSet:  in.GetTemperatureCSet(),
+	})
+	if err != nil {
+		return nil, alcoholometryError(err)
 	}
 	gaugeTS := timestampOrNow(in.GetGaugeDate())
 
@@ -435,9 +450,11 @@ func (s *DistillationService) RecordProductionGauge(
 			return e
 		}
 
-		volume := in.GetVolumeL()
-		abv := in.GetAbvPct()
-		laa := volume * abv / 100
+		// Everything downstream — the ledger, the container balance, the
+		// B266 — works in litres and strength at 20 °C.
+		volume := corrected.VolumeL20C
+		abv := corrected.StrengthPct20C
+		laa := corrected.LAA()
 
 		// 1. Insert the BulkMovement.
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
@@ -459,16 +476,20 @@ func (s *DistillationService) RecordProductionGauge(
 
 		// 2. Insert the ProductionGauge.
 		gauge, e = q.CreateProductionGauge(ctx, sqlcgen.CreateProductionGaugeParams{
-			TenantID:                u.TenantID,
-			DistillationRunID:       runID,
-			DestinationContainerID:  destID,
-			BulkMovementID:          mv.ID,
-			GaugeDate:               gaugeTS,
-			VolumeL:                 volume,
-			AbvPct:                  abv,
-			TemperatureC:            optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
-			GaugerUserID:            u.ID,
-			Notes:                   in.GetNotes(),
+			TenantID:               u.TenantID,
+			DistillationRunID:      runID,
+			DestinationContainerID: destID,
+			BulkMovementID:         mv.ID,
+			GaugeDate:              gaugeTS,
+			VolumeL:                volume,
+			AbvPct:                 abv,
+			TemperatureC:           optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			GaugerUserID:           u.ID,
+			Notes:                  in.GetNotes(),
+			ObservedVolumeL:        optionalFloat(true, in.GetVolumeL()),
+			ObservedDensityKgM3:    optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:          corrected.VolumeFactorC,
+			StrengthSource:         strengthSourceToDB(corrected.Source),
 		})
 		if e != nil {
 			return e
@@ -502,6 +523,9 @@ func (s *DistillationService) RecordProductionGauge(
 				"volume_l":            volume,
 				"abv_pct":             abv,
 				"laa":                 laa,
+				"observed_volume_l":   in.GetVolumeL(),
+				"volume_factor_c":     corrected.VolumeFactorC,
+				"strength_source":     corrected.Source.String(),
 			})
 	})
 	if err != nil {
@@ -625,9 +649,9 @@ func (s *DistillationService) VoidDistillationRun(
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_run", voided.ID.String(),
 			sqlcgen.AuditActionUpdate, map[string]any{
-				"event":   "voided",
-				"run_no":  voided.RunNo,
-				"reason":  reason,
+				"event":     "voided",
+				"run_no":    voided.RunNo,
+				"reason":    reason,
 				"had_gauge": ge == nil,
 			})
 	})
@@ -745,6 +769,15 @@ func productionGaugeToProto(g sqlcgen.ProductionGauge, destName string) *stillho
 		out.TemperatureC = g.TemperatureC.Float64
 		out.TemperatureCSet = true
 	}
+	if g.ObservedVolumeL.Valid {
+		out.ObservedVolumeL = g.ObservedVolumeL.Float64
+	}
+	if g.ObservedDensityKgM3.Valid {
+		out.ObservedDensityKgM3 = g.ObservedDensityKgM3.Float64
+		out.ObservedDensityKgM3Set = true
+	}
+	out.VolumeFactorC = g.VolumeFactorC
+	out.StrengthSource = strengthSourceToProto(g.StrengthSource)
 	return out
 }
 

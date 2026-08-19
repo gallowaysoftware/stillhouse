@@ -4,9 +4,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { Button } from "@/components/Button";
 import { Callout } from "@/components/Callout";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { Shell } from "@/components/Shell";
+import {
+  emptyReading,
+  readingToRequest,
+  SourceBadge,
+  StrengthReading,
+  StrengthReadingValue,
+} from "@/components/StrengthReading";
 import { useToast } from "@/components/Toast";
 import { barrelClient, bulkClient } from "@/lib/clients";
 import {
@@ -16,6 +24,7 @@ import {
   RegaugeBarrelRequestSchema,
   VoidBarrelEventRequestSchema,
 } from "@/gen/stillhouse/v1/barrel_pb";
+import { StrengthSource } from "@/gen/stillhouse/v1/alcoholometry_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 
 const eventKindLabels: Record<BarrelEventKind, string> = {
@@ -185,8 +194,8 @@ export function BarrelDetailPage() {
             <tr>
               <th className="px-4 py-3">When</th>
               <th className="px-4 py-3">Event</th>
-              <th className="px-4 py-3 text-right">Vol (L)</th>
-              <th className="px-4 py-3 text-right">ABV</th>
+              <th className="px-4 py-3 text-right">Vol (L @ 20 °C)</th>
+              <th className="px-4 py-3 text-right">Strength (20 °C)</th>
               <th className="px-4 py-3 text-right">LAA</th>
               <th className="px-4 py-3">Notes</th>
               <th className="px-4 py-3"></th>
@@ -201,10 +210,30 @@ export function BarrelDetailPage() {
                 <td className="px-4 py-3 text-fg-muted">
                   {e.eventDate ? new Date(Number(e.eventDate.seconds) * 1000).toLocaleString() : ""}
                 </td>
-                <td className="px-4 py-3 font-medium text-fg">{eventKindLabels[e.kind] ?? "—"}</td>
-                <td className="px-4 py-3 text-right text-fg-muted">{e.volumeLSet ? formatQty(e.volumeL) : "—"}</td>
-                <td className="px-4 py-3 text-right text-fg-muted">{e.abvPctSet ? `${e.abvPct.toFixed(2)}%` : "—"}</td>
-                <td className="px-4 py-3 text-right text-fg-muted">{e.laaSet ? formatLAA(e.laa) : "—"}</td>
+                <td className="px-4 py-3">
+                  <div className="font-medium text-fg">{eventKindLabels[e.kind] ?? "—"}</div>
+                  {/* Only worth the ink when a determination was actually
+                      made — an unbadged row is an uncorrected legacy one. */}
+                  {e.strengthSource !== StrengthSource.UNCORRECTED && (
+                    <div className="mt-1"><SourceBadge source={e.strengthSource} /></div>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right text-fg-muted tabular-nums">
+                  {e.volumeLSet ? formatQty(e.volumeL) : "—"}
+                  {Math.abs(e.volumeFactorC - 1) > 1e-9 && e.observedVolumeL > 0 && (
+                    <div className="text-xs text-fg-subtle">
+                      gauged {formatQty(e.observedVolumeL)}
+                      {e.temperatureCSet && ` @ ${e.temperatureC.toFixed(1)}°C`}
+                    </div>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right text-fg-muted tabular-nums">
+                  {e.abvPctSet ? `${e.abvPct.toFixed(2)}%` : "—"}
+                  {e.observedDensityKgM3Set && (
+                    <div className="text-xs text-fg-subtle">{e.observedDensityKgM3.toFixed(1)} kg/m³</div>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right text-fg-muted tabular-nums">{e.laaSet ? formatLAA(e.laa) : "—"}</td>
                 <td className="px-4 py-3 text-fg-muted">{e.notes}</td>
                 <td className="px-4 py-3 text-right">
                   {e.kind !== BarrelEventKind.REGAUGE && (
@@ -240,28 +269,31 @@ function FillCard({
   error: Error | null;
 }) {
   const [srcID, setSrcID] = useState("");
-  const [vol, setVol] = useState("");
-  const [abv, setAbv] = useState("");
+  const [reading, setReading] = useState<StrengthReadingValue>(emptyReading());
   const [notes, setNotes] = useState("");
   const selectedSource = containers.find((c) => c.id === srcID);
   const sourceHasNoABV = selectedSource && !selectedSource.currentAbvPctSet;
-  // Prefill ABV from the source the first time it's selected — operators
-  // almost always fill at the container's current ABV; saves re-typing.
+  // Prefill strength from the source the first time it's selected —
+  // operators almost always fill at the container's current strength,
+  // which is already held at 20 °C. Saves re-typing.
   function onSourceChange(id: string) {
     setSrcID(id);
     const next = containers.find((c) => c.id === id);
-    if (next && next.currentAbvPctSet && !abv) setAbv(next.currentAbvPct.toFixed(2));
+    if (next && next.currentAbvPctSet && !reading.abv && reading.mode === "abv") {
+      setReading((r) => ({ ...r, abv: next.currentAbvPct.toFixed(2) }));
+    }
   }
+  const hasStrength = reading.mode === "density" ? reading.density.trim() !== "" : reading.abv.trim() !== "";
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!srcID || !vol || !abv) return;
+    if (!srcID || !reading.volumeL || !hasStrength) return;
     onSubmit(
       create(FillBarrelRequestSchema, {
         barrelId,
         sourceContainerId: srcID,
-        volumeL: Number(vol),
-        abvPct: Number(abv),
+        volumeL: Number(reading.volumeL),
         notes,
+        ...readingToRequest(reading),
       }),
     );
   }
@@ -283,8 +315,7 @@ function FillCard({
             barrel (and in B266 downstream) will be wrong.
           </Callout>
         )}
-        <NumField label="Volume (litres of liquid)" value={vol} onChange={setVol} />
-        <NumField label="ABV %" value={abv} onChange={setAbv} />
+        <StrengthReading value={reading} onChange={setReading} volumeLabel="Volume (L, as gauged)" />
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Fill</Submit>
       </form>
@@ -305,25 +336,26 @@ function RegaugeCard({
   error: Error | null;
   lastResult?: { lostLaa: number } | undefined;
 }) {
-  const [vol, setVol] = useState(String(barrel.currentVolumeL));
-  const [abv, setAbv] = useState(String(barrel.currentAbvPct));
+  const [reading, setReading] = useState<StrengthReadingValue>(
+    emptyReading({ volumeL: String(barrel.currentVolumeL), abv: String(barrel.currentAbvPct) }),
+  );
   const [notes, setNotes] = useState("");
   function submit(e: FormEvent) {
     e.preventDefault();
     onSubmit(
       create(RegaugeBarrelRequestSchema, {
         barrelId: barrel.id,
-        newVolumeL: Number(vol),
-        newAbvPct: Number(abv),
+        newVolumeL: Number(reading.volumeL),
+        newAbvPct: reading.mode === "abv" ? Number(reading.abv) : 0,
         notes,
+        ...readingToRequest(reading),
       }),
     );
   }
   return (
     <Card title="Regauge (record current actual)">
       <form onSubmit={submit} className="space-y-3 p-4">
-        <NumField label="Actual volume (L liquid)" value={vol} onChange={setVol} />
-        <NumField label="Actual ABV %" value={abv} onChange={setAbv} />
+        <StrengthReading value={reading} onChange={setReading} volumeLabel="Actual volume (L, as gauged)" />
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Regauge</Submit>
         {lastResult && lastResult.lostLaa > 0 && (
@@ -351,8 +383,9 @@ function DumpCard({
   error: Error | null;
 }) {
   const [destID, setDestID] = useState("");
-  const [vol, setVol] = useState(String(barrel.currentVolumeL));
-  const [abv, setAbv] = useState(String(barrel.currentAbvPct));
+  const [reading, setReading] = useState<StrengthReadingValue>(
+    emptyReading({ volumeL: String(barrel.currentVolumeL), abv: String(barrel.currentAbvPct) }),
+  );
   const [notes, setNotes] = useState("");
   function submit(e: FormEvent) {
     e.preventDefault();
@@ -361,9 +394,9 @@ function DumpCard({
       create(DumpBarrelRequestSchema, {
         barrelId: barrel.id,
         destinationContainerId: destID,
-        volumeL: Number(vol),
-        abvPct: Number(abv),
+        volumeL: Number(reading.volumeL),
         notes,
+        ...readingToRequest(reading),
       }),
     );
   }
@@ -376,8 +409,7 @@ function DumpCard({
             <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </Select>
-        <NumField label="Actual volume (L liquid)" value={vol} onChange={setVol} />
-        <NumField label="Actual ABV %" value={abv} onChange={setAbv} />
+        <StrengthReading value={reading} onChange={setReading} volumeLabel="Actual volume (L, as gauged)" />
         <TextField label="Notes" value={notes} onChange={setNotes} />
         <Submit submitting={submitting} error={error}>Dump</Submit>
       </form>
@@ -396,20 +428,6 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-function NumField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
-      <input
-        type="number"
-        step="0.01"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-border-strong px-3 py-2 text-sm"
-      />
-    </div>
-  );
-}
 
 function TextField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
@@ -453,13 +471,9 @@ function Select({
 function Submit({ submitting, error, children }: { submitting: boolean; error: Error | null; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
-      >
+      <Button type="submit" disabled={submitting}>
         {submitting ? "Saving…" : children}
-      </button>
+      </Button>
       {error && (
         <span className="text-xs text-danger-fg">
           {error instanceof ConnectError ? error.rawMessage : String(error)}

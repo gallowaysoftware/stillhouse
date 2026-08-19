@@ -3,6 +3,7 @@ syntax = "proto3";
 package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/alcoholometry.proto";
 import "stillhouse/v1/bulk.proto";
 
 enum DistillationStatus {
@@ -77,6 +78,9 @@ message ProductionGauge {
   string destination_container_name = 4;
   string bulk_movement_id = 5;
   google.protobuf.Timestamp gauge_date = 6;
+  // volume_l / abv_pct / laa are the values AT 20 °C — the pair the B266
+  // is built from. observed_* below preserve what the operator read off
+  // the instrument, so a gauge can be audited back to the bench.
   double volume_l = 7;
   double abv_pct = 8;
   double temperature_c = 9;
@@ -84,6 +88,14 @@ message ProductionGauge {
   double laa = 11;
   string gauger_user_id = 12;
   string notes = 13;
+
+  // As observed, before correction to 20 °C.
+  double observed_volume_l = 14;
+  double observed_density_kg_m3 = 15;
+  bool   observed_density_kg_m3_set = 16;
+  // C — the factor applied to observed_volume_l to reach volume_l.
+  double volume_factor_c = 17;
+  StrengthSource strength_source = 18;
 }
 
 // --- requests ---
@@ -143,11 +155,19 @@ message RecordProductionGaugeRequest {
   string distillation_run_id = 1;
   string destination_container_id = 2;
   google.protobuf.Timestamp gauge_date = 3;
+  // volume_l is the volume as gauged, at temperature_c.
   double volume_l = 4;
+  // abv_pct is the strength at 20 °C when the instrument already corrects
+  // (density meter), or when no temperature is supplied at all. Leave it
+  // unset and send density_kg_m3 instead to have Stillhouse resolve the
+  // strength through the published tables — CRA's approved path.
   double abv_pct = 5;
   double temperature_c = 6;
   bool   temperature_c_set = 7;
   string notes = 8;
+  // Hydrometer indication in kg/m³, read at temperature_c.
+  double density_kg_m3 = 9;
+  bool   density_kg_m3_set = 10;
 }
 message RecordProductionGaugeResponse {
   ProductionGauge gauge = 1;

@@ -4,7 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { Button } from "@/components/Button";
 import { useConfirm } from "@/components/ConfirmDialog";
+import {
+  emptyReading,
+  readingToRequest,
+  SourceBadge,
+  StrengthReading,
+  StrengthReadingValue,
+} from "@/components/StrengthReading";
 import { Shell } from "@/components/Shell";
 import { bulkClient, distillationClient, fermentationClient } from "@/lib/clients";
 import {
@@ -154,10 +162,24 @@ export function DistillationDetailPage() {
             <Row k="Gauged at">
               {r.gauge.gaugeDate ? new Date(Number(r.gauge.gaugeDate.seconds) * 1000).toLocaleString() : ""}
             </Row>
-            <Row k="Volume">{formatQty(r.gauge.volumeL)} L</Row>
-            <Row k="ABV">{r.gauge.abvPct.toFixed(2)}%</Row>
+            {/* Volume and ABV are the values at 20 °C — what the B266 is
+                built from. Where a correction was applied, show what was
+                actually read off the instrument beside it. */}
+            <Row k="Volume (20 °C)">
+              {formatQty(r.gauge.volumeL)} L
+              {Math.abs(r.gauge.volumeFactorC - 1) > 1e-9 && r.gauge.observedVolumeL > 0 && (
+                <span className="ml-2 text-xs text-fg-subtle">
+                  gauged {formatQty(r.gauge.observedVolumeL)} L · ×{r.gauge.volumeFactorC.toFixed(4)}
+                </span>
+              )}
+            </Row>
+            <Row k="Strength (20 °C)">{r.gauge.abvPct.toFixed(2)}%</Row>
             <Row k="LAA"><span className="font-semibold text-fg">{formatLAA(r.gauge.laa)} L</span></Row>
             {r.gauge.temperatureCSet && <Row k="Temperature">{r.gauge.temperatureC.toFixed(1)}°C</Row>}
+            {r.gauge.observedDensityKgM3Set && (
+              <Row k="Hydrometer">{r.gauge.observedDensityKgM3.toFixed(1)} kg/m³</Row>
+            )}
+            <Row k="Determination"><SourceBadge source={r.gauge.strengthSource} /></Row>
           </dl>
         ) : (
           <GaugeForm
@@ -456,23 +478,21 @@ function GaugeForm({
   error: Error | null;
 }) {
   const [destID, setDestID] = useState("");
-  const [vol, setVol] = useState("");
-  const [abv, setAbv] = useState("");
-  const [temp, setTemp] = useState("");
+  const [reading, setReading] = useState<StrengthReadingValue>(emptyReading());
   const [notes, setNotes] = useState("");
+
+  const hasStrength = reading.mode === "density" ? reading.density.trim() !== "" : reading.abv.trim() !== "";
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!destID || !vol || !abv) return;
+    if (!destID || !reading.volumeL || !hasStrength) return;
     onSubmit(
       create(RecordProductionGaugeRequestSchema, {
         distillationRunId,
         destinationContainerId: destID,
-        volumeL: Number(vol),
-        abvPct: Number(abv),
-        temperatureC: temp ? Number(temp) : 0,
-        temperatureCSet: !!temp,
+        volumeL: Number(reading.volumeL),
         notes,
+        ...readingToRequest(reading),
       }),
     );
   }
@@ -496,18 +516,16 @@ function GaugeForm({
           Recording the gauge creates a BulkMovement into this container and updates its running balance.
         </p>
       </div>
-      <Field label="Volume (L liquid)" value={vol} onChange={setVol} type="number" step="0.01" />
-      <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="0.01" />
-      <Field label="Temperature (°C, optional)" value={temp} onChange={setTemp} type="number" step="0.1" />
-      <Field label="Notes" value={notes} onChange={setNotes} />
+      <div className="col-span-2">
+        <StrengthReading value={reading} onChange={setReading} />
+      </div>
+      <div className="col-span-2">
+        <Field label="Notes" value={notes} onChange={setNotes} />
+      </div>
       <div className="col-span-2 flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
-        >
+        <Button type="submit" disabled={submitting}>
           {submitting ? "Recording…" : "Record gauge"}
-        </button>
+        </Button>
         {error && (
           <span className="text-sm text-danger-fg">
             {error instanceof ConnectError ? error.rawMessage : String(error)}

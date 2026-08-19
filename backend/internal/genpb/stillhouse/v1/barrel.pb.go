@@ -371,24 +371,34 @@ func (x *Barrel) GetDaysToCanadianWhiskyEligible() int32 {
 }
 
 type BarrelEvent struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ContainerId    string                 `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
-	Kind           BarrelEventKind        `protobuf:"varint,3,opt,name=kind,proto3,enum=stillhouse.v1.BarrelEventKind" json:"kind,omitempty"`
-	EventDate      *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
-	VolumeL        float64                `protobuf:"fixed64,5,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"`
-	VolumeLSet     bool                   `protobuf:"varint,6,opt,name=volume_l_set,json=volumeLSet,proto3" json:"volume_l_set,omitempty"`
-	AbvPct         float64                `protobuf:"fixed64,7,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`
-	AbvPctSet      bool                   `protobuf:"varint,8,opt,name=abv_pct_set,json=abvPctSet,proto3" json:"abv_pct_set,omitempty"`
-	Laa            float64                `protobuf:"fixed64,9,opt,name=laa,proto3" json:"laa,omitempty"`
-	LaaSet         bool                   `protobuf:"varint,10,opt,name=laa_set,json=laaSet,proto3" json:"laa_set,omitempty"`
-	BulkMovementId string                 `protobuf:"bytes,11,opt,name=bulk_movement_id,json=bulkMovementId,proto3" json:"bulk_movement_id,omitempty"` // empty for sample/move
-	LocationAfter  string                 `protobuf:"bytes,12,opt,name=location_after,json=locationAfter,proto3" json:"location_after,omitempty"`
-	Notes          string                 `protobuf:"bytes,13,opt,name=notes,proto3" json:"notes,omitempty"`
-	UserId         string                 `protobuf:"bytes,14,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ContainerId string                 `protobuf:"bytes,2,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	Kind        BarrelEventKind        `protobuf:"varint,3,opt,name=kind,proto3,enum=stillhouse.v1.BarrelEventKind" json:"kind,omitempty"`
+	EventDate   *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
+	// volume_l / abv_pct / laa are the values AT 20 °C. A warehouse is the
+	// place a reading is least likely to be taken at 20 °C, so observed_*
+	// below keep what the operator actually saw.
+	VolumeL                float64                `protobuf:"fixed64,5,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"`
+	VolumeLSet             bool                   `protobuf:"varint,6,opt,name=volume_l_set,json=volumeLSet,proto3" json:"volume_l_set,omitempty"`
+	AbvPct                 float64                `protobuf:"fixed64,7,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`
+	AbvPctSet              bool                   `protobuf:"varint,8,opt,name=abv_pct_set,json=abvPctSet,proto3" json:"abv_pct_set,omitempty"`
+	Laa                    float64                `protobuf:"fixed64,9,opt,name=laa,proto3" json:"laa,omitempty"`
+	LaaSet                 bool                   `protobuf:"varint,10,opt,name=laa_set,json=laaSet,proto3" json:"laa_set,omitempty"`
+	BulkMovementId         string                 `protobuf:"bytes,11,opt,name=bulk_movement_id,json=bulkMovementId,proto3" json:"bulk_movement_id,omitempty"` // empty for sample/move
+	LocationAfter          string                 `protobuf:"bytes,12,opt,name=location_after,json=locationAfter,proto3" json:"location_after,omitempty"`
+	Notes                  string                 `protobuf:"bytes,13,opt,name=notes,proto3" json:"notes,omitempty"`
+	UserId                 string                 `protobuf:"bytes,14,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	CreatedAt              *timestamppb.Timestamp `protobuf:"bytes,15,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	TemperatureC           float64                `protobuf:"fixed64,16,opt,name=temperature_c,json=temperatureC,proto3" json:"temperature_c,omitempty"`
+	TemperatureCSet        bool                   `protobuf:"varint,17,opt,name=temperature_c_set,json=temperatureCSet,proto3" json:"temperature_c_set,omitempty"`
+	ObservedVolumeL        float64                `protobuf:"fixed64,18,opt,name=observed_volume_l,json=observedVolumeL,proto3" json:"observed_volume_l,omitempty"`
+	ObservedDensityKgM3    float64                `protobuf:"fixed64,19,opt,name=observed_density_kg_m3,json=observedDensityKgM3,proto3" json:"observed_density_kg_m3,omitempty"`
+	ObservedDensityKgM3Set bool                   `protobuf:"varint,20,opt,name=observed_density_kg_m3_set,json=observedDensityKgM3Set,proto3" json:"observed_density_kg_m3_set,omitempty"`
+	VolumeFactorC          float64                `protobuf:"fixed64,21,opt,name=volume_factor_c,json=volumeFactorC,proto3" json:"volume_factor_c,omitempty"`
+	StrengthSource         StrengthSource         `protobuf:"varint,22,opt,name=strength_source,json=strengthSource,proto3,enum=stillhouse.v1.StrengthSource" json:"strength_source,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *BarrelEvent) Reset() {
@@ -524,6 +534,55 @@ func (x *BarrelEvent) GetCreatedAt() *timestamppb.Timestamp {
 		return x.CreatedAt
 	}
 	return nil
+}
+
+func (x *BarrelEvent) GetTemperatureC() float64 {
+	if x != nil {
+		return x.TemperatureC
+	}
+	return 0
+}
+
+func (x *BarrelEvent) GetTemperatureCSet() bool {
+	if x != nil {
+		return x.TemperatureCSet
+	}
+	return false
+}
+
+func (x *BarrelEvent) GetObservedVolumeL() float64 {
+	if x != nil {
+		return x.ObservedVolumeL
+	}
+	return 0
+}
+
+func (x *BarrelEvent) GetObservedDensityKgM3() float64 {
+	if x != nil {
+		return x.ObservedDensityKgM3
+	}
+	return 0
+}
+
+func (x *BarrelEvent) GetObservedDensityKgM3Set() bool {
+	if x != nil {
+		return x.ObservedDensityKgM3Set
+	}
+	return false
+}
+
+func (x *BarrelEvent) GetVolumeFactorC() float64 {
+	if x != nil {
+		return x.VolumeFactorC
+	}
+	return 0
+}
+
+func (x *BarrelEvent) GetStrengthSource() StrengthSource {
+	if x != nil {
+		return x.StrengthSource
+	}
+	return StrengthSource_STRENGTH_SOURCE_UNSPECIFIED
 }
 
 type CreateBarrelRequest struct {
@@ -950,6 +1009,10 @@ type FillBarrelRequest struct {
 	AbvPct            float64                `protobuf:"fixed64,4,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`
 	EventDate         *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
 	Notes             string                 `protobuf:"bytes,6,opt,name=notes,proto3" json:"notes,omitempty"`
+	TemperatureC      float64                `protobuf:"fixed64,7,opt,name=temperature_c,json=temperatureC,proto3" json:"temperature_c,omitempty"`
+	TemperatureCSet   bool                   `protobuf:"varint,8,opt,name=temperature_c_set,json=temperatureCSet,proto3" json:"temperature_c_set,omitempty"`
+	DensityKgM3       float64                `protobuf:"fixed64,9,opt,name=density_kg_m3,json=densityKgM3,proto3" json:"density_kg_m3,omitempty"`
+	DensityKgM3Set    bool                   `protobuf:"varint,10,opt,name=density_kg_m3_set,json=densityKgM3Set,proto3" json:"density_kg_m3_set,omitempty"`
 	unknownFields     protoimpl.UnknownFields
 	sizeCache         protoimpl.SizeCache
 }
@@ -1026,6 +1089,34 @@ func (x *FillBarrelRequest) GetNotes() string {
 	return ""
 }
 
+func (x *FillBarrelRequest) GetTemperatureC() float64 {
+	if x != nil {
+		return x.TemperatureC
+	}
+	return 0
+}
+
+func (x *FillBarrelRequest) GetTemperatureCSet() bool {
+	if x != nil {
+		return x.TemperatureCSet
+	}
+	return false
+}
+
+func (x *FillBarrelRequest) GetDensityKgM3() float64 {
+	if x != nil {
+		return x.DensityKgM3
+	}
+	return 0
+}
+
+func (x *FillBarrelRequest) GetDensityKgM3Set() bool {
+	if x != nil {
+		return x.DensityKgM3Set
+	}
+	return false
+}
+
 type FillBarrelResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Event         *BarrelEvent           `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
@@ -1086,6 +1177,10 @@ type DumpBarrelRequest struct {
 	AbvPct                 float64                `protobuf:"fixed64,4,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`    // actual at dump
 	EventDate              *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
 	Notes                  string                 `protobuf:"bytes,6,opt,name=notes,proto3" json:"notes,omitempty"`
+	TemperatureC           float64                `protobuf:"fixed64,7,opt,name=temperature_c,json=temperatureC,proto3" json:"temperature_c,omitempty"`
+	TemperatureCSet        bool                   `protobuf:"varint,8,opt,name=temperature_c_set,json=temperatureCSet,proto3" json:"temperature_c_set,omitempty"`
+	DensityKgM3            float64                `protobuf:"fixed64,9,opt,name=density_kg_m3,json=densityKgM3,proto3" json:"density_kg_m3,omitempty"`
+	DensityKgM3Set         bool                   `protobuf:"varint,10,opt,name=density_kg_m3_set,json=densityKgM3Set,proto3" json:"density_kg_m3_set,omitempty"`
 	unknownFields          protoimpl.UnknownFields
 	sizeCache              protoimpl.SizeCache
 }
@@ -1162,6 +1257,34 @@ func (x *DumpBarrelRequest) GetNotes() string {
 	return ""
 }
 
+func (x *DumpBarrelRequest) GetTemperatureC() float64 {
+	if x != nil {
+		return x.TemperatureC
+	}
+	return 0
+}
+
+func (x *DumpBarrelRequest) GetTemperatureCSet() bool {
+	if x != nil {
+		return x.TemperatureCSet
+	}
+	return false
+}
+
+func (x *DumpBarrelRequest) GetDensityKgM3() float64 {
+	if x != nil {
+		return x.DensityKgM3
+	}
+	return 0
+}
+
+func (x *DumpBarrelRequest) GetDensityKgM3Set() bool {
+	if x != nil {
+		return x.DensityKgM3Set
+	}
+	return false
+}
+
 type DumpBarrelResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Event         *BarrelEvent           `protobuf:"bytes,1,opt,name=event,proto3" json:"event,omitempty"`
@@ -1215,14 +1338,21 @@ func (x *DumpBarrelResponse) GetBarrel() *Barrel {
 }
 
 type RegaugeBarrelRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	BarrelId      string                 `protobuf:"bytes,1,opt,name=barrel_id,json=barrelId,proto3" json:"barrel_id,omitempty"`
-	NewVolumeL    float64                `protobuf:"fixed64,2,opt,name=new_volume_l,json=newVolumeL,proto3" json:"new_volume_l,omitempty"`
-	NewAbvPct     float64                `protobuf:"fixed64,3,opt,name=new_abv_pct,json=newAbvPct,proto3" json:"new_abv_pct,omitempty"`
-	EventDate     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
-	Notes         string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	BarrelId string                 `protobuf:"bytes,1,opt,name=barrel_id,json=barrelId,proto3" json:"barrel_id,omitempty"`
+	// new_volume_l is the volume as gauged, at temperature_c.
+	NewVolumeL float64 `protobuf:"fixed64,2,opt,name=new_volume_l,json=newVolumeL,proto3" json:"new_volume_l,omitempty"`
+	// Strength at 20 °C, or leave unset and send density_kg_m3 to have the
+	// published tables resolve it.
+	NewAbvPct       float64                `protobuf:"fixed64,3,opt,name=new_abv_pct,json=newAbvPct,proto3" json:"new_abv_pct,omitempty"`
+	EventDate       *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=event_date,json=eventDate,proto3" json:"event_date,omitempty"`
+	Notes           string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	TemperatureC    float64                `protobuf:"fixed64,6,opt,name=temperature_c,json=temperatureC,proto3" json:"temperature_c,omitempty"`
+	TemperatureCSet bool                   `protobuf:"varint,7,opt,name=temperature_c_set,json=temperatureCSet,proto3" json:"temperature_c_set,omitempty"`
+	DensityKgM3     float64                `protobuf:"fixed64,8,opt,name=density_kg_m3,json=densityKgM3,proto3" json:"density_kg_m3,omitempty"`
+	DensityKgM3Set  bool                   `protobuf:"varint,9,opt,name=density_kg_m3_set,json=densityKgM3Set,proto3" json:"density_kg_m3_set,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *RegaugeBarrelRequest) Reset() {
@@ -1288,6 +1418,34 @@ func (x *RegaugeBarrelRequest) GetNotes() string {
 		return x.Notes
 	}
 	return ""
+}
+
+func (x *RegaugeBarrelRequest) GetTemperatureC() float64 {
+	if x != nil {
+		return x.TemperatureC
+	}
+	return 0
+}
+
+func (x *RegaugeBarrelRequest) GetTemperatureCSet() bool {
+	if x != nil {
+		return x.TemperatureCSet
+	}
+	return false
+}
+
+func (x *RegaugeBarrelRequest) GetDensityKgM3() float64 {
+	if x != nil {
+		return x.DensityKgM3
+	}
+	return 0
+}
+
+func (x *RegaugeBarrelRequest) GetDensityKgM3Set() bool {
+	if x != nil {
+		return x.DensityKgM3Set
+	}
+	return false
 }
 
 type RegaugeBarrelResponse struct {
@@ -1442,7 +1600,7 @@ var File_stillhouse_v1_barrel_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\n" +
-	"\x1astillhouse/v1/barrel.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf9\b\n" +
+	"\x1astillhouse/v1/barrel.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!stillhouse/v1/alcoholometry.proto\"\xf9\b\n" +
 	"\x06Barrel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
@@ -1480,7 +1638,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\n" +
 	"small_wood\x182 \x01(\bR\tsmallWood\x128\n" +
 	"\x18canadian_whisky_eligible\x183 \x01(\bR\x16canadianWhiskyEligible\x12F\n" +
-	" days_to_canadian_whisky_eligible\x184 \x01(\x05R\x1cdaysToCanadianWhiskyEligible\"\x8b\x04\n" +
+	" days_to_canadian_whisky_eligible\x184 \x01(\x05R\x1cdaysToCanadianWhiskyEligible\"\xe9\x06\n" +
 	"\vBarrelEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fcontainer_id\x18\x02 \x01(\tR\vcontainerId\x122\n" +
@@ -1500,7 +1658,14 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x05notes\x18\r \x01(\tR\x05notes\x12\x17\n" +
 	"\auser_id\x18\x0e \x01(\tR\x06userId\x129\n" +
 	"\n" +
-	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x8a\x04\n" +
+	"created_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12#\n" +
+	"\rtemperature_c\x18\x10 \x01(\x01R\ftemperatureC\x12*\n" +
+	"\x11temperature_c_set\x18\x11 \x01(\bR\x0ftemperatureCSet\x12*\n" +
+	"\x11observed_volume_l\x18\x12 \x01(\x01R\x0fobservedVolumeL\x123\n" +
+	"\x16observed_density_kg_m3\x18\x13 \x01(\x01R\x13observedDensityKgM3\x12:\n" +
+	"\x1aobserved_density_kg_m3_set\x18\x14 \x01(\bR\x16observedDensityKgM3Set\x12&\n" +
+	"\x0fvolume_factor_c\x18\x15 \x01(\x01R\rvolumeFactorC\x12F\n" +
+	"\x0fstrength_source\x18\x16 \x01(\x0e2\x1d.stillhouse.v1.StrengthSourceR\x0estrengthSource\"\x8a\x04\n" +
 	"\x13CreateBarrelRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
@@ -1536,7 +1701,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"v\n" +
 	"\x11GetBarrelResponse\x12-\n" +
 	"\x06barrel\x18\x01 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\x122\n" +
-	"\x06events\x18\x02 \x03(\v2\x1a.stillhouse.v1.BarrelEventR\x06events\"\xe5\x01\n" +
+	"\x06events\x18\x02 \x03(\v2\x1a.stillhouse.v1.BarrelEventR\x06events\"\x85\x03\n" +
 	"\x11FillBarrelRequest\x12\x1b\n" +
 	"\tbarrel_id\x18\x01 \x01(\tR\bbarrelId\x12.\n" +
 	"\x13source_container_id\x18\x02 \x01(\tR\x11sourceContainerId\x12\x19\n" +
@@ -1544,10 +1709,15 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\aabv_pct\x18\x04 \x01(\x01R\x06abvPct\x129\n" +
 	"\n" +
 	"event_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\teventDate\x12\x14\n" +
-	"\x05notes\x18\x06 \x01(\tR\x05notes\"u\n" +
+	"\x05notes\x18\x06 \x01(\tR\x05notes\x12#\n" +
+	"\rtemperature_c\x18\a \x01(\x01R\ftemperatureC\x12*\n" +
+	"\x11temperature_c_set\x18\b \x01(\bR\x0ftemperatureCSet\x12\"\n" +
+	"\rdensity_kg_m3\x18\t \x01(\x01R\vdensityKgM3\x12)\n" +
+	"\x11density_kg_m3_set\x18\n" +
+	" \x01(\bR\x0edensityKgM3Set\"u\n" +
 	"\x12FillBarrelResponse\x120\n" +
 	"\x05event\x18\x01 \x01(\v2\x1a.stillhouse.v1.BarrelEventR\x05event\x12-\n" +
-	"\x06barrel\x18\x02 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\"\xef\x01\n" +
+	"\x06barrel\x18\x02 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\"\x8f\x03\n" +
 	"\x11DumpBarrelRequest\x12\x1b\n" +
 	"\tbarrel_id\x18\x01 \x01(\tR\bbarrelId\x128\n" +
 	"\x18destination_container_id\x18\x02 \x01(\tR\x16destinationContainerId\x12\x19\n" +
@@ -1555,10 +1725,15 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\aabv_pct\x18\x04 \x01(\x01R\x06abvPct\x129\n" +
 	"\n" +
 	"event_date\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\teventDate\x12\x14\n" +
-	"\x05notes\x18\x06 \x01(\tR\x05notes\"u\n" +
+	"\x05notes\x18\x06 \x01(\tR\x05notes\x12#\n" +
+	"\rtemperature_c\x18\a \x01(\x01R\ftemperatureC\x12*\n" +
+	"\x11temperature_c_set\x18\b \x01(\bR\x0ftemperatureCSet\x12\"\n" +
+	"\rdensity_kg_m3\x18\t \x01(\x01R\vdensityKgM3\x12)\n" +
+	"\x11density_kg_m3_set\x18\n" +
+	" \x01(\bR\x0edensityKgM3Set\"u\n" +
 	"\x12DumpBarrelResponse\x120\n" +
 	"\x05event\x18\x01 \x01(\v2\x1a.stillhouse.v1.BarrelEventR\x05event\x12-\n" +
-	"\x06barrel\x18\x02 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\"\xc6\x01\n" +
+	"\x06barrel\x18\x02 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\"\xe6\x02\n" +
 	"\x14RegaugeBarrelRequest\x12\x1b\n" +
 	"\tbarrel_id\x18\x01 \x01(\tR\bbarrelId\x12 \n" +
 	"\fnew_volume_l\x18\x02 \x01(\x01R\n" +
@@ -1566,7 +1741,11 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\vnew_abv_pct\x18\x03 \x01(\x01R\tnewAbvPct\x129\n" +
 	"\n" +
 	"event_date\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\teventDate\x12\x14\n" +
-	"\x05notes\x18\x05 \x01(\tR\x05notes\"\x93\x01\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\x12#\n" +
+	"\rtemperature_c\x18\x06 \x01(\x01R\ftemperatureC\x12*\n" +
+	"\x11temperature_c_set\x18\a \x01(\bR\x0ftemperatureCSet\x12\"\n" +
+	"\rdensity_kg_m3\x18\b \x01(\x01R\vdensityKgM3\x12)\n" +
+	"\x11density_kg_m3_set\x18\t \x01(\bR\x0edensityKgM3Set\"\x93\x01\n" +
 	"\x15RegaugeBarrelResponse\x120\n" +
 	"\x05event\x18\x01 \x01(\v2\x1a.stillhouse.v1.BarrelEventR\x05event\x12-\n" +
 	"\x06barrel\x18\x02 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\x12\x19\n" +
@@ -1628,6 +1807,7 @@ var file_stillhouse_v1_barrel_proto_goTypes = []any{
 	(*VoidBarrelEventRequest)(nil),  // 15: stillhouse.v1.VoidBarrelEventRequest
 	(*VoidBarrelEventResponse)(nil), // 16: stillhouse.v1.VoidBarrelEventResponse
 	(*timestamppb.Timestamp)(nil),   // 17: google.protobuf.Timestamp
+	(StrengthSource)(0),             // 18: stillhouse.v1.StrengthSource
 }
 var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
 	17, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
@@ -1635,38 +1815,39 @@ var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
 	0,  // 2: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
 	17, // 3: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
 	17, // 4: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 5: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	1,  // 6: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
-	1,  // 7: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	2,  // 8: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
-	17, // 9: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	2,  // 10: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	1,  // 11: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	17, // 12: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	2,  // 13: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	1,  // 14: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	17, // 15: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	2,  // 16: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	1,  // 17: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	3,  // 18: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
-	5,  // 19: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
-	7,  // 20: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
-	9,  // 21: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
-	11, // 22: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
-	13, // 23: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
-	15, // 24: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
-	4,  // 25: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
-	6,  // 26: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
-	8,  // 27: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
-	10, // 28: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
-	12, // 29: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
-	14, // 30: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
-	16, // 31: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
-	25, // [25:32] is the sub-list for method output_type
-	18, // [18:25] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	18, // 5: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
+	1,  // 6: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	1,  // 7: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
+	1,  // 8: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	2,  // 9: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
+	17, // 10: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	2,  // 11: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	1,  // 12: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	17, // 13: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	2,  // 14: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	1,  // 15: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	17, // 16: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	2,  // 17: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	1,  // 18: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	3,  // 19: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
+	5,  // 20: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
+	7,  // 21: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
+	9,  // 22: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
+	11, // 23: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
+	13, // 24: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
+	15, // 25: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
+	4,  // 26: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
+	6,  // 27: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
+	8,  // 28: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
+	10, // 29: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
+	12, // 30: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
+	14, // 31: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
+	16, // 32: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
+	26, // [26:33] is the sub-list for method output_type
+	19, // [19:26] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_barrel_proto_init() }
@@ -1674,6 +1855,7 @@ func file_stillhouse_v1_barrel_proto_init() {
 	if File_stillhouse_v1_barrel_proto != nil {
 		return
 	}
+	file_stillhouse_v1_alcoholometry_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

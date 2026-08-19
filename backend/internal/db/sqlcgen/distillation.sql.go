@@ -149,10 +149,11 @@ func (q *Queries) CreateDistillationRun(ctx context.Context, arg CreateDistillat
 const createProductionGauge = `-- name: CreateProductionGauge :one
 INSERT INTO production_gauges (
     tenant_id, distillation_run_id, destination_container_id, bulk_movement_id,
-    gauge_date, volume_l, abv_pct, temperature_c, gauger_user_id, notes
+    gauge_date, volume_l, abv_pct, temperature_c, gauger_user_id, notes,
+    observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-) RETURNING id, tenant_id, distillation_run_id, destination_container_id, bulk_movement_id, gauge_date, volume_l, abv_pct, temperature_c, laa, gauger_user_id, notes, created_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+) RETURNING id, tenant_id, distillation_run_id, destination_container_id, bulk_movement_id, gauge_date, volume_l, abv_pct, temperature_c, laa, gauger_user_id, notes, created_at, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
 `
 
 type CreateProductionGaugeParams struct {
@@ -166,8 +167,14 @@ type CreateProductionGaugeParams struct {
 	TemperatureC           pgtype.Float8      `json:"temperature_c"`
 	GaugerUserID           uuid.UUID          `json:"gauger_user_id"`
 	Notes                  string             `json:"notes"`
+	ObservedVolumeL        pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3    pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC          float64            `json:"volume_factor_c"`
+	StrengthSource         StrengthSource     `json:"strength_source"`
 }
 
+// volume_l / abv_pct are the values AT 20 °C; observed_* preserve what the
+// operator read off the instrument. See migration 000023.
 func (q *Queries) CreateProductionGauge(ctx context.Context, arg CreateProductionGaugeParams) (ProductionGauge, error) {
 	row := q.db.QueryRow(ctx, createProductionGauge,
 		arg.TenantID,
@@ -180,6 +187,10 @@ func (q *Queries) CreateProductionGauge(ctx context.Context, arg CreateProductio
 		arg.TemperatureC,
 		arg.GaugerUserID,
 		arg.Notes,
+		arg.ObservedVolumeL,
+		arg.ObservedDensityKgM3,
+		arg.VolumeFactorC,
+		arg.StrengthSource,
 	)
 	var i ProductionGauge
 	err := row.Scan(
@@ -196,6 +207,10 @@ func (q *Queries) CreateProductionGauge(ctx context.Context, arg CreateProductio
 		&i.GaugerUserID,
 		&i.Notes,
 		&i.CreatedAt,
+		&i.ObservedVolumeL,
+		&i.ObservedDensityKgM3,
+		&i.VolumeFactorC,
+		&i.StrengthSource,
 	)
 	return i, err
 }
@@ -256,7 +271,7 @@ func (q *Queries) GetDistillationRun(ctx context.Context, id uuid.UUID) (Distill
 }
 
 const getProductionGaugeByRun = `-- name: GetProductionGaugeByRun :one
-SELECT id, tenant_id, distillation_run_id, destination_container_id, bulk_movement_id, gauge_date, volume_l, abv_pct, temperature_c, laa, gauger_user_id, notes, created_at FROM production_gauges WHERE distillation_run_id = $1
+SELECT id, tenant_id, distillation_run_id, destination_container_id, bulk_movement_id, gauge_date, volume_l, abv_pct, temperature_c, laa, gauger_user_id, notes, created_at, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source FROM production_gauges WHERE distillation_run_id = $1
 `
 
 func (q *Queries) GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error) {
@@ -276,6 +291,10 @@ func (q *Queries) GetProductionGaugeByRun(ctx context.Context, distillationRunID
 		&i.GaugerUserID,
 		&i.Notes,
 		&i.CreatedAt,
+		&i.ObservedVolumeL,
+		&i.ObservedDensityKgM3,
+		&i.VolumeFactorC,
+		&i.StrengthSource,
 	)
 	return i, err
 }

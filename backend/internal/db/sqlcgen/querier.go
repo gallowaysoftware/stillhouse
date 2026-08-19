@@ -60,6 +60,8 @@ type Querier interface {
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
+	// volume_l / abv_pct are the values AT 20 °C; observed_* preserve what the
+	// operator read off the instrument. See migration 000023.
 	CreateProductionGauge(ctx context.Context, arg CreateProductionGaugeParams) (ProductionGauge, error)
 	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)
 	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
@@ -125,6 +127,8 @@ type Querier interface {
 	IncrementStampOrderApplied(ctx context.Context, arg IncrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	IncrementStampOrderVoided(ctx context.Context, arg IncrementStampOrderVoidedParams) (ExciseStampOrder, error)
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
+	// volume_l / abv_pct / laa are the values AT 20 °C; observed_* preserve what
+	// the operator read off the instrument. See migration 000023.
 	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
 	ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)

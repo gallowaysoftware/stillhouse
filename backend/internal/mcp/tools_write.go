@@ -32,11 +32,13 @@ func registerWriteTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 
 func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	type in struct {
-		BarrelID          string  `json:"barrel_id" jsonschema:"UUID of the barrel being filled"`
-		SourceContainerID string  `json:"source_container_id" jsonschema:"UUID of the bulk container the spirit is coming from"`
-		VolumeL           float64 `json:"volume_l" jsonschema:"volume transferred, in litres"`
-		AbvPct            float64 `json:"abv_pct" jsonschema:"ABV of the spirit going into the barrel, as a percentage (0-100)"`
-		Notes             string  `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		BarrelID          string   `json:"barrel_id" jsonschema:"UUID of the barrel being filled"`
+		SourceContainerID string   `json:"source_container_id" jsonschema:"UUID of the bulk container the spirit is coming from"`
+		VolumeL           float64  `json:"volume_l" jsonschema:"volume transferred, in litres"`
+		AbvPct            float64  `json:"abv_pct" jsonschema:"strength of the spirit going into the barrel as a percentage (0-100), at 20 °C. Ignored when density_kg_m3 is supplied"`
+		Notes             string   `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		TemperatureC      *float64 `json:"temperature_c,omitempty" jsonschema:"temperature the reading was taken at, in °C. Strength is only defined at 20 °C — supply this and Stillhouse resolves the reading through the Canadian Alcoholometric Tables 1980"`
+		DensityKgM3       *float64 `json:"density_kg_m3,omitempty" jsonschema:"hydrometer indication in kg/m³ (CRA's approved instrument reads density, not %ABV). When supplied with temperature_c this determines the strength and abv_pct is ignored"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "fill_barrel",
@@ -49,6 +51,10 @@ func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			VolumeL:           args.VolumeL,
 			AbvPct:            args.AbvPct,
 			Notes:             args.Notes,
+			TemperatureC:      derefFloat(args.TemperatureC),
+			TemperatureCSet:   args.TemperatureC != nil,
+			DensityKgM3:       derefFloat(args.DensityKgM3),
+			DensityKgM3Set:    args.DensityKgM3 != nil,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil
@@ -59,10 +65,12 @@ func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 
 func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	type in struct {
-		BarrelID    string  `json:"barrel_id" jsonschema:"UUID of the barrel"`
-		NewVolumeL  float64 `json:"new_volume_l" jsonschema:"measured current volume in litres; must be ≤ recorded current volume. Cannot be 0 if the barrel is non-empty — use dump_barrel for transfers"`
-		NewAbvPct   float64 `json:"new_abv_pct" jsonschema:"measured current ABV percentage (0-100); resulting LAA must be ≤ recorded LAA"`
-		Notes       string  `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		BarrelID     string   `json:"barrel_id" jsonschema:"UUID of the barrel"`
+		NewVolumeL   float64  `json:"new_volume_l" jsonschema:"measured current volume in litres; must be ≤ recorded current volume. Cannot be 0 if the barrel is non-empty — use dump_barrel for transfers"`
+		NewAbvPct    float64  `json:"new_abv_pct" jsonschema:"measured current strength as a percentage (0-100), at 20 °C; resulting LAA must be ≤ recorded LAA. Ignored when density_kg_m3 is supplied"`
+		Notes        string   `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		TemperatureC *float64 `json:"temperature_c,omitempty" jsonschema:"temperature the reading was taken at, in °C. A warehouse is rarely at 20 °C — supply this and Stillhouse resolves the reading through the Canadian Alcoholometric Tables 1980"`
+		DensityKgM3  *float64 `json:"density_kg_m3,omitempty" jsonschema:"hydrometer indication in kg/m³. When supplied with temperature_c this determines the strength and new_abv_pct is ignored"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "regauge_barrel",
@@ -70,10 +78,14 @@ func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
 		resp, err := d.Barrel.RegaugeBarrel(ctx, connect.NewRequest(&pb.RegaugeBarrelRequest{
-			BarrelId:   args.BarrelID,
-			NewVolumeL: args.NewVolumeL,
-			NewAbvPct:  args.NewAbvPct,
-			Notes:      args.Notes,
+			BarrelId:        args.BarrelID,
+			NewVolumeL:      args.NewVolumeL,
+			NewAbvPct:       args.NewAbvPct,
+			Notes:           args.Notes,
+			TemperatureC:    derefFloat(args.TemperatureC),
+			TemperatureCSet: args.TemperatureC != nil,
+			DensityKgM3:     derefFloat(args.DensityKgM3),
+			DensityKgM3Set:  args.DensityKgM3 != nil,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil
@@ -84,11 +96,13 @@ func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 
 func addDumpBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	type in struct {
-		BarrelID               string  `json:"barrel_id" jsonschema:"UUID of the barrel being dumped"`
-		DestinationContainerID string  `json:"destination_container_id" jsonschema:"UUID of the bulk container (tank, blend tank, etc.) receiving the spirit"`
-		VolumeL                float64 `json:"volume_l" jsonschema:"measured volume coming out of the barrel, in litres"`
-		AbvPct                 float64 `json:"abv_pct" jsonschema:"measured ABV at dump, percentage (0-100)"`
-		Notes                  string  `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		BarrelID               string   `json:"barrel_id" jsonschema:"UUID of the barrel being dumped"`
+		DestinationContainerID string   `json:"destination_container_id" jsonschema:"UUID of the bulk container (tank, blend tank, etc.) receiving the spirit"`
+		VolumeL                float64  `json:"volume_l" jsonschema:"measured volume coming out of the barrel, in litres"`
+		AbvPct                 float64  `json:"abv_pct" jsonschema:"measured strength at dump as a percentage (0-100), at 20 °C. Ignored when density_kg_m3 is supplied"`
+		Notes                  string   `json:"notes,omitempty" jsonschema:"optional free-text notes"`
+		TemperatureC           *float64 `json:"temperature_c,omitempty" jsonschema:"temperature the reading was taken at, in °C. Supply this and Stillhouse resolves the reading through the Canadian Alcoholometric Tables 1980"`
+		DensityKgM3            *float64 `json:"density_kg_m3,omitempty" jsonschema:"hydrometer indication in kg/m³. When supplied with temperature_c this determines the strength and abv_pct is ignored"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
 		Name:        "dump_barrel",
@@ -101,6 +115,10 @@ func addDumpBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			VolumeL:                args.VolumeL,
 			AbvPct:                 args.AbvPct,
 			Notes:                  args.Notes,
+			TemperatureC:           derefFloat(args.TemperatureC),
+			TemperatureCSet:        args.TemperatureC != nil,
+			DensityKgM3:            derefFloat(args.DensityKgM3),
+			DensityKgM3Set:         args.DensityKgM3 != nil,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil
@@ -188,22 +206,22 @@ func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 // underlying RPC replaces the prior score row.
 func addSaveRecipeVersionSensory(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	type in struct {
-		RecipeVersionID string   `json:"recipe_version_id" jsonschema:"UUID of the recipe version you just tasted"`
-		Juniper         *int32   `json:"juniper,omitempty" jsonschema:"0-10; omit if not scored on this axis"`
-		Citrus          *int32   `json:"citrus,omitempty" jsonschema:"0-10"`
-		Herbal          *int32   `json:"herbal,omitempty" jsonschema:"0-10"`
-		Spice           *int32   `json:"spice,omitempty" jsonschema:"0-10"`
-		Floral          *int32   `json:"floral,omitempty" jsonschema:"0-10"`
-		Earth           *int32   `json:"earth,omitempty" jsonschema:"0-10 (root / earthy notes)"`
-		Body            *int32   `json:"body,omitempty" jsonschema:"0-10 (mouthfeel / weight)"`
-		Heat            *int32   `json:"heat,omitempty" jsonschema:"0-10 (perceived ABV burn)"`
-		Balance         *int32   `json:"balance,omitempty" jsonschema:"0-10 (how well the whole hangs together)"`
-		Overall         *int32   `json:"overall,omitempty" jsonschema:"0-10 (gut-call rating)"`
-		TastingPanel    string   `json:"tasting_panel,omitempty" jsonschema:"who tasted — 'self', 'Kyle + Jane', etc."`
-		Notes           string   `json:"notes,omitempty" jsonschema:"optional — appended to the recipe version's tasting notes by future iterations; for now serves as a panel comment"`
+		RecipeVersionID string `json:"recipe_version_id" jsonschema:"UUID of the recipe version you just tasted"`
+		Juniper         *int32 `json:"juniper,omitempty" jsonschema:"0-10; omit if not scored on this axis"`
+		Citrus          *int32 `json:"citrus,omitempty" jsonschema:"0-10"`
+		Herbal          *int32 `json:"herbal,omitempty" jsonschema:"0-10"`
+		Spice           *int32 `json:"spice,omitempty" jsonschema:"0-10"`
+		Floral          *int32 `json:"floral,omitempty" jsonschema:"0-10"`
+		Earth           *int32 `json:"earth,omitempty" jsonschema:"0-10 (root / earthy notes)"`
+		Body            *int32 `json:"body,omitempty" jsonschema:"0-10 (mouthfeel / weight)"`
+		Heat            *int32 `json:"heat,omitempty" jsonschema:"0-10 (perceived ABV burn)"`
+		Balance         *int32 `json:"balance,omitempty" jsonschema:"0-10 (how well the whole hangs together)"`
+		Overall         *int32 `json:"overall,omitempty" jsonschema:"0-10 (gut-call rating)"`
+		TastingPanel    string `json:"tasting_panel,omitempty" jsonschema:"who tasted — 'self', 'Kyle + Jane', etc."`
+		Notes           string `json:"notes,omitempty" jsonschema:"optional — appended to the recipe version's tasting notes by future iterations; for now serves as a panel comment"`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
-		Name: "save_recipe_version_sensory",
+		Name:        "save_recipe_version_sensory",
 		Description: "Score a gin recipe version on the 10-axis tasting bench (juniper / citrus / herbal / spice / floral / earth / body / heat / balance / overall, each 0-10). Upsert — running this replaces any prior scores for the same version. Use after distilling a small test batch and tasting; combine with get_recipe + list_recipe_versions to iterate.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
@@ -281,7 +299,7 @@ func addSaveRecipeVersionWhiskySensory(s *mcpsdk.Server, d Deps, user sqlcgen.Us
 		TastingPanel    string `json:"tasting_panel,omitempty" jsonschema:"who tasted — 'self', 'Kyle + Jane', etc."`
 	}
 	mcpsdk.AddTool(s, &mcpsdk.Tool{
-		Name: "save_recipe_version_whisky_sensory",
+		Name:        "save_recipe_version_whisky_sensory",
 		Description: "Score a whisky-family (whisky / canadian_whisky / rye_whisky) recipe version on the 11-axis tasting bench. Axes are the 8 SWRI Flavour Wheel primary classes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) plus body / finish / overall from the standard panel scorecard. Each 0-10. Upsert with partial-update semantics — sending a single axis preserves the others. Sulphury is primarily an off-note class (low = clean).",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx = withUser(ctx, user)
@@ -330,4 +348,14 @@ func parseMashMetricKind(s string) (pb.MashMetricKind, error) {
 		return pb.MashMetricKind_MASH_METRIC_KIND_OTHER, nil
 	}
 	return 0, fmt.Errorf("unknown mash metric kind %q", s)
+}
+
+// derefFloat unwraps an optional numeric argument. The write tools use
+// pointers so "not measured" stays distinguishable from a measured 0 —
+// see addAddFermentationReading for why that distinction matters.
+func derefFloat(p *float64) float64 {
+	if p == nil {
+		return 0
+	}
+	return *p
 }

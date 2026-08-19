@@ -107,6 +107,14 @@ network, private).
   both before committing. The Dockerfile regenerates the web client
   during the image build, so a generated-code drift between commit
   and Docker build will fail loudly.
+- **Strength is a 20 °C quantity.** Never store or compare a strength
+  without knowing its temperature. Gauging paths funnel through
+  `rpc.resolveStrength`, which records whether a figure was determined
+  from a hydrometer indication, corrected for volume only, or left
+  uncorrected. The embedded table is regenerated with
+  `go run gentable.go -src ALC_TAB.TXT -out alctab.bin` from the CRA ZIP;
+  the 5.2 MB source is deliberately not committed, and its SHA-256 is
+  pinned in the package test.
 - **Float display.** LAA / volume / duty values get full IEEE-754
   noise on the wire (`0.8399999999999999`). Not pretty — known issue
   (QA finding F17). Display rounding lives in `web/src/lib/format.ts`.
@@ -139,6 +147,8 @@ wouldn't have surfaced it.
 - `backend/internal/rpc/bottling.go` (LAA conservation), `barrel.go`
   (maturation + regauge), `b266.go` (period generation) — the
   load-bearing math
+- `backend/internal/alcoholometry/` — CRA Canadian Alcoholometric
+  Tables 1980; every strength/volume lands at 20 °C through here
 - `backend/internal/distilling/` — projection math (whisky spine)
 - `backend/internal/mcp/` — MCP tool registrations
 - `web/src/pages/RecipeDetailPage.tsx` — the most feature-dense page

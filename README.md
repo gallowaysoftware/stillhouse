@@ -39,6 +39,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 114 | Close P3 backlog — LAA/ABV/duty/CAD rounded at display, sensory bench gated to gin recipes, FillBarrel rejects overfill, write tools emit full schema (no more `_set: true` with no value) |
 | 115 | Sensory gin-only gate now surfaces as failed_precondition (was getting swallowed as internal error by the handler's catch-all) |
 | 116 | Whisky tasting bench — SWRI Flavour Wheel axes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) + body / finish / overall; backend + MCP `save_recipe_version_whisky_sensory` + web UI for whisky-family recipes |
+| 117 | Strength at 20 °C — gauges resolve through the CRA Canadian Alcoholometric Tables 1980; hydrometer indication + temperature determine both strength and volume, the as-observed reading is kept for audit, and every reading records which determination path produced it |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
@@ -55,6 +56,12 @@ month.* Achieved at Stage 7.
   per-request `app.current_tenant_id` GUC. Migrations run as a superuser;
   the application connects as a separate non-super role (`stillhouse_app`)
   so the RLS policies actually enforce. One tenant = one CRA spirits licence.
+- **Alcoholometry** — strength and volume are resolved to 20 °C against the
+  CRA [Canadian Alcoholometric Tables 1980](https://www.canada.ca/en/revenue-agency/services/tax/technical-information/excise-duty/tables-alcoholometry/canadian-alcoholometric-tables-1980.html),
+  computed from the OIML general formula (International Recommendation
+  No. 22, 1972). All 117,137 published rows ship embedded in the binary;
+  the package reproduces every one exactly and replays CRA's own worked
+  examples as tests.
 - **License** — AGPL-3.0. Free to self-host. Managed hosting will be a paid
   offering once the project is ready.
 

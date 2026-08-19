@@ -6,6 +6,7 @@ syntax = "proto3";
 package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/alcoholometry.proto";
 
 enum BarrelEventKind {
   BARREL_EVENT_KIND_UNSPECIFIED = 0;
@@ -66,6 +67,9 @@ message BarrelEvent {
   string container_id = 2;
   BarrelEventKind kind = 3;
   google.protobuf.Timestamp event_date = 4;
+  // volume_l / abv_pct / laa are the values AT 20 °C. A warehouse is the
+  // place a reading is least likely to be taken at 20 °C, so observed_*
+  // below keep what the operator actually saw.
   double volume_l = 5;
   bool   volume_l_set = 6;
   double abv_pct = 7;
@@ -77,6 +81,14 @@ message BarrelEvent {
   string notes = 13;
   string user_id = 14;
   google.protobuf.Timestamp created_at = 15;
+
+  double temperature_c = 16;
+  bool   temperature_c_set = 17;
+  double observed_volume_l = 18;
+  double observed_density_kg_m3 = 19;
+  bool   observed_density_kg_m3_set = 20;
+  double volume_factor_c = 21;
+  StrengthSource strength_source = 22;
 }
 
 // --- requests ---
@@ -122,6 +134,10 @@ message FillBarrelRequest {
   double abv_pct = 4;
   google.protobuf.Timestamp event_date = 5;
   string notes = 6;
+  double temperature_c = 7;
+  bool   temperature_c_set = 8;
+  double density_kg_m3 = 9;
+  bool   density_kg_m3_set = 10;
 }
 message FillBarrelResponse {
   BarrelEvent event = 1;
@@ -135,6 +151,10 @@ message DumpBarrelRequest {
   double abv_pct = 4;                  // actual at dump
   google.protobuf.Timestamp event_date = 5;
   string notes = 6;
+  double temperature_c = 7;
+  bool   temperature_c_set = 8;
+  double density_kg_m3 = 9;
+  bool   density_kg_m3_set = 10;
 }
 message DumpBarrelResponse {
   BarrelEvent event = 1;
@@ -143,10 +163,17 @@ message DumpBarrelResponse {
 
 message RegaugeBarrelRequest {
   string barrel_id = 1;
+  // new_volume_l is the volume as gauged, at temperature_c.
   double new_volume_l = 2;
+  // Strength at 20 °C, or leave unset and send density_kg_m3 to have the
+  // published tables resolve it.
   double new_abv_pct = 3;
   google.protobuf.Timestamp event_date = 4;
   string notes = 5;
+  double temperature_c = 6;
+  bool   temperature_c_set = 7;
+  double density_kg_m3 = 8;
+  bool   density_kg_m3_set = 9;
 }
 message RegaugeBarrelResponse {
   BarrelEvent event = 1;

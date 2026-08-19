@@ -1,0 +1,88 @@
+// Alcoholic strength and volume resolved at 20 °C, per the CRA "Canadian
+// Alcoholometric Tables 1980" (computed from the OIML general formula,
+// International Recommendation No. 22, 1972).
+//
+// Strength is only meaningful at a reference temperature. CRA's is 20 °C,
+// and its approved instrument is a hydrometer graduated in density
+// (kg/m³) at that reference, read alongside an approved Celsius
+// thermometer. A reading taken warm or cold has to be resolved back to
+// 20 °C before it means anything on a B266 — both the strength and the
+// volume.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+// How a 20 °C strength was arrived at. Recorded on every gauge so a
+// reading can be audited back to the instrument that produced it.
+enum StrengthSource {
+  STRENGTH_SOURCE_UNSPECIFIED = 0;
+  // No temperature was recorded; the strength is taken as given. Every
+  // reading captured before Stillhouse could correct is this.
+  STRENGTH_SOURCE_UNCORRECTED = 1;
+  // Hydrometer indication (kg/m³) + temperature, resolved through the
+  // published tables. This is CRA's approved path.
+  STRENGTH_SOURCE_TABLE_DENSITY = 2;
+  // Strength already expressed at 20 °C by the instrument (e.g. a density
+  // meter that applies its own correction), with the tables supplying only
+  // the volume factor for the measurement temperature.
+  STRENGTH_SOURCE_TABLE_STRENGTH = 3;
+}
+
+// One resolved row of the tables, in CRA's column notation.
+message AlcoholometryReading {
+  // B — percentage of absolute ethyl alcohol by volume at 20 °C.
+  double strength_pct_20c = 1;
+  // C — multiply litres measured at the measurement temperature by this
+  // to get litres of spirits at 20 °C.
+  double volume_factor_c = 2;
+  // A — multiply kilograms of spirits by this to get litres at 20 °C.
+  // Carried for gauging by weight; Stillhouse gauges by volume today.
+  double litres_per_kg = 3;
+}
+
+// ResolveStrength powers the live correction preview on gauging forms.
+// Supply either a hydrometer indication or an already-corrected strength,
+// plus the temperature the reading was taken at.
+message ResolveStrengthRequest {
+  double temperature_c = 1;
+  // Hydrometer indication in kg/m³.
+  double density_kg_m3 = 2;
+  bool   density_kg_m3_set = 3;
+  // Alternative input: strength the instrument already expressed at 20 °C.
+  double strength_pct_20c = 4;
+  bool   strength_pct_20c_set = 5;
+  // Optional. When set, the response also carries the volume at 20 °C and
+  // the resulting LAA.
+  double observed_volume_l = 6;
+  bool   observed_volume_l_set = 7;
+}
+
+message ResolveStrengthResponse {
+  AlcoholometryReading reading = 1;
+  StrengthSource source = 2;
+  // Populated only when observed_volume_l was supplied.
+  double volume_l_20c = 3;
+  double laa = 4;
+  bool   volume_resolved = 5;
+  // The density span the tables cover at this temperature, so a form can
+  // validate before the operator submits.
+  double density_min_kg_m3 = 6;
+  double density_max_kg_m3 = 7;
+}
+
+// TablesInfoRequest reports which published table this install resolves
+// against, so an auditor can confirm the basis of a filing.
+message TablesInfoRequest {}
+message TablesInfoResponse {
+  string name = 1;              // "Canadian Alcoholometric Tables 1980"
+  string source_url = 2;
+  string source_sha256 = 3;     // of the published ALC_TAB.TXT
+  double temperature_min_c = 4;
+  double temperature_max_c = 5;
+  double reference_temperature_c = 6;  // 20
+}
+
+service AlcoholometryService {
+  rpc ResolveStrength(ResolveStrengthRequest) returns (ResolveStrengthResponse);
+  rpc TablesInfo(TablesInfoRequest) returns (TablesInfoResponse);
+}

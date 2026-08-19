@@ -33,11 +33,14 @@ SET fill_date = NULL,
 WHERE container_id = $1;
 
 -- name: InsertBarrelEvent :one
+-- volume_l / abv_pct / laa are the values AT 20 °C; observed_* preserve what
+-- the operator read off the instrument. See migration 000023.
 INSERT INTO barrel_events (
     tenant_id, container_id, kind, event_date,
-    volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id
+    volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id,
+    temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
 ) RETURNING *;
 
 -- name: ListBarrelEvents :many

@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 
+import { AlcoholometryService } from "@/gen/stillhouse/v1/alcoholometry_pb";
 import { APITokenService } from "@/gen/stillhouse/v1/api_token_pb";
 import { AuditService } from "@/gen/stillhouse/v1/audit_pb";
 import { AuthService } from "@/gen/stillhouse/v1/auth_pb";
@@ -43,3 +44,4 @@ export const pricingClient = createClient(PricingService, transport);
 export const traceabilityClient = createClient(TraceabilityService, transport);
 export const inviteClient = createClient(InviteService, transport);
 export const apiTokenClient = createClient(APITokenService, transport);
+export const alcoholometryClient = createClient(AlcoholometryService, transport);
