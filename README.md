@@ -43,6 +43,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 118 | Mash bench — cereal species on materials drives gelatinisation guidance off the real grain bill; flags when maize or rice force a separate cereal cook, checks mash temp / pH / thickness against the amylase bands, computes conversion efficiency from OG, and calculates strike temperature. MCP `get_mash` + `plan_strike` |
 | 119 | Reduction calculator — proofing down by volume *or by weight*, with the ethanol/water volume contraction computed from the CRA density column instead of estimated. Weighing is exact (mass is additive); the volume figure carries the correction. On tank pages, the bottling page, and MCP `plan_reduction` |
 | 120 | Sensory radar — flavour profiles drawn as shapes on both tasting benches, and two versions overlaid on one plot in version-compare. Hand-rolled SVG, no chart dependency; series colours validated for colour-blind separation against both themes |
+| 121 | Angel's share — measured annual loss against the band a cool, humid warehouse should hold to, with the shelf height deciding which way the strength ought to drift. Flags a probable leak, and flags strength moving against its position as a likely gauge error. Dashboard alert + barrel panel |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

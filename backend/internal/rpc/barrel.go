@@ -175,9 +175,20 @@ func (s *BarrelService) GetBarrel(
 		s.logger.Error("GetBarrel", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	barrel := barrelToProto(container, attrs)
+	// The events are already loaded, so the fill this cask is living off
+	// comes free — no need for the lateral join ListBarrels uses.
+	if fillVol, fillAbv, fillLAA, ok := latestFill(events); ok {
+		barrel.Maturation = buildMaturation(
+			fillVol, fillAbv, fillLAA,
+			container.CurrentVolumeL, barrel.CurrentAbvPct, container.CurrentLaa,
+			barrel.DaysAged, attrs.LevelPosition,
+		)
+	}
 	out := &stillhousev1.GetBarrelResponse{
-		Barrel: barrelToProto(container, attrs),
-		Events: make([]*stillhousev1.BarrelEvent, 0, len(events)),
+		Barrel:     barrel,
+		Events:     make([]*stillhousev1.BarrelEvent, 0, len(events)),
+		Maturation: barrel.Maturation,
 	}
 	for _, e := range events {
 		out.Events = append(out.Events, barrelEventToProto(e))
@@ -931,7 +942,13 @@ func barrelRowToProto(r sqlcgen.ListBarrelsRow) *stillhousev1.Barrel {
 		FillDate:          r.FillDate,
 		DaysAgedAtDump:    r.DaysAgedAtDump,
 	}
-	return barrelToProto(container, attrs)
+	out := barrelToProto(container, attrs)
+	out.Maturation = buildMaturation(
+		r.FillVolumeL, r.FillAbvPct, r.FillLaa,
+		r.CurrentVolumeL, out.CurrentAbvPct, r.CurrentLaa,
+		out.DaysAged, r.LevelPosition,
+	)
+	return out
 }
 
 func barrelEventToProto(e sqlcgen.BarrelEvent) *stillhousev1.BarrelEvent {
@@ -990,4 +1007,16 @@ func barrelEventKindToProto(k sqlcgen.BarrelEventKind) stillhousev1.BarrelEventK
 		return stillhousev1.BarrelEventKind_BARREL_EVENT_KIND_DESTROY
 	}
 	return stillhousev1.BarrelEventKind_BARREL_EVENT_KIND_UNSPECIFIED
+}
+
+// latestFill finds the most recent non-voided fill in an event list.
+// ListBarrelEvents returns newest first, so the first match wins.
+func latestFill(events []sqlcgen.BarrelEvent) (vol, abv, laa pgtype.Float8, ok bool) {
+	for _, e := range events {
+		if e.Kind != sqlcgen.BarrelEventKindFill || e.VoidedAt.Valid {
+			continue
+		}
+		return e.VolumeL, e.AbvPct, e.Laa, true
+	}
+	return pgtype.Float8{}, pgtype.Float8{}, pgtype.Float8{}, false
 }

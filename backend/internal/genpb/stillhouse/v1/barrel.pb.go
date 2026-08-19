@@ -87,6 +87,60 @@ func (BarrelEventKind) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{0}
 }
 
+// How serious a maturation finding is. Advisory — nothing here blocks a
+// write.
+type MaturationFindingSeverity int32
+
+const (
+	MaturationFindingSeverity_MATURATION_FINDING_SEVERITY_UNSPECIFIED MaturationFindingSeverity = 0
+	MaturationFindingSeverity_MATURATION_FINDING_SEVERITY_INFO        MaturationFindingSeverity = 1
+	MaturationFindingSeverity_MATURATION_FINDING_SEVERITY_WARNING     MaturationFindingSeverity = 2
+	MaturationFindingSeverity_MATURATION_FINDING_SEVERITY_PROBLEM     MaturationFindingSeverity = 3
+)
+
+// Enum value maps for MaturationFindingSeverity.
+var (
+	MaturationFindingSeverity_name = map[int32]string{
+		0: "MATURATION_FINDING_SEVERITY_UNSPECIFIED",
+		1: "MATURATION_FINDING_SEVERITY_INFO",
+		2: "MATURATION_FINDING_SEVERITY_WARNING",
+		3: "MATURATION_FINDING_SEVERITY_PROBLEM",
+	}
+	MaturationFindingSeverity_value = map[string]int32{
+		"MATURATION_FINDING_SEVERITY_UNSPECIFIED": 0,
+		"MATURATION_FINDING_SEVERITY_INFO":        1,
+		"MATURATION_FINDING_SEVERITY_WARNING":     2,
+		"MATURATION_FINDING_SEVERITY_PROBLEM":     3,
+	}
+)
+
+func (x MaturationFindingSeverity) Enum() *MaturationFindingSeverity {
+	p := new(MaturationFindingSeverity)
+	*p = x
+	return p
+}
+
+func (x MaturationFindingSeverity) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (MaturationFindingSeverity) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_barrel_proto_enumTypes[1].Descriptor()
+}
+
+func (MaturationFindingSeverity) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_barrel_proto_enumTypes[1]
+}
+
+func (x MaturationFindingSeverity) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use MaturationFindingSeverity.Descriptor instead.
+func (MaturationFindingSeverity) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{1}
+}
+
 // Barrel is the joined view of a bulk_container (kind=barrel) + barrel_attributes
 // + derived maturation info.
 type Barrel struct {
@@ -126,8 +180,12 @@ type Barrel struct {
 	SmallWood                    bool  `protobuf:"varint,50,opt,name=small_wood,json=smallWood,proto3" json:"small_wood,omitempty"`
 	CanadianWhiskyEligible       bool  `protobuf:"varint,51,opt,name=canadian_whisky_eligible,json=canadianWhiskyEligible,proto3" json:"canadian_whisky_eligible,omitempty"`
 	DaysToCanadianWhiskyEligible int32 `protobuf:"varint,52,opt,name=days_to_canadian_whisky_eligible,json=daysToCanadianWhiskyEligible,proto3" json:"days_to_canadian_whisky_eligible,omitempty"`
-	unknownFields                protoimpl.UnknownFields
-	sizeCache                    protoimpl.SizeCache
+	// Angel's share assessment against the fill this cask is living off.
+	// Populated on list and detail reads alike, so a dashboard can flag a
+	// leaking cask without opening every barrel page.
+	Maturation    *MaturationAssessment `protobuf:"bytes,53,opt,name=maturation,proto3" json:"maturation,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Barrel) Reset() {
@@ -370,6 +428,220 @@ func (x *Barrel) GetDaysToCanadianWhiskyEligible() int32 {
 	return 0
 }
 
+func (x *Barrel) GetMaturation() *MaturationAssessment {
+	if x != nil {
+		return x.Maturation
+	}
+	return nil
+}
+
+type MaturationFinding struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Severity      MaturationFindingSeverity `protobuf:"varint,1,opt,name=severity,proto3,enum=stillhouse.v1.MaturationFindingSeverity" json:"severity,omitempty"`
+	Code          string                    `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Title         string                    `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Detail        string                    `protobuf:"bytes,4,opt,name=detail,proto3" json:"detail,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MaturationFinding) Reset() {
+	*x = MaturationFinding{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaturationFinding) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaturationFinding) ProtoMessage() {}
+
+func (x *MaturationFinding) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaturationFinding.ProtoReflect.Descriptor instead.
+func (*MaturationFinding) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *MaturationFinding) GetSeverity() MaturationFindingSeverity {
+	if x != nil {
+		return x.Severity
+	}
+	return MaturationFindingSeverity_MATURATION_FINDING_SEVERITY_UNSPECIFIED
+}
+
+func (x *MaturationFinding) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *MaturationFinding) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *MaturationFinding) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+// MaturationAssessment answers the question a warehouse actually raises:
+// is this cask losing what it should be losing?
+//
+// Rates are compounded annual figures — losses compound on a shrinking
+// volume, so a geometric rate is the honest one across multiple years.
+// Expected bands are from the IBD/CIBD curriculum: 2–3 % a year in a
+// cool, humid warehouse with the strength falling about a point a year;
+// 4–5 % and rising strength in a hot, dry one.
+type MaturationAssessment struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// False when there isn't enough history to say anything — everything
+	// below is meaningless then, and why_not explains the refusal.
+	Measurable          bool    `protobuf:"varint,1,opt,name=measurable,proto3" json:"measurable,omitempty"`
+	WhyNot              string  `protobuf:"bytes,2,opt,name=why_not,json=whyNot,proto3" json:"why_not,omitempty"`
+	AnnualVolumeLossPct float64 `protobuf:"fixed64,3,opt,name=annual_volume_loss_pct,json=annualVolumeLossPct,proto3" json:"annual_volume_loss_pct,omitempty"`
+	// The figure that costs money: duty is charged on LAA.
+	AnnualLaaLossPct float64 `protobuf:"fixed64,4,opt,name=annual_laa_loss_pct,json=annualLaaLossPct,proto3" json:"annual_laa_loss_pct,omitempty"`
+	// Percentage points of strength per year, signed.
+	StrengthDriftPerYear float64 `protobuf:"fixed64,5,opt,name=strength_drift_per_year,json=strengthDriftPerYear,proto3" json:"strength_drift_per_year,omitempty"`
+	ExpectedMinPct       float64 `protobuf:"fixed64,6,opt,name=expected_min_pct,json=expectedMinPct,proto3" json:"expected_min_pct,omitempty"`
+	ExpectedMaxPct       float64 `protobuf:"fixed64,7,opt,name=expected_max_pct,json=expectedMaxPct,proto3" json:"expected_max_pct,omitempty"`
+	// Which way the strength should be moving: negative loses strength.
+	ExpectedDriftSign float64 `protobuf:"fixed64,8,opt,name=expected_drift_sign,json=expectedDriftSign,proto3" json:"expected_drift_sign,omitempty"`
+	// True when the shelf height was legible and refined the expectation —
+	// a cask high in the stack runs hot and dry even in a cool building.
+	ClimateFromLevel bool                 `protobuf:"varint,9,opt,name=climate_from_level,json=climateFromLevel,proto3" json:"climate_from_level,omitempty"`
+	HotDry           bool                 `protobuf:"varint,10,opt,name=hot_dry,json=hotDry,proto3" json:"hot_dry,omitempty"`
+	Findings         []*MaturationFinding `protobuf:"bytes,11,rep,name=findings,proto3" json:"findings,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *MaturationAssessment) Reset() {
+	*x = MaturationAssessment{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaturationAssessment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaturationAssessment) ProtoMessage() {}
+
+func (x *MaturationAssessment) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaturationAssessment.ProtoReflect.Descriptor instead.
+func (*MaturationAssessment) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *MaturationAssessment) GetMeasurable() bool {
+	if x != nil {
+		return x.Measurable
+	}
+	return false
+}
+
+func (x *MaturationAssessment) GetWhyNot() string {
+	if x != nil {
+		return x.WhyNot
+	}
+	return ""
+}
+
+func (x *MaturationAssessment) GetAnnualVolumeLossPct() float64 {
+	if x != nil {
+		return x.AnnualVolumeLossPct
+	}
+	return 0
+}
+
+func (x *MaturationAssessment) GetAnnualLaaLossPct() float64 {
+	if x != nil {
+		return x.AnnualLaaLossPct
+	}
+	return 0
+}
+
+func (x *MaturationAssessment) GetStrengthDriftPerYear() float64 {
+	if x != nil {
+		return x.StrengthDriftPerYear
+	}
+	return 0
+}
+
+func (x *MaturationAssessment) GetExpectedMinPct() float64 {
+	if x != nil {
+		return x.ExpectedMinPct
+	}
+	return 0
+}
+
+func (x *MaturationAssessment) GetExpectedMaxPct() float64 {
+	if x != nil {
+		return x.ExpectedMaxPct
+	}
+	return 0
+}
+
+func (x *MaturationAssessment) GetExpectedDriftSign() float64 {
+	if x != nil {
+		return x.ExpectedDriftSign
+	}
+	return 0
+}
+
+func (x *MaturationAssessment) GetClimateFromLevel() bool {
+	if x != nil {
+		return x.ClimateFromLevel
+	}
+	return false
+}
+
+func (x *MaturationAssessment) GetHotDry() bool {
+	if x != nil {
+		return x.HotDry
+	}
+	return false
+}
+
+func (x *MaturationAssessment) GetFindings() []*MaturationFinding {
+	if x != nil {
+		return x.Findings
+	}
+	return nil
+}
+
 type BarrelEvent struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -403,7 +675,7 @@ type BarrelEvent struct {
 
 func (x *BarrelEvent) Reset() {
 	*x = BarrelEvent{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -415,7 +687,7 @@ func (x *BarrelEvent) String() string {
 func (*BarrelEvent) ProtoMessage() {}
 
 func (x *BarrelEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -428,7 +700,7 @@ func (x *BarrelEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BarrelEvent.ProtoReflect.Descriptor instead.
 func (*BarrelEvent) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BarrelEvent) GetId() string {
@@ -608,7 +880,7 @@ type CreateBarrelRequest struct {
 
 func (x *CreateBarrelRequest) Reset() {
 	*x = CreateBarrelRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -620,7 +892,7 @@ func (x *CreateBarrelRequest) String() string {
 func (*CreateBarrelRequest) ProtoMessage() {}
 
 func (x *CreateBarrelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -633,7 +905,7 @@ func (x *CreateBarrelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateBarrelRequest.ProtoReflect.Descriptor instead.
 func (*CreateBarrelRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateBarrelRequest) GetName() string {
@@ -750,7 +1022,7 @@ type CreateBarrelResponse struct {
 
 func (x *CreateBarrelResponse) Reset() {
 	*x = CreateBarrelResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -762,7 +1034,7 @@ func (x *CreateBarrelResponse) String() string {
 func (*CreateBarrelResponse) ProtoMessage() {}
 
 func (x *CreateBarrelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -775,7 +1047,7 @@ func (x *CreateBarrelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateBarrelResponse.ProtoReflect.Descriptor instead.
 func (*CreateBarrelResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateBarrelResponse) GetBarrel() *Barrel {
@@ -794,7 +1066,7 @@ type ListBarrelsRequest struct {
 
 func (x *ListBarrelsRequest) Reset() {
 	*x = ListBarrelsRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -806,7 +1078,7 @@ func (x *ListBarrelsRequest) String() string {
 func (*ListBarrelsRequest) ProtoMessage() {}
 
 func (x *ListBarrelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -819,7 +1091,7 @@ func (x *ListBarrelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBarrelsRequest.ProtoReflect.Descriptor instead.
 func (*ListBarrelsRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ListBarrelsRequest) GetIncludeArchived() bool {
@@ -842,7 +1114,7 @@ type ListBarrelsResponse struct {
 
 func (x *ListBarrelsResponse) Reset() {
 	*x = ListBarrelsResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -854,7 +1126,7 @@ func (x *ListBarrelsResponse) String() string {
 func (*ListBarrelsResponse) ProtoMessage() {}
 
 func (x *ListBarrelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -867,7 +1139,7 @@ func (x *ListBarrelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListBarrelsResponse.ProtoReflect.Descriptor instead.
 func (*ListBarrelsResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ListBarrelsResponse) GetBarrels() []*Barrel {
@@ -914,7 +1186,7 @@ type GetBarrelRequest struct {
 
 func (x *GetBarrelRequest) Reset() {
 	*x = GetBarrelRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -926,7 +1198,7 @@ func (x *GetBarrelRequest) String() string {
 func (*GetBarrelRequest) ProtoMessage() {}
 
 func (x *GetBarrelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -939,7 +1211,7 @@ func (x *GetBarrelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBarrelRequest.ProtoReflect.Descriptor instead.
 func (*GetBarrelRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetBarrelRequest) GetId() string {
@@ -950,16 +1222,18 @@ func (x *GetBarrelRequest) GetId() string {
 }
 
 type GetBarrelResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Barrel        *Barrel                `protobuf:"bytes,1,opt,name=barrel,proto3" json:"barrel,omitempty"`
-	Events        []*BarrelEvent         `protobuf:"bytes,2,rep,name=events,proto3" json:"events,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Barrel *Barrel                `protobuf:"bytes,1,opt,name=barrel,proto3" json:"barrel,omitempty"`
+	Events []*BarrelEvent         `protobuf:"bytes,2,rep,name=events,proto3" json:"events,omitempty"`
+	// Populated when the cask has a fill to measure against.
+	Maturation    *MaturationAssessment `protobuf:"bytes,3,opt,name=maturation,proto3" json:"maturation,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *GetBarrelResponse) Reset() {
 	*x = GetBarrelResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -971,7 +1245,7 @@ func (x *GetBarrelResponse) String() string {
 func (*GetBarrelResponse) ProtoMessage() {}
 
 func (x *GetBarrelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -984,7 +1258,7 @@ func (x *GetBarrelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBarrelResponse.ProtoReflect.Descriptor instead.
 func (*GetBarrelResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetBarrelResponse) GetBarrel() *Barrel {
@@ -997,6 +1271,13 @@ func (x *GetBarrelResponse) GetBarrel() *Barrel {
 func (x *GetBarrelResponse) GetEvents() []*BarrelEvent {
 	if x != nil {
 		return x.Events
+	}
+	return nil
+}
+
+func (x *GetBarrelResponse) GetMaturation() *MaturationAssessment {
+	if x != nil {
+		return x.Maturation
 	}
 	return nil
 }
@@ -1019,7 +1300,7 @@ type FillBarrelRequest struct {
 
 func (x *FillBarrelRequest) Reset() {
 	*x = FillBarrelRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1031,7 +1312,7 @@ func (x *FillBarrelRequest) String() string {
 func (*FillBarrelRequest) ProtoMessage() {}
 
 func (x *FillBarrelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1044,7 +1325,7 @@ func (x *FillBarrelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FillBarrelRequest.ProtoReflect.Descriptor instead.
 func (*FillBarrelRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *FillBarrelRequest) GetBarrelId() string {
@@ -1127,7 +1408,7 @@ type FillBarrelResponse struct {
 
 func (x *FillBarrelResponse) Reset() {
 	*x = FillBarrelResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1139,7 +1420,7 @@ func (x *FillBarrelResponse) String() string {
 func (*FillBarrelResponse) ProtoMessage() {}
 
 func (x *FillBarrelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1152,7 +1433,7 @@ func (x *FillBarrelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FillBarrelResponse.ProtoReflect.Descriptor instead.
 func (*FillBarrelResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *FillBarrelResponse) GetEvent() *BarrelEvent {
@@ -1187,7 +1468,7 @@ type DumpBarrelRequest struct {
 
 func (x *DumpBarrelRequest) Reset() {
 	*x = DumpBarrelRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1199,7 +1480,7 @@ func (x *DumpBarrelRequest) String() string {
 func (*DumpBarrelRequest) ProtoMessage() {}
 
 func (x *DumpBarrelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1212,7 +1493,7 @@ func (x *DumpBarrelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DumpBarrelRequest.ProtoReflect.Descriptor instead.
 func (*DumpBarrelRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *DumpBarrelRequest) GetBarrelId() string {
@@ -1295,7 +1576,7 @@ type DumpBarrelResponse struct {
 
 func (x *DumpBarrelResponse) Reset() {
 	*x = DumpBarrelResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1307,7 +1588,7 @@ func (x *DumpBarrelResponse) String() string {
 func (*DumpBarrelResponse) ProtoMessage() {}
 
 func (x *DumpBarrelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1320,7 +1601,7 @@ func (x *DumpBarrelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DumpBarrelResponse.ProtoReflect.Descriptor instead.
 func (*DumpBarrelResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DumpBarrelResponse) GetEvent() *BarrelEvent {
@@ -1357,7 +1638,7 @@ type RegaugeBarrelRequest struct {
 
 func (x *RegaugeBarrelRequest) Reset() {
 	*x = RegaugeBarrelRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1369,7 +1650,7 @@ func (x *RegaugeBarrelRequest) String() string {
 func (*RegaugeBarrelRequest) ProtoMessage() {}
 
 func (x *RegaugeBarrelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1382,7 +1663,7 @@ func (x *RegaugeBarrelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegaugeBarrelRequest.ProtoReflect.Descriptor instead.
 func (*RegaugeBarrelRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{12}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *RegaugeBarrelRequest) GetBarrelId() string {
@@ -1459,7 +1740,7 @@ type RegaugeBarrelResponse struct {
 
 func (x *RegaugeBarrelResponse) Reset() {
 	*x = RegaugeBarrelResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1471,7 +1752,7 @@ func (x *RegaugeBarrelResponse) String() string {
 func (*RegaugeBarrelResponse) ProtoMessage() {}
 
 func (x *RegaugeBarrelResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1484,7 +1765,7 @@ func (x *RegaugeBarrelResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegaugeBarrelResponse.ProtoReflect.Descriptor instead.
 func (*RegaugeBarrelResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{13}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *RegaugeBarrelResponse) GetEvent() *BarrelEvent {
@@ -1518,7 +1799,7 @@ type VoidBarrelEventRequest struct {
 
 func (x *VoidBarrelEventRequest) Reset() {
 	*x = VoidBarrelEventRequest{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1530,7 +1811,7 @@ func (x *VoidBarrelEventRequest) String() string {
 func (*VoidBarrelEventRequest) ProtoMessage() {}
 
 func (x *VoidBarrelEventRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1543,7 +1824,7 @@ func (x *VoidBarrelEventRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoidBarrelEventRequest.ProtoReflect.Descriptor instead.
 func (*VoidBarrelEventRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{14}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *VoidBarrelEventRequest) GetId() string {
@@ -1568,7 +1849,7 @@ type VoidBarrelEventResponse struct {
 
 func (x *VoidBarrelEventResponse) Reset() {
 	*x = VoidBarrelEventResponse{}
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1580,7 +1861,7 @@ func (x *VoidBarrelEventResponse) String() string {
 func (*VoidBarrelEventResponse) ProtoMessage() {}
 
 func (x *VoidBarrelEventResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_barrel_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1593,14 +1874,14 @@ func (x *VoidBarrelEventResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoidBarrelEventResponse.ProtoReflect.Descriptor instead.
 func (*VoidBarrelEventResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{15}
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{17}
 }
 
 var File_stillhouse_v1_barrel_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\n" +
-	"\x1astillhouse/v1/barrel.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!stillhouse/v1/alcoholometry.proto\"\xf9\b\n" +
+	"\x1astillhouse/v1/barrel.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!stillhouse/v1/alcoholometry.proto\"\xbe\t\n" +
 	"\x06Barrel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
@@ -1638,7 +1919,30 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\n" +
 	"small_wood\x182 \x01(\bR\tsmallWood\x128\n" +
 	"\x18canadian_whisky_eligible\x183 \x01(\bR\x16canadianWhiskyEligible\x12F\n" +
-	" days_to_canadian_whisky_eligible\x184 \x01(\x05R\x1cdaysToCanadianWhiskyEligible\"\xe9\x06\n" +
+	" days_to_canadian_whisky_eligible\x184 \x01(\x05R\x1cdaysToCanadianWhiskyEligible\x12C\n" +
+	"\n" +
+	"maturation\x185 \x01(\v2#.stillhouse.v1.MaturationAssessmentR\n" +
+	"maturation\"\x9b\x01\n" +
+	"\x11MaturationFinding\x12D\n" +
+	"\bseverity\x18\x01 \x01(\x0e2(.stillhouse.v1.MaturationFindingSeverityR\bseverity\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
+	"\x06detail\x18\x04 \x01(\tR\x06detail\"\xf3\x03\n" +
+	"\x14MaturationAssessment\x12\x1e\n" +
+	"\n" +
+	"measurable\x18\x01 \x01(\bR\n" +
+	"measurable\x12\x17\n" +
+	"\awhy_not\x18\x02 \x01(\tR\x06whyNot\x123\n" +
+	"\x16annual_volume_loss_pct\x18\x03 \x01(\x01R\x13annualVolumeLossPct\x12-\n" +
+	"\x13annual_laa_loss_pct\x18\x04 \x01(\x01R\x10annualLaaLossPct\x125\n" +
+	"\x17strength_drift_per_year\x18\x05 \x01(\x01R\x14strengthDriftPerYear\x12(\n" +
+	"\x10expected_min_pct\x18\x06 \x01(\x01R\x0eexpectedMinPct\x12(\n" +
+	"\x10expected_max_pct\x18\a \x01(\x01R\x0eexpectedMaxPct\x12.\n" +
+	"\x13expected_drift_sign\x18\b \x01(\x01R\x11expectedDriftSign\x12,\n" +
+	"\x12climate_from_level\x18\t \x01(\bR\x10climateFromLevel\x12\x17\n" +
+	"\ahot_dry\x18\n" +
+	" \x01(\bR\x06hotDry\x12<\n" +
+	"\bfindings\x18\v \x03(\v2 .stillhouse.v1.MaturationFindingR\bfindings\"\xe9\x06\n" +
 	"\vBarrelEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fcontainer_id\x18\x02 \x01(\tR\vcontainerId\x122\n" +
@@ -1698,10 +2002,13 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x0eeligible_count\x18\x04 \x01(\x05R\religibleCount\x12\x1b\n" +
 	"\ttotal_laa\x18\x05 \x01(\x01R\btotalLaa\"\"\n" +
 	"\x10GetBarrelRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"v\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xbb\x01\n" +
 	"\x11GetBarrelResponse\x12-\n" +
 	"\x06barrel\x18\x01 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\x122\n" +
-	"\x06events\x18\x02 \x03(\v2\x1a.stillhouse.v1.BarrelEventR\x06events\"\x85\x03\n" +
+	"\x06events\x18\x02 \x03(\v2\x1a.stillhouse.v1.BarrelEventR\x06events\x12C\n" +
+	"\n" +
+	"maturation\x18\x03 \x01(\v2#.stillhouse.v1.MaturationAssessmentR\n" +
+	"maturation\"\x85\x03\n" +
 	"\x11FillBarrelRequest\x12\x1b\n" +
 	"\tbarrel_id\x18\x01 \x01(\tR\bbarrelId\x12.\n" +
 	"\x13source_container_id\x18\x02 \x01(\tR\x11sourceContainerId\x12\x19\n" +
@@ -1761,7 +2068,12 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x18BARREL_EVENT_KIND_SAMPLE\x10\x03\x12\x1a\n" +
 	"\x16BARREL_EVENT_KIND_DUMP\x10\x04\x12\x1a\n" +
 	"\x16BARREL_EVENT_KIND_MOVE\x10\x05\x12\x1d\n" +
-	"\x19BARREL_EVENT_KIND_DESTROY\x10\x062\xf2\x04\n" +
+	"\x19BARREL_EVENT_KIND_DESTROY\x10\x06*\xc0\x01\n" +
+	"\x19MaturationFindingSeverity\x12+\n" +
+	"'MATURATION_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12$\n" +
+	" MATURATION_FINDING_SEVERITY_INFO\x10\x01\x12'\n" +
+	"#MATURATION_FINDING_SEVERITY_WARNING\x10\x02\x12'\n" +
+	"#MATURATION_FINDING_SEVERITY_PROBLEM\x10\x032\xf2\x04\n" +
 	"\rBarrelService\x12W\n" +
 	"\fCreateBarrel\x12\".stillhouse.v1.CreateBarrelRequest\x1a#.stillhouse.v1.CreateBarrelResponse\x12T\n" +
 	"\vListBarrels\x12!.stillhouse.v1.ListBarrelsRequest\x1a\".stillhouse.v1.ListBarrelsResponse\x12N\n" +
@@ -1786,68 +2098,75 @@ func file_stillhouse_v1_barrel_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_barrel_proto_rawDescData
 }
 
-var file_stillhouse_v1_barrel_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_barrel_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_stillhouse_v1_barrel_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_stillhouse_v1_barrel_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_stillhouse_v1_barrel_proto_goTypes = []any{
 	(BarrelEventKind)(0),            // 0: stillhouse.v1.BarrelEventKind
-	(*Barrel)(nil),                  // 1: stillhouse.v1.Barrel
-	(*BarrelEvent)(nil),             // 2: stillhouse.v1.BarrelEvent
-	(*CreateBarrelRequest)(nil),     // 3: stillhouse.v1.CreateBarrelRequest
-	(*CreateBarrelResponse)(nil),    // 4: stillhouse.v1.CreateBarrelResponse
-	(*ListBarrelsRequest)(nil),      // 5: stillhouse.v1.ListBarrelsRequest
-	(*ListBarrelsResponse)(nil),     // 6: stillhouse.v1.ListBarrelsResponse
-	(*GetBarrelRequest)(nil),        // 7: stillhouse.v1.GetBarrelRequest
-	(*GetBarrelResponse)(nil),       // 8: stillhouse.v1.GetBarrelResponse
-	(*FillBarrelRequest)(nil),       // 9: stillhouse.v1.FillBarrelRequest
-	(*FillBarrelResponse)(nil),      // 10: stillhouse.v1.FillBarrelResponse
-	(*DumpBarrelRequest)(nil),       // 11: stillhouse.v1.DumpBarrelRequest
-	(*DumpBarrelResponse)(nil),      // 12: stillhouse.v1.DumpBarrelResponse
-	(*RegaugeBarrelRequest)(nil),    // 13: stillhouse.v1.RegaugeBarrelRequest
-	(*RegaugeBarrelResponse)(nil),   // 14: stillhouse.v1.RegaugeBarrelResponse
-	(*VoidBarrelEventRequest)(nil),  // 15: stillhouse.v1.VoidBarrelEventRequest
-	(*VoidBarrelEventResponse)(nil), // 16: stillhouse.v1.VoidBarrelEventResponse
-	(*timestamppb.Timestamp)(nil),   // 17: google.protobuf.Timestamp
-	(StrengthSource)(0),             // 18: stillhouse.v1.StrengthSource
+	(MaturationFindingSeverity)(0),  // 1: stillhouse.v1.MaturationFindingSeverity
+	(*Barrel)(nil),                  // 2: stillhouse.v1.Barrel
+	(*MaturationFinding)(nil),       // 3: stillhouse.v1.MaturationFinding
+	(*MaturationAssessment)(nil),    // 4: stillhouse.v1.MaturationAssessment
+	(*BarrelEvent)(nil),             // 5: stillhouse.v1.BarrelEvent
+	(*CreateBarrelRequest)(nil),     // 6: stillhouse.v1.CreateBarrelRequest
+	(*CreateBarrelResponse)(nil),    // 7: stillhouse.v1.CreateBarrelResponse
+	(*ListBarrelsRequest)(nil),      // 8: stillhouse.v1.ListBarrelsRequest
+	(*ListBarrelsResponse)(nil),     // 9: stillhouse.v1.ListBarrelsResponse
+	(*GetBarrelRequest)(nil),        // 10: stillhouse.v1.GetBarrelRequest
+	(*GetBarrelResponse)(nil),       // 11: stillhouse.v1.GetBarrelResponse
+	(*FillBarrelRequest)(nil),       // 12: stillhouse.v1.FillBarrelRequest
+	(*FillBarrelResponse)(nil),      // 13: stillhouse.v1.FillBarrelResponse
+	(*DumpBarrelRequest)(nil),       // 14: stillhouse.v1.DumpBarrelRequest
+	(*DumpBarrelResponse)(nil),      // 15: stillhouse.v1.DumpBarrelResponse
+	(*RegaugeBarrelRequest)(nil),    // 16: stillhouse.v1.RegaugeBarrelRequest
+	(*RegaugeBarrelResponse)(nil),   // 17: stillhouse.v1.RegaugeBarrelResponse
+	(*VoidBarrelEventRequest)(nil),  // 18: stillhouse.v1.VoidBarrelEventRequest
+	(*VoidBarrelEventResponse)(nil), // 19: stillhouse.v1.VoidBarrelEventResponse
+	(*timestamppb.Timestamp)(nil),   // 20: google.protobuf.Timestamp
+	(StrengthSource)(0),             // 21: stillhouse.v1.StrengthSource
 }
 var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
-	17, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
-	17, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 2: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
-	17, // 3: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
-	17, // 4: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
-	18, // 5: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
-	1,  // 6: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	1,  // 7: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
-	1,  // 8: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	2,  // 9: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
-	17, // 10: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	2,  // 11: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	1,  // 12: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	17, // 13: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	2,  // 14: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	1,  // 15: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	17, // 16: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	2,  // 17: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	1,  // 18: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	3,  // 19: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
-	5,  // 20: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
-	7,  // 21: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
-	9,  // 22: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
-	11, // 23: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
-	13, // 24: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
-	15, // 25: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
-	4,  // 26: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
-	6,  // 27: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
-	8,  // 28: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
-	10, // 29: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
-	12, // 30: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
-	14, // 31: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
-	16, // 32: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
-	26, // [26:33] is the sub-list for method output_type
-	19, // [19:26] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	20, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
+	20, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
+	4,  // 2: stillhouse.v1.Barrel.maturation:type_name -> stillhouse.v1.MaturationAssessment
+	1,  // 3: stillhouse.v1.MaturationFinding.severity:type_name -> stillhouse.v1.MaturationFindingSeverity
+	3,  // 4: stillhouse.v1.MaturationAssessment.findings:type_name -> stillhouse.v1.MaturationFinding
+	0,  // 5: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
+	20, // 6: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
+	20, // 7: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
+	21, // 8: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
+	2,  // 9: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	2,  // 10: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
+	2,  // 11: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	5,  // 12: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
+	4,  // 13: stillhouse.v1.GetBarrelResponse.maturation:type_name -> stillhouse.v1.MaturationAssessment
+	20, // 14: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	5,  // 15: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 16: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	20, // 17: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	5,  // 18: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 19: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	20, // 20: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	5,  // 21: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 22: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	6,  // 23: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
+	8,  // 24: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
+	10, // 25: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
+	12, // 26: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
+	14, // 27: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
+	16, // 28: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
+	18, // 29: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
+	7,  // 30: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
+	9,  // 31: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
+	11, // 32: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
+	13, // 33: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
+	15, // 34: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
+	17, // 35: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
+	19, // 36: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
+	30, // [30:37] is the sub-list for method output_type
+	23, // [23:30] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_barrel_proto_init() }
@@ -1861,8 +2180,8 @@ func file_stillhouse_v1_barrel_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_barrel_proto_rawDesc), len(file_stillhouse_v1_barrel_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   16,
+			NumEnums:      2,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

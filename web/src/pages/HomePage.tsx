@@ -252,7 +252,14 @@ function CWForecastSection({ barrels }: { barrels: { currentLaa: number; canadia
   );
 }
 
-type BarrelAlertRow = { id: string; name: string; currentLaa: number; canadianWhiskyEligible: boolean; daysAged: number };
+type BarrelAlertRow = {
+  id: string;
+  name: string;
+  currentLaa: number;
+  canadianWhiskyEligible: boolean;
+  daysAged: number;
+  maturation?: { measurable: boolean; findings: { severity: number; title: string }[] };
+};
 type ContainerAlertRow = { id: string; name: string; kind: number; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean };
 type StampAlertRow = { jurisdiction: string; totalOnHand: number; bottlesPerDay30d: number };
 
@@ -287,6 +294,8 @@ function AlertsPanel({
   if (b266) items.push(<div key="b266">{b266}</div>);
   const dump = renderReadyToDumpCallout(barrels);
   if (dump) items.push(<div key="dump">{dump}</div>);
+  const evap = renderAngelsShareCallout(barrels);
+  if (evap) items.push(<div key="evap">{evap}</div>);
   const stamps = renderStampLowStockCallout(stampSummaries);
   if (stamps) items.push(<div key="stamps">{stamps}</div>);
   const stagnant = renderStagnantBulkCallout(containers);
@@ -321,6 +330,42 @@ function renderReadyToDumpCallout(barrels: BarrelAlertRow[]) {
       <span className="font-semibold text-success-fg">{ready.length} barrel{ready.length > 1 ? "s" : ""}</span> hit Canadian Whisky eligibility
       and still hold alcohol — ready to dump for bottling.{" "}
       <Link to="/barrels" className="underline">Open barrels →</Link>
+    </Callout>
+  );
+}
+
+// renderAngelsShareCallout surfaces casks losing more than the warehouse
+// should. Evaporation is silent and permanent — by the time it shows up in
+// a B266 the alcohol is long gone — so it belongs on the dashboard rather
+// than only on the barrel page nobody opens.
+function renderAngelsShareCallout(barrels: BarrelAlertRow[]) {
+  const flagged = barrels
+    .filter((b) => b.maturation?.measurable)
+    .map((b) => ({
+      b,
+      worst: b.maturation!.findings.filter((f) => f.severity >= 2 /* WARNING */),
+    }))
+    .filter((x) => x.worst.length > 0);
+  if (flagged.length === 0) return null;
+
+  const problems = flagged.filter((x) => x.worst.some((f) => f.severity >= 3 /* PROBLEM */));
+  const tone = problems.length > 0 ? "danger" : "warning";
+  const shown = flagged.slice(0, 4);
+  return (
+    <Callout tone={tone}>
+      <span className="font-semibold">
+        {flagged.length} barrel{flagged.length > 1 ? "s" : ""} losing more than expected:
+      </span>{" "}
+      {shown.map((x, i) => (
+        <span key={x.b.id}>
+          {i > 0 && ", "}
+          <Link to={`/barrels/${x.b.id}`} className="underline">
+            {x.b.name}
+          </Link>
+        </span>
+      ))}
+      {flagged.length > shown.length && ` and ${flagged.length - shown.length} more`}. Evaporation
+      is permanent — a slack bung found this month is alcohol you still have.
     </Callout>
   );
 }

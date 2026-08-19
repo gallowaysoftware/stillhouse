@@ -60,6 +60,59 @@ message Barrel {
   bool   small_wood = 50;
   bool   canadian_whisky_eligible = 51;
   int32  days_to_canadian_whisky_eligible = 52;
+
+  // Angel's share assessment against the fill this cask is living off.
+  // Populated on list and detail reads alike, so a dashboard can flag a
+  // leaking cask without opening every barrel page.
+  MaturationAssessment maturation = 53;
+}
+
+// How serious a maturation finding is. Advisory — nothing here blocks a
+// write.
+enum MaturationFindingSeverity {
+  MATURATION_FINDING_SEVERITY_UNSPECIFIED = 0;
+  MATURATION_FINDING_SEVERITY_INFO = 1;
+  MATURATION_FINDING_SEVERITY_WARNING = 2;
+  MATURATION_FINDING_SEVERITY_PROBLEM = 3;
+}
+
+message MaturationFinding {
+  MaturationFindingSeverity severity = 1;
+  string code = 2;
+  string title = 3;
+  string detail = 4;
+}
+
+// MaturationAssessment answers the question a warehouse actually raises:
+// is this cask losing what it should be losing?
+//
+// Rates are compounded annual figures — losses compound on a shrinking
+// volume, so a geometric rate is the honest one across multiple years.
+// Expected bands are from the IBD/CIBD curriculum: 2–3 % a year in a
+// cool, humid warehouse with the strength falling about a point a year;
+// 4–5 % and rising strength in a hot, dry one.
+message MaturationAssessment {
+  // False when there isn't enough history to say anything — everything
+  // below is meaningless then, and why_not explains the refusal.
+  bool   measurable = 1;
+  string why_not = 2;
+
+  double annual_volume_loss_pct = 3;
+  // The figure that costs money: duty is charged on LAA.
+  double annual_laa_loss_pct = 4;
+  // Percentage points of strength per year, signed.
+  double strength_drift_per_year = 5;
+
+  double expected_min_pct = 6;
+  double expected_max_pct = 7;
+  // Which way the strength should be moving: negative loses strength.
+  double expected_drift_sign = 8;
+  // True when the shelf height was legible and refined the expectation —
+  // a cask high in the stack runs hot and dry even in a cool building.
+  bool   climate_from_level = 9;
+  bool   hot_dry = 10;
+
+  repeated MaturationFinding findings = 11;
 }
 
 message BarrelEvent {
@@ -125,6 +178,8 @@ message GetBarrelRequest { string id = 1; }
 message GetBarrelResponse {
   Barrel barrel = 1;
   repeated BarrelEvent events = 2;
+  // Populated when the cask has a fill to measure against.
+  MaturationAssessment maturation = 3;
 }
 
 message FillBarrelRequest {

@@ -17,6 +17,11 @@ linters:
 
   exclusions:
     rules:
+      # QF1005 wants math.Pow(0.98, 3) expanded to 0.98*0.98*0.98. In the
+      # maturation tests that call reads as "three years of 2 % annual loss
+      # compounding"; the expansion reads as noise. Intent wins.
+      - linters: [staticcheck]
+        text: "QF1005"
       # Generated code is the tools' business, not ours. buf and sqlc
       # output is regenerated on every proto/schema change and CI already
       # fails on drift.

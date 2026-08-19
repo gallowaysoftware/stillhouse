@@ -135,6 +135,8 @@ type Querier interface {
 	ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]ListAuditEventsRow, error)
 	ListB266Periods(ctx context.Context) ([]B266Period, error)
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
+	// The fill this cask is currently living off, so the angel's share can be
+	// measured against it without a round trip per barrel.
 	ListBarrels(ctx context.Context, includeArchived bool) ([]ListBarrelsRow, error)
 	ListBottlingRunStampUsage(ctx context.Context, bottlingRunID uuid.UUID) ([]ListBottlingRunStampUsageRow, error)
 	ListBottlingRuns(ctx context.Context, arg ListBottlingRunsParams) ([]ListBottlingRunsRow, error)

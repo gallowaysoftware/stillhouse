@@ -16,9 +16,23 @@ SELECT
     bc.created_at, bc.updated_at,
     ba.cooperage_supplier, ba.char_level, ba.wood_species, ba.prior_use,
     ba.serial_burnin, ba.rickhouse, ba.row_position, ba.level_position, ba.column_position,
-    ba.fill_date, ba.days_aged_at_dump
+    ba.fill_date, ba.days_aged_at_dump,
+    fill.volume_l AS fill_volume_l,
+    fill.abv_pct  AS fill_abv_pct,
+    fill.laa      AS fill_laa
 FROM bulk_containers bc
 JOIN barrel_attributes ba ON ba.container_id = bc.id
+-- The fill this cask is currently living off, so the angel's share can be
+-- measured against it without a round trip per barrel.
+LEFT JOIN LATERAL (
+    SELECT be.volume_l, be.abv_pct, be.laa
+    FROM barrel_events be
+    WHERE be.container_id = bc.id
+      AND be.kind = 'fill'
+      AND be.voided_at IS NULL
+    ORDER BY be.event_date DESC, be.created_at DESC
+    LIMIT 1
+) fill ON TRUE
 WHERE bc.kind = 'barrel'
   AND (sqlc.arg('include_archived')::boolean OR NOT bc.archived)
 ORDER BY ba.fill_date DESC NULLS LAST, bc.name;

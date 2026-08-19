@@ -7,6 +7,7 @@ import { create } from "@bufbuild/protobuf";
 import { Button } from "@/components/Button";
 import { Callout } from "@/components/Callout";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { MaturationPanel } from "@/components/MaturationPanel";
 import { Shell } from "@/components/Shell";
 import {
   emptyReading,
@@ -157,6 +158,12 @@ export function BarrelDetailPage() {
         <Stat label="ABV" value={b.currentAbvPctSet ? `${b.currentAbvPct.toFixed(2)}%` : "—"} />
         <Stat label="LAA" value={`${formatLAA(b.currentLaa)} L`} highlight />
       </section>
+
+      {detail.data.maturation && (
+        <section className="mb-8 max-w-xl">
+          <MaturationPanel m={detail.data.maturation} />
+        </section>
+      )}
 
       <section className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {b.currentVolumeL === 0 ? (

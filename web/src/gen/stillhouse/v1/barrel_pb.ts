@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/barrel.proto.
  */
 export const file_stillhouse_v1_barrel: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL2JhcnJlbC5wcm90bxINc3RpbGxob3VzZS52MSLoBQoGQmFycmVsEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY2FwYWNpdHlfbBgDIAEoARIWCg5jYXBhY2l0eV9sX3NldBgEIAEoCBIQCghsb2NhdGlvbhgFIAEoCRINCgVub3RlcxgGIAEoCRIQCghhcmNoaXZlZBgHIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAggASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgJIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAogASgIEhMKC2N1cnJlbnRfbGFhGAsgASgBEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmNvb3BlcmFnZV9zdXBwbGllchgUIAEoCRISCgpjaGFyX2xldmVsGBUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GBYgASgIEhQKDHdvb2Rfc3BlY2llcxgXIAEoCRIRCglwcmlvcl91c2UYGCABKAkSFQoNc2VyaWFsX2J1cm5pbhgZIAEoCRIRCglyaWNraG91c2UYGiABKAkSFAoMcm93X3Bvc2l0aW9uGBsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGBwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgdIAEoCRIRCglmaWxsX2RhdGUYKCABKAkSEQoJZGF5c19hZ2VkGCkgASgFEhkKEWRheXNfYWdlZF9hdF9kdW1wGCogASgFEh0KFWRheXNfYWdlZF9hdF9kdW1wX3NldBgrIAEoCBISCgpzbWFsbF93b29kGDIgASgIEiAKGGNhbmFkaWFuX3doaXNreV9lbGlnaWJsZRgzIAEoCBIoCiBkYXlzX3RvX2NhbmFkaWFuX3doaXNreV9lbGlnaWJsZRg0IAEoBSLdBAoLQmFycmVsRXZlbnQSCgoCaWQYASABKAkSFAoMY29udGFpbmVyX2lkGAIgASgJEiwKBGtpbmQYAyABKA4yHi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50S2luZBIuCgpldmVudF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIQCgh2b2x1bWVfbBgFIAEoARIUCgx2b2x1bWVfbF9zZXQYBiABKAgSDwoHYWJ2X3BjdBgHIAEoARITCgthYnZfcGN0X3NldBgIIAEoCBILCgNsYWEYCSABKAESDwoHbGFhX3NldBgKIAEoCBIYChBidWxrX21vdmVtZW50X2lkGAsgASgJEhYKDmxvY2F0aW9uX2FmdGVyGAwgASgJEg0KBW5vdGVzGA0gASgJEg8KB3VzZXJfaWQYDiABKAkSLgoKY3JlYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASFQoNdGVtcGVyYXR1cmVfYxgQIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgRIAEoCBIZChFvYnNlcnZlZF92b2x1bWVfbBgSIAEoARIeChZvYnNlcnZlZF9kZW5zaXR5X2tnX20zGBMgASgBEiIKGm9ic2VydmVkX2RlbnNpdHlfa2dfbTNfc2V0GBQgASgIEhcKD3ZvbHVtZV9mYWN0b3JfYxgVIAEoARI2Cg9zdHJlbmd0aF9zb3VyY2UYFiABKA4yHS5zdGlsbGhvdXNlLnYxLlN0cmVuZ3RoU291cmNlItICChNDcmVhdGVCYXJyZWxSZXF1ZXN0EgwKBG5hbWUYASABKAkSEgoKY2FwYWNpdHlfbBgCIAEoARIWCg5jYXBhY2l0eV9sX3NldBgDIAEoCBIaChJjb29wZXJhZ2Vfc3VwcGxpZXIYBCABKAkSEgoKY2hhcl9sZXZlbBgFIAEoBRIWCg5jaGFyX2xldmVsX3NldBgGIAEoCBIUCgx3b29kX3NwZWNpZXMYByABKAkSEQoJcHJpb3JfdXNlGAggASgJEhUKDXNlcmlhbF9idXJuaW4YCSABKAkSEQoJcmlja2hvdXNlGAogASgJEhQKDHJvd19wb3NpdGlvbhgLIAEoCRIWCg5sZXZlbF9wb3NpdGlvbhgMIAEoCRIXCg9jb2x1bW5fcG9zaXRpb24YDSABKAkSEAoIbG9jYXRpb24YDiABKAkSDQoFbm90ZXMYDyABKAkiPQoUQ3JlYXRlQmFycmVsUmVzcG9uc2USJQoGYmFycmVsGAEgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwiLgoSTGlzdEJhcnJlbHNSZXF1ZXN0EhgKEGluY2x1ZGVfYXJjaGl2ZWQYASABKAgikgEKE0xpc3RCYXJyZWxzUmVzcG9uc2USJgoHYmFycmVscxgBIAMoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsEhMKC3RvdGFsX2NvdW50GAIgASgFEhMKC2FnaW5nX2NvdW50GAMgASgFEhYKDmVsaWdpYmxlX2NvdW50GAQgASgFEhEKCXRvdGFsX2xhYRgFIAEoASIeChBHZXRCYXJyZWxSZXF1ZXN0EgoKAmlkGAEgASgJImYKEUdldEJhcnJlbFJlc3BvbnNlEiUKBmJhcnJlbBgBIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsEioKBmV2ZW50cxgCIAMoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQiiQIKEUZpbGxCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIbChNzb3VyY2VfY29udGFpbmVyX2lkGAIgASgJEhAKCHZvbHVtZV9sGAMgASgBEg8KB2Fidl9wY3QYBCABKAESLgoKZXZlbnRfZGF0ZRgFIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBiABKAkSFQoNdGVtcGVyYXR1cmVfYxgHIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgIIAEoCBIVCg1kZW5zaXR5X2tnX20zGAkgASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAogASgIImYKEkZpbGxCYXJyZWxSZXNwb25zZRIpCgVldmVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQSJQoGYmFycmVsGAIgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwijgIKEUR1bXBCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIgChhkZXN0aW5hdGlvbl9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgiZgoSRHVtcEJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbCL3AQoUUmVnYXVnZUJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhQKDG5ld192b2x1bWVfbBgCIAEoARITCgtuZXdfYWJ2X3BjdBgDIAEoARIuCgpldmVudF9kYXRlGAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgFIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAYgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAcgASgIEhUKDWRlbnNpdHlfa2dfbTMYCCABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCSABKAgiewoVUmVnYXVnZUJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBIQCghsb3N0X2xhYRgDIAEoASI0ChZWb2lkQmFycmVsRXZlbnRSZXF1ZXN0EgoKAmlkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSIZChdWb2lkQmFycmVsRXZlbnRSZXNwb25zZSrkAQoPQmFycmVsRXZlbnRLaW5kEiEKHUJBUlJFTF9FVkVOVF9LSU5EX1VOU1BFQ0lGSUVEEAASGgoWQkFSUkVMX0VWRU5UX0tJTkRfRklMTBABEh0KGUJBUlJFTF9FVkVOVF9LSU5EX1JFR0FVR0UQAhIcChhCQVJSRUxfRVZFTlRfS0lORF9TQU1QTEUQAxIaChZCQVJSRUxfRVZFTlRfS0lORF9EVU1QEAQSGgoWQkFSUkVMX0VWRU5UX0tJTkRfTU9WRRAFEh0KGUJBUlJFTF9FVkVOVF9LSU5EX0RFU1RST1kQBjLyBAoNQmFycmVsU2VydmljZRJXCgxDcmVhdGVCYXJyZWwSIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJhcnJlbFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJhcnJlbFJlc3BvbnNlElQKC0xpc3RCYXJyZWxzEiEuc3RpbGxob3VzZS52MS5MaXN0QmFycmVsc1JlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkxpc3RCYXJyZWxzUmVzcG9uc2USTgoJR2V0QmFycmVsEh8uc3RpbGxob3VzZS52MS5HZXRCYXJyZWxSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRCYXJyZWxSZXNwb25zZRJRCgpGaWxsQmFycmVsEiAuc3RpbGxob3VzZS52MS5GaWxsQmFycmVsUmVxdWVzdBohLnN0aWxsaG91c2UudjEuRmlsbEJhcnJlbFJlc3BvbnNlElEKCkR1bXBCYXJyZWwSIC5zdGlsbGhvdXNlLnYxLkR1bXBCYXJyZWxSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5EdW1wQmFycmVsUmVzcG9uc2USWgoNUmVnYXVnZUJhcnJlbBIjLnN0aWxsaG91c2UudjEuUmVnYXVnZUJhcnJlbFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlJlZ2F1Z2VCYXJyZWxSZXNwb25zZRJgCg9Wb2lkQmFycmVsRXZlbnQSJS5zdGlsbGhvdXNlLnYxLlZvaWRCYXJyZWxFdmVudFJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLlZvaWRCYXJyZWxFdmVudFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_alcoholometry]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL2JhcnJlbC5wcm90bxINc3RpbGxob3VzZS52MSKhBgoGQmFycmVsEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY2FwYWNpdHlfbBgDIAEoARIWCg5jYXBhY2l0eV9sX3NldBgEIAEoCBIQCghsb2NhdGlvbhgFIAEoCRINCgVub3RlcxgGIAEoCRIQCghhcmNoaXZlZBgHIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAggASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgJIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAogASgIEhMKC2N1cnJlbnRfbGFhGAsgASgBEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmNvb3BlcmFnZV9zdXBwbGllchgUIAEoCRISCgpjaGFyX2xldmVsGBUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GBYgASgIEhQKDHdvb2Rfc3BlY2llcxgXIAEoCRIRCglwcmlvcl91c2UYGCABKAkSFQoNc2VyaWFsX2J1cm5pbhgZIAEoCRIRCglyaWNraG91c2UYGiABKAkSFAoMcm93X3Bvc2l0aW9uGBsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGBwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgdIAEoCRIRCglmaWxsX2RhdGUYKCABKAkSEQoJZGF5c19hZ2VkGCkgASgFEhkKEWRheXNfYWdlZF9hdF9kdW1wGCogASgFEh0KFWRheXNfYWdlZF9hdF9kdW1wX3NldBgrIAEoCBISCgpzbWFsbF93b29kGDIgASgIEiAKGGNhbmFkaWFuX3doaXNreV9lbGlnaWJsZRgzIAEoCBIoCiBkYXlzX3RvX2NhbmFkaWFuX3doaXNreV9lbGlnaWJsZRg0IAEoBRI3CgptYXR1cmF0aW9uGDUgASgLMiMuc3RpbGxob3VzZS52MS5NYXR1cmF0aW9uQXNzZXNzbWVudCJ8ChFNYXR1cmF0aW9uRmluZGluZxI6CghzZXZlcml0eRgBIAEoDjIoLnN0aWxsaG91c2UudjEuTWF0dXJhdGlvbkZpbmRpbmdTZXZlcml0eRIMCgRjb2RlGAIgASgJEg0KBXRpdGxlGAMgASgJEg4KBmRldGFpbBgEIAEoCSLLAgoUTWF0dXJhdGlvbkFzc2Vzc21lbnQSEgoKbWVhc3VyYWJsZRgBIAEoCBIPCgd3aHlfbm90GAIgASgJEh4KFmFubnVhbF92b2x1bWVfbG9zc19wY3QYAyABKAESGwoTYW5udWFsX2xhYV9sb3NzX3BjdBgEIAEoARIfChdzdHJlbmd0aF9kcmlmdF9wZXJfeWVhchgFIAEoARIYChBleHBlY3RlZF9taW5fcGN0GAYgASgBEhgKEGV4cGVjdGVkX21heF9wY3QYByABKAESGwoTZXhwZWN0ZWRfZHJpZnRfc2lnbhgIIAEoARIaChJjbGltYXRlX2Zyb21fbGV2ZWwYCSABKAgSDwoHaG90X2RyeRgKIAEoCBIyCghmaW5kaW5ncxgLIAMoCzIgLnN0aWxsaG91c2UudjEuTWF0dXJhdGlvbkZpbmRpbmci3QQKC0JhcnJlbEV2ZW50EgoKAmlkGAEgASgJEhQKDGNvbnRhaW5lcl9pZBgCIAEoCRIsCgRraW5kGAMgASgOMh4uc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudEtpbmQSLgoKZXZlbnRfZGF0ZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEAoIdm9sdW1lX2wYBSABKAESFAoMdm9sdW1lX2xfc2V0GAYgASgIEg8KB2Fidl9wY3QYByABKAESEwoLYWJ2X3BjdF9zZXQYCCABKAgSCwoDbGFhGAkgASgBEg8KB2xhYV9zZXQYCiABKAgSGAoQYnVsa19tb3ZlbWVudF9pZBgLIAEoCRIWCg5sb2NhdGlvbl9hZnRlchgMIAEoCRINCgVub3RlcxgNIAEoCRIPCgd1c2VyX2lkGA4gASgJEi4KCmNyZWF0ZWRfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDXRlbXBlcmF0dXJlX2MYECABKAESGQoRdGVtcGVyYXR1cmVfY19zZXQYESABKAgSGQoRb2JzZXJ2ZWRfdm9sdW1lX2wYEiABKAESHgoWb2JzZXJ2ZWRfZGVuc2l0eV9rZ19tMxgTIAEoARIiChpvYnNlcnZlZF9kZW5zaXR5X2tnX20zX3NldBgUIAEoCBIXCg92b2x1bWVfZmFjdG9yX2MYFSABKAESNgoPc3RyZW5ndGhfc291cmNlGBYgASgOMh0uc3RpbGxob3VzZS52MS5TdHJlbmd0aFNvdXJjZSLSAgoTQ3JlYXRlQmFycmVsUmVxdWVzdBIMCgRuYW1lGAEgASgJEhIKCmNhcGFjaXR5X2wYAiABKAESFgoOY2FwYWNpdHlfbF9zZXQYAyABKAgSGgoSY29vcGVyYWdlX3N1cHBsaWVyGAQgASgJEhIKCmNoYXJfbGV2ZWwYBSABKAUSFgoOY2hhcl9sZXZlbF9zZXQYBiABKAgSFAoMd29vZF9zcGVjaWVzGAcgASgJEhEKCXByaW9yX3VzZRgIIAEoCRIVCg1zZXJpYWxfYnVybmluGAkgASgJEhEKCXJpY2tob3VzZRgKIAEoCRIUCgxyb3dfcG9zaXRpb24YCyABKAkSFgoObGV2ZWxfcG9zaXRpb24YDCABKAkSFwoPY29sdW1uX3Bvc2l0aW9uGA0gASgJEhAKCGxvY2F0aW9uGA4gASgJEg0KBW5vdGVzGA8gASgJIj0KFENyZWF0ZUJhcnJlbFJlc3BvbnNlEiUKBmJhcnJlbBgBIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsIi4KEkxpc3RCYXJyZWxzUmVxdWVzdBIYChBpbmNsdWRlX2FyY2hpdmVkGAEgASgIIpIBChNMaXN0QmFycmVsc1Jlc3BvbnNlEiYKB2JhcnJlbHMYASADKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBITCgt0b3RhbF9jb3VudBgCIAEoBRITCgthZ2luZ19jb3VudBgDIAEoBRIWCg5lbGlnaWJsZV9jb3VudBgEIAEoBRIRCgl0b3RhbF9sYWEYBSABKAEiHgoQR2V0QmFycmVsUmVxdWVzdBIKCgJpZBgBIAEoCSKfAQoRR2V0QmFycmVsUmVzcG9uc2USJQoGYmFycmVsGAEgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSKgoGZXZlbnRzGAIgAygLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBI3CgptYXR1cmF0aW9uGAMgASgLMiMuc3RpbGxob3VzZS52MS5NYXR1cmF0aW9uQXNzZXNzbWVudCKJAgoRRmlsbEJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhsKE3NvdXJjZV9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgiZgoSRmlsbEJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbCKOAgoRRHVtcEJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEiAKGGRlc3RpbmF0aW9uX2NvbnRhaW5lcl9pZBgCIAEoCRIQCgh2b2x1bWVfbBgDIAEoARIPCgdhYnZfcGN0GAQgASgBEi4KCmV2ZW50X2RhdGUYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBW5vdGVzGAYgASgJEhUKDXRlbXBlcmF0dXJlX2MYByABKAESGQoRdGVtcGVyYXR1cmVfY19zZXQYCCABKAgSFQoNZGVuc2l0eV9rZ19tMxgJIAEoARIZChFkZW5zaXR5X2tnX20zX3NldBgKIAEoCCJmChJEdW1wQmFycmVsUmVzcG9uc2USKQoFZXZlbnQYASABKAsyGi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50EiUKBmJhcnJlbBgCIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsIvcBChRSZWdhdWdlQmFycmVsUmVxdWVzdBIRCgliYXJyZWxfaWQYASABKAkSFAoMbmV3X3ZvbHVtZV9sGAIgASgBEhMKC25ld19hYnZfcGN0GAMgASgBEi4KCmV2ZW50X2RhdGUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBW5vdGVzGAUgASgJEhUKDXRlbXBlcmF0dXJlX2MYBiABKAESGQoRdGVtcGVyYXR1cmVfY19zZXQYByABKAgSFQoNZGVuc2l0eV9rZ19tMxgIIAEoARIZChFkZW5zaXR5X2tnX20zX3NldBgJIAEoCCJ7ChVSZWdhdWdlQmFycmVsUmVzcG9uc2USKQoFZXZlbnQYASABKAsyGi5zdGlsbGhvdXNlLnYxLkJhcnJlbEV2ZW50EiUKBmJhcnJlbBgCIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsEhAKCGxvc3RfbGFhGAMgASgBIjQKFlZvaWRCYXJyZWxFdmVudFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIhkKF1ZvaWRCYXJyZWxFdmVudFJlc3BvbnNlKuQBCg9CYXJyZWxFdmVudEtpbmQSIQodQkFSUkVMX0VWRU5UX0tJTkRfVU5TUEVDSUZJRUQQABIaChZCQVJSRUxfRVZFTlRfS0lORF9GSUxMEAESHQoZQkFSUkVMX0VWRU5UX0tJTkRfUkVHQVVHRRACEhwKGEJBUlJFTF9FVkVOVF9LSU5EX1NBTVBMRRADEhoKFkJBUlJFTF9FVkVOVF9LSU5EX0RVTVAQBBIaChZCQVJSRUxfRVZFTlRfS0lORF9NT1ZFEAUSHQoZQkFSUkVMX0VWRU5UX0tJTkRfREVTVFJPWRAGKsABChlNYXR1cmF0aW9uRmluZGluZ1NldmVyaXR5EisKJ01BVFVSQVRJT05fRklORElOR19TRVZFUklUWV9VTlNQRUNJRklFRBAAEiQKIE1BVFVSQVRJT05fRklORElOR19TRVZFUklUWV9JTkZPEAESJwojTUFUVVJBVElPTl9GSU5ESU5HX1NFVkVSSVRZX1dBUk5JTkcQAhInCiNNQVRVUkFUSU9OX0ZJTkRJTkdfU0VWRVJJVFlfUFJPQkxFTRADMvIECg1CYXJyZWxTZXJ2aWNlElcKDENyZWF0ZUJhcnJlbBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlQmFycmVsUmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlQmFycmVsUmVzcG9uc2USVAoLTGlzdEJhcnJlbHMSIS5zdGlsbGhvdXNlLnYxLkxpc3RCYXJyZWxzUmVxdWVzdBoiLnN0aWxsaG91c2UudjEuTGlzdEJhcnJlbHNSZXNwb25zZRJOCglHZXRCYXJyZWwSHy5zdGlsbGhvdXNlLnYxLkdldEJhcnJlbFJlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLkdldEJhcnJlbFJlc3BvbnNlElEKCkZpbGxCYXJyZWwSIC5zdGlsbGhvdXNlLnYxLkZpbGxCYXJyZWxSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5GaWxsQmFycmVsUmVzcG9uc2USUQoKRHVtcEJhcnJlbBIgLnN0aWxsaG91c2UudjEuRHVtcEJhcnJlbFJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkR1bXBCYXJyZWxSZXNwb25zZRJaCg1SZWdhdWdlQmFycmVsEiMuc3RpbGxob3VzZS52MS5SZWdhdWdlQmFycmVsUmVxdWVzdBokLnN0aWxsaG91c2UudjEuUmVnYXVnZUJhcnJlbFJlc3BvbnNlEmAKD1ZvaWRCYXJyZWxFdmVudBIlLnN0aWxsaG91c2UudjEuVm9pZEJhcnJlbEV2ZW50UmVxdWVzdBomLnN0aWxsaG91c2UudjEuVm9pZEJhcnJlbEV2ZW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_stillhouse_v1_alcoholometry]);
 
 /**
  * Barrel is the joined view of a bulk_container (kind=barrel) + barrel_attributes
@@ -191,6 +191,15 @@ export type Barrel = Message<"stillhouse.v1.Barrel"> & {
    * @generated from field: int32 days_to_canadian_whisky_eligible = 52;
    */
   daysToCanadianWhiskyEligible: number;
+
+  /**
+   * Angel's share assessment against the fill this cask is living off.
+   * Populated on list and detail reads alike, so a dashboard can flag a
+   * leaking cask without opening every barrel page.
+   *
+   * @generated from field: stillhouse.v1.MaturationAssessment maturation = 53;
+   */
+  maturation?: MaturationAssessment | undefined;
 };
 
 /**
@@ -199,6 +208,126 @@ export type Barrel = Message<"stillhouse.v1.Barrel"> & {
  */
 export const BarrelSchema: GenMessage<Barrel> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_barrel, 0);
+
+/**
+ * @generated from message stillhouse.v1.MaturationFinding
+ */
+export type MaturationFinding = Message<"stillhouse.v1.MaturationFinding"> & {
+  /**
+   * @generated from field: stillhouse.v1.MaturationFindingSeverity severity = 1;
+   */
+  severity: MaturationFindingSeverity;
+
+  /**
+   * @generated from field: string code = 2;
+   */
+  code: string;
+
+  /**
+   * @generated from field: string title = 3;
+   */
+  title: string;
+
+  /**
+   * @generated from field: string detail = 4;
+   */
+  detail: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.MaturationFinding.
+ * Use `create(MaturationFindingSchema)` to create a new message.
+ */
+export const MaturationFindingSchema: GenMessage<MaturationFinding> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_barrel, 1);
+
+/**
+ * MaturationAssessment answers the question a warehouse actually raises:
+ * is this cask losing what it should be losing?
+ *
+ * Rates are compounded annual figures — losses compound on a shrinking
+ * volume, so a geometric rate is the honest one across multiple years.
+ * Expected bands are from the IBD/CIBD curriculum: 2–3 % a year in a
+ * cool, humid warehouse with the strength falling about a point a year;
+ * 4–5 % and rising strength in a hot, dry one.
+ *
+ * @generated from message stillhouse.v1.MaturationAssessment
+ */
+export type MaturationAssessment = Message<"stillhouse.v1.MaturationAssessment"> & {
+  /**
+   * False when there isn't enough history to say anything — everything
+   * below is meaningless then, and why_not explains the refusal.
+   *
+   * @generated from field: bool measurable = 1;
+   */
+  measurable: boolean;
+
+  /**
+   * @generated from field: string why_not = 2;
+   */
+  whyNot: string;
+
+  /**
+   * @generated from field: double annual_volume_loss_pct = 3;
+   */
+  annualVolumeLossPct: number;
+
+  /**
+   * The figure that costs money: duty is charged on LAA.
+   *
+   * @generated from field: double annual_laa_loss_pct = 4;
+   */
+  annualLaaLossPct: number;
+
+  /**
+   * Percentage points of strength per year, signed.
+   *
+   * @generated from field: double strength_drift_per_year = 5;
+   */
+  strengthDriftPerYear: number;
+
+  /**
+   * @generated from field: double expected_min_pct = 6;
+   */
+  expectedMinPct: number;
+
+  /**
+   * @generated from field: double expected_max_pct = 7;
+   */
+  expectedMaxPct: number;
+
+  /**
+   * Which way the strength should be moving: negative loses strength.
+   *
+   * @generated from field: double expected_drift_sign = 8;
+   */
+  expectedDriftSign: number;
+
+  /**
+   * True when the shelf height was legible and refined the expectation —
+   * a cask high in the stack runs hot and dry even in a cool building.
+   *
+   * @generated from field: bool climate_from_level = 9;
+   */
+  climateFromLevel: boolean;
+
+  /**
+   * @generated from field: bool hot_dry = 10;
+   */
+  hotDry: boolean;
+
+  /**
+   * @generated from field: repeated stillhouse.v1.MaturationFinding findings = 11;
+   */
+  findings: MaturationFinding[];
+};
+
+/**
+ * Describes the message stillhouse.v1.MaturationAssessment.
+ * Use `create(MaturationAssessmentSchema)` to create a new message.
+ */
+export const MaturationAssessmentSchema: GenMessage<MaturationAssessment> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_barrel, 2);
 
 /**
  * @generated from message stillhouse.v1.BarrelEvent
@@ -326,7 +455,7 @@ export type BarrelEvent = Message<"stillhouse.v1.BarrelEvent"> & {
  * Use `create(BarrelEventSchema)` to create a new message.
  */
 export const BarrelEventSchema: GenMessage<BarrelEvent> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 1);
+  messageDesc(file_stillhouse_v1_barrel, 3);
 
 /**
  * @generated from message stillhouse.v1.CreateBarrelRequest
@@ -413,7 +542,7 @@ export type CreateBarrelRequest = Message<"stillhouse.v1.CreateBarrelRequest"> &
  * Use `create(CreateBarrelRequestSchema)` to create a new message.
  */
 export const CreateBarrelRequestSchema: GenMessage<CreateBarrelRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 2);
+  messageDesc(file_stillhouse_v1_barrel, 4);
 
 /**
  * @generated from message stillhouse.v1.CreateBarrelResponse
@@ -430,7 +559,7 @@ export type CreateBarrelResponse = Message<"stillhouse.v1.CreateBarrelResponse">
  * Use `create(CreateBarrelResponseSchema)` to create a new message.
  */
 export const CreateBarrelResponseSchema: GenMessage<CreateBarrelResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 3);
+  messageDesc(file_stillhouse_v1_barrel, 5);
 
 /**
  * @generated from message stillhouse.v1.ListBarrelsRequest
@@ -447,7 +576,7 @@ export type ListBarrelsRequest = Message<"stillhouse.v1.ListBarrelsRequest"> & {
  * Use `create(ListBarrelsRequestSchema)` to create a new message.
  */
 export const ListBarrelsRequestSchema: GenMessage<ListBarrelsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 4);
+  messageDesc(file_stillhouse_v1_barrel, 6);
 
 /**
  * @generated from message stillhouse.v1.ListBarrelsResponse
@@ -484,7 +613,7 @@ export type ListBarrelsResponse = Message<"stillhouse.v1.ListBarrelsResponse"> &
  * Use `create(ListBarrelsResponseSchema)` to create a new message.
  */
 export const ListBarrelsResponseSchema: GenMessage<ListBarrelsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 5);
+  messageDesc(file_stillhouse_v1_barrel, 7);
 
 /**
  * @generated from message stillhouse.v1.GetBarrelRequest
@@ -501,7 +630,7 @@ export type GetBarrelRequest = Message<"stillhouse.v1.GetBarrelRequest"> & {
  * Use `create(GetBarrelRequestSchema)` to create a new message.
  */
 export const GetBarrelRequestSchema: GenMessage<GetBarrelRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 6);
+  messageDesc(file_stillhouse_v1_barrel, 8);
 
 /**
  * @generated from message stillhouse.v1.GetBarrelResponse
@@ -516,6 +645,13 @@ export type GetBarrelResponse = Message<"stillhouse.v1.GetBarrelResponse"> & {
    * @generated from field: repeated stillhouse.v1.BarrelEvent events = 2;
    */
   events: BarrelEvent[];
+
+  /**
+   * Populated when the cask has a fill to measure against.
+   *
+   * @generated from field: stillhouse.v1.MaturationAssessment maturation = 3;
+   */
+  maturation?: MaturationAssessment | undefined;
 };
 
 /**
@@ -523,7 +659,7 @@ export type GetBarrelResponse = Message<"stillhouse.v1.GetBarrelResponse"> & {
  * Use `create(GetBarrelResponseSchema)` to create a new message.
  */
 export const GetBarrelResponseSchema: GenMessage<GetBarrelResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 7);
+  messageDesc(file_stillhouse_v1_barrel, 9);
 
 /**
  * @generated from message stillhouse.v1.FillBarrelRequest
@@ -585,7 +721,7 @@ export type FillBarrelRequest = Message<"stillhouse.v1.FillBarrelRequest"> & {
  * Use `create(FillBarrelRequestSchema)` to create a new message.
  */
 export const FillBarrelRequestSchema: GenMessage<FillBarrelRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 8);
+  messageDesc(file_stillhouse_v1_barrel, 10);
 
 /**
  * @generated from message stillhouse.v1.FillBarrelResponse
@@ -607,7 +743,7 @@ export type FillBarrelResponse = Message<"stillhouse.v1.FillBarrelResponse"> & {
  * Use `create(FillBarrelResponseSchema)` to create a new message.
  */
 export const FillBarrelResponseSchema: GenMessage<FillBarrelResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 9);
+  messageDesc(file_stillhouse_v1_barrel, 11);
 
 /**
  * @generated from message stillhouse.v1.DumpBarrelRequest
@@ -673,7 +809,7 @@ export type DumpBarrelRequest = Message<"stillhouse.v1.DumpBarrelRequest"> & {
  * Use `create(DumpBarrelRequestSchema)` to create a new message.
  */
 export const DumpBarrelRequestSchema: GenMessage<DumpBarrelRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 10);
+  messageDesc(file_stillhouse_v1_barrel, 12);
 
 /**
  * @generated from message stillhouse.v1.DumpBarrelResponse
@@ -695,7 +831,7 @@ export type DumpBarrelResponse = Message<"stillhouse.v1.DumpBarrelResponse"> & {
  * Use `create(DumpBarrelResponseSchema)` to create a new message.
  */
 export const DumpBarrelResponseSchema: GenMessage<DumpBarrelResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 11);
+  messageDesc(file_stillhouse_v1_barrel, 13);
 
 /**
  * @generated from message stillhouse.v1.RegaugeBarrelRequest
@@ -757,7 +893,7 @@ export type RegaugeBarrelRequest = Message<"stillhouse.v1.RegaugeBarrelRequest">
  * Use `create(RegaugeBarrelRequestSchema)` to create a new message.
  */
 export const RegaugeBarrelRequestSchema: GenMessage<RegaugeBarrelRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 12);
+  messageDesc(file_stillhouse_v1_barrel, 14);
 
 /**
  * @generated from message stillhouse.v1.RegaugeBarrelResponse
@@ -784,7 +920,7 @@ export type RegaugeBarrelResponse = Message<"stillhouse.v1.RegaugeBarrelResponse
  * Use `create(RegaugeBarrelResponseSchema)` to create a new message.
  */
 export const RegaugeBarrelResponseSchema: GenMessage<RegaugeBarrelResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 13);
+  messageDesc(file_stillhouse_v1_barrel, 15);
 
 /**
  * @generated from message stillhouse.v1.VoidBarrelEventRequest
@@ -806,7 +942,7 @@ export type VoidBarrelEventRequest = Message<"stillhouse.v1.VoidBarrelEventReque
  * Use `create(VoidBarrelEventRequestSchema)` to create a new message.
  */
 export const VoidBarrelEventRequestSchema: GenMessage<VoidBarrelEventRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 14);
+  messageDesc(file_stillhouse_v1_barrel, 16);
 
 /**
  * @generated from message stillhouse.v1.VoidBarrelEventResponse
@@ -819,7 +955,7 @@ export type VoidBarrelEventResponse = Message<"stillhouse.v1.VoidBarrelEventResp
  * Use `create(VoidBarrelEventResponseSchema)` to create a new message.
  */
 export const VoidBarrelEventResponseSchema: GenMessage<VoidBarrelEventResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_barrel, 15);
+  messageDesc(file_stillhouse_v1_barrel, 17);
 
 /**
  * @generated from enum stillhouse.v1.BarrelEventKind
@@ -866,6 +1002,40 @@ export enum BarrelEventKind {
  */
 export const BarrelEventKindSchema: GenEnum<BarrelEventKind> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_barrel, 0);
+
+/**
+ * How serious a maturation finding is. Advisory — nothing here blocks a
+ * write.
+ *
+ * @generated from enum stillhouse.v1.MaturationFindingSeverity
+ */
+export enum MaturationFindingSeverity {
+  /**
+   * @generated from enum value: MATURATION_FINDING_SEVERITY_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: MATURATION_FINDING_SEVERITY_INFO = 1;
+   */
+  INFO = 1,
+
+  /**
+   * @generated from enum value: MATURATION_FINDING_SEVERITY_WARNING = 2;
+   */
+  WARNING = 2,
+
+  /**
+   * @generated from enum value: MATURATION_FINDING_SEVERITY_PROBLEM = 3;
+   */
+  PROBLEM = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.MaturationFindingSeverity.
+ */
+export const MaturationFindingSeveritySchema: GenEnum<MaturationFindingSeverity> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_barrel, 1);
 
 /**
  * @generated from service stillhouse.v1.BarrelService
