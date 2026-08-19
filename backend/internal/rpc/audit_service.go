@@ -76,12 +76,12 @@ func (s *AuditService) ListAuditEvents(
 	}
 	for _, r := range rows {
 		ev := &stillhousev1.AuditEvent{
-			Id:         r.ID.String(),
-			TenantId:   r.TenantID.String(),
-			EntityType: r.EntityType,
-			EntityId:   r.EntityID,
-			Action:     auditActionToProto(r.Action),
-			OccurredAt: timestamppb.New(r.OccurredAt.Time),
+			Id:          r.ID.String(),
+			TenantId:    r.TenantID.String(),
+			EntityType:  r.EntityType,
+			EntityId:    r.EntityID,
+			Action:      auditActionToProto(r.Action),
+			OccurredAt:  timestamppb.New(r.OccurredAt.Time),
 			PayloadJson: r.Payload,
 		}
 		if r.UserID.Valid {

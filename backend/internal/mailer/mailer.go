@@ -88,7 +88,7 @@ func (r *Resend) send(ctx context.Context, req resendReq) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }() // best-effort; nothing actionable on failure
 	if resp.StatusCode >= 400 {
 		buf, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
 		return fmt.Errorf("resend: status %d: %s", resp.StatusCode, string(buf))

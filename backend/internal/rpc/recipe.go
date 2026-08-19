@@ -300,13 +300,13 @@ func (s *RecipeService) SaveRecipeVersion(
 		resp.Projection = projectRecipeVersion(r.SpiritKind, v, ingredients)
 		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe_version", v.ID.String(),
 			sqlcgen.AuditActionCreate, map[string]any{
-				"recipe_id":      recipeID.String(),
-				"version_no":     v.VersionNo,
-				"mash_eff":       v.MashEfficiencyPct,
-				"ferment_eff":    v.FermentEfficiencyPct,
-				"distill_recov":  v.DistillationRecoveryPct,
-				"total_laa":      resp.Projection.GetTotalProjectedLaa(),
-				"ingredient_n":   len(ingredients),
+				"recipe_id":     recipeID.String(),
+				"version_no":    v.VersionNo,
+				"mash_eff":      v.MashEfficiencyPct,
+				"ferment_eff":   v.FermentEfficiencyPct,
+				"distill_recov": v.DistillationRecoveryPct,
+				"total_laa":     resp.Projection.GetTotalProjectedLaa(),
+				"ingredient_n":  len(ingredients),
 			})
 	})
 	if err != nil {
@@ -662,7 +662,7 @@ func (s *RecipeService) SaveRecipeVersionSensory(
 		}
 		if r.SpiritKind != sqlcgen.SpiritKindGin {
 			return connect.NewError(connect.CodeFailedPrecondition,
-				errors.New("sensory bench is gin-only; this recipe is " + string(r.SpiritKind)))
+				errors.New("sensory bench is gin-only; this recipe is "+string(r.SpiritKind)))
 		}
 		saved, e = q.UpsertRecipeVersionSensory(ctx, sqlcgen.UpsertRecipeVersionSensoryParams{
 			RecipeVersionID: versionID,

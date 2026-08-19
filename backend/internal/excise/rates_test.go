@@ -13,7 +13,7 @@ func TestOwed(t *testing.T) {
 		name      string
 		volumeL   float64
 		abvPct    float64
-		wantRate  float64    // ratePerLAA returned (0 for ≤7%)
+		wantRate  float64 // ratePerLAA returned (0 for ≤7%)
 		wantTotal float64
 	}{
 		{

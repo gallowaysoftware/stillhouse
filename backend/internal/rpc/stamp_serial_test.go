@@ -41,10 +41,10 @@ func TestParseAndFormatStampSerial(t *testing.T) {
 
 func TestComputeStampRange(t *testing.T) {
 	cases := []struct {
-		name             string
-		orderStart       string
-		priorApplied     int32
-		take             int32
+		name               string
+		orderStart         string
+		priorApplied       int32
+		take               int32
 		wantStart, wantEnd string
 	}{
 		{"first usage from a fresh order", "ABC00001", 0, 100, "ABC00001", "ABC00100"},

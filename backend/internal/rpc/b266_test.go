@@ -121,8 +121,8 @@ func TestB266GenerationEndToEnd(t *testing.T) {
 		BottlingLossL:           0,
 		LotCode:                 "B266-TEST-L-" + uuid.NewString(),
 		TankGaugeVolumeL:        75,
-		TankGaugeAbvPct:         40, // bottling at bottle-proof
-		TankGaugeLaa:            30, // 75 × 0.40 = 30
+		TankGaugeAbvPct:         40,        // bottling at bottle-proof
+		TankGaugeLaa:            30,        // 75 × 0.40 = 30
 		BulkMovementID:          prodMv.ID, // any non-null reference; not used by B266 query
 	})
 	if err != nil {

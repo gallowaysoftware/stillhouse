@@ -99,7 +99,7 @@ func rotateAppPassword(adminDSN, newPassword string, logger *slog.Logger) error 
 	if err != nil {
 		return err
 	}
-	defer conn.Close(ctx)
+	defer func() { _ = conn.Close(ctx) }() // one-shot admin conn; the process is exiting either way
 	_, err = conn.Exec(ctx, "ALTER ROLE stillhouse_app PASSWORD $$"+newPassword+"$$")
 	if err != nil {
 		return err

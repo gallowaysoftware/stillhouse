@@ -56,8 +56,8 @@ var Markups = []ProvincialMarkup{
 	},
 	{
 		Jurisdiction: "CA-AB", Name: "Alberta (AGLC)",
-		MarkupPct: 0,
-		PerLitreCAD: 13.76, // approx weighted-avg for spirits 22-60% ABV
+		MarkupPct:          0,
+		PerLitreCAD:        13.76, // approx weighted-avg for spirits 22-60% ABV
 		SpiritsBasicTaxPct: 0, ContainerDepositCAD: 0.25,
 		Notes: "Alberta uses a flat per-litre rate, not a percentage markup. " +
 			"Privatized retail; Connect Logistics distributes.",

@@ -107,8 +107,8 @@ build-backend: ## Build the Go server (output: backend/bin/server).
 	cd backend && go build -o bin/server ./cmd/server
 
 test: ## Run all unit tests.
-	cd backend && go test ./...
-	cd web && npm test --if-present
+	(cd backend && go test ./...)
+	(cd web && npm test --if-present)
 
 test-integration: ## Run integration tests against the local Postgres (requires dev-up).
 	cd backend && \
@@ -116,14 +116,21 @@ test-integration: ## Run integration tests against the local Postgres (requires 
 	    STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN="$(PG_ADMIN_DSN)" \
 	    go test -v -tags integration ./...
 
-lint: ## Run linters.
-	cd backend && go vet ./...
-	cd proto && buf lint
-	cd web && npm run lint --if-present
+lint: ## Run linters. Mirrors what CI enforces.
+	@unformatted="$$(gofmt -l backend qa)"; \
+	if [ -n "$$unformatted" ]; then \
+	    echo "not gofmt-clean (run 'make fmt'):"; echo "$$unformatted"; exit 1; \
+	fi
+	(cd backend && go vet ./...)
+	(cd backend && golangci-lint run ./...)
+	(cd proto && buf lint)
+	(cd web && npm run lint --if-present)
 
+# gofmt rather than `go fmt`: the latter resolves packages, and the qa
+# module replaces an out-of-tree sibling checkout that may not be present.
 fmt: ## Format code.
-	cd backend && go fmt ./...
-	cd proto && buf format -w
+	gofmt -w backend qa
+	(cd proto && buf format -w)
 
 # ----- Container image --------------------------------------------------------
 

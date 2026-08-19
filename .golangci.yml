@@ -1,0 +1,30 @@
+# golangci-lint configuration for the Stillhouse Go modules.
+#
+# Deliberately close to the tool's standard set. This is a small codebase
+# with load-bearing arithmetic in it; the value is in catching unchecked
+# errors and dead code, not in style debates. Run it with:
+#
+#   cd backend && golangci-lint run ./...
+#
+# Formatting is enforced separately in CI with `gofmt -l` so the qa/
+# module — which can't be built in CI, since it `replace`s a sibling
+# checkout — is still covered.
+version: "2"
+
+linters:
+  # errcheck, govet, ineffassign, staticcheck, unused.
+  default: standard
+
+  exclusions:
+    rules:
+      # Generated code is the tools' business, not ours. buf and sqlc
+      # output is regenerated on every proto/schema change and CI already
+      # fails on drift.
+      - path: internal/genpb/
+        linters: [errcheck, govet, ineffassign, staticcheck, unused]
+      - path: internal/db/sqlcgen/
+        linters: [errcheck, govet, ineffassign, staticcheck, unused]
+
+formatters:
+  enable:
+    - gofmt

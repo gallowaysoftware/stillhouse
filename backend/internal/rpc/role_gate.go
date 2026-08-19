@@ -35,41 +35,41 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
 	// BarrelService
-	"/stillhouse.v1.BarrelService/ListBarrels":  roleViewer,
-	"/stillhouse.v1.BarrelService/GetBarrel":    roleViewer,
-	"/stillhouse.v1.BarrelService/CreateBarrel": roleOperator,
-	"/stillhouse.v1.BarrelService/FillBarrel":   roleOperator,
-	"/stillhouse.v1.BarrelService/DumpBarrel":   roleOperator,
-	"/stillhouse.v1.BarrelService/RegaugeBarrel": roleOperator,
+	"/stillhouse.v1.BarrelService/ListBarrels":     roleViewer,
+	"/stillhouse.v1.BarrelService/GetBarrel":       roleViewer,
+	"/stillhouse.v1.BarrelService/CreateBarrel":    roleOperator,
+	"/stillhouse.v1.BarrelService/FillBarrel":      roleOperator,
+	"/stillhouse.v1.BarrelService/DumpBarrel":      roleOperator,
+	"/stillhouse.v1.BarrelService/RegaugeBarrel":   roleOperator,
 	"/stillhouse.v1.BarrelService/VoidBarrelEvent": roleOperator,
 
 	// BottlingService
-	"/stillhouse.v1.BottlingService/CreateBottlingRun":    roleOperator,
-	"/stillhouse.v1.BottlingService/GetBottlingRun":       roleViewer,
-	"/stillhouse.v1.BottlingService/ListBottlingRuns":     roleViewer,
+	"/stillhouse.v1.BottlingService/CreateBottlingRun":     roleOperator,
+	"/stillhouse.v1.BottlingService/GetBottlingRun":        roleViewer,
+	"/stillhouse.v1.BottlingService/ListBottlingRuns":      roleViewer,
 	"/stillhouse.v1.BottlingService/ListPackagedInventory": roleViewer,
-	"/stillhouse.v1.BottlingService/VoidBottlingRun":      roleOperator,
+	"/stillhouse.v1.BottlingService/VoidBottlingRun":       roleOperator,
 
 	// BulkService
-	"/stillhouse.v1.BulkService/CreateBulkContainer":     roleOperator,
-	"/stillhouse.v1.BulkService/UpdateBulkContainer":     roleOperator,
+	"/stillhouse.v1.BulkService/CreateBulkContainer":      roleOperator,
+	"/stillhouse.v1.BulkService/UpdateBulkContainer":      roleOperator,
 	"/stillhouse.v1.BulkService/SetBulkContainerArchived": roleOperator,
-	"/stillhouse.v1.BulkService/ListBulkContainers":      roleViewer,
-	"/stillhouse.v1.BulkService/GetBulkContainer":        roleViewer,
-	"/stillhouse.v1.BulkService/ListRecentBulkMovements": roleViewer,
-	"/stillhouse.v1.BulkService/CreateBlend":             roleOperator,
+	"/stillhouse.v1.BulkService/ListBulkContainers":       roleViewer,
+	"/stillhouse.v1.BulkService/GetBulkContainer":         roleViewer,
+	"/stillhouse.v1.BulkService/ListRecentBulkMovements":  roleViewer,
+	"/stillhouse.v1.BulkService/CreateBlend":              roleOperator,
 
 	// DistillationService
-	"/stillhouse.v1.DistillationService/CreateDistillationRun":   roleOperator,
-	"/stillhouse.v1.DistillationService/GetDistillationRun":      roleViewer,
-	"/stillhouse.v1.DistillationService/ListDistillationRuns":    roleViewer,
+	"/stillhouse.v1.DistillationService/CreateDistillationRun":    roleOperator,
+	"/stillhouse.v1.DistillationService/GetDistillationRun":       roleViewer,
+	"/stillhouse.v1.DistillationService/ListDistillationRuns":     roleViewer,
 	"/stillhouse.v1.DistillationService/UpdateDistillationStatus": roleOperator,
-	"/stillhouse.v1.DistillationService/AddDistillationCharge":   roleOperator,
-	"/stillhouse.v1.DistillationService/AddDistillationCut":      roleOperator,
-	"/stillhouse.v1.DistillationService/UpdateDistillationCut":   roleOperator,
-	"/stillhouse.v1.DistillationService/DeleteDistillationCut":   roleOperator,
-	"/stillhouse.v1.DistillationService/RecordProductionGauge":   roleOperator,
-	"/stillhouse.v1.DistillationService/VoidDistillationRun":     roleOperator,
+	"/stillhouse.v1.DistillationService/AddDistillationCharge":    roleOperator,
+	"/stillhouse.v1.DistillationService/AddDistillationCut":       roleOperator,
+	"/stillhouse.v1.DistillationService/UpdateDistillationCut":    roleOperator,
+	"/stillhouse.v1.DistillationService/DeleteDistillationCut":    roleOperator,
+	"/stillhouse.v1.DistillationService/RecordProductionGauge":    roleOperator,
+	"/stillhouse.v1.DistillationService/VoidDistillationRun":      roleOperator,
 
 	// ExciseStampService
 	"/stillhouse.v1.ExciseStampService/CreateStampOrder":  roleOperator,
@@ -78,11 +78,11 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.ExciseStampService/VoidStamps":        roleOperator,
 
 	// FermentationService
-	"/stillhouse.v1.FermentationService/CreateFermentationRun":  roleOperator,
-	"/stillhouse.v1.FermentationService/GetFermentationRun":     roleViewer,
-	"/stillhouse.v1.FermentationService/ListFermentationRuns":   roleViewer,
+	"/stillhouse.v1.FermentationService/CreateFermentationRun":    roleOperator,
+	"/stillhouse.v1.FermentationService/GetFermentationRun":       roleViewer,
+	"/stillhouse.v1.FermentationService/ListFermentationRuns":     roleViewer,
 	"/stillhouse.v1.FermentationService/UpdateFermentationStatus": roleOperator,
-	"/stillhouse.v1.FermentationService/AddFermentationLog":     roleOperator,
+	"/stillhouse.v1.FermentationService/AddFermentationLog":       roleOperator,
 
 	// MashService
 	"/stillhouse.v1.MashService/CreateMashRun":     roleOperator,
@@ -107,22 +107,22 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.PricingService/ComputeProvincialPricing": roleViewer,
 
 	// ProductService
-	"/stillhouse.v1.ProductService/CreateProduct":     roleOperator,
-	"/stillhouse.v1.ProductService/UpdateProduct":     roleOperator,
-	"/stillhouse.v1.ProductService/ListProducts":      roleViewer,
-	"/stillhouse.v1.ProductService/GetProduct":        roleViewer,
+	"/stillhouse.v1.ProductService/CreateProduct":      roleOperator,
+	"/stillhouse.v1.ProductService/UpdateProduct":      roleOperator,
+	"/stillhouse.v1.ProductService/ListProducts":       roleViewer,
+	"/stillhouse.v1.ProductService/GetProduct":         roleViewer,
 	"/stillhouse.v1.ProductService/SetProductArchived": roleOperator,
 
 	// RecipeService
-	"/stillhouse.v1.RecipeService/CreateRecipe":       roleOperator,
-	"/stillhouse.v1.RecipeService/DuplicateRecipe":    roleOperator,
-	"/stillhouse.v1.RecipeService/ListRecipes":        roleViewer,
-	"/stillhouse.v1.RecipeService/GetRecipe":          roleViewer,
-	"/stillhouse.v1.RecipeService/ArchiveRecipe":      roleOperator,
-	"/stillhouse.v1.RecipeService/SaveRecipeVersion":         roleOperator,
-	"/stillhouse.v1.RecipeService/ListRecipeVersions":        roleViewer,
-	"/stillhouse.v1.RecipeService/SaveRecipeVersionSensory":         roleOperator,
-	"/stillhouse.v1.RecipeService/SaveRecipeVersionWhiskySensory":   roleOperator,
+	"/stillhouse.v1.RecipeService/CreateRecipe":                   roleOperator,
+	"/stillhouse.v1.RecipeService/DuplicateRecipe":                roleOperator,
+	"/stillhouse.v1.RecipeService/ListRecipes":                    roleViewer,
+	"/stillhouse.v1.RecipeService/GetRecipe":                      roleViewer,
+	"/stillhouse.v1.RecipeService/ArchiveRecipe":                  roleOperator,
+	"/stillhouse.v1.RecipeService/SaveRecipeVersion":              roleOperator,
+	"/stillhouse.v1.RecipeService/ListRecipeVersions":             roleViewer,
+	"/stillhouse.v1.RecipeService/SaveRecipeVersionSensory":       roleOperator,
+	"/stillhouse.v1.RecipeService/SaveRecipeVersionWhiskySensory": roleOperator,
 
 	// RemovalService
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
@@ -140,10 +140,10 @@ var procedureMinRole = map[string]minRole{
 
 	// UserService — ChangeMyPassword stays viewer-level because every user,
 	// including read-only ones, must be able to rotate their own credentials.
-	"/stillhouse.v1.UserService/GetMe":             roleViewer,
-	"/stillhouse.v1.UserService/ListUsers":         roleViewer,
-	"/stillhouse.v1.UserService/CreateUser":        roleOwner,
-	"/stillhouse.v1.UserService/ChangeMyPassword":  roleViewer,
+	"/stillhouse.v1.UserService/GetMe":            roleViewer,
+	"/stillhouse.v1.UserService/ListUsers":        roleViewer,
+	"/stillhouse.v1.UserService/CreateUser":       roleOwner,
+	"/stillhouse.v1.UserService/ChangeMyPassword": roleViewer,
 
 	// InviteService — invite management is owner-only; SignupWithInvite is
 	// public (covered by publicProcedures, never reaches this map).

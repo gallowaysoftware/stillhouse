@@ -164,9 +164,9 @@ func (s *AuthService) RequestPasswordReset(
 	token := base64.RawURLEncoding.EncodeToString(tokenBytes)
 	hash := sha256.Sum256([]byte(token))
 	if _, err := s.q.CreatePasswordResetToken(ctx, sqlcgen.CreatePasswordResetTokenParams{
-		TokenHash:  hash[:],
-		UserID:     u.ID,
-		ExpiresAt:  pgtype.Timestamptz{Valid: true, Time: time.Now().Add(1 * time.Hour)},
+		TokenHash: hash[:],
+		UserID:    u.ID,
+		ExpiresAt: pgtype.Timestamptz{Valid: true, Time: time.Now().Add(1 * time.Hour)},
 	}); err != nil {
 		s.logger.Error("password reset: token insert", "err", err)
 		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil

@@ -48,12 +48,12 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 
 	// Material + lot at known price: 50 kg @ $1.50/kg = $75 of raw input.
 	mat, err := q.CreateMaterial(ctx, sqlcgen.CreateMaterialParams{
-		TenantID:    tenant.ID,
-		Name:        "Two-row malt",
-		Kind:        sqlcgen.MaterialKindMalt,
-		Uom:         "kg",
-		Supplier:    "Test Supplier",
-		ExtractPct:  pgtype.Float8{Float64: 0.8, Valid: true},
+		TenantID:   tenant.ID,
+		Name:       "Two-row malt",
+		Kind:       sqlcgen.MaterialKindMalt,
+		Uom:        "kg",
+		Supplier:   "Test Supplier",
+		ExtractPct: pgtype.Float8{Float64: 0.8, Valid: true},
 	})
 	if err != nil {
 		t.Fatalf("create material: %v", err)
@@ -159,7 +159,7 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 		BulkMovementID:         mv.ID,
 		GaugeDate:              pgtype.Timestamptz{Valid: true, Time: gaugeTime},
 		VolumeL:                100, AbvPct: 70,
-		GaugerUserID:           uuid.New(),
+		GaugerUserID: uuid.New(),
 	}); err != nil {
 		t.Fatalf("create production gauge: %v", err)
 	}
@@ -189,7 +189,7 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 		BottlingDate: pgtype.Date{Valid: true, Time: gaugeTime.Add(2 * time.Hour)},
 		BottleCount:  100, BottlingLossL: 0, LotCode: "FP-COST-" + uuid.NewString(),
 		TankGaugeVolumeL: 75, TankGaugeAbvPct: 40, TankGaugeLaa: 30,
-		BulkMovementID:   bottlingMv.ID,
+		BulkMovementID: bottlingMv.ID,
 	})
 	if err != nil {
 		t.Fatalf("create bottling run: %v", err)

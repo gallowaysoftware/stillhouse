@@ -68,13 +68,13 @@ type Projection struct {
 
 // IngredientResult is the per-input breakdown.
 type IngredientResult struct {
-	Name              string
-	MassKg            float64
-	FermentableKg     float64 // MassKg × ExtractPct
-	ExtractFreedKg    float64 // FermentableKg × Mash
-	EthanolMassKg     float64 // ExtractFreedKg × 0.511 × Ferment
-	EthanolVolumeL    float64 // EthanolMassKg ÷ 0.78934
-	ProjectedLAA      float64 // EthanolVolumeL × DistillationRecovery
+	Name           string
+	MassKg         float64
+	FermentableKg  float64 // MassKg × ExtractPct
+	ExtractFreedKg float64 // FermentableKg × Mash
+	EthanolMassKg  float64 // ExtractFreedKg × 0.511 × Ferment
+	EthanolVolumeL float64 // EthanolMassKg ÷ 0.78934
+	ProjectedLAA   float64 // EthanolVolumeL × DistillationRecovery
 }
 
 // ProjectBatch runs the full projection.

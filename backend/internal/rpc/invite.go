@@ -67,11 +67,11 @@ func (s *InviteService) CreateInviteCode(
 		expires = pgtype.Timestamptz{Valid: true, Time: time.Now().Add(time.Duration(d) * 24 * time.Hour)}
 	}
 	row, err := s.q.CreateInviteCode(ctx, sqlcgen.CreateInviteCodeParams{
-		Code:               code,
-		CreatedByUserID:    u.ID,
-		CreatedByTenantID:  u.TenantID,
-		Note:               req.Msg.GetNote(),
-		ExpiresAt:          expires,
+		Code:              code,
+		CreatedByUserID:   u.ID,
+		CreatedByTenantID: u.TenantID,
+		Note:              req.Msg.GetNote(),
+		ExpiresAt:         expires,
 	})
 	if err != nil {
 		s.logger.Error("CreateInviteCode", "err", err)

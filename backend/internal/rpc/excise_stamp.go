@@ -230,11 +230,11 @@ func (s *ExciseStampService) ListStampOrders(
 	}
 	for _, s := range summaries {
 		out.Summaries = append(out.Summaries, &stillhousev1.ExciseStampJurisdictionSummary{
-			Jurisdiction:     s.Jurisdiction,
-			TotalReceived:    s.TotalReceived,
-			TotalApplied:     s.TotalApplied,
-			TotalVoided:      s.TotalVoided,
-			TotalOnHand:      s.TotalOnHand,
+			Jurisdiction:      s.Jurisdiction,
+			TotalReceived:     s.TotalReceived,
+			TotalApplied:      s.TotalApplied,
+			TotalVoided:       s.TotalVoided,
+			TotalOnHand:       s.TotalOnHand,
 			BottlesPerDay_30D: rateByJ[s.Jurisdiction],
 		})
 	}

@@ -242,13 +242,13 @@ func (s *BottlingService) CreateBottlingRun(
 				)
 			}
 			use, e := q.CreateBottlingRunStampUsage(ctx, sqlcgen.CreateBottlingRunStampUsageParams{
-				TenantID:       u.TenantID,
-				BottlingRunID:  run.ID,
-				StampOrderID:   orderRow.ID,
-				BottleCount:    take,
-				SerialStart:    serialStart,
-				SerialEnd:      serialEnd,
-				Voids:          0,
+				TenantID:      u.TenantID,
+				BottlingRunID: run.ID,
+				StampOrderID:  orderRow.ID,
+				BottleCount:   take,
+				SerialStart:   serialStart,
+				SerialEnd:     serialEnd,
+				Voids:         0,
 			})
 			if e != nil {
 				return e
@@ -265,12 +265,12 @@ func (s *BottlingService) CreateBottlingRun(
 
 		// 8. Upsert packaged_inventory.
 		packaged, e = q.UpsertPackagedInventory(ctx, sqlcgen.UpsertPackagedInventoryParams{
-			TenantID:        u.TenantID,
-			ProductID:       productID,
-			LotCode:         in.GetLotCode(),
-			Jurisdiction:    in.GetDestinationJurisdiction(),
-			BottlingRunID:   uuid.NullUUID{UUID: run.ID, Valid: true},
-			BottlesOnHand:   in.GetBottleCount(),
+			TenantID:      u.TenantID,
+			ProductID:     productID,
+			LotCode:       in.GetLotCode(),
+			Jurisdiction:  in.GetDestinationJurisdiction(),
+			BottlingRunID: uuid.NullUUID{UUID: run.ID, Valid: true},
+			BottlesOnHand: in.GetBottleCount(),
 		})
 		if e != nil {
 			return e
@@ -280,14 +280,14 @@ func (s *BottlingService) CreateBottlingRun(
 		// 9. Audit log.
 		if e := audit.Write(ctx, q, u.TenantID, u.ID, "bottling_run", run.ID.String(),
 			sqlcgen.AuditActionCreate, map[string]any{
-				"run_no":        run.RunNo,
-				"product_id":    productID.String(),
-				"product_name":  product.Name,
-				"jurisdiction":  in.GetDestinationJurisdiction(),
-				"bottle_count":  in.GetBottleCount(),
-				"lot_code":      in.GetLotCode(),
-				"tank_laa":      laa,
-				"source_id":     sourceID.String(),
+				"run_no":       run.RunNo,
+				"product_id":   productID.String(),
+				"product_name": product.Name,
+				"jurisdiction": in.GetDestinationJurisdiction(),
+				"bottle_count": in.GetBottleCount(),
+				"lot_code":     in.GetLotCode(),
+				"tank_laa":     laa,
+				"source_id":    sourceID.String(),
 			}); e != nil {
 			return e
 		}
@@ -576,13 +576,13 @@ func (s *BottlingService) VoidBottlingRun(
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "bottling_run", voided.ID.String(),
 			sqlcgen.AuditActionUpdate, map[string]any{
-				"event":              "voided",
-				"run_no":             voided.RunNo,
-				"bottle_count":       voided.BottleCount,
-				"tank_gauge_laa":     voided.TankGaugeLaa,
-				"refund_container":   voided.SourceContainerID.String(),
-				"stamp_orders_n":     len(usage),
-				"reason":             reason,
+				"event":            "voided",
+				"run_no":           voided.RunNo,
+				"bottle_count":     voided.BottleCount,
+				"tank_gauge_laa":   voided.TankGaugeLaa,
+				"refund_container": voided.SourceContainerID.String(),
+				"stamp_orders_n":   len(usage),
+				"reason":           reason,
 			})
 	})
 	if err != nil {
@@ -679,15 +679,15 @@ func bottlingRunToProto(r sqlcgen.BottlingRun, p sqlcgen.Product, _ any) *stillh
 
 func bottlingRunStampUsageToProto(u sqlcgen.BottlingRunStampUsage, jurisdiction string) *stillhousev1.BottlingRunStampUsage {
 	return &stillhousev1.BottlingRunStampUsage{
-		Id:             u.ID.String(),
-		BottlingRunId:  u.BottlingRunID.String(),
-		StampOrderId:   u.StampOrderID.String(),
-		Jurisdiction:   jurisdiction,
-		BottleCount:    u.BottleCount,
-		SerialStart:    u.SerialStart,
-		SerialEnd:      u.SerialEnd,
-		Voids:          u.Voids,
-		CreatedAt:      timestamppb.New(u.CreatedAt.Time),
+		Id:            u.ID.String(),
+		BottlingRunId: u.BottlingRunID.String(),
+		StampOrderId:  u.StampOrderID.String(),
+		Jurisdiction:  jurisdiction,
+		BottleCount:   u.BottleCount,
+		SerialStart:   u.SerialStart,
+		SerialEnd:     u.SerialEnd,
+		Voids:         u.Voids,
+		CreatedAt:     timestamppb.New(u.CreatedAt.Time),
 	}
 }
 

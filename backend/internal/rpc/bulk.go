@@ -391,12 +391,12 @@ func (s *BulkService) CreateBlend(
 		dest = d
 		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_container", destID.String(),
 			sqlcgen.AuditActionUpdate, map[string]any{
-				"event":           "blend",
-				"source_count":    len(parsed),
-				"destination":     d.Name,
-				"final_volume_l":  d.CurrentVolumeL,
-				"final_abv_pct":   d.CurrentAbvPct.Float64,
-				"final_laa":       d.CurrentLaa,
+				"event":          "blend",
+				"source_count":   len(parsed),
+				"destination":    d.Name,
+				"final_volume_l": d.CurrentVolumeL,
+				"final_abv_pct":  d.CurrentAbvPct.Float64,
+				"final_laa":      d.CurrentLaa,
 			})
 	})
 	if err != nil {

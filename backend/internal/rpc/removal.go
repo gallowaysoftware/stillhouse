@@ -116,22 +116,22 @@ func (s *RemovalService) CreateRemoval(
 			return e
 		}
 		pkg, e = q.DecrementPackagedOnHand(ctx, sqlcgen.DecrementPackagedOnHandParams{
-			ID:             piID,
-			BottlesOnHand:  in.GetBottlesRemoved(),
+			ID:            piID,
+			BottlesOnHand: in.GetBottlesRemoved(),
 		})
 		if e != nil {
 			return e
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "removal", removal.ID.String(),
 			sqlcgen.AuditActionCreate, map[string]any{
-				"removal_no":      removal.RemovalNo,
-				"product_name":    product.Name,
-				"lot_code":        pkg.LotCode,
-				"jurisdiction":    pkg.Jurisdiction,
-				"bottles":         removal.BottlesRemoved,
-				"total_laa":       removal.TotalLaa,
-				"duty_cad":        removal.DutyAmountCad,
-				"destination":     removal.DestinationName,
+				"removal_no":   removal.RemovalNo,
+				"product_name": product.Name,
+				"lot_code":     pkg.LotCode,
+				"jurisdiction": pkg.Jurisdiction,
+				"bottles":      removal.BottlesRemoved,
+				"total_laa":    removal.TotalLaa,
+				"duty_cad":     removal.DutyAmountCad,
+				"destination":  removal.DestinationName,
 			})
 	})
 	if err != nil {

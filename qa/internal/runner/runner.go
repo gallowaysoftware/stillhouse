@@ -63,41 +63,41 @@ type Plan struct {
 // few decoded fields the runner needs. The runner doesn't try to
 // re-derive what the planner already committed to.
 type RawCase struct {
-	ID                  string          `json:"id"`
-	Title               string          `json:"title"`
-	Category            string          `json:"category"`
-	Priority            string          `json:"priority"`
-	VerifiesInvariants  []string        `json:"verifies_invariants"`
-	Steps               []json.RawMessage `json:"steps"`
-	ExpectedOutcome     string          `json:"expected_outcome"`
-	PrimerSections      []string        `json:"primer_sections"`
+	ID                 string            `json:"id"`
+	Title              string            `json:"title"`
+	Category           string            `json:"category"`
+	Priority           string            `json:"priority"`
+	VerifiesInvariants []string          `json:"verifies_invariants"`
+	Steps              []json.RawMessage `json:"steps"`
+	ExpectedOutcome    string            `json:"expected_outcome"`
+	PrimerSections     []string          `json:"primer_sections"`
 }
 
 // Step is the runner-facing decoding of one entry in RawCase.Steps.
 // The planner's schema mixes kinds; we discriminate on Kind.
 type Step struct {
-	Kind             string                 `json:"kind"`
-	RPC              string                 `json:"rpc"`               // kind=rpc
-	Payload          map[string]any         `json:"payload"`           // kind=rpc
-	Expect           map[string]any         `json:"expect"`            // kind=rpc
-	PlaywrightRecipe string                 `json:"playwright_recipe"` // kind=ui
-	AssertType       string                 `json:"type"`              // kind=assert — note: field name is "type"
-	AssertExtra      map[string]any         `json:"-"`                 // kind=assert — populated post-decode
+	Kind             string         `json:"kind"`
+	RPC              string         `json:"rpc"`               // kind=rpc
+	Payload          map[string]any `json:"payload"`           // kind=rpc
+	Expect           map[string]any `json:"expect"`            // kind=rpc
+	PlaywrightRecipe string         `json:"playwright_recipe"` // kind=ui
+	AssertType       string         `json:"type"`              // kind=assert — note: field name is "type"
+	AssertExtra      map[string]any `json:"-"`                 // kind=assert — populated post-decode
 }
 
 // Finding is one row of the run phase's output stream
 // (findings.jsonl). One per test case.
 type Finding struct {
-	CaseID             string         `json:"case_id"`
-	Title              string         `json:"title"`
-	Category           string         `json:"category"`
-	Priority           string         `json:"priority"`
-	VerifiesInvariants []string       `json:"verifies_invariants"`
-	StepResults        []StepResult   `json:"step_results"`
-	Status             string         `json:"status"` // pass | fail | skipped | error
-	Reason             string         `json:"reason,omitempty"`
-	DurationMs         int64          `json:"duration_ms"`
-	PrimerSections     []string       `json:"primer_sections,omitempty"`
+	CaseID             string       `json:"case_id"`
+	Title              string       `json:"title"`
+	Category           string       `json:"category"`
+	Priority           string       `json:"priority"`
+	VerifiesInvariants []string     `json:"verifies_invariants"`
+	StepResults        []StepResult `json:"step_results"`
+	Status             string       `json:"status"` // pass | fail | skipped | error
+	Reason             string       `json:"reason,omitempty"`
+	DurationMs         int64        `json:"duration_ms"`
+	PrimerSections     []string     `json:"primer_sections,omitempty"`
 }
 
 // StepResult records one step's outcome. The runner attaches the
@@ -283,8 +283,8 @@ func executeRPC(ctx context.Context, client *http.Client, cfg Config, s Step, id
 // matchExpect compares the planner's expect block against the actual
 // response. Two shapes are supported today:
 //
-//   {"status": "ok"}                     → 2xx
-//   {"status": "error", "code": "FOO"}   → non-2xx + ConnectRPC code matches
+//	{"status": "ok"}                     → 2xx
+//	{"status": "error", "code": "FOO"}   → non-2xx + ConnectRPC code matches
 //
 // Anything else returns pass=false with an explanatory reason so the
 // planner gets feedback if it emits a shape the runner doesn't yet

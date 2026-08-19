@@ -21,36 +21,36 @@ func TestApplyDeposit(t *testing.T) {
 		wantLAA     float64
 	}{
 		{
-			name:    "deposit into empty container",
-			curVol:  0,
-			addVol:  100, addABV: 70,
+			name:   "deposit into empty container",
+			curVol: 0,
+			addVol: 100, addABV: 70,
 			wantVol: 100, wantABV: 70, wantABVOK: true, wantLAA: 70,
 		},
 		{
-			name:        "deposit at same ABV grows volume",
-			curVol:      100, curABVValid: true, curABV: 70,
+			name:   "deposit at same ABV grows volume",
+			curVol: 100, curABVValid: true, curABV: 70,
 			addVol: 50, addABV: 70,
 			wantVol: 150, wantABV: 70, wantABVOK: true, wantLAA: 105,
 		},
 		{
-			name:        "deposit at different ABV produces weighted average",
-			curVol:      100, curABVValid: true, curABV: 70,
+			name:   "deposit at different ABV produces weighted average",
+			curVol: 100, curABVValid: true, curABV: 70,
 			addVol: 50, addABV: 60,
 			// (100*70 + 50*60) / 150 = 66.66666...
 			wantVol: 150, wantABV: 66.66666666666667, wantABVOK: true, wantLAA: 100,
 		},
 		{
-			name:        "deposit small volume at high ABV barely shifts mix",
-			curVol:      1000, curABVValid: true, curABV: 40,
+			name:   "deposit small volume at high ABV barely shifts mix",
+			curVol: 1000, curABVValid: true, curABV: 40,
 			addVol: 1, addABV: 100,
 			// (1000*40 + 1*100)/1001 ≈ 40.05994
 			// LAA = 1001 × 40.05994/100 ≈ 401 (was 400 before deposit, +1 LAA added)
 			wantVol: 1001, wantABV: 40.05994, wantABVOK: true, wantLAA: 401,
 		},
 		{
-			name:    "first fill at fractional ABV",
-			curVol:  0,
-			addVol:  53, addABV: 62.5,
+			name:   "first fill at fractional ABV",
+			curVol: 0,
+			addVol: 53, addABV: 62.5,
 			// 53 × 0.625 = 33.125
 			wantVol: 53, wantABV: 62.5, wantABVOK: true, wantLAA: 33.125,
 		},

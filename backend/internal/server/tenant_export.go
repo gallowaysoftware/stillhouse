@@ -95,7 +95,15 @@ func tenantExportHandler(sm *scs.SessionManager, pool *pgxpool.Pool, queries *sq
 		w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(filename))
 
 		zw := zip.NewWriter(w)
-		defer zw.Close()
+		// Close writes the zip's central directory. If it fails the operator
+		// gets a truncated archive, and since headers are already sent we
+		// can't signal that with a status code — so at least log it rather
+		// than handing back a silently corrupt export.
+		defer func() {
+			if err := zw.Close(); err != nil {
+				logger.Error("tenantExport: finalise zip", "err", err)
+			}
+		}()
 
 		err = pgx.BeginFunc(ctx, pool, func(tx pgx.Tx) error {
 			if _, err := tx.Exec(ctx,

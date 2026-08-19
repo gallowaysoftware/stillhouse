@@ -66,17 +66,17 @@ func (s *FermentationService) CreateFermentationRun(
 		}
 		var e error
 		run, e = q.CreateFermentationRun(ctx, sqlcgen.CreateFermentationRunParams{
-			TenantID:            u.TenantID,
-			MashRunID:           mashID,
-			FermenterLabel:      in.GetFermenterLabel(),
-			YeastMaterialID:     yeastID,
-			YeastLotID:          yeastLotID,
-			YeastNotes:          in.GetYeastNotes(),
-			PitchAt:             pitch,
-			TargetFinalGravity:  optionalFloat(in.GetTargetFinalGravitySet(), in.GetTargetFinalGravity()),
-			InitialVolumeL:      optionalFloat(in.GetInitialVolumeLSet(), in.GetInitialVolumeL()),
-			Status:              sqlcgen.FermentationStatusPitched,
-			Notes:               in.GetNotes(),
+			TenantID:           u.TenantID,
+			MashRunID:          mashID,
+			FermenterLabel:     in.GetFermenterLabel(),
+			YeastMaterialID:    yeastID,
+			YeastLotID:         yeastLotID,
+			YeastNotes:         in.GetYeastNotes(),
+			PitchAt:            pitch,
+			TargetFinalGravity: optionalFloat(in.GetTargetFinalGravitySet(), in.GetTargetFinalGravity()),
+			InitialVolumeL:     optionalFloat(in.GetInitialVolumeLSet(), in.GetInitialVolumeL()),
+			Status:             sqlcgen.FermentationStatusPitched,
+			Notes:              in.GetNotes(),
 		})
 		if e != nil {
 			return e
@@ -115,10 +115,10 @@ func (s *FermentationService) GetFermentationRun(
 	}
 
 	var (
-		run        sqlcgen.FermentationRun
-		mash       sqlcgen.MashRun
-		recipeName string
-		logs       []sqlcgen.FermentationLog
+		run         sqlcgen.FermentationRun
+		mash        sqlcgen.MashRun
+		recipeName  string
+		logs        []sqlcgen.FermentationLog
 		mashMetrics []sqlcgen.MashMetric
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {

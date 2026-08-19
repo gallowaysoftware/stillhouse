@@ -67,11 +67,11 @@ func (s *TraceabilityService) TraceBottlingRun(
 			return e
 		}
 		resp.Nodes = append(resp.Nodes, &stillhousev1.TraceabilityNode{
-			Kind:        "bottling_run",
-			Id:          run.ID.String(),
-			Headline:    fmt.Sprintf("Bottling #%d — %s (lot %s)", run.RunNo, product.Name, run.LotCode),
-			Detail:      fmt.Sprintf("%d × %d mL @ %.1f%% to %s · %s", run.BottleCount, product.BottleSizeMl, run.TankGaugeAbvPct, run.DestinationJurisdiction, formatDate(run.BottlingDate)),
-			OccurredAt:  timestamppb.New(run.BottlingDate.Time),
+			Kind:       "bottling_run",
+			Id:         run.ID.String(),
+			Headline:   fmt.Sprintf("Bottling #%d — %s (lot %s)", run.RunNo, product.Name, run.LotCode),
+			Detail:     fmt.Sprintf("%d × %d mL @ %.1f%% to %s · %s", run.BottleCount, product.BottleSizeMl, run.TankGaugeAbvPct, run.DestinationJurisdiction, formatDate(run.BottlingDate)),
+			OccurredAt: timestamppb.New(run.BottlingDate.Time),
 		})
 
 		// Walk recent feeds into the source container. bottling_date is
