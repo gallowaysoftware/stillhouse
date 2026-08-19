@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { Button } from "@/components/Button";
 import { useConfirm } from "@/components/ConfirmDialog";
+import { CutProfile } from "@/components/CutProfile";
 import {
   emptyReading,
   readingToRequest,
@@ -133,6 +134,8 @@ export function DistillationDetailPage() {
           hint={totalChargeLAA > 0 ? "all cuts ÷ charge" : "no charge yet"}
         />
       </section>
+
+      {r.cutAnalysis && <CutProfile analysis={r.cutAnalysis} cuts={r.cuts} />}
 
       <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChargesPanel

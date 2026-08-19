@@ -15,6 +15,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/distilling"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
@@ -232,6 +233,12 @@ func (s *DistillationService) AddDistillationCharge(
 		return e
 	})
 	if err != nil {
+		// A repeated fermenter, or a run/fermentation id that doesn't
+		// exist, is the caller's mistake and has a useful answer. Only a
+		// genuinely unrecognised failure becomes a 500.
+		if ce := classifyWriteErr(err, "distillation run or fermentation run not found"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("AddDistillationCharge", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -719,7 +726,82 @@ func distillationRunToProto(
 			out.TotalCutLaa += p.Laa
 		}
 	}
+	out.CutAnalysis = buildCutAnalysis(out.Charges, out.Cuts)
 	return out
+}
+
+// buildCutAnalysis totals what a run charged against what came off it.
+// Derived on every read, so it always reflects the latest edit to a cut.
+func buildCutAnalysis(
+	charges []*stillhousev1.DistillationCharge,
+	cuts []*stillhousev1.DistillationCut,
+) *stillhousev1.CutAnalysis {
+	if len(cuts) == 0 {
+		return nil
+	}
+	chargeLAA := 0.0
+	for _, c := range charges {
+		chargeLAA += c.GetLaa()
+	}
+	in := make([]distilling.Cut, 0, len(cuts))
+	for _, c := range cuts {
+		in = append(in, distilling.Cut{
+			Kind:    cutKindToDomain(c.GetKind()),
+			VolumeL: c.GetVolumeL(),
+			ABVPct:  c.GetAbvPct(),
+			LAA:     c.GetLaa(),
+			Order:   int(c.GetCutOrder()),
+		})
+	}
+	a := distilling.AnalyseRun(chargeLAA, in)
+
+	out := &stillhousev1.CutAnalysis{
+		ChargeLaa:      round4(a.ChargeLAA),
+		CutLaa:         round4(a.CutLAA),
+		AccountedPct:   round2(a.AccountedPct),
+		HeartsLaa:      round4(a.HeartsLAA),
+		HeartsSharePct: round2(a.HeartsSharePct),
+		HeartsStartAbv: round2(a.HeartsStartABV),
+		HeartsEndAbv:   round2(a.HeartsEndABV),
+		HeartsSet:      a.HeartsSet,
+	}
+	for _, f := range a.Findings {
+		out.Findings = append(out.Findings, &stillhousev1.CutFinding{
+			Severity: cutSeverityToProto(f.Severity),
+			Code:     f.Code,
+			Title:    f.Title,
+			Detail:   f.Detail,
+		})
+	}
+	return out
+}
+
+func cutKindToDomain(k stillhousev1.DistillationCutKind) distilling.CutKind {
+	switch k {
+	case stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_FORESHOTS:
+		return distilling.CutForeshots
+	case stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_HEADS:
+		return distilling.CutHeads
+	case stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_HEARTS:
+		return distilling.CutHearts
+	case stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_TAILS:
+		return distilling.CutTails
+	case stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_FEINTS_SAVED:
+		return distilling.CutFeintsSaved
+	default:
+		return distilling.CutUnspecified
+	}
+}
+
+func cutSeverityToProto(s distilling.Severity) stillhousev1.CutFindingSeverity {
+	switch s {
+	case distilling.SeverityProblem:
+		return stillhousev1.CutFindingSeverity_CUT_FINDING_SEVERITY_PROBLEM
+	case distilling.SeverityWarning:
+		return stillhousev1.CutFindingSeverity_CUT_FINDING_SEVERITY_WARNING
+	default:
+		return stillhousev1.CutFindingSeverity_CUT_FINDING_SEVERITY_INFO
+	}
 }
 
 func distillationChargeToProto(c sqlcgen.DistillationCharge, fermenterLabel string, mashNo int32) *stillhousev1.DistillationCharge {

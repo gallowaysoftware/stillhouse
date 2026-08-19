@@ -40,6 +40,7 @@ message DistillationRun {
   repeated DistillationCut cuts = 11;
   ProductionGauge gauge = 12;       // unset until RecordProductionGauge runs
   double total_cut_laa = 13;        // computed sum from cuts
+  CutAnalysis cut_analysis = 17;    // populated by GetDistillationRun
 
   google.protobuf.Timestamp voided_at = 14;
   string voided_by = 15;
@@ -69,6 +70,48 @@ message DistillationCut {
   int32  cut_order = 7;
   google.protobuf.Timestamp observed_at = 8;
   string notes = 9;
+}
+
+enum CutFindingSeverity {
+  CUT_FINDING_SEVERITY_UNSPECIFIED = 0;
+  CUT_FINDING_SEVERITY_INFO = 1;
+  CUT_FINDING_SEVERITY_WARNING = 2;
+  CUT_FINDING_SEVERITY_PROBLEM = 3;
+}
+
+message CutFinding {
+  CutFindingSeverity severity = 1;
+  string code = 2;
+  string title = 3;
+  string detail = 4;
+}
+
+// CutAnalysis is what a run's cuts add up to.
+//
+// The judgements are limited to what holds for any spirit. Cut points are
+// not universal — a wash run's heads and tails cuts sit at 54 % and 48 %
+// ABV, while a botanical spirit's tails are diverted between 30 % and 20 %
+// — so the hearts window is reported as a figure and the judgement is left
+// to the distiller. What is checked is arithmetic that must hold either
+// way: you cannot collect more alcohol than you charged, and strength
+// falls as a run proceeds.
+message CutAnalysis {
+  double charge_laa = 1;
+  double cut_laa = 2;
+  // Cut LAA over charge LAA. The shortfall is the run's real losses —
+  // vapour that never condensed, and what stayed in the pot and the line.
+  double accounted_pct = 3;
+
+  double hearts_laa = 4;
+  double hearts_share_pct = 5;
+  // The strength at the first and last hearts fraction: the cut points the
+  // distiller actually took, and the number worth comparing between runs
+  // of the same spirit.
+  double hearts_start_abv = 6;
+  double hearts_end_abv = 7;
+  bool   hearts_set = 8;
+
+  repeated CutFinding findings = 9;
 }
 
 message ProductionGauge {
