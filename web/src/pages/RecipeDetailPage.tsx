@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { SensoryRadar } from "@/components/SensoryRadar";
 import { Shell } from "@/components/Shell";
 import { materialClient, recipeClient } from "@/lib/clients";
 import { MaterialKind } from "@/gen/stillhouse/v1/material_pb";
@@ -623,6 +624,15 @@ function SensoryPanel({
         <h2 className="text-sm font-semibold text-fg-muted">Sensory scoring (0–10)</h2>
       </header>
       <div className="space-y-3 p-4">
+        {/* The shape you're building, updating as you score. The inputs
+            below stay the source of truth — the chart never gates a
+            value. */}
+        <div className="flex justify-center">
+          <SensoryRadar
+            axes={SENSORY_AXES.map((a) => ({ key: a.key, label: a.label }))}
+            series={[{ name: "This tasting", slot: 1, values: numericScores(scores) }]}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {SENSORY_AXES.map((a) => (
             <div key={a.key}>
@@ -743,6 +753,13 @@ function WhiskySensoryPanel({
           8 SWRI primary classes + body / finish / overall. Sulphury is an off-note class:
           low score = clean spirit.
         </p>
+        {/* The wheel this bench scores against, drawn as one. */}
+        <div className="flex justify-center">
+          <SensoryRadar
+            axes={WHISKY_SENSORY_AXES.map((a) => ({ key: a.key, label: a.label, hint: a.hint }))}
+            series={[{ name: "This tasting", slot: 1, values: numericScores(scores) }]}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {WHISKY_SENSORY_AXES.map((a) => (
             <div key={a.key} title={a.hint}>
@@ -1020,6 +1037,21 @@ function CompareTwo({
           <header className="border-b border-border bg-surface-3 px-4 py-2 text-xs font-semibold text-fg-muted">
             Sensory {isWhisky ? "— SWRI Flavour Wheel " : ""}(0–10)
           </header>
+          {/* Two profiles on one plot: the difference between versions is
+              a change of shape, which is far easier to see than two
+              columns of digits. The table below carries the values. */}
+          <div className="flex justify-center border-b border-border p-3">
+            <SensoryRadar
+              axes={(isWhisky ? WHISKY_SENSORY_AXES : SENSORY_AXES).map((ax) => ({
+                key: ax.key,
+                label: ax.label,
+              }))}
+              series={[
+                { name: labelOf(a), slot: 1, values: sensoryValues(a, isWhisky) },
+                { name: labelOf(b), slot: 2, values: sensoryValues(b, isWhisky) },
+              ]}
+            />
+          </div>
           <table className="min-w-full divide-y divide-border text-sm">
             <thead className="bg-surface-3 text-left text-xs text-fg-muted">
               <tr><th className="px-3 py-2"></th><th className="px-3 py-2 text-right">{labelOf(a)}</th><th className="px-3 py-2 text-right">{labelOf(b)}</th></tr>
@@ -1056,6 +1088,38 @@ function CompareTwo({
       </div>
     </section>
   );
+}
+
+// numericScores turns the string-keyed form state into the numbers the
+// radar plots. A blank input means "not scored on this axis" and stays
+// undefined rather than becoming a zero, which would draw a dent the
+// taster never recorded.
+function numericScores(scores: Record<string, string>): Record<string, number | undefined> {
+  const out: Record<string, number | undefined> = {};
+  for (const [k, v] of Object.entries(scores)) {
+    const trimmed = v.trim();
+    out[k] = trimmed === "" ? undefined : Math.max(0, Math.min(10, Number(trimmed)));
+  }
+  return out;
+}
+
+// sensoryValues reads a saved version's scores for whichever bench applies.
+function sensoryValues(v: RecipeVersion, isWhisky: boolean): Record<string, number | undefined> {
+  const out: Record<string, number | undefined> = {};
+  if (isWhisky) {
+    const s = recipeWhiskySensory(v);
+    for (const ax of WHISKY_SENSORY_AXES) {
+      out[ax.key] = s?.[`${ax.key}Set` as `${WhiskySensoryAxis}Set`]
+        ? (s?.[ax.key] as number)
+        : undefined;
+    }
+    return out;
+  }
+  const s = recipeSensory(v);
+  for (const ax of SENSORY_AXES) {
+    out[ax.key] = s?.[`${ax.key}Set` as `${SensoryAxis}Set`] ? (s?.[ax.key] as number) : undefined;
+  }
+  return out;
 }
 
 function CmpRow({ label, a, b }: { label: string; a: string; b: string }) {

@@ -43,6 +43,10 @@ export default {
           DEFAULT: "rgb(var(--color-info) / <alpha-value>)",
           fg:      "rgb(var(--color-info-fg) / <alpha-value>)",
         },
+        // Categorical chart series. Deliberately separate from the state
+        // colors above — a series is not a status.
+        "series-1": "rgb(var(--color-series-1) / <alpha-value>)",
+        "series-2": "rgb(var(--color-series-2) / <alpha-value>)",
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],

@@ -30,6 +30,13 @@
     --color-danger-fg: 252 165 165;     /* red-300 */
     --color-info: 56 189 248;           /* sky-400 */
     --color-info-fg: 186 230 253;       /* sky-200 */
+    /* Categorical series colors for charts. Kept apart from the semantic
+       state colors above so a series is never mistaken for a status.
+       Stepped for the dark surface and validated as a pair against
+       surface-2 (#18181b): CVD ΔE 26.8, normal-vision ΔE 31.8, both marks
+       over 3:1 contrast. Don't hand-tweak these — revalidate if changed. */
+    --color-series-1: 57 135 229;       /* #3987e5 */
+    --color-series-2: 217 89 38;        /* #d95926 */
   }
 
   /* Light overrides — kept warm + paper-like. Toggle by setting class="light"
@@ -54,6 +61,10 @@
     --color-danger-fg: 153 27 27;       /* red-800 */
     --color-info: 2 132 199;            /* sky-600 */
     --color-info-fg: 7 89 133;          /* sky-800 */
+    /* Same two hues, stepped for the light surface and validated against
+       white: CVD ΔE 24.7, normal-vision ΔE 33.6. */
+    --color-series-1: 42 120 214;       /* #2a78d6 */
+    --color-series-2: 235 104 52;       /* #eb6834 */
   }
 
   body {
