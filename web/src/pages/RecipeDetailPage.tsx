@@ -912,7 +912,7 @@ function VersionHistory({
                   <td className="px-4 py-2 font-medium text-fg">
                     v{v.versionNo}
                     {v.id === currentVersionId && (
-                      <span className="ml-2 rounded bg-emerald-200 px-2 py-0.5 text-xs text-emerald-800">current</span>
+                      <span className="ml-2 rounded bg-success/15 px-2 py-0.5 text-xs text-success-fg">current</span>
                     )}
                   </td>
                   <td className="px-4 py-2 text-fg-muted">

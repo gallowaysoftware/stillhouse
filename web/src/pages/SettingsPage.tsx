@@ -209,7 +209,7 @@ function DangerZone({ tenantName }: { tenantName: string }) {
               <button
                 onClick={() => del.mutate()}
                 disabled={confirm !== tenantName || del.isPending}
-                className="rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50"
+                className="rounded bg-danger px-3 py-2 text-sm font-medium text-white hover:bg-danger/80 disabled:opacity-50"
               >
                 {del.isPending ? "Deleting…" : "I understand, delete it"}
               </button>

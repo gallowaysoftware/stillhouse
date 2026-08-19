@@ -8,7 +8,7 @@ import { Shell } from "@/components/Shell";
 import { materialClient, productClient } from "@/lib/clients";
 import { CreateProductRequestSchema } from "@/gen/stillhouse/v1/product_pb";
 import { SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
-import { spiritKindLabel } from "@/lib/format";
+import { formatCAD, spiritKindLabel } from "@/lib/format";
 import { WriteOnly } from "@/lib/role";
 
 const spiritOptions = [
@@ -167,7 +167,7 @@ function CostCell({ productId }: { productId: string }) {
   if (!data || data.totalBottles === 0) return <span className="text-fg-subtle">—</span>;
   return (
     <span title={`${data.runCount} run${data.runCount === 1 ? "" : "s"}, ${data.totalBottles.toLocaleString()} bottles`}>
-      ${data.averageMaterialCostPerBottleCad.toFixed(2)}
+      {formatCAD(data.averageMaterialCostPerBottleCad)}
       {data.runsWithMissingPrices > 0 && (
         <span className="ml-1 text-warning-fg" title={`${data.runsWithMissingPrices} runs missing price data`}>*</span>
       )}

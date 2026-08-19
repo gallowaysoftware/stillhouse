@@ -13,7 +13,7 @@ import {
   GenerateB266RequestSchema,
   SubmitB266RequestSchema,
 } from "@/gen/stillhouse/v1/b266_pb";
-import { formatLAA, formatQty } from "@/lib/format";
+import { formatCAD, formatLAA } from "@/lib/format";
 import { WriteOnly, OwnerOnly } from "@/lib/role";
 
 
@@ -215,6 +215,10 @@ function ReportView({
             <p className="mt-1 text-sm">Period {periodStart} → {periodEnd}</p>
           </div>
           <div
+            // Raw ink colours on purpose: this is the stamp on a printed
+            // CRA return, and the print rules force the sheet to white
+            // regardless of the operator's theme. A semantic token would
+            // follow the theme and could come out invisible on paper.
             className={`rounded border-2 px-3 py-1 text-sm font-bold uppercase tracking-wider ${
               isSubmitted ? "border-black text-black" : "border-red-600 text-red-600"
             }`}
@@ -251,7 +255,7 @@ function ReportView({
       <Card title="Duty payable">
         <Row k="Removed LAA (duty-paid)" v={formatLAA(report.packagedRemovedDutyPaidLaa)} />
         <Row k="Rate (CAD / LAA, >7%)"  v={`$${report.dutyRatePerLaa.toFixed(3)}`} />
-        <Row k="Duty payable (CAD)"     v={`$${formatQty(report.dutyPayableCad)}`} bold highlight />
+        <Row k="Duty payable (CAD)"     v={`${formatCAD(report.dutyPayableCad)}`} bold highlight />
       </Card>
 
       <div data-print-hide className="flex items-center gap-3">
@@ -358,7 +362,7 @@ function ReopenPanel({ periodId }: { periodId: string }) {
             <button
               onClick={() => reopen.mutate()}
               disabled={!reason.trim() || reopen.isPending}
-              className="rounded bg-amber-500 px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-amber-400 disabled:opacity-50"
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50"
             >
               {reopen.isPending ? "Reopening…" : "Reopen period"}
             </button>

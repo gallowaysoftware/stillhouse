@@ -15,7 +15,7 @@ import {
   recipeClient,
 } from "@/lib/clients";
 import { AuditAction } from "@/gen/stillhouse/v1/audit_pb";
-import { formatLAA, formatQty } from "@/lib/format";
+import { formatCAD, formatLAA } from "@/lib/format";
 
 function monthBounds(): { start: string; end: string } {
   const d = new Date();
@@ -151,7 +151,7 @@ export function HomePage() {
             <Stat
               to="/b266"
               label="Duty payable (CAD)"
-              value={`$${formatQty(b266.data?.report?.dutyPayableCad ?? 0)}`}
+              value={`${formatCAD(b266.data?.report?.dutyPayableCad ?? 0)}`}
               highlight
             />
           </div>
@@ -260,7 +260,7 @@ type BarrelAlertRow = {
   daysAged: number;
   maturation?: { measurable: boolean; findings: { severity: number; title: string }[] };
 };
-type ContainerAlertRow = { id: string; name: string; kind: number; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean };
+type ContainerAlertRow = { id: string; name: string; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean };
 type StampAlertRow = { jurisdiction: string; totalOnHand: number; bottlesPerDay30d: number };
 
 /**
@@ -390,15 +390,22 @@ function renderB266DueCallout(periodEnd: string, hasBottling: boolean) {
   );
 }
 
-// StagnantBulkCallout warns when a non-barrel container (tank, blend tank,
-// spirit receiver, etc.) has had no movement for 90+ days AND holds
-// non-trivial alcohol. Barrels intentionally excluded — long stagnation
-// IS the goal for aging spirit.
+// StagnantBulkCallout warns when a container (tank, blend tank, spirit
+// receiver, etc.) has had no movement for 90+ days AND holds non-trivial
+// alcohol.
+//
+// Barrels are excluded, but upstream: ListBulkContainers filters them in
+// SQL, because long stagnation IS the goal for aging spirit and a cask
+// has its own maturation view. This function used to re-filter them with
+// `kind === 7`, which was wrong twice over — 7 is OTHER, not BARREL, and
+// the proto enum has no BARREL case to compare against. The only thing
+// that test ever did was silently drop containers the operator had
+// classified as "Other" out of the alert.
 function renderStagnantBulkCallout(containers: ContainerAlertRow[]) {
   const STAGNANT_DAYS = 90;
   const flagged: { id: string; name: string; days: number; currentLaa: number }[] = [];
   for (const c of containers) {
-    if (c.archived || c.kind === 7 /* BARREL */ || c.currentLaa < 1) continue;
+    if (c.archived || c.currentLaa < 1) continue;
     const ts = c.lastMovementAt ?? c.createdAt;
     if (!ts) continue;
     const days = Math.floor((Date.now() - Number(ts.seconds) * 1000) / 86_400_000);

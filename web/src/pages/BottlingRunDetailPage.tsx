@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Shell } from "@/components/Shell";
 import { bottlingClient, materialClient, traceabilityClient } from "@/lib/clients";
-import { formatLAA, formatQty } from "@/lib/format";
+import { formatCAD, formatLAA, formatQty } from "@/lib/format";
 
 export function BottlingRunDetailPage() {
   const { id } = useParams();
@@ -70,10 +70,10 @@ export function BottlingRunDetailPage() {
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-fg-muted">Material cost</h2>
           <div className="mb-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
-            <Stat label="Total materials" value={`$${cost.data.totalMaterialCostCad.toFixed(2)}`} />
+            <Stat label="Total materials" value={formatCAD(cost.data.totalMaterialCostCad)} />
             <Stat
               label="Per bottle"
-              value={`$${cost.data.materialCostPerBottleCad.toFixed(2)}`}
+              value={formatCAD(cost.data.materialCostPerBottleCad)}
               highlight
             />
           </div>
@@ -95,10 +95,13 @@ export function BottlingRunDetailPage() {
                   </td>
                   <td className="px-3 py-2 text-right text-fg-muted">{formatQty(l.quantityUsed)} {l.uom}</td>
                   <td className="px-3 py-2 text-right text-fg-muted">
+                    {/* Unit costs keep three decimals: a closure or a
+                        label is priced in fractions of a cent, and
+                        rounding to two loses the difference. */}
                     {l.unitCostCad > 0 ? `$${l.unitCostCad.toFixed(3)}` : <span className="text-warning-fg">no price</span>}
                   </td>
                   <td className="px-3 py-2 text-right font-medium text-fg">
-                    {l.lineCostCad > 0 ? `$${l.lineCostCad.toFixed(2)}` : "—"}
+                    {l.lineCostCad > 0 ? formatCAD(l.lineCostCad) : "—"}
                   </td>
                 </tr>
               ))}

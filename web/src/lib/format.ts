@@ -36,6 +36,22 @@ export function formatQty(v: number | undefined): string {
   return qtyFormatter.format(v);
 }
 
+// Money is not a quantity. formatQty renders 2–4 decimals, which is right
+// for litres and wrong for dollars — duty payable on a B266 was rendering
+// as $1,234.5678. CAD always gets exactly two.
+const cadFormatter = new Intl.NumberFormat("en-CA", {
+  style: "currency",
+  currency: "CAD",
+  currencyDisplay: "narrowSymbol",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+export function formatCAD(v: number | undefined): string {
+  if (v === undefined || v === null || Number.isNaN(v)) return "—";
+  return cadFormatter.format(v);
+}
+
 export function formatPct(fraction: number | undefined): string {
   if (fraction === undefined || fraction === null || Number.isNaN(fraction)) return "—";
   return pctFormatter.format(fraction * 100) + "%";

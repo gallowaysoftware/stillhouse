@@ -6,7 +6,7 @@ import { create } from "@bufbuild/protobuf";
 import { Shell } from "@/components/Shell";
 import { pricingClient, productClient } from "@/lib/clients";
 import { ComputeProvincialPricingRequestSchema } from "@/gen/stillhouse/v1/pricing_pb";
-import { formatQty } from "@/lib/format";
+import { formatCAD } from "@/lib/format";
 
 export function PricingPage() {
   const products = useQuery({
@@ -117,14 +117,14 @@ export function PricingPage() {
                       <div className="font-medium text-fg">{b.name}</div>
                       <div className="text-xs text-fg-subtle">{b.jurisdiction}</div>
                     </td>
-                    <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.fobCad)}</td>
-                    <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.markupCad)}</td>
-                    <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.perLitreCad)}</td>
-                    <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.basicTaxCad)}</td>
-                    <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.federalExciseCad)}</td>
-                    <td className="px-4 py-3 text-right text-fg-muted">${formatQty(b.containerDepositCad)}</td>
-                    <td className="px-4 py-3 text-right font-medium text-fg">${formatQty(b.shelfBeforeSalesTax)}</td>
-                    <td className="px-4 py-3 text-right font-medium text-success-fg">${formatQty(b.onSiteRetailNetCad)}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted">{formatCAD(b.fobCad)}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted">{formatCAD(b.markupCad)}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted">{formatCAD(b.perLitreCad)}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted">{formatCAD(b.basicTaxCad)}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted">{formatCAD(b.federalExciseCad)}</td>
+                    <td className="px-4 py-3 text-right text-fg-muted">{formatCAD(b.containerDepositCad)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-fg">{formatCAD(b.shelfBeforeSalesTax)}</td>
+                    <td className="px-4 py-3 text-right font-medium text-success-fg">{formatCAD(b.onSiteRetailNetCad)}</td>
                   </tr>
                 ))}
               </tbody>

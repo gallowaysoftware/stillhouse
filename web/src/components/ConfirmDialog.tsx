@@ -209,9 +209,9 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
 function toneButtonClass(tone: ConfirmTone): string {
   switch (tone) {
     case "danger":
-      return "rounded bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-500 disabled:opacity-50";
+      return "rounded bg-danger px-3 py-2 text-sm font-medium text-white hover:bg-danger/80 disabled:opacity-50";
     case "warning":
-      return "rounded bg-amber-500 px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-amber-400 disabled:opacity-50";
+      return "rounded bg-accent px-3 py-2 text-sm font-medium text-accent-fg hover:bg-accent-hover disabled:opacity-50";
     default:
       return "rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50";
   }
