@@ -80,6 +80,113 @@ func (FermentationStatus) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{0}
 }
 
+type FermentationPhase int32
+
+const (
+	FermentationPhase_FERMENTATION_PHASE_UNSPECIFIED FermentationPhase = 0
+	FermentationPhase_FERMENTATION_PHASE_LAG         FermentationPhase = 1
+	FermentationPhase_FERMENTATION_PHASE_GROWTH      FermentationPhase = 2
+	FermentationPhase_FERMENTATION_PHASE_STATIONARY  FermentationPhase = 3
+	FermentationPhase_FERMENTATION_PHASE_FINISHED    FermentationPhase = 4
+)
+
+// Enum value maps for FermentationPhase.
+var (
+	FermentationPhase_name = map[int32]string{
+		0: "FERMENTATION_PHASE_UNSPECIFIED",
+		1: "FERMENTATION_PHASE_LAG",
+		2: "FERMENTATION_PHASE_GROWTH",
+		3: "FERMENTATION_PHASE_STATIONARY",
+		4: "FERMENTATION_PHASE_FINISHED",
+	}
+	FermentationPhase_value = map[string]int32{
+		"FERMENTATION_PHASE_UNSPECIFIED": 0,
+		"FERMENTATION_PHASE_LAG":         1,
+		"FERMENTATION_PHASE_GROWTH":      2,
+		"FERMENTATION_PHASE_STATIONARY":  3,
+		"FERMENTATION_PHASE_FINISHED":    4,
+	}
+)
+
+func (x FermentationPhase) Enum() *FermentationPhase {
+	p := new(FermentationPhase)
+	*p = x
+	return p
+}
+
+func (x FermentationPhase) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FermentationPhase) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_fermentation_proto_enumTypes[1].Descriptor()
+}
+
+func (FermentationPhase) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_fermentation_proto_enumTypes[1]
+}
+
+func (x FermentationPhase) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FermentationPhase.Descriptor instead.
+func (FermentationPhase) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{1}
+}
+
+type FermentFindingSeverity int32
+
+const (
+	FermentFindingSeverity_FERMENT_FINDING_SEVERITY_UNSPECIFIED FermentFindingSeverity = 0
+	FermentFindingSeverity_FERMENT_FINDING_SEVERITY_INFO        FermentFindingSeverity = 1
+	FermentFindingSeverity_FERMENT_FINDING_SEVERITY_WARNING     FermentFindingSeverity = 2
+	FermentFindingSeverity_FERMENT_FINDING_SEVERITY_PROBLEM     FermentFindingSeverity = 3
+)
+
+// Enum value maps for FermentFindingSeverity.
+var (
+	FermentFindingSeverity_name = map[int32]string{
+		0: "FERMENT_FINDING_SEVERITY_UNSPECIFIED",
+		1: "FERMENT_FINDING_SEVERITY_INFO",
+		2: "FERMENT_FINDING_SEVERITY_WARNING",
+		3: "FERMENT_FINDING_SEVERITY_PROBLEM",
+	}
+	FermentFindingSeverity_value = map[string]int32{
+		"FERMENT_FINDING_SEVERITY_UNSPECIFIED": 0,
+		"FERMENT_FINDING_SEVERITY_INFO":        1,
+		"FERMENT_FINDING_SEVERITY_WARNING":     2,
+		"FERMENT_FINDING_SEVERITY_PROBLEM":     3,
+	}
+)
+
+func (x FermentFindingSeverity) Enum() *FermentFindingSeverity {
+	p := new(FermentFindingSeverity)
+	*p = x
+	return p
+}
+
+func (x FermentFindingSeverity) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FermentFindingSeverity) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_fermentation_proto_enumTypes[2].Descriptor()
+}
+
+func (FermentFindingSeverity) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_fermentation_proto_enumTypes[2]
+}
+
+func (x FermentFindingSeverity) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FermentFindingSeverity.Descriptor instead.
+func (FermentFindingSeverity) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{2}
+}
+
 type FermentationRun struct {
 	state                 protoimpl.MessageState `protogen:"open.v1"`
 	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -110,8 +217,10 @@ type FermentationRun struct {
 	CurrentSpecificGravitySet bool    `protobuf:"varint,21,opt,name=current_specific_gravity_set,json=currentSpecificGravitySet,proto3" json:"current_specific_gravity_set,omitempty"`
 	CalculatedAbvPct          float64 `protobuf:"fixed64,22,opt,name=calculated_abv_pct,json=calculatedAbvPct,proto3" json:"calculated_abv_pct,omitempty"` // from OG / latest gravity, ABV ≈ (OG - FG) × 131.25
 	CalculatedAbvPctSet       bool    `protobuf:"varint,23,opt,name=calculated_abv_pct_set,json=calculatedAbvPctSet,proto3" json:"calculated_abv_pct_set,omitempty"`
-	unknownFields             protoimpl.UnknownFields
-	sizeCache                 protoimpl.SizeCache
+	// Populated by GetFermentationRun from the logs.
+	Analysis      *FermentationAnalysis `protobuf:"bytes,26,opt,name=analysis,proto3" json:"analysis,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *FermentationRun) Reset() {
@@ -319,6 +428,200 @@ func (x *FermentationRun) GetCalculatedAbvPctSet() bool {
 	return false
 }
 
+func (x *FermentationRun) GetAnalysis() *FermentationAnalysis {
+	if x != nil {
+		return x.Analysis
+	}
+	return nil
+}
+
+type FermentFinding struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Severity      FermentFindingSeverity `protobuf:"varint,1,opt,name=severity,proto3,enum=stillhouse.v1.FermentFindingSeverity" json:"severity,omitempty"`
+	Code          string                 `protobuf:"bytes,2,opt,name=code,proto3" json:"code,omitempty"`
+	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
+	Detail        string                 `protobuf:"bytes,4,opt,name=detail,proto3" json:"detail,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FermentFinding) Reset() {
+	*x = FermentFinding{}
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FermentFinding) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FermentFinding) ProtoMessage() {}
+
+func (x *FermentFinding) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FermentFinding.ProtoReflect.Descriptor instead.
+func (*FermentFinding) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *FermentFinding) GetSeverity() FermentFindingSeverity {
+	if x != nil {
+		return x.Severity
+	}
+	return FermentFindingSeverity_FERMENT_FINDING_SEVERITY_UNSPECIFIED
+}
+
+func (x *FermentFinding) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+func (x *FermentFinding) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *FermentFinding) GetDetail() string {
+	if x != nil {
+		return x.Detail
+	}
+	return ""
+}
+
+// FermentationAnalysis reads the shape of the gravity curve.
+type FermentationAnalysis struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Measurable      bool                   `protobuf:"varint,1,opt,name=measurable,proto3" json:"measurable,omitempty"`
+	OriginalGravity float64                `protobuf:"fixed64,2,opt,name=original_gravity,json=originalGravity,proto3" json:"original_gravity,omitempty"`
+	CurrentGravity  float64                `protobuf:"fixed64,3,opt,name=current_gravity,json=currentGravity,proto3" json:"current_gravity,omitempty"`
+	AttenuationPct  float64                `protobuf:"fixed64,4,opt,name=attenuation_pct,json=attenuationPct,proto3" json:"attenuation_pct,omitempty"`
+	// Wash strength implied by the gravity fall — the number that decides
+	// what to charge the still with.
+	EstimatedAbv  float64           `protobuf:"fixed64,5,opt,name=estimated_abv,json=estimatedAbv,proto3" json:"estimated_abv,omitempty"`
+	Phase         FermentationPhase `protobuf:"varint,6,opt,name=phase,proto3,enum=stillhouse.v1.FermentationPhase" json:"phase,omitempty"`
+	HoursElapsed  float64           `protobuf:"fixed64,7,opt,name=hours_elapsed,json=hoursElapsed,proto3" json:"hours_elapsed,omitempty"`
+	PeakTempC     float64           `protobuf:"fixed64,8,opt,name=peak_temp_c,json=peakTempC,proto3" json:"peak_temp_c,omitempty"`
+	PeakTempCSet  bool              `protobuf:"varint,9,opt,name=peak_temp_c_set,json=peakTempCSet,proto3" json:"peak_temp_c_set,omitempty"`
+	Findings      []*FermentFinding `protobuf:"bytes,10,rep,name=findings,proto3" json:"findings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FermentationAnalysis) Reset() {
+	*x = FermentationAnalysis{}
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FermentationAnalysis) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FermentationAnalysis) ProtoMessage() {}
+
+func (x *FermentationAnalysis) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FermentationAnalysis.ProtoReflect.Descriptor instead.
+func (*FermentationAnalysis) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *FermentationAnalysis) GetMeasurable() bool {
+	if x != nil {
+		return x.Measurable
+	}
+	return false
+}
+
+func (x *FermentationAnalysis) GetOriginalGravity() float64 {
+	if x != nil {
+		return x.OriginalGravity
+	}
+	return 0
+}
+
+func (x *FermentationAnalysis) GetCurrentGravity() float64 {
+	if x != nil {
+		return x.CurrentGravity
+	}
+	return 0
+}
+
+func (x *FermentationAnalysis) GetAttenuationPct() float64 {
+	if x != nil {
+		return x.AttenuationPct
+	}
+	return 0
+}
+
+func (x *FermentationAnalysis) GetEstimatedAbv() float64 {
+	if x != nil {
+		return x.EstimatedAbv
+	}
+	return 0
+}
+
+func (x *FermentationAnalysis) GetPhase() FermentationPhase {
+	if x != nil {
+		return x.Phase
+	}
+	return FermentationPhase_FERMENTATION_PHASE_UNSPECIFIED
+}
+
+func (x *FermentationAnalysis) GetHoursElapsed() float64 {
+	if x != nil {
+		return x.HoursElapsed
+	}
+	return 0
+}
+
+func (x *FermentationAnalysis) GetPeakTempC() float64 {
+	if x != nil {
+		return x.PeakTempC
+	}
+	return 0
+}
+
+func (x *FermentationAnalysis) GetPeakTempCSet() bool {
+	if x != nil {
+		return x.PeakTempCSet
+	}
+	return false
+}
+
+func (x *FermentationAnalysis) GetFindings() []*FermentFinding {
+	if x != nil {
+		return x.Findings
+	}
+	return nil
+}
+
 type FermentationLog struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	Id                 string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -337,7 +640,7 @@ type FermentationLog struct {
 
 func (x *FermentationLog) Reset() {
 	*x = FermentationLog{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -349,7 +652,7 @@ func (x *FermentationLog) String() string {
 func (*FermentationLog) ProtoMessage() {}
 
 func (x *FermentationLog) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -362,7 +665,7 @@ func (x *FermentationLog) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FermentationLog.ProtoReflect.Descriptor instead.
 func (*FermentationLog) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *FermentationLog) GetId() string {
@@ -454,7 +757,7 @@ type CreateFermentationRunRequest struct {
 
 func (x *CreateFermentationRunRequest) Reset() {
 	*x = CreateFermentationRunRequest{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -466,7 +769,7 @@ func (x *CreateFermentationRunRequest) String() string {
 func (*CreateFermentationRunRequest) ProtoMessage() {}
 
 func (x *CreateFermentationRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -479,7 +782,7 @@ func (x *CreateFermentationRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateFermentationRunRequest.ProtoReflect.Descriptor instead.
 func (*CreateFermentationRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CreateFermentationRunRequest) GetMashRunId() string {
@@ -568,7 +871,7 @@ type CreateFermentationRunResponse struct {
 
 func (x *CreateFermentationRunResponse) Reset() {
 	*x = CreateFermentationRunResponse{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -580,7 +883,7 @@ func (x *CreateFermentationRunResponse) String() string {
 func (*CreateFermentationRunResponse) ProtoMessage() {}
 
 func (x *CreateFermentationRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -593,7 +896,7 @@ func (x *CreateFermentationRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateFermentationRunResponse.ProtoReflect.Descriptor instead.
 func (*CreateFermentationRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CreateFermentationRunResponse) GetRun() *FermentationRun {
@@ -612,7 +915,7 @@ type GetFermentationRunRequest struct {
 
 func (x *GetFermentationRunRequest) Reset() {
 	*x = GetFermentationRunRequest{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -624,7 +927,7 @@ func (x *GetFermentationRunRequest) String() string {
 func (*GetFermentationRunRequest) ProtoMessage() {}
 
 func (x *GetFermentationRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -637,7 +940,7 @@ func (x *GetFermentationRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFermentationRunRequest.ProtoReflect.Descriptor instead.
 func (*GetFermentationRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetFermentationRunRequest) GetId() string {
@@ -656,7 +959,7 @@ type GetFermentationRunResponse struct {
 
 func (x *GetFermentationRunResponse) Reset() {
 	*x = GetFermentationRunResponse{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -668,7 +971,7 @@ func (x *GetFermentationRunResponse) String() string {
 func (*GetFermentationRunResponse) ProtoMessage() {}
 
 func (x *GetFermentationRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -681,7 +984,7 @@ func (x *GetFermentationRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFermentationRunResponse.ProtoReflect.Descriptor instead.
 func (*GetFermentationRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *GetFermentationRunResponse) GetRun() *FermentationRun {
@@ -701,7 +1004,7 @@ type ListFermentationRunsRequest struct {
 
 func (x *ListFermentationRunsRequest) Reset() {
 	*x = ListFermentationRunsRequest{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -713,7 +1016,7 @@ func (x *ListFermentationRunsRequest) String() string {
 func (*ListFermentationRunsRequest) ProtoMessage() {}
 
 func (x *ListFermentationRunsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -726,7 +1029,7 @@ func (x *ListFermentationRunsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFermentationRunsRequest.ProtoReflect.Descriptor instead.
 func (*ListFermentationRunsRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ListFermentationRunsRequest) GetStatus() FermentationStatus {
@@ -752,7 +1055,7 @@ type ListFermentationRunsResponse struct {
 
 func (x *ListFermentationRunsResponse) Reset() {
 	*x = ListFermentationRunsResponse{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -764,7 +1067,7 @@ func (x *ListFermentationRunsResponse) String() string {
 func (*ListFermentationRunsResponse) ProtoMessage() {}
 
 func (x *ListFermentationRunsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -777,7 +1080,7 @@ func (x *ListFermentationRunsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFermentationRunsResponse.ProtoReflect.Descriptor instead.
 func (*ListFermentationRunsResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListFermentationRunsResponse) GetRuns() []*FermentationRun {
@@ -797,7 +1100,7 @@ type UpdateFermentationStatusRequest struct {
 
 func (x *UpdateFermentationStatusRequest) Reset() {
 	*x = UpdateFermentationStatusRequest{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -809,7 +1112,7 @@ func (x *UpdateFermentationStatusRequest) String() string {
 func (*UpdateFermentationStatusRequest) ProtoMessage() {}
 
 func (x *UpdateFermentationStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -822,7 +1125,7 @@ func (x *UpdateFermentationStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateFermentationStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateFermentationStatusRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *UpdateFermentationStatusRequest) GetId() string {
@@ -848,7 +1151,7 @@ type UpdateFermentationStatusResponse struct {
 
 func (x *UpdateFermentationStatusResponse) Reset() {
 	*x = UpdateFermentationStatusResponse{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -860,7 +1163,7 @@ func (x *UpdateFermentationStatusResponse) String() string {
 func (*UpdateFermentationStatusResponse) ProtoMessage() {}
 
 func (x *UpdateFermentationStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -873,7 +1176,7 @@ func (x *UpdateFermentationStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateFermentationStatusResponse.ProtoReflect.Descriptor instead.
 func (*UpdateFermentationStatusResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UpdateFermentationStatusResponse) GetRun() *FermentationRun {
@@ -900,7 +1203,7 @@ type AddFermentationLogRequest struct {
 
 func (x *AddFermentationLogRequest) Reset() {
 	*x = AddFermentationLogRequest{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -912,7 +1215,7 @@ func (x *AddFermentationLogRequest) String() string {
 func (*AddFermentationLogRequest) ProtoMessage() {}
 
 func (x *AddFermentationLogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -925,7 +1228,7 @@ func (x *AddFermentationLogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddFermentationLogRequest.ProtoReflect.Descriptor instead.
 func (*AddFermentationLogRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *AddFermentationLogRequest) GetFermentationRunId() string {
@@ -1000,7 +1303,7 @@ type AddFermentationLogResponse struct {
 
 func (x *AddFermentationLogResponse) Reset() {
 	*x = AddFermentationLogResponse{}
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1012,7 +1315,7 @@ func (x *AddFermentationLogResponse) String() string {
 func (*AddFermentationLogResponse) ProtoMessage() {}
 
 func (x *AddFermentationLogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1025,7 +1328,7 @@ func (x *AddFermentationLogResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddFermentationLogResponse.ProtoReflect.Descriptor instead.
 func (*AddFermentationLogResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *AddFermentationLogResponse) GetLog() *FermentationLog {
@@ -1039,7 +1342,7 @@ var File_stillhouse_v1_fermentation_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\n" +
-	" stillhouse/v1/fermentation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd1\b\n" +
+	" stillhouse/v1/fermentation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x92\t\n" +
 	"\x0fFermentationRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1e\n" +
@@ -1071,7 +1374,27 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\x18current_specific_gravity\x18\x14 \x01(\x01R\x16currentSpecificGravity\x12?\n" +
 	"\x1ccurrent_specific_gravity_set\x18\x15 \x01(\bR\x19currentSpecificGravitySet\x12,\n" +
 	"\x12calculated_abv_pct\x18\x16 \x01(\x01R\x10calculatedAbvPct\x123\n" +
-	"\x16calculated_abv_pct_set\x18\x17 \x01(\bR\x13calculatedAbvPctSet\"\xf9\x02\n" +
+	"\x16calculated_abv_pct_set\x18\x17 \x01(\bR\x13calculatedAbvPctSet\x12?\n" +
+	"\banalysis\x18\x1a \x01(\v2#.stillhouse.v1.FermentationAnalysisR\banalysis\"\x95\x01\n" +
+	"\x0eFermentFinding\x12A\n" +
+	"\bseverity\x18\x01 \x01(\x0e2%.stillhouse.v1.FermentFindingSeverityR\bseverity\x12\x12\n" +
+	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
+	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
+	"\x06detail\x18\x04 \x01(\tR\x06detail\"\xb7\x03\n" +
+	"\x14FermentationAnalysis\x12\x1e\n" +
+	"\n" +
+	"measurable\x18\x01 \x01(\bR\n" +
+	"measurable\x12)\n" +
+	"\x10original_gravity\x18\x02 \x01(\x01R\x0foriginalGravity\x12'\n" +
+	"\x0fcurrent_gravity\x18\x03 \x01(\x01R\x0ecurrentGravity\x12'\n" +
+	"\x0fattenuation_pct\x18\x04 \x01(\x01R\x0eattenuationPct\x12#\n" +
+	"\restimated_abv\x18\x05 \x01(\x01R\festimatedAbv\x126\n" +
+	"\x05phase\x18\x06 \x01(\x0e2 .stillhouse.v1.FermentationPhaseR\x05phase\x12#\n" +
+	"\rhours_elapsed\x18\a \x01(\x01R\fhoursElapsed\x12\x1e\n" +
+	"\vpeak_temp_c\x18\b \x01(\x01R\tpeakTempC\x12%\n" +
+	"\x0fpeak_temp_c_set\x18\t \x01(\bR\fpeakTempCSet\x129\n" +
+	"\bfindings\x18\n" +
+	" \x03(\v2\x1d.stillhouse.v1.FermentFindingR\bfindings\"\xf9\x02\n" +
 	"\x0fFermentationLog\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x13fermentation_run_id\x18\x02 \x01(\tR\x11fermentationRunId\x12;\n" +
@@ -1135,7 +1458,18 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\x1aFERMENTATION_STATUS_ACTIVE\x10\x02\x12 \n" +
 	"\x1cFERMENTATION_STATUS_FINISHED\x10\x03\x12!\n" +
 	"\x1dFERMENTATION_STATUS_DISTILLED\x10\x04\x12!\n" +
-	"\x1dFERMENTATION_STATUS_CANCELLED\x10\x052\xcd\x04\n" +
+	"\x1dFERMENTATION_STATUS_CANCELLED\x10\x05*\xb6\x01\n" +
+	"\x11FermentationPhase\x12\"\n" +
+	"\x1eFERMENTATION_PHASE_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16FERMENTATION_PHASE_LAG\x10\x01\x12\x1d\n" +
+	"\x19FERMENTATION_PHASE_GROWTH\x10\x02\x12!\n" +
+	"\x1dFERMENTATION_PHASE_STATIONARY\x10\x03\x12\x1f\n" +
+	"\x1bFERMENTATION_PHASE_FINISHED\x10\x04*\xb1\x01\n" +
+	"\x16FermentFindingSeverity\x12(\n" +
+	"$FERMENT_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12!\n" +
+	"\x1dFERMENT_FINDING_SEVERITY_INFO\x10\x01\x12$\n" +
+	" FERMENT_FINDING_SEVERITY_WARNING\x10\x02\x12$\n" +
+	" FERMENT_FINDING_SEVERITY_PROBLEM\x10\x032\xcd\x04\n" +
 	"\x13FermentationService\x12r\n" +
 	"\x15CreateFermentationRun\x12+.stillhouse.v1.CreateFermentationRunRequest\x1a,.stillhouse.v1.CreateFermentationRunResponse\x12i\n" +
 	"\x12GetFermentationRun\x12(.stillhouse.v1.GetFermentationRunRequest\x1a).stillhouse.v1.GetFermentationRunResponse\x12o\n" +
@@ -1156,55 +1490,63 @@ func file_stillhouse_v1_fermentation_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_fermentation_proto_rawDescData
 }
 
-var file_stillhouse_v1_fermentation_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_fermentation_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_stillhouse_v1_fermentation_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_stillhouse_v1_fermentation_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_stillhouse_v1_fermentation_proto_goTypes = []any{
 	(FermentationStatus)(0),                  // 0: stillhouse.v1.FermentationStatus
-	(*FermentationRun)(nil),                  // 1: stillhouse.v1.FermentationRun
-	(*FermentationLog)(nil),                  // 2: stillhouse.v1.FermentationLog
-	(*CreateFermentationRunRequest)(nil),     // 3: stillhouse.v1.CreateFermentationRunRequest
-	(*CreateFermentationRunResponse)(nil),    // 4: stillhouse.v1.CreateFermentationRunResponse
-	(*GetFermentationRunRequest)(nil),        // 5: stillhouse.v1.GetFermentationRunRequest
-	(*GetFermentationRunResponse)(nil),       // 6: stillhouse.v1.GetFermentationRunResponse
-	(*ListFermentationRunsRequest)(nil),      // 7: stillhouse.v1.ListFermentationRunsRequest
-	(*ListFermentationRunsResponse)(nil),     // 8: stillhouse.v1.ListFermentationRunsResponse
-	(*UpdateFermentationStatusRequest)(nil),  // 9: stillhouse.v1.UpdateFermentationStatusRequest
-	(*UpdateFermentationStatusResponse)(nil), // 10: stillhouse.v1.UpdateFermentationStatusResponse
-	(*AddFermentationLogRequest)(nil),        // 11: stillhouse.v1.AddFermentationLogRequest
-	(*AddFermentationLogResponse)(nil),       // 12: stillhouse.v1.AddFermentationLogResponse
-	(*timestamppb.Timestamp)(nil),            // 13: google.protobuf.Timestamp
+	(FermentationPhase)(0),                   // 1: stillhouse.v1.FermentationPhase
+	(FermentFindingSeverity)(0),              // 2: stillhouse.v1.FermentFindingSeverity
+	(*FermentationRun)(nil),                  // 3: stillhouse.v1.FermentationRun
+	(*FermentFinding)(nil),                   // 4: stillhouse.v1.FermentFinding
+	(*FermentationAnalysis)(nil),             // 5: stillhouse.v1.FermentationAnalysis
+	(*FermentationLog)(nil),                  // 6: stillhouse.v1.FermentationLog
+	(*CreateFermentationRunRequest)(nil),     // 7: stillhouse.v1.CreateFermentationRunRequest
+	(*CreateFermentationRunResponse)(nil),    // 8: stillhouse.v1.CreateFermentationRunResponse
+	(*GetFermentationRunRequest)(nil),        // 9: stillhouse.v1.GetFermentationRunRequest
+	(*GetFermentationRunResponse)(nil),       // 10: stillhouse.v1.GetFermentationRunResponse
+	(*ListFermentationRunsRequest)(nil),      // 11: stillhouse.v1.ListFermentationRunsRequest
+	(*ListFermentationRunsResponse)(nil),     // 12: stillhouse.v1.ListFermentationRunsResponse
+	(*UpdateFermentationStatusRequest)(nil),  // 13: stillhouse.v1.UpdateFermentationStatusRequest
+	(*UpdateFermentationStatusResponse)(nil), // 14: stillhouse.v1.UpdateFermentationStatusResponse
+	(*AddFermentationLogRequest)(nil),        // 15: stillhouse.v1.AddFermentationLogRequest
+	(*AddFermentationLogResponse)(nil),       // 16: stillhouse.v1.AddFermentationLogResponse
+	(*timestamppb.Timestamp)(nil),            // 17: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_fermentation_proto_depIdxs = []int32{
-	13, // 0: stillhouse.v1.FermentationRun.pitch_at:type_name -> google.protobuf.Timestamp
+	17, // 0: stillhouse.v1.FermentationRun.pitch_at:type_name -> google.protobuf.Timestamp
 	0,  // 1: stillhouse.v1.FermentationRun.status:type_name -> stillhouse.v1.FermentationStatus
-	13, // 2: stillhouse.v1.FermentationRun.created_at:type_name -> google.protobuf.Timestamp
-	13, // 3: stillhouse.v1.FermentationRun.updated_at:type_name -> google.protobuf.Timestamp
-	2,  // 4: stillhouse.v1.FermentationRun.logs:type_name -> stillhouse.v1.FermentationLog
-	13, // 5: stillhouse.v1.FermentationLog.observed_at:type_name -> google.protobuf.Timestamp
-	13, // 6: stillhouse.v1.CreateFermentationRunRequest.pitch_at:type_name -> google.protobuf.Timestamp
-	1,  // 7: stillhouse.v1.CreateFermentationRunResponse.run:type_name -> stillhouse.v1.FermentationRun
-	1,  // 8: stillhouse.v1.GetFermentationRunResponse.run:type_name -> stillhouse.v1.FermentationRun
-	0,  // 9: stillhouse.v1.ListFermentationRunsRequest.status:type_name -> stillhouse.v1.FermentationStatus
-	1,  // 10: stillhouse.v1.ListFermentationRunsResponse.runs:type_name -> stillhouse.v1.FermentationRun
-	0,  // 11: stillhouse.v1.UpdateFermentationStatusRequest.status:type_name -> stillhouse.v1.FermentationStatus
-	1,  // 12: stillhouse.v1.UpdateFermentationStatusResponse.run:type_name -> stillhouse.v1.FermentationRun
-	13, // 13: stillhouse.v1.AddFermentationLogRequest.observed_at:type_name -> google.protobuf.Timestamp
-	2,  // 14: stillhouse.v1.AddFermentationLogResponse.log:type_name -> stillhouse.v1.FermentationLog
-	3,  // 15: stillhouse.v1.FermentationService.CreateFermentationRun:input_type -> stillhouse.v1.CreateFermentationRunRequest
-	5,  // 16: stillhouse.v1.FermentationService.GetFermentationRun:input_type -> stillhouse.v1.GetFermentationRunRequest
-	7,  // 17: stillhouse.v1.FermentationService.ListFermentationRuns:input_type -> stillhouse.v1.ListFermentationRunsRequest
-	9,  // 18: stillhouse.v1.FermentationService.UpdateFermentationStatus:input_type -> stillhouse.v1.UpdateFermentationStatusRequest
-	11, // 19: stillhouse.v1.FermentationService.AddFermentationLog:input_type -> stillhouse.v1.AddFermentationLogRequest
-	4,  // 20: stillhouse.v1.FermentationService.CreateFermentationRun:output_type -> stillhouse.v1.CreateFermentationRunResponse
-	6,  // 21: stillhouse.v1.FermentationService.GetFermentationRun:output_type -> stillhouse.v1.GetFermentationRunResponse
-	8,  // 22: stillhouse.v1.FermentationService.ListFermentationRuns:output_type -> stillhouse.v1.ListFermentationRunsResponse
-	10, // 23: stillhouse.v1.FermentationService.UpdateFermentationStatus:output_type -> stillhouse.v1.UpdateFermentationStatusResponse
-	12, // 24: stillhouse.v1.FermentationService.AddFermentationLog:output_type -> stillhouse.v1.AddFermentationLogResponse
-	20, // [20:25] is the sub-list for method output_type
-	15, // [15:20] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	17, // 2: stillhouse.v1.FermentationRun.created_at:type_name -> google.protobuf.Timestamp
+	17, // 3: stillhouse.v1.FermentationRun.updated_at:type_name -> google.protobuf.Timestamp
+	6,  // 4: stillhouse.v1.FermentationRun.logs:type_name -> stillhouse.v1.FermentationLog
+	5,  // 5: stillhouse.v1.FermentationRun.analysis:type_name -> stillhouse.v1.FermentationAnalysis
+	2,  // 6: stillhouse.v1.FermentFinding.severity:type_name -> stillhouse.v1.FermentFindingSeverity
+	1,  // 7: stillhouse.v1.FermentationAnalysis.phase:type_name -> stillhouse.v1.FermentationPhase
+	4,  // 8: stillhouse.v1.FermentationAnalysis.findings:type_name -> stillhouse.v1.FermentFinding
+	17, // 9: stillhouse.v1.FermentationLog.observed_at:type_name -> google.protobuf.Timestamp
+	17, // 10: stillhouse.v1.CreateFermentationRunRequest.pitch_at:type_name -> google.protobuf.Timestamp
+	3,  // 11: stillhouse.v1.CreateFermentationRunResponse.run:type_name -> stillhouse.v1.FermentationRun
+	3,  // 12: stillhouse.v1.GetFermentationRunResponse.run:type_name -> stillhouse.v1.FermentationRun
+	0,  // 13: stillhouse.v1.ListFermentationRunsRequest.status:type_name -> stillhouse.v1.FermentationStatus
+	3,  // 14: stillhouse.v1.ListFermentationRunsResponse.runs:type_name -> stillhouse.v1.FermentationRun
+	0,  // 15: stillhouse.v1.UpdateFermentationStatusRequest.status:type_name -> stillhouse.v1.FermentationStatus
+	3,  // 16: stillhouse.v1.UpdateFermentationStatusResponse.run:type_name -> stillhouse.v1.FermentationRun
+	17, // 17: stillhouse.v1.AddFermentationLogRequest.observed_at:type_name -> google.protobuf.Timestamp
+	6,  // 18: stillhouse.v1.AddFermentationLogResponse.log:type_name -> stillhouse.v1.FermentationLog
+	7,  // 19: stillhouse.v1.FermentationService.CreateFermentationRun:input_type -> stillhouse.v1.CreateFermentationRunRequest
+	9,  // 20: stillhouse.v1.FermentationService.GetFermentationRun:input_type -> stillhouse.v1.GetFermentationRunRequest
+	11, // 21: stillhouse.v1.FermentationService.ListFermentationRuns:input_type -> stillhouse.v1.ListFermentationRunsRequest
+	13, // 22: stillhouse.v1.FermentationService.UpdateFermentationStatus:input_type -> stillhouse.v1.UpdateFermentationStatusRequest
+	15, // 23: stillhouse.v1.FermentationService.AddFermentationLog:input_type -> stillhouse.v1.AddFermentationLogRequest
+	8,  // 24: stillhouse.v1.FermentationService.CreateFermentationRun:output_type -> stillhouse.v1.CreateFermentationRunResponse
+	10, // 25: stillhouse.v1.FermentationService.GetFermentationRun:output_type -> stillhouse.v1.GetFermentationRunResponse
+	12, // 26: stillhouse.v1.FermentationService.ListFermentationRuns:output_type -> stillhouse.v1.ListFermentationRunsResponse
+	14, // 27: stillhouse.v1.FermentationService.UpdateFermentationStatus:output_type -> stillhouse.v1.UpdateFermentationStatusResponse
+	16, // 28: stillhouse.v1.FermentationService.AddFermentationLog:output_type -> stillhouse.v1.AddFermentationLogResponse
+	24, // [24:29] is the sub-list for method output_type
+	19, // [19:24] is the sub-list for method input_type
+	19, // [19:19] is the sub-list for extension type_name
+	19, // [19:19] is the sub-list for extension extendee
+	0,  // [0:19] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_fermentation_proto_init() }
@@ -1217,8 +1559,8 @@ func file_stillhouse_v1_fermentation_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_fermentation_proto_rawDesc), len(file_stillhouse_v1_fermentation_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   12,
+			NumEnums:      3,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

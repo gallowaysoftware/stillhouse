@@ -49,6 +49,47 @@ message FermentationRun {
   bool   current_specific_gravity_set = 21;
   double calculated_abv_pct = 22;            // from OG / latest gravity, ABV ≈ (OG - FG) × 131.25
   bool   calculated_abv_pct_set = 23;
+
+  // Populated by GetFermentationRun from the logs.
+  FermentationAnalysis analysis = 26;
+}
+
+enum FermentationPhase {
+  FERMENTATION_PHASE_UNSPECIFIED = 0;
+  FERMENTATION_PHASE_LAG = 1;
+  FERMENTATION_PHASE_GROWTH = 2;
+  FERMENTATION_PHASE_STATIONARY = 3;
+  FERMENTATION_PHASE_FINISHED = 4;
+}
+
+enum FermentFindingSeverity {
+  FERMENT_FINDING_SEVERITY_UNSPECIFIED = 0;
+  FERMENT_FINDING_SEVERITY_INFO = 1;
+  FERMENT_FINDING_SEVERITY_WARNING = 2;
+  FERMENT_FINDING_SEVERITY_PROBLEM = 3;
+}
+
+message FermentFinding {
+  FermentFindingSeverity severity = 1;
+  string code = 2;
+  string title = 3;
+  string detail = 4;
+}
+
+// FermentationAnalysis reads the shape of the gravity curve.
+message FermentationAnalysis {
+  bool   measurable = 1;
+  double original_gravity = 2;
+  double current_gravity = 3;
+  double attenuation_pct = 4;
+  // Wash strength implied by the gravity fall — the number that decides
+  // what to charge the still with.
+  double estimated_abv = 5;
+  FermentationPhase phase = 6;
+  double hours_elapsed = 7;
+  double peak_temp_c = 8;
+  bool   peak_temp_c_set = 9;
+  repeated FermentFinding findings = 10;
 }
 
 message FermentationLog {

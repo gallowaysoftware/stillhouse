@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { FermentationCurve } from "@/components/FermentationCurve";
 import { Shell } from "@/components/Shell";
 import { fermentationClient } from "@/lib/clients";
 import {
@@ -124,6 +125,12 @@ export function FermentationDetailPage() {
         />
         <Stat label="Logs" value={String(r.logs.length)} />
       </section>
+
+      <FermentationCurve
+        logs={r.logs}
+        analysis={r.analysis}
+        targetFG={r.targetFinalGravitySet ? r.targetFinalGravity : undefined}
+      />
 
       <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-fg-muted">Add reading</h2>

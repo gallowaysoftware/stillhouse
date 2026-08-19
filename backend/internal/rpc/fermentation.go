@@ -9,10 +9,12 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/fermenting"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
@@ -156,9 +158,82 @@ func (s *FermentationService) GetFermentationRun(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	og := findLatestOG(mashMetrics)
-	return connect.NewResponse(&stillhousev1.GetFermentationRunResponse{
-		Run: fermentationRunToProto(run, mash.MashNo, formatDate(mash.MashDate), recipeName, logs, &og, nil),
-	}), nil
+	out := fermentationRunToProto(run, mash.MashNo, formatDate(mash.MashDate), recipeName, logs, &og, nil)
+	out.Analysis = buildFermentationAnalysis(logs, run.TargetFinalGravity)
+	return connect.NewResponse(&stillhousev1.GetFermentationRunResponse{Run: out}), nil
+}
+
+// buildFermentationAnalysis reads the shape of the gravity curve. Derived
+// on every fetch, so it always reflects the latest reading.
+func buildFermentationAnalysis(
+	logs []sqlcgen.FermentationLog,
+	targetFG pgtype.Float8,
+) *stillhousev1.FermentationAnalysis {
+	if len(logs) == 0 {
+		return nil
+	}
+	readings := make([]fermenting.Reading, 0, len(logs))
+	for _, l := range logs {
+		r := fermenting.Reading{At: l.ObservedAt.Time}
+		if l.SpecificGravity.Valid {
+			r.Gravity, r.GravitySet = l.SpecificGravity.Float64, true
+		}
+		if l.Ph.Valid {
+			r.PH, r.PHSet = l.Ph.Float64, true
+		}
+		if l.TemperatureC.Valid {
+			r.TempC, r.TempSet = l.TemperatureC.Float64, true
+		}
+		readings = append(readings, r)
+	}
+	a := fermenting.Analyse(readings, targetFG.Float64, targetFG.Valid)
+
+	out := &stillhousev1.FermentationAnalysis{
+		Measurable:      a.Measurable,
+		OriginalGravity: a.OriginalGravity,
+		CurrentGravity:  a.CurrentGravity,
+		AttenuationPct:  round2(a.AttenuationPct),
+		EstimatedAbv:    round2(a.EstimatedABV),
+		Phase:           fermentPhaseToProto(a.Phase),
+		HoursElapsed:    round2(a.HoursElapsed),
+		PeakTempC:       a.PeakTempC,
+		PeakTempCSet:    a.TempSet,
+	}
+	for _, f := range a.Findings {
+		out.Findings = append(out.Findings, &stillhousev1.FermentFinding{
+			Severity: fermentSeverityToProto(f.Severity),
+			Code:     f.Code,
+			Title:    f.Title,
+			Detail:   f.Detail,
+		})
+	}
+	return out
+}
+
+func fermentPhaseToProto(p fermenting.Phase) stillhousev1.FermentationPhase {
+	switch p {
+	case fermenting.PhaseLag:
+		return stillhousev1.FermentationPhase_FERMENTATION_PHASE_LAG
+	case fermenting.PhaseGrowth:
+		return stillhousev1.FermentationPhase_FERMENTATION_PHASE_GROWTH
+	case fermenting.PhaseStationary:
+		return stillhousev1.FermentationPhase_FERMENTATION_PHASE_STATIONARY
+	case fermenting.PhaseFinished:
+		return stillhousev1.FermentationPhase_FERMENTATION_PHASE_FINISHED
+	default:
+		return stillhousev1.FermentationPhase_FERMENTATION_PHASE_UNSPECIFIED
+	}
+}
+
+func fermentSeverityToProto(s fermenting.Severity) stillhousev1.FermentFindingSeverity {
+	switch s {
+	case fermenting.SeverityProblem:
+		return stillhousev1.FermentFindingSeverity_FERMENT_FINDING_SEVERITY_PROBLEM
+	case fermenting.SeverityWarning:
+		return stillhousev1.FermentFindingSeverity_FERMENT_FINDING_SEVERITY_WARNING
+	default:
+		return stillhousev1.FermentFindingSeverity_FERMENT_FINDING_SEVERITY_INFO
+	}
 }
 
 func (s *FermentationService) ListFermentationRuns(
