@@ -123,7 +123,7 @@ var errMissingTemperature = errors.New("a hydrometer indication needs the temper
 // not the server failing.
 func alcoholometryError(err error) error {
 	var re *alcoholometry.RangeError
-	if errors.As(err, &re) || errors.Is(err, errMissingTemperature) {
+	if errors.As(err, &re) || errors.Is(err, errMissingTemperature) || errors.Is(err, errInvalidInput) {
 		return connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	// The request is fine; the install isn't. FailedPrecondition tells the

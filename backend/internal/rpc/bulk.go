@@ -39,6 +39,13 @@ func (s *BulkService) CreateBulkContainer(
 	if in.GetName() == "" || in.GetKind() == stillhousev1.BulkContainerKind_BULK_CONTAINER_KIND_UNSPECIFIED {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name and kind are required"))
 	}
+	// A zero capacity is worse than none: it passes the "is a capacity
+	// recorded" test and then refuses every fill into the vessel.
+	if in.GetCapacityLSet() {
+		if err := validateCapacityL(in.GetCapacityL()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
 	kind, err := bulkContainerKindToDB(in.GetKind())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
@@ -87,6 +94,11 @@ func (s *BulkService) UpdateBulkContainer(
 	kind, err := bulkContainerKindToDB(req.Msg.GetKind())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if req.Msg.GetCapacityLSet() {
+		if err := validateCapacityL(req.Msg.GetCapacityL()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 	}
 	var c sqlcgen.BulkContainer
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {

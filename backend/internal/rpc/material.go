@@ -44,6 +44,20 @@ func (s *MaterialService) CreateMaterial(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	// extract and moisture are fractions in [0,1] despite the _pct names.
+	// Unvalidated, 78 typed for 0.78 multiplied a recipe's projected yield
+	// by a hundred, and the yield check couldn't catch it because its own
+	// ceilings are computed from this same figure.
+	if in.GetExtractPctSet() {
+		if err := validateFraction("extract_pct", in.GetExtractPct()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
+	if in.GetMoisturePctSet() {
+		if err := validateFraction("moisture_pct", in.GetMoisturePct()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
 
 	var created sqlcgen.Material
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
@@ -90,6 +104,20 @@ func (s *MaterialService) UpdateMaterial(
 	}
 	if in.GetName() == "" || in.GetUom() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name and uom are required"))
+	}
+	// extract and moisture are fractions in [0,1] despite the _pct names.
+	// Unvalidated, 78 typed for 0.78 multiplied a recipe's projected yield
+	// by a hundred, and the yield check couldn't catch it because its own
+	// ceilings are computed from this same figure.
+	if in.GetExtractPctSet() {
+		if err := validateFraction("extract_pct", in.GetExtractPct()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
+	if in.GetMoisturePctSet() {
+		if err := validateFraction("moisture_pct", in.GetMoisturePct()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
 	}
 
 	var updated sqlcgen.Material

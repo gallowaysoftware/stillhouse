@@ -48,6 +48,13 @@ func (s *BarrelService) CreateBarrel(
 	if in.GetName() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
 	}
+	// A zero capacity is worse than none: it passes the "is a capacity
+	// recorded" test and then refuses every fill into the vessel.
+	if in.GetCapacityLSet() {
+		if err := validateCapacityL(in.GetCapacityL()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
 
 	var (
 		container sqlcgen.BulkContainer
@@ -617,8 +624,15 @@ func (s *BarrelService) RegaugeBarrel(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid barrel_id"))
 	}
-	if in.GetNewVolumeL() < 0 || in.GetNewAbvPct() < 0 || in.GetNewAbvPct() > 100 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid new_volume_l / new_abv_pct"))
+	// Name the field and the bound. "invalid new_volume_l / new_abv_pct"
+	// tells someone standing in a warehouse with a phone nothing about
+	// which of the two numbers to look at.
+	if in.GetNewVolumeL() < 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("new_volume_l must be >= 0, got %g", in.GetNewVolumeL()))
+	}
+	if err := validateAbvPct("new_abv_pct", in.GetNewAbvPct()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	// Resolve the reading to 20 °C before anything is written. A warehouse

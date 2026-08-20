@@ -54,6 +54,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 129 | Pricing by channel — wholesale, on-site retail and export priced separately, with every rate carrying its provenance. Ontario and PEI now REFUSE to price the board channel rather than guessing, because neither publishes a spirits mark-up |
 | 130 | Operator-supplied alcoholometric tables — the CRA tables are no longer shipped in the binary. Each install downloads its own copy (Crown material: non-commercial reproduction only), the server reads the ZIP as downloaded, and a missing copy degrades to uncorrected readings with a Settings panel explaining the one-time fix rather than taking anything down |
 | 131 | Ledger integrity — QA drove the live system as a sole operator and as a team and found alcohol being created: concurrent withdrawals clobbered each other (8 fills moved 800 L while the tank fell 100), a barrel fill credited at the gauged strength but debited at the tank's, a dump silently deleted what the cask kept, and barrel/blend writes landed in already-filed B266 periods |
+| 132 | Say which field and why — the day-one adoption path gets the overfill guard the fill path already had, `extract_pct` stops accepting 78 where 0.78 belongs (it was projecting a 1077% ABV wash), the yield check gains an absolute anchor so it can catch an extract its own ceilings are derived from, and validation errors stop arriving as `internal` |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

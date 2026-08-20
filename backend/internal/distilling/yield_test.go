@@ -145,3 +145,68 @@ func TestNoExtractDataIsNotMeasurable(t *testing.T) {
 		t.Error("and it must not invent findings about it")
 	}
 }
+
+// TestCheckYieldCatchesPercentAsFraction: found by QA. A material's extract
+// is a fraction, but the field is named extract_pct, so 78 gets typed where
+// 0.78 belongs. 340 kg of rye then projected 26,520 kg of fermentable
+// extract, a 1077% ABV wash and 14,270 LAA from 400 kg of grain.
+//
+// The check didn't catch it, and couldn't: the "physically impossible"
+// ceiling is computed from the same extract figure, so it rescaled with the
+// error — 35,675 L/tonne against a "theoretical max" of 50,689, graded
+// merely a warning about optimistic efficiencies. A ceiling derived from
+// the suspect input cannot test that input. Extract above 1.0 is the one
+// thing that needs no comparison: more extract than grain is not a
+// process claim, it's a broken number.
+func TestCheckYieldCatchesPercentAsFraction(t *testing.T) {
+	y := CheckYield([]Ingredient{
+		{Name: "Rye (unmalted)", MassKg: 340, ExtractPct: 78},
+		{Name: "Malted barley", MassKg: 60, ExtractPct: 80},
+	}, 14270.13)
+
+	if !y.Measurable {
+		t.Fatal("check reported not measurable")
+	}
+	if !hasCode(y.Findings, "extract_out_of_range") {
+		t.Errorf("findings = %v, want extract_out_of_range — an extract of %.2f means more "+
+			"extract than grain", codes(y.Findings), y.WeightedExtractPct)
+	}
+	for _, f := range y.Findings {
+		if f.Code == "extract_out_of_range" && f.Severity != SeverityProblem {
+			t.Errorf("extract_out_of_range severity = %v, want problem", f.Severity)
+		}
+	}
+}
+
+// A sane bill must stay quiet — the guard has to catch the unit slip
+// without shouting at ordinary recipes.
+func TestCheckYieldQuietOnSaneBill(t *testing.T) {
+	y := CheckYield([]Ingredient{
+		{Name: "Rye (unmalted)", MassKg: 340, ExtractPct: 0.78},
+		{Name: "Malted barley", MassKg: 60, ExtractPct: 0.80},
+	}, 142.70)
+
+	if hasCode(y.Findings, "extract_out_of_range") {
+		t.Errorf("extract_out_of_range fired on a normal bill (extract %.3f)", y.WeightedExtractPct)
+	}
+	if len(y.Findings) != 0 {
+		t.Errorf("findings = %v, want none for a 357 L/tonne projection", codes(y.Findings))
+	}
+}
+
+func hasCode(fs []Finding, code string) bool {
+	for _, f := range fs {
+		if f.Code == code {
+			return true
+		}
+	}
+	return false
+}
+
+func codes(fs []Finding) []string {
+	out := make([]string, 0, len(fs))
+	for _, f := range fs {
+		out = append(out, f.Code)
+	}
+	return out
+}
