@@ -40,7 +40,20 @@ jobs:
           # commits.
           branch: cla-signatures
           path-to-signatures: signatures/version1/cla.json
-          allowlist: pequalsnp,dependabot[bot],renovate[bot]
+          # Claude* covers the Co-Authored-By trailer this project puts on
+          # every commit. contributor-assistant treats a co-author as a
+          # committer who must sign, and noreply@anthropic.com has no
+          # GitHub account to sign with — so without this, every pull
+          # request fails the check on a trailer rather than on anything
+          # about the contribution. There is also nothing to sign for: an
+          # AI assistant is not a legal person and holds no copyright in
+          # what it helps produce; the human directing the work does, and
+          # that human signs.
+          #
+          # Caveat: this is a prefix match, so a human contributor whose
+          # name begins "Claude" would be allowlisted by accident. Tighten
+          # to exact names if that ever happens.
+          allowlist: pequalsnp,dependabot[bot],renovate[bot],Claude*
           custom-notsigned-prcomment: >-
             Thanks for the pull request.
 
