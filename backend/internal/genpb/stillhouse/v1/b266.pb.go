@@ -213,6 +213,12 @@ type B266Report struct {
 	PackagedRemovedDutyPaidBottles int32   `protobuf:"varint,34,opt,name=packaged_removed_duty_paid_bottles,json=packagedRemovedDutyPaidBottles,proto3" json:"packaged_removed_duty_paid_bottles,omitempty"`
 	PackagedClosingLaa             float64 `protobuf:"fixed64,35,opt,name=packaged_closing_laa,json=packagedClosingLaa,proto3" json:"packaged_closing_laa,omitempty"`
 	PackagedClosingBottles         int32   `protobuf:"varint,36,opt,name=packaged_closing_bottles,json=packagedClosingBottles,proto3" json:"packaged_closing_bottles,omitempty"`
+	// Alcohol that left bulk for the bottling line but never became a sealed
+	// bottle — spillage, what stays in the filler. packaged_packaged_laa
+	// counts bottles only, so without this line the packaged section doesn't
+	// reconcile with bulk_transferred_to_packaging_laa and the reverse-walked
+	// opening balance goes negative.
+	PackagedPackagingLossLaa float64 `protobuf:"fixed64,37,opt,name=packaged_packaging_loss_laa,json=packagedPackagingLossLaa,proto3" json:"packaged_packaging_loss_laa,omitempty"`
 	// Duty section.
 	DutyRatePerLaa float64                `protobuf:"fixed64,50,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"` // current rate (CAD/LAA) >7%
 	DutyPayableCad float64                `protobuf:"fixed64,51,opt,name=duty_payable_cad,json=dutyPayableCad,proto3" json:"duty_payable_cad,omitempty"`   // sum of removals.duty_amount_cad
@@ -380,6 +386,13 @@ func (x *B266Report) GetPackagedClosingLaa() float64 {
 func (x *B266Report) GetPackagedClosingBottles() int32 {
 	if x != nil {
 		return x.PackagedClosingBottles
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedPackagingLossLaa() float64 {
+	if x != nil {
+		return x.PackagedPackagingLossLaa
 	}
 	return 0
 }
@@ -901,7 +914,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9c\t\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xdb\t\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -924,7 +937,8 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x1epackaged_removed_duty_paid_laa\x18! \x01(\x01R\x1apackagedRemovedDutyPaidLaa\x12J\n" +
 	"\"packaged_removed_duty_paid_bottles\x18\" \x01(\x05R\x1epackagedRemovedDutyPaidBottles\x120\n" +
 	"\x14packaged_closing_laa\x18# \x01(\x01R\x12packagedClosingLaa\x128\n" +
-	"\x18packaged_closing_bottles\x18$ \x01(\x05R\x16packagedClosingBottles\x12)\n" +
+	"\x18packaged_closing_bottles\x18$ \x01(\x05R\x16packagedClosingBottles\x12=\n" +
+	"\x1bpackaged_packaging_loss_laa\x18% \x01(\x01R\x18packagedPackagingLossLaa\x12)\n" +
 	"\x11duty_rate_per_laa\x182 \x01(\x01R\x0edutyRatePerLaa\x12(\n" +
 	"\x10duty_payable_cad\x183 \x01(\x01R\x0edutyPayableCad\x12=\n" +
 	"\fgenerated_at\x18< \x01(\v2\x1a.google.protobuf.TimestampR\vgeneratedAt\"W\n" +

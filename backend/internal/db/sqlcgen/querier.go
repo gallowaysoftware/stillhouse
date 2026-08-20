@@ -219,6 +219,14 @@ type Querier interface {
 	// SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
 	// packaged_inventory and bulk separately, so they shouldn't count toward
 	// either the packaging or production lines on B266.
+	// Three different quantities, and conflating them puts a negative opening
+	// balance on the return:
+	//   drawn_laa    — what left bulk (the tank gauge)
+	//   packaged_laa — what became sealed bottles
+	//   loss_laa     — the difference, spilled or left in the filler
+	// Packaged inventory only ever received packaged_laa, so that is the line
+	// that closes against it; the bulk side's transfer-to-packaging figure is
+	// drawn_laa, and the loss is what reconciles the two.
 	SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error)
 	// Bulk LAA excludes barrels for the same reason ListBulkContainers
 	// does — barrel LAA is reported separately so summing both would

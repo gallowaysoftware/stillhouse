@@ -56,6 +56,12 @@ message B266Report {
   int32  packaged_removed_duty_paid_bottles = 34;
   double packaged_closing_laa = 35;
   int32  packaged_closing_bottles = 36;
+  // Alcohol that left bulk for the bottling line but never became a sealed
+  // bottle — spillage, what stays in the filler. packaged_packaged_laa
+  // counts bottles only, so without this line the packaged section doesn't
+  // reconcile with bulk_transferred_to_packaging_laa and the reverse-walked
+  // opening balance goes negative.
+  double packaged_packaging_loss_laa = 37;
 
   // Duty section.
   double duty_rate_per_laa = 50;          // current rate (CAD/LAA) >7%

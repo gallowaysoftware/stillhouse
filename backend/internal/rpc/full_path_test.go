@@ -32,7 +32,9 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 	if err != nil {
 		t.Fatalf("admin pool: %v", err)
 	}
-	defer pool.Close()
+	// See the note in b266_test.go: cleanups run after deferred calls, so
+	// closing the pool with defer strands every fixture delete.
+	t.Cleanup(pool.Close)
 	q := sqlcgen.New(pool)
 
 	tenant, err := q.CreateTenant(ctx, sqlcgen.CreateTenantParams{
