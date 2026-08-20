@@ -12,6 +12,15 @@
 
      Delete this section if the change is purely mechanical. -->
 
+## Third-party material
+
+- [ ] This contribution is my own original work
+- [ ] It includes data, tables or rates from a published source — detailed above
+
+<!-- First-time contributor? A bot will ask you to sign the CLA. See
+     CONTRIBUTING.md; it takes one comment and doesn't affect your
+     copyright. -->
+
 ## Checks
 
 - [ ] `make lint` passes

@@ -55,19 +55,37 @@ considered and rejected, which is often the most useful part later.
 
 ## Licensing and contributions — please read
 
-Stillhouse is licensed under the **AGPL-3.0**. Contributions are accepted
-under the same licence.
+Stillhouse is licensed under the **AGPL-3.0** and always will be. Anyone
+can run it, read it, modify it and self-host it for free.
 
-Be aware that the maintainer may in future offer Stillhouse under a
-separate commercial licence alongside the AGPL. Doing that requires
-holding sufficient rights in all contributed code. **A contributor
-licence agreement is not yet in place.** Until one is, please assume that
-substantial outside contributions may be declined, or may need to be
-re-implemented, rather than merged into a codebase that could later be
-dual-licensed.
+Galloway Software may also offer Stillhouse under a separate commercial
+licence — to a distillery embedding it in something proprietary, or as
+part of a paid hosted service. Offering the same code under two licences
+only works if one party holds sufficient rights in **all** of it, so
+contributions need a one-time signature on the
+[Contributor Licence Agreement](CLA.md).
 
-If you want to contribute something substantial, open an issue first and
-we'll sort the licensing out before you spend the time.
+**It does not take your copyright away.** You keep it, and you can do
+whatever you like with your own work. It grants a licence broad enough to
+keep offering the whole project under more than one set of terms.
+
+Signing is automatic and takes one comment. Open your pull request; a bot
+will reply asking you to sign, and you sign by responding with exactly:
+
+> I have read the CLA Document and I hereby sign the CLA
+
+That's it — you only do it once, and later pull requests are checked
+against the same signature.
+
+If you'd rather not sign, that's completely reasonable. Open an issue
+instead: a good bug report, a suggestion, or a change small enough not to
+be copyrightable are all still welcome, and none of them need a CLA.
+
+One thing the CLA asks that's worth repeating here, because it bites this
+project specifically: **if your contribution includes tables, rates or
+data taken from a published source, say so in the pull request.** Stillhouse
+embeds regulatory material under specific reproduction terms, and data
+that arrives silently can make the whole work undistributable.
 
 ## Reporting problems
 

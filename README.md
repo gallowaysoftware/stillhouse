@@ -196,6 +196,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). The short version: cite your
 sources for anything that produces a number a distiller relies on, don't
 invent domain constants, and keep alcohol conserved.
 
+First pull request? A bot will ask you to sign the [CLA](CLA.md) — one
+comment, once. Stillhouse stays AGPL-3.0 regardless; the CLA exists so
+the project can also be offered commercially, and it doesn't affect your
+copyright in your own work.
+
 Security issues: [SECURITY.md](SECURITY.md) — please don't open a public
 issue.
 
