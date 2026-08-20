@@ -79,10 +79,25 @@ serves. Watch the log for the migration lines.
 ## 5. Seed the first tenant
 
 ```sh
-docker exec -it stillhouse-app /app/seed
+docker exec stillhouse-app /app/stillhouse-seed
 ```
 
 It prints a generated admin password once. Capture it.
+
+The runtime image is distroless — there's no shell in it — so exec the
+binary directly rather than wrapping it in `sh -c`. The seed reads
+`ADMIN_DATABASE_URL` from the container's environment, which compose
+already sets.
+
+The same applies to issuing an API token for MCP without going through
+the web UI:
+
+```sh
+docker exec stillhouse-app /app/stillhouse-mcp-token -email you@example.com -name phone
+```
+
+Prefer the web UI for tokens (Settings → API tokens); this path exists for
+recovery when you can't log in.
 
 ## Upgrading
 
