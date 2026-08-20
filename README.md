@@ -51,6 +51,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 126 | Yield sanity — a recipe's projection expressed as L/tonne against what the grain can actually give, so efficiencies left at 1.0 stop producing a confident impossible number. Separates "physically impossible" from "ahead of industry" |
 | 127 | Fermentation curve — gravity and temperature over time as two plots sharing an x-axis (never a dual axis), plus phase inference and findings for a stuck ferment, thermal stress, and the pH crash that signals contamination |
 | 128 | Vatting planner — what actually comes out when parcels are blended, since a blend is neither the sum of its volumes nor the weighted mean of its strengths, then optionally reduced to bottling strength. Web + MCP `plan_blend` |
+| 129 | Pricing by channel — wholesale, on-site retail and export priced separately, with every rate carrying its provenance. Ontario and PEI now REFUSE to price the board channel rather than guessing, because neither publishes a spirits mark-up |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.

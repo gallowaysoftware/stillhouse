@@ -1,31 +1,100 @@
+// Provincial pricing across the channels a distillery actually sells
+// through.
+//
+// Provincial liquor statutes do not set markup rates — both jurisdictions
+// researched delegate to board policy, which changes without a
+// legislative amendment. So every rate here carries its provenance, and a
+// channel that needs a rate nobody has found REFUSES to produce a number
+// rather than guessing one. A pricing page that looks authoritative is
+// worse than one that admits what it doesn't know.
 syntax = "proto3";
 
 package stillhouse.v1;
 
-message ProvincialPricingBreakdown {
-  string jurisdiction = 1;
+// How much a rate can be trusted.
+enum RateProvenance {
+  RATE_PROVENANCE_UNSPECIFIED = 0;
+  // No rate available. Anything depending on it refuses to compute.
+  RATE_PROVENANCE_UNKNOWN = 1;
+  // From a secondary source. Planning only, never for quoting a customer.
+  RATE_PROVENANCE_INDICATIVE = 2;
+  // From the board's or the legislature's own published material.
+  RATE_PROVENANCE_SOURCED = 3;
+}
+
+// The routes a bottle can take to a buyer. They price completely
+// differently; one formula is right for none of them.
+enum SalesChannel {
+  SALES_CHANNEL_UNSPECIFIED = 0;
+  SALES_CHANNEL_WHOLESALE = 1;       // to the provincial board
+  SALES_CHANNEL_ON_SITE_RETAIL = 2;  // the distillery's own shop
+  SALES_CHANNEL_EXPORT = 3;          // leaving the province
+}
+
+// A rate a calculation needed and did not have.
+message MissingRate {
+  string what = 1;
+  // Where to get the number, or what assumption was made instead.
+  string why = 2;
+}
+
+message ChannelPricing {
+  SalesChannel channel = 1;
+  // False when a needed rate is unknown; every amount below is
+  // meaningless then and missing says what blocked it.
+  bool computable = 2;
+  repeated MissingRate missing = 3;
+
+  double landed_cost_cad = 4;
+  double markup_cad = 5;
+  double cosd_cad = 6;
+  double provincial_tax_cad = 7;
+  double federal_excise_cad = 8;
+  double container_deposit_cad = 9;
+  double sales_tax_cad = 10;
+  // What the customer pays at the end of this channel.
+  double price_to_buyer_cad = 11;
+  // What the distillery keeps after remitting everything that isn't
+  // theirs — the number that decides which channel is worth pursuing.
+  double distillery_net_cad = 12;
+  // The weakest rate the figure leans on, so it can be labelled honestly.
+  RateProvenance lowest_provenance = 13;
+}
+
+message JurisdictionPricing {
+  string code = 1;
   string name = 2;
-  double fob_cad = 3;
-  double markup_cad = 4;
-  double per_litre_cad = 5;
-  double basic_tax_cad = 6;
-  double federal_excise_cad = 7;
-  double container_deposit_cad = 8;
-  double shelf_before_sales_tax = 9;
-  double on_site_retail_net_cad = 10;
-  string notes = 11;
+  string notes = 3;
+  ChannelPricing wholesale = 4;
+  ChannelPricing on_site_retail = 5;
+  ChannelPricing export = 6;
 }
 
 message ComputeProvincialPricingRequest {
   string product_id = 1;
+  // What the distillery charges the board, per bottle.
   double fob_cad = 2;
+  // The shelf price in the distillery's own shop. Zero skips the on-site
+  // channel — the distillery chooses this one, so nothing can be worked
+  // out until it does.
+  double on_site_retail_price_cad = 3;
+  // Remaining components of landed cost. Zero for a domestic distillery
+  // shipping within its own province.
+  double freight_cad = 4;
+  double import_duties_cad = 5;
+  // Drives the cost-of-service differential provinces charge on product
+  // from outside the province.
+  bool   imported = 6;
 }
+
 message ComputeProvincialPricingResponse {
-  repeated ProvincialPricingBreakdown breakdowns = 1;
-  // Echo back the inputs for display.
+  repeated JurisdictionPricing jurisdictions = 1;
+  // Echo the inputs back for display.
   string product_name = 2;
   int32  bottle_size_ml = 3;
   double bottle_abv_pct = 4;
+  double federal_duty_per_laa = 5;
+  double laa_per_bottle = 6;
 }
 
 service PricingService {
