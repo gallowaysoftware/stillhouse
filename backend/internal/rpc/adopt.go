@@ -71,9 +71,19 @@ func (s *BulkService) AdoptOpeningInventory(
 		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurredAt.Time}); e != nil {
 			return e
 		}
-		existing, e := q.GetBulkContainer(ctx, containerID)
+		lockedAdopt, e := lockContainers(ctx, q, containerID)
 		if e != nil {
 			return e
+		}
+		existing := lockedAdopt[containerID]
+		// Same overflow guard FillBarrel has. This is the day-one path, so
+		// a decimal point in the wrong place (1524 kg for 152.4) lands in
+		// opening inventory and therefore on the first return — 1658 L
+		// booked into a 200 L cask, and nothing said a word.
+		if existing.CapacityL.Valid && measured.VolumeL20C > existing.CapacityL.Float64+1e-6 {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"%.4f L would not fit in %s (%.4f L capacity) — check the measurement",
+				measured.VolumeL20C, existing.Name, existing.CapacityL.Float64))
 		}
 		// Adoption establishes a balance; it does not top one up. A vessel
 		// that already holds alcohol has a history in the ledger, and
@@ -184,19 +194,38 @@ func (s *BulkService) AdoptOpeningInventory(
 // No volume correction is involved at all, because a scale reading doesn't
 // expand with temperature.
 func resolveAdoptedStock(in *stillhousev1.AdoptOpeningInventoryRequest) (resolvedStrength, error) {
-	hasMass := in.GetMassKgSet() && in.GetMassKg() > 0
-	hasVolume := in.GetVolumeLSet() && in.GetVolumeL() > 0
+	// A supplied-but-impossible figure is a different mistake from a
+	// missing one, and saying "supply either mass_kg or volume_l" to
+	// someone who supplied mass_kg sends them to the wrong field.
+	if in.GetMassKgSet() && in.GetMassKg() <= 0 {
+		return resolvedStrength{}, invalidInput(fmt.Errorf(
+			"mass_kg must be > 0, got %g", in.GetMassKg()))
+	}
+	if in.GetVolumeLSet() && in.GetVolumeL() <= 0 {
+		return resolvedStrength{}, invalidInput(fmt.Errorf(
+			"volume_l must be > 0, got %g", in.GetVolumeL()))
+	}
+	hasMass := in.GetMassKgSet()
+	hasVolume := in.GetVolumeLSet()
 	if !hasMass && !hasVolume {
-		return resolvedStrength{}, errors.New("supply either mass_kg or volume_l")
+		return resolvedStrength{}, invalidInput(errors.New("supply either mass_kg or volume_l"))
 	}
 	if hasMass && hasVolume {
-		return resolvedStrength{}, errors.New("supply mass_kg or volume_l, not both")
+		return resolvedStrength{}, invalidInput(errors.New("supply mass_kg or volume_l, not both"))
+	}
+	// Only meaningful on the volume route — a weighed charge takes its
+	// strength from the tables — but checking it here keeps the database's
+	// check constraint from being the thing that reports it, as a 500.
+	if !in.GetDensityKgM3Set() {
+		if err := validateAbvPct("abv_pct", in.GetAbvPct()); err != nil {
+			return resolvedStrength{}, invalidInput(err)
+		}
 	}
 
 	if hasMass {
 		if !in.GetDensityKgM3Set() {
-			return resolvedStrength{}, errors.New(
-				"a weighed charge needs the hydrometer indication (density_kg_m3) to give a strength")
+			return resolvedStrength{}, invalidInput(errors.New(
+				"a weighed charge needs the hydrometer indication (density_kg_m3) to give a strength"))
 		}
 		if !in.GetTemperatureCSet() {
 			return resolvedStrength{}, errMissingTemperature

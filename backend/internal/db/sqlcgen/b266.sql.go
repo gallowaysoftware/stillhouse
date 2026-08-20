@@ -199,12 +199,17 @@ func (q *Queries) SubmitB266Period(ctx context.Context, arg SubmitB266PeriodPara
 }
 
 const sumBottlingRunsInPeriod = `-- name: SumBottlingRunsInPeriod :one
-SELECT COALESCE(SUM(tank_gauge_laa), 0)::double precision AS total_laa,
+SELECT COALESCE(SUM(br.tank_gauge_laa), 0)::double precision AS total_laa,
+       COALESCE(SUM(br.bottle_count * p.bottle_size_ml / 1000.0 * p.target_abv_pct / 100.0),
+                0)::double precision AS packaged_laa,
+       COALESCE(SUM(br.bottling_loss_l * p.target_abv_pct / 100.0),
+                0)::double precision AS loss_laa,
        COUNT(*)::int AS run_count,
-       COALESCE(SUM(bottle_count), 0)::int AS total_bottles
-FROM bottling_runs
-WHERE bottling_date >= $1 AND bottling_date < $2
-  AND voided_at IS NULL
+       COALESCE(SUM(br.bottle_count), 0)::int AS total_bottles
+FROM bottling_runs br
+JOIN products p ON p.id = br.product_id
+WHERE br.bottling_date >= $1 AND br.bottling_date < $2
+  AND br.voided_at IS NULL
 `
 
 type SumBottlingRunsInPeriodParams struct {
@@ -214,6 +219,8 @@ type SumBottlingRunsInPeriodParams struct {
 
 type SumBottlingRunsInPeriodRow struct {
 	TotalLaa     float64 `json:"total_laa"`
+	PackagedLaa  float64 `json:"packaged_laa"`
+	LossLaa      float64 `json:"loss_laa"`
 	RunCount     int32   `json:"run_count"`
 	TotalBottles int32   `json:"total_bottles"`
 }
@@ -221,10 +228,26 @@ type SumBottlingRunsInPeriodRow struct {
 // SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
 // packaged_inventory and bulk separately, so they shouldn't count toward
 // either the packaging or production lines on B266.
+// Three different quantities, and conflating them puts a negative opening
+// balance on the return:
+//
+//	drawn_laa    — what left bulk (the tank gauge)
+//	packaged_laa — what became sealed bottles
+//	loss_laa     — the difference, spilled or left in the filler
+//
+// Packaged inventory only ever received packaged_laa, so that is the line
+// that closes against it; the bulk side's transfer-to-packaging figure is
+// drawn_laa, and the loss is what reconciles the two.
 func (q *Queries) SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error) {
 	row := q.db.QueryRow(ctx, sumBottlingRunsInPeriod, arg.BottlingDate, arg.BottlingDate_2)
 	var i SumBottlingRunsInPeriodRow
-	err := row.Scan(&i.TotalLaa, &i.RunCount, &i.TotalBottles)
+	err := row.Scan(
+		&i.TotalLaa,
+		&i.PackagedLaa,
+		&i.LossLaa,
+		&i.RunCount,
+		&i.TotalBottles,
+	)
 	return i, err
 }
 

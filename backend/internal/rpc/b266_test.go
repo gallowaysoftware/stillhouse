@@ -23,7 +23,13 @@ func TestB266GenerationEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatalf("admin pool: %v", err)
 	}
-	defer adminPool.Close()
+	// t.Cleanup, not defer: cleanups run after the test function returns,
+	// so a deferred Close beats them to it and every fixture delete below
+	// silently fails against a closed pool. The test database then keeps
+	// every run's rows, and because the period queries are tenant-scoped
+	// by RLS — which a superuser DSN bypasses — the next run's totals come
+	// back doubled. Registered first so it runs last (cleanups are LIFO).
+	t.Cleanup(adminPool.Close)
 	q := sqlcgen.New(adminPool)
 
 	tenant, err := q.CreateTenant(ctx, sqlcgen.CreateTenantParams{
@@ -76,18 +82,24 @@ func TestB266GenerationEndToEnd(t *testing.T) {
 	_ = prodMv
 
 	// Bottling: transfer 75 L to packaging (= 52.5 LAA out of bulk).
-	bottledVolume := 75.0
-	bottledLAA := bottledVolume * 70.0 / 100
+	// The withdrawal that feeds the bottling run below: 77 L at bottle
+	// strength, of which 100 x 750 mL becomes bottles and 2 L is lost.
+	bottledVolume := 77.0
+	bottledLAA := bottledVolume * 40.0 / 100
 	if _, err := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 		TenantID:               tenant.ID,
 		SourceContainerID:      uuid.NullUUID{UUID: container.ID, Valid: true},
 		DestinationContainerID: uuid.NullUUID{Valid: false},
-		VolumeL:                bottledVolume,
-		AbvPct:                 70,
-		Laa:                    bottledLAA,
-		Reason:                 sqlcgen.BulkMovementReasonTransferToPackaging,
-		ReferenceType:          "test_bottling",
-		OccurredAt:             pgtype.Timestamptz{Time: midPeriod, Valid: true},
+		// Must match the bottling run below — this movement IS that run's
+		// withdrawal. They disagreed (75 L at 70% against a run gauged at
+		// 40%), which is only invisible while nothing checks that the two
+		// sections of the return reconcile.
+		VolumeL:       bottledVolume,
+		AbvPct:        40,
+		Laa:           bottledLAA,
+		Reason:        sqlcgen.BulkMovementReasonTransferToPackaging,
+		ReferenceType: "test_bottling",
+		OccurredAt:    pgtype.Timestamptz{Time: midPeriod, Valid: true},
 	}); err != nil {
 		t.Fatalf("insert bottling movement: %v", err)
 	}
@@ -118,12 +130,16 @@ func TestB266GenerationEndToEnd(t *testing.T) {
 		DestinationJurisdiction: "CA-ON",
 		BottlingDate:            pgtype.Date{Time: midPeriod, Valid: true},
 		BottleCount:             100,
-		BottlingLossL:           0,
-		LotCode:                 "B266-TEST-L-" + uuid.NewString(),
-		TankGaugeVolumeL:        75,
-		TankGaugeAbvPct:         40,        // bottling at bottle-proof
-		TankGaugeLaa:            30,        // 75 × 0.40 = 30
-		BulkMovementID:          prodMv.ID, // any non-null reference; not used by B266 query
+		// A real run loses a little at the filler. Zero here hid the bug
+		// below: the packaged line counted alcohol drawn from the tank
+		// rather than alcohol that became bottles, so any loss at all
+		// pushed the reverse-walked opening balance negative.
+		BottlingLossL:    2,
+		LotCode:          "B266-TEST-L-" + uuid.NewString(),
+		TankGaugeVolumeL: 77,
+		TankGaugeAbvPct:  40,        // bottling at bottle-proof
+		TankGaugeLaa:     30.8,      // 77 × 0.40: 30 into bottles, 0.8 lost
+		BulkMovementID:   prodMv.ID, // any non-null reference; not used by B266 query
 	})
 	if err != nil {
 		t.Fatalf("create bottling run: %v", err)
@@ -191,7 +207,39 @@ func TestB266GenerationEndToEnd(t *testing.T) {
 	if got := report.DutyPayableCad; got < 127.05-0.01 {
 		t.Errorf("DutyPayableCad: got %v, want at least %v", got, 127.05)
 	}
+	// 100 bottles x 750 mL x 40% = 30 LAA into bottles; 2 L of loss at
+	// bottle strength = 0.8 LAA. The packaged line counts bottles only.
+	if got := report.PackagedPackagedLaa; !nearly(got, 30) {
+		t.Errorf("PackagedPackagedLaa: got %v, want 30 (bottles only, not the 30.8 drawn)", got)
+	}
+	if got := report.PackagedPackagingLossLaa; !nearly(got, 0.8) {
+		t.Errorf("PackagedPackagingLossLaa: got %v, want 0.8", got)
+	}
+	// The books have to close. Opening was nothing — this tenant was
+	// created for the test — and a negative opening balance on a first
+	// return is wrong on its face.
+	if got := report.PackagedOpeningLaa; !nearly(got, 0) {
+		t.Errorf("PackagedOpeningLaa: got %v, want 0 for a first-ever return", got)
+	}
+	if report.PackagedOpeningLaa < 0 {
+		t.Errorf("PackagedOpeningLaa is negative (%v) — inventory cannot start below zero",
+			report.PackagedOpeningLaa)
+	}
+	if got, want := report.PackagedOpeningLaa+report.PackagedPackagedLaa-report.PackagedRemovedDutyPaidLaa,
+		report.PackagedClosingLaa; !nearly(got, want) {
+		t.Errorf("packaged books don't close: opening + packaged - removed = %v, closing = %v", got, want)
+	}
+	// And the two sections reconcile: what left bulk for the line is what
+	// became bottles plus what was lost getting there.
+	if got, want := report.PackagedPackagedLaa+report.PackagedPackagingLossLaa,
+		report.BulkTransferredToPackagingLaa; !nearly(got, want) {
+		t.Errorf("packaged %v + loss = %v but bulk says %v left for packaging",
+			report.PackagedPackagedLaa, got, want)
+	}
+
 	if report.DutyRatePerLaa != 14.117 {
 		t.Errorf("DutyRatePerLaa: got %v, want 14.117", report.DutyRatePerLaa)
 	}
 }
+
+func nearly(a, b float64) bool { return a-b < 1e-6 && b-a < 1e-6 }

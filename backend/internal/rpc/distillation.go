@@ -452,7 +452,7 @@ func (s *DistillationService) RecordProductionGauge(
 			return connect.NewError(connect.CodeFailedPrecondition,
 				errors.New("distillation run already has a production gauge"))
 		}
-		container, e := q.GetBulkContainer(ctx, destID)
+		container, e := q.GetBulkContainerForUpdate(ctx, destID)
 		if e != nil {
 			return e
 		}
@@ -600,7 +600,7 @@ func (s *DistillationService) VoidDistillationRun(
 			return ge
 		}
 		if ge == nil {
-			container, ce := q.GetBulkContainer(ctx, gauge.DestinationContainerID)
+			container, ce := q.GetBulkContainerForUpdate(ctx, gauge.DestinationContainerID)
 			if ce != nil {
 				return ce
 			}

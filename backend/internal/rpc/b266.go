@@ -333,7 +333,8 @@ func computeB266Report(
 		// the distillery made, on a return CRA reads.
 		BulkOpeningInventoryAdoptedLaa: round4(byReason["opening_inventory"]),
 
-		PackagedPackagedLaa:            round4(bottlingTotals.TotalLaa),
+		PackagedPackagedLaa:            round4(bottlingTotals.PackagedLaa),
+		PackagedPackagingLossLaa:       round4(bottlingTotals.LossLaa),
 		PackagedPackagedBottles:        bottlingTotals.TotalBottles,
 		PackagedRemovedDutyPaidLaa:     round4(removalTotals.TotalLaa),
 		PackagedRemovedDutyPaidBottles: removalTotals.TotalBottles,
@@ -350,6 +351,10 @@ func computeB266Report(
 	bulkWithdrawals := report.BulkTransferredToPackagingLaa + report.BulkTransferredOutInBondLaa + report.BulkLossesLaa + report.BulkDestroyedLaa
 	report.BulkOpeningLaa = round4(report.BulkClosingLaa - bulkReceipts + bulkWithdrawals)
 
+	// Packaged inventory only ever received what became bottles. Walking
+	// back with the tank-gauge figure instead — which includes what was
+	// spilled on the way — subtracts alcohol that never arrived, and a
+	// first-ever return came out with a negative opening balance.
 	report.PackagedOpeningLaa = round4(report.PackagedClosingLaa - report.PackagedPackagedLaa + report.PackagedRemovedDutyPaidLaa)
 
 	// Validate the snapshot is JSON-serializable as a sanity check.

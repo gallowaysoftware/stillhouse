@@ -97,6 +97,32 @@ func CheckYield(ingredients []Ingredient, projectedLAA float64) YieldCheck {
 }
 
 func (y *YieldCheck) assess() {
+	// Before comparing against anything derived: extract is the fraction of
+	// the grain's mass that is fermentable, so it cannot exceed 1. Above
+	// that the bill says there is more extract than there is grain, and
+	// every ceiling below — theoretical and achievable alike — is computed
+	// from that same figure, so they all rescale with the error and none of
+	// them can detect it. This is the one test that needs no comparison.
+	//
+	// It happens because the field is named extract_pct and holds a
+	// fraction: 78 gets typed where 0.78 belongs, and the projection comes
+	// back a hundredfold too big while looking exactly as confident as a
+	// real one.
+	if y.WeightedExtractPct > 1 {
+		y.Findings = append(y.Findings, Finding{
+			Severity: SeverityProblem,
+			Code:     "extract_out_of_range",
+			Title: fmt.Sprintf("Extract of %.2f means more extract than grain — this projection is not usable",
+				y.WeightedExtractPct),
+			Detail: "Extract is a fraction of the ingredient's mass, not a percentage: malted " +
+				"barley is about 0.80, not 80. Correct it on the materials and the projection " +
+				"will fall by roughly a hundredfold.",
+		})
+		// Everything below compares against ceilings built from this
+		// number. Reporting them too would just be more wrong arithmetic.
+		return
+	}
+
 	switch {
 	case y.LPerTonne > y.TheoreticalMaxLPerTonne:
 		y.Findings = append(y.Findings, Finding{

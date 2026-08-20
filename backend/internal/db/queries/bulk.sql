@@ -21,6 +21,20 @@ UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING *;
 -- name: GetBulkContainer :one
 SELECT * FROM bulk_containers WHERE id = $1;
 
+-- name: GetBulkContainerForUpdate :one
+-- Read a container's balance with the intent to change it. FOR UPDATE is
+-- what makes the read-modify-write safe: without it two transactions both
+-- read the same volume, both compute an absolute new value, and the second
+-- commit silently discards the first one's withdrawal. Eight concurrent
+-- barrel fills from one tank moved 800 L while the tank fell by 100 —
+-- alcohol conjured out of a lost update. Every path that writes a balance
+-- must read it through here.
+--
+-- Lock ordering: a transaction touching more than one container (a blend,
+-- a transfer) must acquire them in a deterministic order — see
+-- lockContainers — or two of them can deadlock holding each other's rows.
+SELECT * FROM bulk_containers WHERE id = $1 FOR UPDATE;
+
 -- name: ListBulkContainers :many
 -- Excludes barrels — they have their own dedicated list/get RPCs that
 -- expose the maturation clock + barrel attributes. Including them here

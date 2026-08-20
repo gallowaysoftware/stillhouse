@@ -102,6 +102,18 @@ type Querier interface {
 	GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent, error)
 	GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error)
 	GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error)
+	// Read a container's balance with the intent to change it. FOR UPDATE is
+	// what makes the read-modify-write safe: without it two transactions both
+	// read the same volume, both compute an absolute new value, and the second
+	// commit silently discards the first one's withdrawal. Eight concurrent
+	// barrel fills from one tank moved 800 L while the tank fell by 100 —
+	// alcohol conjured out of a lost update. Every path that writes a balance
+	// must read it through here.
+	//
+	// Lock ordering: a transaction touching more than one container (a blend,
+	// a transfer) must acquire them in a deterministic order — see
+	// lockContainers — or two of them can deadlock holding each other's rows.
+	GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (BulkContainer, error)
 	GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUID) (BulkMovement, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
@@ -207,6 +219,14 @@ type Querier interface {
 	// SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
 	// packaged_inventory and bulk separately, so they shouldn't count toward
 	// either the packaging or production lines on B266.
+	// Three different quantities, and conflating them puts a negative opening
+	// balance on the return:
+	//   drawn_laa    — what left bulk (the tank gauge)
+	//   packaged_laa — what became sealed bottles
+	//   loss_laa     — the difference, spilled or left in the filler
+	// Packaged inventory only ever received packaged_laa, so that is the line
+	// that closes against it; the bulk side's transfer-to-packaging figure is
+	// drawn_laa, and the loss is what reconciles the two.
 	SumBottlingRunsInPeriod(ctx context.Context, arg SumBottlingRunsInPeriodParams) (SumBottlingRunsInPeriodRow, error)
 	// Bulk LAA excludes barrels for the same reason ListBulkContainers
 	// does — barrel LAA is reported separately so summing both would

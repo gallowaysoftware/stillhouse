@@ -48,6 +48,13 @@ func (s *BarrelService) CreateBarrel(
 	if in.GetName() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
 	}
+	// A zero capacity is worse than none: it passes the "is a capacity
+	// recorded" test and then refuses every fill into the vessel.
+	if in.GetCapacityLSet() {
+		if err := validateCapacityL(in.GetCapacityL()); err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
 
 	var (
 		container sqlcgen.BulkContainer
@@ -245,10 +252,14 @@ func (s *BarrelService) FillBarrel(
 		event           sqlcgen.BarrelEvent
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		barrel, e := q.GetBulkContainer(ctx, barrelID)
+		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
+			return e
+		}
+		locked, e := lockContainers(ctx, q, barrelID, sourceID)
 		if e != nil {
 			return e
 		}
+		barrel := locked[barrelID]
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
@@ -263,15 +274,19 @@ func (s *BarrelService) FillBarrel(
 						barrel.CurrentVolumeL, volume, barrel.CapacityL.Float64))
 			}
 		}
-		source, e := q.GetBulkContainer(ctx, sourceID)
-		if e != nil {
-			return e
-		}
+		source := locked[sourceID]
 		if source.CurrentVolumeL < volume {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("source container has insufficient volume"))
 		}
+		if e := assertFillStrengthMatchesSource(source, abv); e != nil {
+			return e
+		}
 
 		laa := volume * abv / 100
+		if source.CurrentLaa+1e-6 < laa {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("source holds %.4f LAA; this fill would remove %.4f", source.CurrentLaa, laa))
+		}
 
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 			TenantID:               u.TenantID,
@@ -290,15 +305,14 @@ func (s *BarrelService) FillBarrel(
 			return e
 		}
 
-		// Update source (withdraw at source's existing ABV).
-		newSrcVol := source.CurrentVolumeL - volume
-		newSrcAbv := source.CurrentAbvPct
-		newSrcLAA := 0.0
-		if newSrcVol > 0 && newSrcAbv.Valid {
-			newSrcLAA = newSrcVol * newSrcAbv.Float64 / 100
-		} else if newSrcVol == 0 {
-			newSrcAbv = pgtype.Float8{Valid: false}
-		}
+		// Withdraw exactly what the barrel receives. Debiting the source
+		// at its own recorded strength while crediting the barrel at the
+		// gauged one is how alcohol gets created: 100 L "at 80%" out of a
+		// 60% tank used to put 80 LAA in the cask and take 60 out. What is
+		// left over is arithmetic — the remaining alcohol over the
+		// remaining volume — not a second measurement.
+		newSrcVol, newSrcAbv, newSrcLAA := applyWithdrawal(
+			source.CurrentVolumeL, source.CurrentLaa, volume, laa)
 		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
 			ID:             sourceID,
 			CurrentVolumeL: newSrcVol,
@@ -434,22 +448,27 @@ func (s *BarrelService) DumpBarrel(
 		event           sqlcgen.BarrelEvent
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		barrel, e := q.GetBulkContainer(ctx, barrelID)
+		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
+			return e
+		}
+		locked, e := lockContainers(ctx, q, barrelID, destID)
 		if e != nil {
 			return e
 		}
+		barrel := locked[barrelID]
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
 		if barrel.CurrentVolumeL <= 0 {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("barrel is already empty"))
 		}
-		dest, e := q.GetBulkContainer(ctx, destID)
-		if e != nil {
-			return e
-		}
+		dest := locked[destID]
 
 		laa := volume * abv / 100
+		if barrel.CurrentLaa+1e-6 < laa {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"%s holds %.4f LAA; this dump would remove %.4f", barrel.Name, barrel.CurrentLaa, laa))
+		}
 
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 			TenantID:               u.TenantID,
@@ -466,6 +485,36 @@ func (s *BarrelService) DumpBarrel(
 		})
 		if e != nil {
 			return e
+		}
+
+		// A dump empties the cask, so whatever the gauge didn't account for
+		// stayed in the wood. That is a real loss and a reportable B266
+		// line — zeroing the balance without recording it just deletes
+		// alcohol from the ledger and understates losses for the period.
+		residualLAA := barrel.CurrentLaa - laa
+		residualVol := barrel.CurrentVolumeL - volume
+		if residualLAA > 1e-9 {
+			if residualVol < 0 {
+				residualVol = 0
+			}
+			residualABV := 0.0
+			if residualVol > 0 {
+				residualABV = residualLAA / residualVol * 100
+			}
+			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+				TenantID:          u.TenantID,
+				SourceContainerID: uuid.NullUUID{UUID: barrelID, Valid: true},
+				VolumeL:           residualVol,
+				AbvPct:            residualABV,
+				Laa:               residualLAA,
+				Reason:            sqlcgen.BulkMovementReasonLossEvaporation,
+				ReferenceType:     "barrel_dump_residual",
+				ReferenceID:       uuid.NullUUID{UUID: barrelID, Valid: true},
+				Notes:             "retained by the cask at dump",
+				OccurredAt:        eventTime,
+			}); e != nil {
+				return e
+			}
 		}
 
 		// Empty the barrel.
@@ -575,8 +624,15 @@ func (s *BarrelService) RegaugeBarrel(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid barrel_id"))
 	}
-	if in.GetNewVolumeL() < 0 || in.GetNewAbvPct() < 0 || in.GetNewAbvPct() > 100 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid new_volume_l / new_abv_pct"))
+	// Name the field and the bound. "invalid new_volume_l / new_abv_pct"
+	// tells someone standing in a warehouse with a phone nothing about
+	// which of the two numbers to look at.
+	if in.GetNewVolumeL() < 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("new_volume_l must be >= 0, got %g", in.GetNewVolumeL()))
+	}
+	if err := validateAbvPct("new_abv_pct", in.GetNewAbvPct()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
 	// Resolve the reading to 20 °C before anything is written. A warehouse
@@ -605,10 +661,14 @@ func (s *BarrelService) RegaugeBarrel(
 		lostLAA         float64
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		barrel, e := q.GetBulkContainer(ctx, barrelID)
+		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
+			return e
+		}
+		lockedRegauge, e := lockContainers(ctx, q, barrelID)
 		if e != nil {
 			return e
 		}
+		barrel := lockedRegauge[barrelID]
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
@@ -767,7 +827,7 @@ func (s *BarrelService) VoidBarrelEvent(
 			}
 			// Destination loses (we're undoing a deposit there)…
 			if mv.DestinationContainerID.Valid {
-				dst, ge := q.GetBulkContainer(ctx, mv.DestinationContainerID.UUID)
+				dst, ge := q.GetBulkContainerForUpdate(ctx, mv.DestinationContainerID.UUID)
 				if ge != nil {
 					return ge
 				}
@@ -792,7 +852,7 @@ func (s *BarrelService) VoidBarrelEvent(
 			}
 			// …and source regains (we're undoing a withdrawal there).
 			if mv.SourceContainerID.Valid {
-				src, ge := q.GetBulkContainer(ctx, mv.SourceContainerID.UUID)
+				src, ge := q.GetBulkContainerForUpdate(ctx, mv.SourceContainerID.UUID)
 				if ge != nil {
 					return ge
 				}
