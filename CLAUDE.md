@@ -116,10 +116,13 @@ themselves — ping them with the new tag and stop. Site-specific values
   without knowing its temperature. Gauging paths funnel through
   `rpc.resolveStrength`, which records whether a figure was determined
   from a hydrometer indication, corrected for volume only, or left
-  uncorrected. The embedded table is regenerated with
-  `go run gentable.go -src ALC_TAB.TXT -out alctab.bin` from the CRA ZIP;
-  the 5.2 MB source is deliberately not committed, and its SHA-256 is
-  pinned in the package test.
+  uncorrected. **The tables are operator-supplied, never shipped** —
+  Crown material, non-commercial reproduction only. The server reads
+  whatever `STILLHOUSE_ALCOHOLOMETRIC_TABLES` points at (CRA ZIP, the
+  ALC_TAB.TXT inside it, or a directory holding either) and degrades
+  gracefully when it's absent: only the correction paths refuse, with
+  `failed_precondition`. Tests need `ALC_TAB=/path/to/lc_tb.zip` and skip
+  without it; the expected SHA-256 is pinned in the package test.
 - **Cite the curriculum, or say you can't.** Domain constants in
   `internal/mashing` carry the CIBD passage they came from on the
   constant itself. Where the curriculum has no figure (oat

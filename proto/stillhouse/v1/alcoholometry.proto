@@ -72,6 +72,12 @@ message ResolveStrengthResponse {
 
 // TablesInfoRequest reports which published table this install resolves
 // against, so an auditor can confirm the basis of a filing.
+//
+// The tables are not shipped with Stillhouse — they are Crown material
+// whose terms don't permit commercial redistribution — so the operator
+// downloads them from CRA and points the server at the file. Until they
+// do, loaded is false and every other field except name and source_url is
+// empty; the UI uses that to explain the one-time setup.
 message TablesInfoRequest {}
 message TablesInfoResponse {
   string name = 1;              // "Canadian Alcoholometric Tables 1980"
@@ -80,6 +86,9 @@ message TablesInfoResponse {
   double temperature_min_c = 4;
   double temperature_max_c = 5;
   double reference_temperature_c = 6;  // 20
+  bool   loaded = 7;
+  string file_name = 8;         // the file the server read, e.g. "lc_tb.zip!ALC_TAB.TXT"
+  int64  row_count = 9;         // published rows in memory
 }
 
 // PlanReduction works out how to proof spirit down to a target strength.

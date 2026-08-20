@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { AlcoholometricTablesPanel } from "@/components/AlcoholometricTablesPanel";
 import { Shell } from "@/components/Shell";
 import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
 import { UpdateTenantRequestSchema } from "@/gen/stillhouse/v1/tenant_pb";
@@ -126,6 +127,8 @@ export function SettingsPage() {
       {isOwner && <InvitesPanel />}
 
       <APITokensPanel />
+
+      <AlcoholometricTablesPanel />
 
       {isOwner && (
         <section className="mt-10">

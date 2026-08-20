@@ -12,6 +12,8 @@ Single-tenant, single-host. Multi-host is a future-day problem.
 - A host with a real disk for the Postgres volume.
 - A reverse proxy for TLS, unless you're happy on plain HTTP inside a
   trusted network.
+- The CRA's alcoholometric tables (step 3 below). Optional, but without
+  them Stillhouse can't correct readings to 20 °C.
 
 ## 1. Build and push an image
 
@@ -51,7 +53,37 @@ want `openssl rand -base64 32` each, and they must differ:
   server connects as, so the row-level security policies actually
   enforce. Must not contain `$$`.
 
-## 3. Networking
+## 3. Install the alcoholometric tables
+
+Stillhouse doesn't ship the Canadian Alcoholometric Tables 1980. They're
+Crown material: reproducible for non-commercial purposes, but not
+redistributable with commercial software. Rather than guess at which side
+of that line your deployment falls on, every install downloads its own
+copy — which is also the copy an auditor can checksum against CRA's.
+
+Download the ZIP from the bottom of [the CRA
+page](https://www.canada.ca/en/revenue-agency/services/tax/technical-information/excise-duty/tables-alcoholometry/canadian-alcoholometric-tables-1980.html)
+and drop it in, unmodified:
+
+```sh
+mkdir -p /srv/stillhouse/alcoholometric-tables
+cp ~/Downloads/lc_tb.zip /srv/stillhouse/alcoholometric-tables/
+```
+
+The compose file mounts that directory read-only at
+`/data/alcoholometric-tables`. The ZIP as downloaded works; so does the
+`ALC_TAB.TXT` extracted from it. On boot you'll see:
+
+```
+"msg":"alcoholometric tables loaded","file":"lc_tb.zip!ALC_TAB.TXT","rows":117137
+```
+
+Skipping this is supported. The app starts, everything else works, and
+Settings → Alcoholometric tables shows how to finish the job later.
+Readings taken away from 20 °C will be recorded exactly as read until you
+do, so it's worth doing.
+
+## 4. Networking
 
 The compose file gives the app its own LAN IP via macvlan, so it appears
 as a real host and a reverse proxy can point straight at
@@ -65,7 +97,7 @@ app's `networks:` block from `compose.yaml` and add:
     ports: ["8080:8080"]
 ```
 
-## 4. Start it
+## 5. Start it
 
 ```sh
 docker compose up -d
@@ -76,7 +108,7 @@ On boot the app applies migrations with the admin DSN, rotates the app
 role's password to `PG_APP_PASSWORD`, then switches to the app DSN and
 serves. Watch the log for the migration lines.
 
-## 5. Seed the first tenant
+## 6. Seed the first tenant
 
 ```sh
 docker exec stillhouse-app /app/stillhouse-seed

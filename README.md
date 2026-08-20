@@ -52,6 +52,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 127 | Fermentation curve — gravity and temperature over time as two plots sharing an x-axis (never a dual axis), plus phase inference and findings for a stuck ferment, thermal stress, and the pH crash that signals contamination |
 | 128 | Vatting planner — what actually comes out when parcels are blended, since a blend is neither the sum of its volumes nor the weighted mean of its strengths, then optionally reduced to bottling strength. Web + MCP `plan_blend` |
 | 129 | Pricing by channel — wholesale, on-site retail and export priced separately, with every rate carrying its provenance. Ontario and PEI now REFUSE to price the board channel rather than guessing, because neither publishes a spirits mark-up |
+| 130 | Operator-supplied alcoholometric tables — the CRA tables are no longer shipped in the binary. Each install downloads its own copy (Crown material: non-commercial reproduction only), the server reads the ZIP as downloaded, and a missing copy degrades to uncorrected readings with a Settings panel explaining the one-time fix rather than taking anything down |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
@@ -77,9 +78,12 @@ month.* Achieved at Stage 7.
 - **Alcoholometry** — strength and volume are resolved to 20 °C against the
   CRA [Canadian Alcoholometric Tables 1980](https://www.canada.ca/en/revenue-agency/services/tax/technical-information/excise-duty/tables-alcoholometry/canadian-alcoholometric-tables-1980.html),
   computed from the OIML general formula (International Recommendation
-  No. 22, 1972). All 117,137 published rows ship embedded in the binary;
-  the package reproduces every one exactly and replays CRA's own worked
-  examples as tests.
+  No. 22, 1972). The tables are Crown material and are **not** shipped —
+  you download them from CRA once and point the server at the file (see
+  [deploy/README.md](deploy/README.md)); until you do, readings record
+  uncorrected and nothing else changes. With a copy present the package
+  replays all 117,137 published rows back through the lookup, and CRA's
+  own worked examples, as tests.
 - **License** — AGPL-3.0. Free to self-host, forever. See
   [LICENSE](LICENSE), [NOTICE](NOTICE) for third-party material, and
   [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
@@ -215,7 +219,8 @@ The AGPL's network clause means that if you modify Stillhouse and offer
 it to others over a network, you have to offer them the source of your
 modified version too.
 
-[NOTICE](NOTICE) records third-party material, including the CRA's
-Canadian Alcoholometric Tables 1980, which are reproduced here under the
-Government of Canada's non-commercial reproduction terms. Read that file
-before redistributing Stillhouse commercially.
+[NOTICE](NOTICE) records third-party material. Note that the CRA's
+Canadian Alcoholometric Tables are deliberately *not* included — each
+operator supplies their own copy — which keeps commercial redistribution
+of Stillhouse itself clear of the Government of Canada's non-commercial
+reproduction terms.

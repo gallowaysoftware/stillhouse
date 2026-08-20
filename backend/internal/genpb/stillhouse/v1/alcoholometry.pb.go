@@ -355,6 +355,12 @@ func (x *ResolveStrengthResponse) GetDensityMaxKgM3() float64 {
 
 // TablesInfoRequest reports which published table this install resolves
 // against, so an auditor can confirm the basis of a filing.
+//
+// The tables are not shipped with Stillhouse — they are Crown material
+// whose terms don't permit commercial redistribution — so the operator
+// downloads them from CRA and points the server at the file. Until they
+// do, loaded is false and every other field except name and source_url is
+// empty; the UI uses that to explain the one-time setup.
 type TablesInfoRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -399,6 +405,9 @@ type TablesInfoResponse struct {
 	TemperatureMinC       float64                `protobuf:"fixed64,4,opt,name=temperature_min_c,json=temperatureMinC,proto3" json:"temperature_min_c,omitempty"`
 	TemperatureMaxC       float64                `protobuf:"fixed64,5,opt,name=temperature_max_c,json=temperatureMaxC,proto3" json:"temperature_max_c,omitempty"`
 	ReferenceTemperatureC float64                `protobuf:"fixed64,6,opt,name=reference_temperature_c,json=referenceTemperatureC,proto3" json:"reference_temperature_c,omitempty"` // 20
+	Loaded                bool                   `protobuf:"varint,7,opt,name=loaded,proto3" json:"loaded,omitempty"`
+	FileName              string                 `protobuf:"bytes,8,opt,name=file_name,json=fileName,proto3" json:"file_name,omitempty"`  // the file the server read, e.g. "lc_tb.zip!ALC_TAB.TXT"
+	RowCount              int64                  `protobuf:"varint,9,opt,name=row_count,json=rowCount,proto3" json:"row_count,omitempty"` // published rows in memory
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -471,6 +480,27 @@ func (x *TablesInfoResponse) GetTemperatureMaxC() float64 {
 func (x *TablesInfoResponse) GetReferenceTemperatureC() float64 {
 	if x != nil {
 		return x.ReferenceTemperatureC
+	}
+	return 0
+}
+
+func (x *TablesInfoResponse) GetLoaded() bool {
+	if x != nil {
+		return x.Loaded
+	}
+	return false
+}
+
+func (x *TablesInfoResponse) GetFileName() string {
+	if x != nil {
+		return x.FileName
+	}
+	return ""
+}
+
+func (x *TablesInfoResponse) GetRowCount() int64 {
+	if x != nil {
+		return x.RowCount
 	}
 	return 0
 }
@@ -936,7 +966,7 @@ const file_stillhouse_v1_alcoholometry_proto_rawDesc = "" +
 	"\x0fvolume_resolved\x18\x05 \x01(\bR\x0evolumeResolved\x12)\n" +
 	"\x11density_min_kg_m3\x18\x06 \x01(\x01R\x0edensityMinKgM3\x12)\n" +
 	"\x11density_max_kg_m3\x18\a \x01(\x01R\x0edensityMaxKgM3\"\x13\n" +
-	"\x11TablesInfoRequest\"\xfc\x01\n" +
+	"\x11TablesInfoRequest\"\xce\x02\n" +
 	"\x12TablesInfoResponse\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
@@ -944,7 +974,10 @@ const file_stillhouse_v1_alcoholometry_proto_rawDesc = "" +
 	"\rsource_sha256\x18\x03 \x01(\tR\fsourceSha256\x12*\n" +
 	"\x11temperature_min_c\x18\x04 \x01(\x01R\x0ftemperatureMinC\x12*\n" +
 	"\x11temperature_max_c\x18\x05 \x01(\x01R\x0ftemperatureMaxC\x126\n" +
-	"\x17reference_temperature_c\x18\x06 \x01(\x01R\x15referenceTemperatureC\"\xd9\x01\n" +
+	"\x17reference_temperature_c\x18\x06 \x01(\x01R\x15referenceTemperatureC\x12\x16\n" +
+	"\x06loaded\x18\a \x01(\bR\x06loaded\x12\x1b\n" +
+	"\tfile_name\x18\b \x01(\tR\bfileName\x12\x1b\n" +
+	"\trow_count\x18\t \x01(\x03R\browCount\"\xd9\x01\n" +
 	"\x14PlanReductionRequest\x12\"\n" +
 	"\rfrom_volume_l\x18\x01 \x01(\x01R\vfromVolumeL\x12*\n" +
 	"\x11from_strength_pct\x18\x02 \x01(\x01R\x0ffromStrengthPct\x12&\n" +

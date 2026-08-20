@@ -22,6 +22,7 @@ import (
 // performs on day one, so it is worth pinning to the published example
 // rather than to our own arithmetic.
 func TestAdoptByWeightMatchesCRAProcedure(t *testing.T) {
+	requireTables(t)
 	got, err := resolveAdoptedStock(&stillhousev1.AdoptOpeningInventoryRequest{
 		MassKg:          20135,
 		MassKgSet:       true,
@@ -52,6 +53,7 @@ func TestAdoptByWeightMatchesCRAProcedure(t *testing.T) {
 // correction of its own, but the strength still comes off the tables at
 // the temperature the hydrometer was read at.
 func TestAdoptByWeightAtOtherTemperatures(t *testing.T) {
+	requireTables(t)
 	got, err := resolveAdoptedStock(&stillhousev1.AdoptOpeningInventoryRequest{
 		MassKg:          23876,
 		MassKgSet:       true,
@@ -82,6 +84,7 @@ func TestAdoptByWeightAtOtherTemperatures(t *testing.T) {
 }
 
 func TestAdoptByDippedVolume(t *testing.T) {
+	requireTables(t)
 	got, err := resolveAdoptedStock(&stillhousev1.AdoptOpeningInventoryRequest{
 		VolumeL:         21643,
 		VolumeLSet:      true,
@@ -105,6 +108,7 @@ func TestAdoptByDippedVolume(t *testing.T) {
 // TestAdoptWithoutAScaleStillWorks — a distiller with a dipstick and an
 // alcoholometer that reads corrected strength can still adopt.
 func TestAdoptWithoutAScaleStillWorks(t *testing.T) {
+	requireTables(t)
 	got, err := resolveAdoptedStock(&stillhousev1.AdoptOpeningInventoryRequest{
 		VolumeL:    200,
 		VolumeLSet: true,
@@ -123,6 +127,7 @@ func TestAdoptWithoutAScaleStillWorks(t *testing.T) {
 }
 
 func TestAdoptRefusesIncompleteMeasurements(t *testing.T) {
+	requireTables(t)
 	for name, req := range map[string]*stillhousev1.AdoptOpeningInventoryRequest{
 		"nothing at all": {},
 		"mass with no hydrometer": {
@@ -149,6 +154,7 @@ func TestAdoptRefusesIncompleteMeasurements(t *testing.T) {
 }
 
 func TestAdoptMissingTemperatureIsTyped(t *testing.T) {
+	requireTables(t)
 	_, err := resolveAdoptedStock(&stillhousev1.AdoptOpeningInventoryRequest{
 		MassKg: 100, MassKgSet: true, DensityKgM3: 920, DensityKgM3Set: true,
 	})

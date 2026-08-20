@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"errors"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"os"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/alcoholometry"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/config"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/dbmigrate"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/server"
@@ -46,6 +48,8 @@ func main() {
 			}
 		}
 	}
+
+	loadAlcoholometricTables(cfg.AlcoholometricTablesPath, logger)
 
 	srv, err := server.New(cfg, logger)
 	if err != nil {
@@ -115,4 +119,33 @@ func containsDollarQuote(s string) bool {
 		}
 	}
 	return false
+}
+
+// loadAlcoholometricTables reads the operator's copy of the Canadian
+// Alcoholometric Tables, if they've supplied one.
+//
+// A missing or unreadable file is deliberately not fatal. Everything
+// except temperature correction works without it, and a distillery that
+// has just pulled a new image should not find its whole system down
+// because of a mount typo — it should find one clear line in the log and
+// a banner in Settings.
+func loadAlcoholometricTables(path string, logger *slog.Logger) {
+	if path == "" {
+		logger.Warn("alcoholometric tables not configured; temperature correction is unavailable",
+			"how", alcoholometry.ErrNotLoaded.Error())
+		return
+	}
+	if err := alcoholometry.Load(path); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			logger.Warn("alcoholometric tables not installed; temperature correction is unavailable",
+				"looked_in", path,
+				"how", "download the ZIP from CRA and put it there — see the deploy guide")
+			return
+		}
+		logger.Error("alcoholometric tables could not be read; temperature correction is unavailable",
+			"path", path, "err", err)
+		return
+	}
+	logger.Info("alcoholometric tables loaded",
+		"file", alcoholometry.SourceName(), "rows", alcoholometry.RowCount())
 }

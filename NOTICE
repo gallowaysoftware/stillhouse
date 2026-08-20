@@ -11,32 +11,39 @@ Third-party material
 Canadian Alcoholometric Tables 1980
 Author: Canada Revenue Agency, Government of Canada
 
-  backend/internal/alcoholometry/alctab.bin is a compact re-encoding of
-  ALC_TAB.TXT from the "Canadian Alcoholometric Tables 1980", published by
-  the Canada Revenue Agency. It is a copy of the version available at:
+  Stillhouse does NOT redistribute these tables. No copy is in this
+  repository, in the container image, or in any release artifact.
+
+  Temperature correction — resolving a hydrometer indication to a strength
+  at 20 °C — is computed from the "Canadian Alcoholometric Tables 1980",
+  published by the Canada Revenue Agency at:
 
     https://www.canada.ca/en/revenue-agency/services/tax/technical-information/
     excise-duty/tables-alcoholometry/canadian-alcoholometric-tables-1980.html
+
+  Each operator downloads that file themselves and points the server at it
+  (STILLHOUSE_ALCOHOLOMETRIC_TABLES; see deploy/README.md). The reader is
+  backend/internal/alcoholometry/load.go. Until an operator supplies a
+  copy, correction is unavailable and the rest of the application runs
+  normally.
 
   The tables themselves are computed from the OIML general formula
   (International Organization of Legal Metrology, International
   Recommendation No. 22, Fourth International Conference of Legal
   Metrology, October 1972, First Edition 1973).
 
-  Reproduced here under the non-commercial reproduction terms at
-  https://www.canada.ca/en/transparency/terms.html, which permit
-  reproduction in whole or in part for non-commercial purposes without
-  further permission, subject to due diligence as to accuracy and to
-  attribution of title, author and source — all given above. Every one of
-  the 117,137 published rows is reproduced exactly; see
-  backend/internal/alcoholometry/alcoholometry_test.go, which replays the
-  published file and pins its SHA-256.
+  Why it works this way: the canada.ca terms at
+  https://www.canada.ca/en/transparency/terms.html permit reproduction for
+  NON-COMMERCIAL purposes without further permission, but state that
+  materials may NOT be reproduced for the purposes of COMMERCIAL
+  REDISTRIBUTION without prior written permission from the copyright
+  administrator. Shipping the file would therefore put a paid or hosted
+  Stillhouse offside. Having the operator supply their own copy keeps
+  every distribution of this software unambiguously in the clear, and
+  leaves the operator squarely inside the non-commercial permission for
+  their own use.
 
-  IMPORTANT — those same terms state that materials may NOT be reproduced
-  for the purposes of COMMERCIAL REDISTRIBUTION without prior written
-  permission from the copyright administrator. Anyone intending to
-  distribute Stillhouse commercially, including as a paid hosted service
-  that ships this file, should either obtain that permission from CRA or
-  build without the embedded table and have each operator supply their own
-  copy at deploy time. The generator (gen_table.go) is written so the blob
-  can be rebuilt from a locally supplied ALC_TAB.TXT.
+  Fidelity is verified rather than assumed: with ALC_TAB set to a copy of
+  the published file, backend/internal/alcoholometry/alcoholometry_test.go
+  replays all 117,137 published rows back through the lookup and pins the
+  file's SHA-256. That test runs in CI against a freshly downloaded copy.

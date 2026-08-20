@@ -34,6 +34,17 @@
 // sample is less dense, so an uncorrected hydrometer overstates strength,
 // while the expanded volume overstates litres.
 //
+// # The tables are supplied by the operator
+//
+// They are NOT shipped with Stillhouse. They are Crown material, and the
+// Government of Canada's terms allow non-commercial reproduction but not
+// commercial redistribution without written permission — which would make
+// a paid hosted Stillhouse a licensing problem. The operator downloads the
+// ZIP from CRA once and points STILLHOUSE_ALCOHOLOMETRIC_TABLES at it; see
+// load.go. Every lookup returns ErrNotLoaded until then, and the
+// uncorrected path keeps working, so a missing file degrades one feature
+// rather than stopping the server.
+//
 // # Range
 //
 // Temperatures −20.0 °C to +40.0 °C in 0.5 °C steps; densities 780.0 to
@@ -45,17 +56,9 @@
 package alcoholometry
 
 import (
-	_ "embed"
-	"encoding/binary"
 	"fmt"
 	"math"
-	"sync"
 )
-
-//go:embed alctab.bin
-var blob []byte
-
-const magic = "SHALCTB1"
 
 // Reading is one resolved row of the tables. Field names follow CRA's
 // column notation; see the package doc.
@@ -74,75 +77,36 @@ type Reading struct {
 
 type table struct {
 	srcSHA    [32]byte
+	srcName   string
 	tempMin   int // tenths of °C
 	tempStep  int // tenths of °C
 	densStep  int // tenths of kg/m³
 	densStart []int
 	rowCount  []int
 	rowOffset []int
-	rows      []byte // 6 bytes per row: A×1e4, B×10, C×1e4 (big-endian uint16)
+	// rows holds A, B, C consecutively for each row, in the order the
+	// per-temperature blocks appear.
+	rows []float64
 }
 
-var (
-	once    sync.Once
-	tbl     *table
-	loadErr error
-)
-
-func load() (*table, error) {
-	once.Do(func() {
-		tbl, loadErr = parse(blob)
-	})
-	return tbl, loadErr
-}
-
-const headerLen = 8 + 32 + 2 + 2 + 2 + 2
-
-func parse(b []byte) (*table, error) {
-	if len(b) < headerLen || string(b[:8]) != magic {
-		return nil, fmt.Errorf("alcoholometry: embedded table is missing or corrupt")
-	}
-	t := &table{}
-	copy(t.srcSHA[:], b[8:40])
-	nTemps := int(binary.BigEndian.Uint16(b[40:42]))
-	t.tempMin = int(int16(binary.BigEndian.Uint16(b[42:44])))
-	t.tempStep = int(binary.BigEndian.Uint16(b[44:46]))
-	t.densStep = int(binary.BigEndian.Uint16(b[46:48]))
-	if nTemps == 0 || t.tempStep == 0 || t.densStep == 0 {
-		return nil, fmt.Errorf("alcoholometry: embedded table has a degenerate grid")
-	}
-
-	idx := headerLen
-	if len(b) < idx+nTemps*4 {
-		return nil, fmt.Errorf("alcoholometry: embedded table index is truncated")
-	}
-	t.densStart = make([]int, nTemps)
-	t.rowCount = make([]int, nTemps)
-	t.rowOffset = make([]int, nTemps)
-	off := 0
-	for i := 0; i < nTemps; i++ {
-		t.densStart[i] = int(binary.BigEndian.Uint16(b[idx : idx+2]))
-		t.rowCount[i] = int(binary.BigEndian.Uint16(b[idx+2 : idx+4]))
-		t.rowOffset[i] = off
-		off += t.rowCount[i]
-		idx += 4
-	}
-	t.rows = b[idx:]
-	if len(t.rows) != off*6 {
-		return nil, fmt.Errorf("alcoholometry: embedded table body is %d bytes, want %d", len(t.rows), off*6)
-	}
-	return t, nil
-}
-
-// SourceSHA256 returns the SHA-256 of the ALC_TAB.TXT the embedded blob was
-// generated from, so a deployment can prove which published table it files
-// against.
+// SourceSHA256 returns the SHA-256 of the file that was loaded, so a
+// deployment can prove which published table it files against.
 func SourceSHA256() ([32]byte, error) {
-	t, err := load()
+	t, err := get()
 	if err != nil {
 		return [32]byte{}, err
 	}
 	return t.srcSHA, nil
+}
+
+// SourceName is the filename the tables were read from.
+func SourceName() string {
+	mu.RLock()
+	defer mu.RUnlock()
+	if loaded == nil {
+		return ""
+	}
+	return loaded.srcName
 }
 
 // RangeError reports a reading that falls outside the published tables.
@@ -160,7 +124,7 @@ func (e *RangeError) Error() string {
 
 // TemperatureRange returns the temperature span the tables cover, in °C.
 func TemperatureRange() (lo, hi float64, err error) {
-	t, err := load()
+	t, err := get()
 	if err != nil {
 		return 0, 0, err
 	}
@@ -175,11 +139,11 @@ func (t *table) tempSpan() (lo, hi float64) {
 
 // rowAt returns the reading at grid indices (ti, ri).
 func (t *table) rowAt(ti, ri int) Reading {
-	o := (t.rowOffset[ti] + ri) * 6
+	o := (t.rowOffset[ti] + ri) * 3
 	return Reading{
-		LitresPerKg:  float64(binary.BigEndian.Uint16(t.rows[o:o+2])) / 10000,
-		StrengthPct:  float64(binary.BigEndian.Uint16(t.rows[o+2:o+4])) / 10,
-		VolumeFactor: float64(binary.BigEndian.Uint16(t.rows[o+4:o+6])) / 10000,
+		LitresPerKg:  t.rows[o],
+		StrengthPct:  t.rows[o+1],
+		VolumeFactor: t.rows[o+2],
 	}
 }
 
@@ -218,7 +182,7 @@ func (t *table) atTemp(ti int, densityTenths float64) (Reading, error) {
 // approved instrument for fiscal determination is a hydrometer graduated
 // in density at a 20 °C reference.
 func Lookup(tempC, densityKgM3 float64) (Reading, error) {
-	t, err := load()
+	t, err := get()
 	if err != nil {
 		return Reading{}, err
 	}
@@ -252,7 +216,7 @@ func Lookup(tempC, densityKgM3 float64) (Reading, error) {
 // to the overlap of the bracketing temperature rows so interpolation never
 // runs off the end of either.
 func DensitySpan(tempC float64) (lo, hi float64, err error) {
-	t, err := load()
+	t, err := get()
 	if err != nil {
 		return 0, 0, err
 	}
@@ -291,7 +255,7 @@ func (t *table) densSpan(tempC float64) (loKgM3, hiKgM3 float64) {
 // instrument has already given you a 20 °C strength but the volume still
 // needs correcting off the measurement temperature.
 func LookupByStrength(tempC, strengthPct20C float64) (Reading, error) {
-	t, err := load()
+	t, err := get()
 	if err != nil {
 		return Reading{}, err
 	}

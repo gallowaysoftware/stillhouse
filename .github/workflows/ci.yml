@@ -108,8 +108,26 @@ jobs:
           cache-dependency-path: backend/go.sum
       - name: go vet
         run: cd backend && go vet ./...
+      # The alcoholometric tables are Crown material and aren't in the
+      # repo (see NOTICE) — CI downloads a copy so the conformance tests
+      # (all 117,137 published rows, plus CRA's worked examples) actually
+      # run. A download failure is not a build failure: the tests skip
+      # themselves, and a canada.ca hiccup shouldn't block a merge. The
+      # checksum pinned in the package test is what proves we got the
+      # real file, so a corrupt download still fails loudly.
+      - name: Fetch the CRA alcoholometric tables
+        continue-on-error: true
+        run: |
+          curl -sSL --retry 3 --max-time 120 \
+            -o "$RUNNER_TEMP/lc_tb.zip" \
+            https://www.canada.ca/content/dam/cra-arc/migration/cra-arc/tx/tchncl/lchlmtrc/lc_tb.zip
       - name: go test (unit)
-        run: cd backend && go test ./...
+        env:
+          ALC_TAB: ${{ runner.temp }}/lc_tb.zip
+        run: |
+          cd backend
+          test -f "$ALC_TAB" || { echo "::warning::alcoholometric tables unavailable; conformance tests will skip"; unset ALC_TAB; }
+          go test ./...
       - name: go build
         run: cd backend && go build ./...
 
