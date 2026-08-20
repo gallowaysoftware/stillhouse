@@ -113,10 +113,6 @@ func readSource(path string) ([]byte, string, error) {
 			return nil, "", err
 		}
 		path = found
-		info, err = os.Stat(path)
-		if err != nil {
-			return nil, "", fmt.Errorf("alcoholometry: %w", err)
-		}
 	}
 	if strings.EqualFold(filepath.Ext(path), ".zip") {
 		return readFromZip(path)

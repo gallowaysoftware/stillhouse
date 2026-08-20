@@ -1,7 +1,6 @@
 package alcoholometry
 
 import (
-	"fmt"
 	"os"
 	"testing"
 )
@@ -13,18 +12,24 @@ import (
 // the file still gets a green, if narrower, `go test ./...`.
 const alcTabEnv = "ALC_TAB"
 
-var loadErr = fmt.Errorf("%s is not set", alcTabEnv)
+// skipReason is empty once the tables are in memory, and otherwise says
+// why they aren't.
+var skipReason = alcTabEnv + " is not set"
 
 func TestMain(m *testing.M) {
 	if path := os.Getenv(alcTabEnv); path != "" {
-		loadErr = Load(path)
+		if err := Load(path); err != nil {
+			skipReason = err.Error()
+		} else {
+			skipReason = ""
+		}
 	}
 	os.Exit(m.Run())
 }
 
 func requireTables(t *testing.T) {
 	t.Helper()
-	if loadErr != nil {
-		t.Skipf("alcoholometric tables unavailable: %v", loadErr)
+	if skipReason != "" {
+		t.Skipf("alcoholometric tables unavailable: %s", skipReason)
 	}
 }

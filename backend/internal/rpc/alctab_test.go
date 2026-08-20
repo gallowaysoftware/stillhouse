@@ -1,7 +1,6 @@
 package rpc
 
 import (
-	"errors"
 	"os"
 	"testing"
 
@@ -14,18 +13,24 @@ import (
 // ALC_TAB.TXT inside it. CI does exactly that. Without it those tests
 // skip, so a contributor who hasn't downloaded anything still gets a
 // green `go test ./...`.
-var alcTabErr = errors.New("ALC_TAB is not set")
+// skipReason is empty once the tables are in memory, and otherwise says
+// why they aren't.
+var skipReason = "ALC_TAB is not set"
 
 func TestMain(m *testing.M) {
 	if path := os.Getenv("ALC_TAB"); path != "" {
-		alcTabErr = alcoholometry.Load(path)
+		if err := alcoholometry.Load(path); err != nil {
+			skipReason = err.Error()
+		} else {
+			skipReason = ""
+		}
 	}
 	os.Exit(m.Run())
 }
 
 func requireTables(t *testing.T) {
 	t.Helper()
-	if alcTabErr != nil {
-		t.Skipf("alcoholometric tables unavailable: %v", alcTabErr)
+	if skipReason != "" {
+		t.Skipf("alcoholometric tables unavailable: %s", skipReason)
 	}
 }
