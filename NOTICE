@@ -1,0 +1,42 @@
+Stillhouse
+Copyright (c) 2026 Galloway Software
+
+This product includes software developed by Galloway Software, licensed
+under the GNU Affero General Public License v3.0. See LICENSE.
+
+--------------------------------------------------------------------------
+Third-party material
+--------------------------------------------------------------------------
+
+Canadian Alcoholometric Tables 1980
+Author: Canada Revenue Agency, Government of Canada
+
+  backend/internal/alcoholometry/alctab.bin is a compact re-encoding of
+  ALC_TAB.TXT from the "Canadian Alcoholometric Tables 1980", published by
+  the Canada Revenue Agency. It is a copy of the version available at:
+
+    https://www.canada.ca/en/revenue-agency/services/tax/technical-information/
+    excise-duty/tables-alcoholometry/canadian-alcoholometric-tables-1980.html
+
+  The tables themselves are computed from the OIML general formula
+  (International Organization of Legal Metrology, International
+  Recommendation No. 22, Fourth International Conference of Legal
+  Metrology, October 1972, First Edition 1973).
+
+  Reproduced here under the non-commercial reproduction terms at
+  https://www.canada.ca/en/transparency/terms.html, which permit
+  reproduction in whole or in part for non-commercial purposes without
+  further permission, subject to due diligence as to accuracy and to
+  attribution of title, author and source — all given above. Every one of
+  the 117,137 published rows is reproduced exactly; see
+  backend/internal/alcoholometry/alcoholometry_test.go, which replays the
+  published file and pins its SHA-256.
+
+  IMPORTANT — those same terms state that materials may NOT be reproduced
+  for the purposes of COMMERCIAL REDISTRIBUTION without prior written
+  permission from the copyright administrator. Anyone intending to
+  distribute Stillhouse commercially, including as a paid hosted service
+  that ships this file, should either obtain that permission from CRA or
+  build without the embedded table and have each operator supply their own
+  copy at deploy time. The generator (gen_table.go) is written so the blob
+  can be rebuilt from a locally supplied ALC_TAB.TXT.

@@ -61,22 +61,27 @@ podman compose -f deploy/compose.yaml up -d postgres
 
 ## Container build + ship
 
-Image registry is `registry.home.thegalloways.ca/stillhouse`. Tag with
-the short git SHA + `:latest`. Push both. **Kyle pulls + restarts on
-unraid himself** — don't try to automate that, ping him with the new
-tag and stop.
+Set your registry in a gitignored `local.mk` (`REGISTRY := ...`) rather
+than editing the Makefile, then:
+
+```sh
+make image-push        # builds, tags short-SHA + :latest, pushes both
+```
+
+Or by hand:
 
 ```sh
 SHA=$(git rev-parse --short HEAD)
 podman build -f deploy/Dockerfile \
-    -t registry.home.thegalloways.ca/stillhouse:$SHA \
-    -t registry.home.thegalloways.ca/stillhouse:latest .
-podman push registry.home.thegalloways.ca/stillhouse:$SHA
-podman push registry.home.thegalloways.ca/stillhouse:latest
+    -t $REGISTRY/stillhouse:$SHA \
+    -t $REGISTRY/stillhouse:latest .
+podman push $REGISTRY/stillhouse:$SHA
+podman push $REGISTRY/stillhouse:latest
 ```
 
-Production URL: `https://stillhouse.home.thegalloways.ca` (home
-network, private).
+**Deployment is not automated.** Whoever runs the host pulls and restarts
+themselves — ping them with the new tag and stop. Site-specific values
+(registry hostname, LAN IP, data dir) are deliberately not in this repo.
 
 ## Conventions
 

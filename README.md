@@ -79,8 +79,9 @@ month.* Achieved at Stage 7.
   No. 22, 1972). All 117,137 published rows ship embedded in the binary;
   the package reproduces every one exactly and replays CRA's own worked
   examples as tests.
-- **License** — AGPL-3.0. Free to self-host. Managed hosting will be a paid
-  offering once the project is ready.
+- **License** — AGPL-3.0. Free to self-host, forever. See
+  [LICENSE](LICENSE), [NOTICE](NOTICE) for third-party material, and
+  [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 
 ## Repo layout
 
@@ -189,6 +190,26 @@ Back-office work (distillation runs with cuts, bottling, removals,
 B266 generation) stays in the web UI — those flows have multi-row
 inputs that don't translate cleanly to a chat interface.
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). The short version: cite your
+sources for anything that produces a number a distiller relies on, don't
+invent domain constants, and keep alcohol conserved.
+
+Security issues: [SECURITY.md](SECURITY.md) — please don't open a public
+issue.
+
 ## License
 
-Stillhouse is licensed under the [GNU Affero General Public License v3.0](LICENSE).
+Stillhouse is licensed under the
+[GNU Affero General Public License v3.0](LICENSE).
+
+You can run it, read it, modify it and self-host it for free, forever.
+The AGPL's network clause means that if you modify Stillhouse and offer
+it to others over a network, you have to offer them the source of your
+modified version too.
+
+[NOTICE](NOTICE) records third-party material, including the CRA's
+Canadian Alcoholometric Tables 1980, which are reproduced here under the
+Government of Canada's non-commercial reproduction terms. Read that file
+before redistributing Stillhouse commercially.

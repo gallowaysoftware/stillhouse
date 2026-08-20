@@ -3,16 +3,19 @@
 # Networking:
 #   - `stillhouse` bridge: internal, db + app talk over it. Postgres has no
 #     LAN exposure at all.
-#   - `macvlan` (br0 external): app gets its own LAN IP (default
-#     172.16.3.210) so it appears as a real host. NPM proxies
-#     stillhouse.thegalloways.ca → 172.16.3.210:8080 for TLS.
+#   - `macvlan` (external): the app gets its own LAN IP so it appears as a
+#     real host on the network. Put a reverse proxy in front of it for TLS.
+#
+# The macvlan is optional. If you'd rather publish a port the ordinary way,
+# delete the `macvlan` network and the app's `networks:` block, and add:
+#     ports: ["8080:8080"]
 #
 # Prereqs:
-#   - br0 is an existing macvlan network on Unraid (Settings → Docker →
-#     enable macvlan/ipvlan).
-#   - The image lives at ${STILLHOUSE_IMAGE} on the registry; default is
-#     registry.home.thegalloways.ca/stillhouse:latest, pushed via
-#     `make image-push` from the dev box.
+#   - COMPOSE_NETWORK_EXTERNAL names an existing external network (on
+#     Unraid this is typically `br0`; Settings → Docker → enable
+#     macvlan/ipvlan).
+#   - STILLHOUSE_IMAGE points at a registry you can pull from. Build and
+#     push one with `make image-push`.
 #
 # .env (sibling of this file in the stack folder) — see .env.example.
 
@@ -36,7 +39,7 @@ services:
       retries: 10
 
   app:
-    image: ${STILLHOUSE_IMAGE:-registry.home.thegalloways.ca/stillhouse:latest}
+    image: ${STILLHOUSE_IMAGE:?STILLHOUSE_IMAGE must be set in .env}
     container_name: stillhouse-app
     restart: unless-stopped
     pull_policy: always
@@ -55,14 +58,14 @@ services:
       STILLHOUSE_STATIC_DIR: /app/static
     networks:
       macvlan:
-        ipv4_address: ${WEB_IPV4:-172.16.3.210}
+        ipv4_address: ${WEB_IPV4:?WEB_IPV4 must be set in .env}
       stillhouse: {}
     labels:
-      net.unraid.docker.webui: "http://${WEB_IPV4:-172.16.3.210}:8080"
+      net.unraid.docker.webui: "http://${WEB_IPV4}:8080"
       net.unraid.docker.shell: "sh"
     # No app healthcheck — the distroless runtime has no wget/curl to probe
-    # /healthz from inside the container. NPM's upstream check is the
-    # operational signal.
+    # /healthz from inside the container. Use your reverse proxy's upstream
+    # check as the operational signal.
 
 networks:
   stillhouse:
@@ -70,4 +73,4 @@ networks:
     name: stillhouse
   macvlan:
     external: true
-    name: br0
+    name: ${COMPOSE_NETWORK_EXTERNAL:?COMPOSE_NETWORK_EXTERNAL must be set in .env}

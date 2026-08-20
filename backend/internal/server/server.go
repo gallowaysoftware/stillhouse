@@ -56,7 +56,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 
 	mailerImpl := mailer.FromEnv(logger)
 	// resetURLPrefix is what gets emailed to users; the token is appended
-	// to it. STILLHOUSE_BASE_URL=https://stillhouse.thegalloways.ca in
+	// to it. STILLHOUSE_BASE_URL=https://stillhouse.example.com in
 	// prod; falls back to localhost for dev so the console mailer still
 	// produces clickable links.
 	baseURL := cfg.BaseURL

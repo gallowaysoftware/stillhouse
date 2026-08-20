@@ -35,7 +35,7 @@ type AuthService struct {
 	limiter        *SlidingWindowLimiter
 	resetLimiter   *SlidingWindowLimiter
 	mailer         PasswordResetMailer
-	resetURLPrefix string // e.g. https://stillhouse.thegalloways.ca/reset-password?token=
+	resetURLPrefix string // e.g. https://stillhouse.example.com/reset-password?token=
 }
 
 func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Logger, mailer PasswordResetMailer, resetURLPrefix string) *AuthService {

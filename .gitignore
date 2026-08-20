@@ -46,3 +46,6 @@ coverage/
 
 # Claude Code project-local state (settings.local.json, scheduled_tasks.lock, ...)
 .claude/
+
+# Per-developer Makefile overrides (registry, DSNs)
+local.mk

@@ -2,6 +2,9 @@ SHELL := /usr/bin/env bash
 .ONESHELL:
 .DEFAULT_GOAL := help
 
+# Optional, gitignored, per-developer overrides — REGISTRY, DSNs, whatever.
+-include local.mk
+
 # ----- Config -----------------------------------------------------------------
 
 CONTAINER       ?= $(shell command -v podman 2>/dev/null || echo docker)
@@ -10,7 +13,9 @@ COMPOSE         ?= $(CONTAINER) compose -f deploy/compose.yaml
 # ----- Image build / push -----------------------------------------------------
 # Override REGISTRY / IMAGE_NAME to push elsewhere. Tag defaults to the short
 # git SHA so every push is content-addressable; :latest is updated alongside.
-REGISTRY        ?= registry.home.thegalloways.ca
+# Override in a gitignored local.mk (see the -include below) rather than
+# editing this file, so your registry doesn't end up in the public repo.
+REGISTRY        ?= registry.example.com
 IMAGE_NAME      ?= stillhouse
 IMAGE_TAG       ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
 IMAGE           := $(REGISTRY)/$(IMAGE_NAME)
