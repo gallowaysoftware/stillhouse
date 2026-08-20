@@ -16,6 +16,9 @@
 #     macvlan/ipvlan).
 #   - STILLHOUSE_IMAGE points at a registry you can pull from. Build and
 #     push one with `make image-push`.
+#   - The Canadian Alcoholometric Tables, downloaded from CRA into
+#     $STILLHOUSE_DATA_DIR/alcoholometric-tables/. Optional, but without
+#     them the app can't correct readings to 20 °C. See deploy/README.md.
 #
 # .env (sibling of this file in the stack folder) — see .env.example.
 
@@ -56,6 +59,13 @@ services:
       STILLHOUSE_APP_PASSWORD: ${PG_APP_PASSWORD}
       STILLHOUSE_ADDR: ":8080"
       STILLHOUSE_STATIC_DIR: /app/static
+      # Where the Canadian Alcoholometric Tables are mounted. Optional —
+      # without them the app runs but can't correct readings to 20 °C.
+      STILLHOUSE_ALCOHOLOMETRIC_TABLES: /data/alcoholometric-tables
+    volumes:
+      # The operator's own copy of the tables, downloaded from CRA (see
+      # deploy/README.md). Read-only; the app only ever reads it.
+      - ${STILLHOUSE_DATA_DIR}/alcoholometric-tables:/data/alcoholometric-tables:ro
     networks:
       macvlan:
         ipv4_address: ${WEB_IPV4:?WEB_IPV4 must be set in .env}

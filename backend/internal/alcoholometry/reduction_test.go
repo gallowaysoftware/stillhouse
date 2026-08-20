@@ -9,6 +9,7 @@ import (
 // calculation against the worked example in CIBD Module 2 (pre-package
 // blending): 1,000 L at 63 % reduced to 40 % gives 1,575 L.
 func TestReductionMatchesCurriculumVolume(t *testing.T) {
+	requireTables(t)
 	r, err := PlanReduction(1000, 63, 40)
 	if err != nil {
 		t.Fatalf("PlanReduction: %v", err)
@@ -32,6 +33,7 @@ func TestReductionMatchesCurriculumVolume(t *testing.T) {
 // suggests, and the correction should land in that neighbourhood rather
 // than being either zero or wild.
 func TestContractionIsRealAndBounded(t *testing.T) {
+	requireTables(t)
 	r, err := PlanReduction(1000, 63, 40)
 	if err != nil {
 		t.Fatal(err)
@@ -51,6 +53,7 @@ func TestContractionIsRealAndBounded(t *testing.T) {
 // cannot create or destroy absolute alcohol, so the LAA before and after
 // must match. This is the same property stage 109 had to fix in bottling.
 func TestReductionConservesAlcohol(t *testing.T) {
+	requireTables(t)
 	for _, tc := range []struct{ vol, from, to float64 }{
 		{1000, 63, 40},
 		{5000, 62, 40},
@@ -80,6 +83,7 @@ func TestReductionConservesAlcohol(t *testing.T) {
 //
 // Kept as a test so nobody "fixes" the calculation to match the claim.
 func TestCurriculumClaimIsWrong(t *testing.T) {
+	requireTables(t)
 	r, err := PlanReduction(5000, 62, 40)
 	if err != nil {
 		t.Fatal(err)
@@ -94,6 +98,7 @@ func TestCurriculumClaimIsWrong(t *testing.T) {
 }
 
 func TestReductionRefusesImpossibleTargets(t *testing.T) {
+	requireTables(t)
 	// Water cannot raise strength.
 	if _, err := PlanReduction(100, 40, 60); err == nil {
 		t.Error("reducing 40 % to 60 % must be refused, not solved with negative water")
@@ -115,6 +120,7 @@ func TestReductionRefusesImpossibleTargets(t *testing.T) {
 // TestReductionToBottlingStrengths walks the band the curriculum gives for
 // bottling — 37 % to 50 % — from a typical cask strength.
 func TestReductionToBottlingStrengths(t *testing.T) {
+	requireTables(t)
 	for target := 37.0; target <= 50.0; target += 0.5 {
 		r, err := PlanReduction(500, 62, target)
 		if err != nil {
@@ -142,6 +148,7 @@ func TestReductionToBottlingStrengths(t *testing.T) {
 // starting mass must land exactly on the final mass. No contraction, no
 // fudge factor.
 func TestReductionByWeightIsExact(t *testing.T) {
+	requireTables(t)
 	r, err := PlanReduction(1000, 63, 40)
 	if err != nil {
 		t.Fatal(err)
@@ -165,6 +172,7 @@ func TestReductionByWeightIsExact(t *testing.T) {
 // TestMassVolumeRoundTrip — the two gauging modes must describe the same
 // liquid.
 func TestMassVolumeRoundTrip(t *testing.T) {
+	requireTables(t)
 	for _, tc := range []struct{ strength, volume float64 }{
 		{63, 1000}, {40, 1575}, {94.5, 250}, {5, 800},
 	} {
@@ -185,6 +193,7 @@ func TestMassVolumeRoundTrip(t *testing.T) {
 // TestPlanFromMassMatchesPlanFromVolume — entering the same charge as a
 // weight or as a volume must give the same plan.
 func TestPlanFromMassMatchesPlanFromVolume(t *testing.T) {
+	requireTables(t)
 	byVolume, err := PlanReduction(1000, 63, 40)
 	if err != nil {
 		t.Fatal(err)
@@ -204,6 +213,7 @@ func TestPlanFromMassMatchesPlanFromVolume(t *testing.T) {
 }
 
 func TestPlanFromMassRefusesBadInput(t *testing.T) {
+	requireTables(t)
 	if _, err := PlanReductionFromMass(0, 63, 40); err == nil {
 		t.Error("zero mass must be refused")
 	}

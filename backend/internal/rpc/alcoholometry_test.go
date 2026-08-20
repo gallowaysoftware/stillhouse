@@ -14,6 +14,7 @@ import (
 // ledger. The distinction matters on a B266: only the density path is a
 // determination against the published tables.
 func TestResolveStrengthPaths(t *testing.T) {
+	requireTables(t)
 	t.Run("density and temperature resolve through the tables", func(t *testing.T) {
 		// CRA Volume/Density Example 2: 897.4 kg/m³ at 30 °C is 61.7 % with
 		// a volume factor of 0.9909.
@@ -138,6 +139,7 @@ func TestResolveStrengthPaths(t *testing.T) {
 // prevent: filing a warm gauge as if it were at 20 °C inflates LAA, and
 // LAA is what excise duty is charged on.
 func TestWarmGaugeOverstatesDuty(t *testing.T) {
+	requireTables(t)
 	const observedVolume, density, tankTemp = 1000.0, 930.0, 28.0
 
 	corrected, err := resolveStrength(strengthInput{
@@ -170,6 +172,7 @@ func TestWarmGaugeOverstatesDuty(t *testing.T) {
 }
 
 func TestStrengthSourceRoundTrip(t *testing.T) {
+	requireTables(t)
 	for _, s := range []stillhousev1.StrengthSource{
 		stillhousev1.StrengthSource_STRENGTH_SOURCE_UNCORRECTED,
 		stillhousev1.StrengthSource_STRENGTH_SOURCE_TABLE_DENSITY,

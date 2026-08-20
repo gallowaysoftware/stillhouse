@@ -30,7 +30,22 @@ type Config struct {
 	// links etc. Defaults to http://localhost:8080 when empty so dev
 	// emails are still clickable from the console.
 	BaseURL string
+
+	// AlcoholometricTablesPath points at the Canadian Alcoholometric
+	// Tables 1980 as downloaded from CRA — the ZIP, the ALC_TAB.TXT
+	// inside it, or a directory holding either. They aren't shipped with
+	// Stillhouse (Crown material; commercial redistribution needs written
+	// permission), so each operator supplies their own copy. Empty means
+	// temperature correction is unavailable and the rest of the app runs
+	// normally.
+	AlcoholometricTablesPath string
 }
+
+// defaultAlcoholometricTablesPath is where the compose stack mounts the
+// operator's copy. Defaulting to it means the documented deploy needs no
+// extra environment variable at all — drop the file in the data directory
+// and it's found.
+const defaultAlcoholometricTablesPath = "/data/alcoholometric-tables"
 
 func Load() (*Config, error) {
 	c := &Config{
@@ -41,6 +56,9 @@ func Load() (*Config, error) {
 		AdminDatabaseURL: os.Getenv("ADMIN_DATABASE_URL"),
 		AppRolePassword:  os.Getenv("STILLHOUSE_APP_PASSWORD"),
 		BaseURL:          os.Getenv("STILLHOUSE_BASE_URL"),
+
+		AlcoholometricTablesPath: getenv("STILLHOUSE_ALCOHOLOMETRIC_TABLES",
+			defaultAlcoholometricTablesPath),
 	}
 	if c.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")

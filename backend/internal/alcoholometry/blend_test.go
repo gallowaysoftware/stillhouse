@@ -8,6 +8,7 @@ import (
 // TestBlendConservesAlcohol — vatting neither creates nor destroys
 // absolute alcohol, whatever happens to the volume.
 func TestBlendConservesAlcohol(t *testing.T) {
+	requireTables(t)
 	sources := []BlendSource{
 		{Label: "Cask 12", VolumeL: 200, StrengthPct: 62},
 		{Label: "Cask 19", VolumeL: 180, StrengthPct: 58},
@@ -31,6 +32,7 @@ func TestBlendConservesAlcohol(t *testing.T) {
 // TestBlendContractsRatherThanAdding is the point of doing this through
 // the tables: the parcels do not simply add up.
 func TestBlendContractsRatherThanAdding(t *testing.T) {
+	requireTables(t)
 	p, err := PlanBlend([]BlendSource{
 		{VolumeL: 500, StrengthPct: 70},
 		{VolumeL: 500, StrengthPct: 40},
@@ -60,6 +62,7 @@ func TestBlendContractsRatherThanAdding(t *testing.T) {
 // TestBlendStrengthIsNotTheVolumeWeightedMean — the naive answer, and why
 // it's wrong.
 func TestBlendStrengthIsNotTheVolumeWeightedMean(t *testing.T) {
+	requireTables(t)
 	p, err := PlanBlend([]BlendSource{
 		{VolumeL: 500, StrengthPct: 70},
 		{VolumeL: 500, StrengthPct: 40},
@@ -79,6 +82,7 @@ func TestBlendStrengthIsNotTheVolumeWeightedMean(t *testing.T) {
 }
 
 func TestBlendThenReduce(t *testing.T) {
+	requireTables(t)
 	p, err := PlanBlend([]BlendSource{
 		{VolumeL: 200, StrengthPct: 62},
 		{VolumeL: 180, StrengthPct: 58},
@@ -104,6 +108,7 @@ func TestBlendThenReduce(t *testing.T) {
 }
 
 func TestBlendRefusesToStrengthenWithWater(t *testing.T) {
+	requireTables(t)
 	_, err := PlanBlend([]BlendSource{
 		{VolumeL: 100, StrengthPct: 45},
 		{VolumeL: 100, StrengthPct: 43},
@@ -114,6 +119,7 @@ func TestBlendRefusesToStrengthenWithWater(t *testing.T) {
 }
 
 func TestBlendValidatesItsInputs(t *testing.T) {
+	requireTables(t)
 	if _, err := PlanBlend([]BlendSource{{VolumeL: 100, StrengthPct: 60}}, 0); err == nil {
 		t.Error("one source is not a blend")
 	}
@@ -137,6 +143,7 @@ func TestBlendValidatesItsInputs(t *testing.T) {
 // TestBlendOfIdenticalParcelsIsTheSameSpirit — a sanity anchor: vatting a
 // spirit with itself changes nothing but the quantity.
 func TestBlendOfIdenticalParcelsIsTheSameSpirit(t *testing.T) {
+	requireTables(t)
 	p, err := PlanBlend([]BlendSource{
 		{VolumeL: 150, StrengthPct: 63},
 		{VolumeL: 150, StrengthPct: 63},

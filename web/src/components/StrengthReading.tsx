@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Code, ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
 import { alcoholometryClient } from "@/lib/clients";
@@ -20,7 +21,8 @@ import { formatLAA, formatQty } from "@/lib/format";
  * The tables themselves stay on the server — the browser asks
  * AlcoholometryService.ResolveStrength rather than shipping 700 KB of
  * lookup table, which also means the preview can never disagree with what
- * gets written.
+ * gets written. If the server has no tables installed the control still
+ * works; it just says so and records the strength as typed.
  */
 
 export const REFERENCE_TEMPERATURE_C = 20;
@@ -124,7 +126,15 @@ export function StrengthReading({
         suffix="°C"
       />
 
-      {resolved.error && <Callout tone="danger">{resolved.error}</Callout>}
+      {resolved.tablesMissing ? (
+        <Callout tone="warning" title="Temperature correction unavailable">
+          This server has no copy of the Canadian Alcoholometric Tables, so the reading can&apos;t be
+          corrected to 20 °C. It will be recorded exactly as typed. An owner can install them once —
+          see Settings → Alcoholometric tables.
+        </Callout>
+      ) : (
+        resolved.error && <Callout tone="danger">{resolved.error}</Callout>
+      )}
 
       {resolved.data && !resolved.error && (
         <CorrectionPreview
@@ -184,6 +194,11 @@ function useResolvedStrength(v: StrengthReadingValue) {
   return {
     data: q.data,
     error: q.error ? readableError(q.error) : null,
+    // The tables are an operator-supplied file (see Settings). Missing
+    // ones aren't an error the person at the tank can act on, so they get
+    // a different, calmer message.
+    tablesMissing:
+      q.error instanceof ConnectError && q.error.code === Code.FailedPrecondition,
   };
 }
 

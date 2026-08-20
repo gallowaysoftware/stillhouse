@@ -10,19 +10,21 @@ import (
 	"testing"
 )
 
-// srcSHA256Hex pins the exact published table the embedded blob was built
-// from: the ALC_TAB.TXT inside CRA's "Canadian Alcoholometric Tables 1980"
-// ZIP. If someone regenerates the blob from a different file, this fails
-// loudly rather than silently changing what we file.
+// srcSHA256Hex pins the exact published table we test against: the
+// ALC_TAB.TXT inside CRA's "Canadian Alcoholometric Tables 1980" ZIP. If
+// ALC_TAB points at some other file, this fails loudly rather than
+// silently changing what we file.
 const srcSHA256Hex = "5c1ca869418bd60920c46fdde7462ab16eb2c24424da15b7803dc587f4676ace"
 
 func TestSourceProvenance(t *testing.T) {
+	requireTables(t)
 	sum, err := SourceSHA256()
 	if err != nil {
 		t.Fatalf("SourceSHA256: %v", err)
 	}
 	if got := hex.EncodeToString(sum[:]); got != srcSHA256Hex {
-		t.Errorf("embedded table built from unexpected source\n got %s\nwant %s", got, srcSHA256Hex)
+		t.Errorf("loaded %s, which is not the published CRA table\n got %s\nwant %s",
+			SourceName(), got, srcSHA256Hex)
 	}
 }
 
@@ -30,6 +32,7 @@ func TestSourceProvenance(t *testing.T) {
 // publication under "EXAMPLES OF PRACTICAL USE". These are the closest
 // thing to a conformance suite the tables have.
 func TestCRAWorkedExamples(t *testing.T) {
+	requireTables(t)
 	tests := []struct {
 		name                string
 		tempC, density      float64
@@ -66,6 +69,7 @@ func TestCRAWorkedExamples(t *testing.T) {
 // TestCRAVolumeDensityEndToEnd reproduces the full arithmetic CRA prints for
 // Volume/Density Example 2, through AbsoluteAlcohol.
 func TestCRAVolumeDensityEndToEnd(t *testing.T) {
+	requireTables(t)
 	laa, vol20, r, err := AbsoluteAlcohol(30, 897.4, 21643.0)
 	if err != nil {
 		t.Fatalf("AbsoluteAlcohol: %v", err)
@@ -87,6 +91,7 @@ func TestCRAVolumeDensityEndToEnd(t *testing.T) {
 // density of absolute ethyl alcohol as 789.239 1233 kg/m3 at 20 C, which
 // lands in the 789.4 bucket at the published 0.2 kg/m3 resolution.
 func TestReferenceAnchors(t *testing.T) {
+	requireTables(t)
 	if r, err := Lookup(20, 789.4); err != nil || r.StrengthPct != 100.0 {
 		t.Errorf("789.4 @ 20 C = %v (err %v), want strength 100.0", r.StrengthPct, err)
 	}
@@ -98,6 +103,7 @@ func TestReferenceAnchors(t *testing.T) {
 // TestVolumeFactorIdentityAt20C — the whole point of the reference
 // temperature is that no volume correction applies there.
 func TestVolumeFactorIdentityAt20C(t *testing.T) {
+	requireTables(t)
 	for d := 790.0; d <= 998.0; d += 0.2 {
 		r, err := Lookup(20, d)
 		if err != nil {
@@ -114,6 +120,7 @@ func TestVolumeFactorIdentityAt20C(t *testing.T) {
 // close: an uncorrected warm reading overstates strength AND volume, so
 // LAA computed the naive way is too high.
 func TestWarmSpiritOverstatesBothWays(t *testing.T) {
+	requireTables(t)
 	const density, warm = 930.0, 28.0
 	warmR, err := Lookup(warm, density)
 	if err != nil {
@@ -146,6 +153,7 @@ func TestWarmSpiritOverstatesBothWays(t *testing.T) {
 }
 
 func TestLookupByStrengthRoundTrip(t *testing.T) {
+	requireTables(t)
 	for _, tc := range []struct{ tempC, density float64 }{
 		{20, 922.6}, {10, 937.4}, {30, 897.4}, {5, 950.0}, {35, 860.0},
 	} {
@@ -169,6 +177,7 @@ func TestLookupByStrengthRoundTrip(t *testing.T) {
 }
 
 func TestInterpolationBetweenGridPoints(t *testing.T) {
+	requireTables(t)
 	lo, err := Lookup(20, 922.6)
 	if err != nil {
 		t.Fatal(err)
@@ -195,6 +204,7 @@ func TestInterpolationBetweenGridPoints(t *testing.T) {
 }
 
 func TestOutOfRange(t *testing.T) {
+	requireTables(t)
 	if _, err := Lookup(45, 900); err == nil {
 		t.Error("temperature above +40 C should be rejected")
 	}
@@ -226,22 +236,18 @@ func asRangeError(err error, target **RangeError) bool {
 }
 
 // TestAgainstFullSourceTable replays every row of the published ASCII table
-// through Lookup. Skipped unless ALC_TAB is pointed at the original file,
-// since the 5.2 MB source is deliberately not committed.
+// back through Lookup — the grid the loader built must reproduce the file
+// it was built from, exactly, at every one of its ~800k rows.
 //
 //	ALC_TAB=/path/to/ALC_TAB.TXT go test ./internal/alcoholometry/
 func TestAgainstFullSourceTable(t *testing.T) {
-	path := os.Getenv("ALC_TAB")
-	if path == "" {
-		t.Skip("set ALC_TAB=/path/to/ALC_TAB.TXT to verify against the published source")
-	}
-	f, err := os.Open(path)
+	requireTables(t)
+	raw, _, err := readSource(os.Getenv(alcTabEnv))
 	if err != nil {
-		t.Fatalf("open source: %v", err)
+		t.Fatalf("read source: %v", err)
 	}
-	defer func() { _ = f.Close() }()
 
-	sc := bufio.NewScanner(f)
+	sc := bufio.NewScanner(strings.NewReader(string(raw)))
 	sc.Buffer(make([]byte, 1<<20), 1<<20)
 	rows, mismatches := 0, 0
 	for sc.Scan() {

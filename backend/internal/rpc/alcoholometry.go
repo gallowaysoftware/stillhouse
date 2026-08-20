@@ -126,6 +126,11 @@ func alcoholometryError(err error) error {
 	if errors.As(err, &re) || errors.Is(err, errMissingTemperature) {
 		return connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	// The request is fine; the install isn't. FailedPrecondition tells the
+	// caller that retrying won't help but fixing the deployment will.
+	if errors.Is(err, alcoholometry.ErrNotLoaded) {
+		return connect.NewError(connect.CodeFailedPrecondition, err)
+	}
 	return connect.NewError(connect.CodeInternal, err)
 }
 
@@ -187,6 +192,17 @@ func (s *AlcoholometryService) TablesInfo(
 	if _, ok := CurrentUser(ctx); !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
+	// Not an error when the tables are absent — that's a setup state the
+	// UI is expected to render, not a failure. Name and source URL come
+	// back regardless so the page can say what to go and download.
+	out := &stillhousev1.TablesInfoResponse{
+		Name:                  "Canadian Alcoholometric Tables 1980",
+		SourceUrl:             tablesSourceURL,
+		ReferenceTemperatureC: ReferenceTemperatureC,
+	}
+	if !alcoholometry.Loaded() {
+		return connect.NewResponse(out), nil
+	}
 	sum, err := alcoholometry.SourceSHA256()
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
@@ -195,14 +211,12 @@ func (s *AlcoholometryService) TablesInfo(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
-	return connect.NewResponse(&stillhousev1.TablesInfoResponse{
-		Name:                  "Canadian Alcoholometric Tables 1980",
-		SourceUrl:             tablesSourceURL,
-		SourceSha256:          hex.EncodeToString(sum[:]),
-		TemperatureMinC:       lo,
-		TemperatureMaxC:       hi,
-		ReferenceTemperatureC: ReferenceTemperatureC,
-	}), nil
+	out.Loaded = true
+	out.SourceSha256 = hex.EncodeToString(sum[:])
+	out.TemperatureMinC, out.TemperatureMaxC = lo, hi
+	out.FileName = alcoholometry.SourceName()
+	out.RowCount = int64(alcoholometry.RowCount())
+	return connect.NewResponse(out), nil
 }
 
 // strengthSourceToDB / strengthSourceToProto bridge the proto enum and the
