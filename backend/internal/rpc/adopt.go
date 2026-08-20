@@ -71,10 +71,11 @@ func (s *BulkService) AdoptOpeningInventory(
 		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurredAt.Time}); e != nil {
 			return e
 		}
-		existing, e := q.GetBulkContainer(ctx, containerID)
+		lockedAdopt, e := lockContainers(ctx, q, containerID)
 		if e != nil {
 			return e
 		}
+		existing := lockedAdopt[containerID]
 		// Adoption establishes a balance; it does not top one up. A vessel
 		// that already holds alcohol has a history in the ledger, and
 		// adding "opening" stock on top of it would double-count.

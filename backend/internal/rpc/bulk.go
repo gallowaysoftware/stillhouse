@@ -315,23 +315,31 @@ func (s *BulkService) CreateBlend(
 		movements []sqlcgen.BulkMovement
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		// Lock-free reads — single tx + tenant RLS keeps cross-tenant collisions
-		// out; same-tenant concurrent writers race on the container balance,
-		// which the application accepts in v1 (rare in a single-distillery
-		// workflow). Move to SELECT … FOR UPDATE if it becomes a problem.
-		d, e := q.GetBulkContainer(ctx, destID)
+		// Lock every vessel this blend touches before reading a balance.
+		// It became a problem: concurrent writers computing absolute
+		// balances from stale reads discard each other's withdrawals, and
+		// a blend is the widest such transaction in the system.
+		// lockContainers orders the acquisition so two blends sharing
+		// tanks queue rather than deadlock.
+		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurred.Time}); e != nil {
+			return e
+		}
+		ids := make([]uuid.UUID, 0, len(parsed)+1)
+		ids = append(ids, destID)
+		for _, ps := range parsed {
+			ids = append(ids, ps.id)
+		}
+		locked, e := lockContainers(ctx, q, ids...)
 		if e != nil {
 			return e
 		}
+		d := locked[destID]
 		curVol := d.CurrentVolumeL
 		curABV := d.CurrentAbvPct
 		curLAA := d.CurrentLaa
 
 		for _, ps := range parsed {
-			src, e := q.GetBulkContainer(ctx, ps.id)
-			if e != nil {
-				return e
-			}
+			src := locked[ps.id]
 			if !src.CurrentAbvPct.Valid {
 				return connect.NewError(connect.CodeFailedPrecondition,
 					fmt.Errorf("source %s is empty", src.Name))
@@ -599,6 +607,55 @@ func bulkMovementReasonToProto(r sqlcgen.BulkMovementReason) stillhousev1.BulkMo
 // applyDeposit returns the new (volume, abv, laa) after depositing
 // (volume, abv) into a container that currently holds (curVol, curABV).
 // curABV is ignored when curVol == 0.
+// applyWithdrawal removes volume and its alcohol from a balance, returning
+// the new volume, strength and LAA.
+//
+// The invariant is conservation: what the destination gains, the source
+// loses, to the litre of absolute alcohol. The remaining strength follows
+// from what is left rather than being carried over unchanged — carrying it
+// over is what let a gauged fill differ from the tank's recorded strength
+// and quietly mint alcohol.
+func applyWithdrawal(curVol, curLAA, takeVol, takeLAA float64) (newVol float64, newABV pgtype.Float8, newLAA float64) {
+	newVol = curVol - takeVol
+	newLAA = curLAA - takeLAA
+	// Float noise around a full withdrawal shouldn't leave a vessel
+	// holding -1e-15 L of spirit.
+	if newVol <= 1e-9 {
+		return 0, pgtype.Float8{Valid: false}, 0
+	}
+	if newLAA < 0 {
+		newLAA = 0
+	}
+	return newVol, pgtype.Float8{Float64: newLAA / newVol * 100, Valid: true}, newLAA
+}
+
+// fillStrengthToleranceABV is how far a gauged fill may sit from the
+// source's recorded strength before Stillhouse refuses it.
+//
+// A homogeneous tank yields its own strength, so any difference is
+// measurement: hydrometer precision, a reading taken at a different depth,
+// or a balance that has drifted since the last gauge. Inside the tolerance
+// the gauge wins and the tank's strength is recomputed from what is left.
+// Outside it, one of the two figures is simply wrong — you cannot draw 80%
+// spirit from a tank holding 60% — and absorbing the difference silently
+// would write that error into the ledger. Refusing sends the operator to
+// regauge the source, which is the measurement that actually needs redoing.
+const fillStrengthToleranceABV = 2.0
+
+func assertFillStrengthMatchesSource(source sqlcgen.BulkContainer, abv float64) error {
+	if !source.CurrentAbvPct.Valid {
+		return nil // nothing recorded to disagree with
+	}
+	srcABV := source.CurrentAbvPct.Float64
+	if diff := abv - srcABV; diff > fillStrengthToleranceABV || diff < -fillStrengthToleranceABV {
+		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+			"fill gauged at %.2f%% but %s is recorded at %.2f%% — a tank yields its own strength, "+
+				"so regauge the source before transferring (tolerance %.1f%%)",
+			abv, source.Name, srcABV, fillStrengthToleranceABV))
+	}
+	return nil
+}
+
 func applyDeposit(curVol float64, curABV pgtype.Float8, addVol, addABV float64) (newVol float64, newABV pgtype.Float8, newLAA float64) {
 	if curVol <= 0 {
 		newVol = addVol

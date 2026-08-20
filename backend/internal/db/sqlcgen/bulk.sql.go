@@ -124,6 +124,42 @@ func (q *Queries) GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkConta
 	return i, err
 }
 
+const getBulkContainerForUpdate = `-- name: GetBulkContainerForUpdate :one
+SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at FROM bulk_containers WHERE id = $1 FOR UPDATE
+`
+
+// Read a container's balance with the intent to change it. FOR UPDATE is
+// what makes the read-modify-write safe: without it two transactions both
+// read the same volume, both compute an absolute new value, and the second
+// commit silently discards the first one's withdrawal. Eight concurrent
+// barrel fills from one tank moved 800 L while the tank fell by 100 —
+// alcohol conjured out of a lost update. Every path that writes a balance
+// must read it through here.
+//
+// Lock ordering: a transaction touching more than one container (a blend,
+// a transfer) must acquire them in a deterministic order — see
+// lockContainers — or two of them can deadlock holding each other's rows.
+func (q *Queries) GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (BulkContainer, error) {
+	row := q.db.QueryRow(ctx, getBulkContainerForUpdate, id)
+	var i BulkContainer
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.Kind,
+		&i.CapacityL,
+		&i.Location,
+		&i.Notes,
+		&i.Archived,
+		&i.CurrentVolumeL,
+		&i.CurrentAbvPct,
+		&i.CurrentLaa,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const insertBulkMovement = `-- name: InsertBulkMovement :one
 INSERT INTO bulk_movements (
     tenant_id, source_container_id, destination_container_id,

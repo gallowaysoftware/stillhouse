@@ -153,13 +153,23 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 	if err != nil {
 		t.Fatalf("insert production movement: %v", err)
 	}
+	// A later migration put a foreign key on gauger_user_id, so the random
+	// UUID this fixture used to pass no longer resolves.
+	gauger, err := q.CreateUser(ctx, sqlcgen.CreateUserParams{
+		TenantID: tenant.ID, Email: "gauger-" + uuid.NewString() + "@example.com",
+		PasswordHash: "x", DisplayName: "Gauger", Role: sqlcgen.UserRoleOperator,
+	})
+	if err != nil {
+		t.Fatalf("create gauger: %v", err)
+	}
 	if _, err := q.CreateProductionGauge(ctx, sqlcgen.CreateProductionGaugeParams{
 		TenantID: tenant.ID, DistillationRunID: dist.ID,
 		DestinationContainerID: container.ID,
 		BulkMovementID:         mv.ID,
 		GaugeDate:              pgtype.Timestamptz{Valid: true, Time: gaugeTime},
 		VolumeL:                100, AbvPct: 70,
-		GaugerUserID: uuid.New(),
+		GaugerUserID:   gauger.ID,
+		StrengthSource: sqlcgen.StrengthSourceUncorrected,
 	}); err != nil {
 		t.Fatalf("create production gauge: %v", err)
 	}
@@ -388,6 +398,7 @@ func TestVoidBarrelEvent(t *testing.T) {
 		Laa:            pgtype.Float8{Float64: 35, Valid: true},
 		BulkMovementID: uuid.NullUUID{UUID: mv.ID, Valid: true},
 		UserID:         uuid.NullUUID{UUID: user.ID, Valid: true},
+		StrengthSource: sqlcgen.StrengthSourceUncorrected,
 	})
 	if err != nil {
 		t.Fatalf("insert event: %v", err)
