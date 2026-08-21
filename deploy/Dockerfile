@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # ----- Stage 1: build the web frontend ---------------------------------------
-FROM docker.io/library/node:20-alpine AS web-builder
+FROM docker.io/library/node:24-alpine AS web-builder
 WORKDIR /src/web
 
 COPY web/package.json web/package-lock.json* ./
@@ -13,11 +13,15 @@ COPY web/ /src/web/
 
 # Regenerate the TS client from the source-of-truth .proto so the built image
 # can't drift from committed generated code.
-RUN npx -y -p @bufbuild/buf@latest -- buf generate /src/proto --template /src/proto/buf.gen.web.yaml
+# buf is pinned: the image regenerates the web client at build time, and
+# the codegen-drift check runs in CI rather than here — so an unpinned buf
+# that changes its output would silently ship a client differing from the
+# committed one.
+RUN npx -y -p @bufbuild/buf@1.72.0 -- buf generate /src/proto --template /src/proto/buf.gen.web.yaml
 RUN npm run build
 
 # ----- Stage 2: build the Go backend -----------------------------------------
-FROM docker.io/library/golang:1.26.6-alpine AS go-builder
+FROM docker.io/library/golang:1.27.0-alpine AS go-builder
 RUN apk add --no-cache git ca-certificates
 WORKDIR /src
 
