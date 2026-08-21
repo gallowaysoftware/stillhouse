@@ -48,6 +48,10 @@ type Querier interface {
 	// have only existed never accept a row here. Caller falls back to
 	// container.created_at for those.
 	BulkContainerLastActivity(ctx context.Context) ([]BulkContainerLastActivityRow, error)
+	// Only a loss can be classified. The reason guard is here rather than only
+	// in Go so that a caller cannot quietly attach a duty treatment to a
+	// production gauge and have it counted.
+	ClassifyLoss(ctx context.Context, arg ClassifyLossParams) (BulkMovement, error)
 	// Single-use semantics: WHERE used_at IS NULL guarantees the same token
 	// can't be redeemed twice. Expiry check inline so we don't accidentally
 	// accept stale tokens.
@@ -219,6 +223,14 @@ type Querier interface {
 	// history and the period review behind B266 line D.
 	ListInventoryAdjustments(ctx context.Context, arg ListInventoryAdjustmentsParams) ([]ListInventoryAdjustmentsRow, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
+	// Losses and their duty treatment.
+	//
+	// "A loss" is any movement whose reason takes alcohol out of the ledger
+	// without it going anywhere: evaporation, spirits that cannot be accounted
+	// for, and destructions. The list is repeated in each query rather than
+	// factored into a view so that adding a reason to it is a deliberate edit
+	// somebody reads, not a silent inheritance.
+	ListLosses(ctx context.Context, arg ListLossesParams) ([]ListLossesRow, error)
 	ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error)
 	ListMashMetrics(ctx context.Context, mashRunID uuid.UUID) ([]MashMetric, error)
 	ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]ListMashRunsRow, error)
@@ -363,6 +375,10 @@ type Querier interface {
 	// total but held alcohol at as_of. Archiving requires an empty container,
 	// so the LAA involved is zero.
 	SumBulkOnHandAsOf(ctx context.Context, asOf pgtype.Timestamptz) (float64, error)
+	// Destructions carry a treatment too — an unapproved destruction is not
+	// relieved — but they are reported on their own line, so they are summed
+	// separately from the losses total.
+	SumDestructionsByTreatmentInPeriod(ctx context.Context, arg SumDestructionsByTreatmentInPeriodParams) (SumDestructionsByTreatmentInPeriodRow, error)
 	// Sums production_gauges.laa across every distillation that charged from
 	// any fermentation_run belonging to this mash. Note: if a distillation
 	// mixed charges from multiple mashes, that gauge LAA is over-attributed
@@ -373,6 +389,11 @@ type Querier interface {
 	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
 	// showing only the net would say nothing happened.
 	SumInventoryAdjustmentsInPeriod(ctx context.Context, arg SumInventoryAdjustmentsInPeriodParams) (SumInventoryAdjustmentsInPeriodRow, error)
+	// The three figures that must sum to bulk_losses_laa. Destructions are
+	// reported on their own line, so they are excluded here — a destruction is
+	// not part of the losses total, and counting it in both places would
+	// overstate what left the warehouse.
+	SumLossesByTreatmentInPeriod(ctx context.Context, arg SumLossesByTreatmentInPeriodParams) (SumLossesByTreatmentInPeriodRow, error)
 	// Packaged LAA and bottles on hand as at a moment. Same reverse walk as
 	// SumBulkOnHandAsOf and for the same reason: packaged inventory only ever
 	// receives bottling runs and only ever loses removals, so undoing both back

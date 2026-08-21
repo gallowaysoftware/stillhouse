@@ -4,6 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { Callout } from "@/components/Callout";
+import { LossClassificationCard } from "@/components/LossClassificationCard";
 import { Shell } from "@/components/Shell";
 import { b266Client } from "@/lib/clients";
 import { useCurrentUser } from "@/lib/role";
@@ -113,6 +114,15 @@ export function B266Page() {
           </span>
         )}
       </form>
+
+      {/* What has to be resolved before this period can be filed, with the
+          means to resolve it right here rather than three pages away. */}
+      {result?.report && (
+        <LossClassificationCard
+          periodStart={result.report.periodStart}
+          periodEnd={result.report.periodEnd}
+        />
+      )}
 
       {result?.report && (
         <ReportView
@@ -286,6 +296,22 @@ function ReportView({
             <Row k="Returned to production" v={formatLAA(report.bulkReturnedToProductionLaa)} dim />
           )}
           <Row k="Losses (evap + unaccounted)" v={formatLAA(report.bulkLossesLaa)} dim />
+          {/* EDM3-4-1: a relieved loss and one that cannot be accounted for
+              are charged differently, so the total alone is not a filable
+              figure. Shown only when there is a loss to split. */}
+          {report.bulkLossesLaa > 0 && (
+            <>
+              {report.bulkLossesRelievedLaa > 0 && (
+                <Row k="  relieved" v={formatLAA(report.bulkLossesRelievedLaa)} dim />
+              )}
+              {report.bulkLossesDutiableLaa > 0 && (
+                <Row k="  duty payable" v={formatLAA(report.bulkLossesDutiableLaa)} dim />
+              )}
+              {report.bulkLossesUnclassifiedLaa > 0 && (
+                <Row k="  not yet classified" v={formatLAA(report.bulkLossesUnclassifiedLaa)} dim />
+              )}
+            </>
+          )}
           <Row k="Destroyed"              v={formatLAA(report.bulkDestroyedLaa)} dim />
           {/* Line D. Both directions when there were any, because a period
               that found alcohol in one tank and lost it in another nets to
@@ -333,6 +359,23 @@ function ReportView({
         </Card>
       </div>
 
+      {report.filingBlockers.length > 0 && (
+        <Callout tone="warning" title="This period isn't ready to file">
+          <ul className="list-disc space-y-1 pl-5">
+            {report.filingBlockers.map((b) => (
+              <li key={b}>{b}</li>
+            ))}
+          </ul>
+          {/* An empty list is not a promise the figures are right — only
+              that nothing is outstanding. Stillhouse never files, and a
+              green light it can't honestly give would be worse than none. */}
+          <p className="mt-2 text-xs">
+            Resolving these does not mean the return is correct — only that nothing
+            is missing. Check the figures against your own records before filing.
+          </p>
+        </Callout>
+      )}
+
       <Card title="Duty payable">
         {/* Which event crystallised the duty. Without it the figures below
             can't be checked: the same LAA produces the same duty at either
@@ -379,6 +422,9 @@ function ReportView({
               </>
             )}
           </>
+        )}
+        {report.dutyOnLossesCad > 0 && (
+          <Row k="Duty on losses" v={formatCAD(report.dutyOnLossesCad)} dim />
         )}
         <Row k="Rate (CAD / LAA, >7%)"  v={`$${report.dutyRatePerLaa.toFixed(3)}`} />
         <Row k="Rate (CAD / litre, ≤7%)" v={`$${report.dutyRatePerLitreUnder7.toFixed(3)}`} dim />

@@ -369,6 +369,67 @@ func (BulkExternalMovementKind) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{3}
 }
 
+// How a loss is treated for duty. EDM3-4-1: a destruction approved by CRA
+// is relieved, while spirits that cannot be accounted for are duty-payable.
+// Collapsing the two produces a plausible total and the wrong duty.
+type LossDutyTreatment int32
+
+const (
+	LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED LossDutyTreatment = 0
+	// Nobody has said yet. The honest default: Stillhouse does not know
+	// whether a given evaporation loss is relieved, and the barrel regauge
+	// that wrote it did not ask. Reported on the return as outstanding.
+	LossDutyTreatment_LOSS_DUTY_TREATMENT_UNCLASSIFIED LossDutyTreatment = 1
+	// Relieved under EDM3-4-1. Relief rests on something, so an authority is
+	// required — a CRA approval reference, or the provision relied on.
+	LossDutyTreatment_LOSS_DUTY_TREATMENT_RELIEVED LossDutyTreatment = 2
+	// Duty is payable on these litres.
+	LossDutyTreatment_LOSS_DUTY_TREATMENT_DUTIABLE LossDutyTreatment = 3
+)
+
+// Enum value maps for LossDutyTreatment.
+var (
+	LossDutyTreatment_name = map[int32]string{
+		0: "LOSS_DUTY_TREATMENT_UNSPECIFIED",
+		1: "LOSS_DUTY_TREATMENT_UNCLASSIFIED",
+		2: "LOSS_DUTY_TREATMENT_RELIEVED",
+		3: "LOSS_DUTY_TREATMENT_DUTIABLE",
+	}
+	LossDutyTreatment_value = map[string]int32{
+		"LOSS_DUTY_TREATMENT_UNSPECIFIED":  0,
+		"LOSS_DUTY_TREATMENT_UNCLASSIFIED": 1,
+		"LOSS_DUTY_TREATMENT_RELIEVED":     2,
+		"LOSS_DUTY_TREATMENT_DUTIABLE":     3,
+	}
+)
+
+func (x LossDutyTreatment) Enum() *LossDutyTreatment {
+	p := new(LossDutyTreatment)
+	*p = x
+	return p
+}
+
+func (x LossDutyTreatment) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (LossDutyTreatment) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_bulk_proto_enumTypes[4].Descriptor()
+}
+
+func (LossDutyTreatment) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_bulk_proto_enumTypes[4]
+}
+
+func (x LossDutyTreatment) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use LossDutyTreatment.Descriptor instead.
+func (LossDutyTreatment) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{4}
+}
+
 type BulkContainer struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	Id           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -572,8 +633,11 @@ type BulkMovement struct {
 	// Set on a packaged-spirits-returned-to-bulk movement.
 	PackagedInventoryId string `protobuf:"bytes,30,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
 	BottlesUnpackaged   int32  `protobuf:"varint,31,opt,name=bottles_unpackaged,json=bottlesUnpackaged,proto3" json:"bottles_unpackaged,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// Set on a loss or a destruction.
+	LossDutyTreatment      LossDutyTreatment `protobuf:"varint,32,opt,name=loss_duty_treatment,json=lossDutyTreatment,proto3,enum=stillhouse.v1.LossDutyTreatment" json:"loss_duty_treatment,omitempty"`
+	LossTreatmentAuthority string            `protobuf:"bytes,33,opt,name=loss_treatment_authority,json=lossTreatmentAuthority,proto3" json:"loss_treatment_authority,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *BulkMovement) Reset() {
@@ -800,6 +864,20 @@ func (x *BulkMovement) GetBottlesUnpackaged() int32 {
 		return x.BottlesUnpackaged
 	}
 	return 0
+}
+
+func (x *BulkMovement) GetLossDutyTreatment() LossDutyTreatment {
+	if x != nil {
+		return x.LossDutyTreatment
+	}
+	return LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED
+}
+
+func (x *BulkMovement) GetLossTreatmentAuthority() string {
+	if x != nil {
+		return x.LossTreatmentAuthority
+	}
+	return ""
 }
 
 type BulkSummary struct {
@@ -2496,8 +2574,15 @@ type RecordBulkExternalMovementRequest struct {
 	// Required for PACKAGED_RETURNED_TO_BULK, ignored otherwise.
 	PackagedInventoryId string `protobuf:"bytes,15,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
 	BottlesUnpackaged   int32  `protobuf:"varint,16,opt,name=bottles_unpackaged,json=bottlesUnpackaged,proto3" json:"bottles_unpackaged,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// For a loss or a destruction: how it is treated for duty, and the
+	// authority relief rests on. An operator destroying spirits under a CRA
+	// approval has the approval in front of them, so the classification
+	// belongs here rather than as a second trip. Ignored for every other
+	// kind.
+	LossDutyTreatment      LossDutyTreatment `protobuf:"varint,17,opt,name=loss_duty_treatment,json=lossDutyTreatment,proto3,enum=stillhouse.v1.LossDutyTreatment" json:"loss_duty_treatment,omitempty"`
+	LossTreatmentAuthority string            `protobuf:"bytes,18,opt,name=loss_treatment_authority,json=lossTreatmentAuthority,proto3" json:"loss_treatment_authority,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *RecordBulkExternalMovementRequest) Reset() {
@@ -2642,6 +2727,20 @@ func (x *RecordBulkExternalMovementRequest) GetBottlesUnpackaged() int32 {
 	return 0
 }
 
+func (x *RecordBulkExternalMovementRequest) GetLossDutyTreatment() LossDutyTreatment {
+	if x != nil {
+		return x.LossDutyTreatment
+	}
+	return LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED
+}
+
+func (x *RecordBulkExternalMovementRequest) GetLossTreatmentAuthority() string {
+	if x != nil {
+		return x.LossTreatmentAuthority
+	}
+	return ""
+}
+
 type RecordBulkExternalMovementResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Movement      *BulkMovement          `protobuf:"bytes,1,opt,name=movement,proto3" json:"movement,omitempty"`
@@ -2702,6 +2801,380 @@ func (x *RecordBulkExternalMovementResponse) GetWarnings() []string {
 	return nil
 }
 
+// One loss awaiting a duty treatment, or carrying one.
+type ClassifiableLoss struct {
+	state              protoimpl.MessageState `protogen:"open.v1"`
+	MovementId         string                 `protobuf:"bytes,1,opt,name=movement_id,json=movementId,proto3" json:"movement_id,omitempty"`
+	Reason             BulkMovementReason     `protobuf:"varint,2,opt,name=reason,proto3,enum=stillhouse.v1.BulkMovementReason" json:"reason,omitempty"`
+	ContainerName      string                 `protobuf:"bytes,3,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`
+	Laa                float64                `protobuf:"fixed64,4,opt,name=laa,proto3" json:"laa,omitempty"`
+	OccurredAt         *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=occurred_at,json=occurredAt,proto3" json:"occurred_at,omitempty"`
+	Notes              string                 `protobuf:"bytes,6,opt,name=notes,proto3" json:"notes,omitempty"`
+	DocumentReference  string                 `protobuf:"bytes,7,opt,name=document_reference,json=documentReference,proto3" json:"document_reference,omitempty"`
+	Treatment          LossDutyTreatment      `protobuf:"varint,10,opt,name=treatment,proto3,enum=stillhouse.v1.LossDutyTreatment" json:"treatment,omitempty"`
+	TreatmentAuthority string                 `protobuf:"bytes,11,opt,name=treatment_authority,json=treatmentAuthority,proto3" json:"treatment_authority,omitempty"`
+	ClassifiedBy       string                 `protobuf:"bytes,12,opt,name=classified_by,json=classifiedBy,proto3" json:"classified_by,omitempty"`
+	ClassifiedAt       *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=classified_at,json=classifiedAt,proto3" json:"classified_at,omitempty"`
+	// What duty these litres would attract if dutiable, at the rate in force
+	// on the day of the loss. Shown against an unclassified loss so the
+	// decision is made with its cost visible.
+	DutyIfDutiableCad float64 `protobuf:"fixed64,14,opt,name=duty_if_dutiable_cad,json=dutyIfDutiableCad,proto3" json:"duty_if_dutiable_cad,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ClassifiableLoss) Reset() {
+	*x = ClassifiableLoss{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClassifiableLoss) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClassifiableLoss) ProtoMessage() {}
+
+func (x *ClassifiableLoss) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClassifiableLoss.ProtoReflect.Descriptor instead.
+func (*ClassifiableLoss) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *ClassifiableLoss) GetMovementId() string {
+	if x != nil {
+		return x.MovementId
+	}
+	return ""
+}
+
+func (x *ClassifiableLoss) GetReason() BulkMovementReason {
+	if x != nil {
+		return x.Reason
+	}
+	return BulkMovementReason_BULK_MOVEMENT_REASON_UNSPECIFIED
+}
+
+func (x *ClassifiableLoss) GetContainerName() string {
+	if x != nil {
+		return x.ContainerName
+	}
+	return ""
+}
+
+func (x *ClassifiableLoss) GetLaa() float64 {
+	if x != nil {
+		return x.Laa
+	}
+	return 0
+}
+
+func (x *ClassifiableLoss) GetOccurredAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.OccurredAt
+	}
+	return nil
+}
+
+func (x *ClassifiableLoss) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+func (x *ClassifiableLoss) GetDocumentReference() string {
+	if x != nil {
+		return x.DocumentReference
+	}
+	return ""
+}
+
+func (x *ClassifiableLoss) GetTreatment() LossDutyTreatment {
+	if x != nil {
+		return x.Treatment
+	}
+	return LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED
+}
+
+func (x *ClassifiableLoss) GetTreatmentAuthority() string {
+	if x != nil {
+		return x.TreatmentAuthority
+	}
+	return ""
+}
+
+func (x *ClassifiableLoss) GetClassifiedBy() string {
+	if x != nil {
+		return x.ClassifiedBy
+	}
+	return ""
+}
+
+func (x *ClassifiableLoss) GetClassifiedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ClassifiedAt
+	}
+	return nil
+}
+
+func (x *ClassifiableLoss) GetDutyIfDutiableCad() float64 {
+	if x != nil {
+		return x.DutyIfDutiableCad
+	}
+	return 0
+}
+
+type ListLossesRequest struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	PeriodStart string                 `protobuf:"bytes,1,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"` // optional ISO date, inclusive
+	PeriodEnd   string                 `protobuf:"bytes,2,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`       // optional ISO date, inclusive
+	// Only losses nobody has ruled on yet — what has to be resolved before a
+	// return can be filed.
+	UnclassifiedOnly bool `protobuf:"varint,3,opt,name=unclassified_only,json=unclassifiedOnly,proto3" json:"unclassified_only,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ListLossesRequest) Reset() {
+	*x = ListLossesRequest{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListLossesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListLossesRequest) ProtoMessage() {}
+
+func (x *ListLossesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListLossesRequest.ProtoReflect.Descriptor instead.
+func (*ListLossesRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *ListLossesRequest) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *ListLossesRequest) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
+func (x *ListLossesRequest) GetUnclassifiedOnly() bool {
+	if x != nil {
+		return x.UnclassifiedOnly
+	}
+	return false
+}
+
+type ListLossesResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Losses          []*ClassifiableLoss    `protobuf:"bytes,1,rep,name=losses,proto3" json:"losses,omitempty"`
+	UnclassifiedLaa float64                `protobuf:"fixed64,2,opt,name=unclassified_laa,json=unclassifiedLaa,proto3" json:"unclassified_laa,omitempty"`
+	DutiableLaa     float64                `protobuf:"fixed64,3,opt,name=dutiable_laa,json=dutiableLaa,proto3" json:"dutiable_laa,omitempty"`
+	RelievedLaa     float64                `protobuf:"fixed64,4,opt,name=relieved_laa,json=relievedLaa,proto3" json:"relieved_laa,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ListLossesResponse) Reset() {
+	*x = ListLossesResponse{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListLossesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListLossesResponse) ProtoMessage() {}
+
+func (x *ListLossesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListLossesResponse.ProtoReflect.Descriptor instead.
+func (*ListLossesResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *ListLossesResponse) GetLosses() []*ClassifiableLoss {
+	if x != nil {
+		return x.Losses
+	}
+	return nil
+}
+
+func (x *ListLossesResponse) GetUnclassifiedLaa() float64 {
+	if x != nil {
+		return x.UnclassifiedLaa
+	}
+	return 0
+}
+
+func (x *ListLossesResponse) GetDutiableLaa() float64 {
+	if x != nil {
+		return x.DutiableLaa
+	}
+	return 0
+}
+
+func (x *ListLossesResponse) GetRelievedLaa() float64 {
+	if x != nil {
+		return x.RelievedLaa
+	}
+	return 0
+}
+
+type ClassifyLossesRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Several at once: an operator resolving a period's evaporation losses is
+	// making one decision about a dozen rows, not a dozen decisions.
+	MovementIds []string          `protobuf:"bytes,1,rep,name=movement_ids,json=movementIds,proto3" json:"movement_ids,omitempty"`
+	Treatment   LossDutyTreatment `protobuf:"varint,2,opt,name=treatment,proto3,enum=stillhouse.v1.LossDutyTreatment" json:"treatment,omitempty"`
+	// Required when the treatment is RELIEVED. Relief that rests on nothing
+	// is not relief.
+	Authority     string `protobuf:"bytes,3,opt,name=authority,proto3" json:"authority,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClassifyLossesRequest) Reset() {
+	*x = ClassifyLossesRequest{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClassifyLossesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClassifyLossesRequest) ProtoMessage() {}
+
+func (x *ClassifyLossesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClassifyLossesRequest.ProtoReflect.Descriptor instead.
+func (*ClassifyLossesRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *ClassifyLossesRequest) GetMovementIds() []string {
+	if x != nil {
+		return x.MovementIds
+	}
+	return nil
+}
+
+func (x *ClassifyLossesRequest) GetTreatment() LossDutyTreatment {
+	if x != nil {
+		return x.Treatment
+	}
+	return LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED
+}
+
+func (x *ClassifyLossesRequest) GetAuthority() string {
+	if x != nil {
+		return x.Authority
+	}
+	return ""
+}
+
+type ClassifyLossesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Losses        []*ClassifiableLoss    `protobuf:"bytes,1,rep,name=losses,proto3" json:"losses,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ClassifyLossesResponse) Reset() {
+	*x = ClassifyLossesResponse{}
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ClassifyLossesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ClassifyLossesResponse) ProtoMessage() {}
+
+func (x *ClassifyLossesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_bulk_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ClassifyLossesResponse.ProtoReflect.Descriptor instead.
+func (*ClassifyLossesResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_bulk_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *ClassifyLossesResponse) GetLosses() []*ClassifiableLoss {
+	if x != nil {
+		return x.Losses
+	}
+	return nil
+}
+
 var File_stillhouse_v1_bulk_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_bulk_proto_rawDesc = "" +
@@ -2728,8 +3201,7 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"created_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\x0f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12D\n" +
-	"\x10last_movement_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastMovementAt\"\x94\n" +
-	"\n" +
+	"\x10last_movement_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\x0elastMovementAt\"\xa0\v\n" +
 	"\fBulkMovement\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x13source_container_id\x18\x02 \x01(\tR\x11sourceContainerId\x122\n" +
@@ -2762,7 +3234,9 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\x0fstrength_source\x18\x1a \x01(\x0e2\x1d.stillhouse.v1.StrengthSourceR\x0estrengthSource\x12I\n" +
 	"\vinstruments\x18\x1b \x01(\v2'.stillhouse.v1.DeterminationInstrumentsR\vinstruments\x122\n" +
 	"\x15packaged_inventory_id\x18\x1e \x01(\tR\x13packagedInventoryId\x12-\n" +
-	"\x12bottles_unpackaged\x18\x1f \x01(\x05R\x11bottlesUnpackaged\"S\n" +
+	"\x12bottles_unpackaged\x18\x1f \x01(\x05R\x11bottlesUnpackaged\x12P\n" +
+	"\x13loss_duty_treatment\x18  \x01(\x0e2 .stillhouse.v1.LossDutyTreatmentR\x11lossDutyTreatment\x128\n" +
+	"\x18loss_treatment_authority\x18! \x01(\tR\x16lossTreatmentAuthority\"S\n" +
 	"\vBulkSummary\x12\x1b\n" +
 	"\ttotal_laa\x18\x01 \x01(\x01R\btotalLaa\x12'\n" +
 	"\x0fcontainer_count\x18\x02 \x01(\x05R\x0econtainerCount\"\xdd\x01\n" +
@@ -2905,7 +3379,7 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\n" +
 	"period_end\x18\x03 \x01(\tR\tperiodEnd\"h\n" +
 	" ListInventoryAdjustmentsResponse\x12D\n" +
-	"\vadjustments\x18\x01 \x03(\v2\".stillhouse.v1.InventoryAdjustmentR\vadjustments\"\xe2\x05\n" +
+	"\vadjustments\x18\x01 \x03(\v2\".stillhouse.v1.InventoryAdjustmentR\vadjustments\"\xee\x06\n" +
 	"!RecordBulkExternalMovementRequest\x12!\n" +
 	"\fcontainer_id\x18\x01 \x01(\tR\vcontainerId\x12;\n" +
 	"\x04kind\x18\x02 \x01(\x0e2'.stillhouse.v1.BulkExternalMovementKindR\x04kind\x12\x19\n" +
@@ -2924,11 +3398,45 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"occurredAt\x12\x14\n" +
 	"\x05notes\x18\x0e \x01(\tR\x05notes\x122\n" +
 	"\x15packaged_inventory_id\x18\x0f \x01(\tR\x13packagedInventoryId\x12-\n" +
-	"\x12bottles_unpackaged\x18\x10 \x01(\x05R\x11bottlesUnpackaged\"\xb5\x01\n" +
+	"\x12bottles_unpackaged\x18\x10 \x01(\x05R\x11bottlesUnpackaged\x12P\n" +
+	"\x13loss_duty_treatment\x18\x11 \x01(\x0e2 .stillhouse.v1.LossDutyTreatmentR\x11lossDutyTreatment\x128\n" +
+	"\x18loss_treatment_authority\x18\x12 \x01(\tR\x16lossTreatmentAuthority\"\xb5\x01\n" +
 	"\"RecordBulkExternalMovementResponse\x127\n" +
 	"\bmovement\x18\x01 \x01(\v2\x1b.stillhouse.v1.BulkMovementR\bmovement\x12:\n" +
 	"\tcontainer\x18\x02 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\tcontainer\x12\x1a\n" +
-	"\bwarnings\x18\x03 \x03(\tR\bwarnings*\xa4\x02\n" +
+	"\bwarnings\x18\x03 \x03(\tR\bwarnings\"\xb1\x04\n" +
+	"\x10ClassifiableLoss\x12\x1f\n" +
+	"\vmovement_id\x18\x01 \x01(\tR\n" +
+	"movementId\x129\n" +
+	"\x06reason\x18\x02 \x01(\x0e2!.stillhouse.v1.BulkMovementReasonR\x06reason\x12%\n" +
+	"\x0econtainer_name\x18\x03 \x01(\tR\rcontainerName\x12\x10\n" +
+	"\x03laa\x18\x04 \x01(\x01R\x03laa\x12;\n" +
+	"\voccurred_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"occurredAt\x12\x14\n" +
+	"\x05notes\x18\x06 \x01(\tR\x05notes\x12-\n" +
+	"\x12document_reference\x18\a \x01(\tR\x11documentReference\x12>\n" +
+	"\ttreatment\x18\n" +
+	" \x01(\x0e2 .stillhouse.v1.LossDutyTreatmentR\ttreatment\x12/\n" +
+	"\x13treatment_authority\x18\v \x01(\tR\x12treatmentAuthority\x12#\n" +
+	"\rclassified_by\x18\f \x01(\tR\fclassifiedBy\x12?\n" +
+	"\rclassified_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\fclassifiedAt\x12/\n" +
+	"\x14duty_if_dutiable_cad\x18\x0e \x01(\x01R\x11dutyIfDutiableCad\"\x82\x01\n" +
+	"\x11ListLossesRequest\x12!\n" +
+	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x02 \x01(\tR\tperiodEnd\x12+\n" +
+	"\x11unclassified_only\x18\x03 \x01(\bR\x10unclassifiedOnly\"\xbe\x01\n" +
+	"\x12ListLossesResponse\x127\n" +
+	"\x06losses\x18\x01 \x03(\v2\x1f.stillhouse.v1.ClassifiableLossR\x06losses\x12)\n" +
+	"\x10unclassified_laa\x18\x02 \x01(\x01R\x0funclassifiedLaa\x12!\n" +
+	"\fdutiable_laa\x18\x03 \x01(\x01R\vdutiableLaa\x12!\n" +
+	"\frelieved_laa\x18\x04 \x01(\x01R\vrelievedLaa\"\x98\x01\n" +
+	"\x15ClassifyLossesRequest\x12!\n" +
+	"\fmovement_ids\x18\x01 \x03(\tR\vmovementIds\x12>\n" +
+	"\ttreatment\x18\x02 \x01(\x0e2 .stillhouse.v1.LossDutyTreatmentR\ttreatment\x12\x1c\n" +
+	"\tauthority\x18\x03 \x01(\tR\tauthority\"Q\n" +
+	"\x16ClassifyLossesResponse\x127\n" +
+	"\x06losses\x18\x01 \x03(\v2\x1f.stillhouse.v1.ClassifiableLossR\x06losses*\xa4\x02\n" +
 	"\x11BulkContainerKind\x12#\n" +
 	"\x1fBULK_CONTAINER_KIND_UNSPECIFIED\x10\x00\x12'\n" +
 	"#BULK_CONTAINER_KIND_SPIRIT_RECEIVER\x10\x01\x12\x1c\n" +
@@ -2986,8 +3494,16 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	")BULK_EXTERNAL_MOVEMENT_KIND_DENATURED_SDA\x10\x0f\x126\n" +
 	"2BULK_EXTERNAL_MOVEMENT_KIND_RETURNED_TO_PRODUCTION\x10\x10\x12+\n" +
 	"'BULK_EXTERNAL_MOVEMENT_KIND_DESTRUCTION\x10\x11\x120\n" +
-	",BULK_EXTERNAL_MOVEMENT_KIND_UNACCOUNTED_LOSS\x10\x122\xfb\t\n" +
-	"\vBulkService\x12\x81\x01\n" +
+	",BULK_EXTERNAL_MOVEMENT_KIND_UNACCOUNTED_LOSS\x10\x12*\xa2\x01\n" +
+	"\x11LossDutyTreatment\x12#\n" +
+	"\x1fLOSS_DUTY_TREATMENT_UNSPECIFIED\x10\x00\x12$\n" +
+	" LOSS_DUTY_TREATMENT_UNCLASSIFIED\x10\x01\x12 \n" +
+	"\x1cLOSS_DUTY_TREATMENT_RELIEVED\x10\x02\x12 \n" +
+	"\x1cLOSS_DUTY_TREATMENT_DUTIABLE\x10\x032\xad\v\n" +
+	"\vBulkService\x12Q\n" +
+	"\n" +
+	"ListLosses\x12 .stillhouse.v1.ListLossesRequest\x1a!.stillhouse.v1.ListLossesResponse\x12]\n" +
+	"\x0eClassifyLosses\x12$.stillhouse.v1.ClassifyLossesRequest\x1a%.stillhouse.v1.ClassifyLossesResponse\x12\x81\x01\n" +
 	"\x1aRecordBulkExternalMovement\x120.stillhouse.v1.RecordBulkExternalMovementRequest\x1a1.stillhouse.v1.RecordBulkExternalMovementResponse\x12~\n" +
 	"\x19RecordInventoryAdjustment\x12/.stillhouse.v1.RecordInventoryAdjustmentRequest\x1a0.stillhouse.v1.RecordInventoryAdjustmentResponse\x12{\n" +
 	"\x18ListInventoryAdjustments\x12..stillhouse.v1.ListInventoryAdjustmentsRequest\x1a/.stillhouse.v1.ListInventoryAdjustmentsResponse\x12l\n" +
@@ -3013,115 +3529,134 @@ func file_stillhouse_v1_bulk_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_bulk_proto_rawDescData
 }
 
-var file_stillhouse_v1_bulk_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_stillhouse_v1_bulk_proto_msgTypes = make([]protoimpl.MessageInfo, 27)
+var file_stillhouse_v1_bulk_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_stillhouse_v1_bulk_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
 var file_stillhouse_v1_bulk_proto_goTypes = []any{
 	(BulkContainerKind)(0),                     // 0: stillhouse.v1.BulkContainerKind
 	(BulkMovementReason)(0),                    // 1: stillhouse.v1.BulkMovementReason
 	(InventoryAdjustmentReason)(0),             // 2: stillhouse.v1.InventoryAdjustmentReason
 	(BulkExternalMovementKind)(0),              // 3: stillhouse.v1.BulkExternalMovementKind
-	(*BulkContainer)(nil),                      // 4: stillhouse.v1.BulkContainer
-	(*BulkMovement)(nil),                       // 5: stillhouse.v1.BulkMovement
-	(*BulkSummary)(nil),                        // 6: stillhouse.v1.BulkSummary
-	(*CreateBulkContainerRequest)(nil),         // 7: stillhouse.v1.CreateBulkContainerRequest
-	(*CreateBulkContainerResponse)(nil),        // 8: stillhouse.v1.CreateBulkContainerResponse
-	(*UpdateBulkContainerRequest)(nil),         // 9: stillhouse.v1.UpdateBulkContainerRequest
-	(*UpdateBulkContainerResponse)(nil),        // 10: stillhouse.v1.UpdateBulkContainerResponse
-	(*SetBulkContainerArchivedRequest)(nil),    // 11: stillhouse.v1.SetBulkContainerArchivedRequest
-	(*SetBulkContainerArchivedResponse)(nil),   // 12: stillhouse.v1.SetBulkContainerArchivedResponse
-	(*ListBulkContainersRequest)(nil),          // 13: stillhouse.v1.ListBulkContainersRequest
-	(*ListBulkContainersResponse)(nil),         // 14: stillhouse.v1.ListBulkContainersResponse
-	(*GetBulkContainerRequest)(nil),            // 15: stillhouse.v1.GetBulkContainerRequest
-	(*GetBulkContainerResponse)(nil),           // 16: stillhouse.v1.GetBulkContainerResponse
-	(*ListRecentBulkMovementsRequest)(nil),     // 17: stillhouse.v1.ListRecentBulkMovementsRequest
-	(*ListRecentBulkMovementsResponse)(nil),    // 18: stillhouse.v1.ListRecentBulkMovementsResponse
-	(*BlendSourceInput)(nil),                   // 19: stillhouse.v1.BlendSourceInput
-	(*CreateBlendRequest)(nil),                 // 20: stillhouse.v1.CreateBlendRequest
-	(*CreateBlendResponse)(nil),                // 21: stillhouse.v1.CreateBlendResponse
-	(*AdoptOpeningInventoryRequest)(nil),       // 22: stillhouse.v1.AdoptOpeningInventoryRequest
-	(*AdoptOpeningInventoryResponse)(nil),      // 23: stillhouse.v1.AdoptOpeningInventoryResponse
-	(*InventoryAdjustment)(nil),                // 24: stillhouse.v1.InventoryAdjustment
-	(*RecordInventoryAdjustmentRequest)(nil),   // 25: stillhouse.v1.RecordInventoryAdjustmentRequest
-	(*RecordInventoryAdjustmentResponse)(nil),  // 26: stillhouse.v1.RecordInventoryAdjustmentResponse
-	(*ListInventoryAdjustmentsRequest)(nil),    // 27: stillhouse.v1.ListInventoryAdjustmentsRequest
-	(*ListInventoryAdjustmentsResponse)(nil),   // 28: stillhouse.v1.ListInventoryAdjustmentsResponse
-	(*RecordBulkExternalMovementRequest)(nil),  // 29: stillhouse.v1.RecordBulkExternalMovementRequest
-	(*RecordBulkExternalMovementResponse)(nil), // 30: stillhouse.v1.RecordBulkExternalMovementResponse
-	(*timestamppb.Timestamp)(nil),              // 31: google.protobuf.Timestamp
-	(StrengthSource)(0),                        // 32: stillhouse.v1.StrengthSource
-	(*DeterminationInstruments)(nil),           // 33: stillhouse.v1.DeterminationInstruments
-	(*InstrumentRefs)(nil),                     // 34: stillhouse.v1.InstrumentRefs
+	(LossDutyTreatment)(0),                     // 4: stillhouse.v1.LossDutyTreatment
+	(*BulkContainer)(nil),                      // 5: stillhouse.v1.BulkContainer
+	(*BulkMovement)(nil),                       // 6: stillhouse.v1.BulkMovement
+	(*BulkSummary)(nil),                        // 7: stillhouse.v1.BulkSummary
+	(*CreateBulkContainerRequest)(nil),         // 8: stillhouse.v1.CreateBulkContainerRequest
+	(*CreateBulkContainerResponse)(nil),        // 9: stillhouse.v1.CreateBulkContainerResponse
+	(*UpdateBulkContainerRequest)(nil),         // 10: stillhouse.v1.UpdateBulkContainerRequest
+	(*UpdateBulkContainerResponse)(nil),        // 11: stillhouse.v1.UpdateBulkContainerResponse
+	(*SetBulkContainerArchivedRequest)(nil),    // 12: stillhouse.v1.SetBulkContainerArchivedRequest
+	(*SetBulkContainerArchivedResponse)(nil),   // 13: stillhouse.v1.SetBulkContainerArchivedResponse
+	(*ListBulkContainersRequest)(nil),          // 14: stillhouse.v1.ListBulkContainersRequest
+	(*ListBulkContainersResponse)(nil),         // 15: stillhouse.v1.ListBulkContainersResponse
+	(*GetBulkContainerRequest)(nil),            // 16: stillhouse.v1.GetBulkContainerRequest
+	(*GetBulkContainerResponse)(nil),           // 17: stillhouse.v1.GetBulkContainerResponse
+	(*ListRecentBulkMovementsRequest)(nil),     // 18: stillhouse.v1.ListRecentBulkMovementsRequest
+	(*ListRecentBulkMovementsResponse)(nil),    // 19: stillhouse.v1.ListRecentBulkMovementsResponse
+	(*BlendSourceInput)(nil),                   // 20: stillhouse.v1.BlendSourceInput
+	(*CreateBlendRequest)(nil),                 // 21: stillhouse.v1.CreateBlendRequest
+	(*CreateBlendResponse)(nil),                // 22: stillhouse.v1.CreateBlendResponse
+	(*AdoptOpeningInventoryRequest)(nil),       // 23: stillhouse.v1.AdoptOpeningInventoryRequest
+	(*AdoptOpeningInventoryResponse)(nil),      // 24: stillhouse.v1.AdoptOpeningInventoryResponse
+	(*InventoryAdjustment)(nil),                // 25: stillhouse.v1.InventoryAdjustment
+	(*RecordInventoryAdjustmentRequest)(nil),   // 26: stillhouse.v1.RecordInventoryAdjustmentRequest
+	(*RecordInventoryAdjustmentResponse)(nil),  // 27: stillhouse.v1.RecordInventoryAdjustmentResponse
+	(*ListInventoryAdjustmentsRequest)(nil),    // 28: stillhouse.v1.ListInventoryAdjustmentsRequest
+	(*ListInventoryAdjustmentsResponse)(nil),   // 29: stillhouse.v1.ListInventoryAdjustmentsResponse
+	(*RecordBulkExternalMovementRequest)(nil),  // 30: stillhouse.v1.RecordBulkExternalMovementRequest
+	(*RecordBulkExternalMovementResponse)(nil), // 31: stillhouse.v1.RecordBulkExternalMovementResponse
+	(*ClassifiableLoss)(nil),                   // 32: stillhouse.v1.ClassifiableLoss
+	(*ListLossesRequest)(nil),                  // 33: stillhouse.v1.ListLossesRequest
+	(*ListLossesResponse)(nil),                 // 34: stillhouse.v1.ListLossesResponse
+	(*ClassifyLossesRequest)(nil),              // 35: stillhouse.v1.ClassifyLossesRequest
+	(*ClassifyLossesResponse)(nil),             // 36: stillhouse.v1.ClassifyLossesResponse
+	(*timestamppb.Timestamp)(nil),              // 37: google.protobuf.Timestamp
+	(StrengthSource)(0),                        // 38: stillhouse.v1.StrengthSource
+	(*DeterminationInstruments)(nil),           // 39: stillhouse.v1.DeterminationInstruments
+	(*InstrumentRefs)(nil),                     // 40: stillhouse.v1.InstrumentRefs
 }
 var file_stillhouse_v1_bulk_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.BulkContainer.kind:type_name -> stillhouse.v1.BulkContainerKind
-	31, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
-	31, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
-	31, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
+	37, // 1: stillhouse.v1.BulkContainer.created_at:type_name -> google.protobuf.Timestamp
+	37, // 2: stillhouse.v1.BulkContainer.updated_at:type_name -> google.protobuf.Timestamp
+	37, // 3: stillhouse.v1.BulkContainer.last_movement_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: stillhouse.v1.BulkMovement.reason:type_name -> stillhouse.v1.BulkMovementReason
-	31, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
-	31, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
-	32, // 7: stillhouse.v1.BulkMovement.strength_source:type_name -> stillhouse.v1.StrengthSource
-	33, // 8: stillhouse.v1.BulkMovement.instruments:type_name -> stillhouse.v1.DeterminationInstruments
-	0,  // 9: stillhouse.v1.CreateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
-	4,  // 10: stillhouse.v1.CreateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
-	0,  // 11: stillhouse.v1.UpdateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
-	4,  // 12: stillhouse.v1.UpdateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
-	4,  // 13: stillhouse.v1.SetBulkContainerArchivedResponse.container:type_name -> stillhouse.v1.BulkContainer
-	4,  // 14: stillhouse.v1.ListBulkContainersResponse.containers:type_name -> stillhouse.v1.BulkContainer
-	6,  // 15: stillhouse.v1.ListBulkContainersResponse.summary:type_name -> stillhouse.v1.BulkSummary
-	4,  // 16: stillhouse.v1.GetBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
-	5,  // 17: stillhouse.v1.GetBulkContainerResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	5,  // 18: stillhouse.v1.ListRecentBulkMovementsResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	19, // 19: stillhouse.v1.CreateBlendRequest.sources:type_name -> stillhouse.v1.BlendSourceInput
-	31, // 20: stillhouse.v1.CreateBlendRequest.occurred_at:type_name -> google.protobuf.Timestamp
-	4,  // 21: stillhouse.v1.CreateBlendResponse.destination:type_name -> stillhouse.v1.BulkContainer
-	5,  // 22: stillhouse.v1.CreateBlendResponse.movements:type_name -> stillhouse.v1.BulkMovement
-	31, // 23: stillhouse.v1.AdoptOpeningInventoryRequest.as_of:type_name -> google.protobuf.Timestamp
-	4,  // 24: stillhouse.v1.AdoptOpeningInventoryResponse.container:type_name -> stillhouse.v1.BulkContainer
-	5,  // 25: stillhouse.v1.AdoptOpeningInventoryResponse.movement:type_name -> stillhouse.v1.BulkMovement
-	2,  // 26: stillhouse.v1.InventoryAdjustment.reason:type_name -> stillhouse.v1.InventoryAdjustmentReason
-	32, // 27: stillhouse.v1.InventoryAdjustment.strength_source:type_name -> stillhouse.v1.StrengthSource
-	33, // 28: stillhouse.v1.InventoryAdjustment.instruments:type_name -> stillhouse.v1.DeterminationInstruments
-	31, // 29: stillhouse.v1.InventoryAdjustment.occurred_at:type_name -> google.protobuf.Timestamp
-	31, // 30: stillhouse.v1.InventoryAdjustment.created_at:type_name -> google.protobuf.Timestamp
-	2,  // 31: stillhouse.v1.RecordInventoryAdjustmentRequest.reason:type_name -> stillhouse.v1.InventoryAdjustmentReason
-	31, // 32: stillhouse.v1.RecordInventoryAdjustmentRequest.occurred_at:type_name -> google.protobuf.Timestamp
-	34, // 33: stillhouse.v1.RecordInventoryAdjustmentRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	24, // 34: stillhouse.v1.RecordInventoryAdjustmentResponse.adjustment:type_name -> stillhouse.v1.InventoryAdjustment
-	4,  // 35: stillhouse.v1.RecordInventoryAdjustmentResponse.container:type_name -> stillhouse.v1.BulkContainer
-	24, // 36: stillhouse.v1.ListInventoryAdjustmentsResponse.adjustments:type_name -> stillhouse.v1.InventoryAdjustment
-	3,  // 37: stillhouse.v1.RecordBulkExternalMovementRequest.kind:type_name -> stillhouse.v1.BulkExternalMovementKind
-	34, // 38: stillhouse.v1.RecordBulkExternalMovementRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	31, // 39: stillhouse.v1.RecordBulkExternalMovementRequest.occurred_at:type_name -> google.protobuf.Timestamp
-	5,  // 40: stillhouse.v1.RecordBulkExternalMovementResponse.movement:type_name -> stillhouse.v1.BulkMovement
-	4,  // 41: stillhouse.v1.RecordBulkExternalMovementResponse.container:type_name -> stillhouse.v1.BulkContainer
-	29, // 42: stillhouse.v1.BulkService.RecordBulkExternalMovement:input_type -> stillhouse.v1.RecordBulkExternalMovementRequest
-	25, // 43: stillhouse.v1.BulkService.RecordInventoryAdjustment:input_type -> stillhouse.v1.RecordInventoryAdjustmentRequest
-	27, // 44: stillhouse.v1.BulkService.ListInventoryAdjustments:input_type -> stillhouse.v1.ListInventoryAdjustmentsRequest
-	7,  // 45: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
-	9,  // 46: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
-	11, // 47: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
-	13, // 48: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
-	15, // 49: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
-	17, // 50: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
-	20, // 51: stillhouse.v1.BulkService.CreateBlend:input_type -> stillhouse.v1.CreateBlendRequest
-	22, // 52: stillhouse.v1.BulkService.AdoptOpeningInventory:input_type -> stillhouse.v1.AdoptOpeningInventoryRequest
-	30, // 53: stillhouse.v1.BulkService.RecordBulkExternalMovement:output_type -> stillhouse.v1.RecordBulkExternalMovementResponse
-	26, // 54: stillhouse.v1.BulkService.RecordInventoryAdjustment:output_type -> stillhouse.v1.RecordInventoryAdjustmentResponse
-	28, // 55: stillhouse.v1.BulkService.ListInventoryAdjustments:output_type -> stillhouse.v1.ListInventoryAdjustmentsResponse
-	8,  // 56: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
-	10, // 57: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
-	12, // 58: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
-	14, // 59: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
-	16, // 60: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
-	18, // 61: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
-	21, // 62: stillhouse.v1.BulkService.CreateBlend:output_type -> stillhouse.v1.CreateBlendResponse
-	23, // 63: stillhouse.v1.BulkService.AdoptOpeningInventory:output_type -> stillhouse.v1.AdoptOpeningInventoryResponse
-	53, // [53:64] is the sub-list for method output_type
-	42, // [42:53] is the sub-list for method input_type
-	42, // [42:42] is the sub-list for extension type_name
-	42, // [42:42] is the sub-list for extension extendee
-	0,  // [0:42] is the sub-list for field type_name
+	37, // 5: stillhouse.v1.BulkMovement.occurred_at:type_name -> google.protobuf.Timestamp
+	37, // 6: stillhouse.v1.BulkMovement.created_at:type_name -> google.protobuf.Timestamp
+	38, // 7: stillhouse.v1.BulkMovement.strength_source:type_name -> stillhouse.v1.StrengthSource
+	39, // 8: stillhouse.v1.BulkMovement.instruments:type_name -> stillhouse.v1.DeterminationInstruments
+	4,  // 9: stillhouse.v1.BulkMovement.loss_duty_treatment:type_name -> stillhouse.v1.LossDutyTreatment
+	0,  // 10: stillhouse.v1.CreateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
+	5,  // 11: stillhouse.v1.CreateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
+	0,  // 12: stillhouse.v1.UpdateBulkContainerRequest.kind:type_name -> stillhouse.v1.BulkContainerKind
+	5,  // 13: stillhouse.v1.UpdateBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
+	5,  // 14: stillhouse.v1.SetBulkContainerArchivedResponse.container:type_name -> stillhouse.v1.BulkContainer
+	5,  // 15: stillhouse.v1.ListBulkContainersResponse.containers:type_name -> stillhouse.v1.BulkContainer
+	7,  // 16: stillhouse.v1.ListBulkContainersResponse.summary:type_name -> stillhouse.v1.BulkSummary
+	5,  // 17: stillhouse.v1.GetBulkContainerResponse.container:type_name -> stillhouse.v1.BulkContainer
+	6,  // 18: stillhouse.v1.GetBulkContainerResponse.movements:type_name -> stillhouse.v1.BulkMovement
+	6,  // 19: stillhouse.v1.ListRecentBulkMovementsResponse.movements:type_name -> stillhouse.v1.BulkMovement
+	20, // 20: stillhouse.v1.CreateBlendRequest.sources:type_name -> stillhouse.v1.BlendSourceInput
+	37, // 21: stillhouse.v1.CreateBlendRequest.occurred_at:type_name -> google.protobuf.Timestamp
+	5,  // 22: stillhouse.v1.CreateBlendResponse.destination:type_name -> stillhouse.v1.BulkContainer
+	6,  // 23: stillhouse.v1.CreateBlendResponse.movements:type_name -> stillhouse.v1.BulkMovement
+	37, // 24: stillhouse.v1.AdoptOpeningInventoryRequest.as_of:type_name -> google.protobuf.Timestamp
+	5,  // 25: stillhouse.v1.AdoptOpeningInventoryResponse.container:type_name -> stillhouse.v1.BulkContainer
+	6,  // 26: stillhouse.v1.AdoptOpeningInventoryResponse.movement:type_name -> stillhouse.v1.BulkMovement
+	2,  // 27: stillhouse.v1.InventoryAdjustment.reason:type_name -> stillhouse.v1.InventoryAdjustmentReason
+	38, // 28: stillhouse.v1.InventoryAdjustment.strength_source:type_name -> stillhouse.v1.StrengthSource
+	39, // 29: stillhouse.v1.InventoryAdjustment.instruments:type_name -> stillhouse.v1.DeterminationInstruments
+	37, // 30: stillhouse.v1.InventoryAdjustment.occurred_at:type_name -> google.protobuf.Timestamp
+	37, // 31: stillhouse.v1.InventoryAdjustment.created_at:type_name -> google.protobuf.Timestamp
+	2,  // 32: stillhouse.v1.RecordInventoryAdjustmentRequest.reason:type_name -> stillhouse.v1.InventoryAdjustmentReason
+	37, // 33: stillhouse.v1.RecordInventoryAdjustmentRequest.occurred_at:type_name -> google.protobuf.Timestamp
+	40, // 34: stillhouse.v1.RecordInventoryAdjustmentRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	25, // 35: stillhouse.v1.RecordInventoryAdjustmentResponse.adjustment:type_name -> stillhouse.v1.InventoryAdjustment
+	5,  // 36: stillhouse.v1.RecordInventoryAdjustmentResponse.container:type_name -> stillhouse.v1.BulkContainer
+	25, // 37: stillhouse.v1.ListInventoryAdjustmentsResponse.adjustments:type_name -> stillhouse.v1.InventoryAdjustment
+	3,  // 38: stillhouse.v1.RecordBulkExternalMovementRequest.kind:type_name -> stillhouse.v1.BulkExternalMovementKind
+	40, // 39: stillhouse.v1.RecordBulkExternalMovementRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	37, // 40: stillhouse.v1.RecordBulkExternalMovementRequest.occurred_at:type_name -> google.protobuf.Timestamp
+	4,  // 41: stillhouse.v1.RecordBulkExternalMovementRequest.loss_duty_treatment:type_name -> stillhouse.v1.LossDutyTreatment
+	6,  // 42: stillhouse.v1.RecordBulkExternalMovementResponse.movement:type_name -> stillhouse.v1.BulkMovement
+	5,  // 43: stillhouse.v1.RecordBulkExternalMovementResponse.container:type_name -> stillhouse.v1.BulkContainer
+	1,  // 44: stillhouse.v1.ClassifiableLoss.reason:type_name -> stillhouse.v1.BulkMovementReason
+	37, // 45: stillhouse.v1.ClassifiableLoss.occurred_at:type_name -> google.protobuf.Timestamp
+	4,  // 46: stillhouse.v1.ClassifiableLoss.treatment:type_name -> stillhouse.v1.LossDutyTreatment
+	37, // 47: stillhouse.v1.ClassifiableLoss.classified_at:type_name -> google.protobuf.Timestamp
+	32, // 48: stillhouse.v1.ListLossesResponse.losses:type_name -> stillhouse.v1.ClassifiableLoss
+	4,  // 49: stillhouse.v1.ClassifyLossesRequest.treatment:type_name -> stillhouse.v1.LossDutyTreatment
+	32, // 50: stillhouse.v1.ClassifyLossesResponse.losses:type_name -> stillhouse.v1.ClassifiableLoss
+	33, // 51: stillhouse.v1.BulkService.ListLosses:input_type -> stillhouse.v1.ListLossesRequest
+	35, // 52: stillhouse.v1.BulkService.ClassifyLosses:input_type -> stillhouse.v1.ClassifyLossesRequest
+	30, // 53: stillhouse.v1.BulkService.RecordBulkExternalMovement:input_type -> stillhouse.v1.RecordBulkExternalMovementRequest
+	26, // 54: stillhouse.v1.BulkService.RecordInventoryAdjustment:input_type -> stillhouse.v1.RecordInventoryAdjustmentRequest
+	28, // 55: stillhouse.v1.BulkService.ListInventoryAdjustments:input_type -> stillhouse.v1.ListInventoryAdjustmentsRequest
+	8,  // 56: stillhouse.v1.BulkService.CreateBulkContainer:input_type -> stillhouse.v1.CreateBulkContainerRequest
+	10, // 57: stillhouse.v1.BulkService.UpdateBulkContainer:input_type -> stillhouse.v1.UpdateBulkContainerRequest
+	12, // 58: stillhouse.v1.BulkService.SetBulkContainerArchived:input_type -> stillhouse.v1.SetBulkContainerArchivedRequest
+	14, // 59: stillhouse.v1.BulkService.ListBulkContainers:input_type -> stillhouse.v1.ListBulkContainersRequest
+	16, // 60: stillhouse.v1.BulkService.GetBulkContainer:input_type -> stillhouse.v1.GetBulkContainerRequest
+	18, // 61: stillhouse.v1.BulkService.ListRecentBulkMovements:input_type -> stillhouse.v1.ListRecentBulkMovementsRequest
+	21, // 62: stillhouse.v1.BulkService.CreateBlend:input_type -> stillhouse.v1.CreateBlendRequest
+	23, // 63: stillhouse.v1.BulkService.AdoptOpeningInventory:input_type -> stillhouse.v1.AdoptOpeningInventoryRequest
+	34, // 64: stillhouse.v1.BulkService.ListLosses:output_type -> stillhouse.v1.ListLossesResponse
+	36, // 65: stillhouse.v1.BulkService.ClassifyLosses:output_type -> stillhouse.v1.ClassifyLossesResponse
+	31, // 66: stillhouse.v1.BulkService.RecordBulkExternalMovement:output_type -> stillhouse.v1.RecordBulkExternalMovementResponse
+	27, // 67: stillhouse.v1.BulkService.RecordInventoryAdjustment:output_type -> stillhouse.v1.RecordInventoryAdjustmentResponse
+	29, // 68: stillhouse.v1.BulkService.ListInventoryAdjustments:output_type -> stillhouse.v1.ListInventoryAdjustmentsResponse
+	9,  // 69: stillhouse.v1.BulkService.CreateBulkContainer:output_type -> stillhouse.v1.CreateBulkContainerResponse
+	11, // 70: stillhouse.v1.BulkService.UpdateBulkContainer:output_type -> stillhouse.v1.UpdateBulkContainerResponse
+	13, // 71: stillhouse.v1.BulkService.SetBulkContainerArchived:output_type -> stillhouse.v1.SetBulkContainerArchivedResponse
+	15, // 72: stillhouse.v1.BulkService.ListBulkContainers:output_type -> stillhouse.v1.ListBulkContainersResponse
+	17, // 73: stillhouse.v1.BulkService.GetBulkContainer:output_type -> stillhouse.v1.GetBulkContainerResponse
+	19, // 74: stillhouse.v1.BulkService.ListRecentBulkMovements:output_type -> stillhouse.v1.ListRecentBulkMovementsResponse
+	22, // 75: stillhouse.v1.BulkService.CreateBlend:output_type -> stillhouse.v1.CreateBlendResponse
+	24, // 76: stillhouse.v1.BulkService.AdoptOpeningInventory:output_type -> stillhouse.v1.AdoptOpeningInventoryResponse
+	64, // [64:77] is the sub-list for method output_type
+	51, // [51:64] is the sub-list for method input_type
+	51, // [51:51] is the sub-list for extension type_name
+	51, // [51:51] is the sub-list for extension extendee
+	0,  // [0:51] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_bulk_proto_init() }
@@ -3136,8 +3671,8 @@ func file_stillhouse_v1_bulk_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_bulk_proto_rawDesc), len(file_stillhouse_v1_bulk_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   27,
+			NumEnums:      5,
+			NumMessages:   32,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

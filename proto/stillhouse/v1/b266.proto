@@ -69,6 +69,26 @@ message B266Report {
   double bulk_denatured_sda_laa = 66;
   double bulk_returned_to_production_laa = 67;
 
+  // Losses split by duty treatment. bulk_losses_laa stays as the total, so
+  // the three below always sum to it.
+  //
+  // Unclassified is reported rather than assumed either way: Stillhouse
+  // does not know whether a given evaporation loss is relieved, and putting
+  // a number on a return that nobody chose is the thing this product does
+  // not do. A period with unclassified losses is not ready to file, and
+  // filing_blockers says so.
+  double bulk_losses_relieved_laa = 68;
+  double bulk_losses_dutiable_laa = 69;
+  double bulk_losses_unclassified_laa = 70;
+  // Duty on the dutiable losses, at the rate in force over the period.
+  // Included in duty_payable_cad.
+  double duty_on_losses_cad = 71;
+
+  // Reasons this period cannot be filed as it stands, in the operator's
+  // words. Empty means nothing is outstanding — which is not a promise the
+  // figures are right, only that nothing is missing.
+  repeated string filing_blockers = 72;
+
   // Packaged spirits section.
   double packaged_opening_laa = 30;
   double packaged_packaged_laa = 31;      // produced by bottling runs

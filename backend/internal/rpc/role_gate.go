@@ -74,6 +74,11 @@ var procedureMinRole = map[string]minRole{
 	// An inventory adjustment is a deliberate, attributable reconciliation
 	// entry that lands on line D of a filed return, so it is an operator
 	// action with a mandatory explanation rather than a viewer one.
+	// Ruling on a loss's duty treatment changes what the return charges, so
+	// it is an operator action; reading the outstanding list is not.
+	"/stillhouse.v1.BulkService/ListLosses":     roleViewer,
+	"/stillhouse.v1.BulkService/ClassifyLosses": roleOperator,
+
 	// Alcohol arriving on or leaving the premises lands on a filed return
 	// and names a counterparty, so it is an operator action.
 	"/stillhouse.v1.BulkService/RecordBulkExternalMovement": roleOperator,

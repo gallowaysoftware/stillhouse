@@ -114,6 +114,10 @@ message BulkMovement {
   // Set on a packaged-spirits-returned-to-bulk movement.
   string packaged_inventory_id = 30;
   int32  bottles_unpackaged = 31;
+
+  // Set on a loss or a destruction.
+  LossDutyTreatment loss_duty_treatment = 32;
+  string loss_treatment_authority = 33;
 }
 
 message BulkSummary {
@@ -382,6 +386,14 @@ message RecordBulkExternalMovementRequest {
   // Required for PACKAGED_RETURNED_TO_BULK, ignored otherwise.
   string packaged_inventory_id = 15;
   int32  bottles_unpackaged = 16;
+
+  // For a loss or a destruction: how it is treated for duty, and the
+  // authority relief rests on. An operator destroying spirits under a CRA
+  // approval has the approval in front of them, so the classification
+  // belongs here rather than as a second trip. Ignored for every other
+  // kind.
+  LossDutyTreatment loss_duty_treatment = 17;
+  string loss_treatment_authority = 18;
 }
 message RecordBulkExternalMovementResponse {
   BulkMovement movement = 1;
@@ -389,7 +401,73 @@ message RecordBulkExternalMovementResponse {
   repeated string warnings = 3;
 }
 
+// How a loss is treated for duty. EDM3-4-1: a destruction approved by CRA
+// is relieved, while spirits that cannot be accounted for are duty-payable.
+// Collapsing the two produces a plausible total and the wrong duty.
+enum LossDutyTreatment {
+  LOSS_DUTY_TREATMENT_UNSPECIFIED = 0;
+  // Nobody has said yet. The honest default: Stillhouse does not know
+  // whether a given evaporation loss is relieved, and the barrel regauge
+  // that wrote it did not ask. Reported on the return as outstanding.
+  LOSS_DUTY_TREATMENT_UNCLASSIFIED = 1;
+  // Relieved under EDM3-4-1. Relief rests on something, so an authority is
+  // required — a CRA approval reference, or the provision relied on.
+  LOSS_DUTY_TREATMENT_RELIEVED = 2;
+  // Duty is payable on these litres.
+  LOSS_DUTY_TREATMENT_DUTIABLE = 3;
+}
+
+// One loss awaiting a duty treatment, or carrying one.
+message ClassifiableLoss {
+  string movement_id = 1;
+  BulkMovementReason reason = 2;
+  string container_name = 3;
+  double laa = 4;
+  google.protobuf.Timestamp occurred_at = 5;
+  string notes = 6;
+  string document_reference = 7;
+
+  LossDutyTreatment treatment = 10;
+  string treatment_authority = 11;
+  string classified_by = 12;
+  google.protobuf.Timestamp classified_at = 13;
+  // What duty these litres would attract if dutiable, at the rate in force
+  // on the day of the loss. Shown against an unclassified loss so the
+  // decision is made with its cost visible.
+  double duty_if_dutiable_cad = 14;
+}
+
+message ListLossesRequest {
+  string period_start = 1;            // optional ISO date, inclusive
+  string period_end = 2;              // optional ISO date, inclusive
+  // Only losses nobody has ruled on yet — what has to be resolved before a
+  // return can be filed.
+  bool unclassified_only = 3;
+}
+message ListLossesResponse {
+  repeated ClassifiableLoss losses = 1;
+  double unclassified_laa = 2;
+  double dutiable_laa = 3;
+  double relieved_laa = 4;
+}
+
+message ClassifyLossesRequest {
+  // Several at once: an operator resolving a period's evaporation losses is
+  // making one decision about a dozen rows, not a dozen decisions.
+  repeated string movement_ids = 1;
+  LossDutyTreatment treatment = 2;
+  // Required when the treatment is RELIEVED. Relief that rests on nothing
+  // is not relief.
+  string authority = 3;
+}
+message ClassifyLossesResponse {
+  repeated ClassifiableLoss losses = 1;
+}
+
 service BulkService {
+  // Losses, and what duty treatment each carries.
+  rpc ListLosses(ListLossesRequest) returns (ListLossesResponse);
+  rpc ClassifyLosses(ClassifyLossesRequest) returns (ClassifyLossesResponse);
   // Record bulk spirits arriving on or leaving the premises — the B266
   // page 3 lines that had no path.
   rpc RecordBulkExternalMovement(RecordBulkExternalMovementRequest) returns (RecordBulkExternalMovementResponse);

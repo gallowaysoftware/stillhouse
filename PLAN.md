@@ -62,16 +62,6 @@ else first:
   `A2`.
 - **Page 1 line 8** — refunds, with an attached B256. Waits on `A9`.
 
-### A5 · Losses aren't classified by duty treatment — P1
-
-`bulk_losses_laa` is one number, and stage 145 took the misclassified
-count variances out of it — what remains is genuine loss, still unclassified.
-Under EDM3-4-1 the treatment diverges sharply:
-destruction approved by CRA is relieved; unaccounted losses are duty-paid and
-cost real money. Collapsing them yields a plausible total and the wrong duty.
-Needs the classification, the approval reference where one exists, and the duty
-consequence attached.
-
 ### A6 · Reporting periods assume a calendar month — P1
 
 The default period is a fiscal month, but an authorized licensee may file
@@ -607,16 +597,17 @@ the three options.
 
 Correctness first, in this order, because each depends on the one before:
 
-1. `A5` `A6` losses and reporting periods
+1. `A6` reporting periods
 2. `H1` `H2` liability and backups — before any second distillery's records land here
 3. `C2` audit binder — the artifact that makes the case for everything above
 
-`A1`, `C1`, `A4` and the bulk half of `A3` shipped in stages 143–146: duty
+`A1`, `C1`, `A4`, `A5` and the bulk half of `A3` shipped in stages 143–147: duty
 crystallises at the event that makes it payable, every gauge can name the
 approved instrument that made it, a discrepancy between book and physical has a
-reason-coded entry of its own instead of vanishing into losses, and page 3 has
-the movement vocabulary the form actually asks for. What is left of `A3` is
-blocked on `B3`, `A2` and `A9` rather than on itself.
+reason-coded entry of its own instead of vanishing into losses, page 3 has the
+movement vocabulary the form actually asks for, and a loss says whether it is
+relieved or duty-payable rather than being averaged into one line. What is left
+of `A3` is blocked on `B3`, `A2` and `A9` rather than on itself.
 
 `A3` and `A4` are the difference between a return that ties out and one that is
 also true; `A10`, which was the third of that group, shipped in stage 141. `K1`

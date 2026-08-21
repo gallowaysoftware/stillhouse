@@ -67,10 +67,11 @@ INSERT INTO bulk_movements (
     temperature_c, observed_volume_l, observed_density_kg_m3,
     volume_factor_c, strength_source,
     volume_instrument_id, strength_instrument_id, temperature_instrument_id,
-    recorded_by, packaged_inventory_id, bottles_unpackaged
+    recorded_by, packaged_inventory_id, bottles_unpackaged,
+    loss_duty_treatment, loss_treatment_authority
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
-    $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
+    $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
 ) RETURNING *;
 
 -- name: InsertBulkMovement :one

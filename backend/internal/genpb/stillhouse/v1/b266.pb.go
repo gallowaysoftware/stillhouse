@@ -224,6 +224,24 @@ type B266Report struct {
 	BulkDenaturedDaLaa              float64 `protobuf:"fixed64,65,opt,name=bulk_denatured_da_laa,json=bulkDenaturedDaLaa,proto3" json:"bulk_denatured_da_laa,omitempty"`
 	BulkDenaturedSdaLaa             float64 `protobuf:"fixed64,66,opt,name=bulk_denatured_sda_laa,json=bulkDenaturedSdaLaa,proto3" json:"bulk_denatured_sda_laa,omitempty"`
 	BulkReturnedToProductionLaa     float64 `protobuf:"fixed64,67,opt,name=bulk_returned_to_production_laa,json=bulkReturnedToProductionLaa,proto3" json:"bulk_returned_to_production_laa,omitempty"`
+	// Losses split by duty treatment. bulk_losses_laa stays as the total, so
+	// the three below always sum to it.
+	//
+	// Unclassified is reported rather than assumed either way: Stillhouse
+	// does not know whether a given evaporation loss is relieved, and putting
+	// a number on a return that nobody chose is the thing this product does
+	// not do. A period with unclassified losses is not ready to file, and
+	// filing_blockers says so.
+	BulkLossesRelievedLaa     float64 `protobuf:"fixed64,68,opt,name=bulk_losses_relieved_laa,json=bulkLossesRelievedLaa,proto3" json:"bulk_losses_relieved_laa,omitempty"`
+	BulkLossesDutiableLaa     float64 `protobuf:"fixed64,69,opt,name=bulk_losses_dutiable_laa,json=bulkLossesDutiableLaa,proto3" json:"bulk_losses_dutiable_laa,omitempty"`
+	BulkLossesUnclassifiedLaa float64 `protobuf:"fixed64,70,opt,name=bulk_losses_unclassified_laa,json=bulkLossesUnclassifiedLaa,proto3" json:"bulk_losses_unclassified_laa,omitempty"`
+	// Duty on the dutiable losses, at the rate in force over the period.
+	// Included in duty_payable_cad.
+	DutyOnLossesCad float64 `protobuf:"fixed64,71,opt,name=duty_on_losses_cad,json=dutyOnLossesCad,proto3" json:"duty_on_losses_cad,omitempty"`
+	// Reasons this period cannot be filed as it stands, in the operator's
+	// words. Empty means nothing is outstanding — which is not a promise the
+	// figures are right, only that nothing is missing.
+	FilingBlockers []string `protobuf:"bytes,72,rep,name=filing_blockers,json=filingBlockers,proto3" json:"filing_blockers,omitempty"`
 	// Packaged spirits section.
 	PackagedOpeningLaa             float64 `protobuf:"fixed64,30,opt,name=packaged_opening_laa,json=packagedOpeningLaa,proto3" json:"packaged_opening_laa,omitempty"`
 	PackagedPackagedLaa            float64 `protobuf:"fixed64,31,opt,name=packaged_packaged_laa,json=packagedPackagedLaa,proto3" json:"packaged_packaged_laa,omitempty"` // produced by bottling runs
@@ -489,6 +507,41 @@ func (x *B266Report) GetBulkReturnedToProductionLaa() float64 {
 		return x.BulkReturnedToProductionLaa
 	}
 	return 0
+}
+
+func (x *B266Report) GetBulkLossesRelievedLaa() float64 {
+	if x != nil {
+		return x.BulkLossesRelievedLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkLossesDutiableLaa() float64 {
+	if x != nil {
+		return x.BulkLossesDutiableLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkLossesUnclassifiedLaa() float64 {
+	if x != nil {
+		return x.BulkLossesUnclassifiedLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetDutyOnLossesCad() float64 {
+	if x != nil {
+		return x.DutyOnLossesCad
+	}
+	return 0
+}
+
+func (x *B266Report) GetFilingBlockers() []string {
+	if x != nil {
+		return x.FilingBlockers
+	}
+	return nil
 }
 
 func (x *B266Report) GetPackagedOpeningLaa() float64 {
@@ -1183,7 +1236,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x86\x19\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8f\x1b\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1213,7 +1266,12 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x11bulk_exported_laa\x18@ \x01(\x01R\x0fbulkExportedLaa\x121\n" +
 	"\x15bulk_denatured_da_laa\x18A \x01(\x01R\x12bulkDenaturedDaLaa\x123\n" +
 	"\x16bulk_denatured_sda_laa\x18B \x01(\x01R\x13bulkDenaturedSdaLaa\x12D\n" +
-	"\x1fbulk_returned_to_production_laa\x18C \x01(\x01R\x1bbulkReturnedToProductionLaa\x120\n" +
+	"\x1fbulk_returned_to_production_laa\x18C \x01(\x01R\x1bbulkReturnedToProductionLaa\x127\n" +
+	"\x18bulk_losses_relieved_laa\x18D \x01(\x01R\x15bulkLossesRelievedLaa\x127\n" +
+	"\x18bulk_losses_dutiable_laa\x18E \x01(\x01R\x15bulkLossesDutiableLaa\x12?\n" +
+	"\x1cbulk_losses_unclassified_laa\x18F \x01(\x01R\x19bulkLossesUnclassifiedLaa\x12+\n" +
+	"\x12duty_on_losses_cad\x18G \x01(\x01R\x0fdutyOnLossesCad\x12'\n" +
+	"\x0ffiling_blockers\x18H \x03(\tR\x0efilingBlockers\x120\n" +
 	"\x14packaged_opening_laa\x18\x1e \x01(\x01R\x12packagedOpeningLaa\x122\n" +
 	"\x15packaged_packaged_laa\x18\x1f \x01(\x01R\x13packagedPackagedLaa\x12:\n" +
 	"\x19packaged_packaged_bottles\x18  \x01(\x05R\x17packagedPackagedBottles\x12B\n" +

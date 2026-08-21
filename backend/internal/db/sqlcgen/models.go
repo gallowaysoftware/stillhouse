@@ -658,6 +658,49 @@ func (ns NullInventoryAdjustmentReason) Value() (driver.Value, error) {
 	return string(ns.InventoryAdjustmentReason), nil
 }
 
+type LossDutyTreatment string
+
+const (
+	LossDutyTreatmentUnclassified LossDutyTreatment = "unclassified"
+	LossDutyTreatmentRelieved     LossDutyTreatment = "relieved"
+	LossDutyTreatmentDutiable     LossDutyTreatment = "dutiable"
+)
+
+func (e *LossDutyTreatment) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LossDutyTreatment(s)
+	case string:
+		*e = LossDutyTreatment(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LossDutyTreatment: %T", src)
+	}
+	return nil
+}
+
+type NullLossDutyTreatment struct {
+	LossDutyTreatment LossDutyTreatment `json:"loss_duty_treatment"`
+	Valid             bool              `json:"valid"` // Valid is true if LossDutyTreatment is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLossDutyTreatment) Scan(value interface{}) error {
+	if value == nil {
+		ns.LossDutyTreatment, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LossDutyTreatment.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLossDutyTreatment) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LossDutyTreatment), nil
+}
+
 type MashMetricKind string
 
 const (
@@ -1139,6 +1182,10 @@ type BulkMovement struct {
 	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
 	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
 	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
+	LossDutyTreatment       LossDutyTreatment  `json:"loss_duty_treatment"`
+	LossTreatmentAuthority  string             `json:"loss_treatment_authority"`
+	LossClassifiedBy        uuid.NullUUID      `json:"loss_classified_by"`
+	LossClassifiedAt        pgtype.Timestamptz `json:"loss_classified_at"`
 }
 
 type DistillationCharge struct {

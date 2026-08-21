@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"fmt"
 	"math"
 	"time"
 
@@ -93,6 +94,18 @@ type b266Totals struct {
 	adjustmentsIncreaseLAA float64
 	adjustmentsDecreaseLAA float64
 	adjustmentsCount       int32
+
+	// Losses split by duty treatment (EDM3-4-1). The three always sum to
+	// the losses total; destructions carry a treatment too but are
+	// reported on their own line, so they are held separately.
+	lossesRelievedLAA        float64
+	lossesDutiableLAA        float64
+	lossesUnclassifiedLAA    float64
+	lossesUnclassifiedCount  int32
+	destroyedUnclassifiedLAA float64
+	destroyedUnclassifiedN   int32
+	// Duty on the dutiable losses, at the rate in force over the period.
+	dutyOnLossesCAD float64
 }
 
 // laa returns the LAA summed against a bulk movement reason, or zero if
@@ -142,6 +155,11 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		BulkAdjustmentsDecreaseLaa: round4(t.adjustmentsDecreaseLAA),
 		BulkAdjustmentsCount:       t.adjustmentsCount,
 
+		BulkLossesRelievedLaa:     round4(t.lossesRelievedLAA),
+		BulkLossesDutiableLaa:     round4(t.lossesDutiableLAA),
+		BulkLossesUnclassifiedLaa: round4(t.lossesUnclassifiedLAA),
+		DutyOnLossesCad:           round2cents(t.dutyOnLossesCAD),
+
 		PackagedPackagedLaa:            round4(t.bottlingPackagedLAA),
 		PackagedPackagingLossLaa:       round4(t.bottlingLossLAA),
 		PackagedPackagedBottles:        t.bottlingBottles,
@@ -183,7 +201,10 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		// because stock packaged before the change is still dutied on its
 		// way out. Summing rather than choosing is what makes that period
 		// add up.
-		DutyPayableCad:         round2cents(t.packagedDutyCAD + t.removedDutyCAD),
+		// Duty on losses that were ruled dutiable belongs here too. Under
+		// EDM3-4-1 spirits that cannot be accounted for are duty-payable,
+		// and a return that leaves them out understates what is owed.
+		DutyPayableCad:         round2cents(t.packagedDutyCAD + t.removedDutyCAD + t.dutyOnLossesCAD),
 		DutyPoint:              dutyPointToProto(t.dutyPoint),
 		DutyPointEffectiveFrom: t.dutyPointFrom.Format("2006-01-02"),
 		GeneratedAt:            timestamppb.New(generatedAt),
@@ -221,6 +242,7 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 	// first-ever return came out with a negative opening balance.
 	report.PackagedOpeningLaa = round4(report.PackagedClosingLaa - report.PackagedPackagedLaa + report.PackagedRemovedDutyPaidLaa)
 
+	report.FilingBlockers = filingBlockers(t)
 	return report
 }
 
@@ -239,4 +261,32 @@ func round2cents(x float64) float64 {
 
 func round4(x float64) float64 {
 	return math.Round(x*10000) / 10000
+}
+
+// filingBlockers lists, in the operator's words, what stops this period
+// being filed as it stands.
+//
+// An empty list is not a promise the figures are right — only that nothing
+// is outstanding. The distinction matters: Stillhouse never files, and a
+// green light it cannot honestly give would be worse than no light at all.
+func filingBlockers(t b266Totals) []string {
+	var out []string
+	if t.lossesUnclassifiedCount > 0 {
+		out = append(out, fmt.Sprintf(
+			"%d loss%s totalling %.4f LAA have no duty treatment. Under EDM3-4-1 a relieved loss and one that cannot be accounted for are charged differently, and Stillhouse will not guess which these are.",
+			t.lossesUnclassifiedCount, plural(t.lossesUnclassifiedCount), t.lossesUnclassifiedLAA))
+	}
+	if t.destroyedUnclassifiedN > 0 {
+		out = append(out, fmt.Sprintf(
+			"%d destruction%s totalling %.4f LAA have no duty treatment. A destruction is relieved only where CRA approved it, and the approval reference has to be on file.",
+			t.destroyedUnclassifiedN, plural(t.destroyedUnclassifiedN), t.destroyedUnclassifiedLAA))
+	}
+	return out
+}
+
+func plural(n int32) string {
+	if n == 1 {
+		return ""
+	}
+	return "es"
 }

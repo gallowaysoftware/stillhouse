@@ -37,6 +37,9 @@ type externalMovement struct {
 	reason  sqlcgen.BulkMovementReason
 	inbound bool
 	label   string
+	// isLoss marks the kinds that take alcohol out of the ledger without it
+	// going anywhere, and so carry a duty treatment (EDM3-4-1).
+	isLoss bool
 	// needsCounterparty marks the kinds where EDM10-1-7 wants the other
 	// party named, not just a quantity — an in-bond transfer is reportable
 	// by both ends, and the counterparty is what ties them together.
@@ -91,10 +94,10 @@ var externalMovements = map[stillhousev1.BulkExternalMovementKind]externalMoveme
 		reason: sqlcgen.BulkMovementReasonReturnedToProduction, label: "returned to production",
 	},
 	stillhousev1.BulkExternalMovementKind_BULK_EXTERNAL_MOVEMENT_KIND_DESTRUCTION: {
-		reason: sqlcgen.BulkMovementReasonDestruction, label: "destroyed",
+		reason: sqlcgen.BulkMovementReasonDestruction, isLoss: true, label: "destroyed",
 	},
 	stillhousev1.BulkExternalMovementKind_BULK_EXTERNAL_MOVEMENT_KIND_UNACCOUNTED_LOSS: {
-		reason: sqlcgen.BulkMovementReasonLossUnaccounted, label: "unaccounted loss",
+		reason: sqlcgen.BulkMovementReasonLossUnaccounted, isLoss: true, label: "unaccounted loss",
 	},
 }
 
@@ -132,6 +135,29 @@ func (s *BulkService) RecordBulkExternalMovement(
 	}
 	if in.GetAbvPct() < 0 || in.GetAbvPct() > 100 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("abv_pct must be in [0, 100]"))
+	}
+
+	// A loss or a destruction can be classified where it is recorded: an
+	// operator destroying spirits under a CRA approval has the approval in
+	// front of them, and making them come back for it is how a period ends
+	// up full of unclassified losses.
+	lossTreatment := sqlcgen.LossDutyTreatmentUnclassified
+	lossAuthority := ""
+	if spec.isLoss {
+		if in.GetLossDutyTreatment() != stillhousev1.LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED {
+			var lerr error
+			lossTreatment, lossAuthority, lerr = lossTreatmentToDB(
+				in.GetLossDutyTreatment(), in.GetLossTreatmentAuthority())
+			if lerr != nil {
+				return nil, connect.NewError(connect.CodeInvalidArgument, lerr)
+			}
+		}
+	} else if in.GetLossDutyTreatment() != stillhousev1.LossDutyTreatment_LOSS_DUTY_TREATMENT_UNSPECIFIED {
+		// Silently dropping it would leave the operator believing they had
+		// classified something.
+		return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+			"a duty treatment does not apply to spirits %s — it is only meaningful for a loss or a destruction",
+			spec.label))
 	}
 
 	// Receiving spirit in bond means gauging it, and that gauge lands on a
@@ -236,6 +262,8 @@ func (s *BulkService) RecordBulkExternalMovement(
 			StrengthInstrumentID:    instr.strength,
 			TemperatureInstrumentID: instr.temperature,
 			RecordedBy:              uuid.NullUUID{UUID: u.ID, Valid: true},
+			LossDutyTreatment:       lossTreatment,
+			LossTreatmentAuthority:  lossAuthority,
 			PackagedInventoryID:     pkgID,
 			BottlesUnpackaged:       unbottle,
 		})

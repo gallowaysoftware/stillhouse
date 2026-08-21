@@ -124,3 +124,19 @@ func Owed(on time.Time, volumeL, abvPct float64) (ratePerLAA, totalCAD float64, 
 	}
 	return 0, volumeL * b.PerLitreAtOrUnder7, nil
 }
+
+// DutyOnLAA returns the duty on a quantity of absolute alcohol at the rate
+// in force on a date.
+//
+// Bulk spirits are always above the 7% band — that is what makes them
+// spirits — so the per-LAA rate is the one that applies, and there is no
+// litres-of-product figure to charge the low-strength rate against. Callers
+// holding a packaged quantity should use Owed instead, which picks the band
+// from the strength.
+func DutyOnLAA(on time.Time, laa float64) (ratePerLAA, totalCAD float64, err error) {
+	b, err := RateOn(on)
+	if err != nil {
+		return 0, 0, err
+	}
+	return b.PerLAAOver7Pct, laa * b.PerLAAOver7Pct, nil
+}

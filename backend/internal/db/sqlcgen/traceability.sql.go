@@ -64,7 +64,7 @@ func (q *Queries) BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID)
 }
 
 const bottlingRunChainFeeds = `-- name: BottlingRunChainFeeds :many
-SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at, bm.counterparty_name, bm.counterparty_licence_no, bm.document_reference, bm.temperature_c, bm.observed_volume_l, bm.observed_density_kg_m3, bm.volume_factor_c, bm.strength_source, bm.volume_instrument_id, bm.strength_instrument_id, bm.temperature_instrument_id, bm.recorded_by, bm.packaged_inventory_id, bm.bottles_unpackaged,
+SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at, bm.counterparty_name, bm.counterparty_licence_no, bm.document_reference, bm.temperature_c, bm.observed_volume_l, bm.observed_density_kg_m3, bm.volume_factor_c, bm.strength_source, bm.volume_instrument_id, bm.strength_instrument_id, bm.temperature_instrument_id, bm.recorded_by, bm.packaged_inventory_id, bm.bottles_unpackaged, bm.loss_duty_treatment, bm.loss_treatment_authority, bm.loss_classified_by, bm.loss_classified_at,
        src.name AS source_name,
        dst.name AS destination_name
 FROM bulk_movements bm
@@ -109,6 +109,10 @@ type BottlingRunChainFeedsRow struct {
 	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
 	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
 	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
+	LossDutyTreatment       LossDutyTreatment  `json:"loss_duty_treatment"`
+	LossTreatmentAuthority  string             `json:"loss_treatment_authority"`
+	LossClassifiedBy        uuid.NullUUID      `json:"loss_classified_by"`
+	LossClassifiedAt        pgtype.Timestamptz `json:"loss_classified_at"`
 	SourceName              pgtype.Text        `json:"source_name"`
 	DestinationName         pgtype.Text        `json:"destination_name"`
 }
@@ -154,6 +158,10 @@ func (q *Queries) BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChai
 			&i.RecordedBy,
 			&i.PackagedInventoryID,
 			&i.BottlesUnpackaged,
+			&i.LossDutyTreatment,
+			&i.LossTreatmentAuthority,
+			&i.LossClassifiedBy,
+			&i.LossClassifiedAt,
 			&i.SourceName,
 			&i.DestinationName,
 		); err != nil {

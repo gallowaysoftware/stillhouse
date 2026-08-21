@@ -453,6 +453,37 @@ func gatherB266Totals(
 	t.adjustmentsDecreaseLAA = adj.DecreaseLaa
 	t.adjustmentsCount = adj.AdjustmentCount
 
+	// Losses by duty treatment (EDM3-4-1), and the duty the dutiable ones
+	// attract at the period's rate.
+	losses, err := q.SumLossesByTreatmentInPeriod(ctx, sqlcgen.SumLossesByTreatmentInPeriodParams{
+		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
+		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+	})
+	if err != nil {
+		return t, err
+	}
+	t.lossesRelievedLAA = losses.RelievedLaa
+	t.lossesDutiableLAA = losses.DutiableLaa
+	t.lossesUnclassifiedLAA = losses.UnclassifiedLaa
+	t.lossesUnclassifiedCount = losses.UnclassifiedCount
+
+	destroyed, err := q.SumDestructionsByTreatmentInPeriod(ctx, sqlcgen.SumDestructionsByTreatmentInPeriodParams{
+		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
+		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+	})
+	if err != nil {
+		return t, err
+	}
+	t.destroyedUnclassifiedLAA = destroyed.UnclassifiedLaa
+	t.destroyedUnclassifiedN = destroyed.UnclassifiedCount
+
+	// Charged at the period's rate rather than each loss's own date. The
+	// period cannot span an indexation — gatherB266Totals refuses one that
+	// does — so there is exactly one rate to charge, and the alternative
+	// would report a duty figure that no single stated rate multiplies out
+	// to. A destruction ruled dutiable is charged the same way.
+	t.dutyOnLossesCAD = (losses.DutiableLaa + destroyed.DutiableLaa) * t.dutyBand.PerLAAOver7Pct
+
 	// The basis the period was computed on, carried onto the return: the
 	// figures cannot be checked without knowing which event crystallised
 	// them.

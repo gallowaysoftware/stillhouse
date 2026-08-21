@@ -37,6 +37,11 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// BulkServiceListLossesProcedure is the fully-qualified name of the BulkService's ListLosses RPC.
+	BulkServiceListLossesProcedure = "/stillhouse.v1.BulkService/ListLosses"
+	// BulkServiceClassifyLossesProcedure is the fully-qualified name of the BulkService's
+	// ClassifyLosses RPC.
+	BulkServiceClassifyLossesProcedure = "/stillhouse.v1.BulkService/ClassifyLosses"
 	// BulkServiceRecordBulkExternalMovementProcedure is the fully-qualified name of the BulkService's
 	// RecordBulkExternalMovement RPC.
 	BulkServiceRecordBulkExternalMovementProcedure = "/stillhouse.v1.BulkService/RecordBulkExternalMovement"
@@ -73,6 +78,9 @@ const (
 
 // BulkServiceClient is a client for the stillhouse.v1.BulkService service.
 type BulkServiceClient interface {
+	// Losses, and what duty treatment each carries.
+	ListLosses(context.Context, *connect.Request[v1.ListLossesRequest]) (*connect.Response[v1.ListLossesResponse], error)
+	ClassifyLosses(context.Context, *connect.Request[v1.ClassifyLossesRequest]) (*connect.Response[v1.ClassifyLossesResponse], error)
 	// Record bulk spirits arriving on or leaving the premises — the B266
 	// page 3 lines that had no path.
 	RecordBulkExternalMovement(context.Context, *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error)
@@ -100,6 +108,18 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	bulkServiceMethods := v1.File_stillhouse_v1_bulk_proto.Services().ByName("BulkService").Methods()
 	return &bulkServiceClient{
+		listLosses: connect.NewClient[v1.ListLossesRequest, v1.ListLossesResponse](
+			httpClient,
+			baseURL+BulkServiceListLossesProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("ListLosses")),
+			connect.WithClientOptions(opts...),
+		),
+		classifyLosses: connect.NewClient[v1.ClassifyLossesRequest, v1.ClassifyLossesResponse](
+			httpClient,
+			baseURL+BulkServiceClassifyLossesProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("ClassifyLosses")),
+			connect.WithClientOptions(opts...),
+		),
 		recordBulkExternalMovement: connect.NewClient[v1.RecordBulkExternalMovementRequest, v1.RecordBulkExternalMovementResponse](
 			httpClient,
 			baseURL+BulkServiceRecordBulkExternalMovementProcedure,
@@ -171,6 +191,8 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // bulkServiceClient implements BulkServiceClient.
 type bulkServiceClient struct {
+	listLosses                 *connect.Client[v1.ListLossesRequest, v1.ListLossesResponse]
+	classifyLosses             *connect.Client[v1.ClassifyLossesRequest, v1.ClassifyLossesResponse]
 	recordBulkExternalMovement *connect.Client[v1.RecordBulkExternalMovementRequest, v1.RecordBulkExternalMovementResponse]
 	recordInventoryAdjustment  *connect.Client[v1.RecordInventoryAdjustmentRequest, v1.RecordInventoryAdjustmentResponse]
 	listInventoryAdjustments   *connect.Client[v1.ListInventoryAdjustmentsRequest, v1.ListInventoryAdjustmentsResponse]
@@ -182,6 +204,16 @@ type bulkServiceClient struct {
 	listRecentBulkMovements    *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
 	createBlend                *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
 	adoptOpeningInventory      *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
+}
+
+// ListLosses calls stillhouse.v1.BulkService.ListLosses.
+func (c *bulkServiceClient) ListLosses(ctx context.Context, req *connect.Request[v1.ListLossesRequest]) (*connect.Response[v1.ListLossesResponse], error) {
+	return c.listLosses.CallUnary(ctx, req)
+}
+
+// ClassifyLosses calls stillhouse.v1.BulkService.ClassifyLosses.
+func (c *bulkServiceClient) ClassifyLosses(ctx context.Context, req *connect.Request[v1.ClassifyLossesRequest]) (*connect.Response[v1.ClassifyLossesResponse], error) {
+	return c.classifyLosses.CallUnary(ctx, req)
 }
 
 // RecordBulkExternalMovement calls stillhouse.v1.BulkService.RecordBulkExternalMovement.
@@ -241,6 +273,9 @@ func (c *bulkServiceClient) AdoptOpeningInventory(ctx context.Context, req *conn
 
 // BulkServiceHandler is an implementation of the stillhouse.v1.BulkService service.
 type BulkServiceHandler interface {
+	// Losses, and what duty treatment each carries.
+	ListLosses(context.Context, *connect.Request[v1.ListLossesRequest]) (*connect.Response[v1.ListLossesResponse], error)
+	ClassifyLosses(context.Context, *connect.Request[v1.ClassifyLossesRequest]) (*connect.Response[v1.ClassifyLossesResponse], error)
 	// Record bulk spirits arriving on or leaving the premises — the B266
 	// page 3 lines that had no path.
 	RecordBulkExternalMovement(context.Context, *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error)
@@ -264,6 +299,18 @@ type BulkServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	bulkServiceMethods := v1.File_stillhouse_v1_bulk_proto.Services().ByName("BulkService").Methods()
+	bulkServiceListLossesHandler := connect.NewUnaryHandler(
+		BulkServiceListLossesProcedure,
+		svc.ListLosses,
+		connect.WithSchema(bulkServiceMethods.ByName("ListLosses")),
+		connect.WithHandlerOptions(opts...),
+	)
+	bulkServiceClassifyLossesHandler := connect.NewUnaryHandler(
+		BulkServiceClassifyLossesProcedure,
+		svc.ClassifyLosses,
+		connect.WithSchema(bulkServiceMethods.ByName("ClassifyLosses")),
+		connect.WithHandlerOptions(opts...),
+	)
 	bulkServiceRecordBulkExternalMovementHandler := connect.NewUnaryHandler(
 		BulkServiceRecordBulkExternalMovementProcedure,
 		svc.RecordBulkExternalMovement,
@@ -332,6 +379,10 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/stillhouse.v1.BulkService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case BulkServiceListLossesProcedure:
+			bulkServiceListLossesHandler.ServeHTTP(w, r)
+		case BulkServiceClassifyLossesProcedure:
+			bulkServiceClassifyLossesHandler.ServeHTTP(w, r)
 		case BulkServiceRecordBulkExternalMovementProcedure:
 			bulkServiceRecordBulkExternalMovementHandler.ServeHTTP(w, r)
 		case BulkServiceRecordInventoryAdjustmentProcedure:
@@ -362,6 +413,14 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedBulkServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedBulkServiceHandler struct{}
+
+func (UnimplementedBulkServiceHandler) ListLosses(context.Context, *connect.Request[v1.ListLossesRequest]) (*connect.Response[v1.ListLossesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.ListLosses is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) ClassifyLosses(context.Context, *connect.Request[v1.ClassifyLossesRequest]) (*connect.Response[v1.ClassifyLossesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.ClassifyLosses is not implemented"))
+}
 
 func (UnimplementedBulkServiceHandler) RecordBulkExternalMovement(context.Context, *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.RecordBulkExternalMovement is not implemented"))
