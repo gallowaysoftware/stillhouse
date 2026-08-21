@@ -27,6 +27,13 @@ jobs:
       # writes — so an @latest install makes this job fail the moment a
       # new plugin release lands, on a one-line comment, with nothing
       # actually wrong. Bump these deliberately alongside go.mod.
+      # Note the plugins must also be BUILT with the same Go version: the
+      # generator runs the output through go/printer, whose comment
+      # reflowing changed between 1.26 and 1.27, so a plugin of the right
+      # version compiled by the wrong toolchain still produces a diff.
+      # setup-go above pins this job to go-version-file, which is what
+      # makes `go install` here agree with a developer running it from
+      # backend/.
       - name: Install Go protoc plugins
         run: |
           PROTOBUF_VERSION=$(cd backend && go list -m -f '{{.Version}}' google.golang.org/protobuf)

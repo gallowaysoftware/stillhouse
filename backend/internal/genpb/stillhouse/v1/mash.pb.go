@@ -566,9 +566,7 @@ type MashRun struct {
 	Metrics     []*MashMetric          `protobuf:"bytes,13,rep,name=metrics,proto3" json:"metrics,omitempty"`
 	// Analytics, populated by GetMashRun.
 	// projected_laa = sum(ingredient_used × material.extract × recipe.mash_eff
-	//
-	//	× 0.511 × recipe.ferment_eff / 0.78934 × recipe.distill_recov)
-	//
+	//                     × 0.511 × recipe.ferment_eff / 0.78934 × recipe.distill_recov)
 	// computed from actual ingredient usage using the recipe version's efficiency
 	// parameters. Zero when no fermentable ingredients are recorded yet.
 	ProjectedLaa float64 `protobuf:"fixed64,14,opt,name=projected_laa,json=projectedLaa,proto3" json:"projected_laa,omitempty"`

@@ -31,8 +31,7 @@ type TraceabilityNode struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Free-form kind so the tree can be rendered generically.
 	// Values: bottling_run | bulk_movement | barrel | distillation_run |
-	//
-	//	fermentation_run | mash_run | recipe_version
+	//         fermentation_run | mash_run | recipe_version
 	Kind string `protobuf:"bytes,1,opt,name=kind,proto3" json:"kind,omitempty"`
 	Id   string `protobuf:"bytes,2,opt,name=id,proto3" json:"id,omitempty"`
 	// One-line headline rendered as the node title.

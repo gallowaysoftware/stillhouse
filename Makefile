@@ -42,7 +42,10 @@ tools: ## Install required Go-based dev tools (buf, sqlc, migrate, protoc plugin
 	go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
 	# Pinned to the go.mod versions, matching what CI installs. Installing
 	# these at @latest is how a developer's regeneration produces a diff
-	# that CI's codegen-drift check then rejects.
+	# that CI's codegen-drift check then rejects. Run from backend/ so the
+	# toolchain matches too — the plugins embed go/printer, whose comment
+	# reflowing differs between Go versions, so the right plugin version
+	# built by the wrong toolchain still drifts.
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@v1.20.0
 
