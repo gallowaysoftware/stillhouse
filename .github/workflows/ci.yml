@@ -45,9 +45,13 @@ jobs:
       # surface is reachable by external bearer tokens, so a wire break is
       # not a local matter.
       - name: Check for breaking .proto changes
-        run: cd proto && buf breaking --against '../.git#branch=main,subdir=proto'
-        # On main itself there is nothing to compare against.
-        if: github.event_name == 'pull_request' 
+        # Compares against origin/main, fetched explicitly: actions/checkout
+        # takes a shallow clone of the PR head, so a local `main` ref does
+        # not exist and buf can't resolve it.
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          cd proto && buf breaking --against '../.git#ref=FETCH_HEAD,subdir=proto' 
       - name: Regenerate Go code
         run: cd proto && buf generate --template buf.gen.yaml
       - name: Regenerate TS code
