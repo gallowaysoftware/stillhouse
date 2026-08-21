@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"math"
 	"time"
 
 	"connectrpc.com/connect"
@@ -18,7 +17,6 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
-	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
@@ -300,126 +298,92 @@ func (s *B266Service) ListB266Periods(
 	return connect.NewResponse(&stillhousev1.ListB266PeriodsResponse{Periods: out}), nil
 }
 
-// computeB266Report walks the underlying tables for the period and projects
-// every B266 line. Opening balances are derived by reverse-walking from the
-// current running totals (current = opening + receipts - withdrawals →
-// opening = current - receipts + withdrawals). That works cleanly when the
-// report is generated promptly after period close.
+// computeB266Report gathers the period's totals from the database and
+// hands them to projectB266, which does the arithmetic. Everything below
+// is I/O; every line of the return itself is computed in
+// b266_projection.go, without a database, and tested there.
 func computeB266Report(
 	ctx context.Context,
 	q *sqlcgen.Queries,
 	periodStart, periodEnd, queryEnd time.Time,
 ) (*stillhousev1.B266Report, error) {
-	pStartTS := pgtype.Timestamptz{Valid: true, Time: periodStart}
-	pEndTS := pgtype.Timestamptz{Valid: true, Time: queryEnd}
-
-	reasonSums, err := q.SumBulkMovementsByReason(ctx, sqlcgen.SumBulkMovementsByReasonParams{
-		OccurredAt:   pStartTS,
-		OccurredAt_2: pEndTS,
-	})
+	totals, err := gatherB266Totals(ctx, q, periodStart, queryEnd)
 	if err != nil {
 		return nil, err
 	}
-	byReason := map[string]float64{}
-	for _, r := range reasonSums {
-		byReason[r.Reason] = r.TotalLaa
-	}
-
-	currentBulk, err := q.SumBulkOnHandAsOfDate(ctx)
-	if err != nil {
-		return nil, err
-	}
-	currentPackagedRow, err := q.SumPackagedOnHandLAA(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	pStartDate := pgtype.Date{Valid: true, Time: periodStart}
-	pEndDate := pgtype.Date{Valid: true, Time: queryEnd}
-	bottlingTotals, err := q.SumBottlingRunsInPeriod(ctx, sqlcgen.SumBottlingRunsInPeriodParams{
-		BottlingDate:   pStartDate,
-		BottlingDate_2: pEndDate,
-	})
-	if err != nil {
-		return nil, err
-	}
-	removalTotals, err := q.SumRemovalsInPeriod(ctx, sqlcgen.SumRemovalsInPeriodParams{
-		RemovalDate:   pStartDate,
-		RemovalDate_2: pEndDate,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	report := &stillhousev1.B266Report{
-		PeriodStart: periodStart.Format("2006-01-02"),
-		PeriodEnd:   periodEnd.Format("2006-01-02"),
-
-		BulkProductionLaa:             byReason["production_gauge"],
-		BulkReceivedInBondLaa:         byReason["transfer_in_bond"],
-		BulkBlendInLaa:                byReason["blend"],
-		BulkTransferredToPackagingLaa: byReason["transfer_to_packaging"],
-		BulkTransferredOutInBondLaa:   byReason["transfer_out_in_bond"],
-		BulkLossesLaa:                 byReason["loss_evaporation"] + byReason["loss_unaccounted"],
-		BulkDestroyedLaa:              byReason["destruction"],
-		BulkClosingLaa:                round4(currentBulk),
-		// Adopted stock is reported but deliberately NOT counted among the
-		// receipts below, so the reverse-walk puts it in the opening
-		// balance. It was in the warehouse before the period; only the
-		// bookkeeping is new. Counting it as a receipt would overstate what
-		// the distillery made, on a return CRA reads.
-		BulkOpeningInventoryAdoptedLaa: round4(byReason["opening_inventory"]),
-
-		PackagedPackagedLaa:            round4(bottlingTotals.PackagedLaa),
-		PackagedPackagingLossLaa:       round4(bottlingTotals.LossLaa),
-		PackagedPackagedBottles:        bottlingTotals.TotalBottles,
-		PackagedRemovedDutyPaidLaa:     round4(removalTotals.TotalLaa),
-		PackagedRemovedDutyPaidBottles: removalTotals.TotalBottles,
-		PackagedClosingLaa:             round4(currentPackagedRow.TotalLaa),
-		PackagedClosingBottles:         currentPackagedRow.TotalBottles,
-
-		PackagedRemovedOver7Laa:      round4(removalTotals.Over7Laa),
-		PackagedRemovedOver7DutyCad:  round2cents(removalTotals.Over7Duty),
-		PackagedRemovedOver7Bottles:  removalTotals.Over7Bottles,
-		PackagedRemovedUnder7Litres:  round4(removalTotals.Under7Litres),
-		PackagedRemovedUnder7DutyCad: round2cents(removalTotals.Under7Duty),
-		PackagedRemovedUnder7Bottles: removalTotals.Under7Bottles,
-
-		// Both rates travel with the return so each band's line can be
-		// checked against the quantity it is charged on. Quoting only the
-		// per-LAA rate beside a blended LAA total made the arithmetic fail
-		// for any period holding both bands.
-		DutyRatePerLaa:         excise.DutyRatePerLAAOver7Pct,
-		DutyRatePerLitreUnder7: excise.DutyRatePerLAtOrUnder7,
-		DutyPayableCad:         round2cents(removalTotals.TotalDuty),
-		GeneratedAt:            timestamppb.New(time.Now()),
-	}
-
-	// Reverse-walk opening balances.
-	// Blending is an internal move — alcohol goes from one of the
-	// distillery's vessels into another, and nothing enters or leaves the
-	// premises. It was being added to receipts with no matching
-	// withdrawal, so a blend left the closing balance untouched (correctly)
-	// while driving the reverse-walked opening balance DOWN by the blended
-	// LAA and reporting a receipt that never happened. Barrel fills and
-	// dumps, which are the same kind of internal move, are already in
-	// neither column; blend was the outlier. BulkBlendInLaa is still
-	// reported, for information.
-	bulkReceipts := report.BulkProductionLaa + report.BulkReceivedInBondLaa
-	bulkWithdrawals := report.BulkTransferredToPackagingLaa + report.BulkTransferredOutInBondLaa + report.BulkLossesLaa + report.BulkDestroyedLaa
-	report.BulkOpeningLaa = round4(report.BulkClosingLaa - bulkReceipts + bulkWithdrawals)
-
-	// Packaged inventory only ever received what became bottles. Walking
-	// back with the tank-gauge figure instead — which includes what was
-	// spilled on the way — subtracts alcohol that never arrived, and a
-	// first-ever return came out with a negative opening balance.
-	report.PackagedOpeningLaa = round4(report.PackagedClosingLaa - report.PackagedPackagedLaa + report.PackagedRemovedDutyPaidLaa)
+	report := projectB266(totals, periodStart, periodEnd, time.Now())
 
 	// Validate the snapshot is JSON-serializable as a sanity check.
 	if _, err := json.Marshal(report); err != nil {
 		return nil, err
 	}
 	return report, nil
+}
+
+// gatherB266Totals runs the five aggregation queries behind the return.
+// Nothing here decides anything — it reads, and the projection judges.
+func gatherB266Totals(
+	ctx context.Context,
+	q *sqlcgen.Queries,
+	periodStart, queryEnd time.Time,
+) (b266Totals, error) {
+	var t b266Totals
+
+	reasonSums, err := q.SumBulkMovementsByReason(ctx, sqlcgen.SumBulkMovementsByReasonParams{
+		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
+		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+	})
+	if err != nil {
+		return t, err
+	}
+	t.byReason = make(map[string]float64, len(reasonSums))
+	for _, r := range reasonSums {
+		t.byReason[r.Reason] = r.TotalLaa
+	}
+
+	if t.bulkClosingLAA, err = q.SumBulkOnHandAsOfDate(ctx); err != nil {
+		return t, err
+	}
+	packaged, err := q.SumPackagedOnHandLAA(ctx)
+	if err != nil {
+		return t, err
+	}
+	t.packagedClosingLAA = packaged.TotalLaa
+	t.packagedClosingBottle = packaged.TotalBottles
+
+	pStartDate := pgtype.Date{Valid: true, Time: periodStart}
+	pEndDate := pgtype.Date{Valid: true, Time: queryEnd}
+
+	bottling, err := q.SumBottlingRunsInPeriod(ctx, sqlcgen.SumBottlingRunsInPeriodParams{
+		BottlingDate:   pStartDate,
+		BottlingDate_2: pEndDate,
+	})
+	if err != nil {
+		return t, err
+	}
+	t.bottlingDrawnLAA = bottling.TotalLaa
+	t.bottlingPackagedLAA = bottling.PackagedLaa
+	t.bottlingLossLAA = bottling.LossLaa
+	t.bottlingBottles = bottling.TotalBottles
+
+	removals, err := q.SumRemovalsInPeriod(ctx, sqlcgen.SumRemovalsInPeriodParams{
+		RemovalDate:   pStartDate,
+		RemovalDate_2: pEndDate,
+	})
+	if err != nil {
+		return t, err
+	}
+	t.removedLAA = removals.TotalLaa
+	t.removedBottles = removals.TotalBottles
+	t.removedDutyCAD = removals.TotalDuty
+	t.removedOver7LAA = removals.Over7Laa
+	t.removedOver7DutyCAD = removals.Over7Duty
+	t.removedOver7Bottles = removals.Over7Bottles
+	t.removedUnder7Litres = removals.Under7Litres
+	t.removedUnder7DutyCAD = removals.Under7Duty
+	t.removedUnder7Bottles = removals.Under7Bottles
+
+	return t, nil
 }
 
 func b266PeriodToProto(p sqlcgen.B266Period) *stillhousev1.B266Period {
@@ -449,21 +413,4 @@ func b266StatusToProto(s sqlcgen.B266Status) stillhousev1.B266Status {
 		return stillhousev1.B266Status_B266_STATUS_SUBMITTED
 	}
 	return stillhousev1.B266Status_B266_STATUS_UNSPECIFIED
-}
-
-// The `int(x*N + 0.5)` idiom these used to spell rounds correctly only for
-// positive numbers: int() truncates toward zero, so on a negative the +0.5
-// bias pushes the result the wrong way. round4(-0.12345) came out -0.1234
-// against +0.1235 for the positive, and round4(-1.5) came out -1.4999.
-//
-// Negatives do reach here — a cask's strength drift is negative in a cool,
-// humid warehouse, which is the normal Canadian case. math.Round rounds
-// half away from zero symmetrically and is identical for positives, so
-// nothing already recorded moves.
-func round2cents(x float64) float64 {
-	return math.Round(x*100) / 100
-}
-
-func round4(x float64) float64 {
-	return math.Round(x*10000) / 10000
 }

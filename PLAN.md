@@ -623,17 +623,6 @@ status, scheduling.
 
 Not features. The reasons to believe the numbers above are right.
 
-### K1 · The B266 projection can't be unit-tested — P1
-
-`computeB266Report` is five query calls followed by about sixty lines of pure
-projection, but it takes a concrete `*sqlcgen.Queries`, so none of the
-arithmetic can be exercised without a database. That arithmetic is the highest
-consequence code in the product — it is what CRA reads.
-
-Splitting the projection into a pure function over a totals struct makes it
-100% unit-testable at zero infrastructure cost, and is worth more than any
-amount of integration tooling.
-
 ### K2 · The two paths that write duty onto a return have no handler tests — P1
 
 `BottlingService.CreateBottlingRun` and `RemovalService.CreateRemoval` are never
@@ -688,9 +677,10 @@ Correctness first, in this order, because each depends on the one before:
 7. `C2` audit binder — the artifact that makes the case for everything above
 
 `A10` belongs with `A3`/`A4`: all three are the difference between a return that
-ties out and one that is also true. `K1` and `K2` are worth doing before, not
-after, the track-A work they would be testing — the projection is easier to
-split now than once four more lines depend on it.
+ties out and one that is also true. `K2` is worth doing before, not after, the
+track-A work it would be testing — `K1` split the projection out ahead of the
+same work, and every line track A adds to the return now lands somewhere a test
+can reach.
 
 Then breadth. `D1` (customers) and `F1` (locations) unblock the most downstream
 work and are worth doing early even though neither is urgent on its own.
