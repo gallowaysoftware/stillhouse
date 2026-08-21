@@ -200,6 +200,22 @@ func (s *BarrelService) GetBarrel(
 	for _, e := range events {
 		out.Events = append(out.Events, barrelEventToProto(e))
 	}
+	// The last link in the audit chain: which approved instrument made
+	// each determination (EDM3-1-1 ¶24). Resolved in one pass over the
+	// distinct instruments rather than once per event.
+	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		cache := newInstrumentCache(q, time.Now())
+		for i, e := range events {
+			out.Events[i].Instruments = cache.refs(ctx,
+				e.VolumeInstrumentID, e.StrengthInstrumentID, e.TemperatureInstrumentID)
+		}
+		return nil
+	}); err != nil {
+		// Decoration only. A gauge is still a gauge without its
+		// instrument block, and failing the whole read over it would be
+		// worse than showing the figures.
+		s.logger.Warn("GetBarrel: resolve instruments", "err", err)
+	}
 	return connect.NewResponse(out), nil
 }
 
@@ -251,6 +267,9 @@ func (s *BarrelService) FillBarrel(
 		attrs           sqlcgen.BarrelAttribute
 		event           sqlcgen.BarrelEvent
 	)
+	// Conditions that don't block the event but that the operator
+	// should see — an instrument past due for calibration.
+	var eventWarnings []string
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
 			return e
@@ -337,23 +356,36 @@ func (s *BarrelService) FillBarrel(
 			return e
 		}
 
+		// The instruments this determination was made with. Checked
+		// against the date of the event, not today — an instrument whose
+		// approval has since lapsed was still approved when the reading
+		// was taken.
+		instr, e := checkInstruments(ctx, q, in.GetInstruments(), eventTime.Time)
+		if e != nil {
+			return e
+		}
+		eventWarnings = instr.warnings
+
 		event, e = q.InsertBarrelEvent(ctx, sqlcgen.InsertBarrelEventParams{
-			TemperatureC:        optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
-			ObservedVolumeL:     optionalFloat(true, in.GetVolumeL()),
-			ObservedDensityKgM3: optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
-			VolumeFactorC:       corrected.VolumeFactorC,
-			StrengthSource:      strengthSourceToDB(corrected.Source),
-			TenantID:            u.TenantID,
-			ContainerID:         barrelID,
-			Kind:                sqlcgen.BarrelEventKindFill,
-			EventDate:           eventTime,
-			VolumeL:             pgtype.Float8{Float64: volume, Valid: true},
-			AbvPct:              pgtype.Float8{Float64: abv, Valid: true},
-			Laa:                 pgtype.Float8{Float64: laa, Valid: true},
-			BulkMovementID:      uuid.NullUUID{UUID: mv.ID, Valid: true},
-			LocationAfter:       "",
-			Notes:               in.GetNotes(),
-			UserID:              uuid.NullUUID{UUID: u.ID, Valid: true},
+			TemperatureC:            optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			ObservedVolumeL:         optionalFloat(true, in.GetVolumeL()),
+			ObservedDensityKgM3:     optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:           corrected.VolumeFactorC,
+			StrengthSource:          strengthSourceToDB(corrected.Source),
+			VolumeInstrumentID:      instr.volume,
+			StrengthInstrumentID:    instr.strength,
+			TemperatureInstrumentID: instr.temperature,
+			TenantID:                u.TenantID,
+			ContainerID:             barrelID,
+			Kind:                    sqlcgen.BarrelEventKindFill,
+			EventDate:               eventTime,
+			VolumeL:                 pgtype.Float8{Float64: volume, Valid: true},
+			AbvPct:                  pgtype.Float8{Float64: abv, Valid: true},
+			Laa:                     pgtype.Float8{Float64: laa, Valid: true},
+			BulkMovementID:          uuid.NullUUID{UUID: mv.ID, Valid: true},
+			LocationAfter:           "",
+			Notes:                   in.GetNotes(),
+			UserID:                  uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
 		if e != nil {
 			return e
@@ -397,8 +429,9 @@ func (s *BarrelService) FillBarrel(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.FillBarrelResponse{
-		Event:  barrelEventToProto(event),
-		Barrel: barrelToProto(barrelContainer, attrs),
+		Event:    barrelEventToProto(event),
+		Barrel:   barrelToProto(barrelContainer, attrs),
+		Warnings: eventWarnings,
 	}), nil
 }
 
@@ -447,6 +480,9 @@ func (s *BarrelService) DumpBarrel(
 		attrs           sqlcgen.BarrelAttribute
 		event           sqlcgen.BarrelEvent
 	)
+	// Conditions that don't block the event but that the operator
+	// should see — an instrument past due for calibration.
+	var eventWarnings []string
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
 			return e
@@ -542,22 +578,35 @@ func (s *BarrelService) DumpBarrel(
 			return e
 		}
 
+		// The instruments this determination was made with. Checked
+		// against the date of the event, not today — an instrument whose
+		// approval has since lapsed was still approved when the reading
+		// was taken.
+		instr, e := checkInstruments(ctx, q, in.GetInstruments(), eventTime.Time)
+		if e != nil {
+			return e
+		}
+		eventWarnings = instr.warnings
+
 		event, e = q.InsertBarrelEvent(ctx, sqlcgen.InsertBarrelEventParams{
-			TemperatureC:        optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
-			ObservedVolumeL:     optionalFloat(true, in.GetVolumeL()),
-			ObservedDensityKgM3: optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
-			VolumeFactorC:       corrected.VolumeFactorC,
-			StrengthSource:      strengthSourceToDB(corrected.Source),
-			TenantID:            u.TenantID,
-			ContainerID:         barrelID,
-			Kind:                sqlcgen.BarrelEventKindDump,
-			EventDate:           eventTime,
-			VolumeL:             pgtype.Float8{Float64: volume, Valid: true},
-			AbvPct:              pgtype.Float8{Float64: abv, Valid: true},
-			Laa:                 pgtype.Float8{Float64: laa, Valid: true},
-			BulkMovementID:      uuid.NullUUID{UUID: mv.ID, Valid: true},
-			Notes:               in.GetNotes(),
-			UserID:              uuid.NullUUID{UUID: u.ID, Valid: true},
+			TemperatureC:            optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			ObservedVolumeL:         optionalFloat(true, in.GetVolumeL()),
+			ObservedDensityKgM3:     optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:           corrected.VolumeFactorC,
+			StrengthSource:          strengthSourceToDB(corrected.Source),
+			VolumeInstrumentID:      instr.volume,
+			StrengthInstrumentID:    instr.strength,
+			TemperatureInstrumentID: instr.temperature,
+			TenantID:                u.TenantID,
+			ContainerID:             barrelID,
+			Kind:                    sqlcgen.BarrelEventKindDump,
+			EventDate:               eventTime,
+			VolumeL:                 pgtype.Float8{Float64: volume, Valid: true},
+			AbvPct:                  pgtype.Float8{Float64: abv, Valid: true},
+			Laa:                     pgtype.Float8{Float64: laa, Valid: true},
+			BulkMovementID:          uuid.NullUUID{UUID: mv.ID, Valid: true},
+			Notes:                   in.GetNotes(),
+			UserID:                  uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
 		if e != nil {
 			return e
@@ -603,8 +652,9 @@ func (s *BarrelService) DumpBarrel(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.DumpBarrelResponse{
-		Event:  barrelEventToProto(event),
-		Barrel: barrelToProto(barrelContainer, attrs),
+		Event:    barrelEventToProto(event),
+		Barrel:   barrelToProto(barrelContainer, attrs),
+		Warnings: eventWarnings,
 	}), nil
 }
 
@@ -660,6 +710,9 @@ func (s *BarrelService) RegaugeBarrel(
 		event           sqlcgen.BarrelEvent
 		lostLAA         float64
 	)
+	// Conditions that don't block the event but that the operator
+	// should see — an instrument past due for calibration.
+	var eventWarnings []string
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
 			return e
@@ -729,22 +782,35 @@ func (s *BarrelService) RegaugeBarrel(
 			return e
 		}
 
+		// The instruments this determination was made with. Checked
+		// against the date of the event, not today — an instrument whose
+		// approval has since lapsed was still approved when the reading
+		// was taken.
+		instr, e := checkInstruments(ctx, q, in.GetInstruments(), eventTime.Time)
+		if e != nil {
+			return e
+		}
+		eventWarnings = instr.warnings
+
 		event, e = q.InsertBarrelEvent(ctx, sqlcgen.InsertBarrelEventParams{
-			TemperatureC:        optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
-			ObservedVolumeL:     optionalFloat(true, in.GetNewVolumeL()),
-			ObservedDensityKgM3: optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
-			VolumeFactorC:       corrected.VolumeFactorC,
-			StrengthSource:      strengthSourceToDB(corrected.Source),
-			TenantID:            u.TenantID,
-			ContainerID:         barrelID,
-			Kind:                sqlcgen.BarrelEventKindRegauge,
-			EventDate:           eventTime,
-			VolumeL:             pgtype.Float8{Float64: volume, Valid: true},
-			AbvPct:              pgtype.Float8{Float64: abv, Valid: true},
-			Laa:                 pgtype.Float8{Float64: newLAA, Valid: true},
-			BulkMovementID:      mvID,
-			Notes:               in.GetNotes(),
-			UserID:              uuid.NullUUID{UUID: u.ID, Valid: true},
+			TemperatureC:            optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			ObservedVolumeL:         optionalFloat(true, in.GetNewVolumeL()),
+			ObservedDensityKgM3:     optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:           corrected.VolumeFactorC,
+			StrengthSource:          strengthSourceToDB(corrected.Source),
+			VolumeInstrumentID:      instr.volume,
+			StrengthInstrumentID:    instr.strength,
+			TemperatureInstrumentID: instr.temperature,
+			TenantID:                u.TenantID,
+			ContainerID:             barrelID,
+			Kind:                    sqlcgen.BarrelEventKindRegauge,
+			EventDate:               eventTime,
+			VolumeL:                 pgtype.Float8{Float64: volume, Valid: true},
+			AbvPct:                  pgtype.Float8{Float64: abv, Valid: true},
+			Laa:                     pgtype.Float8{Float64: newLAA, Valid: true},
+			BulkMovementID:          mvID,
+			Notes:                   in.GetNotes(),
+			UserID:                  uuid.NullUUID{UUID: u.ID, Valid: true},
 		})
 		if e != nil {
 			return e
@@ -776,9 +842,10 @@ func (s *BarrelService) RegaugeBarrel(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.RegaugeBarrelResponse{
-		Event:   barrelEventToProto(event),
-		Barrel:  barrelToProto(barrelContainer, attrs),
-		LostLaa: round4(lostLAA),
+		Event:    barrelEventToProto(event),
+		Barrel:   barrelToProto(barrelContainer, attrs),
+		LostLaa:  round4(lostLAA),
+		Warnings: eventWarnings,
 	}), nil
 }
 

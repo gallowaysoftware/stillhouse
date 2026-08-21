@@ -28,6 +28,7 @@ import { RecipesPage } from "./pages/RecipesPage";
 import { RemovalsPage } from "./pages/RemovalsPage";
 import { RequireAuth } from "./pages/RequireAuth";
 import { SettingsPage } from "./pages/SettingsPage";
+import { InstrumentsPage } from "./pages/InstrumentsPage";
 import { StampsPage } from "./pages/StampsPage";
 
 function Guarded({ children }: { children: React.ReactNode }) {
@@ -58,6 +59,7 @@ export function App() {
       <Route path="/barrels/:id" element={<Guarded><BarrelDetailPage /></Guarded>} />
       <Route path="/products" element={<Guarded><ProductsPage /></Guarded>} />
       <Route path="/stamps" element={<Guarded><StampsPage /></Guarded>} />
+      <Route path="/instruments" element={<Guarded><InstrumentsPage /></Guarded>} />
       <Route path="/bottling" element={<Guarded><BottlingPage /></Guarded>} />
       <Route path="/bottling/:id" element={<Guarded><BottlingRunDetailPage /></Guarded>} />
       <Route path="/removals" element={<Guarded><RemovalsPage /></Guarded>} />

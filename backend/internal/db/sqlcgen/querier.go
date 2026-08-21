@@ -65,8 +65,10 @@ type Querier interface {
 	CreateBottlingRun(ctx context.Context, arg CreateBottlingRunParams) (BottlingRun, error)
 	CreateBottlingRunStampUsage(ctx context.Context, arg CreateBottlingRunStampUsageParams) (BottlingRunStampUsage, error)
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
+	CreateCalibration(ctx context.Context, arg CreateCalibrationParams) (InstrumentCalibration, error)
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
+	CreateInstrument(ctx context.Context, arg CreateInstrumentParams) (Instrument, error)
 	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
@@ -135,6 +137,7 @@ type Querier interface {
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
+	GetInstrument(ctx context.Context, id uuid.UUID) (Instrument, error)
 	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
 	// expires_at to decide if the code is actually usable.
 	GetInviteCode(ctx context.Context, code string) (InviteCode, error)
@@ -168,6 +171,14 @@ type Querier interface {
 	// the operator read off the instrument. See migration 000023.
 	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
+	// The most recent PASSED calibration. A failed check is history worth
+	// keeping, but it is not the date the next one is counted from — an
+	// instrument that failed its check has not been calibrated.
+	LatestCalibration(ctx context.Context, instrumentID uuid.UUID) (InstrumentCalibration, error)
+	// One row per instrument: its most recent passed calibration. DISTINCT ON
+	// rather than a correlated subquery so listing the register is one query
+	// regardless of how many instruments a distillery holds.
+	LatestCalibrationsForInstruments(ctx context.Context) ([]InstrumentCalibration, error)
 	ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
 	ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]ListAuditEventsRow, error)
 	ListB266Periods(ctx context.Context) ([]B266Period, error)
@@ -187,12 +198,17 @@ type Querier interface {
 	// list response).
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
+	ListCalibrations(ctx context.Context, instrumentID uuid.UUID) ([]InstrumentCalibration, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
 	ListDistillationCuts(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationCut, error)
 	ListDistillationRuns(ctx context.Context, status NullDistillationStatus) ([]DistillationRun, error)
 	ListFermentationLogs(ctx context.Context, fermentationRunID uuid.UUID) ([]FermentationLog, error)
 	ListFermentationRuns(ctx context.Context, status NullFermentationStatus) ([]ListFermentationRunsRow, error)
 	ListFermentationRunsByMash(ctx context.Context, mashRunID uuid.UUID) ([]FermentationRun, error)
+	// Retired instruments are excluded unless asked for: the register an
+	// operator picks from at the bench should hold what is in service. They
+	// are never deleted, so a determination made years ago still resolves.
+	ListInstruments(ctx context.Context, arg ListInstrumentsParams) ([]Instrument, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
 	ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error)
 	ListMashMetrics(ctx context.Context, mashRunID uuid.UUID) ([]MashMetric, error)
@@ -267,6 +283,7 @@ type Querier interface {
 	// duty across events that may already have been filed. Here so a support
 	// path exists that is deliberate rather than improvised.
 	SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error)
+	SetInstrumentStatus(ctx context.Context, arg SetInstrumentStatusParams) (Instrument, error)
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
@@ -373,6 +390,11 @@ type Querier interface {
 	UpdateDistillationCut(ctx context.Context, arg UpdateDistillationCutParams) (DistillationCut, error)
 	UpdateDistillationStatus(ctx context.Context, arg UpdateDistillationStatusParams) (DistillationRun, error)
 	UpdateFermentationStatus(ctx context.Context, arg UpdateFermentationStatusParams) (FermentationRun, error)
+	// Deliberately cannot change kind or serial_no. Both are the instrument's
+	// identity — the serial is what CRA approved — and editing either would
+	// silently re-point every determination already made with it at a
+	// different physical device.
+	UpdateInstrument(ctx context.Context, arg UpdateInstrumentParams) (Instrument, error)
 	UpdateMashStatus(ctx context.Context, arg UpdateMashStatusParams) (MashRun, error)
 	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)

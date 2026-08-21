@@ -52,9 +52,12 @@ WHERE container_id = $1;
 INSERT INTO barrel_events (
     tenant_id, container_id, kind, event_date,
     volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id,
-    temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
+    temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source,
+    -- The instruments the determination was made with. NULL means none was
+    -- named, which is what every row predating the register says.
+    volume_instrument_id, strength_instrument_id, temperature_instrument_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
 ) RETURNING *;
 
 -- name: ListBarrelEvents :many

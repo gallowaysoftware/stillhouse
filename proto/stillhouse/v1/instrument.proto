@@ -1,0 +1,182 @@
+// The instrument register.
+//
+// EDM3-1-1 ¶24 and EDM1-1-5: volume and absolute alcohol content must be
+// determined using CRA-approved instruments, and each individual
+// instrument must itself be approved — approval attaches to the serial
+// number in front of the operator, not to the model on the box.
+//
+// Stillhouse already records how a figure was determined (StrengthSource)
+// and, before this, nothing about what determined it. That left the audit
+// chain running quantity → movement → determination → nothing.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum InstrumentKind {
+  INSTRUMENT_KIND_UNSPECIFIED = 0;
+  INSTRUMENT_KIND_THERMOMETER = 1;
+  INSTRUMENT_KIND_HYDROMETER = 2;
+  INSTRUMENT_KIND_DENSITY_METER = 3;
+  INSTRUMENT_KIND_MASS_FLOW_METER = 4;
+  INSTRUMENT_KIND_SCALE = 5;
+  INSTRUMENT_KIND_VOLUMETRIC_MEASURE = 6;
+  INSTRUMENT_KIND_OTHER = 7;
+}
+
+enum InstrumentStatus {
+  INSTRUMENT_STATUS_UNSPECIFIED = 0;
+  // In service and usable for a determination.
+  INSTRUMENT_STATUS_ACTIVE = 1;
+  // Temporarily out of service — failed a check, away for repair.
+  INSTRUMENT_STATUS_SUSPENDED = 2;
+  // Withdrawn. Never deleted: a determination made years ago has to keep
+  // pointing at the instrument that made it.
+  INSTRUMENT_STATUS_RETIRED = 3;
+}
+
+message Instrument {
+  string id = 1;
+  InstrumentKind kind = 2;
+  string label = 3;                 // what it is called on the floor
+  string manufacturer = 4;
+  string model = 5;
+  string serial_no = 6;             // the identity CRA approves
+
+  // Empty means no approval on file. A duty-relevant determination naming
+  // an instrument in that state is refused: naming an unapproved
+  // instrument documents a gap, which is worse than naming none.
+  string approval_reference = 7;
+  string approval_date = 8;         // ISO date; empty if unset
+  string approval_expires_on = 9;   // ISO date; empty means no stated expiry
+
+  InstrumentStatus status = 10;
+  string status_reason = 11;
+
+  // How often this instrument is meant to be checked. Zero means no
+  // interval is set, and calibration is then never reported as overdue —
+  // an interval nobody chose is not a deadline anybody missed.
+  int32 calibration_interval_days = 12;
+
+  string notes = 13;
+  google.protobuf.Timestamp created_at = 14;
+  google.protobuf.Timestamp updated_at = 15;
+
+  // --- derived, read-only ---
+
+  // Whether this instrument may be used for a duty-relevant determination
+  // right now, and if not, the sentence explaining why.
+  bool usable = 20;
+  string unusable_reason = 21;
+  // Last calibration on file, and when the next is due given the interval.
+  // Empty when there is no calibration history or no interval.
+  string last_calibrated_on = 22;
+  string calibration_due_on = 23;
+  // Past due. A warning, not a refusal: an instrument still approved but
+  // overdue for a check is a compliance risk, not a false reading.
+  bool calibration_overdue = 24;
+}
+
+message InstrumentCalibration {
+  string id = 1;
+  string instrument_id = 2;
+  string calibrated_on = 3;         // ISO date
+  string performed_by = 4;
+  string certificate_ref = 5;       // the certificate an auditor asks for
+  bool passed = 6;
+  string notes = 7;
+  string recorded_by = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// The instruments used for one determination. Three roles, because a gauge
+// is three measurements and they are not normally taken with one device:
+// the volume, the strength, and the temperature the other two were read
+// at. Any may be empty; each one that is set is checked.
+message InstrumentRefs {
+  string volume_instrument_id = 1;
+  string strength_instrument_id = 2;
+  string temperature_instrument_id = 3;
+}
+
+// Resolved instruments on a determination that has already been recorded,
+// for display and for the audit trail.
+message DeterminationInstruments {
+  Instrument volume = 1;
+  Instrument strength = 2;
+  Instrument temperature = 3;
+}
+
+message CreateInstrumentRequest {
+  InstrumentKind kind = 1;
+  string label = 2;
+  string manufacturer = 3;
+  string model = 4;
+  string serial_no = 5;
+  string approval_reference = 6;
+  string approval_date = 7;
+  string approval_expires_on = 8;
+  int32 calibration_interval_days = 9;
+  string notes = 10;
+}
+message CreateInstrumentResponse { Instrument instrument = 1; }
+
+message UpdateInstrumentRequest {
+  string id = 1;
+  string label = 2;
+  string manufacturer = 3;
+  string model = 4;
+  string approval_reference = 5;
+  string approval_date = 6;
+  string approval_expires_on = 7;
+  int32 calibration_interval_days = 8;
+  string notes = 9;
+}
+message UpdateInstrumentResponse { Instrument instrument = 1; }
+
+// Status changes are their own call because they are the ones an auditor
+// reads. A reason is required for anything other than returning an
+// instrument to service.
+message SetInstrumentStatusRequest {
+  string id = 1;
+  InstrumentStatus status = 2;
+  string reason = 3;
+}
+message SetInstrumentStatusResponse { Instrument instrument = 1; }
+
+message ListInstrumentsRequest {
+  // Include retired instruments. Off by default: the register an operator
+  // picks from should hold what is in service.
+  bool include_retired = 1;
+  InstrumentKind kind = 2;          // UNSPECIFIED = all kinds
+}
+message ListInstrumentsResponse { repeated Instrument instruments = 1; }
+
+message GetInstrumentRequest { string id = 1; }
+message GetInstrumentResponse {
+  Instrument instrument = 1;
+  repeated InstrumentCalibration calibrations = 2;
+}
+
+message RecordCalibrationRequest {
+  string instrument_id = 1;
+  string calibrated_on = 2;         // ISO date; defaults to today
+  string performed_by = 3;
+  string certificate_ref = 4;
+  bool passed = 5;
+  string notes = 6;
+}
+message RecordCalibrationResponse {
+  Instrument instrument = 1;
+  InstrumentCalibration calibration = 2;
+}
+
+service InstrumentService {
+  rpc CreateInstrument(CreateInstrumentRequest) returns (CreateInstrumentResponse);
+  rpc UpdateInstrument(UpdateInstrumentRequest) returns (UpdateInstrumentResponse);
+  rpc SetInstrumentStatus(SetInstrumentStatusRequest) returns (SetInstrumentStatusResponse);
+  rpc ListInstruments(ListInstrumentsRequest) returns (ListInstrumentsResponse);
+  rpc GetInstrument(GetInstrumentRequest) returns (GetInstrumentResponse);
+  rpc RecordCalibration(RecordCalibrationRequest) returns (RecordCalibrationResponse);
+}

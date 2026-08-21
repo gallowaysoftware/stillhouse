@@ -165,25 +165,11 @@ dashboard alerts nobody currently gets.
 The one area where Stillhouse is already ahead of everything commercial. These
 finish the job.
 
-### C1 · Instrument register — P0
-
-EDM3-1-1 ¶24 and EDM1-1-5: volume and absolute alcohol content must be
-determined using CRA-approved instruments, and **each individual instrument
-must itself be approved**. Stillhouse records how a figure was determined and
-nothing about what determined it, so the audit chain breaks at the last link.
-
-- Instruments with type (thermometer, hydrometer, mass flow), serial, CRA
-  approval reference, approval date, calibration history, status.
-- Foreign key from every gauge, barrel event and production gauge to the
-  instruments used.
-- Refuse — or at minimum flag loudly — a duty-relevant determination made with
-  an instrument that has no approval on file.
-
 ### C2 · Audit binder export — P1
 
 Everything needed already exists in pieces: period-locked snapshots, the audit
-log, gauge determination paths, movement-level detail. Nobody has assembled
-them. One bundle per period — filed figures, the movements behind each line,
+log, gauge determination paths, the instruments behind them (stage 144), and
+movement-level detail. Nobody has assembled them. One bundle per period — filed figures, the movements behind each line,
 the determinations and instruments behind each movement, the trail — as PDF
 plus CSV. The single most persuasive artifact the product can produce.
 
@@ -622,15 +608,14 @@ the three options.
 
 Correctness first, in this order, because each depends on the one before:
 
-1. `C1` instrument register
-2. `A3` `A4` B266 completeness and adjustments
-3. `A5` `A6` losses and reporting periods
-4. `H1` `H2` liability and backups — before any second distillery's records land here
-5. `C2` audit binder — the artifact that makes the case for everything above
+1. `A3` `A4` B266 completeness and adjustments
+2. `A5` `A6` losses and reporting periods
+3. `H1` `H2` liability and backups — before any second distillery's records land here
+4. `C2` audit binder — the artifact that makes the case for everything above
 
-`A1`, which was the head of this list, shipped in stage 143: duty now
-crystallises at packaging for a licensee without a warehouse licence, and the
-returns compute from the event that actually made it payable.
+`A1` and `C1`, which headed this list, shipped in stages 143 and 144: duty now
+crystallises at packaging for a licensee without a warehouse licence, and every
+gauge can name the approved instrument that made it.
 
 `A3` and `A4` are the difference between a return that ties out and one that is
 also true; `A10`, which was the third of that group, shipped in stage 141. `K1`

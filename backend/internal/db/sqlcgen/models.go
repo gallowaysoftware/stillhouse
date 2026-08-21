@@ -512,6 +512,96 @@ func (ns NullFermentationStatus) Value() (driver.Value, error) {
 	return string(ns.FermentationStatus), nil
 }
 
+type InstrumentKind string
+
+const (
+	InstrumentKindThermometer       InstrumentKind = "thermometer"
+	InstrumentKindHydrometer        InstrumentKind = "hydrometer"
+	InstrumentKindDensityMeter      InstrumentKind = "density_meter"
+	InstrumentKindMassFlowMeter     InstrumentKind = "mass_flow_meter"
+	InstrumentKindScale             InstrumentKind = "scale"
+	InstrumentKindVolumetricMeasure InstrumentKind = "volumetric_measure"
+	InstrumentKindOther             InstrumentKind = "other"
+)
+
+func (e *InstrumentKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InstrumentKind(s)
+	case string:
+		*e = InstrumentKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InstrumentKind: %T", src)
+	}
+	return nil
+}
+
+type NullInstrumentKind struct {
+	InstrumentKind InstrumentKind `json:"instrument_kind"`
+	Valid          bool           `json:"valid"` // Valid is true if InstrumentKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInstrumentKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.InstrumentKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InstrumentKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInstrumentKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InstrumentKind), nil
+}
+
+type InstrumentStatus string
+
+const (
+	InstrumentStatusActive    InstrumentStatus = "active"
+	InstrumentStatusSuspended InstrumentStatus = "suspended"
+	InstrumentStatusRetired   InstrumentStatus = "retired"
+)
+
+func (e *InstrumentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InstrumentStatus(s)
+	case string:
+		*e = InstrumentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InstrumentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullInstrumentStatus struct {
+	InstrumentStatus InstrumentStatus `json:"instrument_status"`
+	Valid            bool             `json:"valid"` // Valid is true if InstrumentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInstrumentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.InstrumentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InstrumentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInstrumentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InstrumentStatus), nil
+}
+
 type MashMetricKind string
 
 const (
@@ -885,27 +975,30 @@ type BarrelAttribute struct {
 }
 
 type BarrelEvent struct {
-	ID                  uuid.UUID          `json:"id"`
-	TenantID            uuid.UUID          `json:"tenant_id"`
-	ContainerID         uuid.UUID          `json:"container_id"`
-	Kind                BarrelEventKind    `json:"kind"`
-	EventDate           pgtype.Timestamptz `json:"event_date"`
-	VolumeL             pgtype.Float8      `json:"volume_l"`
-	AbvPct              pgtype.Float8      `json:"abv_pct"`
-	Laa                 pgtype.Float8      `json:"laa"`
-	BulkMovementID      uuid.NullUUID      `json:"bulk_movement_id"`
-	LocationAfter       string             `json:"location_after"`
-	Notes               string             `json:"notes"`
-	UserID              uuid.NullUUID      `json:"user_id"`
-	CreatedAt           pgtype.Timestamptz `json:"created_at"`
-	VoidedAt            pgtype.Timestamptz `json:"voided_at"`
-	VoidedBy            uuid.NullUUID      `json:"voided_by"`
-	VoidedReason        string             `json:"voided_reason"`
-	TemperatureC        pgtype.Float8      `json:"temperature_c"`
-	ObservedVolumeL     pgtype.Float8      `json:"observed_volume_l"`
-	ObservedDensityKgM3 pgtype.Float8      `json:"observed_density_kg_m3"`
-	VolumeFactorC       float64            `json:"volume_factor_c"`
-	StrengthSource      StrengthSource     `json:"strength_source"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	ContainerID             uuid.UUID          `json:"container_id"`
+	Kind                    BarrelEventKind    `json:"kind"`
+	EventDate               pgtype.Timestamptz `json:"event_date"`
+	VolumeL                 pgtype.Float8      `json:"volume_l"`
+	AbvPct                  pgtype.Float8      `json:"abv_pct"`
+	Laa                     pgtype.Float8      `json:"laa"`
+	BulkMovementID          uuid.NullUUID      `json:"bulk_movement_id"`
+	LocationAfter           string             `json:"location_after"`
+	Notes                   string             `json:"notes"`
+	UserID                  uuid.NullUUID      `json:"user_id"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	VoidedAt                pgtype.Timestamptz `json:"voided_at"`
+	VoidedBy                uuid.NullUUID      `json:"voided_by"`
+	VoidedReason            string             `json:"voided_reason"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
 }
 
 type BottlingRun struct {
@@ -1064,6 +1157,38 @@ type FermentationRun struct {
 	YeastLotID         uuid.NullUUID      `json:"yeast_lot_id"`
 }
 
+type Instrument struct {
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	Kind                    InstrumentKind     `json:"kind"`
+	Label                   string             `json:"label"`
+	Manufacturer            string             `json:"manufacturer"`
+	Model                   string             `json:"model"`
+	SerialNo                string             `json:"serial_no"`
+	ApprovalReference       string             `json:"approval_reference"`
+	ApprovalDate            pgtype.Date        `json:"approval_date"`
+	ApprovalExpiresOn       pgtype.Date        `json:"approval_expires_on"`
+	Status                  InstrumentStatus   `json:"status"`
+	StatusReason            string             `json:"status_reason"`
+	CalibrationIntervalDays pgtype.Int4        `json:"calibration_interval_days"`
+	Notes                   string             `json:"notes"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt               pgtype.Timestamptz `json:"updated_at"`
+}
+
+type InstrumentCalibration struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	InstrumentID   uuid.UUID          `json:"instrument_id"`
+	CalibratedOn   pgtype.Date        `json:"calibrated_on"`
+	PerformedBy    string             `json:"performed_by"`
+	CertificateRef string             `json:"certificate_ref"`
+	Passed         bool               `json:"passed"`
+	Notes          string             `json:"notes"`
+	RecordedBy     uuid.NullUUID      `json:"recorded_by"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type InviteCode struct {
 	Code              string             `json:"code"`
 	CreatedByUserID   uuid.UUID          `json:"created_by_user_id"`
@@ -1202,23 +1327,26 @@ type Product struct {
 }
 
 type ProductionGauge struct {
-	ID                     uuid.UUID          `json:"id"`
-	TenantID               uuid.UUID          `json:"tenant_id"`
-	DistillationRunID      uuid.UUID          `json:"distillation_run_id"`
-	DestinationContainerID uuid.UUID          `json:"destination_container_id"`
-	BulkMovementID         uuid.UUID          `json:"bulk_movement_id"`
-	GaugeDate              pgtype.Timestamptz `json:"gauge_date"`
-	VolumeL                float64            `json:"volume_l"`
-	AbvPct                 float64            `json:"abv_pct"`
-	TemperatureC           pgtype.Float8      `json:"temperature_c"`
-	Laa                    pgtype.Float8      `json:"laa"`
-	GaugerUserID           uuid.UUID          `json:"gauger_user_id"`
-	Notes                  string             `json:"notes"`
-	CreatedAt              pgtype.Timestamptz `json:"created_at"`
-	ObservedVolumeL        pgtype.Float8      `json:"observed_volume_l"`
-	ObservedDensityKgM3    pgtype.Float8      `json:"observed_density_kg_m3"`
-	VolumeFactorC          float64            `json:"volume_factor_c"`
-	StrengthSource         StrengthSource     `json:"strength_source"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	DistillationRunID       uuid.UUID          `json:"distillation_run_id"`
+	DestinationContainerID  uuid.UUID          `json:"destination_container_id"`
+	BulkMovementID          uuid.UUID          `json:"bulk_movement_id"`
+	GaugeDate               pgtype.Timestamptz `json:"gauge_date"`
+	VolumeL                 float64            `json:"volume_l"`
+	AbvPct                  float64            `json:"abv_pct"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	Laa                     pgtype.Float8      `json:"laa"`
+	GaugerUserID            uuid.UUID          `json:"gauger_user_id"`
+	Notes                   string             `json:"notes"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
 }
 
 type Recipe struct {

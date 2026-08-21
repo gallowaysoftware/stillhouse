@@ -95,6 +95,18 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.ExciseStampService/ListStampOrders":   roleViewer,
 	"/stillhouse.v1.ExciseStampService/VoidStamps":        roleOperator,
 
+	// The instrument register. Reading it is a viewer action — an operator
+	// at the bench has to be able to see which hydrometer is approved.
+	// Registering and calibrating are operator actions. Suspending or
+	// retiring an instrument invalidates nothing already recorded but does
+	// stop future determinations, so it stays owner-only.
+	"/stillhouse.v1.InstrumentService/CreateInstrument":    roleOperator,
+	"/stillhouse.v1.InstrumentService/UpdateInstrument":    roleOperator,
+	"/stillhouse.v1.InstrumentService/SetInstrumentStatus": roleOwner,
+	"/stillhouse.v1.InstrumentService/ListInstruments":     roleViewer,
+	"/stillhouse.v1.InstrumentService/GetInstrument":       roleViewer,
+	"/stillhouse.v1.InstrumentService/RecordCalibration":   roleOperator,
+
 	// FermentationService
 	"/stillhouse.v1.FermentationService/CreateFermentationRun":    roleOperator,
 	"/stillhouse.v1.FermentationService/GetFermentationRun":       roleViewer,

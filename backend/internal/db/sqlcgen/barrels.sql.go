@@ -94,7 +94,7 @@ func (q *Queries) GetBarrelAttributes(ctx context.Context, containerID uuid.UUID
 }
 
 const getBarrelEvent = `-- name: GetBarrelEvent :one
-SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source FROM barrel_events WHERE id = $1
+SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id FROM barrel_events WHERE id = $1
 `
 
 func (q *Queries) GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent, error) {
@@ -122,6 +122,9 @@ func (q *Queries) GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent
 		&i.ObservedDensityKgM3,
 		&i.VolumeFactorC,
 		&i.StrengthSource,
+		&i.VolumeInstrumentID,
+		&i.StrengthInstrumentID,
+		&i.TemperatureInstrumentID,
 	)
 	return i, err
 }
@@ -155,29 +158,35 @@ const insertBarrelEvent = `-- name: InsertBarrelEvent :one
 INSERT INTO barrel_events (
     tenant_id, container_id, kind, event_date,
     volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id,
-    temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
+    temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source,
+    -- The instruments the determination was made with. NULL means none was
+    -- named, which is what every row predating the register says.
+    volume_instrument_id, strength_instrument_id, temperature_instrument_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-) RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+) RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id
 `
 
 type InsertBarrelEventParams struct {
-	TenantID            uuid.UUID          `json:"tenant_id"`
-	ContainerID         uuid.UUID          `json:"container_id"`
-	Kind                BarrelEventKind    `json:"kind"`
-	EventDate           pgtype.Timestamptz `json:"event_date"`
-	VolumeL             pgtype.Float8      `json:"volume_l"`
-	AbvPct              pgtype.Float8      `json:"abv_pct"`
-	Laa                 pgtype.Float8      `json:"laa"`
-	BulkMovementID      uuid.NullUUID      `json:"bulk_movement_id"`
-	LocationAfter       string             `json:"location_after"`
-	Notes               string             `json:"notes"`
-	UserID              uuid.NullUUID      `json:"user_id"`
-	TemperatureC        pgtype.Float8      `json:"temperature_c"`
-	ObservedVolumeL     pgtype.Float8      `json:"observed_volume_l"`
-	ObservedDensityKgM3 pgtype.Float8      `json:"observed_density_kg_m3"`
-	VolumeFactorC       float64            `json:"volume_factor_c"`
-	StrengthSource      StrengthSource     `json:"strength_source"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	ContainerID             uuid.UUID          `json:"container_id"`
+	Kind                    BarrelEventKind    `json:"kind"`
+	EventDate               pgtype.Timestamptz `json:"event_date"`
+	VolumeL                 pgtype.Float8      `json:"volume_l"`
+	AbvPct                  pgtype.Float8      `json:"abv_pct"`
+	Laa                     pgtype.Float8      `json:"laa"`
+	BulkMovementID          uuid.NullUUID      `json:"bulk_movement_id"`
+	LocationAfter           string             `json:"location_after"`
+	Notes                   string             `json:"notes"`
+	UserID                  uuid.NullUUID      `json:"user_id"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
 }
 
 // volume_l / abv_pct / laa are the values AT 20 °C; observed_* preserve what
@@ -200,6 +209,9 @@ func (q *Queries) InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventPa
 		arg.ObservedDensityKgM3,
 		arg.VolumeFactorC,
 		arg.StrengthSource,
+		arg.VolumeInstrumentID,
+		arg.StrengthInstrumentID,
+		arg.TemperatureInstrumentID,
 	)
 	var i BarrelEvent
 	err := row.Scan(
@@ -224,12 +236,15 @@ func (q *Queries) InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventPa
 		&i.ObservedDensityKgM3,
 		&i.VolumeFactorC,
 		&i.StrengthSource,
+		&i.VolumeInstrumentID,
+		&i.StrengthInstrumentID,
+		&i.TemperatureInstrumentID,
 	)
 	return i, err
 }
 
 const listBarrelEvents = `-- name: ListBarrelEvents :many
-SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source FROM barrel_events
+SELECT id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id FROM barrel_events
 WHERE container_id = $1
 ORDER BY event_date DESC, created_at DESC
 `
@@ -265,6 +280,9 @@ func (q *Queries) ListBarrelEvents(ctx context.Context, containerID uuid.UUID) (
 			&i.ObservedDensityKgM3,
 			&i.VolumeFactorC,
 			&i.StrengthSource,
+			&i.VolumeInstrumentID,
+			&i.StrengthInstrumentID,
+			&i.TemperatureInstrumentID,
 		); err != nil {
 			return nil, err
 		}
@@ -418,7 +436,7 @@ SET voided_at = NOW(),
     voided_by = $2,
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
-RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
+RETURNING id, tenant_id, container_id, kind, event_date, volume_l, abv_pct, laa, bulk_movement_id, location_after, notes, user_id, created_at, voided_at, voided_by, voided_reason, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id
 `
 
 type VoidBarrelEventParams struct {
@@ -452,6 +470,9 @@ func (q *Queries) VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams
 		&i.ObservedDensityKgM3,
 		&i.VolumeFactorC,
 		&i.StrengthSource,
+		&i.VolumeInstrumentID,
+		&i.StrengthInstrumentID,
+		&i.TemperatureInstrumentID,
 	)
 	return i, err
 }

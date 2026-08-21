@@ -802,8 +802,14 @@ type ProductionGauge struct {
 	// C — the factor applied to observed_volume_l to reach volume_l.
 	VolumeFactorC  float64        `protobuf:"fixed64,17,opt,name=volume_factor_c,json=volumeFactorC,proto3" json:"volume_factor_c,omitempty"`
 	StrengthSource StrengthSource `protobuf:"varint,18,opt,name=strength_source,json=strengthSource,proto3,enum=stillhouse.v1.StrengthSource" json:"strength_source,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// The instruments the determination was made with, resolved. This is the
+	// last link in the audit chain: quantity → movement → determination →
+	// the approved instrument that made it (EDM3-1-1 ¶24, EDM1-1-5). Unset
+	// on rows recorded before the register existed, which is honest — they
+	// name no instrument because none was named.
+	Instruments   *DeterminationInstruments `protobuf:"bytes,19,opt,name=instruments,proto3" json:"instruments,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ProductionGauge) Reset() {
@@ -960,6 +966,13 @@ func (x *ProductionGauge) GetStrengthSource() StrengthSource {
 		return x.StrengthSource
 	}
 	return StrengthSource_STRENGTH_SOURCE_UNSPECIFIED
+}
+
+func (x *ProductionGauge) GetInstruments() *DeterminationInstruments {
+	if x != nil {
+		return x.Instruments
+	}
+	return nil
 }
 
 type CreateDistillationRunRequest struct {
@@ -1836,8 +1849,12 @@ type RecordProductionGaugeRequest struct {
 	// Hydrometer indication in kg/m³, read at temperature_c.
 	DensityKgM3    float64 `protobuf:"fixed64,9,opt,name=density_kg_m3,json=densityKgM3,proto3" json:"density_kg_m3,omitempty"`
 	DensityKgM3Set bool    `protobuf:"varint,10,opt,name=density_kg_m3_set,json=densityKgM3Set,proto3" json:"density_kg_m3_set,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// The instruments this determination was made with. Optional — the
+	// register starts empty — but any instrument named here is checked, and
+	// one without a CRA approval on file is refused.
+	Instruments   *InstrumentRefs `protobuf:"bytes,11,opt,name=instruments,proto3" json:"instruments,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RecordProductionGaugeRequest) Reset() {
@@ -1940,12 +1957,23 @@ func (x *RecordProductionGaugeRequest) GetDensityKgM3Set() bool {
 	return false
 }
 
+func (x *RecordProductionGaugeRequest) GetInstruments() *InstrumentRefs {
+	if x != nil {
+		return x.Instruments
+	}
+	return nil
+}
+
 type RecordProductionGaugeResponse struct {
 	state                protoimpl.MessageState `protogen:"open.v1"`
 	Gauge                *ProductionGauge       `protobuf:"bytes,1,opt,name=gauge,proto3" json:"gauge,omitempty"`
 	DestinationContainer *BulkContainer         `protobuf:"bytes,2,opt,name=destination_container,json=destinationContainer,proto3" json:"destination_container,omitempty"`
-	unknownFields        protoimpl.UnknownFields
-	sizeCache            protoimpl.SizeCache
+	// Conditions that did not block the determination but that an operator
+	// and an auditor both want to see — an instrument past due for
+	// calibration is still approved, so it is a warning, not a refusal.
+	Warnings      []string `protobuf:"bytes,3,rep,name=warnings,proto3" json:"warnings,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RecordProductionGaugeResponse) Reset() {
@@ -1988,6 +2016,13 @@ func (x *RecordProductionGaugeResponse) GetGauge() *ProductionGauge {
 func (x *RecordProductionGaugeResponse) GetDestinationContainer() *BulkContainer {
 	if x != nil {
 		return x.DestinationContainer
+	}
+	return nil
+}
+
+func (x *RecordProductionGaugeResponse) GetWarnings() []string {
+	if x != nil {
+		return x.Warnings
 	}
 	return nil
 }
@@ -2092,7 +2127,7 @@ var File_stillhouse_v1_distillation_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\n" +
-	" stillhouse/v1/distillation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a!stillhouse/v1/alcoholometry.proto\x1a\x18stillhouse/v1/bulk.proto\"\xdd\x05\n" +
+	" stillhouse/v1/distillation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1estillhouse/v1/instrument.proto\x1a!stillhouse/v1/alcoholometry.proto\x1a\x18stillhouse/v1/bulk.proto\"\xdd\x05\n" +
 	"\x0fDistillationRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x15\n" +
@@ -2156,7 +2191,7 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x0ehearts_end_abv\x18\a \x01(\x01R\fheartsEndAbv\x12\x1d\n" +
 	"\n" +
 	"hearts_set\x18\b \x01(\bR\theartsSet\x125\n" +
-	"\bfindings\x18\t \x03(\v2\x19.stillhouse.v1.CutFindingR\bfindings\"\x8e\x06\n" +
+	"\bfindings\x18\t \x03(\v2\x19.stillhouse.v1.CutFindingR\bfindings\"\xd9\x06\n" +
 	"\x0fProductionGauge\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x13distillation_run_id\x18\x02 \x01(\tR\x11distillationRunId\x128\n" +
@@ -2177,7 +2212,8 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x16observed_density_kg_m3\x18\x0f \x01(\x01R\x13observedDensityKgM3\x12:\n" +
 	"\x1aobserved_density_kg_m3_set\x18\x10 \x01(\bR\x16observedDensityKgM3Set\x12&\n" +
 	"\x0fvolume_factor_c\x18\x11 \x01(\x01R\rvolumeFactorC\x12F\n" +
-	"\x0fstrength_source\x18\x12 \x01(\x0e2\x1d.stillhouse.v1.StrengthSourceR\x0estrengthSource\"p\n" +
+	"\x0fstrength_source\x18\x12 \x01(\x0e2\x1d.stillhouse.v1.StrengthSourceR\x0estrengthSource\x12I\n" +
+	"\vinstruments\x18\x13 \x01(\v2'.stillhouse.v1.DeterminationInstrumentsR\vinstruments\"p\n" +
 	"\x1cCreateDistillationRunRequest\x12\x1f\n" +
 	"\vstill_label\x18\x01 \x01(\tR\n" +
 	"stillLabel\x12\x19\n" +
@@ -2231,7 +2267,7 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x03cut\x18\x01 \x01(\v2\x1e.stillhouse.v1.DistillationCutR\x03cut\".\n" +
 	"\x1cDeleteDistillationCutRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\x1f\n" +
-	"\x1dDeleteDistillationCutResponse\"\xad\x03\n" +
+	"\x1dDeleteDistillationCutResponse\"\xee\x03\n" +
 	"\x1cRecordProductionGaugeRequest\x12.\n" +
 	"\x13distillation_run_id\x18\x01 \x01(\tR\x11distillationRunId\x128\n" +
 	"\x18destination_container_id\x18\x02 \x01(\tR\x16destinationContainerId\x129\n" +
@@ -2244,10 +2280,12 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x05notes\x18\b \x01(\tR\x05notes\x12\"\n" +
 	"\rdensity_kg_m3\x18\t \x01(\x01R\vdensityKgM3\x12)\n" +
 	"\x11density_kg_m3_set\x18\n" +
-	" \x01(\bR\x0edensityKgM3Set\"\xa8\x01\n" +
+	" \x01(\bR\x0edensityKgM3Set\x12?\n" +
+	"\vinstruments\x18\v \x01(\v2\x1d.stillhouse.v1.InstrumentRefsR\vinstruments\"\xc4\x01\n" +
 	"\x1dRecordProductionGaugeResponse\x124\n" +
 	"\x05gauge\x18\x01 \x01(\v2\x1e.stillhouse.v1.ProductionGaugeR\x05gauge\x12Q\n" +
-	"\x15destination_container\x18\x02 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\x14destinationContainer\"D\n" +
+	"\x15destination_container\x18\x02 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\x14destinationContainer\x12\x1a\n" +
+	"\bwarnings\x18\x03 \x03(\tR\bwarnings\"D\n" +
 	"\x1aVoidDistillationRunRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"O\n" +
@@ -2331,7 +2369,9 @@ var file_stillhouse_v1_distillation_proto_goTypes = []any{
 	(*VoidDistillationRunResponse)(nil),      // 28: stillhouse.v1.VoidDistillationRunResponse
 	(*timestamppb.Timestamp)(nil),            // 29: google.protobuf.Timestamp
 	(StrengthSource)(0),                      // 30: stillhouse.v1.StrengthSource
-	(*BulkContainer)(nil),                    // 31: stillhouse.v1.BulkContainer
+	(*DeterminationInstruments)(nil),         // 31: stillhouse.v1.DeterminationInstruments
+	(*InstrumentRefs)(nil),                   // 32: stillhouse.v1.InstrumentRefs
+	(*BulkContainer)(nil),                    // 33: stillhouse.v1.BulkContainer
 }
 var file_stillhouse_v1_distillation_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.DistillationRun.status:type_name -> stillhouse.v1.DistillationStatus
@@ -2348,48 +2388,50 @@ var file_stillhouse_v1_distillation_proto_depIdxs = []int32{
 	6,  // 11: stillhouse.v1.CutAnalysis.findings:type_name -> stillhouse.v1.CutFinding
 	29, // 12: stillhouse.v1.ProductionGauge.gauge_date:type_name -> google.protobuf.Timestamp
 	30, // 13: stillhouse.v1.ProductionGauge.strength_source:type_name -> stillhouse.v1.StrengthSource
-	3,  // 14: stillhouse.v1.CreateDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
-	3,  // 15: stillhouse.v1.GetDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
-	0,  // 16: stillhouse.v1.ListDistillationRunsRequest.status:type_name -> stillhouse.v1.DistillationStatus
-	3,  // 17: stillhouse.v1.ListDistillationRunsResponse.runs:type_name -> stillhouse.v1.DistillationRun
-	0,  // 18: stillhouse.v1.UpdateDistillationStatusRequest.status:type_name -> stillhouse.v1.DistillationStatus
-	3,  // 19: stillhouse.v1.UpdateDistillationStatusResponse.run:type_name -> stillhouse.v1.DistillationRun
-	4,  // 20: stillhouse.v1.AddDistillationChargeResponse.charge:type_name -> stillhouse.v1.DistillationCharge
-	1,  // 21: stillhouse.v1.AddDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
-	29, // 22: stillhouse.v1.AddDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
-	5,  // 23: stillhouse.v1.AddDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
-	1,  // 24: stillhouse.v1.UpdateDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
-	29, // 25: stillhouse.v1.UpdateDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
-	5,  // 26: stillhouse.v1.UpdateDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
-	29, // 27: stillhouse.v1.RecordProductionGaugeRequest.gauge_date:type_name -> google.protobuf.Timestamp
-	8,  // 28: stillhouse.v1.RecordProductionGaugeResponse.gauge:type_name -> stillhouse.v1.ProductionGauge
-	31, // 29: stillhouse.v1.RecordProductionGaugeResponse.destination_container:type_name -> stillhouse.v1.BulkContainer
-	3,  // 30: stillhouse.v1.VoidDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
-	9,  // 31: stillhouse.v1.DistillationService.CreateDistillationRun:input_type -> stillhouse.v1.CreateDistillationRunRequest
-	11, // 32: stillhouse.v1.DistillationService.GetDistillationRun:input_type -> stillhouse.v1.GetDistillationRunRequest
-	13, // 33: stillhouse.v1.DistillationService.ListDistillationRuns:input_type -> stillhouse.v1.ListDistillationRunsRequest
-	15, // 34: stillhouse.v1.DistillationService.UpdateDistillationStatus:input_type -> stillhouse.v1.UpdateDistillationStatusRequest
-	17, // 35: stillhouse.v1.DistillationService.AddDistillationCharge:input_type -> stillhouse.v1.AddDistillationChargeRequest
-	19, // 36: stillhouse.v1.DistillationService.AddDistillationCut:input_type -> stillhouse.v1.AddDistillationCutRequest
-	25, // 37: stillhouse.v1.DistillationService.RecordProductionGauge:input_type -> stillhouse.v1.RecordProductionGaugeRequest
-	27, // 38: stillhouse.v1.DistillationService.VoidDistillationRun:input_type -> stillhouse.v1.VoidDistillationRunRequest
-	21, // 39: stillhouse.v1.DistillationService.UpdateDistillationCut:input_type -> stillhouse.v1.UpdateDistillationCutRequest
-	23, // 40: stillhouse.v1.DistillationService.DeleteDistillationCut:input_type -> stillhouse.v1.DeleteDistillationCutRequest
-	10, // 41: stillhouse.v1.DistillationService.CreateDistillationRun:output_type -> stillhouse.v1.CreateDistillationRunResponse
-	12, // 42: stillhouse.v1.DistillationService.GetDistillationRun:output_type -> stillhouse.v1.GetDistillationRunResponse
-	14, // 43: stillhouse.v1.DistillationService.ListDistillationRuns:output_type -> stillhouse.v1.ListDistillationRunsResponse
-	16, // 44: stillhouse.v1.DistillationService.UpdateDistillationStatus:output_type -> stillhouse.v1.UpdateDistillationStatusResponse
-	18, // 45: stillhouse.v1.DistillationService.AddDistillationCharge:output_type -> stillhouse.v1.AddDistillationChargeResponse
-	20, // 46: stillhouse.v1.DistillationService.AddDistillationCut:output_type -> stillhouse.v1.AddDistillationCutResponse
-	26, // 47: stillhouse.v1.DistillationService.RecordProductionGauge:output_type -> stillhouse.v1.RecordProductionGaugeResponse
-	28, // 48: stillhouse.v1.DistillationService.VoidDistillationRun:output_type -> stillhouse.v1.VoidDistillationRunResponse
-	22, // 49: stillhouse.v1.DistillationService.UpdateDistillationCut:output_type -> stillhouse.v1.UpdateDistillationCutResponse
-	24, // 50: stillhouse.v1.DistillationService.DeleteDistillationCut:output_type -> stillhouse.v1.DeleteDistillationCutResponse
-	41, // [41:51] is the sub-list for method output_type
-	31, // [31:41] is the sub-list for method input_type
-	31, // [31:31] is the sub-list for extension type_name
-	31, // [31:31] is the sub-list for extension extendee
-	0,  // [0:31] is the sub-list for field type_name
+	31, // 14: stillhouse.v1.ProductionGauge.instruments:type_name -> stillhouse.v1.DeterminationInstruments
+	3,  // 15: stillhouse.v1.CreateDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
+	3,  // 16: stillhouse.v1.GetDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
+	0,  // 17: stillhouse.v1.ListDistillationRunsRequest.status:type_name -> stillhouse.v1.DistillationStatus
+	3,  // 18: stillhouse.v1.ListDistillationRunsResponse.runs:type_name -> stillhouse.v1.DistillationRun
+	0,  // 19: stillhouse.v1.UpdateDistillationStatusRequest.status:type_name -> stillhouse.v1.DistillationStatus
+	3,  // 20: stillhouse.v1.UpdateDistillationStatusResponse.run:type_name -> stillhouse.v1.DistillationRun
+	4,  // 21: stillhouse.v1.AddDistillationChargeResponse.charge:type_name -> stillhouse.v1.DistillationCharge
+	1,  // 22: stillhouse.v1.AddDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
+	29, // 23: stillhouse.v1.AddDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
+	5,  // 24: stillhouse.v1.AddDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
+	1,  // 25: stillhouse.v1.UpdateDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
+	29, // 26: stillhouse.v1.UpdateDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
+	5,  // 27: stillhouse.v1.UpdateDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
+	29, // 28: stillhouse.v1.RecordProductionGaugeRequest.gauge_date:type_name -> google.protobuf.Timestamp
+	32, // 29: stillhouse.v1.RecordProductionGaugeRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	8,  // 30: stillhouse.v1.RecordProductionGaugeResponse.gauge:type_name -> stillhouse.v1.ProductionGauge
+	33, // 31: stillhouse.v1.RecordProductionGaugeResponse.destination_container:type_name -> stillhouse.v1.BulkContainer
+	3,  // 32: stillhouse.v1.VoidDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
+	9,  // 33: stillhouse.v1.DistillationService.CreateDistillationRun:input_type -> stillhouse.v1.CreateDistillationRunRequest
+	11, // 34: stillhouse.v1.DistillationService.GetDistillationRun:input_type -> stillhouse.v1.GetDistillationRunRequest
+	13, // 35: stillhouse.v1.DistillationService.ListDistillationRuns:input_type -> stillhouse.v1.ListDistillationRunsRequest
+	15, // 36: stillhouse.v1.DistillationService.UpdateDistillationStatus:input_type -> stillhouse.v1.UpdateDistillationStatusRequest
+	17, // 37: stillhouse.v1.DistillationService.AddDistillationCharge:input_type -> stillhouse.v1.AddDistillationChargeRequest
+	19, // 38: stillhouse.v1.DistillationService.AddDistillationCut:input_type -> stillhouse.v1.AddDistillationCutRequest
+	25, // 39: stillhouse.v1.DistillationService.RecordProductionGauge:input_type -> stillhouse.v1.RecordProductionGaugeRequest
+	27, // 40: stillhouse.v1.DistillationService.VoidDistillationRun:input_type -> stillhouse.v1.VoidDistillationRunRequest
+	21, // 41: stillhouse.v1.DistillationService.UpdateDistillationCut:input_type -> stillhouse.v1.UpdateDistillationCutRequest
+	23, // 42: stillhouse.v1.DistillationService.DeleteDistillationCut:input_type -> stillhouse.v1.DeleteDistillationCutRequest
+	10, // 43: stillhouse.v1.DistillationService.CreateDistillationRun:output_type -> stillhouse.v1.CreateDistillationRunResponse
+	12, // 44: stillhouse.v1.DistillationService.GetDistillationRun:output_type -> stillhouse.v1.GetDistillationRunResponse
+	14, // 45: stillhouse.v1.DistillationService.ListDistillationRuns:output_type -> stillhouse.v1.ListDistillationRunsResponse
+	16, // 46: stillhouse.v1.DistillationService.UpdateDistillationStatus:output_type -> stillhouse.v1.UpdateDistillationStatusResponse
+	18, // 47: stillhouse.v1.DistillationService.AddDistillationCharge:output_type -> stillhouse.v1.AddDistillationChargeResponse
+	20, // 48: stillhouse.v1.DistillationService.AddDistillationCut:output_type -> stillhouse.v1.AddDistillationCutResponse
+	26, // 49: stillhouse.v1.DistillationService.RecordProductionGauge:output_type -> stillhouse.v1.RecordProductionGaugeResponse
+	28, // 50: stillhouse.v1.DistillationService.VoidDistillationRun:output_type -> stillhouse.v1.VoidDistillationRunResponse
+	22, // 51: stillhouse.v1.DistillationService.UpdateDistillationCut:output_type -> stillhouse.v1.UpdateDistillationCutResponse
+	24, // 52: stillhouse.v1.DistillationService.DeleteDistillationCut:output_type -> stillhouse.v1.DeleteDistillationCutResponse
+	43, // [43:53] is the sub-list for method output_type
+	33, // [33:43] is the sub-list for method input_type
+	33, // [33:33] is the sub-list for extension type_name
+	33, // [33:33] is the sub-list for extension extendee
+	0,  // [0:33] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_distillation_proto_init() }
@@ -2397,6 +2439,7 @@ func file_stillhouse_v1_distillation_proto_init() {
 	if File_stillhouse_v1_distillation_proto != nil {
 		return
 	}
+	file_stillhouse_v1_instrument_proto_init()
 	file_stillhouse_v1_alcoholometry_proto_init()
 	file_stillhouse_v1_bulk_proto_init()
 	type x struct{}

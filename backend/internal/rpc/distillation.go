@@ -84,11 +84,12 @@ func (s *DistillationService) GetDistillationRun(
 	}
 
 	var (
-		r        sqlcgen.DistillationRun
-		charges  []sqlcgen.ListDistillationChargesRow
-		cuts     []sqlcgen.DistillationCut
-		gauge    *sqlcgen.ProductionGauge
-		destName string
+		r                sqlcgen.DistillationRun
+		charges          []sqlcgen.ListDistillationChargesRow
+		cuts             []sqlcgen.DistillationCut
+		gauge            *sqlcgen.ProductionGauge
+		destName         string
+		gaugeInstruments *stillhousev1.DeterminationInstruments
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
@@ -110,6 +111,10 @@ func (s *DistillationService) GetDistillationRun(
 			if c, ce := q.GetBulkContainer(ctx, g.DestinationContainerID); ce == nil {
 				destName = c.Name
 			}
+			// The last link in the audit chain: which approved instrument
+			// made this determination (EDM3-1-1 ¶24).
+			gaugeInstruments = newInstrumentCache(q, time.Now()).refs(ctx,
+				g.VolumeInstrumentID, g.StrengthInstrumentID, g.TemperatureInstrumentID)
 		} else if !errors.Is(ge, pgx.ErrNoRows) {
 			return ge
 		}
@@ -125,6 +130,7 @@ func (s *DistillationService) GetDistillationRun(
 	var gaugeProto *stillhousev1.ProductionGauge
 	if gauge != nil {
 		gaugeProto = productionGaugeToProto(*gauge, destName)
+		gaugeProto.Instruments = gaugeInstruments
 	}
 	return connect.NewResponse(&stillhousev1.GetDistillationRunResponse{
 		Run: distillationRunToProto(r, charges, cuts, gaugeProto),
@@ -441,6 +447,9 @@ func (s *DistillationService) RecordProductionGauge(
 	var (
 		gauge   sqlcgen.ProductionGauge
 		updated sqlcgen.BulkContainer
+		// Conditions that don't block the gauge but that the operator
+		// should see — an instrument past due for calibration.
+		gaugeWarnings []string
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: gaugeTS.Time}); e != nil {
@@ -485,21 +494,35 @@ func (s *DistillationService) RecordProductionGauge(
 		}
 
 		// 2. Insert the ProductionGauge.
+		// The instruments this determination was made with. Checked
+		// against the date of the gauge, not today — an instrument whose
+		// approval has since lapsed was still approved when the reading
+		// was taken, and a backdated correction must not be judged
+		// against today's register.
+		instr, e := checkInstruments(ctx, q, in.GetInstruments(), gaugeTS.Time)
+		if e != nil {
+			return e
+		}
+		gaugeWarnings = instr.warnings
+
 		gauge, e = q.CreateProductionGauge(ctx, sqlcgen.CreateProductionGaugeParams{
-			TenantID:               u.TenantID,
-			DistillationRunID:      runID,
-			DestinationContainerID: destID,
-			BulkMovementID:         mv.ID,
-			GaugeDate:              gaugeTS,
-			VolumeL:                volume,
-			AbvPct:                 abv,
-			TemperatureC:           optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
-			GaugerUserID:           u.ID,
-			Notes:                  in.GetNotes(),
-			ObservedVolumeL:        optionalFloat(true, in.GetVolumeL()),
-			ObservedDensityKgM3:    optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
-			VolumeFactorC:          corrected.VolumeFactorC,
-			StrengthSource:         strengthSourceToDB(corrected.Source),
+			TenantID:                u.TenantID,
+			DistillationRunID:       runID,
+			DestinationContainerID:  destID,
+			BulkMovementID:          mv.ID,
+			GaugeDate:               gaugeTS,
+			VolumeL:                 volume,
+			AbvPct:                  abv,
+			TemperatureC:            optionalFloat(in.GetTemperatureCSet(), in.GetTemperatureC()),
+			GaugerUserID:            u.ID,
+			Notes:                   in.GetNotes(),
+			ObservedVolumeL:         optionalFloat(true, in.GetVolumeL()),
+			ObservedDensityKgM3:     optionalFloat(in.GetDensityKgM3Set(), in.GetDensityKgM3()),
+			VolumeFactorC:           corrected.VolumeFactorC,
+			StrengthSource:          strengthSourceToDB(corrected.Source),
+			VolumeInstrumentID:      instr.volume,
+			StrengthInstrumentID:    instr.strength,
+			TemperatureInstrumentID: instr.temperature,
 		})
 		if e != nil {
 			return e
@@ -553,6 +576,7 @@ func (s *DistillationService) RecordProductionGauge(
 	return connect.NewResponse(&stillhousev1.RecordProductionGaugeResponse{
 		Gauge:                productionGaugeToProto(gauge, updated.Name),
 		DestinationContainer: bulkContainerToProto(updated),
+		Warnings:             gaugeWarnings,
 	}), nil
 }
 

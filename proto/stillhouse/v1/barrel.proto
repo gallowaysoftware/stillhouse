@@ -6,6 +6,7 @@ syntax = "proto3";
 package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/instrument.proto";
 import "stillhouse/v1/alcoholometry.proto";
 
 enum BarrelEventKind {
@@ -142,6 +143,13 @@ message BarrelEvent {
   bool   observed_density_kg_m3_set = 20;
   double volume_factor_c = 21;
   StrengthSource strength_source = 22;
+
+  // The instruments the determination was made with, resolved. This is the
+  // last link in the audit chain: quantity → movement → determination →
+  // the approved instrument that made it (EDM3-1-1 ¶24, EDM1-1-5). Unset
+  // on rows recorded before the register existed, which is honest — they
+  // name no instrument because none was named.
+  DeterminationInstruments instruments = 23;
 }
 
 // --- requests ---
@@ -193,10 +201,18 @@ message FillBarrelRequest {
   bool   temperature_c_set = 8;
   double density_kg_m3 = 9;
   bool   density_kg_m3_set = 10;
+  // The instruments this determination was made with. Optional — the
+  // register starts empty — but any instrument named here is checked, and
+  // one without a CRA approval on file is refused.
+  InstrumentRefs instruments = 11;
 }
 message FillBarrelResponse {
   BarrelEvent event = 1;
   Barrel barrel = 2;
+  // Conditions that did not block the determination but that an operator
+  // and an auditor both want to see — an instrument past due for
+  // calibration is still approved, so it is a warning, not a refusal.
+  repeated string warnings = 3;
 }
 
 message DumpBarrelRequest {
@@ -210,10 +226,18 @@ message DumpBarrelRequest {
   bool   temperature_c_set = 8;
   double density_kg_m3 = 9;
   bool   density_kg_m3_set = 10;
+  // The instruments this determination was made with. Optional — the
+  // register starts empty — but any instrument named here is checked, and
+  // one without a CRA approval on file is refused.
+  InstrumentRefs instruments = 11;
 }
 message DumpBarrelResponse {
   BarrelEvent event = 1;
   Barrel barrel = 2;
+  // Conditions that did not block the determination but that an operator
+  // and an auditor both want to see — an instrument past due for
+  // calibration is still approved, so it is a warning, not a refusal.
+  repeated string warnings = 3;
 }
 
 message RegaugeBarrelRequest {
@@ -229,11 +253,19 @@ message RegaugeBarrelRequest {
   bool   temperature_c_set = 7;
   double density_kg_m3 = 8;
   bool   density_kg_m3_set = 9;
+  // The instruments this determination was made with. Optional — the
+  // register starts empty — but any instrument named here is checked, and
+  // one without a CRA approval on file is refused.
+  InstrumentRefs instruments = 10;
 }
 message RegaugeBarrelResponse {
   BarrelEvent event = 1;
   Barrel barrel = 2;
   double lost_laa = 3;
+  // Conditions that did not block the determination but that an operator
+  // and an auditor both want to see — an instrument past due for
+  // calibration is still approved, so it is a warning, not a refusal.
+  repeated string warnings = 4;
 }
 
 message VoidBarrelEventRequest {

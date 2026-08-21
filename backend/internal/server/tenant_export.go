@@ -35,6 +35,12 @@ import (
 // → barrels → bottling → removals → B266 → audit) so a reviewer reading the
 // zip top-to-bottom can follow the chain.
 var exportTables = []string{
+	// The instrument register comes first: everything downstream that
+	// determined a quantity points back at it, and a reviewer reading the
+	// zip top-to-bottom needs to know what the serial numbers mean before
+	// meeting them on a gauge.
+	"instruments",
+	"instrument_calibrations",
 	"materials",
 	"material_receipts",
 	"recipes",
@@ -50,7 +56,12 @@ var exportTables = []string{
 	"distillation_runs",
 	"distillation_charges",
 	"distillation_cuts",
+	// The determinations themselves. Without these the export could show
+	// what the quantities were and not how any of them was arrived at,
+	// which is the half an auditor actually asks about.
+	"production_gauges",
 	"barrels",
+	"barrel_events",
 	"products",
 	"excise_stamp_orders",
 	"bottling_runs",

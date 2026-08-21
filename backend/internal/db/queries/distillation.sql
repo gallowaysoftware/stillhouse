@@ -72,9 +72,12 @@ DELETE FROM distillation_cuts WHERE id = $1;
 INSERT INTO production_gauges (
     tenant_id, distillation_run_id, destination_container_id, bulk_movement_id,
     gauge_date, volume_l, abv_pct, temperature_c, gauger_user_id, notes,
-    observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source
+    observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source,
+    -- The instruments the determination was made with. NULL means none was
+    -- named, which is what every row predating the register says.
+    volume_instrument_id, strength_instrument_id, temperature_instrument_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
 ) RETURNING *;
 
 -- name: GetProductionGaugeByRun :one

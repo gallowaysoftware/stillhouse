@@ -62,20 +62,25 @@ export function BarrelDetailPage() {
     qc.invalidateQueries({ queryKey: ["listRecentBulkMovements"] });
   };
 
+  // An instrument past due for calibration doesn't block the gauge, so the
+  // only place the operator will ever see it is here. A warning nobody
+  // surfaces is a warning nobody acts on.
+  const warnAll = (warnings: string[]) => warnings.forEach((w) => toast("warning", w));
+
   const fill = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof FillBarrelRequestSchema>>) =>
       barrelClient.fillBarrel(msg),
-    onSuccess: () => { refresh(); toast("success", "Barrel filled."); },
+    onSuccess: (r) => { refresh(); toast("success", "Barrel filled."); warnAll(r.warnings); },
   });
   const regauge = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof RegaugeBarrelRequestSchema>>) =>
       barrelClient.regaugeBarrel(msg),
-    onSuccess: () => { refresh(); toast("success", "Regauge recorded."); },
+    onSuccess: (r) => { refresh(); toast("success", "Regauge recorded."); warnAll(r.warnings); },
   });
   const dump = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof DumpBarrelRequestSchema>>) =>
       barrelClient.dumpBarrel(msg),
-    onSuccess: () => { refresh(); toast("success", "Barrel dumped."); },
+    onSuccess: (r) => { refresh(); toast("success", "Barrel dumped."); warnAll(r.warnings); },
   });
   const voidEvent = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof VoidBarrelEventRequestSchema>>) =>
@@ -227,6 +232,26 @@ export function BarrelDetailPage() {
                       made — an unbadged row is an uncorrected legacy one. */}
                   {e.strengthSource !== StrengthSource.UNCORRECTED && (
                     <div className="mt-1"><SourceBadge source={e.strengthSource} /></div>
+                  )}
+                  {/* The last link: which approved instrument made this
+                      determination (EDM3-1-1 ¶24). Absent on rows recorded
+                      before the register existed, which is honest — they
+                      name none because none was named. */}
+                  {e.instruments && (
+                    <div className="mt-1 space-y-0.5 text-xs text-fg-subtle">
+                      {[
+                        ["vol", e.instruments.volume],
+                        ["str", e.instruments.strength],
+                        ["temp", e.instruments.temperature],
+                      ].map(([role, inst]) =>
+                        inst ? (
+                          <div key={role as string} title={(inst as { approvalReference: string }).approvalReference}>
+                            {role as string}: {(inst as { label: string }).label} (
+                            {(inst as { serialNo: string }).serialNo})
+                          </div>
+                        ) : null,
+                      )}
+                    </div>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right text-fg-muted tabular-nums">

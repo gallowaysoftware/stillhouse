@@ -3,8 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Code, ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
-import { alcoholometryClient } from "@/lib/clients";
+import { alcoholometryClient, instrumentClient } from "@/lib/clients";
 import { StrengthSource } from "@/gen/stillhouse/v1/alcoholometry_pb";
+import { InstrumentKind } from "@/gen/stillhouse/v1/instrument_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 
 /**
@@ -40,10 +41,22 @@ export type StrengthReadingValue = {
   density: string;
   /** Strength at 20 °C. Used when mode === "abv". */
   abv: string;
+  /**
+   * Which registered instrument took each of the three measurements.
+   * Empty means none was named, which is recorded honestly as such —
+   * the server refuses an instrument that IS named but is not approved.
+   */
+  volumeInstrumentId: string;
+  strengthInstrumentId: string;
+  temperatureInstrumentId: string;
 };
 
 export function emptyReading(overrides: Partial<StrengthReadingValue> = {}): StrengthReadingValue {
-  return { volumeL: "", tempC: "", mode: "abv", density: "", abv: "", ...overrides };
+  return {
+    volumeL: "", tempC: "", mode: "abv", density: "", abv: "",
+    volumeInstrumentId: "", strengthInstrumentId: "", temperatureInstrumentId: "",
+    ...overrides,
+  };
 }
 
 /**
@@ -61,6 +74,11 @@ export function readingToRequest(v: StrengthReadingValue): {
   densityKgM3Set: boolean;
   temperatureC: number;
   temperatureCSet: boolean;
+  instruments: {
+    volumeInstrumentId: string;
+    strengthInstrumentId: string;
+    temperatureInstrumentId: string;
+  };
 } {
   const tempSet = v.tempC.trim() !== "" && !Number.isNaN(Number(v.tempC));
   const densitySet = v.mode === "density" && v.density.trim() !== "" && !Number.isNaN(Number(v.density));
@@ -70,6 +88,15 @@ export function readingToRequest(v: StrengthReadingValue): {
     densityKgM3Set: densitySet,
     temperatureC: tempSet ? Number(v.tempC) : 0,
     temperatureCSet: tempSet,
+    instruments: {
+      volumeInstrumentId: v.volumeInstrumentId,
+      // Only the instrument that actually took the reading. A strength
+      // typed in the abv box still came off a hydrometer or a density
+      // meter, so the field applies in both modes.
+      strengthInstrumentId: v.strengthInstrumentId,
+      // A temperature nobody recorded was taken with no thermometer.
+      temperatureInstrumentId: tempSet ? v.temperatureInstrumentId : "",
+    },
   };
 }
 
@@ -125,6 +152,13 @@ export function StrengthReading({
         onChange={(tempC) => set({ tempC })}
         suffix="°C"
       />
+
+      {/* The last link in the audit chain. CRA approval attaches to the
+          individual instrument, not the model (EDM1-1-5), so a
+          determination that says how it was made but not what made it
+          stops one step short. Optional: naming nothing is recorded as
+          naming nothing, and naming something unapproved is refused. */}
+      <InstrumentPickers value={value} onChange={onChange} />
 
       {resolved.tablesMissing ? (
         <Callout tone="warning" title="Temperature correction unavailable">
@@ -375,6 +409,120 @@ function NumField({
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+/**
+ * InstrumentPickers — which registered instrument took each measurement.
+ *
+ * Collapsed by default. An operator with wet hands is not going to expand
+ * three dropdowns for every regauge, and the register is optional by
+ * design; but once instruments are registered, the summary line shows what
+ * is currently selected so an unfilled determination is visible at a
+ * glance rather than discovered at audit.
+ *
+ * Unusable instruments are listed and disabled rather than hidden. An
+ * operator reaching for the hydrometer in their hand needs to see why it
+ * is not selectable — an instrument that has silently vanished from a
+ * dropdown reads as a bug, not as a compliance gap.
+ */
+function InstrumentPickers({
+  value,
+  onChange,
+}: {
+  value: StrengthReadingValue;
+  onChange: (v: StrengthReadingValue) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const list = useQuery({
+    queryKey: ["listInstruments", false],
+    queryFn: () => instrumentClient.listInstruments({ includeRetired: false }),
+  });
+  const instruments = list.data?.instruments ?? [];
+  if (instruments.length === 0) return null;
+
+  const set = (patch: Partial<StrengthReadingValue>) => onChange({ ...value, ...patch });
+  const byKind = (kinds: InstrumentKind[]) => instruments.filter((i) => kinds.includes(i.kind));
+  const named = [value.volumeInstrumentId, value.strengthInstrumentId, value.temperatureInstrumentId]
+    .filter(Boolean).length;
+
+  return (
+    <div className="rounded border border-border">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between px-3 py-2 text-left text-xs text-fg-muted hover:bg-surface-3"
+      >
+        <span>Instruments used {named > 0 ? `(${named} named)` : "(none named)"}</span>
+        <span aria-hidden>{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div className="space-y-2 border-t border-border p-3">
+          <Picker
+            label="Volume"
+            value={value.volumeInstrumentId}
+            onChange={(volumeInstrumentId) => set({ volumeInstrumentId })}
+            options={byKind([
+              InstrumentKind.VOLUMETRIC_MEASURE,
+              InstrumentKind.MASS_FLOW_METER,
+              InstrumentKind.SCALE,
+              InstrumentKind.OTHER,
+            ])}
+          />
+          <Picker
+            label="Strength"
+            value={value.strengthInstrumentId}
+            onChange={(strengthInstrumentId) => set({ strengthInstrumentId })}
+            options={byKind([
+              InstrumentKind.HYDROMETER,
+              InstrumentKind.DENSITY_METER,
+              InstrumentKind.OTHER,
+            ])}
+          />
+          <Picker
+            label="Temperature"
+            value={value.temperatureInstrumentId}
+            onChange={(temperatureInstrumentId) => set({ temperatureInstrumentId })}
+            options={byKind([InstrumentKind.THERMOMETER, InstrumentKind.OTHER])}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Picker({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: { id: string; label: string; serialNo: string; usable: boolean; unusableReason: string; calibrationOverdue: boolean }[];
+}) {
+  if (options.length === 0) return null;
+  const selected = options.find((o) => o.id === value);
+  return (
+    <div>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded border border-border-strong px-2 py-1 text-sm"
+      >
+        <option value="">Not recorded</option>
+        {options.map((o) => (
+          <option key={o.id} value={o.id} disabled={!o.usable}>
+            {o.label} ({o.serialNo}){o.usable ? "" : " — not approved"}
+          </option>
+        ))}
+      </select>
+      {selected?.calibrationOverdue && (
+        <p className="mt-1 text-xs text-warning">Past due for calibration — the gauge will record a warning.</p>
+      )}
     </div>
   );
 }

@@ -15,6 +15,7 @@ import {
   StrengthReadingValue,
 } from "@/components/StrengthReading";
 import { Shell } from "@/components/Shell";
+import { useToast } from "@/components/Toast";
 import { bulkClient, distillationClient, fermentationClient } from "@/lib/clients";
 import {
   AddDistillationChargeRequestSchema,
@@ -57,6 +58,8 @@ export function DistillationDetailPage() {
     queryFn: () => fermentationClient.listFermentationRuns({}),
   });
 
+  const toast = useToast();
+
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["getDistillationRun", id] });
     qc.invalidateQueries({ queryKey: ["listBulkContainers"] });
@@ -86,7 +89,13 @@ export function DistillationDetailPage() {
   const recordGauge = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof RecordProductionGaugeRequestSchema>>) =>
       distillationClient.recordProductionGauge(msg),
-    onSuccess: refresh,
+    onSuccess: (r) => {
+      refresh();
+      // An instrument past due for calibration doesn't block the gauge, so
+      // this is the only place the operator will see it. A warning nobody
+      // surfaces is a warning nobody acts on.
+      r.warnings.forEach((w) => toast("warning", w));
+    },
   });
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
