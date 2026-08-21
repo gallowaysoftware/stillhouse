@@ -197,19 +197,29 @@ func (ns NullBulkContainerKind) Value() (driver.Value, error) {
 type BulkMovementReason string
 
 const (
-	BulkMovementReasonProductionGauge     BulkMovementReason = "production_gauge"
-	BulkMovementReasonInterTankTransfer   BulkMovementReason = "inter_tank_transfer"
-	BulkMovementReasonBlend               BulkMovementReason = "blend"
-	BulkMovementReasonTransferInBond      BulkMovementReason = "transfer_in_bond"
-	BulkMovementReasonTransferOutInBond   BulkMovementReason = "transfer_out_in_bond"
-	BulkMovementReasonTransferToPackaging BulkMovementReason = "transfer_to_packaging"
-	BulkMovementReasonLossEvaporation     BulkMovementReason = "loss_evaporation"
-	BulkMovementReasonLossUnaccounted     BulkMovementReason = "loss_unaccounted"
-	BulkMovementReasonRegaugeCorrection   BulkMovementReason = "regauge_correction"
-	BulkMovementReasonDestruction         BulkMovementReason = "destruction"
-	BulkMovementReasonOpeningInventory    BulkMovementReason = "opening_inventory"
-	BulkMovementReasonAdjustmentIncrease  BulkMovementReason = "adjustment_increase"
-	BulkMovementReasonAdjustmentDecrease  BulkMovementReason = "adjustment_decrease"
+	BulkMovementReasonProductionGauge             BulkMovementReason = "production_gauge"
+	BulkMovementReasonInterTankTransfer           BulkMovementReason = "inter_tank_transfer"
+	BulkMovementReasonBlend                       BulkMovementReason = "blend"
+	BulkMovementReasonTransferInBond              BulkMovementReason = "transfer_in_bond"
+	BulkMovementReasonTransferOutInBond           BulkMovementReason = "transfer_out_in_bond"
+	BulkMovementReasonTransferToPackaging         BulkMovementReason = "transfer_to_packaging"
+	BulkMovementReasonLossEvaporation             BulkMovementReason = "loss_evaporation"
+	BulkMovementReasonLossUnaccounted             BulkMovementReason = "loss_unaccounted"
+	BulkMovementReasonRegaugeCorrection           BulkMovementReason = "regauge_correction"
+	BulkMovementReasonDestruction                 BulkMovementReason = "destruction"
+	BulkMovementReasonOpeningInventory            BulkMovementReason = "opening_inventory"
+	BulkMovementReasonAdjustmentIncrease          BulkMovementReason = "adjustment_increase"
+	BulkMovementReasonAdjustmentDecrease          BulkMovementReason = "adjustment_decrease"
+	BulkMovementReasonImportReceived              BulkMovementReason = "import_received"
+	BulkMovementReasonReceivedFromSpiritsLicensee BulkMovementReason = "received_from_spirits_licensee"
+	BulkMovementReasonReceivedFromLicensedUser    BulkMovementReason = "received_from_licensed_user"
+	BulkMovementReasonPackagedReturnedToBulk      BulkMovementReason = "packaged_returned_to_bulk"
+	BulkMovementReasonDeliveredToSpiritsLicensee  BulkMovementReason = "delivered_to_spirits_licensee"
+	BulkMovementReasonDeliveredToLicensedUser     BulkMovementReason = "delivered_to_licensed_user"
+	BulkMovementReasonExported                    BulkMovementReason = "exported"
+	BulkMovementReasonDenaturedDa                 BulkMovementReason = "denatured_da"
+	BulkMovementReasonDenaturedSda                BulkMovementReason = "denatured_sda"
+	BulkMovementReasonReturnedToProduction        BulkMovementReason = "returned_to_production"
 )
 
 func (e *BulkMovementReason) Scan(src interface{}) error {
@@ -1102,19 +1112,33 @@ type BulkContainer struct {
 }
 
 type BulkMovement struct {
-	ID                     uuid.UUID          `json:"id"`
-	TenantID               uuid.UUID          `json:"tenant_id"`
-	SourceContainerID      uuid.NullUUID      `json:"source_container_id"`
-	DestinationContainerID uuid.NullUUID      `json:"destination_container_id"`
-	VolumeL                float64            `json:"volume_l"`
-	AbvPct                 float64            `json:"abv_pct"`
-	Laa                    float64            `json:"laa"`
-	Reason                 BulkMovementReason `json:"reason"`
-	ReferenceType          string             `json:"reference_type"`
-	ReferenceID            uuid.NullUUID      `json:"reference_id"`
-	Notes                  string             `json:"notes"`
-	OccurredAt             pgtype.Timestamptz `json:"occurred_at"`
-	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	SourceContainerID       uuid.NullUUID      `json:"source_container_id"`
+	DestinationContainerID  uuid.NullUUID      `json:"destination_container_id"`
+	VolumeL                 float64            `json:"volume_l"`
+	AbvPct                  float64            `json:"abv_pct"`
+	Laa                     float64            `json:"laa"`
+	Reason                  BulkMovementReason `json:"reason"`
+	ReferenceType           string             `json:"reference_type"`
+	ReferenceID             uuid.NullUUID      `json:"reference_id"`
+	Notes                   string             `json:"notes"`
+	OccurredAt              pgtype.Timestamptz `json:"occurred_at"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	CounterpartyName        string             `json:"counterparty_name"`
+	CounterpartyLicenceNo   string             `json:"counterparty_licence_no"`
+	DocumentReference       string             `json:"document_reference"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
+	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
+	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
 }
 
 type DistillationCharge struct {

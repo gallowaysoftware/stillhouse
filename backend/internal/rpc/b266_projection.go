@@ -121,6 +121,22 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		// the distillery made, on a return CRA reads.
 		BulkOpeningInventoryAdoptedLaa: round4(t.laa("opening_inventory")),
 
+		// The rest of EDM10-1-7 page 3. Four of these lines existed on the
+		// report from the beginning and were structurally always zero,
+		// because nothing in the application ever wrote the movement:
+		// received in bond, transferred out in bond, destroyed, and
+		// unaccounted loss. They have a path now (stage 146).
+		BulkImportedLaa:                 t.laa("import_received"),
+		BulkReceivedFromLicenseeLaa:     t.laa("received_from_spirits_licensee"),
+		BulkReceivedFromLicensedUserLaa: t.laa("received_from_licensed_user"),
+		BulkPackagedReturnedToBulkLaa:   t.laa("packaged_returned_to_bulk"),
+		BulkDeliveredToLicenseeLaa:      t.laa("delivered_to_spirits_licensee"),
+		BulkDeliveredToLicensedUserLaa:  t.laa("delivered_to_licensed_user"),
+		BulkExportedLaa:                 t.laa("exported"),
+		BulkDenaturedDaLaa:              t.laa("denatured_da"),
+		BulkDenaturedSdaLaa:             t.laa("denatured_sda"),
+		BulkReturnedToProductionLaa:     t.laa("returned_to_production"),
+
 		BulkAdjustmentsLaa:         round4(t.adjustmentsNetLAA),
 		BulkAdjustmentsIncreaseLaa: round4(t.adjustmentsIncreaseLAA),
 		BulkAdjustmentsDecreaseLaa: round4(t.adjustmentsDecreaseLAA),
@@ -189,9 +205,14 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 	// it belongs in the walk explicitly rather than being absorbed by the
 	// opening balance the way an unreported movement is.
 	bulkReceipts := report.BulkProductionLaa + report.BulkReceivedInBondLaa +
-		report.BulkAdjustmentsIncreaseLaa
+		report.BulkAdjustmentsIncreaseLaa +
+		report.BulkImportedLaa + report.BulkReceivedFromLicenseeLaa +
+		report.BulkReceivedFromLicensedUserLaa + report.BulkPackagedReturnedToBulkLaa
 	bulkWithdrawals := report.BulkTransferredToPackagingLaa + report.BulkTransferredOutInBondLaa +
-		report.BulkLossesLaa + report.BulkDestroyedLaa + report.BulkAdjustmentsDecreaseLaa
+		report.BulkLossesLaa + report.BulkDestroyedLaa + report.BulkAdjustmentsDecreaseLaa +
+		report.BulkDeliveredToLicenseeLaa + report.BulkDeliveredToLicensedUserLaa +
+		report.BulkExportedLaa + report.BulkDenaturedDaLaa + report.BulkDenaturedSdaLaa +
+		report.BulkReturnedToProductionLaa
 	report.BulkOpeningLaa = round4(report.BulkClosingLaa - bulkReceipts + bulkWithdrawals)
 
 	// Packaged inventory only ever received what became bottles. Walking

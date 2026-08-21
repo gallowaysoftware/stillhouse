@@ -130,7 +130,7 @@ func (q *Queries) GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent
 }
 
 const getBulkMovementForBarrelEvent = `-- name: GetBulkMovementForBarrelEvent :one
-SELECT id, tenant_id, source_container_id, destination_container_id, volume_l, abv_pct, laa, reason, reference_type, reference_id, notes, occurred_at, created_at FROM bulk_movements WHERE id = $1
+SELECT id, tenant_id, source_container_id, destination_container_id, volume_l, abv_pct, laa, reason, reference_type, reference_id, notes, occurred_at, created_at, counterparty_name, counterparty_licence_no, document_reference, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id, recorded_by, packaged_inventory_id, bottles_unpackaged FROM bulk_movements WHERE id = $1
 `
 
 func (q *Queries) GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUID) (BulkMovement, error) {
@@ -150,6 +150,20 @@ func (q *Queries) GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUI
 		&i.Notes,
 		&i.OccurredAt,
 		&i.CreatedAt,
+		&i.CounterpartyName,
+		&i.CounterpartyLicenceNo,
+		&i.DocumentReference,
+		&i.TemperatureC,
+		&i.ObservedVolumeL,
+		&i.ObservedDensityKgM3,
+		&i.VolumeFactorC,
+		&i.StrengthSource,
+		&i.VolumeInstrumentID,
+		&i.StrengthInstrumentID,
+		&i.TemperatureInstrumentID,
+		&i.RecordedBy,
+		&i.PackagedInventoryID,
+		&i.BottlesUnpackaged,
 	)
 	return i, err
 }

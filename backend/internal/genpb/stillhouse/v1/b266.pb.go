@@ -213,6 +213,17 @@ type B266Report struct {
 	BulkAdjustmentsIncreaseLaa float64 `protobuf:"fixed64,21,opt,name=bulk_adjustments_increase_laa,json=bulkAdjustmentsIncreaseLaa,proto3" json:"bulk_adjustments_increase_laa,omitempty"`
 	BulkAdjustmentsDecreaseLaa float64 `protobuf:"fixed64,22,opt,name=bulk_adjustments_decrease_laa,json=bulkAdjustmentsDecreaseLaa,proto3" json:"bulk_adjustments_decrease_laa,omitempty"`
 	BulkAdjustmentsCount       int32   `protobuf:"varint,23,opt,name=bulk_adjustments_count,json=bulkAdjustmentsCount,proto3" json:"bulk_adjustments_count,omitempty"`
+	// The rest of EDM10-1-7 page 3. Receipts first, then dispositions.
+	BulkImportedLaa                 float64 `protobuf:"fixed64,24,opt,name=bulk_imported_laa,json=bulkImportedLaa,proto3" json:"bulk_imported_laa,omitempty"`
+	BulkReceivedFromLicenseeLaa     float64 `protobuf:"fixed64,25,opt,name=bulk_received_from_licensee_laa,json=bulkReceivedFromLicenseeLaa,proto3" json:"bulk_received_from_licensee_laa,omitempty"`
+	BulkReceivedFromLicensedUserLaa float64 `protobuf:"fixed64,26,opt,name=bulk_received_from_licensed_user_laa,json=bulkReceivedFromLicensedUserLaa,proto3" json:"bulk_received_from_licensed_user_laa,omitempty"`
+	BulkPackagedReturnedToBulkLaa   float64 `protobuf:"fixed64,27,opt,name=bulk_packaged_returned_to_bulk_laa,json=bulkPackagedReturnedToBulkLaa,proto3" json:"bulk_packaged_returned_to_bulk_laa,omitempty"`
+	BulkDeliveredToLicenseeLaa      float64 `protobuf:"fixed64,28,opt,name=bulk_delivered_to_licensee_laa,json=bulkDeliveredToLicenseeLaa,proto3" json:"bulk_delivered_to_licensee_laa,omitempty"`
+	BulkDeliveredToLicensedUserLaa  float64 `protobuf:"fixed64,29,opt,name=bulk_delivered_to_licensed_user_laa,json=bulkDeliveredToLicensedUserLaa,proto3" json:"bulk_delivered_to_licensed_user_laa,omitempty"`
+	BulkExportedLaa                 float64 `protobuf:"fixed64,64,opt,name=bulk_exported_laa,json=bulkExportedLaa,proto3" json:"bulk_exported_laa,omitempty"`
+	BulkDenaturedDaLaa              float64 `protobuf:"fixed64,65,opt,name=bulk_denatured_da_laa,json=bulkDenaturedDaLaa,proto3" json:"bulk_denatured_da_laa,omitempty"`
+	BulkDenaturedSdaLaa             float64 `protobuf:"fixed64,66,opt,name=bulk_denatured_sda_laa,json=bulkDenaturedSdaLaa,proto3" json:"bulk_denatured_sda_laa,omitempty"`
+	BulkReturnedToProductionLaa     float64 `protobuf:"fixed64,67,opt,name=bulk_returned_to_production_laa,json=bulkReturnedToProductionLaa,proto3" json:"bulk_returned_to_production_laa,omitempty"`
 	// Packaged spirits section.
 	PackagedOpeningLaa             float64 `protobuf:"fixed64,30,opt,name=packaged_opening_laa,json=packagedOpeningLaa,proto3" json:"packaged_opening_laa,omitempty"`
 	PackagedPackagedLaa            float64 `protobuf:"fixed64,31,opt,name=packaged_packaged_laa,json=packagedPackagedLaa,proto3" json:"packaged_packaged_laa,omitempty"` // produced by bottling runs
@@ -406,6 +417,76 @@ func (x *B266Report) GetBulkAdjustmentsDecreaseLaa() float64 {
 func (x *B266Report) GetBulkAdjustmentsCount() int32 {
 	if x != nil {
 		return x.BulkAdjustmentsCount
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkImportedLaa() float64 {
+	if x != nil {
+		return x.BulkImportedLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkReceivedFromLicenseeLaa() float64 {
+	if x != nil {
+		return x.BulkReceivedFromLicenseeLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkReceivedFromLicensedUserLaa() float64 {
+	if x != nil {
+		return x.BulkReceivedFromLicensedUserLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkPackagedReturnedToBulkLaa() float64 {
+	if x != nil {
+		return x.BulkPackagedReturnedToBulkLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkDeliveredToLicenseeLaa() float64 {
+	if x != nil {
+		return x.BulkDeliveredToLicenseeLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkDeliveredToLicensedUserLaa() float64 {
+	if x != nil {
+		return x.BulkDeliveredToLicensedUserLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkExportedLaa() float64 {
+	if x != nil {
+		return x.BulkExportedLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkDenaturedDaLaa() float64 {
+	if x != nil {
+		return x.BulkDenaturedDaLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkDenaturedSdaLaa() float64 {
+	if x != nil {
+		return x.BulkDenaturedSdaLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkReturnedToProductionLaa() float64 {
+	if x != nil {
+		return x.BulkReturnedToProductionLaa
 	}
 	return 0
 }
@@ -1102,7 +1183,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8f\x14\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x86\x19\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1122,7 +1203,17 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x14bulk_adjustments_laa\x18\x14 \x01(\x01R\x12bulkAdjustmentsLaa\x12A\n" +
 	"\x1dbulk_adjustments_increase_laa\x18\x15 \x01(\x01R\x1abulkAdjustmentsIncreaseLaa\x12A\n" +
 	"\x1dbulk_adjustments_decrease_laa\x18\x16 \x01(\x01R\x1abulkAdjustmentsDecreaseLaa\x124\n" +
-	"\x16bulk_adjustments_count\x18\x17 \x01(\x05R\x14bulkAdjustmentsCount\x120\n" +
+	"\x16bulk_adjustments_count\x18\x17 \x01(\x05R\x14bulkAdjustmentsCount\x12*\n" +
+	"\x11bulk_imported_laa\x18\x18 \x01(\x01R\x0fbulkImportedLaa\x12D\n" +
+	"\x1fbulk_received_from_licensee_laa\x18\x19 \x01(\x01R\x1bbulkReceivedFromLicenseeLaa\x12M\n" +
+	"$bulk_received_from_licensed_user_laa\x18\x1a \x01(\x01R\x1fbulkReceivedFromLicensedUserLaa\x12I\n" +
+	"\"bulk_packaged_returned_to_bulk_laa\x18\x1b \x01(\x01R\x1dbulkPackagedReturnedToBulkLaa\x12B\n" +
+	"\x1ebulk_delivered_to_licensee_laa\x18\x1c \x01(\x01R\x1abulkDeliveredToLicenseeLaa\x12K\n" +
+	"#bulk_delivered_to_licensed_user_laa\x18\x1d \x01(\x01R\x1ebulkDeliveredToLicensedUserLaa\x12*\n" +
+	"\x11bulk_exported_laa\x18@ \x01(\x01R\x0fbulkExportedLaa\x121\n" +
+	"\x15bulk_denatured_da_laa\x18A \x01(\x01R\x12bulkDenaturedDaLaa\x123\n" +
+	"\x16bulk_denatured_sda_laa\x18B \x01(\x01R\x13bulkDenaturedSdaLaa\x12D\n" +
+	"\x1fbulk_returned_to_production_laa\x18C \x01(\x01R\x1bbulkReturnedToProductionLaa\x120\n" +
 	"\x14packaged_opening_laa\x18\x1e \x01(\x01R\x12packagedOpeningLaa\x122\n" +
 	"\x15packaged_packaged_laa\x18\x1f \x01(\x01R\x13packagedPackagedLaa\x12:\n" +
 	"\x19packaged_packaged_bottles\x18  \x01(\x05R\x17packagedPackagedBottles\x12B\n" +

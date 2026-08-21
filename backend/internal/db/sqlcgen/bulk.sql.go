@@ -167,7 +167,7 @@ INSERT INTO bulk_movements (
     notes, occurred_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
-) RETURNING id, tenant_id, source_container_id, destination_container_id, volume_l, abv_pct, laa, reason, reference_type, reference_id, notes, occurred_at, created_at
+) RETURNING id, tenant_id, source_container_id, destination_container_id, volume_l, abv_pct, laa, reason, reference_type, reference_id, notes, occurred_at, created_at, counterparty_name, counterparty_licence_no, document_reference, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id, recorded_by, packaged_inventory_id, bottles_unpackaged
 `
 
 type InsertBulkMovementParams struct {
@@ -213,6 +213,127 @@ func (q *Queries) InsertBulkMovement(ctx context.Context, arg InsertBulkMovement
 		&i.Notes,
 		&i.OccurredAt,
 		&i.CreatedAt,
+		&i.CounterpartyName,
+		&i.CounterpartyLicenceNo,
+		&i.DocumentReference,
+		&i.TemperatureC,
+		&i.ObservedVolumeL,
+		&i.ObservedDensityKgM3,
+		&i.VolumeFactorC,
+		&i.StrengthSource,
+		&i.VolumeInstrumentID,
+		&i.StrengthInstrumentID,
+		&i.TemperatureInstrumentID,
+		&i.RecordedBy,
+		&i.PackagedInventoryID,
+		&i.BottlesUnpackaged,
+	)
+	return i, err
+}
+
+const insertExternalBulkMovement = `-- name: InsertExternalBulkMovement :one
+INSERT INTO bulk_movements (
+    tenant_id, source_container_id, destination_container_id,
+    volume_l, abv_pct, laa, reason, reference_type,
+    notes, occurred_at,
+    counterparty_name, counterparty_licence_no, document_reference,
+    temperature_c, observed_volume_l, observed_density_kg_m3,
+    volume_factor_c, strength_source,
+    volume_instrument_id, strength_instrument_id, temperature_instrument_id,
+    recorded_by, packaged_inventory_id, bottles_unpackaged
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+    $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
+) RETURNING id, tenant_id, source_container_id, destination_container_id, volume_l, abv_pct, laa, reason, reference_type, reference_id, notes, occurred_at, created_at, counterparty_name, counterparty_licence_no, document_reference, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id, recorded_by, packaged_inventory_id, bottles_unpackaged
+`
+
+type InsertExternalBulkMovementParams struct {
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	SourceContainerID       uuid.NullUUID      `json:"source_container_id"`
+	DestinationContainerID  uuid.NullUUID      `json:"destination_container_id"`
+	VolumeL                 float64            `json:"volume_l"`
+	AbvPct                  float64            `json:"abv_pct"`
+	Laa                     float64            `json:"laa"`
+	Reason                  BulkMovementReason `json:"reason"`
+	ReferenceType           string             `json:"reference_type"`
+	Notes                   string             `json:"notes"`
+	OccurredAt              pgtype.Timestamptz `json:"occurred_at"`
+	CounterpartyName        string             `json:"counterparty_name"`
+	CounterpartyLicenceNo   string             `json:"counterparty_licence_no"`
+	DocumentReference       string             `json:"document_reference"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
+	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
+	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
+}
+
+// A movement recorded directly by an operator rather than as a side effect
+// of another action: spirits arriving on or leaving the premises. Carries
+// the counterparty, the document, the determination and the author, none of
+// which a side-effect movement needs because its parent row has them.
+func (q *Queries) InsertExternalBulkMovement(ctx context.Context, arg InsertExternalBulkMovementParams) (BulkMovement, error) {
+	row := q.db.QueryRow(ctx, insertExternalBulkMovement,
+		arg.TenantID,
+		arg.SourceContainerID,
+		arg.DestinationContainerID,
+		arg.VolumeL,
+		arg.AbvPct,
+		arg.Laa,
+		arg.Reason,
+		arg.ReferenceType,
+		arg.Notes,
+		arg.OccurredAt,
+		arg.CounterpartyName,
+		arg.CounterpartyLicenceNo,
+		arg.DocumentReference,
+		arg.TemperatureC,
+		arg.ObservedVolumeL,
+		arg.ObservedDensityKgM3,
+		arg.VolumeFactorC,
+		arg.StrengthSource,
+		arg.VolumeInstrumentID,
+		arg.StrengthInstrumentID,
+		arg.TemperatureInstrumentID,
+		arg.RecordedBy,
+		arg.PackagedInventoryID,
+		arg.BottlesUnpackaged,
+	)
+	var i BulkMovement
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.SourceContainerID,
+		&i.DestinationContainerID,
+		&i.VolumeL,
+		&i.AbvPct,
+		&i.Laa,
+		&i.Reason,
+		&i.ReferenceType,
+		&i.ReferenceID,
+		&i.Notes,
+		&i.OccurredAt,
+		&i.CreatedAt,
+		&i.CounterpartyName,
+		&i.CounterpartyLicenceNo,
+		&i.DocumentReference,
+		&i.TemperatureC,
+		&i.ObservedVolumeL,
+		&i.ObservedDensityKgM3,
+		&i.VolumeFactorC,
+		&i.StrengthSource,
+		&i.VolumeInstrumentID,
+		&i.StrengthInstrumentID,
+		&i.TemperatureInstrumentID,
+		&i.RecordedBy,
+		&i.PackagedInventoryID,
+		&i.BottlesUnpackaged,
 	)
 	return i, err
 }
@@ -264,7 +385,7 @@ func (q *Queries) ListBulkContainers(ctx context.Context, includeArchived bool) 
 }
 
 const listBulkMovementsByContainer = `-- name: ListBulkMovementsByContainer :many
-SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at,
+SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at, bm.counterparty_name, bm.counterparty_licence_no, bm.document_reference, bm.temperature_c, bm.observed_volume_l, bm.observed_density_kg_m3, bm.volume_factor_c, bm.strength_source, bm.volume_instrument_id, bm.strength_instrument_id, bm.temperature_instrument_id, bm.recorded_by, bm.packaged_inventory_id, bm.bottles_unpackaged,
        src.name AS source_name,
        dst.name AS destination_name
 FROM bulk_movements bm
@@ -277,21 +398,35 @@ LIMIT 200
 `
 
 type ListBulkMovementsByContainerRow struct {
-	ID                     uuid.UUID          `json:"id"`
-	TenantID               uuid.UUID          `json:"tenant_id"`
-	SourceContainerID      uuid.NullUUID      `json:"source_container_id"`
-	DestinationContainerID uuid.NullUUID      `json:"destination_container_id"`
-	VolumeL                float64            `json:"volume_l"`
-	AbvPct                 float64            `json:"abv_pct"`
-	Laa                    float64            `json:"laa"`
-	Reason                 BulkMovementReason `json:"reason"`
-	ReferenceType          string             `json:"reference_type"`
-	ReferenceID            uuid.NullUUID      `json:"reference_id"`
-	Notes                  string             `json:"notes"`
-	OccurredAt             pgtype.Timestamptz `json:"occurred_at"`
-	CreatedAt              pgtype.Timestamptz `json:"created_at"`
-	SourceName             pgtype.Text        `json:"source_name"`
-	DestinationName        pgtype.Text        `json:"destination_name"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	SourceContainerID       uuid.NullUUID      `json:"source_container_id"`
+	DestinationContainerID  uuid.NullUUID      `json:"destination_container_id"`
+	VolumeL                 float64            `json:"volume_l"`
+	AbvPct                  float64            `json:"abv_pct"`
+	Laa                     float64            `json:"laa"`
+	Reason                  BulkMovementReason `json:"reason"`
+	ReferenceType           string             `json:"reference_type"`
+	ReferenceID             uuid.NullUUID      `json:"reference_id"`
+	Notes                   string             `json:"notes"`
+	OccurredAt              pgtype.Timestamptz `json:"occurred_at"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	CounterpartyName        string             `json:"counterparty_name"`
+	CounterpartyLicenceNo   string             `json:"counterparty_licence_no"`
+	DocumentReference       string             `json:"document_reference"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
+	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
+	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
+	SourceName              pgtype.Text        `json:"source_name"`
+	DestinationName         pgtype.Text        `json:"destination_name"`
 }
 
 func (q *Queries) ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error) {
@@ -317,6 +452,20 @@ func (q *Queries) ListBulkMovementsByContainer(ctx context.Context, sourceContai
 			&i.Notes,
 			&i.OccurredAt,
 			&i.CreatedAt,
+			&i.CounterpartyName,
+			&i.CounterpartyLicenceNo,
+			&i.DocumentReference,
+			&i.TemperatureC,
+			&i.ObservedVolumeL,
+			&i.ObservedDensityKgM3,
+			&i.VolumeFactorC,
+			&i.StrengthSource,
+			&i.VolumeInstrumentID,
+			&i.StrengthInstrumentID,
+			&i.TemperatureInstrumentID,
+			&i.RecordedBy,
+			&i.PackagedInventoryID,
+			&i.BottlesUnpackaged,
 			&i.SourceName,
 			&i.DestinationName,
 		); err != nil {
@@ -331,7 +480,7 @@ func (q *Queries) ListBulkMovementsByContainer(ctx context.Context, sourceContai
 }
 
 const listRecentBulkMovements = `-- name: ListRecentBulkMovements :many
-SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at,
+SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at, bm.counterparty_name, bm.counterparty_licence_no, bm.document_reference, bm.temperature_c, bm.observed_volume_l, bm.observed_density_kg_m3, bm.volume_factor_c, bm.strength_source, bm.volume_instrument_id, bm.strength_instrument_id, bm.temperature_instrument_id, bm.recorded_by, bm.packaged_inventory_id, bm.bottles_unpackaged,
        src.name AS source_name,
        dst.name AS destination_name
 FROM bulk_movements bm
@@ -342,21 +491,35 @@ LIMIT 100
 `
 
 type ListRecentBulkMovementsRow struct {
-	ID                     uuid.UUID          `json:"id"`
-	TenantID               uuid.UUID          `json:"tenant_id"`
-	SourceContainerID      uuid.NullUUID      `json:"source_container_id"`
-	DestinationContainerID uuid.NullUUID      `json:"destination_container_id"`
-	VolumeL                float64            `json:"volume_l"`
-	AbvPct                 float64            `json:"abv_pct"`
-	Laa                    float64            `json:"laa"`
-	Reason                 BulkMovementReason `json:"reason"`
-	ReferenceType          string             `json:"reference_type"`
-	ReferenceID            uuid.NullUUID      `json:"reference_id"`
-	Notes                  string             `json:"notes"`
-	OccurredAt             pgtype.Timestamptz `json:"occurred_at"`
-	CreatedAt              pgtype.Timestamptz `json:"created_at"`
-	SourceName             pgtype.Text        `json:"source_name"`
-	DestinationName        pgtype.Text        `json:"destination_name"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	SourceContainerID       uuid.NullUUID      `json:"source_container_id"`
+	DestinationContainerID  uuid.NullUUID      `json:"destination_container_id"`
+	VolumeL                 float64            `json:"volume_l"`
+	AbvPct                  float64            `json:"abv_pct"`
+	Laa                     float64            `json:"laa"`
+	Reason                  BulkMovementReason `json:"reason"`
+	ReferenceType           string             `json:"reference_type"`
+	ReferenceID             uuid.NullUUID      `json:"reference_id"`
+	Notes                   string             `json:"notes"`
+	OccurredAt              pgtype.Timestamptz `json:"occurred_at"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	CounterpartyName        string             `json:"counterparty_name"`
+	CounterpartyLicenceNo   string             `json:"counterparty_licence_no"`
+	DocumentReference       string             `json:"document_reference"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
+	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
+	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
+	SourceName              pgtype.Text        `json:"source_name"`
+	DestinationName         pgtype.Text        `json:"destination_name"`
 }
 
 func (q *Queries) ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulkMovementsRow, error) {
@@ -382,6 +545,20 @@ func (q *Queries) ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulk
 			&i.Notes,
 			&i.OccurredAt,
 			&i.CreatedAt,
+			&i.CounterpartyName,
+			&i.CounterpartyLicenceNo,
+			&i.DocumentReference,
+			&i.TemperatureC,
+			&i.ObservedVolumeL,
+			&i.ObservedDensityKgM3,
+			&i.VolumeFactorC,
+			&i.StrengthSource,
+			&i.VolumeInstrumentID,
+			&i.StrengthInstrumentID,
+			&i.TemperatureInstrumentID,
+			&i.RecordedBy,
+			&i.PackagedInventoryID,
+			&i.BottlesUnpackaged,
 			&i.SourceName,
 			&i.DestinationName,
 		); err != nil {

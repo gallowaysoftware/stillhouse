@@ -45,18 +45,22 @@ What remains is data:
 Each is a struct literal in `internal/excise/rates.go`; the table test
 enforces that bands abut exactly and that every band cites a notice.
 
-### A3 · B266 covers a subset of the form's lines — P0
+### A3 · The three B266 lines still without a path — P1
 
-Against EDM10-1-7, page 3 is missing: imported bulk spirits; bulk received from
-other spirits licensees and licensed users; packaged spirits returned to bulk;
-bulk removed for delivery to spirits licensees / licensed users; spirits
-denatured to DA and SDA; exported bulk; spirits packaged in marked special
-containers; bulk returned to production. Page 1 is missing line 6 (imported
-spirits delivered to licensed users, special duty) and line 8 (refunds with an
-attached B256).
+Stage 146 gave EDM10-1-7 page 3 its bulk vocabulary — imports, receipts
+from and deliveries to other spirits licensees and licensed users,
+packaged spirits returned to bulk, denaturing to DA and SDA, exports, and
+bulk returned to production — along with the four lines that existed on
+the report but that nothing could ever write. What is left needs something
+else first:
 
-Any distillery doing contract work, export, or bottle-your-own kegs cannot file
-from Stillhouse today.
+- **Spirits packaged in marked special containers**, on page 3 and as the
+  third column of the packaging split. Waits on `B3`: they are packaging,
+  not bulk, and need their own model.
+- **Page 1 line 6** — imported spirits delivered to licensed users, at the
+  Schedule 5 special duty rate. Waits on that rate being sourced; see
+  `A2`.
+- **Page 1 line 8** — refunds, with an attached B256. Waits on `A9`.
 
 ### A5 · Losses aren't classified by duty treatment — P1
 
@@ -603,15 +607,16 @@ the three options.
 
 Correctness first, in this order, because each depends on the one before:
 
-1. `A3` B266 completeness
-2. `A5` `A6` losses and reporting periods
-3. `H1` `H2` liability and backups — before any second distillery's records land here
-4. `C2` audit binder — the artifact that makes the case for everything above
+1. `A5` `A6` losses and reporting periods
+2. `H1` `H2` liability and backups — before any second distillery's records land here
+3. `C2` audit binder — the artifact that makes the case for everything above
 
-`A1`, `C1` and `A4`, which headed this list, shipped in stages 143–145: duty
+`A1`, `C1`, `A4` and the bulk half of `A3` shipped in stages 143–146: duty
 crystallises at the event that makes it payable, every gauge can name the
-approved instrument that made it, and a discrepancy between book and physical
-has a reason-coded entry of its own instead of vanishing into losses.
+approved instrument that made it, a discrepancy between book and physical has a
+reason-coded entry of its own instead of vanishing into losses, and page 3 has
+the movement vocabulary the form actually asks for. What is left of `A3` is
+blocked on `B3`, `A2` and `A9` rather than on itself.
 
 `A3` and `A4` are the difference between a return that ties out and one that is
 also true; `A10`, which was the third of that group, shipped in stage 141. `K1`

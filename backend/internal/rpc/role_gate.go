@@ -74,14 +74,17 @@ var procedureMinRole = map[string]minRole{
 	// An inventory adjustment is a deliberate, attributable reconciliation
 	// entry that lands on line D of a filed return, so it is an operator
 	// action with a mandatory explanation rather than a viewer one.
-	"/stillhouse.v1.BulkService/RecordInventoryAdjustment": roleOperator,
-	"/stillhouse.v1.BulkService/ListInventoryAdjustments":  roleViewer,
-	"/stillhouse.v1.BulkService/UpdateBulkContainer":       roleOperator,
-	"/stillhouse.v1.BulkService/SetBulkContainerArchived":  roleOperator,
-	"/stillhouse.v1.BulkService/ListBulkContainers":        roleViewer,
-	"/stillhouse.v1.BulkService/GetBulkContainer":          roleViewer,
-	"/stillhouse.v1.BulkService/ListRecentBulkMovements":   roleViewer,
-	"/stillhouse.v1.BulkService/CreateBlend":               roleOperator,
+	// Alcohol arriving on or leaving the premises lands on a filed return
+	// and names a counterparty, so it is an operator action.
+	"/stillhouse.v1.BulkService/RecordBulkExternalMovement": roleOperator,
+	"/stillhouse.v1.BulkService/RecordInventoryAdjustment":  roleOperator,
+	"/stillhouse.v1.BulkService/ListInventoryAdjustments":   roleViewer,
+	"/stillhouse.v1.BulkService/UpdateBulkContainer":        roleOperator,
+	"/stillhouse.v1.BulkService/SetBulkContainerArchived":   roleOperator,
+	"/stillhouse.v1.BulkService/ListBulkContainers":         roleViewer,
+	"/stillhouse.v1.BulkService/GetBulkContainer":           roleViewer,
+	"/stillhouse.v1.BulkService/ListRecentBulkMovements":    roleViewer,
+	"/stillhouse.v1.BulkService/CreateBlend":                roleOperator,
 
 	// DistillationService
 	"/stillhouse.v1.DistillationService/CreateDistillationRun":    roleOperator,

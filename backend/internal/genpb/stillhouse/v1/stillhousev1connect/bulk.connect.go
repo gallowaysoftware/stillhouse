@@ -37,6 +37,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// BulkServiceRecordBulkExternalMovementProcedure is the fully-qualified name of the BulkService's
+	// RecordBulkExternalMovement RPC.
+	BulkServiceRecordBulkExternalMovementProcedure = "/stillhouse.v1.BulkService/RecordBulkExternalMovement"
 	// BulkServiceRecordInventoryAdjustmentProcedure is the fully-qualified name of the BulkService's
 	// RecordInventoryAdjustment RPC.
 	BulkServiceRecordInventoryAdjustmentProcedure = "/stillhouse.v1.BulkService/RecordInventoryAdjustment"
@@ -70,6 +73,9 @@ const (
 
 // BulkServiceClient is a client for the stillhouse.v1.BulkService service.
 type BulkServiceClient interface {
+	// Record bulk spirits arriving on or leaving the premises — the B266
+	// page 3 lines that had no path.
+	RecordBulkExternalMovement(context.Context, *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error)
 	// Reconcile a container's book balance to what was physically found.
 	RecordInventoryAdjustment(context.Context, *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error)
 	ListInventoryAdjustments(context.Context, *connect.Request[v1.ListInventoryAdjustmentsRequest]) (*connect.Response[v1.ListInventoryAdjustmentsResponse], error)
@@ -94,6 +100,12 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	bulkServiceMethods := v1.File_stillhouse_v1_bulk_proto.Services().ByName("BulkService").Methods()
 	return &bulkServiceClient{
+		recordBulkExternalMovement: connect.NewClient[v1.RecordBulkExternalMovementRequest, v1.RecordBulkExternalMovementResponse](
+			httpClient,
+			baseURL+BulkServiceRecordBulkExternalMovementProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("RecordBulkExternalMovement")),
+			connect.WithClientOptions(opts...),
+		),
 		recordInventoryAdjustment: connect.NewClient[v1.RecordInventoryAdjustmentRequest, v1.RecordInventoryAdjustmentResponse](
 			httpClient,
 			baseURL+BulkServiceRecordInventoryAdjustmentProcedure,
@@ -159,16 +171,22 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // bulkServiceClient implements BulkServiceClient.
 type bulkServiceClient struct {
-	recordInventoryAdjustment *connect.Client[v1.RecordInventoryAdjustmentRequest, v1.RecordInventoryAdjustmentResponse]
-	listInventoryAdjustments  *connect.Client[v1.ListInventoryAdjustmentsRequest, v1.ListInventoryAdjustmentsResponse]
-	createBulkContainer       *connect.Client[v1.CreateBulkContainerRequest, v1.CreateBulkContainerResponse]
-	updateBulkContainer       *connect.Client[v1.UpdateBulkContainerRequest, v1.UpdateBulkContainerResponse]
-	setBulkContainerArchived  *connect.Client[v1.SetBulkContainerArchivedRequest, v1.SetBulkContainerArchivedResponse]
-	listBulkContainers        *connect.Client[v1.ListBulkContainersRequest, v1.ListBulkContainersResponse]
-	getBulkContainer          *connect.Client[v1.GetBulkContainerRequest, v1.GetBulkContainerResponse]
-	listRecentBulkMovements   *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
-	createBlend               *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
-	adoptOpeningInventory     *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
+	recordBulkExternalMovement *connect.Client[v1.RecordBulkExternalMovementRequest, v1.RecordBulkExternalMovementResponse]
+	recordInventoryAdjustment  *connect.Client[v1.RecordInventoryAdjustmentRequest, v1.RecordInventoryAdjustmentResponse]
+	listInventoryAdjustments   *connect.Client[v1.ListInventoryAdjustmentsRequest, v1.ListInventoryAdjustmentsResponse]
+	createBulkContainer        *connect.Client[v1.CreateBulkContainerRequest, v1.CreateBulkContainerResponse]
+	updateBulkContainer        *connect.Client[v1.UpdateBulkContainerRequest, v1.UpdateBulkContainerResponse]
+	setBulkContainerArchived   *connect.Client[v1.SetBulkContainerArchivedRequest, v1.SetBulkContainerArchivedResponse]
+	listBulkContainers         *connect.Client[v1.ListBulkContainersRequest, v1.ListBulkContainersResponse]
+	getBulkContainer           *connect.Client[v1.GetBulkContainerRequest, v1.GetBulkContainerResponse]
+	listRecentBulkMovements    *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
+	createBlend                *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
+	adoptOpeningInventory      *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
+}
+
+// RecordBulkExternalMovement calls stillhouse.v1.BulkService.RecordBulkExternalMovement.
+func (c *bulkServiceClient) RecordBulkExternalMovement(ctx context.Context, req *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error) {
+	return c.recordBulkExternalMovement.CallUnary(ctx, req)
 }
 
 // RecordInventoryAdjustment calls stillhouse.v1.BulkService.RecordInventoryAdjustment.
@@ -223,6 +241,9 @@ func (c *bulkServiceClient) AdoptOpeningInventory(ctx context.Context, req *conn
 
 // BulkServiceHandler is an implementation of the stillhouse.v1.BulkService service.
 type BulkServiceHandler interface {
+	// Record bulk spirits arriving on or leaving the premises — the B266
+	// page 3 lines that had no path.
+	RecordBulkExternalMovement(context.Context, *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error)
 	// Reconcile a container's book balance to what was physically found.
 	RecordInventoryAdjustment(context.Context, *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error)
 	ListInventoryAdjustments(context.Context, *connect.Request[v1.ListInventoryAdjustmentsRequest]) (*connect.Response[v1.ListInventoryAdjustmentsResponse], error)
@@ -243,6 +264,12 @@ type BulkServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	bulkServiceMethods := v1.File_stillhouse_v1_bulk_proto.Services().ByName("BulkService").Methods()
+	bulkServiceRecordBulkExternalMovementHandler := connect.NewUnaryHandler(
+		BulkServiceRecordBulkExternalMovementProcedure,
+		svc.RecordBulkExternalMovement,
+		connect.WithSchema(bulkServiceMethods.ByName("RecordBulkExternalMovement")),
+		connect.WithHandlerOptions(opts...),
+	)
 	bulkServiceRecordInventoryAdjustmentHandler := connect.NewUnaryHandler(
 		BulkServiceRecordInventoryAdjustmentProcedure,
 		svc.RecordInventoryAdjustment,
@@ -305,6 +332,8 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/stillhouse.v1.BulkService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case BulkServiceRecordBulkExternalMovementProcedure:
+			bulkServiceRecordBulkExternalMovementHandler.ServeHTTP(w, r)
 		case BulkServiceRecordInventoryAdjustmentProcedure:
 			bulkServiceRecordInventoryAdjustmentHandler.ServeHTTP(w, r)
 		case BulkServiceListInventoryAdjustmentsProcedure:
@@ -333,6 +362,10 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedBulkServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedBulkServiceHandler struct{}
+
+func (UnimplementedBulkServiceHandler) RecordBulkExternalMovement(context.Context, *connect.Request[v1.RecordBulkExternalMovementRequest]) (*connect.Response[v1.RecordBulkExternalMovementResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.RecordBulkExternalMovement is not implemented"))
+}
 
 func (UnimplementedBulkServiceHandler) RecordInventoryAdjustment(context.Context, *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.RecordInventoryAdjustment is not implemented"))

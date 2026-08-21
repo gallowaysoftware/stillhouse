@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { AdoptStockCard } from "@/components/AdoptStockCard";
+import { ExternalMovementCard } from "@/components/ExternalMovementCard";
 import { InventoryAdjustmentCard } from "@/components/InventoryAdjustmentCard";
 import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
@@ -55,6 +56,12 @@ export function BulkContainerDetailPage() {
           vessel holds anything or not: a container the ledger says is
           empty and that turns out not to be is exactly the variance line D
           exists for. */}
+      {/* Spirits arriving on or leaving the premises — the B266 page 3
+          lines that had no path at all. */}
+      <section className="mb-8 max-w-xl">
+        <ExternalMovementCard containerId={c.id} containerName={c.name} />
+      </section>
+
       <section className="mb-8 max-w-xl">
         <InventoryAdjustmentCard
           containerId={c.id}

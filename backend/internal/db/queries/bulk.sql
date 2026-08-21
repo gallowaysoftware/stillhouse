@@ -54,6 +54,25 @@ SET current_volume_l = $2,
 WHERE id = $1
 RETURNING *;
 
+-- name: InsertExternalBulkMovement :one
+-- A movement recorded directly by an operator rather than as a side effect
+-- of another action: spirits arriving on or leaving the premises. Carries
+-- the counterparty, the document, the determination and the author, none of
+-- which a side-effect movement needs because its parent row has them.
+INSERT INTO bulk_movements (
+    tenant_id, source_container_id, destination_container_id,
+    volume_l, abv_pct, laa, reason, reference_type,
+    notes, occurred_at,
+    counterparty_name, counterparty_licence_no, document_reference,
+    temperature_c, observed_volume_l, observed_density_kg_m3,
+    volume_factor_c, strength_source,
+    volume_instrument_id, strength_instrument_id, temperature_instrument_id,
+    recorded_by, packaged_inventory_id, bottles_unpackaged
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
+    $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
+) RETURNING *;
+
 -- name: InsertBulkMovement :one
 INSERT INTO bulk_movements (
     tenant_id, source_container_id, destination_container_id,

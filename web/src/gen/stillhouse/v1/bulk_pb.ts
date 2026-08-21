@@ -20,7 +20,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/bulk.proto.
  */
 export const file_stillhouse_v1_bulk: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2J1bGsucHJvdG8SDXN0aWxsaG91c2UudjEixgMKDUJ1bGtDb250YWluZXISCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEgwKBG5hbWUYAyABKAkSLgoEa2luZBgEIAEoDjIgLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lcktpbmQSEgoKY2FwYWNpdHlfbBgFIAEoARIWCg5jYXBhY2l0eV9sX3NldBgGIAEoCBIQCghsb2NhdGlvbhgHIAEoCRINCgVub3RlcxgIIAEoCRIQCghhcmNoaXZlZBgJIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAogASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgLIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAwgASgIEhMKC2N1cnJlbnRfbGFhGA0gASgBEi4KCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKEGxhc3RfbW92ZW1lbnRfYXQYECABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIp0DCgxCdWxrTW92ZW1lbnQSCgoCaWQYASABKAkSGwoTc291cmNlX2NvbnRhaW5lcl9pZBgCIAEoCRIdChVzb3VyY2VfY29udGFpbmVyX25hbWUYAyABKAkSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAQgASgJEiIKGmRlc3RpbmF0aW9uX2NvbnRhaW5lcl9uYW1lGAUgASgJEhAKCHZvbHVtZV9sGAYgASgBEg8KB2Fidl9wY3QYByABKAESCwoDbGFhGAggASgBEjEKBnJlYXNvbhgJIAEoDjIhLnN0aWxsaG91c2UudjEuQnVsa01vdmVtZW50UmVhc29uEhYKDnJlZmVyZW5jZV90eXBlGAogASgJEhQKDHJlZmVyZW5jZV9pZBgLIAEoCRINCgVub3RlcxgMIAEoCRIvCgtvY2N1cnJlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiOQoLQnVsa1N1bW1hcnkSEQoJdG90YWxfbGFhGAEgASgBEhcKD2NvbnRhaW5lcl9jb3VudBgCIAEoBSKnAQoaQ3JlYXRlQnVsa0NvbnRhaW5lclJlcXVlc3QSDAoEbmFtZRgBIAEoCRIuCgRraW5kGAIgASgOMiAuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyS2luZBISCgpjYXBhY2l0eV9sGAMgASgBEhYKDmNhcGFjaXR5X2xfc2V0GAQgASgIEhAKCGxvY2F0aW9uGAUgASgJEg0KBW5vdGVzGAYgASgJIk4KG0NyZWF0ZUJ1bGtDb250YWluZXJSZXNwb25zZRIvCgljb250YWluZXIYASABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXIiswEKGlVwZGF0ZUJ1bGtDb250YWluZXJSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSLgoEa2luZBgDIAEoDjIgLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lcktpbmQSEgoKY2FwYWNpdHlfbBgEIAEoARIWCg5jYXBhY2l0eV9sX3NldBgFIAEoCBIQCghsb2NhdGlvbhgGIAEoCRINCgVub3RlcxgHIAEoCSJOChtVcGRhdGVCdWxrQ29udGFpbmVyUmVzcG9uc2USLwoJY29udGFpbmVyGAEgASgLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyIj8KH1NldEJ1bGtDb250YWluZXJBcmNoaXZlZFJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiUwogU2V0QnVsa0NvbnRhaW5lckFyY2hpdmVkUmVzcG9uc2USLwoJY29udGFpbmVyGAEgASgLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyIjUKGUxpc3RCdWxrQ29udGFpbmVyc1JlcXVlc3QSGAoQaW5jbHVkZV9hcmNoaXZlZBgBIAEoCCJ7ChpMaXN0QnVsa0NvbnRhaW5lcnNSZXNwb25zZRIwCgpjb250YWluZXJzGAEgAygLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyEisKB3N1bW1hcnkYAiABKAsyGi5zdGlsbGhvdXNlLnYxLkJ1bGtTdW1tYXJ5IiUKF0dldEJ1bGtDb250YWluZXJSZXF1ZXN0EgoKAmlkGAEgASgJInsKGEdldEJ1bGtDb250YWluZXJSZXNwb25zZRIvCgljb250YWluZXIYASABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXISLgoJbW92ZW1lbnRzGAIgAygLMhsuc3RpbGxob3VzZS52MS5CdWxrTW92ZW1lbnQiIAoeTGlzdFJlY2VudEJ1bGtNb3ZlbWVudHNSZXF1ZXN0IlEKH0xpc3RSZWNlbnRCdWxrTW92ZW1lbnRzUmVzcG9uc2USLgoJbW92ZW1lbnRzGAEgAygLMhsuc3RpbGxob3VzZS52MS5CdWxrTW92ZW1lbnQiQQoQQmxlbmRTb3VyY2VJbnB1dBIbChNzb3VyY2VfY29udGFpbmVyX2lkGAEgASgJEhAKCHZvbHVtZV9sGAIgASgBIqgBChJDcmVhdGVCbGVuZFJlcXVlc3QSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAEgASgJEjAKB3NvdXJjZXMYAiADKAsyHy5zdGlsbGhvdXNlLnYxLkJsZW5kU291cmNlSW5wdXQSDQoFbm90ZXMYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIngKE0NyZWF0ZUJsZW5kUmVzcG9uc2USMQoLZGVzdGluYXRpb24YASABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXISLgoJbW92ZW1lbnRzGAIgAygLMhsuc3RpbGxob3VzZS52MS5CdWxrTW92ZW1lbnQixAIKHEFkb3B0T3BlbmluZ0ludmVudG9yeVJlcXVlc3QSFAoMY29udGFpbmVyX2lkGAEgASgJEg8KB21hc3Nfa2cYAiABKAESEwoLbWFzc19rZ19zZXQYAyABKAgSEAoIdm9sdW1lX2wYBCABKAESFAoMdm9sdW1lX2xfc2V0GAUgASgIEhUKDWRlbnNpdHlfa2dfbTMYBiABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYByABKAgSDwoHYWJ2X3BjdBgIIAEoARIVCg10ZW1wZXJhdHVyZV9jGAkgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAogASgIEhEKCWZpbGxfZGF0ZRgLIAEoCRIpCgVhc19vZhgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYDSABKAkivAEKHUFkb3B0T3BlbmluZ0ludmVudG9yeVJlc3BvbnNlEi8KCWNvbnRhaW5lchgBIAEoCzIcLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lchItCghtb3ZlbWVudBgCIAEoCzIbLnN0aWxsaG91c2UudjEuQnVsa01vdmVtZW50EhQKDHZvbHVtZV9sXzIwYxgDIAEoARIYChBzdHJlbmd0aF9wY3RfMjBjGAQgASgBEgsKA2xhYRgFIAEoASLgBgoTSW52ZW50b3J5QWRqdXN0bWVudBIKCgJpZBgBIAEoCRIUCgxjb250YWluZXJfaWQYAiABKAkSFgoOY29udGFpbmVyX25hbWUYAyABKAkSGAoQYnVsa19tb3ZlbWVudF9pZBgEIAEoCRI4CgZyZWFzb24YBSABKA4yKC5zdGlsbGhvdXNlLnYxLkludmVudG9yeUFkanVzdG1lbnRSZWFzb24SEwoLZXhwbGFuYXRpb24YBiABKAkSFQoNYm9va192b2x1bWVfbBgKIAEoARIUCgxib29rX2Fidl9wY3QYCyABKAESGAoQYm9va19hYnZfcGN0X3NldBgMIAEoCBIQCghib29rX2xhYRgNIAEoARIYChBjb3VudGVkX3ZvbHVtZV9sGA4gASgBEhcKD2NvdW50ZWRfYWJ2X3BjdBgPIAEoARIbChNjb3VudGVkX2Fidl9wY3Rfc2V0GBAgASgIEhMKC2NvdW50ZWRfbGFhGBEgASgBEhEKCWRlbHRhX2xhYRgSIAEoARIWCg5kZWx0YV92b2x1bWVfbBgTIAEoARIVCg10ZW1wZXJhdHVyZV9jGBQgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GBUgASgIEhkKEW9ic2VydmVkX3ZvbHVtZV9sGBYgASgBEh4KFm9ic2VydmVkX2RlbnNpdHlfa2dfbTMYFyABKAESIgoab2JzZXJ2ZWRfZGVuc2l0eV9rZ19tM19zZXQYGCABKAgSFwoPdm9sdW1lX2ZhY3Rvcl9jGBkgASgBEjYKD3N0cmVuZ3RoX3NvdXJjZRgaIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USPAoLaW5zdHJ1bWVudHMYGyABKAsyJy5zdGlsbGhvdXNlLnYxLkRldGVybWluYXRpb25JbnN0cnVtZW50cxITCgthZGp1c3RlZF9ieRgeIAEoCRIYChBhZGp1c3RlZF9ieV9uYW1lGB8gASgJEg0KBW5vdGVzGCAgASgJEi8KC29jY3VycmVkX2F0GCEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GCIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKKAwogUmVjb3JkSW52ZW50b3J5QWRqdXN0bWVudFJlcXVlc3QSFAoMY29udGFpbmVyX2lkGAEgASgJEjgKBnJlYXNvbhgCIAEoDjIoLnN0aWxsaG91c2UudjEuSW52ZW50b3J5QWRqdXN0bWVudFJlYXNvbhITCgtleHBsYW5hdGlvbhgDIAEoCRIYChBjb3VudGVkX3ZvbHVtZV9sGAQgASgBEg8KB2Fidl9wY3QYBSABKAESFQoNdGVtcGVyYXR1cmVfYxgGIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgHIAEoCBIVCg1kZW5zaXR5X2tnX20zGAggASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAkgASgIEi8KC29jY3VycmVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgLIAEoCRIyCgtpbnN0cnVtZW50cxgMIAEoCzIdLnN0aWxsaG91c2UudjEuSW5zdHJ1bWVudFJlZnMingEKIVJlY29yZEludmVudG9yeUFkanVzdG1lbnRSZXNwb25zZRI2CgphZGp1c3RtZW50GAEgASgLMiIuc3RpbGxob3VzZS52MS5JbnZlbnRvcnlBZGp1c3RtZW50Ei8KCWNvbnRhaW5lchgCIAEoCzIcLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lchIQCgh3YXJuaW5ncxgDIAMoCSJhCh9MaXN0SW52ZW50b3J5QWRqdXN0bWVudHNSZXF1ZXN0EhQKDGNvbnRhaW5lcl9pZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCSJbCiBMaXN0SW52ZW50b3J5QWRqdXN0bWVudHNSZXNwb25zZRI3CgthZGp1c3RtZW50cxgBIAMoCzIiLnN0aWxsaG91c2UudjEuSW52ZW50b3J5QWRqdXN0bWVudCqkAgoRQnVsa0NvbnRhaW5lcktpbmQSIwofQlVMS19DT05UQUlORVJfS0lORF9VTlNQRUNJRklFRBAAEicKI0JVTEtfQ09OVEFJTkVSX0tJTkRfU1BJUklUX1JFQ0VJVkVSEAESHAoYQlVMS19DT05UQUlORVJfS0lORF9UQU5LEAISGwoXQlVMS19DT05UQUlORVJfS0lORF9JQkMQAxIcChhCVUxLX0NPTlRBSU5FUl9LSU5EX1RPVEUQBBIiCh5CVUxLX0NPTlRBSU5FUl9LSU5EX0JMRU5EX1RBTksQBRIlCiFCVUxLX0NPTlRBSU5FUl9LSU5EX0JPVFRMSU5HX1RBTksQBhIdChlCVUxLX0NPTlRBSU5FUl9LSU5EX09USEVSEAcqkgQKEkJ1bGtNb3ZlbWVudFJlYXNvbhIkCiBCVUxLX01PVkVNRU5UX1JFQVNPTl9VTlNQRUNJRklFRBAAEikKJUJVTEtfTU9WRU1FTlRfUkVBU09OX1BST0RVQ1RJT05fR0FVR0UQARIsCihCVUxLX01PVkVNRU5UX1JFQVNPTl9JTlRFUl9UQU5LX1RSQU5TRkVSEAISHgoaQlVMS19NT1ZFTUVOVF9SRUFTT05fQkxFTkQQAxIpCiVCVUxLX01PVkVNRU5UX1JFQVNPTl9UUkFOU0ZFUl9JTl9CT05EEAQSLQopQlVMS19NT1ZFTUVOVF9SRUFTT05fVFJBTlNGRVJfT1VUX0lOX0JPTkQQBRIuCipCVUxLX01PVkVNRU5UX1JFQVNPTl9UUkFOU0ZFUl9UT19QQUNLQUdJTkcQBhIpCiVCVUxLX01PVkVNRU5UX1JFQVNPTl9MT1NTX0VWQVBPUkFUSU9OEAcSKQolQlVMS19NT1ZFTUVOVF9SRUFTT05fTE9TU19VTkFDQ09VTlRFRBAIEisKJ0JVTEtfTU9WRU1FTlRfUkVBU09OX1JFR0FVR0VfQ09SUkVDVElPThAJEiQKIEJVTEtfTU9WRU1FTlRfUkVBU09OX0RFU1RSVUNUSU9OEAoSKgomQlVMS19NT1ZFTUVOVF9SRUFTT05fT1BFTklOR19JTlZFTlRPUlkQCyqJAgoZSW52ZW50b3J5QWRqdXN0bWVudFJlYXNvbhIrCidJTlZFTlRPUllfQURKVVNUTUVOVF9SRUFTT05fVU5TUEVDSUZJRUQQABIuCipJTlZFTlRPUllfQURKVVNUTUVOVF9SRUFTT05fUEhZU0lDQUxfQ09VTlQQARI2CjJJTlZFTlRPUllfQURKVVNUTUVOVF9SRUFTT05fTUVBU1VSRU1FTlRfQ09SUkVDVElPThACEjAKLElOVkVOVE9SWV9BREpVU1RNRU5UX1JFQVNPTl9EQVRBX0VOVFJZX0VSUk9SEAMSJQohSU5WRU5UT1JZX0FESlVTVE1FTlRfUkVBU09OX09USEVSEAQy9wgKC0J1bGtTZXJ2aWNlEn4KGVJlY29yZEludmVudG9yeUFkanVzdG1lbnQSLy5zdGlsbGhvdXNlLnYxLlJlY29yZEludmVudG9yeUFkanVzdG1lbnRSZXF1ZXN0GjAuc3RpbGxob3VzZS52MS5SZWNvcmRJbnZlbnRvcnlBZGp1c3RtZW50UmVzcG9uc2USewoYTGlzdEludmVudG9yeUFkanVzdG1lbnRzEi4uc3RpbGxob3VzZS52MS5MaXN0SW52ZW50b3J5QWRqdXN0bWVudHNSZXF1ZXN0Gi8uc3RpbGxob3VzZS52MS5MaXN0SW52ZW50b3J5QWRqdXN0bWVudHNSZXNwb25zZRJsChNDcmVhdGVCdWxrQ29udGFpbmVyEikuc3RpbGxob3VzZS52MS5DcmVhdGVCdWxrQ29udGFpbmVyUmVxdWVzdBoqLnN0aWxsaG91c2UudjEuQ3JlYXRlQnVsa0NvbnRhaW5lclJlc3BvbnNlEmwKE1VwZGF0ZUJ1bGtDb250YWluZXISKS5zdGlsbGhvdXNlLnYxLlVwZGF0ZUJ1bGtDb250YWluZXJSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5VcGRhdGVCdWxrQ29udGFpbmVyUmVzcG9uc2USewoYU2V0QnVsa0NvbnRhaW5lckFyY2hpdmVkEi4uc3RpbGxob3VzZS52MS5TZXRCdWxrQ29udGFpbmVyQXJjaGl2ZWRSZXF1ZXN0Gi8uc3RpbGxob3VzZS52MS5TZXRCdWxrQ29udGFpbmVyQXJjaGl2ZWRSZXNwb25zZRJpChJMaXN0QnVsa0NvbnRhaW5lcnMSKC5zdGlsbGhvdXNlLnYxLkxpc3RCdWxrQ29udGFpbmVyc1JlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLkxpc3RCdWxrQ29udGFpbmVyc1Jlc3BvbnNlEmMKEEdldEJ1bGtDb250YWluZXISJi5zdGlsbGhvdXNlLnYxLkdldEJ1bGtDb250YWluZXJSZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5HZXRCdWxrQ29udGFpbmVyUmVzcG9uc2USeAoXTGlzdFJlY2VudEJ1bGtNb3ZlbWVudHMSLS5zdGlsbGhvdXNlLnYxLkxpc3RSZWNlbnRCdWxrTW92ZW1lbnRzUmVxdWVzdBouLnN0aWxsaG91c2UudjEuTGlzdFJlY2VudEJ1bGtNb3ZlbWVudHNSZXNwb25zZRJUCgtDcmVhdGVCbGVuZBIhLnN0aWxsaG91c2UudjEuQ3JlYXRlQmxlbmRSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5DcmVhdGVCbGVuZFJlc3BvbnNlEnIKFUFkb3B0T3BlbmluZ0ludmVudG9yeRIrLnN0aWxsaG91c2UudjEuQWRvcHRPcGVuaW5nSW52ZW50b3J5UmVxdWVzdBosLnN0aWxsaG91c2UudjEuQWRvcHRPcGVuaW5nSW52ZW50b3J5UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_stillhouse_v1_alcoholometry, file_stillhouse_v1_instrument]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2J1bGsucHJvdG8SDXN0aWxsaG91c2UudjEixgMKDUJ1bGtDb250YWluZXISCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEgwKBG5hbWUYAyABKAkSLgoEa2luZBgEIAEoDjIgLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lcktpbmQSEgoKY2FwYWNpdHlfbBgFIAEoARIWCg5jYXBhY2l0eV9sX3NldBgGIAEoCBIQCghsb2NhdGlvbhgHIAEoCRINCgVub3RlcxgIIAEoCRIQCghhcmNoaXZlZBgJIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAogASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgLIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAwgASgIEhMKC2N1cnJlbnRfbGFhGA0gASgBEi4KCmNyZWF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjQKEGxhc3RfbW92ZW1lbnRfYXQYECABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIuUGCgxCdWxrTW92ZW1lbnQSCgoCaWQYASABKAkSGwoTc291cmNlX2NvbnRhaW5lcl9pZBgCIAEoCRIdChVzb3VyY2VfY29udGFpbmVyX25hbWUYAyABKAkSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAQgASgJEiIKGmRlc3RpbmF0aW9uX2NvbnRhaW5lcl9uYW1lGAUgASgJEhAKCHZvbHVtZV9sGAYgASgBEg8KB2Fidl9wY3QYByABKAESCwoDbGFhGAggASgBEjEKBnJlYXNvbhgJIAEoDjIhLnN0aWxsaG91c2UudjEuQnVsa01vdmVtZW50UmVhc29uEhYKDnJlZmVyZW5jZV90eXBlGAogASgJEhQKDHJlZmVyZW5jZV9pZBgLIAEoCRINCgVub3RlcxgMIAEoCRIvCgtvY2N1cnJlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKY3JlYXRlZF9hdBgOIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASGQoRY291bnRlcnBhcnR5X25hbWUYDyABKAkSHwoXY291bnRlcnBhcnR5X2xpY2VuY2Vfbm8YECABKAkSGgoSZG9jdW1lbnRfcmVmZXJlbmNlGBEgASgJEhMKC3JlY29yZGVkX2J5GBIgASgJEhUKDXRlbXBlcmF0dXJlX2MYFCABKAESGQoRdGVtcGVyYXR1cmVfY19zZXQYFSABKAgSGQoRb2JzZXJ2ZWRfdm9sdW1lX2wYFiABKAESHgoWb2JzZXJ2ZWRfZGVuc2l0eV9rZ19tMxgXIAEoARIiChpvYnNlcnZlZF9kZW5zaXR5X2tnX20zX3NldBgYIAEoCBIXCg92b2x1bWVfZmFjdG9yX2MYGSABKAESNgoPc3RyZW5ndGhfc291cmNlGBogASgOMh0uc3RpbGxob3VzZS52MS5TdHJlbmd0aFNvdXJjZRI8CgtpbnN0cnVtZW50cxgbIAEoCzInLnN0aWxsaG91c2UudjEuRGV0ZXJtaW5hdGlvbkluc3RydW1lbnRzEh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgeIAEoCRIaChJib3R0bGVzX3VucGFja2FnZWQYHyABKAUiOQoLQnVsa1N1bW1hcnkSEQoJdG90YWxfbGFhGAEgASgBEhcKD2NvbnRhaW5lcl9jb3VudBgCIAEoBSKnAQoaQ3JlYXRlQnVsa0NvbnRhaW5lclJlcXVlc3QSDAoEbmFtZRgBIAEoCRIuCgRraW5kGAIgASgOMiAuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyS2luZBISCgpjYXBhY2l0eV9sGAMgASgBEhYKDmNhcGFjaXR5X2xfc2V0GAQgASgIEhAKCGxvY2F0aW9uGAUgASgJEg0KBW5vdGVzGAYgASgJIk4KG0NyZWF0ZUJ1bGtDb250YWluZXJSZXNwb25zZRIvCgljb250YWluZXIYASABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXIiswEKGlVwZGF0ZUJ1bGtDb250YWluZXJSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSLgoEa2luZBgDIAEoDjIgLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lcktpbmQSEgoKY2FwYWNpdHlfbBgEIAEoARIWCg5jYXBhY2l0eV9sX3NldBgFIAEoCBIQCghsb2NhdGlvbhgGIAEoCRINCgVub3RlcxgHIAEoCSJOChtVcGRhdGVCdWxrQ29udGFpbmVyUmVzcG9uc2USLwoJY29udGFpbmVyGAEgASgLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyIj8KH1NldEJ1bGtDb250YWluZXJBcmNoaXZlZFJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiUwogU2V0QnVsa0NvbnRhaW5lckFyY2hpdmVkUmVzcG9uc2USLwoJY29udGFpbmVyGAEgASgLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyIjUKGUxpc3RCdWxrQ29udGFpbmVyc1JlcXVlc3QSGAoQaW5jbHVkZV9hcmNoaXZlZBgBIAEoCCJ7ChpMaXN0QnVsa0NvbnRhaW5lcnNSZXNwb25zZRIwCgpjb250YWluZXJzGAEgAygLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyEisKB3N1bW1hcnkYAiABKAsyGi5zdGlsbGhvdXNlLnYxLkJ1bGtTdW1tYXJ5IiUKF0dldEJ1bGtDb250YWluZXJSZXF1ZXN0EgoKAmlkGAEgASgJInsKGEdldEJ1bGtDb250YWluZXJSZXNwb25zZRIvCgljb250YWluZXIYASABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXISLgoJbW92ZW1lbnRzGAIgAygLMhsuc3RpbGxob3VzZS52MS5CdWxrTW92ZW1lbnQiIAoeTGlzdFJlY2VudEJ1bGtNb3ZlbWVudHNSZXF1ZXN0IlEKH0xpc3RSZWNlbnRCdWxrTW92ZW1lbnRzUmVzcG9uc2USLgoJbW92ZW1lbnRzGAEgAygLMhsuc3RpbGxob3VzZS52MS5CdWxrTW92ZW1lbnQiQQoQQmxlbmRTb3VyY2VJbnB1dBIbChNzb3VyY2VfY29udGFpbmVyX2lkGAEgASgJEhAKCHZvbHVtZV9sGAIgASgBIqgBChJDcmVhdGVCbGVuZFJlcXVlc3QSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAEgASgJEjAKB3NvdXJjZXMYAiADKAsyHy5zdGlsbGhvdXNlLnYxLkJsZW5kU291cmNlSW5wdXQSDQoFbm90ZXMYAyABKAkSLwoLb2NjdXJyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIngKE0NyZWF0ZUJsZW5kUmVzcG9uc2USMQoLZGVzdGluYXRpb24YASABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXISLgoJbW92ZW1lbnRzGAIgAygLMhsuc3RpbGxob3VzZS52MS5CdWxrTW92ZW1lbnQixAIKHEFkb3B0T3BlbmluZ0ludmVudG9yeVJlcXVlc3QSFAoMY29udGFpbmVyX2lkGAEgASgJEg8KB21hc3Nfa2cYAiABKAESEwoLbWFzc19rZ19zZXQYAyABKAgSEAoIdm9sdW1lX2wYBCABKAESFAoMdm9sdW1lX2xfc2V0GAUgASgIEhUKDWRlbnNpdHlfa2dfbTMYBiABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYByABKAgSDwoHYWJ2X3BjdBgIIAEoARIVCg10ZW1wZXJhdHVyZV9jGAkgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAogASgIEhEKCWZpbGxfZGF0ZRgLIAEoCRIpCgVhc19vZhgMIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYDSABKAkivAEKHUFkb3B0T3BlbmluZ0ludmVudG9yeVJlc3BvbnNlEi8KCWNvbnRhaW5lchgBIAEoCzIcLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lchItCghtb3ZlbWVudBgCIAEoCzIbLnN0aWxsaG91c2UudjEuQnVsa01vdmVtZW50EhQKDHZvbHVtZV9sXzIwYxgDIAEoARIYChBzdHJlbmd0aF9wY3RfMjBjGAQgASgBEgsKA2xhYRgFIAEoASLgBgoTSW52ZW50b3J5QWRqdXN0bWVudBIKCgJpZBgBIAEoCRIUCgxjb250YWluZXJfaWQYAiABKAkSFgoOY29udGFpbmVyX25hbWUYAyABKAkSGAoQYnVsa19tb3ZlbWVudF9pZBgEIAEoCRI4CgZyZWFzb24YBSABKA4yKC5zdGlsbGhvdXNlLnYxLkludmVudG9yeUFkanVzdG1lbnRSZWFzb24SEwoLZXhwbGFuYXRpb24YBiABKAkSFQoNYm9va192b2x1bWVfbBgKIAEoARIUCgxib29rX2Fidl9wY3QYCyABKAESGAoQYm9va19hYnZfcGN0X3NldBgMIAEoCBIQCghib29rX2xhYRgNIAEoARIYChBjb3VudGVkX3ZvbHVtZV9sGA4gASgBEhcKD2NvdW50ZWRfYWJ2X3BjdBgPIAEoARIbChNjb3VudGVkX2Fidl9wY3Rfc2V0GBAgASgIEhMKC2NvdW50ZWRfbGFhGBEgASgBEhEKCWRlbHRhX2xhYRgSIAEoARIWCg5kZWx0YV92b2x1bWVfbBgTIAEoARIVCg10ZW1wZXJhdHVyZV9jGBQgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GBUgASgIEhkKEW9ic2VydmVkX3ZvbHVtZV9sGBYgASgBEh4KFm9ic2VydmVkX2RlbnNpdHlfa2dfbTMYFyABKAESIgoab2JzZXJ2ZWRfZGVuc2l0eV9rZ19tM19zZXQYGCABKAgSFwoPdm9sdW1lX2ZhY3Rvcl9jGBkgASgBEjYKD3N0cmVuZ3RoX3NvdXJjZRgaIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USPAoLaW5zdHJ1bWVudHMYGyABKAsyJy5zdGlsbGhvdXNlLnYxLkRldGVybWluYXRpb25JbnN0cnVtZW50cxITCgthZGp1c3RlZF9ieRgeIAEoCRIYChBhZGp1c3RlZF9ieV9uYW1lGB8gASgJEg0KBW5vdGVzGCAgASgJEi8KC29jY3VycmVkX2F0GCEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgpjcmVhdGVkX2F0GCIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKKAwogUmVjb3JkSW52ZW50b3J5QWRqdXN0bWVudFJlcXVlc3QSFAoMY29udGFpbmVyX2lkGAEgASgJEjgKBnJlYXNvbhgCIAEoDjIoLnN0aWxsaG91c2UudjEuSW52ZW50b3J5QWRqdXN0bWVudFJlYXNvbhITCgtleHBsYW5hdGlvbhgDIAEoCRIYChBjb3VudGVkX3ZvbHVtZV9sGAQgASgBEg8KB2Fidl9wY3QYBSABKAESFQoNdGVtcGVyYXR1cmVfYxgGIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgHIAEoCBIVCg1kZW5zaXR5X2tnX20zGAggASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAkgASgIEi8KC29jY3VycmVkX2F0GAogASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgLIAEoCRIyCgtpbnN0cnVtZW50cxgMIAEoCzIdLnN0aWxsaG91c2UudjEuSW5zdHJ1bWVudFJlZnMingEKIVJlY29yZEludmVudG9yeUFkanVzdG1lbnRSZXNwb25zZRI2CgphZGp1c3RtZW50GAEgASgLMiIuc3RpbGxob3VzZS52MS5JbnZlbnRvcnlBZGp1c3RtZW50Ei8KCWNvbnRhaW5lchgCIAEoCzIcLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lchIQCgh3YXJuaW5ncxgDIAMoCSJhCh9MaXN0SW52ZW50b3J5QWRqdXN0bWVudHNSZXF1ZXN0EhQKDGNvbnRhaW5lcl9pZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCSJbCiBMaXN0SW52ZW50b3J5QWRqdXN0bWVudHNSZXNwb25zZRI3CgthZGp1c3RtZW50cxgBIAMoCzIiLnN0aWxsaG91c2UudjEuSW52ZW50b3J5QWRqdXN0bWVudCL+AwohUmVjb3JkQnVsa0V4dGVybmFsTW92ZW1lbnRSZXF1ZXN0EhQKDGNvbnRhaW5lcl9pZBgBIAEoCRI1CgRraW5kGAIgASgOMicuc3RpbGxob3VzZS52MS5CdWxrRXh0ZXJuYWxNb3ZlbWVudEtpbmQSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIVCg10ZW1wZXJhdHVyZV9jGAUgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAYgASgIEhUKDWRlbnNpdHlfa2dfbTMYByABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCCABKAgSMgoLaW5zdHJ1bWVudHMYCSABKAsyHS5zdGlsbGhvdXNlLnYxLkluc3RydW1lbnRSZWZzEhkKEWNvdW50ZXJwYXJ0eV9uYW1lGAogASgJEh8KF2NvdW50ZXJwYXJ0eV9saWNlbmNlX25vGAsgASgJEhoKEmRvY3VtZW50X3JlZmVyZW5jZRgMIAEoCRIvCgtvY2N1cnJlZF9hdBgNIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYDiABKAkSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGA8gASgJEhoKEmJvdHRsZXNfdW5wYWNrYWdlZBgQIAEoBSKWAQoiUmVjb3JkQnVsa0V4dGVybmFsTW92ZW1lbnRSZXNwb25zZRItCghtb3ZlbWVudBgBIAEoCzIbLnN0aWxsaG91c2UudjEuQnVsa01vdmVtZW50Ei8KCWNvbnRhaW5lchgCIAEoCzIcLnN0aWxsaG91c2UudjEuQnVsa0NvbnRhaW5lchIQCgh3YXJuaW5ncxgDIAMoCSqkAgoRQnVsa0NvbnRhaW5lcktpbmQSIwofQlVMS19DT05UQUlORVJfS0lORF9VTlNQRUNJRklFRBAAEicKI0JVTEtfQ09OVEFJTkVSX0tJTkRfU1BJUklUX1JFQ0VJVkVSEAESHAoYQlVMS19DT05UQUlORVJfS0lORF9UQU5LEAISGwoXQlVMS19DT05UQUlORVJfS0lORF9JQkMQAxIcChhCVUxLX0NPTlRBSU5FUl9LSU5EX1RPVEUQBBIiCh5CVUxLX0NPTlRBSU5FUl9LSU5EX0JMRU5EX1RBTksQBRIlCiFCVUxLX0NPTlRBSU5FUl9LSU5EX0JPVFRMSU5HX1RBTksQBhIdChlCVUxLX0NPTlRBSU5FUl9LSU5EX09USEVSEAcqywgKEkJ1bGtNb3ZlbWVudFJlYXNvbhIkCiBCVUxLX01PVkVNRU5UX1JFQVNPTl9VTlNQRUNJRklFRBAAEikKJUJVTEtfTU9WRU1FTlRfUkVBU09OX1BST0RVQ1RJT05fR0FVR0UQARIsCihCVUxLX01PVkVNRU5UX1JFQVNPTl9JTlRFUl9UQU5LX1RSQU5TRkVSEAISHgoaQlVMS19NT1ZFTUVOVF9SRUFTT05fQkxFTkQQAxIpCiVCVUxLX01PVkVNRU5UX1JFQVNPTl9UUkFOU0ZFUl9JTl9CT05EEAQSLQopQlVMS19NT1ZFTUVOVF9SRUFTT05fVFJBTlNGRVJfT1VUX0lOX0JPTkQQBRIuCipCVUxLX01PVkVNRU5UX1JFQVNPTl9UUkFOU0ZFUl9UT19QQUNLQUdJTkcQBhIpCiVCVUxLX01PVkVNRU5UX1JFQVNPTl9MT1NTX0VWQVBPUkFUSU9OEAcSKQolQlVMS19NT1ZFTUVOVF9SRUFTT05fTE9TU19VTkFDQ09VTlRFRBAIEisKJ0JVTEtfTU9WRU1FTlRfUkVBU09OX1JFR0FVR0VfQ09SUkVDVElPThAJEiQKIEJVTEtfTU9WRU1FTlRfUkVBU09OX0RFU1RSVUNUSU9OEAoSKgomQlVMS19NT1ZFTUVOVF9SRUFTT05fT1BFTklOR19JTlZFTlRPUlkQCxIsCihCVUxLX01PVkVNRU5UX1JFQVNPTl9BREpVU1RNRU5UX0lOQ1JFQVNFEAwSLAooQlVMS19NT1ZFTUVOVF9SRUFTT05fQURKVVNUTUVOVF9ERUNSRUFTRRANEigKJEJVTEtfTU9WRU1FTlRfUkVBU09OX0lNUE9SVF9SRUNFSVZFRBAOEjcKM0JVTEtfTU9WRU1FTlRfUkVBU09OX1JFQ0VJVkVEX0ZST01fU1BJUklUU19MSUNFTlNFRRAPEjQKMEJVTEtfTU9WRU1FTlRfUkVBU09OX1JFQ0VJVkVEX0ZST01fTElDRU5TRURfVVNFUhAQEjIKLkJVTEtfTU9WRU1FTlRfUkVBU09OX1BBQ0tBR0VEX1JFVFVSTkVEX1RPX0JVTEsQERI2CjJCVUxLX01PVkVNRU5UX1JFQVNPTl9ERUxJVkVSRURfVE9fU1BJUklUU19MSUNFTlNFRRASEjMKL0JVTEtfTU9WRU1FTlRfUkVBU09OX0RFTElWRVJFRF9UT19MSUNFTlNFRF9VU0VSEBMSIQodQlVMS19NT1ZFTUVOVF9SRUFTT05fRVhQT1JURUQQFBIlCiFCVUxLX01PVkVNRU5UX1JFQVNPTl9ERU5BVFVSRURfREEQFRImCiJCVUxLX01PVkVNRU5UX1JFQVNPTl9ERU5BVFVSRURfU0RBEBYSLworQlVMS19NT1ZFTUVOVF9SRUFTT05fUkVUVVJORURfVE9fUFJPRFVDVElPThAXKokCChlJbnZlbnRvcnlBZGp1c3RtZW50UmVhc29uEisKJ0lOVkVOVE9SWV9BREpVU1RNRU5UX1JFQVNPTl9VTlNQRUNJRklFRBAAEi4KKklOVkVOVE9SWV9BREpVU1RNRU5UX1JFQVNPTl9QSFlTSUNBTF9DT1VOVBABEjYKMklOVkVOVE9SWV9BREpVU1RNRU5UX1JFQVNPTl9NRUFTVVJFTUVOVF9DT1JSRUNUSU9OEAISMAosSU5WRU5UT1JZX0FESlVTVE1FTlRfUkVBU09OX0RBVEFfRU5UUllfRVJST1IQAxIlCiFJTlZFTlRPUllfQURKVVNUTUVOVF9SRUFTT05fT1RIRVIQBCrxBQoYQnVsa0V4dGVybmFsTW92ZW1lbnRLaW5kEisKJ0JVTEtfRVhURVJOQUxfTU9WRU1FTlRfS0lORF9VTlNQRUNJRklFRBAAEiYKIkJVTEtfRVhURVJOQUxfTU9WRU1FTlRfS0lORF9JTVBPUlQQARIqCiZCVUxLX0VYVEVSTkFMX01PVkVNRU5UX0tJTkRfSU5fQk9ORF9JThACEjUKMUJVTEtfRVhURVJOQUxfTU9WRU1FTlRfS0lORF9GUk9NX1NQSVJJVFNfTElDRU5TRUUQAxIyCi5CVUxLX0VYVEVSTkFMX01PVkVNRU5UX0tJTkRfRlJPTV9MSUNFTlNFRF9VU0VSEAQSOQo1QlVMS19FWFRFUk5BTF9NT1ZFTUVOVF9LSU5EX1BBQ0tBR0VEX1JFVFVSTkVEX1RPX0JVTEsQBRIrCidCVUxLX0VYVEVSTkFMX01PVkVNRU5UX0tJTkRfSU5fQk9ORF9PVVQQChIzCi9CVUxLX0VYVEVSTkFMX01PVkVNRU5UX0tJTkRfVE9fU1BJUklUU19MSUNFTlNFRRALEjAKLEJVTEtfRVhURVJOQUxfTU9WRU1FTlRfS0lORF9UT19MSUNFTlNFRF9VU0VSEAwSJgoiQlVMS19FWFRFUk5BTF9NT1ZFTUVOVF9LSU5EX0VYUE9SVBANEiwKKEJVTEtfRVhURVJOQUxfTU9WRU1FTlRfS0lORF9ERU5BVFVSRURfREEQDhItCilCVUxLX0VYVEVSTkFMX01PVkVNRU5UX0tJTkRfREVOQVRVUkVEX1NEQRAPEjYKMkJVTEtfRVhURVJOQUxfTU9WRU1FTlRfS0lORF9SRVRVUk5FRF9UT19QUk9EVUNUSU9OEBASKwonQlVMS19FWFRFUk5BTF9NT1ZFTUVOVF9LSU5EX0RFU1RSVUNUSU9OEBESMAosQlVMS19FWFRFUk5BTF9NT1ZFTUVOVF9LSU5EX1VOQUNDT1VOVEVEX0xPU1MQEjL7CQoLQnVsa1NlcnZpY2USgQEKGlJlY29yZEJ1bGtFeHRlcm5hbE1vdmVtZW50EjAuc3RpbGxob3VzZS52MS5SZWNvcmRCdWxrRXh0ZXJuYWxNb3ZlbWVudFJlcXVlc3QaMS5zdGlsbGhvdXNlLnYxLlJlY29yZEJ1bGtFeHRlcm5hbE1vdmVtZW50UmVzcG9uc2USfgoZUmVjb3JkSW52ZW50b3J5QWRqdXN0bWVudBIvLnN0aWxsaG91c2UudjEuUmVjb3JkSW52ZW50b3J5QWRqdXN0bWVudFJlcXVlc3QaMC5zdGlsbGhvdXNlLnYxLlJlY29yZEludmVudG9yeUFkanVzdG1lbnRSZXNwb25zZRJ7ChhMaXN0SW52ZW50b3J5QWRqdXN0bWVudHMSLi5zdGlsbGhvdXNlLnYxLkxpc3RJbnZlbnRvcnlBZGp1c3RtZW50c1JlcXVlc3QaLy5zdGlsbGhvdXNlLnYxLkxpc3RJbnZlbnRvcnlBZGp1c3RtZW50c1Jlc3BvbnNlEmwKE0NyZWF0ZUJ1bGtDb250YWluZXISKS5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJ1bGtDb250YWluZXJSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5DcmVhdGVCdWxrQ29udGFpbmVyUmVzcG9uc2USbAoTVXBkYXRlQnVsa0NvbnRhaW5lchIpLnN0aWxsaG91c2UudjEuVXBkYXRlQnVsa0NvbnRhaW5lclJlcXVlc3QaKi5zdGlsbGhvdXNlLnYxLlVwZGF0ZUJ1bGtDb250YWluZXJSZXNwb25zZRJ7ChhTZXRCdWxrQ29udGFpbmVyQXJjaGl2ZWQSLi5zdGlsbGhvdXNlLnYxLlNldEJ1bGtDb250YWluZXJBcmNoaXZlZFJlcXVlc3QaLy5zdGlsbGhvdXNlLnYxLlNldEJ1bGtDb250YWluZXJBcmNoaXZlZFJlc3BvbnNlEmkKEkxpc3RCdWxrQ29udGFpbmVycxIoLnN0aWxsaG91c2UudjEuTGlzdEJ1bGtDb250YWluZXJzUmVxdWVzdBopLnN0aWxsaG91c2UudjEuTGlzdEJ1bGtDb250YWluZXJzUmVzcG9uc2USYwoQR2V0QnVsa0NvbnRhaW5lchImLnN0aWxsaG91c2UudjEuR2V0QnVsa0NvbnRhaW5lclJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLkdldEJ1bGtDb250YWluZXJSZXNwb25zZRJ4ChdMaXN0UmVjZW50QnVsa01vdmVtZW50cxItLnN0aWxsaG91c2UudjEuTGlzdFJlY2VudEJ1bGtNb3ZlbWVudHNSZXF1ZXN0Gi4uc3RpbGxob3VzZS52MS5MaXN0UmVjZW50QnVsa01vdmVtZW50c1Jlc3BvbnNlElQKC0NyZWF0ZUJsZW5kEiEuc3RpbGxob3VzZS52MS5DcmVhdGVCbGVuZFJlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJsZW5kUmVzcG9uc2UScgoVQWRvcHRPcGVuaW5nSW52ZW50b3J5Eisuc3RpbGxob3VzZS52MS5BZG9wdE9wZW5pbmdJbnZlbnRvcnlSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5BZG9wdE9wZW5pbmdJbnZlbnRvcnlSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_alcoholometry, file_stillhouse_v1_instrument]);
 
 /**
  * @generated from message stillhouse.v1.BulkContainer
@@ -197,6 +197,84 @@ export type BulkMovement = Message<"stillhouse.v1.BulkMovement"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 14;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * Who the alcohol came from or went to, and the document that says so.
+   * Set on movements recorded directly rather than as a side effect of
+   * another action.
+   *
+   * @generated from field: string counterparty_name = 15;
+   */
+  counterpartyName: string;
+
+  /**
+   * @generated from field: string counterparty_licence_no = 16;
+   */
+  counterpartyLicenceNo: string;
+
+  /**
+   * @generated from field: string document_reference = 17;
+   */
+  documentReference: string;
+
+  /**
+   * @generated from field: string recorded_by = 18;
+   */
+  recordedBy: string;
+
+  /**
+   * The determination behind an external movement, where one was made.
+   *
+   * @generated from field: double temperature_c = 20;
+   */
+  temperatureC: number;
+
+  /**
+   * @generated from field: bool temperature_c_set = 21;
+   */
+  temperatureCSet: boolean;
+
+  /**
+   * @generated from field: double observed_volume_l = 22;
+   */
+  observedVolumeL: number;
+
+  /**
+   * @generated from field: double observed_density_kg_m3 = 23;
+   */
+  observedDensityKgM3: number;
+
+  /**
+   * @generated from field: bool observed_density_kg_m3_set = 24;
+   */
+  observedDensityKgM3Set: boolean;
+
+  /**
+   * @generated from field: double volume_factor_c = 25;
+   */
+  volumeFactorC: number;
+
+  /**
+   * @generated from field: stillhouse.v1.StrengthSource strength_source = 26;
+   */
+  strengthSource: StrengthSource;
+
+  /**
+   * @generated from field: stillhouse.v1.DeterminationInstruments instruments = 27;
+   */
+  instruments?: DeterminationInstruments | undefined;
+
+  /**
+   * Set on a packaged-spirits-returned-to-bulk movement.
+   *
+   * @generated from field: string packaged_inventory_id = 30;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: int32 bottles_unpackaged = 31;
+   */
+  bottlesUnpackaged: number;
 };
 
 /**
@@ -1055,6 +1133,136 @@ export const ListInventoryAdjustmentsResponseSchema: GenMessage<ListInventoryAdj
   messageDesc(file_stillhouse_v1_bulk, 24);
 
 /**
+ * @generated from message stillhouse.v1.RecordBulkExternalMovementRequest
+ */
+export type RecordBulkExternalMovementRequest = Message<"stillhouse.v1.RecordBulkExternalMovementRequest"> & {
+  /**
+   * @generated from field: string container_id = 1;
+   */
+  containerId: string;
+
+  /**
+   * @generated from field: stillhouse.v1.BulkExternalMovementKind kind = 2;
+   */
+  kind: BulkExternalMovementKind;
+
+  /**
+   * The gauge, in the same shape every other determination takes.
+   * Receiving spirit in bond means gauging it, and that gauge is subject
+   * to the same instrument approval as any other.
+   *
+   * @generated from field: double volume_l = 3;
+   */
+  volumeL: number;
+
+  /**
+   * @generated from field: double abv_pct = 4;
+   */
+  abvPct: number;
+
+  /**
+   * @generated from field: double temperature_c = 5;
+   */
+  temperatureC: number;
+
+  /**
+   * @generated from field: bool temperature_c_set = 6;
+   */
+  temperatureCSet: boolean;
+
+  /**
+   * @generated from field: double density_kg_m3 = 7;
+   */
+  densityKgM3: number;
+
+  /**
+   * @generated from field: bool density_kg_m3_set = 8;
+   */
+  densityKgM3Set: boolean;
+
+  /**
+   * @generated from field: stillhouse.v1.InstrumentRefs instruments = 9;
+   */
+  instruments?: InstrumentRefs | undefined;
+
+  /**
+   * Who it came from or went to, and the document that says so. EDM10-1-7
+   * does not want a bare quantity on the "received from other spirits
+   * licensees" line — the counterparty is what makes the movement
+   * traceable to the other end of it.
+   *
+   * @generated from field: string counterparty_name = 10;
+   */
+  counterpartyName: string;
+
+  /**
+   * @generated from field: string counterparty_licence_no = 11;
+   */
+  counterpartyLicenceNo: string;
+
+  /**
+   * @generated from field: string document_reference = 12;
+   */
+  documentReference: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp occurred_at = 13;
+   */
+  occurredAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: string notes = 14;
+   */
+  notes: string;
+
+  /**
+   * Required for PACKAGED_RETURNED_TO_BULK, ignored otherwise.
+   *
+   * @generated from field: string packaged_inventory_id = 15;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: int32 bottles_unpackaged = 16;
+   */
+  bottlesUnpackaged: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecordBulkExternalMovementRequest.
+ * Use `create(RecordBulkExternalMovementRequestSchema)` to create a new message.
+ */
+export const RecordBulkExternalMovementRequestSchema: GenMessage<RecordBulkExternalMovementRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_bulk, 25);
+
+/**
+ * @generated from message stillhouse.v1.RecordBulkExternalMovementResponse
+ */
+export type RecordBulkExternalMovementResponse = Message<"stillhouse.v1.RecordBulkExternalMovementResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.BulkMovement movement = 1;
+   */
+  movement?: BulkMovement | undefined;
+
+  /**
+   * @generated from field: stillhouse.v1.BulkContainer container = 2;
+   */
+  container?: BulkContainer | undefined;
+
+  /**
+   * @generated from field: repeated string warnings = 3;
+   */
+  warnings: string[];
+};
+
+/**
+ * Describes the message stillhouse.v1.RecordBulkExternalMovementResponse.
+ * Use `create(RecordBulkExternalMovementResponseSchema)` to create a new message.
+ */
+export const RecordBulkExternalMovementResponseSchema: GenMessage<RecordBulkExternalMovementResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_bulk, 26);
+
+/**
  * @generated from enum stillhouse.v1.BulkContainerKind
  */
 export enum BulkContainerKind {
@@ -1172,6 +1380,70 @@ export enum BulkMovementReason {
    * @generated from enum value: BULK_MOVEMENT_REASON_OPENING_INVENTORY = 11;
    */
   OPENING_INVENTORY = 11,
+
+  /**
+   * Reason-coded reconciliation of book stock to physical — B266 line D.
+   *
+   * @generated from enum value: BULK_MOVEMENT_REASON_ADJUSTMENT_INCREASE = 12;
+   */
+  ADJUSTMENT_INCREASE = 12,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_ADJUSTMENT_DECREASE = 13;
+   */
+  ADJUSTMENT_DECREASE = 13,
+
+  /**
+   * The rest of EDM10-1-7 page 3.
+   *
+   * @generated from enum value: BULK_MOVEMENT_REASON_IMPORT_RECEIVED = 14;
+   */
+  IMPORT_RECEIVED = 14,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_RECEIVED_FROM_SPIRITS_LICENSEE = 15;
+   */
+  RECEIVED_FROM_SPIRITS_LICENSEE = 15,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_RECEIVED_FROM_LICENSED_USER = 16;
+   */
+  RECEIVED_FROM_LICENSED_USER = 16,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_PACKAGED_RETURNED_TO_BULK = 17;
+   */
+  PACKAGED_RETURNED_TO_BULK = 17,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_DELIVERED_TO_SPIRITS_LICENSEE = 18;
+   */
+  DELIVERED_TO_SPIRITS_LICENSEE = 18,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_DELIVERED_TO_LICENSED_USER = 19;
+   */
+  DELIVERED_TO_LICENSED_USER = 19,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_EXPORTED = 20;
+   */
+  EXPORTED = 20,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_DENATURED_DA = 21;
+   */
+  DENATURED_DA = 21,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_DENATURED_SDA = 22;
+   */
+  DENATURED_SDA = 22,
+
+  /**
+   * @generated from enum value: BULK_MOVEMENT_REASON_RETURNED_TO_PRODUCTION = 23;
+   */
+  RETURNED_TO_PRODUCTION = 23,
 }
 
 /**
@@ -1227,9 +1499,127 @@ export const InventoryAdjustmentReasonSchema: GenEnum<InventoryAdjustmentReason>
   enumDesc(file_stillhouse_v1_bulk, 2);
 
 /**
+ * The reportable movements of bulk spirits into and out of the premises —
+ * B266 page 3 against EDM10-1-7.
+ *
+ * These are the lines Stillhouse could not produce. Four of them
+ * (IN_BOND_IN, IN_BOND_OUT, DESTRUCTION, UNACCOUNTED_LOSS) were on the
+ * report from the beginning and structurally always zero, because nothing
+ * in the application ever wrote one.
+ *
+ * Marked special containers are absent deliberately: they are packaging,
+ * not bulk, and need their own model (PLAN B3).
+ *
+ * @generated from enum stillhouse.v1.BulkExternalMovementKind
+ */
+export enum BulkExternalMovementKind {
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * --- receipts: alcohol arriving on the premises ---
+   *
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_IMPORT = 1;
+   */
+  IMPORT = 1,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_IN_BOND_IN = 2;
+   */
+  IN_BOND_IN = 2,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_FROM_SPIRITS_LICENSEE = 3;
+   */
+  FROM_SPIRITS_LICENSEE = 3,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_FROM_LICENSED_USER = 4;
+   */
+  FROM_LICENSED_USER = 4,
+
+  /**
+   * Packaged spirits unpackaged back to bulk. Decrements packaged
+   * inventory, so it carries the lot and the bottle count.
+   *
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_PACKAGED_RETURNED_TO_BULK = 5;
+   */
+  PACKAGED_RETURNED_TO_BULK = 5,
+
+  /**
+   * --- dispositions: alcohol leaving ---
+   *
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_IN_BOND_OUT = 10;
+   */
+  IN_BOND_OUT = 10,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_TO_SPIRITS_LICENSEE = 11;
+   */
+  TO_SPIRITS_LICENSEE = 11,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_TO_LICENSED_USER = 12;
+   */
+  TO_LICENSED_USER = 12,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_EXPORT = 13;
+   */
+  EXPORT = 13,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_DENATURED_DA = 14;
+   */
+  DENATURED_DA = 14,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_DENATURED_SDA = 15;
+   */
+  DENATURED_SDA = 15,
+
+  /**
+   * Back into the still. The records EDM3-1-1 para 38-41 wants around a
+   * redistillation are PLAN A8; this is the reportable movement itself.
+   *
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_RETURNED_TO_PRODUCTION = 16;
+   */
+  RETURNED_TO_PRODUCTION = 16,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_DESTRUCTION = 17;
+   */
+  DESTRUCTION = 17,
+
+  /**
+   * @generated from enum value: BULK_EXTERNAL_MOVEMENT_KIND_UNACCOUNTED_LOSS = 18;
+   */
+  UNACCOUNTED_LOSS = 18,
+}
+
+/**
+ * Describes the enum stillhouse.v1.BulkExternalMovementKind.
+ */
+export const BulkExternalMovementKindSchema: GenEnum<BulkExternalMovementKind> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_bulk, 3);
+
+/**
  * @generated from service stillhouse.v1.BulkService
  */
 export const BulkService: GenService<{
+  /**
+   * Record bulk spirits arriving on or leaving the premises — the B266
+   * page 3 lines that had no path.
+   *
+   * @generated from rpc stillhouse.v1.BulkService.RecordBulkExternalMovement
+   */
+  recordBulkExternalMovement: {
+    methodKind: "unary";
+    input: typeof RecordBulkExternalMovementRequestSchema;
+    output: typeof RecordBulkExternalMovementResponseSchema;
+  },
   /**
    * Reconcile a container's book balance to what was physically found.
    *

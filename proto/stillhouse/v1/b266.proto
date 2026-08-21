@@ -57,6 +57,18 @@ message B266Report {
   double bulk_adjustments_decrease_laa = 22;
   int32  bulk_adjustments_count = 23;
 
+  // The rest of EDM10-1-7 page 3. Receipts first, then dispositions.
+  double bulk_imported_laa = 24;
+  double bulk_received_from_licensee_laa = 25;
+  double bulk_received_from_licensed_user_laa = 26;
+  double bulk_packaged_returned_to_bulk_laa = 27;
+  double bulk_delivered_to_licensee_laa = 28;
+  double bulk_delivered_to_licensed_user_laa = 29;
+  double bulk_exported_laa = 64;
+  double bulk_denatured_da_laa = 65;
+  double bulk_denatured_sda_laa = 66;
+  double bulk_returned_to_production_laa = 67;
+
   // Packaged spirits section.
   double packaged_opening_laa = 30;
   double packaged_packaged_laa = 31;      // produced by bottling runs

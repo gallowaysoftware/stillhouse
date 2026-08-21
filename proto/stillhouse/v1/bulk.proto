@@ -36,6 +36,20 @@ enum BulkMovementReason {
   // production — it flows into the B266's opening balance rather than
   // into what the distillery made this period.
   BULK_MOVEMENT_REASON_OPENING_INVENTORY = 11;
+  // Reason-coded reconciliation of book stock to physical — B266 line D.
+  BULK_MOVEMENT_REASON_ADJUSTMENT_INCREASE = 12;
+  BULK_MOVEMENT_REASON_ADJUSTMENT_DECREASE = 13;
+  // The rest of EDM10-1-7 page 3.
+  BULK_MOVEMENT_REASON_IMPORT_RECEIVED = 14;
+  BULK_MOVEMENT_REASON_RECEIVED_FROM_SPIRITS_LICENSEE = 15;
+  BULK_MOVEMENT_REASON_RECEIVED_FROM_LICENSED_USER = 16;
+  BULK_MOVEMENT_REASON_PACKAGED_RETURNED_TO_BULK = 17;
+  BULK_MOVEMENT_REASON_DELIVERED_TO_SPIRITS_LICENSEE = 18;
+  BULK_MOVEMENT_REASON_DELIVERED_TO_LICENSED_USER = 19;
+  BULK_MOVEMENT_REASON_EXPORTED = 20;
+  BULK_MOVEMENT_REASON_DENATURED_DA = 21;
+  BULK_MOVEMENT_REASON_DENATURED_SDA = 22;
+  BULK_MOVEMENT_REASON_RETURNED_TO_PRODUCTION = 23;
 }
 
 message BulkContainer {
@@ -78,6 +92,28 @@ message BulkMovement {
   string notes = 12;
   google.protobuf.Timestamp occurred_at = 13;
   google.protobuf.Timestamp created_at = 14;
+
+  // Who the alcohol came from or went to, and the document that says so.
+  // Set on movements recorded directly rather than as a side effect of
+  // another action.
+  string counterparty_name = 15;
+  string counterparty_licence_no = 16;
+  string document_reference = 17;
+  string recorded_by = 18;
+
+  // The determination behind an external movement, where one was made.
+  double temperature_c = 20;
+  bool   temperature_c_set = 21;
+  double observed_volume_l = 22;
+  double observed_density_kg_m3 = 23;
+  bool   observed_density_kg_m3_set = 24;
+  double volume_factor_c = 25;
+  StrengthSource strength_source = 26;
+  DeterminationInstruments instruments = 27;
+
+  // Set on a packaged-spirits-returned-to-bulk movement.
+  string packaged_inventory_id = 30;
+  int32  bottles_unpackaged = 31;
 }
 
 message BulkSummary {
@@ -281,7 +317,82 @@ message ListInventoryAdjustmentsResponse {
   repeated InventoryAdjustment adjustments = 1;
 }
 
+// The reportable movements of bulk spirits into and out of the premises —
+// B266 page 3 against EDM10-1-7.
+//
+// These are the lines Stillhouse could not produce. Four of them
+// (IN_BOND_IN, IN_BOND_OUT, DESTRUCTION, UNACCOUNTED_LOSS) were on the
+// report from the beginning and structurally always zero, because nothing
+// in the application ever wrote one.
+//
+// Marked special containers are absent deliberately: they are packaging,
+// not bulk, and need their own model (PLAN B3).
+enum BulkExternalMovementKind {
+  BULK_EXTERNAL_MOVEMENT_KIND_UNSPECIFIED = 0;
+
+  // --- receipts: alcohol arriving on the premises ---
+  BULK_EXTERNAL_MOVEMENT_KIND_IMPORT = 1;
+  BULK_EXTERNAL_MOVEMENT_KIND_IN_BOND_IN = 2;
+  BULK_EXTERNAL_MOVEMENT_KIND_FROM_SPIRITS_LICENSEE = 3;
+  BULK_EXTERNAL_MOVEMENT_KIND_FROM_LICENSED_USER = 4;
+  // Packaged spirits unpackaged back to bulk. Decrements packaged
+  // inventory, so it carries the lot and the bottle count.
+  BULK_EXTERNAL_MOVEMENT_KIND_PACKAGED_RETURNED_TO_BULK = 5;
+
+  // --- dispositions: alcohol leaving ---
+  BULK_EXTERNAL_MOVEMENT_KIND_IN_BOND_OUT = 10;
+  BULK_EXTERNAL_MOVEMENT_KIND_TO_SPIRITS_LICENSEE = 11;
+  BULK_EXTERNAL_MOVEMENT_KIND_TO_LICENSED_USER = 12;
+  BULK_EXTERNAL_MOVEMENT_KIND_EXPORT = 13;
+  BULK_EXTERNAL_MOVEMENT_KIND_DENATURED_DA = 14;
+  BULK_EXTERNAL_MOVEMENT_KIND_DENATURED_SDA = 15;
+  // Back into the still. The records EDM3-1-1 para 38-41 wants around a
+  // redistillation are PLAN A8; this is the reportable movement itself.
+  BULK_EXTERNAL_MOVEMENT_KIND_RETURNED_TO_PRODUCTION = 16;
+  BULK_EXTERNAL_MOVEMENT_KIND_DESTRUCTION = 17;
+  BULK_EXTERNAL_MOVEMENT_KIND_UNACCOUNTED_LOSS = 18;
+}
+
+message RecordBulkExternalMovementRequest {
+  string container_id = 1;
+  BulkExternalMovementKind kind = 2;
+
+  // The gauge, in the same shape every other determination takes.
+  // Receiving spirit in bond means gauging it, and that gauge is subject
+  // to the same instrument approval as any other.
+  double volume_l = 3;
+  double abv_pct = 4;
+  double temperature_c = 5;
+  bool   temperature_c_set = 6;
+  double density_kg_m3 = 7;
+  bool   density_kg_m3_set = 8;
+  InstrumentRefs instruments = 9;
+
+  // Who it came from or went to, and the document that says so. EDM10-1-7
+  // does not want a bare quantity on the "received from other spirits
+  // licensees" line — the counterparty is what makes the movement
+  // traceable to the other end of it.
+  string counterparty_name = 10;
+  string counterparty_licence_no = 11;
+  string document_reference = 12;
+
+  google.protobuf.Timestamp occurred_at = 13;
+  string notes = 14;
+
+  // Required for PACKAGED_RETURNED_TO_BULK, ignored otherwise.
+  string packaged_inventory_id = 15;
+  int32  bottles_unpackaged = 16;
+}
+message RecordBulkExternalMovementResponse {
+  BulkMovement movement = 1;
+  BulkContainer container = 2;
+  repeated string warnings = 3;
+}
+
 service BulkService {
+  // Record bulk spirits arriving on or leaving the premises — the B266
+  // page 3 lines that had no path.
+  rpc RecordBulkExternalMovement(RecordBulkExternalMovementRequest) returns (RecordBulkExternalMovementResponse);
   // Reconcile a container's book balance to what was physically found.
   rpc RecordInventoryAdjustment(RecordInventoryAdjustmentRequest) returns (RecordInventoryAdjustmentResponse);
   rpc ListInventoryAdjustments(ListInventoryAdjustmentsRequest) returns (ListInventoryAdjustmentsResponse);

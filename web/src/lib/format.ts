@@ -195,6 +195,19 @@ const bulkMovementReasonLabels = new Map<BulkMovementReason, string>([
   [BulkMovementReason.LOSS_UNACCOUNTED, "Loss (unaccounted)"],
   [BulkMovementReason.REGAUGE_CORRECTION, "Regauge correction"],
   [BulkMovementReason.DESTRUCTION, "Destruction"],
+  [BulkMovementReason.OPENING_INVENTORY, "Opening inventory (adopted)"],
+  [BulkMovementReason.ADJUSTMENT_INCREASE, "Adjustment (increase)"],
+  [BulkMovementReason.ADJUSTMENT_DECREASE, "Adjustment (decrease)"],
+  [BulkMovementReason.IMPORT_RECEIVED, "Imported bulk spirits"],
+  [BulkMovementReason.RECEIVED_FROM_SPIRITS_LICENSEE, "Received from spirits licensee"],
+  [BulkMovementReason.RECEIVED_FROM_LICENSED_USER, "Received from licensed user"],
+  [BulkMovementReason.PACKAGED_RETURNED_TO_BULK, "Packaged returned to bulk"],
+  [BulkMovementReason.DELIVERED_TO_SPIRITS_LICENSEE, "Delivered to spirits licensee"],
+  [BulkMovementReason.DELIVERED_TO_LICENSED_USER, "Delivered to licensed user"],
+  [BulkMovementReason.EXPORTED, "Exported"],
+  [BulkMovementReason.DENATURED_DA, "Denatured to DA"],
+  [BulkMovementReason.DENATURED_SDA, "Denatured to SDA"],
+  [BulkMovementReason.RETURNED_TO_PRODUCTION, "Returned to production"],
 ]);
 
 export function bulkMovementReasonLabel(r: BulkMovementReason): string {

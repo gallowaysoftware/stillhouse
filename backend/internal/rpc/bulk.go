@@ -527,7 +527,7 @@ func bulkMovementRowToProto(r sqlcgen.ListBulkMovementsByContainerRow) *stillhou
 }
 
 func bulkMovementToProto(m sqlcgen.BulkMovement) *stillhousev1.BulkMovement {
-	return &stillhousev1.BulkMovement{
+	out := &stillhousev1.BulkMovement{
 		Id:                     m.ID.String(),
 		SourceContainerId:      nullUUIDString(m.SourceContainerID),
 		DestinationContainerId: nullUUIDString(m.DestinationContainerID),
@@ -540,7 +540,29 @@ func bulkMovementToProto(m sqlcgen.BulkMovement) *stillhousev1.BulkMovement {
 		Notes:                  m.Notes,
 		OccurredAt:             timestamppb.New(m.OccurredAt.Time),
 		CreatedAt:              timestamppb.New(m.CreatedAt.Time),
+
+		// Set only on movements recorded directly by an operator. A
+		// side-effect movement — a barrel fill, a bottling run — carries
+		// none of these because its parent row has them.
+		CounterpartyName:      m.CounterpartyName,
+		CounterpartyLicenceNo: m.CounterpartyLicenceNo,
+		DocumentReference:     m.DocumentReference,
+		RecordedBy:            nullUUIDString(m.RecordedBy),
+		ObservedVolumeL:       m.ObservedVolumeL.Float64,
+		VolumeFactorC:         m.VolumeFactorC,
+		StrengthSource:        strengthSourceToProto(m.StrengthSource),
+		PackagedInventoryId:   nullUUIDString(m.PackagedInventoryID),
 	}
+	if m.TemperatureC.Valid {
+		out.TemperatureC, out.TemperatureCSet = m.TemperatureC.Float64, true
+	}
+	if m.ObservedDensityKgM3.Valid {
+		out.ObservedDensityKgM3, out.ObservedDensityKgM3Set = m.ObservedDensityKgM3.Float64, true
+	}
+	if m.BottlesUnpackaged.Valid {
+		out.BottlesUnpackaged = m.BottlesUnpackaged.Int32
+	}
+	return out
 }
 
 func nullUUIDString(u uuid.NullUUID) string {
@@ -590,30 +612,42 @@ func bulkContainerKindToProto(k sqlcgen.BulkContainerKind) stillhousev1.BulkCont
 	return stillhousev1.BulkContainerKind_BULK_CONTAINER_KIND_UNSPECIFIED
 }
 
+// bulkMovementReasonProto maps every ledger reason to its wire value.
+//
+// A table rather than a switch, so movementReasonsAreTotal can walk it and
+// fail when a migration adds a reason nobody mapped. It had already
+// drifted: opening_inventory (stage 124) was never added to the switch
+// this replaces, so adopted stock displayed in the UI as an unspecified
+// movement.
+var bulkMovementReasonProto = map[sqlcgen.BulkMovementReason]stillhousev1.BulkMovementReason{
+	sqlcgen.BulkMovementReasonProductionGauge:     stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_PRODUCTION_GAUGE,
+	sqlcgen.BulkMovementReasonInterTankTransfer:   stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_INTER_TANK_TRANSFER,
+	sqlcgen.BulkMovementReasonBlend:               stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_BLEND,
+	sqlcgen.BulkMovementReasonTransferInBond:      stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_TRANSFER_IN_BOND,
+	sqlcgen.BulkMovementReasonTransferOutInBond:   stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_TRANSFER_OUT_IN_BOND,
+	sqlcgen.BulkMovementReasonTransferToPackaging: stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_TRANSFER_TO_PACKAGING,
+	sqlcgen.BulkMovementReasonLossEvaporation:     stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_LOSS_EVAPORATION,
+	sqlcgen.BulkMovementReasonLossUnaccounted:     stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED,
+	sqlcgen.BulkMovementReasonRegaugeCorrection:   stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_REGAUGE_CORRECTION,
+	sqlcgen.BulkMovementReasonDestruction:         stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_DESTRUCTION,
+	sqlcgen.BulkMovementReasonOpeningInventory:    stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_OPENING_INVENTORY,
+	sqlcgen.BulkMovementReasonAdjustmentIncrease:  stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_ADJUSTMENT_INCREASE,
+	sqlcgen.BulkMovementReasonAdjustmentDecrease:  stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_ADJUSTMENT_DECREASE,
+
+	sqlcgen.BulkMovementReasonImportReceived:              stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_IMPORT_RECEIVED,
+	sqlcgen.BulkMovementReasonReceivedFromSpiritsLicensee: stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_RECEIVED_FROM_SPIRITS_LICENSEE,
+	sqlcgen.BulkMovementReasonReceivedFromLicensedUser:    stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_RECEIVED_FROM_LICENSED_USER,
+	sqlcgen.BulkMovementReasonPackagedReturnedToBulk:      stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_PACKAGED_RETURNED_TO_BULK,
+	sqlcgen.BulkMovementReasonDeliveredToSpiritsLicensee:  stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_DELIVERED_TO_SPIRITS_LICENSEE,
+	sqlcgen.BulkMovementReasonDeliveredToLicensedUser:     stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_DELIVERED_TO_LICENSED_USER,
+	sqlcgen.BulkMovementReasonExported:                    stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_EXPORTED,
+	sqlcgen.BulkMovementReasonDenaturedDa:                 stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_DENATURED_DA,
+	sqlcgen.BulkMovementReasonDenaturedSda:                stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_DENATURED_SDA,
+	sqlcgen.BulkMovementReasonReturnedToProduction:        stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_RETURNED_TO_PRODUCTION,
+}
+
 func bulkMovementReasonToProto(r sqlcgen.BulkMovementReason) stillhousev1.BulkMovementReason {
-	switch r {
-	case sqlcgen.BulkMovementReasonProductionGauge:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_PRODUCTION_GAUGE
-	case sqlcgen.BulkMovementReasonInterTankTransfer:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_INTER_TANK_TRANSFER
-	case sqlcgen.BulkMovementReasonBlend:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_BLEND
-	case sqlcgen.BulkMovementReasonTransferInBond:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_TRANSFER_IN_BOND
-	case sqlcgen.BulkMovementReasonTransferOutInBond:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_TRANSFER_OUT_IN_BOND
-	case sqlcgen.BulkMovementReasonTransferToPackaging:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_TRANSFER_TO_PACKAGING
-	case sqlcgen.BulkMovementReasonLossEvaporation:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_LOSS_EVAPORATION
-	case sqlcgen.BulkMovementReasonLossUnaccounted:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_LOSS_UNACCOUNTED
-	case sqlcgen.BulkMovementReasonRegaugeCorrection:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_REGAUGE_CORRECTION
-	case sqlcgen.BulkMovementReasonDestruction:
-		return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_DESTRUCTION
-	}
-	return stillhousev1.BulkMovementReason_BULK_MOVEMENT_REASON_UNSPECIFIED
+	return bulkMovementReasonProto[r]
 }
 
 // applyDeposit returns the new (volume, abv, laa) after depositing

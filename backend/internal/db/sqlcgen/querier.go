@@ -172,6 +172,11 @@ type Querier interface {
 	// the operator read off the instrument. See migration 000023.
 	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
+	// A movement recorded directly by an operator rather than as a side effect
+	// of another action: spirits arriving on or leaving the premises. Carries
+	// the counterparty, the document, the determination and the author, none of
+	// which a side-effect movement needs because its parent row has them.
+	InsertExternalBulkMovement(ctx context.Context, arg InsertExternalBulkMovementParams) (BulkMovement, error)
 	// The most recent PASSED calibration. A failed check is history worth
 	// keeping, but it is not the date the next one is counted from — an
 	// instrument that failed its check has not been calibrated.

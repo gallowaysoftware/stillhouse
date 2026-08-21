@@ -248,9 +248,43 @@ function ReportView({
           )}
           <Row k="Production"             v={formatLAA(report.bulkProductionLaa)} />
           <Row k="Received in bond"       v={formatLAA(report.bulkReceivedInBondLaa)} />
+          {/* The rest of EDM10-1-7 page 3. Shown only when there is
+              something on the line: a craft distiller who never imports,
+              never denatures and never contract-fills should not read
+              eleven zeroes to find the two numbers that matter. */}
+          {report.bulkImportedLaa > 0 && (
+            <Row k="Imported" v={formatLAA(report.bulkImportedLaa)} />
+          )}
+          {report.bulkReceivedFromLicenseeLaa > 0 && (
+            <Row k="Received from spirits licensee" v={formatLAA(report.bulkReceivedFromLicenseeLaa)} />
+          )}
+          {report.bulkReceivedFromLicensedUserLaa > 0 && (
+            <Row k="Received from licensed user" v={formatLAA(report.bulkReceivedFromLicensedUserLaa)} />
+          )}
+          {report.bulkPackagedReturnedToBulkLaa > 0 && (
+            <Row k="Packaged returned to bulk" v={formatLAA(report.bulkPackagedReturnedToBulkLaa)} />
+          )}
           <Row k="Blend in"               v={formatLAA(report.bulkBlendInLaa)} />
           <Row k="Transferred to packaging" v={formatLAA(report.bulkTransferredToPackagingLaa)} dim />
           <Row k="Transferred out in bond" v={formatLAA(report.bulkTransferredOutInBondLaa)} dim />
+          {report.bulkDeliveredToLicenseeLaa > 0 && (
+            <Row k="Delivered to spirits licensee" v={formatLAA(report.bulkDeliveredToLicenseeLaa)} dim />
+          )}
+          {report.bulkDeliveredToLicensedUserLaa > 0 && (
+            <Row k="Delivered to licensed user" v={formatLAA(report.bulkDeliveredToLicensedUserLaa)} dim />
+          )}
+          {report.bulkExportedLaa > 0 && (
+            <Row k="Exported" v={formatLAA(report.bulkExportedLaa)} dim />
+          )}
+          {report.bulkDenaturedDaLaa > 0 && (
+            <Row k="Denatured to DA" v={formatLAA(report.bulkDenaturedDaLaa)} dim />
+          )}
+          {report.bulkDenaturedSdaLaa > 0 && (
+            <Row k="Denatured to SDA" v={formatLAA(report.bulkDenaturedSdaLaa)} dim />
+          )}
+          {report.bulkReturnedToProductionLaa > 0 && (
+            <Row k="Returned to production" v={formatLAA(report.bulkReturnedToProductionLaa)} dim />
+          )}
           <Row k="Losses (evap + unaccounted)" v={formatLAA(report.bulkLossesLaa)} dim />
           <Row k="Destroyed"              v={formatLAA(report.bulkDestroyedLaa)} dim />
           {/* Line D. Both directions when there were any, because a period

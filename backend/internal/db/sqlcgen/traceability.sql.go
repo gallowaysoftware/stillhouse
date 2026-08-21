@@ -64,7 +64,7 @@ func (q *Queries) BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID)
 }
 
 const bottlingRunChainFeeds = `-- name: BottlingRunChainFeeds :many
-SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at,
+SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at, bm.counterparty_name, bm.counterparty_licence_no, bm.document_reference, bm.temperature_c, bm.observed_volume_l, bm.observed_density_kg_m3, bm.volume_factor_c, bm.strength_source, bm.volume_instrument_id, bm.strength_instrument_id, bm.temperature_instrument_id, bm.recorded_by, bm.packaged_inventory_id, bm.bottles_unpackaged,
        src.name AS source_name,
        dst.name AS destination_name
 FROM bulk_movements bm
@@ -82,21 +82,35 @@ type BottlingRunChainFeedsParams struct {
 }
 
 type BottlingRunChainFeedsRow struct {
-	ID                     uuid.UUID          `json:"id"`
-	TenantID               uuid.UUID          `json:"tenant_id"`
-	SourceContainerID      uuid.NullUUID      `json:"source_container_id"`
-	DestinationContainerID uuid.NullUUID      `json:"destination_container_id"`
-	VolumeL                float64            `json:"volume_l"`
-	AbvPct                 float64            `json:"abv_pct"`
-	Laa                    float64            `json:"laa"`
-	Reason                 BulkMovementReason `json:"reason"`
-	ReferenceType          string             `json:"reference_type"`
-	ReferenceID            uuid.NullUUID      `json:"reference_id"`
-	Notes                  string             `json:"notes"`
-	OccurredAt             pgtype.Timestamptz `json:"occurred_at"`
-	CreatedAt              pgtype.Timestamptz `json:"created_at"`
-	SourceName             pgtype.Text        `json:"source_name"`
-	DestinationName        pgtype.Text        `json:"destination_name"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	SourceContainerID       uuid.NullUUID      `json:"source_container_id"`
+	DestinationContainerID  uuid.NullUUID      `json:"destination_container_id"`
+	VolumeL                 float64            `json:"volume_l"`
+	AbvPct                  float64            `json:"abv_pct"`
+	Laa                     float64            `json:"laa"`
+	Reason                  BulkMovementReason `json:"reason"`
+	ReferenceType           string             `json:"reference_type"`
+	ReferenceID             uuid.NullUUID      `json:"reference_id"`
+	Notes                   string             `json:"notes"`
+	OccurredAt              pgtype.Timestamptz `json:"occurred_at"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	CounterpartyName        string             `json:"counterparty_name"`
+	CounterpartyLicenceNo   string             `json:"counterparty_licence_no"`
+	DocumentReference       string             `json:"document_reference"`
+	TemperatureC            pgtype.Float8      `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8      `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8      `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64            `json:"volume_factor_c"`
+	StrengthSource          StrengthSource     `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+	RecordedBy              uuid.NullUUID      `json:"recorded_by"`
+	PackagedInventoryID     uuid.NullUUID      `json:"packaged_inventory_id"`
+	BottlesUnpackaged       pgtype.Int4        `json:"bottles_unpackaged"`
+	SourceName              pgtype.Text        `json:"source_name"`
+	DestinationName         pgtype.Text        `json:"destination_name"`
 }
 
 // Given a bottling run, return the bulk_movements that fed into its source
@@ -126,6 +140,20 @@ func (q *Queries) BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChai
 			&i.Notes,
 			&i.OccurredAt,
 			&i.CreatedAt,
+			&i.CounterpartyName,
+			&i.CounterpartyLicenceNo,
+			&i.DocumentReference,
+			&i.TemperatureC,
+			&i.ObservedVolumeL,
+			&i.ObservedDensityKgM3,
+			&i.VolumeFactorC,
+			&i.StrengthSource,
+			&i.VolumeInstrumentID,
+			&i.StrengthInstrumentID,
+			&i.TemperatureInstrumentID,
+			&i.RecordedBy,
+			&i.PackagedInventoryID,
+			&i.BottlesUnpackaged,
 			&i.SourceName,
 			&i.DestinationName,
 		); err != nil {
