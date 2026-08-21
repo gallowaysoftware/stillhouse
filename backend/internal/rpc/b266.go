@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"math"
 	"time"
@@ -58,8 +59,26 @@ func (s *B266Service) GenerateB266(
 		report *stillhousev1.B266Report
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		// Two returns covering the same day would report the same alcohol
+		// twice. An exact re-generate of the same range is fine — that's
+		// how a draft gets refreshed — but any other overlap is a filing
+		// error, and cheaper to refuse here than to unpick later.
+		overlaps, e := q.B266PeriodsOverlapping(ctx, sqlcgen.B266PeriodsOverlappingParams{
+			RangeStart: pgtype.Date{Valid: true, Time: pStart},
+			RangeEnd:   pgtype.Date{Valid: true, Time: pEnd},
+		})
+		if e != nil {
+			return e
+		}
+		if len(overlaps) > 0 {
+			o := overlaps[0]
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"period %s → %s overlaps the existing %s period %s → %s; B266 periods must not share days",
+				pStart.Format("2006-01-02"), pEnd.Format("2006-01-02"),
+				o.Status, o.PeriodStart.Time.Format("2006-01-02"), o.PeriodEnd.Time.Format("2006-01-02")))
+		}
+
 		// Upsert draft period.
-		var e error
 		period, e = q.UpsertB266PeriodDraft(ctx, sqlcgen.UpsertB266PeriodDraftParams{
 			TenantID:    u.TenantID,
 			PeriodStart: pgtype.Date{Valid: true, Time: pStart},
@@ -74,6 +93,15 @@ func (s *B266Service) GenerateB266(
 		return e
 	})
 	if err != nil {
+		// Errors raised deliberately inside the transaction carry the
+		// code and the sentence the operator needs — "period already
+		// submitted", "periods must not share days". Collapsing every
+		// one of them to "internal error" threw that away and told the
+		// caller Stillhouse was broken.
+		var connectErr *connect.Error
+		if errors.As(err, &connectErr) {
+			return nil, connectErr
+		}
 		s.logger.Error("GenerateB266", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -253,6 +281,15 @@ func (s *B266Service) ListB266Periods(
 		return e
 	})
 	if err != nil {
+		// Errors raised deliberately inside the transaction carry the
+		// code and the sentence the operator needs — "period already
+		// submitted", "periods must not share days". Collapsing every
+		// one of them to "internal error" threw that away and told the
+		// caller Stillhouse was broken.
+		var connectErr *connect.Error
+		if errors.As(err, &connectErr) {
+			return nil, connectErr
+		}
 		s.logger.Error("ListB266Periods", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -341,9 +378,21 @@ func computeB266Report(
 		PackagedClosingLaa:             round4(currentPackagedRow.TotalLaa),
 		PackagedClosingBottles:         currentPackagedRow.TotalBottles,
 
-		DutyRatePerLaa: excise.DutyRatePerLAAOver7Pct,
-		DutyPayableCad: round2cents(removalTotals.TotalDuty),
-		GeneratedAt:    timestamppb.New(time.Now()),
+		PackagedRemovedOver7Laa:      round4(removalTotals.Over7Laa),
+		PackagedRemovedOver7DutyCad:  round2cents(removalTotals.Over7Duty),
+		PackagedRemovedOver7Bottles:  removalTotals.Over7Bottles,
+		PackagedRemovedUnder7Litres:  round4(removalTotals.Under7Litres),
+		PackagedRemovedUnder7DutyCad: round2cents(removalTotals.Under7Duty),
+		PackagedRemovedUnder7Bottles: removalTotals.Under7Bottles,
+
+		// Both rates travel with the return so each band's line can be
+		// checked against the quantity it is charged on. Quoting only the
+		// per-LAA rate beside a blended LAA total made the arithmetic fail
+		// for any period holding both bands.
+		DutyRatePerLaa:         excise.DutyRatePerLAAOver7Pct,
+		DutyRatePerLitreUnder7: excise.DutyRatePerLAtOrUnder7,
+		DutyPayableCad:         round2cents(removalTotals.TotalDuty),
+		GeneratedAt:            timestamppb.New(time.Now()),
 	}
 
 	// Reverse-walk opening balances.

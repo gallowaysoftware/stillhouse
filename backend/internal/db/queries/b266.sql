@@ -93,13 +93,47 @@ WHERE br.bottling_date >= $1 AND br.bottling_date < $2
   AND br.voided_at IS NULL;
 
 -- name: SumRemovalsInPeriod :one
-SELECT COALESCE(SUM(total_laa), 0)::double precision      AS total_laa,
+-- Split by rate band, because the two bands are not taxed in the same
+-- unit: spirits above 7% ABV pay per litre of absolute alcohol, at or
+-- below 7% pay per litre of product. Reporting one blended "rate per LAA"
+-- against a total LAA made the return fail its own arithmetic as soon as a
+-- period contained both — 7.775 LAA at a stated $14.117 is $109.76, while
+-- the duty actually owed was $97.41. The B266 has separate lines for the
+-- two bands for exactly this reason.
+SELECT COALESCE(SUM(total_laa), 0)::double precision       AS total_laa,
        COALESCE(SUM(duty_amount_cad), 0)::double precision AS total_duty,
-       COALESCE(SUM(bottles_removed), 0)::int             AS total_bottles,
-       COUNT(*)::int                                      AS removal_count
+       COALESCE(SUM(bottles_removed), 0)::int              AS total_bottles,
+       COUNT(*)::int                                       AS removal_count,
+       COALESCE(SUM(total_laa) FILTER (WHERE bottle_abv_pct > 7), 0)::double precision
+           AS over7_laa,
+       COALESCE(SUM(duty_amount_cad) FILTER (WHERE bottle_abv_pct > 7), 0)::double precision
+           AS over7_duty,
+       COALESCE(SUM(bottles_removed) FILTER (WHERE bottle_abv_pct > 7), 0)::int
+           AS over7_bottles,
+       COALESCE(SUM(total_litres) FILTER (WHERE bottle_abv_pct <= 7), 0)::double precision
+           AS under7_litres,
+       COALESCE(SUM(duty_amount_cad) FILTER (WHERE bottle_abv_pct <= 7), 0)::double precision
+           AS under7_duty,
+       COALESCE(SUM(bottles_removed) FILTER (WHERE bottle_abv_pct <= 7), 0)::int
+           AS under7_bottles
 FROM packaging_removals
 WHERE removal_date >= $1 AND removal_date < $2
   AND voided_at IS NULL;
+
+-- name: B266PeriodsOverlapping :many
+-- Any period that shares a day with the given range and is not that exact
+-- range. Two returns covering the same day would report the same alcohol
+-- twice.
+--
+-- Named parameters deliberately: with positional $1/$2, sqlc names the
+-- struct fields after the column each is compared against, so `period_end
+-- >= $1` made $1 "PeriodEnd" and the caller's PeriodStart silently landed
+-- in the wrong slot.
+SELECT * FROM b266_periods
+WHERE period_start <= sqlc.arg(range_end)
+  AND period_end   >= sqlc.arg(range_start)
+  AND NOT (period_start = sqlc.arg(range_start) AND period_end = sqlc.arg(range_end))
+ORDER BY period_start;
 
 -- name: SumBulkOnHandAsOfDate :one
 -- LAA on hand right now (we don't have point-in-time snapshots; B266 generated

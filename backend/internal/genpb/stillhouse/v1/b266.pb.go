@@ -219,6 +219,16 @@ type B266Report struct {
 	// reconcile with bulk_transferred_to_packaging_laa and the reverse-walked
 	// opening balance goes negative.
 	PackagedPackagingLossLaa float64 `protobuf:"fixed64,37,opt,name=packaged_packaging_loss_laa,json=packagedPackagingLossLaa,proto3" json:"packaged_packaging_loss_laa,omitempty"`
+	// Duty splits by strength band and the two bands are charged in
+	// different units, so each is reported with the quantity it is actually
+	// charged on. duty_payable_cad is their sum.
+	PackagedRemovedOver7Laa      float64 `protobuf:"fixed64,38,opt,name=packaged_removed_over7_laa,json=packagedRemovedOver7Laa,proto3" json:"packaged_removed_over7_laa,omitempty"` // charged per LAA
+	PackagedRemovedOver7DutyCad  float64 `protobuf:"fixed64,39,opt,name=packaged_removed_over7_duty_cad,json=packagedRemovedOver7DutyCad,proto3" json:"packaged_removed_over7_duty_cad,omitempty"`
+	PackagedRemovedOver7Bottles  int32   `protobuf:"varint,40,opt,name=packaged_removed_over7_bottles,json=packagedRemovedOver7Bottles,proto3" json:"packaged_removed_over7_bottles,omitempty"`
+	PackagedRemovedUnder7Litres  float64 `protobuf:"fixed64,41,opt,name=packaged_removed_under7_litres,json=packagedRemovedUnder7Litres,proto3" json:"packaged_removed_under7_litres,omitempty"` // charged per litre of product
+	PackagedRemovedUnder7DutyCad float64 `protobuf:"fixed64,42,opt,name=packaged_removed_under7_duty_cad,json=packagedRemovedUnder7DutyCad,proto3" json:"packaged_removed_under7_duty_cad,omitempty"`
+	PackagedRemovedUnder7Bottles int32   `protobuf:"varint,43,opt,name=packaged_removed_under7_bottles,json=packagedRemovedUnder7Bottles,proto3" json:"packaged_removed_under7_bottles,omitempty"`
+	DutyRatePerLitreUnder7       float64 `protobuf:"fixed64,44,opt,name=duty_rate_per_litre_under7,json=dutyRatePerLitreUnder7,proto3" json:"duty_rate_per_litre_under7,omitempty"`
 	// Duty section.
 	DutyRatePerLaa float64                `protobuf:"fixed64,50,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"` // current rate (CAD/LAA) >7%
 	DutyPayableCad float64                `protobuf:"fixed64,51,opt,name=duty_payable_cad,json=dutyPayableCad,proto3" json:"duty_payable_cad,omitempty"`   // sum of removals.duty_amount_cad
@@ -393,6 +403,55 @@ func (x *B266Report) GetPackagedClosingBottles() int32 {
 func (x *B266Report) GetPackagedPackagingLossLaa() float64 {
 	if x != nil {
 		return x.PackagedPackagingLossLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedRemovedOver7Laa() float64 {
+	if x != nil {
+		return x.PackagedRemovedOver7Laa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedRemovedOver7DutyCad() float64 {
+	if x != nil {
+		return x.PackagedRemovedOver7DutyCad
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedRemovedOver7Bottles() int32 {
+	if x != nil {
+		return x.PackagedRemovedOver7Bottles
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedRemovedUnder7Litres() float64 {
+	if x != nil {
+		return x.PackagedRemovedUnder7Litres
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedRemovedUnder7DutyCad() float64 {
+	if x != nil {
+		return x.PackagedRemovedUnder7DutyCad
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedRemovedUnder7Bottles() int32 {
+	if x != nil {
+		return x.PackagedRemovedUnder7Bottles
+	}
+	return 0
+}
+
+func (x *B266Report) GetDutyRatePerLitreUnder7() float64 {
+	if x != nil {
+		return x.DutyRatePerLitreUnder7
 	}
 	return 0
 }
@@ -914,7 +973,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xdb\t\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb3\r\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -938,7 +997,14 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\"packaged_removed_duty_paid_bottles\x18\" \x01(\x05R\x1epackagedRemovedDutyPaidBottles\x120\n" +
 	"\x14packaged_closing_laa\x18# \x01(\x01R\x12packagedClosingLaa\x128\n" +
 	"\x18packaged_closing_bottles\x18$ \x01(\x05R\x16packagedClosingBottles\x12=\n" +
-	"\x1bpackaged_packaging_loss_laa\x18% \x01(\x01R\x18packagedPackagingLossLaa\x12)\n" +
+	"\x1bpackaged_packaging_loss_laa\x18% \x01(\x01R\x18packagedPackagingLossLaa\x12;\n" +
+	"\x1apackaged_removed_over7_laa\x18& \x01(\x01R\x17packagedRemovedOver7Laa\x12D\n" +
+	"\x1fpackaged_removed_over7_duty_cad\x18' \x01(\x01R\x1bpackagedRemovedOver7DutyCad\x12C\n" +
+	"\x1epackaged_removed_over7_bottles\x18( \x01(\x05R\x1bpackagedRemovedOver7Bottles\x12C\n" +
+	"\x1epackaged_removed_under7_litres\x18) \x01(\x01R\x1bpackagedRemovedUnder7Litres\x12F\n" +
+	" packaged_removed_under7_duty_cad\x18* \x01(\x01R\x1cpackagedRemovedUnder7DutyCad\x12E\n" +
+	"\x1fpackaged_removed_under7_bottles\x18+ \x01(\x05R\x1cpackagedRemovedUnder7Bottles\x12:\n" +
+	"\x1aduty_rate_per_litre_under7\x18, \x01(\x01R\x16dutyRatePerLitreUnder7\x12)\n" +
 	"\x11duty_rate_per_laa\x182 \x01(\x01R\x0edutyRatePerLaa\x12(\n" +
 	"\x10duty_payable_cad\x183 \x01(\x01R\x0edutyPayableCad\x12=\n" +
 	"\fgenerated_at\x18< \x01(\v2\x1a.google.protobuf.TimestampR\vgeneratedAt\"W\n" +

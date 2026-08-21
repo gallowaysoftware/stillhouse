@@ -23,6 +23,15 @@ type Querier interface {
 	// snapshot has already been filed with CRA and backdating would create
 	// a live-vs-filed discrepancy.
 	B266PeriodCoveringDate(ctx context.Context, periodStart pgtype.Date) (B266Period, error)
+	// Any period that shares a day with the given range and is not that exact
+	// range. Two returns covering the same day would report the same alcohol
+	// twice.
+	//
+	// Named parameters deliberately: with positional $1/$2, sqlc names the
+	// struct fields after the column each is compared against, so `period_end
+	// >= $1` made $1 "PeriodEnd" and the caller's PeriodStart silently landed
+	// in the wrong slot.
+	B266PeriodsOverlapping(ctx context.Context, arg B266PeriodsOverlappingParams) ([]B266Period, error)
 	// For a barrel_dump-tagged bulk_movement, return the barrel + its fill
 	// history (so we can include the original distillation behind the fill).
 	BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID) ([]BarrelDumpsForContainerFillRow, error)
@@ -250,6 +259,13 @@ type Querier interface {
 	SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error)
 	// Approximate packaged LAA on hand: bottles × bottle_size × target_abv / 100 / 1000.
 	SumPackagedOnHandLAA(ctx context.Context) (SumPackagedOnHandLAARow, error)
+	// Split by rate band, because the two bands are not taxed in the same
+	// unit: spirits above 7% ABV pay per litre of absolute alcohol, at or
+	// below 7% pay per litre of product. Reporting one blended "rate per LAA"
+	// against a total LAA made the return fail its own arithmetic as soon as a
+	// period contained both — 7.775 LAA at a stated $14.117 is $109.76, while
+	// the duty actually owed was $97.41. The B266 has separate lines for the
+	// two bands for exactly this reason.
 	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)
 	SumStampInventory(ctx context.Context) ([]SumStampInventoryRow, error)
 	TouchAPIToken(ctx context.Context, tokenHash []byte) error

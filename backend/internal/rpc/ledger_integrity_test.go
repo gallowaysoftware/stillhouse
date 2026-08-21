@@ -324,3 +324,143 @@ func TestBarrelWritesRefusedInSubmittedPeriod(t *testing.T) {
 		t.Errorf("code = %v, want failed_precondition (err: %v)", got, err)
 	}
 }
+
+// TestB266RefusesOverlappingPeriods: found by QA. Periods could be
+// generated freely on top of each other — October 1–31 (already submitted),
+// October 1–15, October 15–November 15 and a 400-day range all coexisted.
+// Two returns covering the same day report the same alcohol twice.
+func TestB266RefusesOverlappingPeriods(t *testing.T) {
+	f := newLedgerFixture(t)
+	svc := NewB266Service(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+
+	gen := func(from, to string) error {
+		_, err := svc.GenerateB266(f.ctx, connect.NewRequest(&stillhousev1.GenerateB266Request{
+			PeriodStart: from, PeriodEnd: to,
+		}))
+		return err
+	}
+
+	if err := gen("2026-10-01", "2026-10-31"); err != nil {
+		t.Fatalf("first period: %v", err)
+	}
+	// Re-generating the identical range is how a draft gets refreshed.
+	if err := gen("2026-10-01", "2026-10-31"); err != nil {
+		t.Errorf("re-generating the same range should be allowed: %v", err)
+	}
+	// An abutting month must still be fine — periods tile.
+	if err := gen("2026-11-01", "2026-11-30"); err != nil {
+		t.Errorf("the next month should be allowed: %v", err)
+	}
+
+	for _, tc := range []struct{ name, from, to string }{
+		{"contained by an existing period", "2026-10-05", "2026-10-20"},
+		{"straddling the end", "2026-10-15", "2026-11-15"},
+		{"swallowing several", "2025-01-01", "2026-12-31"},
+		{"sharing a single day", "2026-10-31", "2026-11-01"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			err := gen(tc.from, tc.to)
+			if err == nil {
+				t.Fatalf("%s → %s was accepted alongside October", tc.from, tc.to)
+			}
+			if got := connect.CodeOf(err); got != connect.CodeFailedPrecondition {
+				t.Errorf("code = %v, want failed_precondition (err: %v)", got, err)
+			}
+		})
+	}
+}
+
+// TestB266DutyReconcilesAcrossRateBands: found by QA. Spirits above 7% ABV
+// are charged per litre of absolute alcohol; at or below 7% they are
+// charged per litre of product. The return quoted a single "rate per LAA"
+// of $14.117 beside a blended LAA total, so a period holding both bands
+// failed its own arithmetic — 7.775 LAA at the stated rate is $109.76,
+// while the duty actually owed was $97.41. The total was right; the return
+// simply could not be checked against the figures printed on it.
+func TestB266DutyReconcilesAcrossRateBands(t *testing.T) {
+	f := newLedgerFixture(t)
+	svc := NewB266Service(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	day := time.Date(2026, 5, 15, 12, 0, 0, 0, time.UTC)
+
+	// One removal in each band, booked straight into the removals table:
+	// 20 x 750 mL at 40% = 6 LAA, and 100 x 355 mL at 5% = 35.5 L.
+	for _, r := range []struct {
+		no                     int32
+		bottles                int32
+		sizeML                 int32
+		abv, litres, laa, duty float64
+		ratePerLAA             float64
+	}{
+		{1, 20, 750, 40, 15, 6, 6 * 14.117, 14.117},
+		{2, 100, 355, 5, 35.5, 1.775, 35.5 * 0.358, 0},
+	} {
+		if _, err := f.q.CreateRemoval(f.ctx, sqlcgen.CreateRemovalParams{
+			TenantID: f.tenant.ID, RemovalNo: r.no,
+			PackagedInventoryID: f.packagedLot(t, r.sizeML, r.abv, r.bottles),
+			RemovalDate:         pgtype.Date{Valid: true, Time: day},
+			BottlesRemoved:      r.bottles,
+			DestinationKind:     sqlcgen.RemovalDestinationKindDutyPaidCustomer,
+			BottleSizeMl:        r.sizeML,
+			BottleAbvPct:        r.abv,
+			TotalLitres:         r.litres,
+			TotalLaa:            r.laa,
+			DutyRatePerLaa:      r.ratePerLAA,
+			DutyAmountCad:       r.duty,
+		}); err != nil {
+			t.Fatalf("removal %d: %v", r.no, err)
+		}
+	}
+
+	res, err := svc.GenerateB266(f.ctx, connect.NewRequest(&stillhousev1.GenerateB266Request{
+		PeriodStart: "2026-05-01", PeriodEnd: "2026-05-31",
+	}))
+	if err != nil {
+		t.Fatalf("GenerateB266: %v", err)
+	}
+	rep := res.Msg.GetReport()
+
+	if got, want := rep.GetPackagedRemovedOver7Laa(), 6.0; !near(got, want, 1e-6) {
+		t.Errorf("over-7%% LAA = %v, want %v", got, want)
+	}
+	if got, want := rep.GetPackagedRemovedUnder7Litres(), 35.5; !near(got, want, 1e-6) {
+		t.Errorf("under-7%% litres = %v, want %v", got, want)
+	}
+	// Each band must reconcile against the quantity it is charged on.
+	if got, want := rep.GetPackagedRemovedOver7Laa()*rep.GetDutyRatePerLaa(),
+		rep.GetPackagedRemovedOver7DutyCad(); !near(got, want, 0.01) {
+		t.Errorf("over-7%% line doesn't reconcile: %v LAA x %v = %v, reported %v",
+			rep.GetPackagedRemovedOver7Laa(), rep.GetDutyRatePerLaa(), got, want)
+	}
+	if got, want := rep.GetPackagedRemovedUnder7Litres()*rep.GetDutyRatePerLitreUnder7(),
+		rep.GetPackagedRemovedUnder7DutyCad(); !near(got, want, 0.01) {
+		t.Errorf("under-7%% line doesn't reconcile: %v L x %v = %v, reported %v",
+			rep.GetPackagedRemovedUnder7Litres(), rep.GetDutyRatePerLitreUnder7(), got, want)
+	}
+	// And the bands must add up to the total payable.
+	if got, want := rep.GetPackagedRemovedOver7DutyCad()+rep.GetPackagedRemovedUnder7DutyCad(),
+		rep.GetDutyPayableCad(); !near(got, want, 0.01) {
+		t.Errorf("bands sum to %v but duty payable says %v", got, want)
+	}
+}
+
+// packagedLot creates a product + bottling run + packaged inventory row so a
+// removal has something to point at.
+func (f *ledgerFixture) packagedLot(t *testing.T, sizeML int32, abv float64, bottles int32) uuid.UUID {
+	t.Helper()
+	product, err := f.q.CreateProduct(f.ctx, sqlcgen.CreateProductParams{
+		TenantID: f.tenant.ID, Name: "Band " + uuid.NewString()[:8],
+		SpiritKind: sqlcgen.SpiritKindVodka, BottleSizeMl: sizeML, TargetAbvPct: abv,
+	})
+	if err != nil {
+		t.Fatalf("product: %v", err)
+	}
+	pkg, err := f.q.UpsertPackagedInventory(f.ctx, sqlcgen.UpsertPackagedInventoryParams{
+		TenantID: f.tenant.ID, ProductID: product.ID,
+		LotCode: "LOT-" + uuid.NewString()[:8], Jurisdiction: "CA-ON",
+		BottlesOnHand: bottles,
+	})
+	if err != nil {
+		t.Fatalf("packaged inventory: %v", err)
+	}
+	return pkg.ID
+}

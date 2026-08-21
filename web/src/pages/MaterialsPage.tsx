@@ -62,9 +62,13 @@ export function MaterialsPage() {
       uom: fd.get("uom")?.toString() ?? "kg",
       supplier: fd.get("supplier")?.toString() ?? "",
       notes: fd.get("notes")?.toString() ?? "",
-      extractPct: isFermentable && extractPctRaw ? Number(extractPctRaw) : 0,
+      // Typed as a percentage because that is how every maltster's spec
+      // sheet quotes it; stored as a fraction because that is what the
+      // projection math takes. Asking the operator to divide by 100 was an
+      // invitation to enter 78 and get a hundredfold yield projection.
+      extractPct: isFermentable && extractPctRaw ? Number(extractPctRaw) / 100 : 0,
       extractPctSet: !!(isFermentable && extractPctRaw),
-      moisturePct: isFermentable && moisturePctRaw ? Number(moisturePctRaw) : 0,
+      moisturePct: isFermentable && moisturePctRaw ? Number(moisturePctRaw) / 100 : 0,
       moisturePctSet: !!(isFermentable && moisturePctRaw),
       cereal: isFermentable && cerealRaw ? (Number(cerealRaw) as Cereal) : Cereal.UNSPECIFIED,
     });
@@ -107,13 +111,13 @@ export function MaterialsPage() {
           <Field label="UoM" name="uom" placeholder="kg / L / each" defaultValue="kg" required />
           <Field label="Supplier" name="supplier" />
           <Field
-            label="Extract % (0..1)"
+            label="Extract (%)"
             name="extract_pct"
             type="number"
-            step="0.01"
+            step="0.1"
             min="0"
-            max="1"
-            placeholder="0.78"
+            max="100"
+            placeholder="78"
           />
           <Field label="Cereal" name="cereal" as="select">
             {CEREAL_OPTIONS.map((c) => (
@@ -124,13 +128,13 @@ export function MaterialsPage() {
             ))}
           </Field>
           <Field
-            label="Moisture % (0..1)"
+            label="Moisture (%)"
             name="moisture_pct"
             type="number"
-            step="0.01"
+            step="0.1"
             min="0"
-            max="1"
-            placeholder="0.04"
+            max="100"
+            placeholder="4"
           />
           <Field label="Notes" name="notes" className="col-span-2" />
           <div className="col-span-2 flex items-center gap-3">
