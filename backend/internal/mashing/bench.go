@@ -126,6 +126,21 @@ func (b *Bench) assessGelatinisation(bill []GrainBillItem) {
 		}
 	}
 	if !any {
+		// Nothing in the bill has a published range — an all-oat mash, say.
+		// Returning here silently left GelatinisationC at 0–0 °C with no
+		// finding attached, which reads as "gelatinises at zero degrees"
+		// rather than "we don't know". Saying nothing is the one thing
+		// this package is not allowed to do.
+		if len(unknown) > 0 {
+			b.Findings = append(b.Findings, Finding{
+				Severity: SeverityWarning,
+				Code:     "cereal_unknown",
+				Title:    fmt.Sprintf("No published gelatinisation range for any cereal in this bill (%s)", joinNames(unknown)),
+				Detail: "The curriculum gives no figure for these, so there is no temperature " +
+					"guidance to offer — not a low one. Set the cereal on these materials if " +
+					"they do have a published range, and otherwise treat the rest cautiously.",
+			})
+		}
 		return
 	}
 	b.GelatinisationC = hottest

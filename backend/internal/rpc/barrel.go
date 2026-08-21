@@ -865,6 +865,15 @@ func (s *BarrelService) VoidBarrelEvent(
 					return e
 				}
 			}
+			// Note on voiding a DUMP: this reverses the transfer only. The
+			// residual the cask kept (booked as loss_evaporation by
+			// DumpBarrel) stays on the books, and the barrel comes back
+			// holding what was transferred rather than what it held before
+			// the dump. That is deliberate and it conserves — 70.2 back in
+			// the cask plus 9.8 still booked as loss is the same 80 LAA
+			// that went in. The wood absorbed what it absorbed; voiding a
+			// paperwork entry doesn't give it back.
+			//
 			// Audit-friendly offsetting ledger row so the journal stays
 			// reconstructable. Reason regauge_correction matches the pattern
 			// used by other void handlers.
