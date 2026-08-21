@@ -28,6 +28,12 @@ var publicProcedures = map[string]bool{
 	"/stillhouse.v1.AuthService/Logout":             true,
 	"/stillhouse.v1.TenantService/CreateTenant":     true,
 	"/stillhouse.v1.InviteService/SignupWithInvite": true,
+	// Password recovery is by definition reachable without a session —
+	// these were absent, so "forgot password" answered "authentication
+	// required". Both are rate-limited (see auth.go) and neither
+	// distinguishes a known email from an unknown one.
+	"/stillhouse.v1.AuthService/RequestPasswordReset": true,
+	"/stillhouse.v1.AuthService/ResetPassword":        true,
 }
 
 // NewAuthInterceptor returns a Connect unary interceptor that:

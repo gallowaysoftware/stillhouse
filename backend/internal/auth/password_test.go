@@ -154,3 +154,60 @@ func mutateSegment(encoded string, idx int, replacement string) string {
 	parts[idx] = replacement
 	return strings.Join(parts, "$")
 }
+
+// TestVerifyRejectsMalformedDigestLengths: VerifyPassword derives with
+// uint32(len(hash)) as the key length, and argon2.IDKey panics outright on
+// a zero key length. A stored hash whose digest segment is empty therefore
+// crashed the request — from the unauthenticated login handler, which
+// turns one corrupt row into a denial of service. A short-but-nonempty
+// digest was worse in a quieter way: it silently shortened the comparison.
+func TestVerifyRejectsMalformedDigestLengths(t *testing.T) {
+	valid, err := HashPassword("correct horse battery staple")
+	if err != nil {
+		t.Fatalf("HashPassword: %v", err)
+	}
+	parts := strings.Split(valid, "$")
+	if len(parts) != 6 {
+		t.Fatalf("unexpected hash shape: %q", valid)
+	}
+
+	for name, digest := range map[string]string{
+		"empty digest":     "",
+		"one byte digest":  "AA",
+		"truncated digest": parts[5][:20],
+		"empty salt":       "",
+	} {
+		t.Run(name, func(t *testing.T) {
+			bad := make([]string, len(parts))
+			copy(bad, parts)
+			if name == "empty salt" {
+				bad[4] = ""
+			} else {
+				bad[5] = digest
+			}
+			// Must return an error, and must not panic.
+			if err := VerifyPassword("correct horse battery staple", strings.Join(bad, "$")); err == nil {
+				t.Error("malformed hash was accepted")
+			}
+		})
+	}
+}
+
+// TestArgonParametersArePinned: the package documents OWASP-grade cost, but
+// nothing asserted the numbers. Dropping argonMemory from 64 MiB to 64 KiB
+// — a plausible unit slip — left every other test in this package passing
+// while destroying the property the package exists for.
+func TestArgonParametersArePinned(t *testing.T) {
+	if argonMemory != 64*1024 {
+		t.Errorf("argonMemory = %d KiB, want 65536 (64 MiB) — OWASP guidance for Argon2id", argonMemory)
+	}
+	if argonTime != 2 {
+		t.Errorf("argonTime = %d, want 2", argonTime)
+	}
+	if argonKeyLen != 32 {
+		t.Errorf("argonKeyLen = %d, want 32", argonKeyLen)
+	}
+	if saltLen != 16 {
+		t.Errorf("saltLen = %d, want 16", saltLen)
+	}
+}
