@@ -49,3 +49,4 @@ coverage/
 
 # Per-developer Makefile overrides (registry, DSNs)
 local.mk
+.local/

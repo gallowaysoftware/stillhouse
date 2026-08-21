@@ -62,6 +62,16 @@ message B266Report {
   // reconcile with bulk_transferred_to_packaging_laa and the reverse-walked
   // opening balance goes negative.
   double packaged_packaging_loss_laa = 37;
+  // Duty splits by strength band and the two bands are charged in
+  // different units, so each is reported with the quantity it is actually
+  // charged on. duty_payable_cad is their sum.
+  double packaged_removed_over7_laa = 38;         // charged per LAA
+  double packaged_removed_over7_duty_cad = 39;
+  int32  packaged_removed_over7_bottles = 40;
+  double packaged_removed_under7_litres = 41;     // charged per litre of product
+  double packaged_removed_under7_duty_cad = 42;
+  int32  packaged_removed_under7_bottles = 43;
+  double duty_rate_per_litre_under7 = 44;
 
   // Duty section.
   double duty_rate_per_laa = 50;          // current rate (CAD/LAA) >7%
