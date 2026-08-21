@@ -211,6 +211,13 @@ func (s *InviteService) SignupWithInvite(
 			// tenant + user we just created vanish.
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("invalid invite code"))
 		}
+		// The transaction opened without a tenant context, because the
+		// tenant didn't exist yet. It does now, and audit_events enforces
+		// row-level security — so scope the transaction before writing to
+		// it, or the INSERT is refused and this whole signup rolls back.
+		if e := tenantdb.SetTenantContext(ctx, q, tenant.ID); e != nil {
+			return e
+		}
 		// Audit on the new tenant so the trail says who created it via which code.
 		return audit.Write(ctx, q, tenant.ID, user.ID, "tenant", tenant.ID.String(),
 			sqlcgen.AuditActionCreate, map[string]any{

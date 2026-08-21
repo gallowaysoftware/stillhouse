@@ -173,3 +173,60 @@ func TestRLSIsolation(t *testing.T) {
 		t.Errorf("cross-tenant insert succeeded — RLS WITH CHECK is broken")
 	}
 }
+
+// TestSetTenantContextEnablesAuditWriteDuringSignup pins the fix for a
+// break that only ever appeared under a correctly configured server.
+//
+// Signup creates a tenant, so the transaction has to begin WITHOUT a
+// tenant context — there is no id to scope by yet. But audit_events
+// carries FORCE ROW LEVEL SECURITY, so writing the signup's audit row
+// with no app.current_tenant_id set is refused, the transaction rolls
+// back, and the tenant, the owner and the invite redemption all vanish
+// behind a 500.
+//
+// It looked fine in dev because dev connects as the superuser, who
+// bypasses RLS entirely — so the feature worked exactly where the tenant
+// boundary wasn't being enforced, and broke exactly where it was. This
+// test runs as stillhouse_app, which is the only configuration that can
+// see it.
+func TestSetTenantContextEnablesAuditWriteDuringSignup(t *testing.T) {
+	dsn := integrationDSN(t)
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		t.Fatalf("pool: %v", err)
+	}
+	t.Cleanup(pool.Close)
+	db := New(pool)
+
+	var tenantID uuid.UUID
+	err = db.WithoutTenantTx(ctx, func(ctx context.Context, q *sqlcgen.Queries) error {
+		tenant, e := q.CreateTenant(ctx, sqlcgen.CreateTenantParams{
+			Name:                    "Signup RLS " + uuid.NewString(),
+			CraSpiritsLicenceNumber: "SIGNUP-" + uuid.NewString(),
+			DefaultJurisdiction:     "CA-ON",
+		})
+		if e != nil {
+			return e
+		}
+		tenantID = tenant.ID
+		// The line under test. Without it the insert below is refused.
+		if e := SetTenantContext(ctx, q, tenant.ID); e != nil {
+			return e
+		}
+		_, e = q.InsertAuditEvent(ctx, sqlcgen.InsertAuditEventParams{
+			TenantID:   tenant.ID,
+			EntityType: "tenant",
+			EntityID:   tenant.ID.String(),
+			Action:     sqlcgen.AuditActionCreate,
+			Payload:    []byte(`{"signup":true}`),
+		})
+		return e
+	})
+	if err != nil {
+		t.Fatalf("signup transaction failed as stillhouse_app: %v", err)
+	}
+	t.Cleanup(func() {
+		_, _ = pool.Exec(context.Background(), "DELETE FROM tenants WHERE id = $1", tenantID)
+	})
+}
