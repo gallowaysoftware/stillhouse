@@ -58,16 +58,11 @@ attached B256).
 Any distillery doing contract work, export, or bottle-your-own kegs cannot file
 from Stillhouse today.
 
-### A4 · Inventory adjustments are an implicit residual — P0
-
-Line D on B266 page 3 (and line F on B262) is a real, reason-coded entry that
-reconciles book inventory to physical. Stillhouse has no adjustment concept, so
-a discrepancy either doesn't surface or silently lands in losses. Needs its own
-movement type, a reason, an author, and an audit row.
-
 ### A5 · Losses aren't classified by duty treatment — P1
 
-`bulk_losses_laa` is one number. Under EDM3-4-1 the treatment diverges sharply:
+`bulk_losses_laa` is one number, and stage 145 took the misclassified
+count variances out of it — what remains is genuine loss, still unclassified.
+Under EDM3-4-1 the treatment diverges sharply:
 destruction approved by CRA is relieved; unaccounted losses are duty-paid and
 cost real money. Collapsing them yields a plausible total and the wrong duty.
 Needs the classification, the approval reference where one exists, and the duty
@@ -608,14 +603,15 @@ the three options.
 
 Correctness first, in this order, because each depends on the one before:
 
-1. `A3` `A4` B266 completeness and adjustments
+1. `A3` B266 completeness
 2. `A5` `A6` losses and reporting periods
 3. `H1` `H2` liability and backups — before any second distillery's records land here
 4. `C2` audit binder — the artifact that makes the case for everything above
 
-`A1` and `C1`, which headed this list, shipped in stages 143 and 144: duty now
-crystallises at packaging for a licensee without a warehouse licence, and every
-gauge can name the approved instrument that made it.
+`A1`, `C1` and `A4`, which headed this list, shipped in stages 143–145: duty
+crystallises at the event that makes it payable, every gauge can name the
+approved instrument that made it, and a discrepancy between book and physical
+has a reason-coded entry of its own instead of vanishing into losses.
 
 `A3` and `A4` are the difference between a return that ties out and one that is
 also true; `A10`, which was the third of that group, shipped in stage 141. `K1`

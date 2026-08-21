@@ -48,6 +48,14 @@ message B266Report {
   // it is reported separately so an adopted balance is never invisible on
   // the return it affects.
   double bulk_opening_inventory_adopted_laa = 19;
+  // Line D — reason-coded adjustments reconciling book inventory to
+  // physical. Signed net, with each direction also reported: a period that
+  // found 3 LAA in one tank and lost 3 in another nets to zero, and a line
+  // showing only the net would say nothing happened.
+  double bulk_adjustments_laa = 20;
+  double bulk_adjustments_increase_laa = 21;
+  double bulk_adjustments_decrease_laa = 22;
+  int32  bulk_adjustments_count = 23;
 
   // Packaged spirits section.
   double packaged_opening_laa = 30;

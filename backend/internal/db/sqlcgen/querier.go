@@ -69,6 +69,7 @@ type Querier interface {
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
 	CreateInstrument(ctx context.Context, arg CreateInstrumentParams) (Instrument, error)
+	CreateInventoryAdjustment(ctx context.Context, arg CreateInventoryAdjustmentParams) (InventoryAdjustment, error)
 	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
@@ -209,6 +210,9 @@ type Querier interface {
 	// operator picks from at the bench should hold what is in service. They
 	// are never deleted, so a determination made years ago still resolves.
 	ListInstruments(ctx context.Context, arg ListInstrumentsParams) ([]Instrument, error)
+	// Filters are all optional so one query backs both the container's own
+	// history and the period review behind B266 line D.
+	ListInventoryAdjustments(ctx context.Context, arg ListInventoryAdjustmentsParams) ([]ListInventoryAdjustmentsRow, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
 	ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error)
 	ListMashMetrics(ctx context.Context, mashRunID uuid.UUID) ([]MashMetric, error)
@@ -360,6 +364,10 @@ type Querier interface {
 	// here. Acceptable for v1 single-mash-per-distillation operations;
 	// proportional attribution is a future refinement.
 	SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error)
+	// Line D. Both directions are reported, not just the net: a period that
+	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
+	// showing only the net would say nothing happened.
+	SumInventoryAdjustmentsInPeriod(ctx context.Context, arg SumInventoryAdjustmentsInPeriodParams) (SumInventoryAdjustmentsInPeriodRow, error)
 	// Packaged LAA and bottles on hand as at a moment. Same reverse walk as
 	// SumBulkOnHandAsOf and for the same reason: packaged inventory only ever
 	// receives bottling runs and only ever loses removals, so undoing both back

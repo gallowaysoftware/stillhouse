@@ -84,6 +84,15 @@ type b266Totals struct {
 	packagedDutyUnder7CAD    float64
 	packagedDutyPaidLAA      float64
 	packagedDutyPaidBottles  int32
+
+	// Line D: reason-coded adjustments reconciling book inventory to
+	// physical. Both directions, because a period that found 3 LAA in one
+	// tank and lost 3 in another nets to zero, and a line showing only the
+	// net would say nothing happened.
+	adjustmentsNetLAA      float64
+	adjustmentsIncreaseLAA float64
+	adjustmentsDecreaseLAA float64
+	adjustmentsCount       int32
 }
 
 // laa returns the LAA summed against a bulk movement reason, or zero if
@@ -111,6 +120,11 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		// bookkeeping is new. Counting it as a receipt would overstate what
 		// the distillery made, on a return CRA reads.
 		BulkOpeningInventoryAdoptedLaa: round4(t.laa("opening_inventory")),
+
+		BulkAdjustmentsLaa:         round4(t.adjustmentsNetLAA),
+		BulkAdjustmentsIncreaseLaa: round4(t.adjustmentsIncreaseLAA),
+		BulkAdjustmentsDecreaseLaa: round4(t.adjustmentsDecreaseLAA),
+		BulkAdjustmentsCount:       t.adjustmentsCount,
 
 		PackagedPackagedLaa:            round4(t.bottlingPackagedLAA),
 		PackagedPackagingLossLaa:       round4(t.bottlingLossLAA),
@@ -169,8 +183,15 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 	// dumps, which are the same kind of internal move, are already in
 	// neither column; blend was the outlier. BulkBlendInLaa is still
 	// reported, for information.
-	bulkReceipts := report.BulkProductionLaa + report.BulkReceivedInBondLaa
-	bulkWithdrawals := report.BulkTransferredToPackagingLaa + report.BulkTransferredOutInBondLaa + report.BulkLossesLaa + report.BulkDestroyedLaa
+	//
+	// Adjustments are on both sides, by direction. An adjustment is not a
+	// residual and never was — it is a deliberate, attributable entry — so
+	// it belongs in the walk explicitly rather than being absorbed by the
+	// opening balance the way an unreported movement is.
+	bulkReceipts := report.BulkProductionLaa + report.BulkReceivedInBondLaa +
+		report.BulkAdjustmentsIncreaseLaa
+	bulkWithdrawals := report.BulkTransferredToPackagingLaa + report.BulkTransferredOutInBondLaa +
+		report.BulkLossesLaa + report.BulkDestroyedLaa + report.BulkAdjustmentsDecreaseLaa
 	report.BulkOpeningLaa = round4(report.BulkClosingLaa - bulkReceipts + bulkWithdrawals)
 
 	// Packaged inventory only ever received what became bottles. Walking

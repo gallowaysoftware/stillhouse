@@ -6,6 +6,8 @@ syntax = "proto3";
 package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/alcoholometry.proto";
+import "stillhouse/v1/instrument.proto";
 
 enum BulkContainerKind {
   BULK_CONTAINER_KIND_UNSPECIFIED = 0;
@@ -189,7 +191,100 @@ message AdoptOpeningInventoryResponse {
   double laa = 5;
 }
 
+// Why the book and the physical stock disagreed. Line D on B266 page 3 is
+// a reason-coded entry, not a free-text correction.
+enum InventoryAdjustmentReason {
+  INVENTORY_ADJUSTMENT_REASON_UNSPECIFIED = 0;
+  // Stock was counted or gauged and differs from the ledger.
+  INVENTORY_ADJUSTMENT_REASON_PHYSICAL_COUNT = 1;
+  // An earlier determination was wrong: instrument error, arithmetic, a
+  // reading taken at the wrong temperature.
+  INVENTORY_ADJUSTMENT_REASON_MEASUREMENT_CORRECTION = 2;
+  // A keying mistake in Stillhouse itself.
+  INVENTORY_ADJUSTMENT_REASON_DATA_ENTRY_ERROR = 3;
+  INVENTORY_ADJUSTMENT_REASON_OTHER = 4;
+}
+
+// An adjustment reconciling one container's book balance to what was
+// physically found. It is a determination like any other gauge — same
+// 20 °C correction, same instruments — and what makes it different is that
+// it says why, names who, and keeps the book figure beside the counted one.
+message InventoryAdjustment {
+  string id = 1;
+  string container_id = 2;
+  string container_name = 3;
+  string bulk_movement_id = 4;        // empty when the count confirmed the book
+
+  InventoryAdjustmentReason reason = 5;
+  string explanation = 6;
+
+  // What the ledger said, immediately before.
+  double book_volume_l = 10;
+  double book_abv_pct = 11;
+  bool   book_abv_pct_set = 12;
+  double book_laa = 13;
+  // What was found, corrected to 20 °C.
+  double counted_volume_l = 14;
+  double counted_abv_pct = 15;
+  bool   counted_abv_pct_set = 16;
+  double counted_laa = 17;
+  // Signed: negative when the count found less than the book.
+  double delta_laa = 18;
+  double delta_volume_l = 19;
+
+  // The determination trail.
+  double temperature_c = 20;
+  bool   temperature_c_set = 21;
+  double observed_volume_l = 22;
+  double observed_density_kg_m3 = 23;
+  bool   observed_density_kg_m3_set = 24;
+  double volume_factor_c = 25;
+  StrengthSource strength_source = 26;
+  DeterminationInstruments instruments = 27;
+
+  string adjusted_by = 30;
+  string adjusted_by_name = 31;
+  string notes = 32;
+  google.protobuf.Timestamp occurred_at = 33;
+  google.protobuf.Timestamp created_at = 34;
+}
+
+message RecordInventoryAdjustmentRequest {
+  string container_id = 1;
+  InventoryAdjustmentReason reason = 2;
+  string explanation = 3;             // required
+
+  // The count, in the same shape every gauging call takes.
+  double counted_volume_l = 4;
+  double abv_pct = 5;
+  double temperature_c = 6;
+  bool   temperature_c_set = 7;
+  double density_kg_m3 = 8;
+  bool   density_kg_m3_set = 9;
+
+  google.protobuf.Timestamp occurred_at = 10;
+  string notes = 11;
+  InstrumentRefs instruments = 12;
+}
+message RecordInventoryAdjustmentResponse {
+  InventoryAdjustment adjustment = 1;
+  BulkContainer container = 2;
+  repeated string warnings = 3;
+}
+
+message ListInventoryAdjustmentsRequest {
+  string container_id = 1;            // optional; empty = every container
+  string period_start = 2;            // optional ISO date, inclusive
+  string period_end = 3;              // optional ISO date, inclusive
+}
+message ListInventoryAdjustmentsResponse {
+  repeated InventoryAdjustment adjustments = 1;
+}
+
 service BulkService {
+  // Reconcile a container's book balance to what was physically found.
+  rpc RecordInventoryAdjustment(RecordInventoryAdjustmentRequest) returns (RecordInventoryAdjustmentResponse);
+  rpc ListInventoryAdjustments(ListInventoryAdjustmentsRequest) returns (ListInventoryAdjustmentsResponse);
   rpc CreateBulkContainer(CreateBulkContainerRequest) returns (CreateBulkContainerResponse);
   rpc UpdateBulkContainer(UpdateBulkContainerRequest) returns (UpdateBulkContainerResponse);
   rpc SetBulkContainerArchived(SetBulkContainerArchivedRequest) returns (SetBulkContainerArchivedResponse);

@@ -253,6 +253,24 @@ function ReportView({
           <Row k="Transferred out in bond" v={formatLAA(report.bulkTransferredOutInBondLaa)} dim />
           <Row k="Losses (evap + unaccounted)" v={formatLAA(report.bulkLossesLaa)} dim />
           <Row k="Destroyed"              v={formatLAA(report.bulkDestroyedLaa)} dim />
+          {/* Line D. Both directions when there were any, because a period
+              that found alcohol in one tank and lost it in another nets to
+              zero, and a line showing only the net would say nothing
+              happened. */}
+          {report.bulkAdjustmentsCount > 0 && (
+            <>
+              <Row
+                k={`Adjustments (${report.bulkAdjustmentsCount})`}
+                v={`${report.bulkAdjustmentsLaa > 0 ? "+" : ""}${formatLAA(report.bulkAdjustmentsLaa)}`}
+              />
+              {report.bulkAdjustmentsIncreaseLaa > 0 && (
+                <Row k="  increases" v={formatLAA(report.bulkAdjustmentsIncreaseLaa)} dim />
+              )}
+              {report.bulkAdjustmentsDecreaseLaa > 0 && (
+                <Row k="  decreases" v={formatLAA(report.bulkAdjustmentsDecreaseLaa)} dim />
+              )}
+            </>
+          )}
           <Row k="Closing on hand"        v={formatLAA(report.bulkClosingLaa)} bold />
         </Card>
         <Card title="Packaged spirits (LAA)">

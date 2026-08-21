@@ -53,6 +53,9 @@ var exportTables = []string{
 	"fermentation_logs",
 	"bulk_containers",
 	"bulk_movements",
+	// Line D: the reason-coded entries reconciling book to physical, with
+	// the explanation and the author an auditor reads.
+	"inventory_adjustments",
 	"distillation_runs",
 	"distillation_charges",
 	"distillation_cuts",

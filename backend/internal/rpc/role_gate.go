@@ -69,13 +69,19 @@ var procedureMinRole = map[string]minRole{
 	// capturing readings at the still. (Anything absent from this map fails
 	// closed at roleOwner anyway; listed explicitly so the intent is on the
 	// page rather than implied.)
-	"/stillhouse.v1.BulkService/AdoptOpeningInventory":    roleOwner,
-	"/stillhouse.v1.BulkService/UpdateBulkContainer":      roleOperator,
-	"/stillhouse.v1.BulkService/SetBulkContainerArchived": roleOperator,
-	"/stillhouse.v1.BulkService/ListBulkContainers":       roleViewer,
-	"/stillhouse.v1.BulkService/GetBulkContainer":         roleViewer,
-	"/stillhouse.v1.BulkService/ListRecentBulkMovements":  roleViewer,
-	"/stillhouse.v1.BulkService/CreateBlend":              roleOperator,
+	"/stillhouse.v1.BulkService/AdoptOpeningInventory": roleOwner,
+
+	// An inventory adjustment is a deliberate, attributable reconciliation
+	// entry that lands on line D of a filed return, so it is an operator
+	// action with a mandatory explanation rather than a viewer one.
+	"/stillhouse.v1.BulkService/RecordInventoryAdjustment": roleOperator,
+	"/stillhouse.v1.BulkService/ListInventoryAdjustments":  roleViewer,
+	"/stillhouse.v1.BulkService/UpdateBulkContainer":       roleOperator,
+	"/stillhouse.v1.BulkService/SetBulkContainerArchived":  roleOperator,
+	"/stillhouse.v1.BulkService/ListBulkContainers":        roleViewer,
+	"/stillhouse.v1.BulkService/GetBulkContainer":          roleViewer,
+	"/stillhouse.v1.BulkService/ListRecentBulkMovements":   roleViewer,
+	"/stillhouse.v1.BulkService/CreateBlend":               roleOperator,
 
 	// DistillationService
 	"/stillhouse.v1.DistillationService/CreateDistillationRun":    roleOperator,

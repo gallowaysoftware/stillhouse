@@ -205,6 +205,14 @@ type B266Report struct {
 	// it is reported separately so an adopted balance is never invisible on
 	// the return it affects.
 	BulkOpeningInventoryAdoptedLaa float64 `protobuf:"fixed64,19,opt,name=bulk_opening_inventory_adopted_laa,json=bulkOpeningInventoryAdoptedLaa,proto3" json:"bulk_opening_inventory_adopted_laa,omitempty"`
+	// Line D — reason-coded adjustments reconciling book inventory to
+	// physical. Signed net, with each direction also reported: a period that
+	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
+	// showing only the net would say nothing happened.
+	BulkAdjustmentsLaa         float64 `protobuf:"fixed64,20,opt,name=bulk_adjustments_laa,json=bulkAdjustmentsLaa,proto3" json:"bulk_adjustments_laa,omitempty"`
+	BulkAdjustmentsIncreaseLaa float64 `protobuf:"fixed64,21,opt,name=bulk_adjustments_increase_laa,json=bulkAdjustmentsIncreaseLaa,proto3" json:"bulk_adjustments_increase_laa,omitempty"`
+	BulkAdjustmentsDecreaseLaa float64 `protobuf:"fixed64,22,opt,name=bulk_adjustments_decrease_laa,json=bulkAdjustmentsDecreaseLaa,proto3" json:"bulk_adjustments_decrease_laa,omitempty"`
+	BulkAdjustmentsCount       int32   `protobuf:"varint,23,opt,name=bulk_adjustments_count,json=bulkAdjustmentsCount,proto3" json:"bulk_adjustments_count,omitempty"`
 	// Packaged spirits section.
 	PackagedOpeningLaa             float64 `protobuf:"fixed64,30,opt,name=packaged_opening_laa,json=packagedOpeningLaa,proto3" json:"packaged_opening_laa,omitempty"`
 	PackagedPackagedLaa            float64 `protobuf:"fixed64,31,opt,name=packaged_packaged_laa,json=packagedPackagedLaa,proto3" json:"packaged_packaged_laa,omitempty"` // produced by bottling runs
@@ -370,6 +378,34 @@ func (x *B266Report) GetBulkClosingLaa() float64 {
 func (x *B266Report) GetBulkOpeningInventoryAdoptedLaa() float64 {
 	if x != nil {
 		return x.BulkOpeningInventoryAdoptedLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkAdjustmentsLaa() float64 {
+	if x != nil {
+		return x.BulkAdjustmentsLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkAdjustmentsIncreaseLaa() float64 {
+	if x != nil {
+		return x.BulkAdjustmentsIncreaseLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkAdjustmentsDecreaseLaa() float64 {
+	if x != nil {
+		return x.BulkAdjustmentsDecreaseLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkAdjustmentsCount() int32 {
+	if x != nil {
+		return x.BulkAdjustmentsCount
 	}
 	return 0
 }
@@ -1066,7 +1102,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xa1\x12\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8f\x14\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1083,6 +1119,10 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x12bulk_destroyed_laa\x18\x11 \x01(\x01R\x10bulkDestroyedLaa\x12(\n" +
 	"\x10bulk_closing_laa\x18\x12 \x01(\x01R\x0ebulkClosingLaa\x12J\n" +
 	"\"bulk_opening_inventory_adopted_laa\x18\x13 \x01(\x01R\x1ebulkOpeningInventoryAdoptedLaa\x120\n" +
+	"\x14bulk_adjustments_laa\x18\x14 \x01(\x01R\x12bulkAdjustmentsLaa\x12A\n" +
+	"\x1dbulk_adjustments_increase_laa\x18\x15 \x01(\x01R\x1abulkAdjustmentsIncreaseLaa\x12A\n" +
+	"\x1dbulk_adjustments_decrease_laa\x18\x16 \x01(\x01R\x1abulkAdjustmentsDecreaseLaa\x124\n" +
+	"\x16bulk_adjustments_count\x18\x17 \x01(\x05R\x14bulkAdjustmentsCount\x120\n" +
 	"\x14packaged_opening_laa\x18\x1e \x01(\x01R\x12packagedOpeningLaa\x122\n" +
 	"\x15packaged_packaged_laa\x18\x1f \x01(\x01R\x13packagedPackagedLaa\x12:\n" +
 	"\x19packaged_packaged_bottles\x18  \x01(\x05R\x17packagedPackagedBottles\x12B\n" +

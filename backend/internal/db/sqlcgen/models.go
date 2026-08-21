@@ -208,6 +208,8 @@ const (
 	BulkMovementReasonRegaugeCorrection   BulkMovementReason = "regauge_correction"
 	BulkMovementReasonDestruction         BulkMovementReason = "destruction"
 	BulkMovementReasonOpeningInventory    BulkMovementReason = "opening_inventory"
+	BulkMovementReasonAdjustmentIncrease  BulkMovementReason = "adjustment_increase"
+	BulkMovementReasonAdjustmentDecrease  BulkMovementReason = "adjustment_decrease"
 )
 
 func (e *BulkMovementReason) Scan(src interface{}) error {
@@ -600,6 +602,50 @@ func (ns NullInstrumentStatus) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.InstrumentStatus), nil
+}
+
+type InventoryAdjustmentReason string
+
+const (
+	InventoryAdjustmentReasonPhysicalCount         InventoryAdjustmentReason = "physical_count"
+	InventoryAdjustmentReasonMeasurementCorrection InventoryAdjustmentReason = "measurement_correction"
+	InventoryAdjustmentReasonDataEntryError        InventoryAdjustmentReason = "data_entry_error"
+	InventoryAdjustmentReasonOther                 InventoryAdjustmentReason = "other"
+)
+
+func (e *InventoryAdjustmentReason) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InventoryAdjustmentReason(s)
+	case string:
+		*e = InventoryAdjustmentReason(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InventoryAdjustmentReason: %T", src)
+	}
+	return nil
+}
+
+type NullInventoryAdjustmentReason struct {
+	InventoryAdjustmentReason InventoryAdjustmentReason `json:"inventory_adjustment_reason"`
+	Valid                     bool                      `json:"valid"` // Valid is true if InventoryAdjustmentReason is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInventoryAdjustmentReason) Scan(value interface{}) error {
+	if value == nil {
+		ns.InventoryAdjustmentReason, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InventoryAdjustmentReason.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInventoryAdjustmentReason) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InventoryAdjustmentReason), nil
 }
 
 type MashMetricKind string
@@ -1187,6 +1233,35 @@ type InstrumentCalibration struct {
 	Notes          string             `json:"notes"`
 	RecordedBy     uuid.NullUUID      `json:"recorded_by"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
+type InventoryAdjustment struct {
+	ID                      uuid.UUID                 `json:"id"`
+	TenantID                uuid.UUID                 `json:"tenant_id"`
+	ContainerID             uuid.UUID                 `json:"container_id"`
+	BulkMovementID          uuid.NullUUID             `json:"bulk_movement_id"`
+	Reason                  InventoryAdjustmentReason `json:"reason"`
+	Explanation             string                    `json:"explanation"`
+	BookVolumeL             float64                   `json:"book_volume_l"`
+	BookAbvPct              pgtype.Float8             `json:"book_abv_pct"`
+	BookLaa                 float64                   `json:"book_laa"`
+	CountedVolumeL          float64                   `json:"counted_volume_l"`
+	CountedAbvPct           pgtype.Float8             `json:"counted_abv_pct"`
+	CountedLaa              float64                   `json:"counted_laa"`
+	DeltaLaa                float64                   `json:"delta_laa"`
+	DeltaVolumeL            float64                   `json:"delta_volume_l"`
+	TemperatureC            pgtype.Float8             `json:"temperature_c"`
+	ObservedVolumeL         pgtype.Float8             `json:"observed_volume_l"`
+	ObservedDensityKgM3     pgtype.Float8             `json:"observed_density_kg_m3"`
+	VolumeFactorC           float64                   `json:"volume_factor_c"`
+	StrengthSource          StrengthSource            `json:"strength_source"`
+	VolumeInstrumentID      uuid.NullUUID             `json:"volume_instrument_id"`
+	StrengthInstrumentID    uuid.NullUUID             `json:"strength_instrument_id"`
+	TemperatureInstrumentID uuid.NullUUID             `json:"temperature_instrument_id"`
+	AdjustedBy              uuid.UUID                 `json:"adjusted_by"`
+	Notes                   string                    `json:"notes"`
+	OccurredAt              pgtype.Timestamptz        `json:"occurred_at"`
+	CreatedAt               pgtype.Timestamptz        `json:"created_at"`
 }
 
 type InviteCode struct {

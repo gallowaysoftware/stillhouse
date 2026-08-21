@@ -37,6 +37,12 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// BulkServiceRecordInventoryAdjustmentProcedure is the fully-qualified name of the BulkService's
+	// RecordInventoryAdjustment RPC.
+	BulkServiceRecordInventoryAdjustmentProcedure = "/stillhouse.v1.BulkService/RecordInventoryAdjustment"
+	// BulkServiceListInventoryAdjustmentsProcedure is the fully-qualified name of the BulkService's
+	// ListInventoryAdjustments RPC.
+	BulkServiceListInventoryAdjustmentsProcedure = "/stillhouse.v1.BulkService/ListInventoryAdjustments"
 	// BulkServiceCreateBulkContainerProcedure is the fully-qualified name of the BulkService's
 	// CreateBulkContainer RPC.
 	BulkServiceCreateBulkContainerProcedure = "/stillhouse.v1.BulkService/CreateBulkContainer"
@@ -64,6 +70,9 @@ const (
 
 // BulkServiceClient is a client for the stillhouse.v1.BulkService service.
 type BulkServiceClient interface {
+	// Reconcile a container's book balance to what was physically found.
+	RecordInventoryAdjustment(context.Context, *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error)
+	ListInventoryAdjustments(context.Context, *connect.Request[v1.ListInventoryAdjustmentsRequest]) (*connect.Response[v1.ListInventoryAdjustmentsResponse], error)
 	CreateBulkContainer(context.Context, *connect.Request[v1.CreateBulkContainerRequest]) (*connect.Response[v1.CreateBulkContainerResponse], error)
 	UpdateBulkContainer(context.Context, *connect.Request[v1.UpdateBulkContainerRequest]) (*connect.Response[v1.UpdateBulkContainerResponse], error)
 	SetBulkContainerArchived(context.Context, *connect.Request[v1.SetBulkContainerArchivedRequest]) (*connect.Response[v1.SetBulkContainerArchivedResponse], error)
@@ -85,6 +94,18 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	bulkServiceMethods := v1.File_stillhouse_v1_bulk_proto.Services().ByName("BulkService").Methods()
 	return &bulkServiceClient{
+		recordInventoryAdjustment: connect.NewClient[v1.RecordInventoryAdjustmentRequest, v1.RecordInventoryAdjustmentResponse](
+			httpClient,
+			baseURL+BulkServiceRecordInventoryAdjustmentProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("RecordInventoryAdjustment")),
+			connect.WithClientOptions(opts...),
+		),
+		listInventoryAdjustments: connect.NewClient[v1.ListInventoryAdjustmentsRequest, v1.ListInventoryAdjustmentsResponse](
+			httpClient,
+			baseURL+BulkServiceListInventoryAdjustmentsProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("ListInventoryAdjustments")),
+			connect.WithClientOptions(opts...),
+		),
 		createBulkContainer: connect.NewClient[v1.CreateBulkContainerRequest, v1.CreateBulkContainerResponse](
 			httpClient,
 			baseURL+BulkServiceCreateBulkContainerProcedure,
@@ -138,14 +159,26 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // bulkServiceClient implements BulkServiceClient.
 type bulkServiceClient struct {
-	createBulkContainer      *connect.Client[v1.CreateBulkContainerRequest, v1.CreateBulkContainerResponse]
-	updateBulkContainer      *connect.Client[v1.UpdateBulkContainerRequest, v1.UpdateBulkContainerResponse]
-	setBulkContainerArchived *connect.Client[v1.SetBulkContainerArchivedRequest, v1.SetBulkContainerArchivedResponse]
-	listBulkContainers       *connect.Client[v1.ListBulkContainersRequest, v1.ListBulkContainersResponse]
-	getBulkContainer         *connect.Client[v1.GetBulkContainerRequest, v1.GetBulkContainerResponse]
-	listRecentBulkMovements  *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
-	createBlend              *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
-	adoptOpeningInventory    *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
+	recordInventoryAdjustment *connect.Client[v1.RecordInventoryAdjustmentRequest, v1.RecordInventoryAdjustmentResponse]
+	listInventoryAdjustments  *connect.Client[v1.ListInventoryAdjustmentsRequest, v1.ListInventoryAdjustmentsResponse]
+	createBulkContainer       *connect.Client[v1.CreateBulkContainerRequest, v1.CreateBulkContainerResponse]
+	updateBulkContainer       *connect.Client[v1.UpdateBulkContainerRequest, v1.UpdateBulkContainerResponse]
+	setBulkContainerArchived  *connect.Client[v1.SetBulkContainerArchivedRequest, v1.SetBulkContainerArchivedResponse]
+	listBulkContainers        *connect.Client[v1.ListBulkContainersRequest, v1.ListBulkContainersResponse]
+	getBulkContainer          *connect.Client[v1.GetBulkContainerRequest, v1.GetBulkContainerResponse]
+	listRecentBulkMovements   *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
+	createBlend               *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
+	adoptOpeningInventory     *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
+}
+
+// RecordInventoryAdjustment calls stillhouse.v1.BulkService.RecordInventoryAdjustment.
+func (c *bulkServiceClient) RecordInventoryAdjustment(ctx context.Context, req *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error) {
+	return c.recordInventoryAdjustment.CallUnary(ctx, req)
+}
+
+// ListInventoryAdjustments calls stillhouse.v1.BulkService.ListInventoryAdjustments.
+func (c *bulkServiceClient) ListInventoryAdjustments(ctx context.Context, req *connect.Request[v1.ListInventoryAdjustmentsRequest]) (*connect.Response[v1.ListInventoryAdjustmentsResponse], error) {
+	return c.listInventoryAdjustments.CallUnary(ctx, req)
 }
 
 // CreateBulkContainer calls stillhouse.v1.BulkService.CreateBulkContainer.
@@ -190,6 +223,9 @@ func (c *bulkServiceClient) AdoptOpeningInventory(ctx context.Context, req *conn
 
 // BulkServiceHandler is an implementation of the stillhouse.v1.BulkService service.
 type BulkServiceHandler interface {
+	// Reconcile a container's book balance to what was physically found.
+	RecordInventoryAdjustment(context.Context, *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error)
+	ListInventoryAdjustments(context.Context, *connect.Request[v1.ListInventoryAdjustmentsRequest]) (*connect.Response[v1.ListInventoryAdjustmentsResponse], error)
 	CreateBulkContainer(context.Context, *connect.Request[v1.CreateBulkContainerRequest]) (*connect.Response[v1.CreateBulkContainerResponse], error)
 	UpdateBulkContainer(context.Context, *connect.Request[v1.UpdateBulkContainerRequest]) (*connect.Response[v1.UpdateBulkContainerResponse], error)
 	SetBulkContainerArchived(context.Context, *connect.Request[v1.SetBulkContainerArchivedRequest]) (*connect.Response[v1.SetBulkContainerArchivedResponse], error)
@@ -207,6 +243,18 @@ type BulkServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	bulkServiceMethods := v1.File_stillhouse_v1_bulk_proto.Services().ByName("BulkService").Methods()
+	bulkServiceRecordInventoryAdjustmentHandler := connect.NewUnaryHandler(
+		BulkServiceRecordInventoryAdjustmentProcedure,
+		svc.RecordInventoryAdjustment,
+		connect.WithSchema(bulkServiceMethods.ByName("RecordInventoryAdjustment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	bulkServiceListInventoryAdjustmentsHandler := connect.NewUnaryHandler(
+		BulkServiceListInventoryAdjustmentsProcedure,
+		svc.ListInventoryAdjustments,
+		connect.WithSchema(bulkServiceMethods.ByName("ListInventoryAdjustments")),
+		connect.WithHandlerOptions(opts...),
+	)
 	bulkServiceCreateBulkContainerHandler := connect.NewUnaryHandler(
 		BulkServiceCreateBulkContainerProcedure,
 		svc.CreateBulkContainer,
@@ -257,6 +305,10 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/stillhouse.v1.BulkService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case BulkServiceRecordInventoryAdjustmentProcedure:
+			bulkServiceRecordInventoryAdjustmentHandler.ServeHTTP(w, r)
+		case BulkServiceListInventoryAdjustmentsProcedure:
+			bulkServiceListInventoryAdjustmentsHandler.ServeHTTP(w, r)
 		case BulkServiceCreateBulkContainerProcedure:
 			bulkServiceCreateBulkContainerHandler.ServeHTTP(w, r)
 		case BulkServiceUpdateBulkContainerProcedure:
@@ -281,6 +333,14 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedBulkServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedBulkServiceHandler struct{}
+
+func (UnimplementedBulkServiceHandler) RecordInventoryAdjustment(context.Context, *connect.Request[v1.RecordInventoryAdjustmentRequest]) (*connect.Response[v1.RecordInventoryAdjustmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.RecordInventoryAdjustment is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) ListInventoryAdjustments(context.Context, *connect.Request[v1.ListInventoryAdjustmentsRequest]) (*connect.Response[v1.ListInventoryAdjustmentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.ListInventoryAdjustments is not implemented"))
+}
 
 func (UnimplementedBulkServiceHandler) CreateBulkContainer(context.Context, *connect.Request[v1.CreateBulkContainerRequest]) (*connect.Response[v1.CreateBulkContainerResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.CreateBulkContainer is not implemented"))

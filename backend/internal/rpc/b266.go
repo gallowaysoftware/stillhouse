@@ -437,6 +437,22 @@ func gatherB266Totals(
 	t.packagedDutyPaidLAA = packagingDuty.DutyPaidLaa
 	t.packagedDutyPaidBottles = packagingDuty.DutyPaidBottles
 
+	// Line D. Read from the adjustment rows rather than from the movement
+	// reasons, because the adjustment row is the one that carries the
+	// signed delta, the reason code and the author — the movement is only
+	// its effect on the ledger.
+	adj, err := q.SumInventoryAdjustmentsInPeriod(ctx, sqlcgen.SumInventoryAdjustmentsInPeriodParams{
+		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
+		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+	})
+	if err != nil {
+		return t, err
+	}
+	t.adjustmentsNetLAA = adj.NetLaa
+	t.adjustmentsIncreaseLAA = adj.IncreaseLaa
+	t.adjustmentsDecreaseLAA = adj.DecreaseLaa
+	t.adjustmentsCount = adj.AdjustmentCount
+
 	// The basis the period was computed on, carried onto the return: the
 	// figures cannot be checked without knowing which event crystallised
 	// them.

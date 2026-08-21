@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { AdoptStockCard } from "@/components/AdoptStockCard";
+import { InventoryAdjustmentCard } from "@/components/InventoryAdjustmentCard";
 import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
 import { bulkClient } from "@/lib/clients";
@@ -49,6 +50,20 @@ export function BulkContainerDetailPage() {
           <AdoptStockCard containerId={c.id} containerName={c.name} isBarrel={false} />
         </section>
       )}
+
+      {/* Reconciling the book to a physical count. Available whether the
+          vessel holds anything or not: a container the ledger says is
+          empty and that turns out not to be is exactly the variance line D
+          exists for. */}
+      <section className="mb-8 max-w-xl">
+        <InventoryAdjustmentCard
+          containerId={c.id}
+          containerName={c.name}
+          bookVolumeL={c.currentVolumeL}
+          bookAbvPct={c.currentAbvPctSet ? c.currentAbvPct : null}
+          bookLaa={c.currentLaa}
+        />
+      </section>
 
       {/* Prefilled from the tank in front of you — reducing this vessel is
           the reason you're on this page. */}
