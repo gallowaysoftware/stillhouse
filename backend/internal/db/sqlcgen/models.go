@@ -524,6 +524,90 @@ func (ns NullFermentationStatus) Value() (driver.Value, error) {
 	return string(ns.FermentationStatus), nil
 }
 
+type FilingFrequency string
+
+const (
+	FilingFrequencyMonthly    FilingFrequency = "monthly"
+	FilingFrequencySemiAnnual FilingFrequency = "semi_annual"
+)
+
+func (e *FilingFrequency) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FilingFrequency(s)
+	case string:
+		*e = FilingFrequency(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FilingFrequency: %T", src)
+	}
+	return nil
+}
+
+type NullFilingFrequency struct {
+	FilingFrequency FilingFrequency `json:"filing_frequency"`
+	Valid           bool            `json:"valid"` // Valid is true if FilingFrequency is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFilingFrequency) Scan(value interface{}) error {
+	if value == nil {
+		ns.FilingFrequency, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FilingFrequency.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFilingFrequency) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FilingFrequency), nil
+}
+
+type FiscalMonthBasis string
+
+const (
+	FiscalMonthBasisCalendarMonth   FiscalMonthBasis = "calendar_month"
+	FiscalMonthBasisFixedDayOfMonth FiscalMonthBasis = "fixed_day_of_month"
+)
+
+func (e *FiscalMonthBasis) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = FiscalMonthBasis(s)
+	case string:
+		*e = FiscalMonthBasis(s)
+	default:
+		return fmt.Errorf("unsupported scan type for FiscalMonthBasis: %T", src)
+	}
+	return nil
+}
+
+type NullFiscalMonthBasis struct {
+	FiscalMonthBasis FiscalMonthBasis `json:"fiscal_month_basis"`
+	Valid            bool             `json:"valid"` // Valid is true if FiscalMonthBasis is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullFiscalMonthBasis) Scan(value interface{}) error {
+	if value == nil {
+		ns.FiscalMonthBasis, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.FiscalMonthBasis.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullFiscalMonthBasis) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.FiscalMonthBasis), nil
+}
+
 type InstrumentKind string
 
 const (
@@ -1055,6 +1139,8 @@ type B266Period struct {
 	Notes       string             `json:"notes"`
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	// Last day of the fiscal month following the reporting period (EDM3-1-1 para 50). Frozen at generation so a later change of election does not restate when a past return was due.
+	DueOn pgtype.Date `json:"due_on"`
 }
 
 type BarrelAttribute struct {
@@ -1589,7 +1675,12 @@ type Tenant struct {
 	// Derived from excise_warehouse_licence_number: a licensee without a warehouse licence pays at packaging (EDM3-1-1 para 29), one with a warehouse licence pays at removal.
 	DutyPoint DutyPoint `json:"duty_point"`
 	// First day duty_point governs. Duty events before this date used the at-removal basis, which is what has already been filed.
-	DutyPointEffectiveFrom pgtype.Date `json:"duty_point_effective_from"`
+	DutyPointEffectiveFrom          pgtype.Date      `json:"duty_point_effective_from"`
+	FilingFrequency                 FilingFrequency  `json:"filing_frequency"`
+	FiscalMonthBasis                FiscalMonthBasis `json:"fiscal_month_basis"`
+	FiscalMonthEndDay               pgtype.Int4      `json:"fiscal_month_end_day"`
+	FiscalMonthNotificationRef      string           `json:"fiscal_month_notification_ref"`
+	FilingFrequencyAuthorizationRef string           `json:"filing_frequency_authorization_ref"`
 }
 
 type User struct {

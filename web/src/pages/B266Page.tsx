@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
@@ -40,9 +40,28 @@ export function B266Page() {
     queryFn: () => b266Client.listB266Periods({}),
   });
 
+  // Which period the licensee should be filing, on their own fiscal
+  // calendar. The page used to default to THIS month, which is the period
+  // still running — the one whose figures are not final and which nobody
+  // files. It also assumed calendar months, which a licensee who notified
+  // CRA otherwise does not have.
+  const suggested = useQuery({
+    queryKey: ["suggestB266Period"],
+    queryFn: () => b266Client.suggestB266Period({}),
+  });
+
   const [periodStart, setPeriodStart] = useState(firstOfThisMonth());
   const [periodEnd, setPeriodEnd] = useState(lastOfThisMonth());
+  const [touched, setTouched] = useState(false);
   const [openPeriodId, setOpenPeriodId] = useState<string>("");
+
+  // Only until the operator types something: a suggestion that keeps
+  // overwriting a typed date is worse than none.
+  useEffect(() => {
+    if (touched || !suggested.data) return;
+    setPeriodStart(suggested.data.periodStart);
+    setPeriodEnd(suggested.data.periodEnd);
+  }, [suggested.data, touched]);
 
   const openPeriod = useQuery({
     queryKey: ["getB266Period", openPeriodId],
@@ -93,11 +112,11 @@ export function B266Page() {
       >
         <div>
           <label className="mb-2 block text-sm font-medium text-fg-muted">Period start</label>
-          <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} required className="rounded border border-border-strong px-3 py-2 text-sm" />
+          <input type="date" value={periodStart} onChange={(e) => { setTouched(true); setPeriodStart(e.target.value); }} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-fg-muted">Period end</label>
-          <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} required className="rounded border border-border-strong px-3 py-2 text-sm" />
+          <input type="date" value={periodEnd} onChange={(e) => { setTouched(true); setPeriodEnd(e.target.value); }} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
         <WriteOnly>
           <button
@@ -114,6 +133,30 @@ export function B266Page() {
           </span>
         )}
       </form>
+
+      {suggested.data && (
+        <p data-print-hide className="-mt-2 mb-6 text-xs text-fg-muted">
+          Your {suggested.data.periodStart} → {suggested.data.periodEnd} return is due{" "}
+          {suggested.data.dueOn}
+          {suggested.data.daysUntilDue < 0
+            ? ` (${Math.abs(suggested.data.daysUntilDue)} days overdue)`
+            : ` (${suggested.data.daysUntilDue} days)`}
+          .{" "}
+          {/* Somewhere to go for an operator catching up, without doing the
+              fiscal-month arithmetic by hand. */}
+          <button
+            type="button"
+            onClick={() => {
+              setTouched(true);
+              setPeriodStart(suggested.data!.previousPeriodStart);
+              setPeriodEnd(suggested.data!.previousPeriodEnd);
+            }}
+            className="underline"
+          >
+            Previous period ({suggested.data.previousPeriodStart} → {suggested.data.previousPeriodEnd})
+          </button>
+        </p>
+      )}
 
       {/* What has to be resolved before this period can be filed, with the
           means to resolve it right here rather than three pages away. */}
@@ -221,6 +264,17 @@ function ReportView({
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs">CRA Form B266 — Excise Duty Return, Spirits Licensee</p>
+            {/* When it falls due, on the licensee's own fiscal calendar.
+                Nothing in the model could say this before — which is why
+                a filing reminder had nothing to fire on. */}
+            {report.dueOn && (
+              <p className={`text-xs ${report.daysUntilDue < 0 ? "text-warning" : "text-fg-muted"}`}>
+                Due {report.dueOn}
+                {report.daysUntilDue < 0
+                  ? ` — ${Math.abs(report.daysUntilDue)} day${Math.abs(report.daysUntilDue) === 1 ? "" : "s"} overdue`
+                  : ` — ${report.daysUntilDue} day${report.daysUntilDue === 1 ? "" : "s"} to file`}
+              </p>
+            )}
             <h2 className="mt-1 text-xl font-semibold">{tenantName || "Distillery"}</h2>
             {craLicence && <p className="mt-0.5 text-xs">Licence {craLicence}</p>}
             <p className="mt-1 text-sm">Period {periodStart} → {periodEnd}</p>

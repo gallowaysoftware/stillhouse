@@ -68,3 +68,15 @@ SELECT COALESCE(SUM(laa) FILTER (WHERE loss_duty_treatment = 'relieved'), 0)::do
 FROM bulk_movements
 WHERE reason = 'destruction'
   AND occurred_at >= $1 AND occurred_at < $2;
+
+-- name: ListDutiableLossesInPeriod :many
+-- Each dutiable loss with the day it happened, so it can be charged at the
+-- rate in force then rather than at the period's. A semi-annual period
+-- always spans an indexation, so a period rate would charge half of them
+-- at the wrong one.
+SELECT occurred_at, laa
+FROM bulk_movements
+WHERE reason IN ('loss_evaporation', 'loss_unaccounted', 'destruction')
+  AND reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+  AND loss_duty_treatment = 'dutiable'
+  AND occurred_at >= $1 AND occurred_at < $2;

@@ -10,10 +10,14 @@ SELECT * FROM b266_periods
 ORDER BY period_start DESC;
 
 -- name: UpsertB266PeriodDraft :one
-INSERT INTO b266_periods (tenant_id, period_start, period_end, status)
-VALUES ($1, $2, $3, 'draft')
+-- due_on is set on first generation and left alone afterwards: a change of
+-- fiscal-month election must not silently restate when a past return was
+-- due. COALESCE keeps whatever the row already had.
+INSERT INTO b266_periods (tenant_id, period_start, period_end, status, due_on)
+VALUES ($1, $2, $3, 'draft', $4)
 ON CONFLICT (tenant_id, period_start, period_end) DO UPDATE
-SET updated_at = NOW()
+SET updated_at = NOW(),
+    due_on     = COALESCE(b266_periods.due_on, EXCLUDED.due_on)
 RETURNING *;
 
 -- name: SubmitB266Period :one

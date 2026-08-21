@@ -77,6 +77,49 @@ func (q *Queries) ClassifyLoss(ctx context.Context, arg ClassifyLossParams) (Bul
 	return i, err
 }
 
+const listDutiableLossesInPeriod = `-- name: ListDutiableLossesInPeriod :many
+SELECT occurred_at, laa
+FROM bulk_movements
+WHERE reason IN ('loss_evaporation', 'loss_unaccounted', 'destruction')
+  AND reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+  AND loss_duty_treatment = 'dutiable'
+  AND occurred_at >= $1 AND occurred_at < $2
+`
+
+type ListDutiableLossesInPeriodParams struct {
+	OccurredAt   pgtype.Timestamptz `json:"occurred_at"`
+	OccurredAt_2 pgtype.Timestamptz `json:"occurred_at_2"`
+}
+
+type ListDutiableLossesInPeriodRow struct {
+	OccurredAt pgtype.Timestamptz `json:"occurred_at"`
+	Laa        float64            `json:"laa"`
+}
+
+// Each dutiable loss with the day it happened, so it can be charged at the
+// rate in force then rather than at the period's. A semi-annual period
+// always spans an indexation, so a period rate would charge half of them
+// at the wrong one.
+func (q *Queries) ListDutiableLossesInPeriod(ctx context.Context, arg ListDutiableLossesInPeriodParams) ([]ListDutiableLossesInPeriodRow, error) {
+	rows, err := q.db.Query(ctx, listDutiableLossesInPeriod, arg.OccurredAt, arg.OccurredAt_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListDutiableLossesInPeriodRow{}
+	for rows.Next() {
+		var i ListDutiableLossesInPeriodRow
+		if err := rows.Scan(&i.OccurredAt, &i.Laa); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listLosses = `-- name: ListLosses :many
 
 SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id, bm.volume_l, bm.abv_pct, bm.laa, bm.reason, bm.reference_type, bm.reference_id, bm.notes, bm.occurred_at, bm.created_at, bm.counterparty_name, bm.counterparty_licence_no, bm.document_reference, bm.temperature_c, bm.observed_volume_l, bm.observed_density_kg_m3, bm.volume_factor_c, bm.strength_source, bm.volume_instrument_id, bm.strength_instrument_id, bm.temperature_instrument_id, bm.recorded_by, bm.packaged_inventory_id, bm.bottles_unpackaged, bm.loss_duty_treatment, bm.loss_treatment_authority, bm.loss_classified_by, bm.loss_classified_at,

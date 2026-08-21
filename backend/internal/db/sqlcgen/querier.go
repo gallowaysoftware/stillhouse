@@ -212,6 +212,11 @@ type Querier interface {
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
 	ListDistillationCuts(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationCut, error)
 	ListDistillationRuns(ctx context.Context, status NullDistillationStatus) ([]DistillationRun, error)
+	// Each dutiable loss with the day it happened, so it can be charged at the
+	// rate in force then rather than at the period's. A semi-annual period
+	// always spans an indexation, so a period rate would charge half of them
+	// at the wrong one.
+	ListDutiableLossesInPeriod(ctx context.Context, arg ListDutiableLossesInPeriodParams) ([]ListDutiableLossesInPeriodRow, error)
 	ListFermentationLogs(ctx context.Context, fermentationRunID uuid.UUID) ([]FermentationLog, error)
 	ListFermentationRuns(ctx context.Context, status NullFermentationStatus) ([]ListFermentationRunsRow, error)
 	ListFermentationRunsByMash(ctx context.Context, mashRunID uuid.UUID) ([]FermentationRun, error)
@@ -424,6 +429,11 @@ type Querier interface {
 	UpdateDistillationCut(ctx context.Context, arg UpdateDistillationCutParams) (DistillationCut, error)
 	UpdateDistillationStatus(ctx context.Context, arg UpdateDistillationStatusParams) (DistillationRun, error)
 	UpdateFermentationStatus(ctx context.Context, arg UpdateFermentationStatusParams) (FermentationRun, error)
+	// The reporting calendar: how often the licensee files, and how their
+	// fiscal months are defined. Separate from UpdateTenant because these two
+	// are CRA elections with paperwork behind them, not distillery details an
+	// owner edits in passing.
+	UpdateFilingCalendar(ctx context.Context, arg UpdateFilingCalendarParams) (Tenant, error)
 	// Deliberately cannot change kind or serial_no. Both are the instrument's
 	// identity — the serial is what CRA approved — and editing either would
 	// silently re-point every determination already made with it at a
@@ -434,6 +444,9 @@ type Querier interface {
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
+	// due_on is set on first generation and left alone afterwards: a change of
+	// fiscal-month election must not silently restate when a past return was
+	// due. COALESCE keeps whatever the row already had.
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 	// One row per recipe_version. Partial-update: an axis that's NULL in

@@ -7,7 +7,11 @@ import { create } from "@bufbuild/protobuf";
 import { AlcoholometricTablesPanel } from "@/components/AlcoholometricTablesPanel";
 import { Shell } from "@/components/Shell";
 import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
-import { UpdateTenantRequestSchema } from "@/gen/stillhouse/v1/tenant_pb";
+import {
+  FilingFrequency,
+  FiscalMonthBasis,
+  UpdateTenantRequestSchema,
+} from "@/gen/stillhouse/v1/tenant_pb";
 import { ChangeMyPasswordRequestSchema, CreateUserRequestSchema, UserRole } from "@/gen/stillhouse/v1/user_pb";
 
 const roleLabels: Record<UserRole, string> = {
@@ -37,6 +41,11 @@ export function SettingsPage() {
   const [warehouse, setWarehouse] = useState("");
   const [jurisdiction, setJurisdiction] = useState("");
   const [saved, setSaved] = useState(false);
+  const [frequency, setFrequency] = useState<FilingFrequency>(FilingFrequency.MONTHLY);
+  const [monthBasis, setMonthBasis] = useState<FiscalMonthBasis>(FiscalMonthBasis.CALENDAR_MONTH);
+  const [monthEndDay, setMonthEndDay] = useState("");
+  const [b268, setB268] = useState("");
+  const [b284, setB284] = useState("");
 
   useEffect(() => {
     if (tenant.data?.tenant) {
@@ -44,8 +53,25 @@ export function SettingsPage() {
       setLicence(tenant.data.tenant.craSpiritsLicenceNumber);
       setWarehouse(tenant.data.tenant.exciseWarehouseLicenceNumber);
       setJurisdiction(tenant.data.tenant.defaultJurisdiction);
+      setFrequency(tenant.data.tenant.filingFrequency || FilingFrequency.MONTHLY);
+      setMonthBasis(tenant.data.tenant.fiscalMonthBasis || FiscalMonthBasis.CALENDAR_MONTH);
+      setMonthEndDay(
+        tenant.data.tenant.fiscalMonthEndDay ? String(tenant.data.tenant.fiscalMonthEndDay) : "",
+      );
+      setB268(tenant.data.tenant.fiscalMonthNotificationRef);
+      setB284(tenant.data.tenant.filingFrequencyAuthorizationRef);
     }
   }, [tenant.data]);
+
+  const updateCalendar = useMutation({
+    mutationFn: (msg: Parameters<typeof tenantClient.updateFilingCalendar>[0]) =>
+      tenantClient.updateFilingCalendar(msg),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["getTenant"] });
+      // The suggested period and every due date move with the election.
+      qc.invalidateQueries({ queryKey: ["suggestB266Period"] });
+    },
+  });
 
   const update = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof UpdateTenantRequestSchema>>) =>
@@ -108,6 +134,100 @@ export function SettingsPage() {
           <label className="mb-2 block text-sm font-medium text-fg-muted">Default jurisdiction (ISO 3166-2)</label>
           <input value={jurisdiction} onChange={(e) => setJurisdiction(e.target.value)} required placeholder="CA-ON" className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
+        {/* The reporting calendar. Kept beside the licence fields because
+            both are CRA elections with paperwork behind them, not
+            distillery details an owner edits in passing. */}
+        <div className="col-span-2 border-t border-border pt-4">
+          <h2 className="mb-1 text-sm font-semibold text-fg">Reporting calendar</h2>
+          <p className="mb-3 text-xs text-fg-muted">
+            A fiscal month is set by notification (form B268) rather than assumed, and
+            an authorized licensee may file semi-annually (form B284) — EDM3-1-1 ¶50.
+            These decide when each return falls due.
+          </p>
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Filing frequency</label>
+          <select
+            value={frequency}
+            onChange={(e) => setFrequency(Number(e.target.value) as FilingFrequency)}
+            className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+          >
+            <option value={FilingFrequency.MONTHLY}>Monthly</option>
+            <option value={FilingFrequency.SEMI_ANNUAL}>Semi-annual (B284 authorized)</option>
+          </select>
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">Fiscal months</label>
+          <select
+            value={monthBasis}
+            onChange={(e) => setMonthBasis(Number(e.target.value) as FiscalMonthBasis)}
+            className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+          >
+            <option value={FiscalMonthBasis.CALENDAR_MONTH}>Calendar months</option>
+            <option value={FiscalMonthBasis.FIXED_DAY_OF_MONTH}>Ending on a fixed day</option>
+          </select>
+        </div>
+        {monthBasis === FiscalMonthBasis.FIXED_DAY_OF_MONTH && (
+          <div>
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Fiscal month ends on day</label>
+            <input
+              type="number"
+              min={1}
+              max={28}
+              value={monthEndDay}
+              onChange={(e) => setMonthEndDay(e.target.value)}
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+            />
+            {/* 28 rather than 31: a fiscal month ending on the 30th has no
+                February, and the elections CRA accepts do not create one. */}
+            <p className="mt-1 text-xs text-fg-subtle">
+              1–28. A fiscal month ending on the 30th would have no February.
+            </p>
+          </div>
+        )}
+        <div>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">B268 notification ref</label>
+          <input
+            value={b268}
+            onChange={(e) => setB268(e.target.value)}
+            className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm font-medium text-fg-muted">B284 authorization ref</label>
+          <input
+            value={b284}
+            onChange={(e) => setB284(e.target.value)}
+            className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+          />
+        </div>
+        {isOwner && (
+          <div className="col-span-2">
+            <button
+              type="button"
+              onClick={() =>
+                updateCalendar.mutate({
+                  filingFrequency: frequency,
+                  fiscalMonthBasis: monthBasis,
+                  fiscalMonthEndDay:
+                    monthBasis === FiscalMonthBasis.FIXED_DAY_OF_MONTH ? Number(monthEndDay) || 0 : 0,
+                  fiscalMonthNotificationRef: b268,
+                  filingFrequencyAuthorizationRef: b284,
+                })
+              }
+              disabled={updateCalendar.isPending}
+              className="rounded border border-border-strong px-3 py-2 text-sm hover:bg-surface-3 disabled:opacity-50"
+            >
+              {updateCalendar.isPending ? "Saving…" : "Save reporting calendar"}
+            </button>
+            {updateCalendar.error && (
+              <p className="mt-2 text-xs text-danger-fg">
+                {ConnectError.from(updateCalendar.error).message}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="col-span-2 flex items-center gap-3">
           {isOwner ? (
             <button

@@ -37,6 +37,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// B266ServiceSuggestB266PeriodProcedure is the fully-qualified name of the B266Service's
+	// SuggestB266Period RPC.
+	B266ServiceSuggestB266PeriodProcedure = "/stillhouse.v1.B266Service/SuggestB266Period"
 	// B266ServiceGenerateB266Procedure is the fully-qualified name of the B266Service's GenerateB266
 	// RPC.
 	B266ServiceGenerateB266Procedure = "/stillhouse.v1.B266Service/GenerateB266"
@@ -55,6 +58,8 @@ const (
 
 // B266ServiceClient is a client for the stillhouse.v1.B266Service service.
 type B266ServiceClient interface {
+	// The period the licensee should be filing, on their own fiscal calendar.
+	SuggestB266Period(context.Context, *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error)
 	GenerateB266(context.Context, *connect.Request[v1.GenerateB266Request]) (*connect.Response[v1.GenerateB266Response], error)
 	SubmitB266(context.Context, *connect.Request[v1.SubmitB266Request]) (*connect.Response[v1.SubmitB266Response], error)
 	ListB266Periods(context.Context, *connect.Request[v1.ListB266PeriodsRequest]) (*connect.Response[v1.ListB266PeriodsResponse], error)
@@ -73,6 +78,12 @@ func NewB266ServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	b266ServiceMethods := v1.File_stillhouse_v1_b266_proto.Services().ByName("B266Service").Methods()
 	return &b266ServiceClient{
+		suggestB266Period: connect.NewClient[v1.SuggestB266PeriodRequest, v1.SuggestB266PeriodResponse](
+			httpClient,
+			baseURL+B266ServiceSuggestB266PeriodProcedure,
+			connect.WithSchema(b266ServiceMethods.ByName("SuggestB266Period")),
+			connect.WithClientOptions(opts...),
+		),
 		generateB266: connect.NewClient[v1.GenerateB266Request, v1.GenerateB266Response](
 			httpClient,
 			baseURL+B266ServiceGenerateB266Procedure,
@@ -108,11 +119,17 @@ func NewB266ServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // b266ServiceClient implements B266ServiceClient.
 type b266ServiceClient struct {
-	generateB266     *connect.Client[v1.GenerateB266Request, v1.GenerateB266Response]
-	submitB266       *connect.Client[v1.SubmitB266Request, v1.SubmitB266Response]
-	listB266Periods  *connect.Client[v1.ListB266PeriodsRequest, v1.ListB266PeriodsResponse]
-	getB266Period    *connect.Client[v1.GetB266PeriodRequest, v1.GetB266PeriodResponse]
-	reopenB266Period *connect.Client[v1.ReopenB266PeriodRequest, v1.ReopenB266PeriodResponse]
+	suggestB266Period *connect.Client[v1.SuggestB266PeriodRequest, v1.SuggestB266PeriodResponse]
+	generateB266      *connect.Client[v1.GenerateB266Request, v1.GenerateB266Response]
+	submitB266        *connect.Client[v1.SubmitB266Request, v1.SubmitB266Response]
+	listB266Periods   *connect.Client[v1.ListB266PeriodsRequest, v1.ListB266PeriodsResponse]
+	getB266Period     *connect.Client[v1.GetB266PeriodRequest, v1.GetB266PeriodResponse]
+	reopenB266Period  *connect.Client[v1.ReopenB266PeriodRequest, v1.ReopenB266PeriodResponse]
+}
+
+// SuggestB266Period calls stillhouse.v1.B266Service.SuggestB266Period.
+func (c *b266ServiceClient) SuggestB266Period(ctx context.Context, req *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error) {
+	return c.suggestB266Period.CallUnary(ctx, req)
 }
 
 // GenerateB266 calls stillhouse.v1.B266Service.GenerateB266.
@@ -142,6 +159,8 @@ func (c *b266ServiceClient) ReopenB266Period(ctx context.Context, req *connect.R
 
 // B266ServiceHandler is an implementation of the stillhouse.v1.B266Service service.
 type B266ServiceHandler interface {
+	// The period the licensee should be filing, on their own fiscal calendar.
+	SuggestB266Period(context.Context, *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error)
 	GenerateB266(context.Context, *connect.Request[v1.GenerateB266Request]) (*connect.Response[v1.GenerateB266Response], error)
 	SubmitB266(context.Context, *connect.Request[v1.SubmitB266Request]) (*connect.Response[v1.SubmitB266Response], error)
 	ListB266Periods(context.Context, *connect.Request[v1.ListB266PeriodsRequest]) (*connect.Response[v1.ListB266PeriodsResponse], error)
@@ -156,6 +175,12 @@ type B266ServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	b266ServiceMethods := v1.File_stillhouse_v1_b266_proto.Services().ByName("B266Service").Methods()
+	b266ServiceSuggestB266PeriodHandler := connect.NewUnaryHandler(
+		B266ServiceSuggestB266PeriodProcedure,
+		svc.SuggestB266Period,
+		connect.WithSchema(b266ServiceMethods.ByName("SuggestB266Period")),
+		connect.WithHandlerOptions(opts...),
+	)
 	b266ServiceGenerateB266Handler := connect.NewUnaryHandler(
 		B266ServiceGenerateB266Procedure,
 		svc.GenerateB266,
@@ -188,6 +213,8 @@ func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/stillhouse.v1.B266Service/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case B266ServiceSuggestB266PeriodProcedure:
+			b266ServiceSuggestB266PeriodHandler.ServeHTTP(w, r)
 		case B266ServiceGenerateB266Procedure:
 			b266ServiceGenerateB266Handler.ServeHTTP(w, r)
 		case B266ServiceSubmitB266Procedure:
@@ -206,6 +233,10 @@ func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedB266ServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedB266ServiceHandler struct{}
+
+func (UnimplementedB266ServiceHandler) SuggestB266Period(context.Context, *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.B266Service.SuggestB266Period is not implemented"))
+}
 
 func (UnimplementedB266ServiceHandler) GenerateB266(context.Context, *connect.Request[v1.GenerateB266Request]) (*connect.Response[v1.GenerateB266Response], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.B266Service.GenerateB266 is not implemented"))

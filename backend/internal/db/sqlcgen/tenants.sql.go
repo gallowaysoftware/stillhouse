@@ -28,7 +28,7 @@ INSERT INTO tenants (
     name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction
 ) VALUES (
     $1, $2, $3, $4
-) RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from
+) RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref
 `
 
 type CreateTenantParams struct {
@@ -56,6 +56,11 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 		&i.UpdatedAt,
 		&i.DutyPoint,
 		&i.DutyPointEffectiveFrom,
+		&i.FilingFrequency,
+		&i.FiscalMonthBasis,
+		&i.FiscalMonthEndDay,
+		&i.FiscalMonthNotificationRef,
+		&i.FilingFrequencyAuthorizationRef,
 	)
 	return i, err
 }
@@ -74,7 +79,7 @@ func (q *Queries) DeleteTenant(ctx context.Context, id uuid.UUID) error {
 }
 
 const getTenantByID = `-- name: GetTenantByID :one
-SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from FROM tenants WHERE id = $1
+SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref FROM tenants WHERE id = $1
 `
 
 func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error) {
@@ -90,6 +95,11 @@ func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, erro
 		&i.UpdatedAt,
 		&i.DutyPoint,
 		&i.DutyPointEffectiveFrom,
+		&i.FilingFrequency,
+		&i.FiscalMonthBasis,
+		&i.FiscalMonthEndDay,
+		&i.FiscalMonthNotificationRef,
+		&i.FilingFrequencyAuthorizationRef,
 	)
 	return i, err
 }

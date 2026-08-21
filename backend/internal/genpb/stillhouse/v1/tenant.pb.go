@@ -84,6 +84,111 @@ func (DutyPoint) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{0}
 }
 
+// How often the licensee files. An authorized licensee may file
+// semi-annually (form B284) rather than monthly — EDM3-1-1 ¶50.
+type FilingFrequency int32
+
+const (
+	FilingFrequency_FILING_FREQUENCY_UNSPECIFIED FilingFrequency = 0
+	FilingFrequency_FILING_FREQUENCY_MONTHLY     FilingFrequency = 1
+	FilingFrequency_FILING_FREQUENCY_SEMI_ANNUAL FilingFrequency = 2
+)
+
+// Enum value maps for FilingFrequency.
+var (
+	FilingFrequency_name = map[int32]string{
+		0: "FILING_FREQUENCY_UNSPECIFIED",
+		1: "FILING_FREQUENCY_MONTHLY",
+		2: "FILING_FREQUENCY_SEMI_ANNUAL",
+	}
+	FilingFrequency_value = map[string]int32{
+		"FILING_FREQUENCY_UNSPECIFIED": 0,
+		"FILING_FREQUENCY_MONTHLY":     1,
+		"FILING_FREQUENCY_SEMI_ANNUAL": 2,
+	}
+)
+
+func (x FilingFrequency) Enum() *FilingFrequency {
+	p := new(FilingFrequency)
+	*p = x
+	return p
+}
+
+func (x FilingFrequency) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FilingFrequency) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_tenant_proto_enumTypes[1].Descriptor()
+}
+
+func (FilingFrequency) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_tenant_proto_enumTypes[1]
+}
+
+func (x FilingFrequency) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FilingFrequency.Descriptor instead.
+func (FilingFrequency) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{1}
+}
+
+// How the licensee's fiscal months are defined. Set by notification (form
+// B268) rather than assumed.
+type FiscalMonthBasis int32
+
+const (
+	FiscalMonthBasis_FISCAL_MONTH_BASIS_UNSPECIFIED    FiscalMonthBasis = 0
+	FiscalMonthBasis_FISCAL_MONTH_BASIS_CALENDAR_MONTH FiscalMonthBasis = 1
+	// Fiscal months end on a nominated day, so one runs from the 26th to the
+	// 25th. Between 1 and 28 — a fiscal month ending on the 30th has no
+	// February.
+	FiscalMonthBasis_FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH FiscalMonthBasis = 2
+)
+
+// Enum value maps for FiscalMonthBasis.
+var (
+	FiscalMonthBasis_name = map[int32]string{
+		0: "FISCAL_MONTH_BASIS_UNSPECIFIED",
+		1: "FISCAL_MONTH_BASIS_CALENDAR_MONTH",
+		2: "FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH",
+	}
+	FiscalMonthBasis_value = map[string]int32{
+		"FISCAL_MONTH_BASIS_UNSPECIFIED":        0,
+		"FISCAL_MONTH_BASIS_CALENDAR_MONTH":     1,
+		"FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH": 2,
+	}
+)
+
+func (x FiscalMonthBasis) Enum() *FiscalMonthBasis {
+	p := new(FiscalMonthBasis)
+	*p = x
+	return p
+}
+
+func (x FiscalMonthBasis) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (FiscalMonthBasis) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_tenant_proto_enumTypes[2].Descriptor()
+}
+
+func (FiscalMonthBasis) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_tenant_proto_enumTypes[2]
+}
+
+func (x FiscalMonthBasis) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use FiscalMonthBasis.Descriptor instead.
+func (FiscalMonthBasis) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{2}
+}
+
 type Tenant struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	Id                           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -100,8 +205,16 @@ type Tenant struct {
 	// at-removal basis, which is what has already been filed — nothing filed
 	// moves when the duty point changes.
 	DutyPointEffectiveFrom string `protobuf:"bytes,9,opt,name=duty_point_effective_from,json=dutyPointEffectiveFrom,proto3" json:"duty_point_effective_from,omitempty"`
-	unknownFields          protoimpl.UnknownFields
-	sizeCache              protoimpl.SizeCache
+	// The reporting calendar. Neither election is something a licensee just
+	// decides — each is filed with CRA — so the reference sits beside the
+	// setting.
+	FilingFrequency                 FilingFrequency  `protobuf:"varint,10,opt,name=filing_frequency,json=filingFrequency,proto3,enum=stillhouse.v1.FilingFrequency" json:"filing_frequency,omitempty"`
+	FiscalMonthBasis                FiscalMonthBasis `protobuf:"varint,11,opt,name=fiscal_month_basis,json=fiscalMonthBasis,proto3,enum=stillhouse.v1.FiscalMonthBasis" json:"fiscal_month_basis,omitempty"`
+	FiscalMonthEndDay               int32            `protobuf:"varint,12,opt,name=fiscal_month_end_day,json=fiscalMonthEndDay,proto3" json:"fiscal_month_end_day,omitempty"`
+	FiscalMonthNotificationRef      string           `protobuf:"bytes,13,opt,name=fiscal_month_notification_ref,json=fiscalMonthNotificationRef,proto3" json:"fiscal_month_notification_ref,omitempty"`
+	FilingFrequencyAuthorizationRef string           `protobuf:"bytes,14,opt,name=filing_frequency_authorization_ref,json=filingFrequencyAuthorizationRef,proto3" json:"filing_frequency_authorization_ref,omitempty"`
+	unknownFields                   protoimpl.UnknownFields
+	sizeCache                       protoimpl.SizeCache
 }
 
 func (x *Tenant) Reset() {
@@ -193,6 +306,41 @@ func (x *Tenant) GetDutyPoint() DutyPoint {
 func (x *Tenant) GetDutyPointEffectiveFrom() string {
 	if x != nil {
 		return x.DutyPointEffectiveFrom
+	}
+	return ""
+}
+
+func (x *Tenant) GetFilingFrequency() FilingFrequency {
+	if x != nil {
+		return x.FilingFrequency
+	}
+	return FilingFrequency_FILING_FREQUENCY_UNSPECIFIED
+}
+
+func (x *Tenant) GetFiscalMonthBasis() FiscalMonthBasis {
+	if x != nil {
+		return x.FiscalMonthBasis
+	}
+	return FiscalMonthBasis_FISCAL_MONTH_BASIS_UNSPECIFIED
+}
+
+func (x *Tenant) GetFiscalMonthEndDay() int32 {
+	if x != nil {
+		return x.FiscalMonthEndDay
+	}
+	return 0
+}
+
+func (x *Tenant) GetFiscalMonthNotificationRef() string {
+	if x != nil {
+		return x.FiscalMonthNotificationRef
+	}
+	return ""
+}
+
+func (x *Tenant) GetFilingFrequencyAuthorizationRef() string {
+	if x != nil {
+		return x.FilingFrequencyAuthorizationRef
 	}
 	return ""
 }
@@ -406,6 +554,126 @@ func (x *GetTenantResponse) GetTenant() *Tenant {
 	return nil
 }
 
+type UpdateFilingCalendarRequest struct {
+	state                           protoimpl.MessageState `protogen:"open.v1"`
+	FilingFrequency                 FilingFrequency        `protobuf:"varint,1,opt,name=filing_frequency,json=filingFrequency,proto3,enum=stillhouse.v1.FilingFrequency" json:"filing_frequency,omitempty"`
+	FiscalMonthBasis                FiscalMonthBasis       `protobuf:"varint,2,opt,name=fiscal_month_basis,json=fiscalMonthBasis,proto3,enum=stillhouse.v1.FiscalMonthBasis" json:"fiscal_month_basis,omitempty"`
+	FiscalMonthEndDay               int32                  `protobuf:"varint,3,opt,name=fiscal_month_end_day,json=fiscalMonthEndDay,proto3" json:"fiscal_month_end_day,omitempty"` // required for FIXED_DAY_OF_MONTH
+	FiscalMonthNotificationRef      string                 `protobuf:"bytes,4,opt,name=fiscal_month_notification_ref,json=fiscalMonthNotificationRef,proto3" json:"fiscal_month_notification_ref,omitempty"`
+	FilingFrequencyAuthorizationRef string                 `protobuf:"bytes,5,opt,name=filing_frequency_authorization_ref,json=filingFrequencyAuthorizationRef,proto3" json:"filing_frequency_authorization_ref,omitempty"`
+	unknownFields                   protoimpl.UnknownFields
+	sizeCache                       protoimpl.SizeCache
+}
+
+func (x *UpdateFilingCalendarRequest) Reset() {
+	*x = UpdateFilingCalendarRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFilingCalendarRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFilingCalendarRequest) ProtoMessage() {}
+
+func (x *UpdateFilingCalendarRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFilingCalendarRequest.ProtoReflect.Descriptor instead.
+func (*UpdateFilingCalendarRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *UpdateFilingCalendarRequest) GetFilingFrequency() FilingFrequency {
+	if x != nil {
+		return x.FilingFrequency
+	}
+	return FilingFrequency_FILING_FREQUENCY_UNSPECIFIED
+}
+
+func (x *UpdateFilingCalendarRequest) GetFiscalMonthBasis() FiscalMonthBasis {
+	if x != nil {
+		return x.FiscalMonthBasis
+	}
+	return FiscalMonthBasis_FISCAL_MONTH_BASIS_UNSPECIFIED
+}
+
+func (x *UpdateFilingCalendarRequest) GetFiscalMonthEndDay() int32 {
+	if x != nil {
+		return x.FiscalMonthEndDay
+	}
+	return 0
+}
+
+func (x *UpdateFilingCalendarRequest) GetFiscalMonthNotificationRef() string {
+	if x != nil {
+		return x.FiscalMonthNotificationRef
+	}
+	return ""
+}
+
+func (x *UpdateFilingCalendarRequest) GetFilingFrequencyAuthorizationRef() string {
+	if x != nil {
+		return x.FilingFrequencyAuthorizationRef
+	}
+	return ""
+}
+
+type UpdateFilingCalendarResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tenant        *Tenant                `protobuf:"bytes,1,opt,name=tenant,proto3" json:"tenant,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateFilingCalendarResponse) Reset() {
+	*x = UpdateFilingCalendarResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateFilingCalendarResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateFilingCalendarResponse) ProtoMessage() {}
+
+func (x *UpdateFilingCalendarResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateFilingCalendarResponse.ProtoReflect.Descriptor instead.
+func (*UpdateFilingCalendarResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *UpdateFilingCalendarResponse) GetTenant() *Tenant {
+	if x != nil {
+		return x.Tenant
+	}
+	return nil
+}
+
 type UpdateTenantRequest struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	Name                         string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -418,7 +686,7 @@ type UpdateTenantRequest struct {
 
 func (x *UpdateTenantRequest) Reset() {
 	*x = UpdateTenantRequest{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -430,7 +698,7 @@ func (x *UpdateTenantRequest) String() string {
 func (*UpdateTenantRequest) ProtoMessage() {}
 
 func (x *UpdateTenantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -443,7 +711,7 @@ func (x *UpdateTenantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTenantRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTenantRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *UpdateTenantRequest) GetName() string {
@@ -483,7 +751,7 @@ type UpdateTenantResponse struct {
 
 func (x *UpdateTenantResponse) Reset() {
 	*x = UpdateTenantResponse{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -495,7 +763,7 @@ func (x *UpdateTenantResponse) String() string {
 func (*UpdateTenantResponse) ProtoMessage() {}
 
 func (x *UpdateTenantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -508,7 +776,7 @@ func (x *UpdateTenantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTenantResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTenantResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *UpdateTenantResponse) GetTenant() *Tenant {
@@ -534,7 +802,7 @@ type DeleteMyTenantRequest struct {
 
 func (x *DeleteMyTenantRequest) Reset() {
 	*x = DeleteMyTenantRequest{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -546,7 +814,7 @@ func (x *DeleteMyTenantRequest) String() string {
 func (*DeleteMyTenantRequest) ProtoMessage() {}
 
 func (x *DeleteMyTenantRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -559,7 +827,7 @@ func (x *DeleteMyTenantRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMyTenantRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMyTenantRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *DeleteMyTenantRequest) GetConfirmName() string {
@@ -577,7 +845,7 @@ type DeleteMyTenantResponse struct {
 
 func (x *DeleteMyTenantResponse) Reset() {
 	*x = DeleteMyTenantResponse{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -589,7 +857,7 @@ func (x *DeleteMyTenantResponse) String() string {
 func (*DeleteMyTenantResponse) ProtoMessage() {}
 
 func (x *DeleteMyTenantResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -602,14 +870,14 @@ func (x *DeleteMyTenantResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMyTenantResponse.ProtoReflect.Descriptor instead.
 func (*DeleteMyTenantResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{10}
 }
 
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\n" +
-	"\x1astillhouse/v1/tenant.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcd\x03\n" +
+	"\x1astillhouse/v1/tenant.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa8\x06\n" +
 	"\x06Tenant\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12;\n" +
@@ -622,7 +890,13 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x127\n" +
 	"\n" +
 	"duty_point\x18\b \x01(\x0e2\x18.stillhouse.v1.DutyPointR\tdutyPoint\x129\n" +
-	"\x19duty_point_effective_from\x18\t \x01(\tR\x16dutyPointEffectiveFrom\"\x8f\x02\n" +
+	"\x19duty_point_effective_from\x18\t \x01(\tR\x16dutyPointEffectiveFrom\x12I\n" +
+	"\x10filing_frequency\x18\n" +
+	" \x01(\x0e2\x1e.stillhouse.v1.FilingFrequencyR\x0ffilingFrequency\x12M\n" +
+	"\x12fiscal_month_basis\x18\v \x01(\x0e2\x1f.stillhouse.v1.FiscalMonthBasisR\x10fiscalMonthBasis\x12/\n" +
+	"\x14fiscal_month_end_day\x18\f \x01(\x05R\x11fiscalMonthEndDay\x12A\n" +
+	"\x1dfiscal_month_notification_ref\x18\r \x01(\tR\x1afiscalMonthNotificationRef\x12K\n" +
+	"\"filing_frequency_authorization_ref\x18\x0e \x01(\tR\x1ffilingFrequencyAuthorizationRef\"\x8f\x02\n" +
 	"\x13CreateTenantRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
 	"\x1acra_spirits_licence_number\x18\x02 \x01(\tR\x17craSpiritsLicenceNumber\x121\n" +
@@ -635,6 +909,14 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\x12\n" +
 	"\x10GetTenantRequest\"B\n" +
 	"\x11GetTenantResponse\x12-\n" +
+	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\xf8\x02\n" +
+	"\x1bUpdateFilingCalendarRequest\x12I\n" +
+	"\x10filing_frequency\x18\x01 \x01(\x0e2\x1e.stillhouse.v1.FilingFrequencyR\x0ffilingFrequency\x12M\n" +
+	"\x12fiscal_month_basis\x18\x02 \x01(\x0e2\x1f.stillhouse.v1.FiscalMonthBasisR\x10fiscalMonthBasis\x12/\n" +
+	"\x14fiscal_month_end_day\x18\x03 \x01(\x05R\x11fiscalMonthEndDay\x12A\n" +
+	"\x1dfiscal_month_notification_ref\x18\x04 \x01(\tR\x1afiscalMonthNotificationRef\x12K\n" +
+	"\"filing_frequency_authorization_ref\x18\x05 \x01(\tR\x1ffilingFrequencyAuthorizationRef\"M\n" +
+	"\x1cUpdateFilingCalendarResponse\x12-\n" +
 	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\xe0\x01\n" +
 	"\x13UpdateTenantRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
@@ -649,8 +931,17 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\tDutyPoint\x12\x1a\n" +
 	"\x16DUTY_POINT_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17DUTY_POINT_AT_PACKAGING\x10\x01\x12\x19\n" +
-	"\x15DUTY_POINT_AT_REMOVAL\x10\x022\xf0\x02\n" +
-	"\rTenantService\x12W\n" +
+	"\x15DUTY_POINT_AT_REMOVAL\x10\x02*s\n" +
+	"\x0fFilingFrequency\x12 \n" +
+	"\x1cFILING_FREQUENCY_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18FILING_FREQUENCY_MONTHLY\x10\x01\x12 \n" +
+	"\x1cFILING_FREQUENCY_SEMI_ANNUAL\x10\x02*\x88\x01\n" +
+	"\x10FiscalMonthBasis\x12\"\n" +
+	"\x1eFISCAL_MONTH_BASIS_UNSPECIFIED\x10\x00\x12%\n" +
+	"!FISCAL_MONTH_BASIS_CALENDAR_MONTH\x10\x01\x12)\n" +
+	"%FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH\x10\x022\xe1\x03\n" +
+	"\rTenantService\x12o\n" +
+	"\x14UpdateFilingCalendar\x12*.stillhouse.v1.UpdateFilingCalendarRequest\x1a+.stillhouse.v1.UpdateFilingCalendarResponse\x12W\n" +
 	"\fCreateTenant\x12\".stillhouse.v1.CreateTenantRequest\x1a#.stillhouse.v1.CreateTenantResponse\x12N\n" +
 	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
 	"\fUpdateTenant\x12\".stillhouse.v1.UpdateTenantRequest\x1a#.stillhouse.v1.UpdateTenantResponse\x12]\n" +
@@ -669,41 +960,52 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_tenant_proto_rawDescData
 }
 
-var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
-	(DutyPoint)(0),                 // 0: stillhouse.v1.DutyPoint
-	(*Tenant)(nil),                 // 1: stillhouse.v1.Tenant
-	(*CreateTenantRequest)(nil),    // 2: stillhouse.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),   // 3: stillhouse.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),       // 4: stillhouse.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),      // 5: stillhouse.v1.GetTenantResponse
-	(*UpdateTenantRequest)(nil),    // 6: stillhouse.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),   // 7: stillhouse.v1.UpdateTenantResponse
-	(*DeleteMyTenantRequest)(nil),  // 8: stillhouse.v1.DeleteMyTenantRequest
-	(*DeleteMyTenantResponse)(nil), // 9: stillhouse.v1.DeleteMyTenantResponse
-	(*timestamppb.Timestamp)(nil),  // 10: google.protobuf.Timestamp
+	(DutyPoint)(0),                       // 0: stillhouse.v1.DutyPoint
+	(FilingFrequency)(0),                 // 1: stillhouse.v1.FilingFrequency
+	(FiscalMonthBasis)(0),                // 2: stillhouse.v1.FiscalMonthBasis
+	(*Tenant)(nil),                       // 3: stillhouse.v1.Tenant
+	(*CreateTenantRequest)(nil),          // 4: stillhouse.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),         // 5: stillhouse.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),             // 6: stillhouse.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),            // 7: stillhouse.v1.GetTenantResponse
+	(*UpdateFilingCalendarRequest)(nil),  // 8: stillhouse.v1.UpdateFilingCalendarRequest
+	(*UpdateFilingCalendarResponse)(nil), // 9: stillhouse.v1.UpdateFilingCalendarResponse
+	(*UpdateTenantRequest)(nil),          // 10: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),         // 11: stillhouse.v1.UpdateTenantResponse
+	(*DeleteMyTenantRequest)(nil),        // 12: stillhouse.v1.DeleteMyTenantRequest
+	(*DeleteMyTenantResponse)(nil),       // 13: stillhouse.v1.DeleteMyTenantResponse
+	(*timestamppb.Timestamp)(nil),        // 14: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	10, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	10, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	14, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	14, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
-	1,  // 3: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	1,  // 4: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	1,  // 5: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	2,  // 6: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	4,  // 7: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	6,  // 8: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	8,  // 9: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	3,  // 10: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	5,  // 11: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	7,  // 12: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	9,  // 13: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	1,  // 3: stillhouse.v1.Tenant.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
+	2,  // 4: stillhouse.v1.Tenant.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
+	3,  // 5: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	3,  // 6: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	1,  // 7: stillhouse.v1.UpdateFilingCalendarRequest.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
+	2,  // 8: stillhouse.v1.UpdateFilingCalendarRequest.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
+	3,  // 9: stillhouse.v1.UpdateFilingCalendarResponse.tenant:type_name -> stillhouse.v1.Tenant
+	3,  // 10: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	8,  // 11: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
+	4,  // 12: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	6,  // 13: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	10, // 14: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	12, // 15: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	9,  // 16: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
+	5,  // 17: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	7,  // 18: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	11, // 19: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	13, // 20: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	16, // [16:21] is the sub-list for method output_type
+	11, // [11:16] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -716,8 +1018,8 @@ func file_stillhouse_v1_tenant_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   9,
+			NumEnums:      3,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

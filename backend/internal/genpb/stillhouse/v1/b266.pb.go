@@ -75,24 +75,160 @@ func (B266Status) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{0}
 }
 
+type SuggestB266PeriodRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Suggest the period containing this date; empty means today. A licensee
+	// filing last month's return in the first week of this one gets last
+	// month, which is the ordinary case, by passing the period end.
+	On            string `protobuf:"bytes,1,opt,name=on,proto3" json:"on,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SuggestB266PeriodRequest) Reset() {
+	*x = SuggestB266PeriodRequest{}
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestB266PeriodRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestB266PeriodRequest) ProtoMessage() {}
+
+func (x *SuggestB266PeriodRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestB266PeriodRequest.ProtoReflect.Descriptor instead.
+func (*SuggestB266PeriodRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *SuggestB266PeriodRequest) GetOn() string {
+	if x != nil {
+		return x.On
+	}
+	return ""
+}
+
+type SuggestB266PeriodResponse struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	PeriodStart  string                 `protobuf:"bytes,1,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd    string                 `protobuf:"bytes,2,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	DueOn        string                 `protobuf:"bytes,3,opt,name=due_on,json=dueOn,proto3" json:"due_on,omitempty"`
+	DaysUntilDue int32                  `protobuf:"varint,4,opt,name=days_until_due,json=daysUntilDue,proto3" json:"days_until_due,omitempty"`
+	// The period before the suggested one, so an operator catching up has
+	// somewhere to go without doing the arithmetic.
+	PreviousPeriodStart string `protobuf:"bytes,5,opt,name=previous_period_start,json=previousPeriodStart,proto3" json:"previous_period_start,omitempty"`
+	PreviousPeriodEnd   string `protobuf:"bytes,6,opt,name=previous_period_end,json=previousPeriodEnd,proto3" json:"previous_period_end,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SuggestB266PeriodResponse) Reset() {
+	*x = SuggestB266PeriodResponse{}
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SuggestB266PeriodResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SuggestB266PeriodResponse) ProtoMessage() {}
+
+func (x *SuggestB266PeriodResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SuggestB266PeriodResponse.ProtoReflect.Descriptor instead.
+func (*SuggestB266PeriodResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *SuggestB266PeriodResponse) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *SuggestB266PeriodResponse) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
+func (x *SuggestB266PeriodResponse) GetDueOn() string {
+	if x != nil {
+		return x.DueOn
+	}
+	return ""
+}
+
+func (x *SuggestB266PeriodResponse) GetDaysUntilDue() int32 {
+	if x != nil {
+		return x.DaysUntilDue
+	}
+	return 0
+}
+
+func (x *SuggestB266PeriodResponse) GetPreviousPeriodStart() string {
+	if x != nil {
+		return x.PreviousPeriodStart
+	}
+	return ""
+}
+
+func (x *SuggestB266PeriodResponse) GetPreviousPeriodEnd() string {
+	if x != nil {
+		return x.PreviousPeriodEnd
+	}
+	return ""
+}
+
 type B266Period struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	PeriodStart   string                 `protobuf:"bytes,2,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"` // ISO date
-	PeriodEnd     string                 `protobuf:"bytes,3,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
-	Status        B266Status             `protobuf:"varint,4,opt,name=status,proto3,enum=stillhouse.v1.B266Status" json:"status,omitempty"`
-	SubmittedAt   *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=submitted_at,json=submittedAt,proto3" json:"submitted_at,omitempty"`
-	SubmittedBy   string                 `protobuf:"bytes,6,opt,name=submitted_by,json=submittedBy,proto3" json:"submitted_by,omitempty"`
-	Notes         string                 `protobuf:"bytes,7,opt,name=notes,proto3" json:"notes,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	PeriodStart string                 `protobuf:"bytes,2,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"` // ISO date
+	PeriodEnd   string                 `protobuf:"bytes,3,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	Status      B266Status             `protobuf:"varint,4,opt,name=status,proto3,enum=stillhouse.v1.B266Status" json:"status,omitempty"`
+	SubmittedAt *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=submitted_at,json=submittedAt,proto3" json:"submitted_at,omitempty"`
+	SubmittedBy string                 `protobuf:"bytes,6,opt,name=submitted_by,json=submittedBy,proto3" json:"submitted_by,omitempty"`
+	Notes       string                 `protobuf:"bytes,7,opt,name=notes,proto3" json:"notes,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// Frozen at generation, so a later change of fiscal-month election does
+	// not silently restate when a past return was due.
+	DueOn         string `protobuf:"bytes,10,opt,name=due_on,json=dueOn,proto3" json:"due_on,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *B266Period) Reset() {
 	*x = B266Period{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -104,7 +240,7 @@ func (x *B266Period) String() string {
 func (*B266Period) ProtoMessage() {}
 
 func (x *B266Period) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,7 +253,7 @@ func (x *B266Period) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use B266Period.ProtoReflect.Descriptor instead.
 func (*B266Period) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{0}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *B266Period) GetId() string {
@@ -183,6 +319,13 @@ func (x *B266Period) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *B266Period) GetDueOn() string {
+	if x != nil {
+		return x.DueOn
+	}
+	return ""
+}
+
 // B266Report mirrors the lines you'd enter on the CRA form. All amounts
 // in LAA (litres absolute alcohol) unless otherwise noted; duty in CAD.
 type B266Report struct {
@@ -242,6 +385,12 @@ type B266Report struct {
 	// words. Empty means nothing is outstanding — which is not a promise the
 	// figures are right, only that nothing is missing.
 	FilingBlockers []string `protobuf:"bytes,72,rep,name=filing_blockers,json=filingBlockers,proto3" json:"filing_blockers,omitempty"`
+	// When this return falls due: the last day of the fiscal month following
+	// the reporting period (EDM3-1-1 ¶50). Empty if the period's dates put
+	// the due date outside what the fiscal calendar can compute.
+	DueOn string `protobuf:"bytes,73,opt,name=due_on,json=dueOn,proto3" json:"due_on,omitempty"`
+	// Negative once the due date has passed.
+	DaysUntilDue int32 `protobuf:"varint,74,opt,name=days_until_due,json=daysUntilDue,proto3" json:"days_until_due,omitempty"`
 	// Packaged spirits section.
 	PackagedOpeningLaa             float64 `protobuf:"fixed64,30,opt,name=packaged_opening_laa,json=packagedOpeningLaa,proto3" json:"packaged_opening_laa,omitempty"`
 	PackagedPackagedLaa            float64 `protobuf:"fixed64,31,opt,name=packaged_packaged_laa,json=packagedPackagedLaa,proto3" json:"packaged_packaged_laa,omitempty"` // produced by bottling runs
@@ -299,7 +448,7 @@ type B266Report struct {
 
 func (x *B266Report) Reset() {
 	*x = B266Report{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -311,7 +460,7 @@ func (x *B266Report) String() string {
 func (*B266Report) ProtoMessage() {}
 
 func (x *B266Report) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -324,7 +473,7 @@ func (x *B266Report) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use B266Report.ProtoReflect.Descriptor instead.
 func (*B266Report) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *B266Report) GetPeriodStart() string {
@@ -544,6 +693,20 @@ func (x *B266Report) GetFilingBlockers() []string {
 	return nil
 }
 
+func (x *B266Report) GetDueOn() string {
+	if x != nil {
+		return x.DueOn
+	}
+	return ""
+}
+
+func (x *B266Report) GetDaysUntilDue() int32 {
+	if x != nil {
+		return x.DaysUntilDue
+	}
+	return 0
+}
+
 func (x *B266Report) GetPackagedOpeningLaa() float64 {
 	if x != nil {
 		return x.PackagedOpeningLaa
@@ -750,7 +913,7 @@ type GenerateB266Request struct {
 
 func (x *GenerateB266Request) Reset() {
 	*x = GenerateB266Request{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -762,7 +925,7 @@ func (x *GenerateB266Request) String() string {
 func (*GenerateB266Request) ProtoMessage() {}
 
 func (x *GenerateB266Request) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -775,7 +938,7 @@ func (x *GenerateB266Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateB266Request.ProtoReflect.Descriptor instead.
 func (*GenerateB266Request) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *GenerateB266Request) GetPeriodStart() string {
@@ -802,7 +965,7 @@ type GenerateB266Response struct {
 
 func (x *GenerateB266Response) Reset() {
 	*x = GenerateB266Response{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -814,7 +977,7 @@ func (x *GenerateB266Response) String() string {
 func (*GenerateB266Response) ProtoMessage() {}
 
 func (x *GenerateB266Response) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -827,7 +990,7 @@ func (x *GenerateB266Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateB266Response.ProtoReflect.Descriptor instead.
 func (*GenerateB266Response) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GenerateB266Response) GetPeriod() *B266Period {
@@ -853,7 +1016,7 @@ type SubmitB266Request struct {
 
 func (x *SubmitB266Request) Reset() {
 	*x = SubmitB266Request{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -865,7 +1028,7 @@ func (x *SubmitB266Request) String() string {
 func (*SubmitB266Request) ProtoMessage() {}
 
 func (x *SubmitB266Request) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -878,7 +1041,7 @@ func (x *SubmitB266Request) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitB266Request.ProtoReflect.Descriptor instead.
 func (*SubmitB266Request) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SubmitB266Request) GetPeriodId() string {
@@ -898,7 +1061,7 @@ type SubmitB266Response struct {
 
 func (x *SubmitB266Response) Reset() {
 	*x = SubmitB266Response{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -910,7 +1073,7 @@ func (x *SubmitB266Response) String() string {
 func (*SubmitB266Response) ProtoMessage() {}
 
 func (x *SubmitB266Response) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -923,7 +1086,7 @@ func (x *SubmitB266Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubmitB266Response.ProtoReflect.Descriptor instead.
 func (*SubmitB266Response) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *SubmitB266Response) GetPeriod() *B266Period {
@@ -948,7 +1111,7 @@ type ListB266PeriodsRequest struct {
 
 func (x *ListB266PeriodsRequest) Reset() {
 	*x = ListB266PeriodsRequest{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -960,7 +1123,7 @@ func (x *ListB266PeriodsRequest) String() string {
 func (*ListB266PeriodsRequest) ProtoMessage() {}
 
 func (x *ListB266PeriodsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -973,7 +1136,7 @@ func (x *ListB266PeriodsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListB266PeriodsRequest.ProtoReflect.Descriptor instead.
 func (*ListB266PeriodsRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{8}
 }
 
 type ListB266PeriodsResponse struct {
@@ -985,7 +1148,7 @@ type ListB266PeriodsResponse struct {
 
 func (x *ListB266PeriodsResponse) Reset() {
 	*x = ListB266PeriodsResponse{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -997,7 +1160,7 @@ func (x *ListB266PeriodsResponse) String() string {
 func (*ListB266PeriodsResponse) ProtoMessage() {}
 
 func (x *ListB266PeriodsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1010,7 +1173,7 @@ func (x *ListB266PeriodsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListB266PeriodsResponse.ProtoReflect.Descriptor instead.
 func (*ListB266PeriodsResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *ListB266PeriodsResponse) GetPeriods() []*B266Period {
@@ -1029,7 +1192,7 @@ type GetB266PeriodRequest struct {
 
 func (x *GetB266PeriodRequest) Reset() {
 	*x = GetB266PeriodRequest{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1041,7 +1204,7 @@ func (x *GetB266PeriodRequest) String() string {
 func (*GetB266PeriodRequest) ProtoMessage() {}
 
 func (x *GetB266PeriodRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1054,7 +1217,7 @@ func (x *GetB266PeriodRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetB266PeriodRequest.ProtoReflect.Descriptor instead.
 func (*GetB266PeriodRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetB266PeriodRequest) GetId() string {
@@ -1076,7 +1239,7 @@ type GetB266PeriodResponse struct {
 
 func (x *GetB266PeriodResponse) Reset() {
 	*x = GetB266PeriodResponse{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1088,7 +1251,7 @@ func (x *GetB266PeriodResponse) String() string {
 func (*GetB266PeriodResponse) ProtoMessage() {}
 
 func (x *GetB266PeriodResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1101,7 +1264,7 @@ func (x *GetB266PeriodResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetB266PeriodResponse.ProtoReflect.Descriptor instead.
 func (*GetB266PeriodResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *GetB266PeriodResponse) GetPeriod() *B266Period {
@@ -1132,7 +1295,7 @@ type ReopenB266PeriodRequest struct {
 
 func (x *ReopenB266PeriodRequest) Reset() {
 	*x = ReopenB266PeriodRequest{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1144,7 +1307,7 @@ func (x *ReopenB266PeriodRequest) String() string {
 func (*ReopenB266PeriodRequest) ProtoMessage() {}
 
 func (x *ReopenB266PeriodRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1157,7 +1320,7 @@ func (x *ReopenB266PeriodRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReopenB266PeriodRequest.ProtoReflect.Descriptor instead.
 func (*ReopenB266PeriodRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ReopenB266PeriodRequest) GetId() string {
@@ -1183,7 +1346,7 @@ type ReopenB266PeriodResponse struct {
 
 func (x *ReopenB266PeriodResponse) Reset() {
 	*x = ReopenB266PeriodResponse{}
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1195,7 +1358,7 @@ func (x *ReopenB266PeriodResponse) String() string {
 func (*ReopenB266PeriodResponse) ProtoMessage() {}
 
 func (x *ReopenB266PeriodResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_b266_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_b266_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1208,7 +1371,7 @@ func (x *ReopenB266PeriodResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReopenB266PeriodResponse.ProtoReflect.Descriptor instead.
 func (*ReopenB266PeriodResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ReopenB266PeriodResponse) GetPeriod() *B266Period {
@@ -1222,7 +1385,17 @@ var File_stillhouse_v1_b266_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/b266.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/tenant.proto\"\xff\x02\n" +
+	"\x18stillhouse/v1/b266.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/tenant.proto\"*\n" +
+	"\x18SuggestB266PeriodRequest\x12\x0e\n" +
+	"\x02on\x18\x01 \x01(\tR\x02on\"\xfe\x01\n" +
+	"\x19SuggestB266PeriodResponse\x12!\n" +
+	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x02 \x01(\tR\tperiodEnd\x12\x15\n" +
+	"\x06due_on\x18\x03 \x01(\tR\x05dueOn\x12$\n" +
+	"\x0edays_until_due\x18\x04 \x01(\x05R\fdaysUntilDue\x122\n" +
+	"\x15previous_period_start\x18\x05 \x01(\tR\x13previousPeriodStart\x12.\n" +
+	"\x13previous_period_end\x18\x06 \x01(\tR\x11previousPeriodEnd\"\x96\x03\n" +
 	"\n" +
 	"B266Period\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
@@ -1236,7 +1409,9 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8f\x1b\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
+	"\x06due_on\x18\n" +
+	" \x01(\tR\x05dueOn\"\xcc\x1b\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1271,7 +1446,9 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x18bulk_losses_dutiable_laa\x18E \x01(\x01R\x15bulkLossesDutiableLaa\x12?\n" +
 	"\x1cbulk_losses_unclassified_laa\x18F \x01(\x01R\x19bulkLossesUnclassifiedLaa\x12+\n" +
 	"\x12duty_on_losses_cad\x18G \x01(\x01R\x0fdutyOnLossesCad\x12'\n" +
-	"\x0ffiling_blockers\x18H \x03(\tR\x0efilingBlockers\x120\n" +
+	"\x0ffiling_blockers\x18H \x03(\tR\x0efilingBlockers\x12\x15\n" +
+	"\x06due_on\x18I \x01(\tR\x05dueOn\x12$\n" +
+	"\x0edays_until_due\x18J \x01(\x05R\fdaysUntilDue\x120\n" +
 	"\x14packaged_opening_laa\x18\x1e \x01(\x01R\x12packagedOpeningLaa\x122\n" +
 	"\x15packaged_packaged_laa\x18\x1f \x01(\x01R\x13packagedPackagedLaa\x12:\n" +
 	"\x19packaged_packaged_bottles\x18  \x01(\x05R\x17packagedPackagedBottles\x12B\n" +
@@ -1330,8 +1507,9 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"B266Status\x12\x1b\n" +
 	"\x17B266_STATUS_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11B266_STATUS_DRAFT\x10\x01\x12\x19\n" +
-	"\x15B266_STATUS_SUBMITTED\x10\x022\xdc\x03\n" +
-	"\vB266Service\x12W\n" +
+	"\x15B266_STATUS_SUBMITTED\x10\x022\xc4\x04\n" +
+	"\vB266Service\x12f\n" +
+	"\x11SuggestB266Period\x12'.stillhouse.v1.SuggestB266PeriodRequest\x1a(.stillhouse.v1.SuggestB266PeriodResponse\x12W\n" +
 	"\fGenerateB266\x12\".stillhouse.v1.GenerateB266Request\x1a#.stillhouse.v1.GenerateB266Response\x12Q\n" +
 	"\n" +
 	"SubmitB266\x12 .stillhouse.v1.SubmitB266Request\x1a!.stillhouse.v1.SubmitB266Response\x12`\n" +
@@ -1353,51 +1531,55 @@ func file_stillhouse_v1_b266_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_b266_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_b266_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_stillhouse_v1_b266_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_stillhouse_v1_b266_proto_goTypes = []any{
-	(B266Status)(0),                  // 0: stillhouse.v1.B266Status
-	(*B266Period)(nil),               // 1: stillhouse.v1.B266Period
-	(*B266Report)(nil),               // 2: stillhouse.v1.B266Report
-	(*GenerateB266Request)(nil),      // 3: stillhouse.v1.GenerateB266Request
-	(*GenerateB266Response)(nil),     // 4: stillhouse.v1.GenerateB266Response
-	(*SubmitB266Request)(nil),        // 5: stillhouse.v1.SubmitB266Request
-	(*SubmitB266Response)(nil),       // 6: stillhouse.v1.SubmitB266Response
-	(*ListB266PeriodsRequest)(nil),   // 7: stillhouse.v1.ListB266PeriodsRequest
-	(*ListB266PeriodsResponse)(nil),  // 8: stillhouse.v1.ListB266PeriodsResponse
-	(*GetB266PeriodRequest)(nil),     // 9: stillhouse.v1.GetB266PeriodRequest
-	(*GetB266PeriodResponse)(nil),    // 10: stillhouse.v1.GetB266PeriodResponse
-	(*ReopenB266PeriodRequest)(nil),  // 11: stillhouse.v1.ReopenB266PeriodRequest
-	(*ReopenB266PeriodResponse)(nil), // 12: stillhouse.v1.ReopenB266PeriodResponse
-	(*timestamppb.Timestamp)(nil),    // 13: google.protobuf.Timestamp
-	(DutyPoint)(0),                   // 14: stillhouse.v1.DutyPoint
+	(B266Status)(0),                   // 0: stillhouse.v1.B266Status
+	(*SuggestB266PeriodRequest)(nil),  // 1: stillhouse.v1.SuggestB266PeriodRequest
+	(*SuggestB266PeriodResponse)(nil), // 2: stillhouse.v1.SuggestB266PeriodResponse
+	(*B266Period)(nil),                // 3: stillhouse.v1.B266Period
+	(*B266Report)(nil),                // 4: stillhouse.v1.B266Report
+	(*GenerateB266Request)(nil),       // 5: stillhouse.v1.GenerateB266Request
+	(*GenerateB266Response)(nil),      // 6: stillhouse.v1.GenerateB266Response
+	(*SubmitB266Request)(nil),         // 7: stillhouse.v1.SubmitB266Request
+	(*SubmitB266Response)(nil),        // 8: stillhouse.v1.SubmitB266Response
+	(*ListB266PeriodsRequest)(nil),    // 9: stillhouse.v1.ListB266PeriodsRequest
+	(*ListB266PeriodsResponse)(nil),   // 10: stillhouse.v1.ListB266PeriodsResponse
+	(*GetB266PeriodRequest)(nil),      // 11: stillhouse.v1.GetB266PeriodRequest
+	(*GetB266PeriodResponse)(nil),     // 12: stillhouse.v1.GetB266PeriodResponse
+	(*ReopenB266PeriodRequest)(nil),   // 13: stillhouse.v1.ReopenB266PeriodRequest
+	(*ReopenB266PeriodResponse)(nil),  // 14: stillhouse.v1.ReopenB266PeriodResponse
+	(*timestamppb.Timestamp)(nil),     // 15: google.protobuf.Timestamp
+	(DutyPoint)(0),                    // 16: stillhouse.v1.DutyPoint
 }
 var file_stillhouse_v1_b266_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.B266Period.status:type_name -> stillhouse.v1.B266Status
-	13, // 1: stillhouse.v1.B266Period.submitted_at:type_name -> google.protobuf.Timestamp
-	13, // 2: stillhouse.v1.B266Period.created_at:type_name -> google.protobuf.Timestamp
-	13, // 3: stillhouse.v1.B266Period.updated_at:type_name -> google.protobuf.Timestamp
-	14, // 4: stillhouse.v1.B266Report.duty_point:type_name -> stillhouse.v1.DutyPoint
-	13, // 5: stillhouse.v1.B266Report.generated_at:type_name -> google.protobuf.Timestamp
-	1,  // 6: stillhouse.v1.GenerateB266Response.period:type_name -> stillhouse.v1.B266Period
-	2,  // 7: stillhouse.v1.GenerateB266Response.report:type_name -> stillhouse.v1.B266Report
-	1,  // 8: stillhouse.v1.SubmitB266Response.period:type_name -> stillhouse.v1.B266Period
-	2,  // 9: stillhouse.v1.SubmitB266Response.snapshot:type_name -> stillhouse.v1.B266Report
-	1,  // 10: stillhouse.v1.ListB266PeriodsResponse.periods:type_name -> stillhouse.v1.B266Period
-	1,  // 11: stillhouse.v1.GetB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
-	2,  // 12: stillhouse.v1.GetB266PeriodResponse.snapshot:type_name -> stillhouse.v1.B266Report
-	1,  // 13: stillhouse.v1.ReopenB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
-	3,  // 14: stillhouse.v1.B266Service.GenerateB266:input_type -> stillhouse.v1.GenerateB266Request
-	5,  // 15: stillhouse.v1.B266Service.SubmitB266:input_type -> stillhouse.v1.SubmitB266Request
-	7,  // 16: stillhouse.v1.B266Service.ListB266Periods:input_type -> stillhouse.v1.ListB266PeriodsRequest
-	9,  // 17: stillhouse.v1.B266Service.GetB266Period:input_type -> stillhouse.v1.GetB266PeriodRequest
-	11, // 18: stillhouse.v1.B266Service.ReopenB266Period:input_type -> stillhouse.v1.ReopenB266PeriodRequest
-	4,  // 19: stillhouse.v1.B266Service.GenerateB266:output_type -> stillhouse.v1.GenerateB266Response
-	6,  // 20: stillhouse.v1.B266Service.SubmitB266:output_type -> stillhouse.v1.SubmitB266Response
-	8,  // 21: stillhouse.v1.B266Service.ListB266Periods:output_type -> stillhouse.v1.ListB266PeriodsResponse
-	10, // 22: stillhouse.v1.B266Service.GetB266Period:output_type -> stillhouse.v1.GetB266PeriodResponse
-	12, // 23: stillhouse.v1.B266Service.ReopenB266Period:output_type -> stillhouse.v1.ReopenB266PeriodResponse
-	19, // [19:24] is the sub-list for method output_type
-	14, // [14:19] is the sub-list for method input_type
+	15, // 1: stillhouse.v1.B266Period.submitted_at:type_name -> google.protobuf.Timestamp
+	15, // 2: stillhouse.v1.B266Period.created_at:type_name -> google.protobuf.Timestamp
+	15, // 3: stillhouse.v1.B266Period.updated_at:type_name -> google.protobuf.Timestamp
+	16, // 4: stillhouse.v1.B266Report.duty_point:type_name -> stillhouse.v1.DutyPoint
+	15, // 5: stillhouse.v1.B266Report.generated_at:type_name -> google.protobuf.Timestamp
+	3,  // 6: stillhouse.v1.GenerateB266Response.period:type_name -> stillhouse.v1.B266Period
+	4,  // 7: stillhouse.v1.GenerateB266Response.report:type_name -> stillhouse.v1.B266Report
+	3,  // 8: stillhouse.v1.SubmitB266Response.period:type_name -> stillhouse.v1.B266Period
+	4,  // 9: stillhouse.v1.SubmitB266Response.snapshot:type_name -> stillhouse.v1.B266Report
+	3,  // 10: stillhouse.v1.ListB266PeriodsResponse.periods:type_name -> stillhouse.v1.B266Period
+	3,  // 11: stillhouse.v1.GetB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
+	4,  // 12: stillhouse.v1.GetB266PeriodResponse.snapshot:type_name -> stillhouse.v1.B266Report
+	3,  // 13: stillhouse.v1.ReopenB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
+	1,  // 14: stillhouse.v1.B266Service.SuggestB266Period:input_type -> stillhouse.v1.SuggestB266PeriodRequest
+	5,  // 15: stillhouse.v1.B266Service.GenerateB266:input_type -> stillhouse.v1.GenerateB266Request
+	7,  // 16: stillhouse.v1.B266Service.SubmitB266:input_type -> stillhouse.v1.SubmitB266Request
+	9,  // 17: stillhouse.v1.B266Service.ListB266Periods:input_type -> stillhouse.v1.ListB266PeriodsRequest
+	11, // 18: stillhouse.v1.B266Service.GetB266Period:input_type -> stillhouse.v1.GetB266PeriodRequest
+	13, // 19: stillhouse.v1.B266Service.ReopenB266Period:input_type -> stillhouse.v1.ReopenB266PeriodRequest
+	2,  // 20: stillhouse.v1.B266Service.SuggestB266Period:output_type -> stillhouse.v1.SuggestB266PeriodResponse
+	6,  // 21: stillhouse.v1.B266Service.GenerateB266:output_type -> stillhouse.v1.GenerateB266Response
+	8,  // 22: stillhouse.v1.B266Service.SubmitB266:output_type -> stillhouse.v1.SubmitB266Response
+	10, // 23: stillhouse.v1.B266Service.ListB266Periods:output_type -> stillhouse.v1.ListB266PeriodsResponse
+	12, // 24: stillhouse.v1.B266Service.GetB266Period:output_type -> stillhouse.v1.GetB266PeriodResponse
+	14, // 25: stillhouse.v1.B266Service.ReopenB266Period:output_type -> stillhouse.v1.ReopenB266PeriodResponse
+	20, // [20:26] is the sub-list for method output_type
+	14, // [14:20] is the sub-list for method input_type
 	14, // [14:14] is the sub-list for extension type_name
 	14, // [14:14] is the sub-list for extension extendee
 	0,  // [0:14] is the sub-list for field type_name
@@ -1415,7 +1597,7 @@ func file_stillhouse_v1_b266_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_b266_proto_rawDesc), len(file_stillhouse_v1_b266_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   12,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

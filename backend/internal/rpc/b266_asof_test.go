@@ -308,16 +308,17 @@ func TestB266AndRemovalRefuseDatesWithNoRate(t *testing.T) {
 		}
 	})
 
-	t.Run("a period straddling a rate change", func(t *testing.T) {
-		// The last band's KnownUntil is the next indexation date. A period
-		// crossing it would need two sets of rates on a form that has one
-		// line for each.
+	t.Run("a period ending past the table", func(t *testing.T) {
+		// Past the last band entirely: there is no rate to charge at all,
+		// so this one still refuses. A period that merely SPANS an
+		// indexation does not — see
+		// TestAPeriodSpanningAnIndexationComputesAndSaysSo.
 		_, err := b266.GenerateB266(f.ctx, connect.NewRequest(&stillhousev1.GenerateB266Request{
-			PeriodStart: to.AddDate(0, 0, -5).Format("2006-01-02"),
-			PeriodEnd:   to.AddDate(0, 0, 5).Format("2006-01-02"),
+			PeriodStart: to.AddDate(0, 0, 1).Format("2006-01-02"),
+			PeriodEnd:   to.AddDate(0, 0, 30).Format("2006-01-02"),
 		}))
 		if err == nil {
-			t.Fatal("a return was generated across a rate boundary")
+			t.Fatal("a return was generated for a period with no rate on file")
 		}
 		if got := connect.CodeOf(err); got != connect.CodeFailedPrecondition {
 			t.Errorf("code = %v, want failed_precondition (err: %v)", got, err)

@@ -106,6 +106,18 @@ type b266Totals struct {
 	destroyedUnclassifiedN   int32
 	// Duty on the dutiable losses, at the rate in force over the period.
 	dutyOnLossesCAD float64
+
+	// When this return falls due, and how long there is. Zero time means
+	// the fiscal calendar could not place the period.
+	dueOn time.Time
+	// Set when the period's dates are not the one the licensee elected to
+	// file. Not a refusal — a draft over an odd range to look at the
+	// figures is legitimate — so it becomes a blocker instead.
+	electionMismatch string
+	// Set when the period spans an excise indexation. Not an error — a
+	// semi-annual period always does — but the single rate the form asks
+	// to be quoted cannot describe the whole period.
+	rateChangeNote string
 }
 
 // laa returns the LAA summed against a bulk movement reason, or zero if
@@ -242,6 +254,10 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 	// first-ever return came out with a negative opening balance.
 	report.PackagedOpeningLaa = round4(report.PackagedClosingLaa - report.PackagedPackagedLaa + report.PackagedRemovedDutyPaidLaa)
 
+	if !t.dueOn.IsZero() {
+		report.DueOn = t.dueOn.Format("2006-01-02")
+		report.DaysUntilDue = int32(t.dueOn.Sub(dayStart(generatedAt)).Hours() / 24)
+	}
 	report.FilingBlockers = filingBlockers(t)
 	return report
 }
@@ -271,6 +287,12 @@ func round4(x float64) float64 {
 // green light it cannot honestly give would be worse than no light at all.
 func filingBlockers(t b266Totals) []string {
 	var out []string
+	if t.electionMismatch != "" {
+		out = append(out, t.electionMismatch)
+	}
+	if t.rateChangeNote != "" {
+		out = append(out, t.rateChangeNote)
+	}
 	if t.lossesUnclassifiedCount > 0 {
 		out = append(out, fmt.Sprintf(
 			"%d loss%s totalling %.4f LAA have no duty treatment. Under EDM3-4-1 a relieved loss and one that cannot be accounted for are charged differently, and Stillhouse will not guess which these are.",
@@ -289,4 +311,10 @@ func plural(n int32) string {
 		return ""
 	}
 	return "es"
+}
+
+// dayStart drops the time of day, so "days until due" counts whole days
+// and does not flip on the hour a report happens to be generated.
+func dayStart(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
 }

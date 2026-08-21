@@ -32,6 +32,14 @@ func tenantToProto(t sqlcgen.Tenant) *stillhousev1.Tenant {
 		// reason.
 		DutyPoint:              dutyPointToProto(t.DutyPoint),
 		DutyPointEffectiveFrom: t.DutyPointEffectiveFrom.Time.Format("2006-01-02"),
+
+		FilingFrequency:                 filingFrequencyToProto(t.FilingFrequency),
+		FiscalMonthBasis:                fiscalMonthBasisToProto(t.FiscalMonthBasis),
+		FiscalMonthNotificationRef:      t.FiscalMonthNotificationRef,
+		FilingFrequencyAuthorizationRef: t.FilingFrequencyAuthorizationRef,
+	}
+	if t.FiscalMonthEndDay.Valid {
+		out.FiscalMonthEndDay = t.FiscalMonthEndDay.Int32
 	}
 	if t.ExciseWarehouseLicenceNumber.Valid {
 		out.ExciseWarehouseLicenceNumber = t.ExciseWarehouseLicenceNumber.String

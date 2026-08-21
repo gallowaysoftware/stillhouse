@@ -78,10 +78,21 @@ func (s *B266Service) GenerateB266(
 		}
 
 		// Upsert draft period.
+		// The due date is frozen on first generation: a later change of
+		// fiscal-month election must not silently restate when a past
+		// return was due.
+		tenant, e := q.GetTenantByID(ctx, u.TenantID)
+		if e != nil {
+			return e
+		}
 		period, e = q.UpsertB266PeriodDraft(ctx, sqlcgen.UpsertB266PeriodDraftParams{
 			TenantID:    u.TenantID,
 			PeriodStart: pgtype.Date{Valid: true, Time: pStart},
 			PeriodEnd:   pgtype.Date{Valid: true, Time: pEnd},
+			DueOn: pgtype.Date{
+				Valid: true,
+				Time:  tenantFilingBasis(tenant).DueDate(pEnd),
+			},
 		})
 		if e != nil {
 			return e
@@ -337,16 +348,20 @@ func gatherB266Totals(
 ) (b266Totals, error) {
 	var t b266Totals
 
-	// The rates the period is charged at. Resolved from the period's own
-	// dates, so a return filed for a period before the last indexation
-	// quotes that period's rate rather than today's.
+	// The rates the period is charged at, and whether one set of them
+	// covers the whole period.
 	//
-	// A period that spans a rate change would need two sets of rates on
-	// one form, and the form has one line for each. CRA indexes on 1
-	// April, which is a fiscal-month boundary, so a period that straddles
-	// one is a period that was set up wrong — say so rather than quoting
-	// one of the two rates and letting the other quantity be charged at
-	// it.
+	// A period CAN span an indexation and it is not an error: CRA indexes
+	// on 1 April, and a semi-annual filer's January-to-June period contains
+	// it by construction. Refusing one — which stage 142 did, reasoning
+	// from monthly periods only — made semi-annual filing impossible.
+	//
+	// The duty figures survive it. Every removal and every bottling run
+	// stores the rate in force on its own date (stages 142 and 143), and
+	// losses are charged the same way below, so duty_payable_cad is right
+	// either way. What cannot survive is the single rate the form asks to
+	// be quoted in a box, so the period says so and lets the operator
+	// decide what to write there.
 	startBand, err := excise.RateOn(periodStart)
 	if err != nil {
 		return t, connect.NewError(connect.CodeFailedPrecondition, err)
@@ -355,12 +370,11 @@ func gatherB266Totals(
 	if err != nil {
 		return t, connect.NewError(connect.CodeFailedPrecondition, err)
 	}
-	if startBand.EffectiveFrom != endBand.EffectiveFrom {
-		return t, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-			"the period spans an excise rate change on %s (%s → %s); split it at the boundary so each return carries one set of rates",
-			endBand.EffectiveFrom.Format("2006-01-02"), startBand.Source, endBand.Source))
-	}
-	t.dutyBand = startBand
+	// The band in force at the close is the one quoted: it is the rate
+	// most of a spanning period's activity was charged at, and the one an
+	// operator has in front of them at filing time.
+	t.dutyBand = endBand
+	t.rateChangeNote = rateChangeNoteFor(startBand, endBand)
 
 	reasonSums, err := q.SumBulkMovementsByReason(ctx, sqlcgen.SumBulkMovementsByReasonParams{
 		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
@@ -477,12 +491,27 @@ func gatherB266Totals(
 	t.destroyedUnclassifiedLAA = destroyed.UnclassifiedLaa
 	t.destroyedUnclassifiedN = destroyed.UnclassifiedCount
 
-	// Charged at the period's rate rather than each loss's own date. The
-	// period cannot span an indexation — gatherB266Totals refuses one that
-	// does — so there is exactly one rate to charge, and the alternative
-	// would report a duty figure that no single stated rate multiplies out
-	// to. A destruction ruled dutiable is charged the same way.
-	t.dutyOnLossesCAD = (losses.DutiableLaa + destroyed.DutiableLaa) * t.dutyBand.PerLAAOver7Pct
+	// Each dutiable loss is charged at the rate in force on the day it
+	// happened, not at the period's. Across an indexation — which a
+	// semi-annual period always spans — a period rate would charge half
+	// the losses at the wrong one.
+	dutiable, err := q.ListDutiableLossesInPeriod(ctx, sqlcgen.ListDutiableLossesInPeriodParams{
+		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
+		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+	})
+	if err != nil {
+		return t, err
+	}
+	for _, l := range dutiable {
+		_, duty, e := excise.DutyOnLAA(l.OccurredAt.Time, l.Laa)
+		if e != nil {
+			// Unreachable while the period itself resolved a rate at both
+			// ends, but a loss dated outside the table would otherwise be
+			// charged nothing at all.
+			return t, connect.NewError(connect.CodeFailedPrecondition, e)
+		}
+		t.dutyOnLossesCAD += duty
+	}
 
 	// The basis the period was computed on, carried onto the return: the
 	// figures cannot be checked without knowing which event crystallised
@@ -493,6 +522,14 @@ func gatherB266Totals(
 	}
 	t.dutyPoint = tenant.DutyPoint
 	t.dutyPointFrom = tenant.DutyPointEffectiveFrom.Time
+
+	// When this return falls due, on the licensee's own fiscal calendar,
+	// and whether these dates are the period they elected to file.
+	basis := tenantFilingBasis(tenant)
+	t.dueOn = basis.DueDate(periodEnd)
+	if ok, why := basis.MatchesElection(periodStart, periodEnd); !ok {
+		t.electionMismatch = why
+	}
 
 	return t, nil
 }
@@ -506,6 +543,7 @@ func b266PeriodToProto(p sqlcgen.B266Period) *stillhousev1.B266Period {
 		Notes:       p.Notes,
 		CreatedAt:   timestamppb.New(p.CreatedAt.Time),
 		UpdatedAt:   timestamppb.New(p.UpdatedAt.Time),
+		DueOn:       formatDate(p.DueOn),
 	}
 	if p.SubmittedAt.Valid {
 		out.SubmittedAt = timestamppb.New(p.SubmittedAt.Time)
@@ -524,4 +562,20 @@ func b266StatusToProto(s sqlcgen.B266Status) stillhousev1.B266Status {
 		return stillhousev1.B266Status_B266_STATUS_SUBMITTED
 	}
 	return stillhousev1.B266Status_B266_STATUS_UNSPECIFIED
+}
+
+// rateChangeNoteFor returns the sentence to put on a period that spans an
+// excise indexation, or "" when one set of rates covers it.
+//
+// Split out so it can be exercised without a database and without a
+// second band in the shipped rate table — which, until the EDN history is
+// seeded (PLAN A2), is the only reason the end-to-end case cannot be
+// built.
+func rateChangeNoteFor(start, end excise.Band) string {
+	if start.EffectiveFrom.Equal(end.EffectiveFrom) {
+		return ""
+	}
+	return fmt.Sprintf(
+		"this period spans the excise rate change on %s (%s → %s). Every line is charged at the rate in force on its own date, so the totals are right — but the single rate quoted below is %s's and will not multiply out against them.",
+		end.EffectiveFrom.Format("2006-01-02"), start.Source, end.Source, end.Source)
 }

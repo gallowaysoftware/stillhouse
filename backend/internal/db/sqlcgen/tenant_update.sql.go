@@ -13,7 +13,7 @@ import (
 )
 
 const setDutyPointEffectiveFrom = `-- name: SetDutyPointEffectiveFrom :one
-UPDATE tenants SET duty_point_effective_from = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from
+UPDATE tenants SET duty_point_effective_from = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref
 `
 
 type SetDutyPointEffectiveFromParams struct {
@@ -38,6 +38,64 @@ func (q *Queries) SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPoin
 		&i.UpdatedAt,
 		&i.DutyPoint,
 		&i.DutyPointEffectiveFrom,
+		&i.FilingFrequency,
+		&i.FiscalMonthBasis,
+		&i.FiscalMonthEndDay,
+		&i.FiscalMonthNotificationRef,
+		&i.FilingFrequencyAuthorizationRef,
+	)
+	return i, err
+}
+
+const updateFilingCalendar = `-- name: UpdateFilingCalendar :one
+UPDATE tenants
+SET filing_frequency                   = $2,
+    fiscal_month_basis                 = $3,
+    fiscal_month_end_day               = $4,
+    fiscal_month_notification_ref      = $5,
+    filing_frequency_authorization_ref = $6
+WHERE id = $1
+RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref
+`
+
+type UpdateFilingCalendarParams struct {
+	ID                              uuid.UUID        `json:"id"`
+	FilingFrequency                 FilingFrequency  `json:"filing_frequency"`
+	FiscalMonthBasis                FiscalMonthBasis `json:"fiscal_month_basis"`
+	FiscalMonthEndDay               pgtype.Int4      `json:"fiscal_month_end_day"`
+	FiscalMonthNotificationRef      string           `json:"fiscal_month_notification_ref"`
+	FilingFrequencyAuthorizationRef string           `json:"filing_frequency_authorization_ref"`
+}
+
+// The reporting calendar: how often the licensee files, and how their
+// fiscal months are defined. Separate from UpdateTenant because these two
+// are CRA elections with paperwork behind them, not distillery details an
+// owner edits in passing.
+func (q *Queries) UpdateFilingCalendar(ctx context.Context, arg UpdateFilingCalendarParams) (Tenant, error) {
+	row := q.db.QueryRow(ctx, updateFilingCalendar,
+		arg.ID,
+		arg.FilingFrequency,
+		arg.FiscalMonthBasis,
+		arg.FiscalMonthEndDay,
+		arg.FiscalMonthNotificationRef,
+		arg.FilingFrequencyAuthorizationRef,
+	)
+	var i Tenant
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CraSpiritsLicenceNumber,
+		&i.ExciseWarehouseLicenceNumber,
+		&i.DefaultJurisdiction,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DutyPoint,
+		&i.DutyPointEffectiveFrom,
+		&i.FilingFrequency,
+		&i.FiscalMonthBasis,
+		&i.FiscalMonthEndDay,
+		&i.FiscalMonthNotificationRef,
+		&i.FilingFrequencyAuthorizationRef,
 	)
 	return i, err
 }
@@ -49,7 +107,7 @@ SET name                            = $2,
     excise_warehouse_licence_number = $4,
     default_jurisdiction            = $5
 WHERE id = $1
-RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from
+RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref
 `
 
 type UpdateTenantParams struct {
@@ -79,6 +137,11 @@ func (q *Queries) UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Ten
 		&i.UpdatedAt,
 		&i.DutyPoint,
 		&i.DutyPointEffectiveFrom,
+		&i.FilingFrequency,
+		&i.FiscalMonthBasis,
+		&i.FiscalMonthEndDay,
+		&i.FiscalMonthNotificationRef,
+		&i.FilingFrequencyAuthorizationRef,
 	)
 	return i, err
 }

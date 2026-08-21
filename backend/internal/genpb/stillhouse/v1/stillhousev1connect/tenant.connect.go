@@ -36,6 +36,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// TenantServiceUpdateFilingCalendarProcedure is the fully-qualified name of the TenantService's
+	// UpdateFilingCalendar RPC.
+	TenantServiceUpdateFilingCalendarProcedure = "/stillhouse.v1.TenantService/UpdateFilingCalendar"
 	// TenantServiceCreateTenantProcedure is the fully-qualified name of the TenantService's
 	// CreateTenant RPC.
 	TenantServiceCreateTenantProcedure = "/stillhouse.v1.TenantService/CreateTenant"
@@ -51,6 +54,7 @@ const (
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
 type TenantServiceClient interface {
+	UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error)
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
 	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
@@ -68,6 +72,12 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 	baseURL = strings.TrimRight(baseURL, "/")
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
 	return &tenantServiceClient{
+		updateFilingCalendar: connect.NewClient[v1.UpdateFilingCalendarRequest, v1.UpdateFilingCalendarResponse](
+			httpClient,
+			baseURL+TenantServiceUpdateFilingCalendarProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("UpdateFilingCalendar")),
+			connect.WithClientOptions(opts...),
+		),
 		createTenant: connect.NewClient[v1.CreateTenantRequest, v1.CreateTenantResponse](
 			httpClient,
 			baseURL+TenantServiceCreateTenantProcedure,
@@ -97,10 +107,16 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // tenantServiceClient implements TenantServiceClient.
 type tenantServiceClient struct {
-	createTenant   *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
-	getTenant      *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
-	updateTenant   *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
-	deleteMyTenant *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+	updateFilingCalendar *connect.Client[v1.UpdateFilingCalendarRequest, v1.UpdateFilingCalendarResponse]
+	createTenant         *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
+	getTenant            *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
+	updateTenant         *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
+	deleteMyTenant       *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+}
+
+// UpdateFilingCalendar calls stillhouse.v1.TenantService.UpdateFilingCalendar.
+func (c *tenantServiceClient) UpdateFilingCalendar(ctx context.Context, req *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error) {
+	return c.updateFilingCalendar.CallUnary(ctx, req)
 }
 
 // CreateTenant calls stillhouse.v1.TenantService.CreateTenant.
@@ -125,6 +141,7 @@ func (c *tenantServiceClient) DeleteMyTenant(ctx context.Context, req *connect.R
 
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
+	UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error)
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
 	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
@@ -138,6 +155,12 @@ type TenantServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
+	tenantServiceUpdateFilingCalendarHandler := connect.NewUnaryHandler(
+		TenantServiceUpdateFilingCalendarProcedure,
+		svc.UpdateFilingCalendar,
+		connect.WithSchema(tenantServiceMethods.ByName("UpdateFilingCalendar")),
+		connect.WithHandlerOptions(opts...),
+	)
 	tenantServiceCreateTenantHandler := connect.NewUnaryHandler(
 		TenantServiceCreateTenantProcedure,
 		svc.CreateTenant,
@@ -164,6 +187,8 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case TenantServiceUpdateFilingCalendarProcedure:
+			tenantServiceUpdateFilingCalendarHandler.ServeHTTP(w, r)
 		case TenantServiceCreateTenantProcedure:
 			tenantServiceCreateTenantHandler.ServeHTTP(w, r)
 		case TenantServiceGetTenantProcedure:
@@ -180,6 +205,10 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 
 // UnimplementedTenantServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTenantServiceHandler struct{}
+
+func (UnimplementedTenantServiceHandler) UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.UpdateFilingCalendar is not implemented"))
+}
 
 func (UnimplementedTenantServiceHandler) CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.CreateTenant is not implemented"))

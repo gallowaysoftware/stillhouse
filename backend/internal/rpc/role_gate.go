@@ -76,6 +76,11 @@ var procedureMinRole = map[string]minRole{
 	// action with a mandatory explanation rather than a viewer one.
 	// Ruling on a loss's duty treatment changes what the return charges, so
 	// it is an operator action; reading the outstanding list is not.
+	// The reporting calendar is a pair of CRA elections, so changing it is
+	// owner-only; asking which period to file is not.
+	"/stillhouse.v1.TenantService/UpdateFilingCalendar": roleOwner,
+	"/stillhouse.v1.B266Service/SuggestB266Period":      roleViewer,
+
 	"/stillhouse.v1.BulkService/ListLosses":     roleViewer,
 	"/stillhouse.v1.BulkService/ClassifyLosses": roleOperator,
 

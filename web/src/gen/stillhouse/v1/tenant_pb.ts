@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/tenant.proto.
  */
 export const file_stillhouse_v1_tenant: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSK+AgoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCSKuAQoTQ3JlYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEhwKFGRlZmF1bHRfanVyaXNkaWN0aW9uGAMgASgJEhMKC293bmVyX2VtYWlsGAQgASgJEhYKDm93bmVyX3Bhc3N3b3JkGAUgASgJEhoKEm93bmVyX2Rpc3BsYXlfbmFtZRgGIAEoCSI9ChRDcmVhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCISChBHZXRUZW5hbnRSZXF1ZXN0IjoKEUdldFRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCItChVEZWxldGVNeVRlbmFudFJlcXVlc3QSFAoMY29uZmlybV9uYW1lGAEgASgJIhgKFkRlbGV0ZU15VGVuYW50UmVzcG9uc2UqXwoJRHV0eVBvaW50EhoKFkRVVFlfUE9JTlRfVU5TUEVDSUZJRUQQABIbChdEVVRZX1BPSU5UX0FUX1BBQ0tBR0lORxABEhkKFURVVFlfUE9JTlRfQVRfUkVNT1ZBTBACMvACCg1UZW5hbnRTZXJ2aWNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZRJXCgxVcGRhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlc3BvbnNlEl0KDkRlbGV0ZU15VGVuYW50EiQuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSKmBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkirgEKE0NyZWF0ZVRlbmFudFJlcXVlc3QSDAoEbmFtZRgBIAEoCRIiChpjcmFfc3Bpcml0c19saWNlbmNlX251bWJlchgCIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgDIAEoCRITCgtvd25lcl9lbWFpbBgEIAEoCRIWCg5vd25lcl9wYXNzd29yZBgFIAEoCRIaChJvd25lcl9kaXNwbGF5X25hbWUYBiABKAkiPQoUQ3JlYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiEgoQR2V0VGVuYW50UmVxdWVzdCI6ChFHZXRUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKFAgobVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0EjgKEGZpbGluZ19mcmVxdWVuY3kYASABKA4yHi5zdGlsbGhvdXNlLnYxLkZpbGluZ0ZyZXF1ZW5jeRI7ChJmaXNjYWxfbW9udGhfYmFzaXMYAiABKA4yHy5zdGlsbGhvdXNlLnYxLkZpc2NhbE1vbnRoQmFzaXMSHAoUZmlzY2FsX21vbnRoX2VuZF9kYXkYAyABKAUSJQodZmlzY2FsX21vbnRoX25vdGlmaWNhdGlvbl9yZWYYBCABKAkSKgoiZmlsaW5nX2ZyZXF1ZW5jeV9hdXRob3JpemF0aW9uX3JlZhgFIAEoCSJFChxVcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCItChVEZWxldGVNeVRlbmFudFJlcXVlc3QSFAoMY29uZmlybV9uYW1lGAEgASgJIhgKFkRlbGV0ZU15VGVuYW50UmVzcG9uc2UqXwoJRHV0eVBvaW50EhoKFkRVVFlfUE9JTlRfVU5TUEVDSUZJRUQQABIbChdEVVRZX1BPSU5UX0FUX1BBQ0tBR0lORxABEhkKFURVVFlfUE9JTlRfQVRfUkVNT1ZBTBACKnMKD0ZpbGluZ0ZyZXF1ZW5jeRIgChxGSUxJTkdfRlJFUVVFTkNZX1VOU1BFQ0lGSUVEEAASHAoYRklMSU5HX0ZSRVFVRU5DWV9NT05USExZEAESIAocRklMSU5HX0ZSRVFVRU5DWV9TRU1JX0FOTlVBTBACKogBChBGaXNjYWxNb250aEJhc2lzEiIKHkZJU0NBTF9NT05USF9CQVNJU19VTlNQRUNJRklFRBAAEiUKIUZJU0NBTF9NT05USF9CQVNJU19DQUxFTkRBUl9NT05USBABEikKJUZJU0NBTF9NT05USF9CQVNJU19GSVhFRF9EQVlfT0ZfTU9OVEgQAjLhAwoNVGVuYW50U2VydmljZRJvChRVcGRhdGVGaWxpbmdDYWxlbmRhchIqLnN0aWxsaG91c2UudjEuVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5VcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZRJXCgxVcGRhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlc3BvbnNlEl0KDkRlbGV0ZU15VGVuYW50EiQuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Tenant
@@ -78,6 +78,35 @@ export type Tenant = Message<"stillhouse.v1.Tenant"> & {
    * @generated from field: string duty_point_effective_from = 9;
    */
   dutyPointEffectiveFrom: string;
+
+  /**
+   * The reporting calendar. Neither election is something a licensee just
+   * decides — each is filed with CRA — so the reference sits beside the
+   * setting.
+   *
+   * @generated from field: stillhouse.v1.FilingFrequency filing_frequency = 10;
+   */
+  filingFrequency: FilingFrequency;
+
+  /**
+   * @generated from field: stillhouse.v1.FiscalMonthBasis fiscal_month_basis = 11;
+   */
+  fiscalMonthBasis: FiscalMonthBasis;
+
+  /**
+   * @generated from field: int32 fiscal_month_end_day = 12;
+   */
+  fiscalMonthEndDay: number;
+
+  /**
+   * @generated from field: string fiscal_month_notification_ref = 13;
+   */
+  fiscalMonthNotificationRef: string;
+
+  /**
+   * @generated from field: string filing_frequency_authorization_ref = 14;
+   */
+  filingFrequencyAuthorizationRef: string;
 };
 
 /**
@@ -179,6 +208,62 @@ export const GetTenantResponseSchema: GenMessage<GetTenantResponse> = /*@__PURE_
   messageDesc(file_stillhouse_v1_tenant, 4);
 
 /**
+ * @generated from message stillhouse.v1.UpdateFilingCalendarRequest
+ */
+export type UpdateFilingCalendarRequest = Message<"stillhouse.v1.UpdateFilingCalendarRequest"> & {
+  /**
+   * @generated from field: stillhouse.v1.FilingFrequency filing_frequency = 1;
+   */
+  filingFrequency: FilingFrequency;
+
+  /**
+   * @generated from field: stillhouse.v1.FiscalMonthBasis fiscal_month_basis = 2;
+   */
+  fiscalMonthBasis: FiscalMonthBasis;
+
+  /**
+   * required for FIXED_DAY_OF_MONTH
+   *
+   * @generated from field: int32 fiscal_month_end_day = 3;
+   */
+  fiscalMonthEndDay: number;
+
+  /**
+   * @generated from field: string fiscal_month_notification_ref = 4;
+   */
+  fiscalMonthNotificationRef: string;
+
+  /**
+   * @generated from field: string filing_frequency_authorization_ref = 5;
+   */
+  filingFrequencyAuthorizationRef: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.UpdateFilingCalendarRequest.
+ * Use `create(UpdateFilingCalendarRequestSchema)` to create a new message.
+ */
+export const UpdateFilingCalendarRequestSchema: GenMessage<UpdateFilingCalendarRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 5);
+
+/**
+ * @generated from message stillhouse.v1.UpdateFilingCalendarResponse
+ */
+export type UpdateFilingCalendarResponse = Message<"stillhouse.v1.UpdateFilingCalendarResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.Tenant tenant = 1;
+   */
+  tenant?: Tenant | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.UpdateFilingCalendarResponse.
+ * Use `create(UpdateFilingCalendarResponseSchema)` to create a new message.
+ */
+export const UpdateFilingCalendarResponseSchema: GenMessage<UpdateFilingCalendarResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 6);
+
+/**
  * @generated from message stillhouse.v1.UpdateTenantRequest
  */
 export type UpdateTenantRequest = Message<"stillhouse.v1.UpdateTenantRequest"> & {
@@ -210,7 +295,7 @@ export type UpdateTenantRequest = Message<"stillhouse.v1.UpdateTenantRequest"> &
  * Use `create(UpdateTenantRequestSchema)` to create a new message.
  */
 export const UpdateTenantRequestSchema: GenMessage<UpdateTenantRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_tenant, 5);
+  messageDesc(file_stillhouse_v1_tenant, 7);
 
 /**
  * @generated from message stillhouse.v1.UpdateTenantResponse
@@ -227,7 +312,7 @@ export type UpdateTenantResponse = Message<"stillhouse.v1.UpdateTenantResponse">
  * Use `create(UpdateTenantResponseSchema)` to create a new message.
  */
 export const UpdateTenantResponseSchema: GenMessage<UpdateTenantResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_tenant, 6);
+  messageDesc(file_stillhouse_v1_tenant, 8);
 
 /**
  * DeleteMyTenant — owner-only, hard-deletes the caller's tenant and every
@@ -252,7 +337,7 @@ export type DeleteMyTenantRequest = Message<"stillhouse.v1.DeleteMyTenantRequest
  * Use `create(DeleteMyTenantRequestSchema)` to create a new message.
  */
 export const DeleteMyTenantRequestSchema: GenMessage<DeleteMyTenantRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_tenant, 7);
+  messageDesc(file_stillhouse_v1_tenant, 9);
 
 /**
  * @generated from message stillhouse.v1.DeleteMyTenantResponse
@@ -265,7 +350,7 @@ export type DeleteMyTenantResponse = Message<"stillhouse.v1.DeleteMyTenantRespon
  * Use `create(DeleteMyTenantResponseSchema)` to create a new message.
  */
 export const DeleteMyTenantResponseSchema: GenMessage<DeleteMyTenantResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_tenant, 8);
+  messageDesc(file_stillhouse_v1_tenant, 10);
 
 /**
  * DutyPoint is the event at which excise duty becomes payable.
@@ -307,12 +392,82 @@ export const DutyPointSchema: GenEnum<DutyPoint> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_tenant, 0);
 
 /**
+ * How often the licensee files. An authorized licensee may file
+ * semi-annually (form B284) rather than monthly — EDM3-1-1 ¶50.
+ *
+ * @generated from enum stillhouse.v1.FilingFrequency
+ */
+export enum FilingFrequency {
+  /**
+   * @generated from enum value: FILING_FREQUENCY_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: FILING_FREQUENCY_MONTHLY = 1;
+   */
+  MONTHLY = 1,
+
+  /**
+   * @generated from enum value: FILING_FREQUENCY_SEMI_ANNUAL = 2;
+   */
+  SEMI_ANNUAL = 2,
+}
+
+/**
+ * Describes the enum stillhouse.v1.FilingFrequency.
+ */
+export const FilingFrequencySchema: GenEnum<FilingFrequency> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_tenant, 1);
+
+/**
+ * How the licensee's fiscal months are defined. Set by notification (form
+ * B268) rather than assumed.
+ *
+ * @generated from enum stillhouse.v1.FiscalMonthBasis
+ */
+export enum FiscalMonthBasis {
+  /**
+   * @generated from enum value: FISCAL_MONTH_BASIS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: FISCAL_MONTH_BASIS_CALENDAR_MONTH = 1;
+   */
+  CALENDAR_MONTH = 1,
+
+  /**
+   * Fiscal months end on a nominated day, so one runs from the 26th to the
+   * 25th. Between 1 and 28 — a fiscal month ending on the 30th has no
+   * February.
+   *
+   * @generated from enum value: FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH = 2;
+   */
+  FIXED_DAY_OF_MONTH = 2,
+}
+
+/**
+ * Describes the enum stillhouse.v1.FiscalMonthBasis.
+ */
+export const FiscalMonthBasisSchema: GenEnum<FiscalMonthBasis> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_tenant, 2);
+
+/**
  * TenantService manages tenant metadata.
  * CreateTenant is the bootstrap operation for a fresh self-hosted install.
  *
  * @generated from service stillhouse.v1.TenantService
  */
 export const TenantService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.TenantService.UpdateFilingCalendar
+   */
+  updateFilingCalendar: {
+    methodKind: "unary";
+    input: typeof UpdateFilingCalendarRequestSchema;
+    output: typeof UpdateFilingCalendarResponseSchema;
+  },
   /**
    * @generated from rpc stillhouse.v1.TenantService.CreateTenant
    */

@@ -13,16 +13,24 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/auth"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
 type TenantService struct {
-	pool   *pgxpool.Pool
-	q      *sqlcgen.Queries
+	pool *pgxpool.Pool
+	q    *sqlcgen.Queries
+	// db is the tenant-scoped path. `tenants` itself is not RLS-scoped, so
+	// most of this service reads through q directly — but `audit_events`
+	// FORCES row-level security, so any write worth an audit row has to go
+	// through a transaction that sets the tenant GUC first. That is stage
+	// 138's lesson: without it the audit insert is refused and the whole
+	// operation rolls back behind a 500, invisibly in dev.
+	db     *tenantdb.DB
 	logger *slog.Logger
 }
 
 func NewTenantService(pool *pgxpool.Pool, q *sqlcgen.Queries, logger *slog.Logger) *TenantService {
-	return &TenantService{pool: pool, q: q, logger: logger}
+	return &TenantService{pool: pool, q: q, db: tenantdb.New(pool), logger: logger}
 }
 
 // CreateTenant is the bootstrap endpoint. Calls succeed only when no tenant

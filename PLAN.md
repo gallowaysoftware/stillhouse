@@ -62,15 +62,6 @@ else first:
   `A2`.
 - **Page 1 line 8** — refunds, with an attached B256. Waits on `A9`.
 
-### A6 · Reporting periods assume a calendar month — P1
-
-The default period is a fiscal month, but an authorized licensee may file
-semi-annually (B284), and fiscal months are set by notification (B268) rather
-than assumed — EDM3-1-1 ¶50. Neither the elected frequency nor the derived due
-date (last day of the fiscal month after the period) exists in the model.
-Prerequisite for the filing-due notification in `H5`, and for every return
-added in track B.
-
 ### A7 · Spirits held for others aren't modelled — P1
 
 EDM10-1-7 page 3: report all bulk spirits *in your possession regardless of who
@@ -397,7 +388,7 @@ role that fits, which is a shame given they are also the best referral channel.
 ### H5 · Notifications — P1
 
 A mailer exists for password resets and nothing else. Filing due in N days
-(depends on `A6`), stamps below a week of cover, ferment stuck, cask outside its
+(unblocked: stage 148 computes the due date), stamps below a week of cover, ferment stuck, cask outside its
 angel's-share band, licence expiring (`B6`). A dashboard nobody opens on a
 Tuesday is not an alert.
 
@@ -595,25 +586,32 @@ the three options.
 
 ## Ordering
 
-Correctness first, in this order, because each depends on the one before:
+Track A and track C set out to make the return right before anything else
+mattered. Most of that has now shipped, in stages 139–148:
 
-1. `A6` reporting periods
-2. `H1` `H2` liability and backups — before any second distillery's records land here
-3. `C2` audit binder — the artifact that makes the case for everything above
+| | |
+|---|---|
+| `K1` `K2` | the projection is pure and testable, and both handlers that write duty onto a return are covered |
+| `A10` | closing balances are as of period end, so a late or amended return reports the period's figures |
+| `A2` | rates are date-effective and refuse outside what they can cite |
+| `A1` | duty crystallises at packaging for a licensee without a warehouse licence |
+| `C1` | every gauge can name the CRA-approved instrument that made it |
+| `A4` | a book-versus-physical discrepancy is a reason-coded entry, not a residual in losses |
+| `A3` | page 3 has the bulk movement vocabulary the form asks for |
+| `A5` | a loss says whether it is relieved or duty-payable |
+| `A6` | a period is the one the licensee elected to file, with a due date attached |
 
-`A1`, `C1`, `A4`, `A5` and the bulk half of `A3` shipped in stages 143–147: duty
-crystallises at the event that makes it payable, every gauge can name the
-approved instrument that made it, a discrepancy between book and physical has a
-reason-coded entry of its own instead of vanishing into losses, page 3 has the
-movement vocabulary the form actually asks for, and a loss says whether it is
-relieved or duty-payable rather than being averaged into one line. What is left
-of `A3` is blocked on `B3`, `A2` and `A9` rather than on itself.
+What is left in track A is blocked on other items rather than on itself:
+the rest of `A3` waits on `B3`, `A2` and `A9`; `A7` is inert until the first
+contract fill; `A8` and `A9` are their own features.
 
-`A3` and `A4` are the difference between a return that ties out and one that is
-also true; `A10`, which was the third of that group, shipped in stage 141. `K1`
-and `K2` are done: the projection is split out and pure, and both handlers that
-write duty onto a return are covered, so every line track A adds now lands
-somewhere a test can reach.
+Next, in this order:
+
+1. `H1` `H2` — liability boundary and a tested restore, before any second
+   distillery's records land here
+2. `C2` — the audit binder. Stages 144–147 gave it real content to assemble:
+   instruments behind every determination, reason-coded adjustments, and a
+   complete page 3.
 
 Then breadth. `D1` (customers) and `F1` (locations) unblock the most downstream
 work and are worth doing early even though neither is urgent on its own.

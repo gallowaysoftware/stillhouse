@@ -13,7 +13,7 @@ import (
 )
 
 const b266PeriodCoveringDate = `-- name: B266PeriodCoveringDate :one
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
 WHERE status = 'submitted'
   AND period_start <= $1
   AND period_end   >= $1
@@ -39,12 +39,13 @@ func (q *Queries) B266PeriodCoveringDate(ctx context.Context, periodStart pgtype
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DueOn,
 	)
 	return i, err
 }
 
 const b266PeriodsOverlapping = `-- name: B266PeriodsOverlapping :many
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
 WHERE period_start <= $1
   AND period_end   >= $2
   AND NOT (period_start = $2 AND period_end = $1)
@@ -85,6 +86,7 @@ func (q *Queries) B266PeriodsOverlapping(ctx context.Context, arg B266PeriodsOve
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DueOn,
 		); err != nil {
 			return nil, err
 		}
@@ -97,7 +99,7 @@ func (q *Queries) B266PeriodsOverlapping(ctx context.Context, arg B266PeriodsOve
 }
 
 const getB266Period = `-- name: GetB266Period :one
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods WHERE id = $1
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods WHERE id = $1
 `
 
 func (q *Queries) GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error) {
@@ -115,12 +117,13 @@ func (q *Queries) GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, 
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DueOn,
 	)
 	return i, err
 }
 
 const getB266PeriodByDates = `-- name: GetB266PeriodByDates :one
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
 WHERE period_start = $1 AND period_end = $2
 `
 
@@ -144,12 +147,13 @@ func (q *Queries) GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByD
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DueOn,
 	)
 	return i, err
 }
 
 const listB266Periods = `-- name: ListB266Periods :many
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
 ORDER BY period_start DESC
 `
 
@@ -174,6 +178,7 @@ func (q *Queries) ListB266Periods(ctx context.Context) ([]B266Period, error) {
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.DueOn,
 		); err != nil {
 			return nil, err
 		}
@@ -189,7 +194,7 @@ const reopenB266Period = `-- name: ReopenB266Period :one
 UPDATE b266_periods
 SET status = 'draft'
 WHERE id = $1 AND status = 'submitted'
-RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on
 `
 
 // Flips a submitted period back to draft. Snapshot stays in place for
@@ -211,6 +216,7 @@ func (q *Queries) ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Perio
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DueOn,
 	)
 	return i, err
 }
@@ -223,7 +229,7 @@ SET status       = 'submitted',
     submitted_by = $3
 WHERE id = $1
   AND status = 'draft'
-RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on
 `
 
 type SubmitB266PeriodParams struct {
@@ -247,6 +253,7 @@ func (q *Queries) SubmitB266Period(ctx context.Context, arg SubmitB266PeriodPara
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DueOn,
 	)
 	return i, err
 }
@@ -596,21 +603,31 @@ func (q *Queries) SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeri
 }
 
 const upsertB266PeriodDraft = `-- name: UpsertB266PeriodDraft :one
-INSERT INTO b266_periods (tenant_id, period_start, period_end, status)
-VALUES ($1, $2, $3, 'draft')
+INSERT INTO b266_periods (tenant_id, period_start, period_end, status, due_on)
+VALUES ($1, $2, $3, 'draft', $4)
 ON CONFLICT (tenant_id, period_start, period_end) DO UPDATE
-SET updated_at = NOW()
-RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at
+SET updated_at = NOW(),
+    due_on     = COALESCE(b266_periods.due_on, EXCLUDED.due_on)
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on
 `
 
 type UpsertB266PeriodDraftParams struct {
 	TenantID    uuid.UUID   `json:"tenant_id"`
 	PeriodStart pgtype.Date `json:"period_start"`
 	PeriodEnd   pgtype.Date `json:"period_end"`
+	DueOn       pgtype.Date `json:"due_on"`
 }
 
+// due_on is set on first generation and left alone afterwards: a change of
+// fiscal-month election must not silently restate when a past return was
+// due. COALESCE keeps whatever the row already had.
 func (q *Queries) UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error) {
-	row := q.db.QueryRow(ctx, upsertB266PeriodDraft, arg.TenantID, arg.PeriodStart, arg.PeriodEnd)
+	row := q.db.QueryRow(ctx, upsertB266PeriodDraft,
+		arg.TenantID,
+		arg.PeriodStart,
+		arg.PeriodEnd,
+		arg.DueOn,
+	)
 	var i B266Period
 	err := row.Scan(
 		&i.ID,
@@ -624,6 +641,7 @@ func (q *Queries) UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266Perio
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DueOn,
 	)
 	return i, err
 }
