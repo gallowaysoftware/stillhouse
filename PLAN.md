@@ -145,14 +145,6 @@ dashboard alerts nobody currently gets.
 The one area where Stillhouse is already ahead of everything commercial. These
 finish the job.
 
-### C2 · Audit binder export — P1
-
-Everything needed already exists in pieces: period-locked snapshots, the audit
-log, gauge determination paths, the instruments behind them (stage 144), and
-movement-level detail. Nobody has assembled them. One bundle per period — filed figures, the movements behind each line,
-the determinations and instruments behind each movement, the trail — as PDF
-plus CSV. The single most persuasive artifact the product can produce.
-
 ### C3 · Stamp serial reconciliation — P1
 
 Stamps are Crown-controlled and must be accounted for. Orders, received,
@@ -539,6 +531,26 @@ status, scheduling.
 
 Not features. The reasons to believe the numbers above are right.
 
+### K5 · DB-backed tests share a database and bypass RLS — P2
+
+The integration tests connect as `STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN`, a
+superuser, so `WithTenantTx` sets the tenant GUC and row-level security does
+not act on it. Two consequences, both real:
+
+- **Tests are not isolated from each other.** A period left behind by one
+  test is visible to the next test's tenant, because the period-lock query
+  is only tenant-scoped by RLS. This bit during stage 151: a leftover
+  submitted period blocked writes for every other tenant in the database.
+- **The DB-backed tests do not exercise RLS at all.** They prove the SQL and
+  the handlers; they prove nothing about tenant isolation, which is `H11`'s
+  subject.
+
+Options, roughly in order of cost: run each test in a transaction that rolls
+back; give each test its own database; or run the suite as `stillhouse_app`
+and keep a superuser connection only for fixture setup. The last one would
+make the tests prove tenant isolation as a side effect, which is worth more
+than the other two.
+
 ### K3 · `_pct` means two different scales — P2
 
 `abv_pct` is 0–100. `extract_pct`, `moisture_pct` and the three recipe
@@ -588,10 +600,10 @@ What is left in track A is blocked on other items rather than on itself:
 the rest of `A3` waits on `B3`, `A2` and `A9`; `A7` is inert until the first
 contract fill; `A8` and `A9` are their own features.
 
-Next: `C2`, the audit binder. Stages 144–149 gave it real content to
-assemble — instruments behind every determination, reason-coded
-adjustments, a complete page 3, losses that say how they are treated, and
-a named person's confirmation on every filed period.
+Track A and C's ordered work is done. `C2`, the audit binder, shipped in
+stage 151 and is what the nine stages before it were for: a period's
+figures as filed, the movements behind each line, the determinations and
+approved instruments behind each movement, and the trail — in one bundle.
 
 Then breadth. `D1` (customers) and `F1` (locations) unblock the most downstream
 work and are worth doing early even though neither is urgent on its own.

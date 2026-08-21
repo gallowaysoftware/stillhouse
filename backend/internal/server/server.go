@@ -117,6 +117,10 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewAlcoholometryServiceHandler(alcoholometrySvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
 	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
+	// One bundle per reporting period: the figures as filed, the movements
+	// behind each line, the determinations and instruments behind each
+	// movement, and the trail.
+	mux.Handle("/export/b266-binder.zip", b266BinderHandler(sm, pool, queries, logger))
 	// MCP endpoint — non-browser clients (e.g. Claude.ai mobile) speak
 	// JSON-RPC over Streamable HTTP here. Auth is Authorization: Bearer
 	// sh_..., issued by cmd/mcp-token; the cookie-session middleware

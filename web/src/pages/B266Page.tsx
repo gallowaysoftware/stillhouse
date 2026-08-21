@@ -661,6 +661,21 @@ function ReopenPanel({ periodId }: { periodId: string }) {
   });
   return (
     <div data-print-hide className="space-y-3">
+      {/* The binder is only meaningful once there is a snapshot: before
+          that there is no "as filed" to assemble evidence around. */}
+      <a
+        href={`/export/b266-binder.zip?period_id=${encodeURIComponent(periodId)}`}
+        className="inline-block rounded border border-border-strong px-3 py-2 text-sm hover:bg-surface-3"
+      >
+        Download audit binder (.zip)
+      </a>
+      <p className="text-xs text-fg-muted">
+        One bundle for this period: the figures as filed, the movements behind each
+        line, the determinations and approved instruments behind each movement, and
+        the trail. Open <code>binder.html</code> and print it to PDF; the CSVs are the
+        same evidence in a form a spreadsheet can work with.
+      </p>
+
       <Callout tone="success" title="Snapshot frozen in Stillhouse">
         Stillhouse has locked the period for backdated changes. The CRA filing itself
         lives in My Business Account — if you haven't entered it there yet, this lock
