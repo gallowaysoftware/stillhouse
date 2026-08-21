@@ -87,8 +87,8 @@ themselves — ping them with the new tag and stop. Site-specific values
 
 - **Stage commits.** Every shipped feature is a single commit titled
   `stage N: <terse one-liner>`. Add a row to the README stages table
-  in the same commit, and delete the item's line from `PLAN.md`.
-  Cross-reference related stages in the body (`see also stage 109`).
+  in the same commit. Cross-reference related stages in the body
+  (`see also stage 109`).
 - **Web UI first.** Any operator-facing operation (token mgmt,
   invites, audit export, B266 generation, etc.) goes in the web UI,
   not a CLI. CLIs are reserved for bootstrap (`cmd/seed`,
@@ -159,9 +159,6 @@ wouldn't have surfaced it.
 ## What to read first
 
 - `README.md` — user-facing overview + stages table
-- `PLAN.md` — the open backlog, by track and severity. Items carry track
-  IDs (`A1`, `D3`), not stage numbers; a stage number is assigned when the
-  item ships, and its line in PLAN.md is deleted in the same commit.
 - `proto/stillhouse/v1/*.proto` — the API surface, well-commented
 - `backend/internal/rpc/bottling.go` (LAA conservation), `barrel.go`
   (maturation + regauge), `b266.go` (period generation) — the
