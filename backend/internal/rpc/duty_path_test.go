@@ -535,3 +535,61 @@ func TestConcurrentRemovalsAcrossLotsAllocateDistinctNumbers(t *testing.T) {
 		t.Errorf("recorded %d of %d removals — the rest are lost shipments", len(nos), lots)
 	}
 }
+
+// movement seeds a bulk movement INTO a container at a given moment and
+// moves the running balance with it. Both halves matter: the as-of walk
+// goes backwards from the running total over the ledger, so a fixture that
+// writes only one of the two is testing a state the application cannot
+// produce.
+func (f *dutyFixture) movement(t *testing.T, containerID uuid.UUID, volumeL, abvPct float64,
+	reason sqlcgen.BulkMovementReason, at time.Time) error {
+	t.Helper()
+	return f.moveBalance(t, containerID, volumeL, abvPct, reason, at, true)
+}
+
+// movementOut is movement's mirror: alcohol leaving the premises — a loss,
+// a destruction, a transfer out.
+func (f *dutyFixture) movementOut(t *testing.T, containerID uuid.UUID, volumeL, abvPct float64,
+	reason sqlcgen.BulkMovementReason, at time.Time) error {
+	t.Helper()
+	return f.moveBalance(t, containerID, volumeL, abvPct, reason, at, false)
+}
+
+func (f *dutyFixture) moveBalance(t *testing.T, containerID uuid.UUID, volumeL, abvPct float64,
+	reason sqlcgen.BulkMovementReason, at time.Time, inbound bool) error {
+	t.Helper()
+	c, err := f.q.GetBulkContainer(f.ctx, containerID)
+	if err != nil {
+		return err
+	}
+	laa := volumeL * abvPct / 100
+	var src, dst uuid.NullUUID
+	newVol, newLAA := c.CurrentVolumeL, c.CurrentLaa
+	if inbound {
+		dst = uuid.NullUUID{UUID: containerID, Valid: true}
+		newVol, newLAA = newVol+volumeL, newLAA+laa
+	} else {
+		src = uuid.NullUUID{UUID: containerID, Valid: true}
+		newVol, newLAA = newVol-volumeL, newLAA-laa
+	}
+	if _, err := f.q.InsertBulkMovement(f.ctx, sqlcgen.InsertBulkMovementParams{
+		TenantID:               f.tenant.ID,
+		SourceContainerID:      src,
+		DestinationContainerID: dst,
+		VolumeL:                volumeL,
+		AbvPct:                 abvPct,
+		Laa:                    laa,
+		Reason:                 reason,
+		ReferenceType:          "test",
+		OccurredAt:             pgtype.Timestamptz{Valid: true, Time: at},
+	}); err != nil {
+		return err
+	}
+	_, err = f.q.UpdateBulkContainerBalance(f.ctx, sqlcgen.UpdateBulkContainerBalanceParams{
+		ID:             containerID,
+		CurrentVolumeL: newVol,
+		CurrentAbvPct:  pgtype.Float8{Float64: abvPct, Valid: true},
+		CurrentLaa:     newLAA,
+	})
+	return err
+}

@@ -289,18 +289,53 @@ type Querier interface {
 	// excludes regauge_correction movements that reference a void event — those
 	// exist purely to balance the ledger and shouldn't show up as their own line.
 	SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error)
-	// LAA on hand right now (we don't have point-in-time snapshots; B266 generated
-	// for a closed period uses current values, which is fine if generated promptly
-	// after period close).
-	SumBulkOnHandAsOfDate(ctx context.Context) (float64, error)
+	// Bulk LAA on hand as at a moment, not right now.
+	//
+	// This used to sum current_laa with no date at all, and its own comment
+	// conceded that was "fine if generated promptly after period close".
+	// Generating May's return in August therefore reported August's balance as
+	// May's closing figure — and because the opening balance is reverse-walked
+	// from the closing one, both ends moved together and the arithmetic still
+	// tied out. A return that is internally consistent and factually wrong is
+	// the worst shape for an error, because nothing looks off.
+	//
+	// The walk goes backwards from the running total rather than forwards from
+	// zero, deliberately: when as_of is now, the "after" set is empty and this
+	// returns exactly what the old query did, so a promptly-generated return
+	// does not move. Only movements between the period end and now are
+	// subtracted, so nothing depends on the ledger being complete back to the
+	// distillery's first day.
+	//
+	// Net effect on total on-hand: a movement into a container adds, a movement
+	// out subtracts, and one with both ends set — a barrel fill, a blend — is
+	// internal and nets to zero. Void corrections carry their own offsetting
+	// row (see VoidDistillationRun), so including everything is what makes the
+	// walk reconcile.
+	//
+	// Known edge: a container archived after as_of is excluded from the running
+	// total but held alcohol at as_of. Archiving requires an empty container,
+	// so the LAA involved is zero.
+	SumBulkOnHandAsOf(ctx context.Context, asOf pgtype.Timestamptz) (float64, error)
 	// Sums production_gauges.laa across every distillation that charged from
 	// any fermentation_run belonging to this mash. Note: if a distillation
 	// mixed charges from multiple mashes, that gauge LAA is over-attributed
 	// here. Acceptable for v1 single-mash-per-distillation operations;
 	// proportional attribution is a future refinement.
 	SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error)
-	// Approximate packaged LAA on hand: bottles × bottle_size × target_abv / 100 / 1000.
-	SumPackagedOnHandLAA(ctx context.Context) (SumPackagedOnHandLAARow, error)
+	// Packaged LAA and bottles on hand as at a moment. Same reverse walk as
+	// SumBulkOnHandAsOf and for the same reason: packaged inventory only ever
+	// receives bottling runs and only ever loses removals, so undoing both back
+	// to the period end recovers the balance that was actually on hand then.
+	//
+	// LAA is the same approximation the packaged section has always used:
+	// bottles × bottle_size × target_abv. Removals carry their own total_laa,
+	// computed the same way at the time, so the two sides subtract cleanly.
+	//
+	// Known edge: a run or removal dated inside the period but voided after it
+	// is treated as never having happened, which is how the reason sums above
+	// already treat voids. The period lock stops that arising for a period
+	// already filed.
+	SumPackagedOnHandAsOf(ctx context.Context, asOf pgtype.Date) (SumPackagedOnHandAsOfRow, error)
 	// Split by rate band, because the two bands are not taxed in the same
 	// unit: spirits above 7% ABV pay per litre of absolute alcohol, at or
 	// below 7% pay per litre of product. Reporting one blended "rate per LAA"

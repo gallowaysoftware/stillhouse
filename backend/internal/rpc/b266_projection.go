@@ -26,15 +26,10 @@ type b266Totals struct {
 	// of that kind should project.
 	byReason map[string]float64
 
-	// Closing balances, as at the moment the report is generated.
-	//
-	// These are running totals, not point-in-time balances: generating a
-	// May return in August reports August's balance as May's closing
-	// figure, and because opening is reverse-walked from closing both
-	// ends move together and the arithmetic still ties out. That is
-	// PLAN A10, and it is a property of the gather step, not of this
-	// projection — swap the two fields for as-of-date figures and every
-	// line below becomes correct with no change here.
+	// Closing balances as at the end of the period — not as at the moment
+	// the report is generated. The gather step walks the running totals
+	// back over everything that moved after the period closed, so
+	// generating May's return in August reports May's balance (stage 141).
 	bulkClosingLAA        float64
 	packagedClosingLAA    float64
 	packagedClosingBottle int32

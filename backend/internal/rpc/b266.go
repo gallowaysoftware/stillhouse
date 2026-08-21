@@ -322,6 +322,11 @@ func computeB266Report(
 
 // gatherB266Totals runs the five aggregation queries behind the return.
 // Nothing here decides anything — it reads, and the projection judges.
+//
+// Everything is bounded by the period, closing balances included: they are
+// walked back from the running totals over whatever moved after the period
+// closed. Filing late, or amending a prior period, therefore reports the
+// balance that was actually on hand at period end.
 func gatherB266Totals(
 	ctx context.Context,
 	q *sqlcgen.Queries,
@@ -341,10 +346,14 @@ func gatherB266Totals(
 		t.byReason[r.Reason] = r.TotalLaa
 	}
 
-	if t.bulkClosingLAA, err = q.SumBulkOnHandAsOfDate(ctx); err != nil {
+	// Closing balances as of the period end, not as of now. queryEnd is the
+	// exclusive bound — the day after the last day of the period — so a
+	// movement dated on the period's final day is inside it.
+	if t.bulkClosingLAA, err = q.SumBulkOnHandAsOf(ctx,
+		pgtype.Timestamptz{Valid: true, Time: queryEnd}); err != nil {
 		return t, err
 	}
-	packaged, err := q.SumPackagedOnHandLAA(ctx)
+	packaged, err := q.SumPackagedOnHandAsOf(ctx, pgtype.Date{Valid: true, Time: queryEnd})
 	if err != nil {
 		return t, err
 	}

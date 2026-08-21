@@ -135,17 +135,79 @@ WHERE period_start <= sqlc.arg(range_end)
   AND NOT (period_start = sqlc.arg(range_start) AND period_end = sqlc.arg(range_end))
 ORDER BY period_start;
 
--- name: SumBulkOnHandAsOfDate :one
--- LAA on hand right now (we don't have point-in-time snapshots; B266 generated
--- for a closed period uses current values, which is fine if generated promptly
--- after period close).
-SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
-FROM bulk_containers
-WHERE NOT archived;
+-- name: SumBulkOnHandAsOf :one
+-- Bulk LAA on hand as at a moment, not right now.
+--
+-- This used to sum current_laa with no date at all, and its own comment
+-- conceded that was "fine if generated promptly after period close".
+-- Generating May's return in August therefore reported August's balance as
+-- May's closing figure — and because the opening balance is reverse-walked
+-- from the closing one, both ends moved together and the arithmetic still
+-- tied out. A return that is internally consistent and factually wrong is
+-- the worst shape for an error, because nothing looks off.
+--
+-- The walk goes backwards from the running total rather than forwards from
+-- zero, deliberately: when as_of is now, the "after" set is empty and this
+-- returns exactly what the old query did, so a promptly-generated return
+-- does not move. Only movements between the period end and now are
+-- subtracted, so nothing depends on the ledger being complete back to the
+-- distillery's first day.
+--
+-- Net effect on total on-hand: a movement into a container adds, a movement
+-- out subtracts, and one with both ends set — a barrel fill, a blend — is
+-- internal and nets to zero. Void corrections carry their own offsetting
+-- row (see VoidDistillationRun), so including everything is what makes the
+-- walk reconcile.
+--
+-- Known edge: a container archived after as_of is excluded from the running
+-- total but held alcohol at as_of. Archiving requires an empty container,
+-- so the LAA involved is zero.
+WITH running AS (
+    SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
+    FROM bulk_containers
+    WHERE NOT archived
+), moved_after AS (
+    SELECT COALESCE(SUM(
+        CASE WHEN destination_container_id IS NOT NULL THEN laa ELSE 0 END
+      - CASE WHEN source_container_id      IS NOT NULL THEN laa ELSE 0 END
+    ), 0)::double precision AS net_laa
+    FROM bulk_movements
+    WHERE occurred_at >= sqlc.arg(as_of)
+)
+SELECT (running.total_laa - moved_after.net_laa)::double precision AS total_laa
+FROM running, moved_after;
 
--- name: SumPackagedOnHandLAA :one
--- Approximate packaged LAA on hand: bottles × bottle_size × target_abv / 100 / 1000.
-SELECT COALESCE(SUM(pi.bottles_on_hand * p.bottle_size_ml * p.target_abv_pct / 100000.0), 0)::double precision AS total_laa,
-       COALESCE(SUM(pi.bottles_on_hand), 0)::int AS total_bottles
-FROM packaged_inventory pi
-JOIN products p ON p.id = pi.product_id;
+-- name: SumPackagedOnHandAsOf :one
+-- Packaged LAA and bottles on hand as at a moment. Same reverse walk as
+-- SumBulkOnHandAsOf and for the same reason: packaged inventory only ever
+-- receives bottling runs and only ever loses removals, so undoing both back
+-- to the period end recovers the balance that was actually on hand then.
+--
+-- LAA is the same approximation the packaged section has always used:
+-- bottles × bottle_size × target_abv. Removals carry their own total_laa,
+-- computed the same way at the time, so the two sides subtract cleanly.
+--
+-- Known edge: a run or removal dated inside the period but voided after it
+-- is treated as never having happened, which is how the reason sums above
+-- already treat voids. The period lock stops that arising for a period
+-- already filed.
+WITH running AS (
+    SELECT COALESCE(SUM(pi.bottles_on_hand * p.bottle_size_ml * p.target_abv_pct / 100000.0), 0)::double precision AS total_laa,
+           COALESCE(SUM(pi.bottles_on_hand), 0)::int AS total_bottles
+    FROM packaged_inventory pi
+    JOIN products p ON p.id = pi.product_id
+), packaged_after AS (
+    SELECT COALESCE(SUM(br.bottle_count * p.bottle_size_ml / 1000.0 * p.target_abv_pct / 100.0), 0)::double precision AS laa,
+           COALESCE(SUM(br.bottle_count), 0)::int AS bottles
+    FROM bottling_runs br
+    JOIN products p ON p.id = br.product_id
+    WHERE br.bottling_date >= sqlc.arg(as_of) AND br.voided_at IS NULL
+), removed_after AS (
+    SELECT COALESCE(SUM(total_laa), 0)::double precision AS laa,
+           COALESCE(SUM(bottles_removed), 0)::int AS bottles
+    FROM packaging_removals
+    WHERE removal_date >= sqlc.arg(as_of) AND voided_at IS NULL
+)
+SELECT (running.total_laa     - packaged_after.laa     + removed_after.laa)::double precision AS total_laa,
+       (running.total_bottles - packaged_after.bottles + removed_after.bottles)::int          AS total_bottles
+FROM running, packaged_after, removed_after;

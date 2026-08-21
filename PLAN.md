@@ -127,21 +127,6 @@ shipment, and every destroyed return. Refund reasons are enumerated (1, 7, 8, 9)
 and only one may be used per application.
 
 
-### A10 · Closing inventory is read at generation time, not as of period end — P1
-
-`SumBulkOnHandAsOfDate` (`db/queries/b266.sql`) takes no date and sums
-`current_laa` right now; `SumPackagedOnHandLAA` likewise. The query's own
-comment concedes it "uses current values, which is fine if generated promptly
-after period close". Generating May's return in August therefore reports
-August's balance as May's closing figure, and because opening is reverse-walked
-from closing, both ends are wrong while the arithmetic still ties out.
-
-Anyone amending a prior period, or filing late, gets a return that is internally
-consistent and factually wrong — the worst shape for an error, since nothing
-looks off. Needs point-in-time balances: either a period-end snapshot written at
-generation, or a balance derived from movements up to the period end rather than
-from the running total.
-
 ---
 
 ## Track B — the other returns and licence types
@@ -663,10 +648,11 @@ Correctness first, in this order, because each depends on the one before:
 6. `H1` `H2` liability and backups — before any second distillery's records land here
 7. `C2` audit binder — the artifact that makes the case for everything above
 
-`A10` belongs with `A3`/`A4`: all three are the difference between a return that
-ties out and one that is also true. `K1` and `K2` are done: the projection is
-split out and pure, and both handlers that write duty onto a return are covered,
-so every line track A adds now lands somewhere a test can reach.
+`A3` and `A4` are the difference between a return that ties out and one that is
+also true; `A10`, which was the third of that group, shipped in stage 141. `K1`
+and `K2` are done: the projection is split out and pure, and both handlers that
+write duty onto a return are covered, so every line track A adds now lands
+somewhere a test can reach.
 
 Then breadth. `D1` (customers) and `F1` (locations) unblock the most downstream
 work and are worth doing early even though neither is urgent on its own.
