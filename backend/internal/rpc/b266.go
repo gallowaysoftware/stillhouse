@@ -17,6 +17,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
@@ -307,7 +308,7 @@ func computeB266Report(
 	q *sqlcgen.Queries,
 	periodStart, periodEnd, queryEnd time.Time,
 ) (*stillhousev1.B266Report, error) {
-	totals, err := gatherB266Totals(ctx, q, periodStart, queryEnd)
+	totals, err := gatherB266Totals(ctx, q, periodStart, periodEnd, queryEnd)
 	if err != nil {
 		return nil, err
 	}
@@ -330,9 +331,34 @@ func computeB266Report(
 func gatherB266Totals(
 	ctx context.Context,
 	q *sqlcgen.Queries,
-	periodStart, queryEnd time.Time,
+	periodStart, periodEnd, queryEnd time.Time,
 ) (b266Totals, error) {
 	var t b266Totals
+
+	// The rates the period is charged at. Resolved from the period's own
+	// dates, so a return filed for a period before the last indexation
+	// quotes that period's rate rather than today's.
+	//
+	// A period that spans a rate change would need two sets of rates on
+	// one form, and the form has one line for each. CRA indexes on 1
+	// April, which is a fiscal-month boundary, so a period that straddles
+	// one is a period that was set up wrong — say so rather than quoting
+	// one of the two rates and letting the other quantity be charged at
+	// it.
+	startBand, err := excise.RateOn(periodStart)
+	if err != nil {
+		return t, connect.NewError(connect.CodeFailedPrecondition, err)
+	}
+	endBand, err := excise.RateOn(periodEnd)
+	if err != nil {
+		return t, connect.NewError(connect.CodeFailedPrecondition, err)
+	}
+	if startBand.EffectiveFrom != endBand.EffectiveFrom {
+		return t, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+			"the period spans an excise rate change on %s (%s → %s); split it at the boundary so each return carries one set of rates",
+			endBand.EffectiveFrom.Format("2006-01-02"), startBand.Source, endBand.Source))
+	}
+	t.dutyBand = startBand
 
 	reasonSums, err := q.SumBulkMovementsByReason(ctx, sqlcgen.SumBulkMovementsByReasonParams{
 		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},

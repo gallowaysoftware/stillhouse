@@ -172,11 +172,16 @@ func TestProjectB266_PackagedWalkUsesBottlesNotTankGauge(t *testing.T) {
 // blended "rate per LAA" against a total LAA made the return fail its own
 // arithmetic as soon as a period contained both.
 func TestProjectB266_BothDutyBands(t *testing.T) {
+	band, err := excise.RateOn(testPeriodStart)
+	if err != nil {
+		t.Fatalf("RateOn: %v", err)
+	}
 	over7LAA, under7L := 7.775, 40.0
-	over7Duty := over7LAA * excise.DutyRatePerLAAOver7Pct // 109.7597…
-	under7Duty := under7L * excise.DutyRatePerLAtOrUnder7 // 14.32
+	over7Duty := over7LAA * band.PerLAAOver7Pct     // 109.7597…
+	under7Duty := under7L * band.PerLitreAtOrUnder7 // 14.32
 
 	rep := projectB266(b266Totals{
+		dutyBand:             band,
 		removedLAA:           over7LAA,
 		removedBottles:       120,
 		removedDutyCAD:       over7Duty + under7Duty,
@@ -207,12 +212,12 @@ func TestProjectB266_BothDutyBands(t *testing.T) {
 	if nearly(rep.PackagedRemovedOver7Laa*rep.DutyRatePerLaa, rep.DutyPayableCad) {
 		t.Error("total duty equals the >7% band alone — the ≤7% band was dropped")
 	}
-	if rep.DutyRatePerLaa != excise.DutyRatePerLAAOver7Pct {
-		t.Errorf("rate per LAA: got %v, want %v", rep.DutyRatePerLaa, excise.DutyRatePerLAAOver7Pct)
+	if rep.DutyRatePerLaa != band.PerLAAOver7Pct {
+		t.Errorf("rate per LAA: got %v, want %v", rep.DutyRatePerLaa, band.PerLAAOver7Pct)
 	}
-	if rep.DutyRatePerLitreUnder7 != excise.DutyRatePerLAtOrUnder7 {
+	if rep.DutyRatePerLitreUnder7 != band.PerLitreAtOrUnder7 {
 		t.Errorf("rate per litre ≤7%%: got %v, want %v",
-			rep.DutyRatePerLitreUnder7, excise.DutyRatePerLAtOrUnder7)
+			rep.DutyRatePerLitreUnder7, band.PerLitreAtOrUnder7)
 	}
 }
 

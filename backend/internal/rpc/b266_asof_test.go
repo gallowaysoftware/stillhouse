@@ -3,6 +3,7 @@ package rpc
 import (
 	"log/slog"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 )
 
@@ -30,9 +32,11 @@ func TestB266ClosingBalanceIsAsOfPeriodEnd(t *testing.T) {
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	b266 := NewB266Service(f.db, log)
 
-	// A closed month, well in the past.
-	const periodStart, periodEnd = "2026-01-01", "2026-01-31"
-	inPeriod := time.Date(2026, 1, 15, 12, 0, 0, 0, time.UTC)
+	// A closed month, months behind the current one. April rather than
+	// January because the seeded excise band starts 2026-04-01 and the
+	// rate lookup refuses outside what it can source (stage 142).
+	const periodStart, periodEnd = "2026-04-01", "2026-04-30"
+	inPeriod := time.Date(2026, 4, 15, 12, 0, 0, 0, time.UTC)
 
 	tank := f.tank(t, "As-of tank", 0, 0)
 
@@ -72,19 +76,19 @@ func TestB266ClosingBalanceIsAsOfPeriodEnd(t *testing.T) {
 	after := second.Msg.GetReport()
 
 	if got, want := after.GetBulkClosingLaa(), before.GetBulkClosingLaa(); !near(got, want, 1e-6) {
-		t.Errorf("January's closing balance moved to %v after June and July activity (was %v) — "+
+		t.Errorf("April's closing balance moved to %v after June and July activity (was %v) — "+
 			"the return reports today's balance, not the period's", got, want)
 	}
 	if got, want := after.GetBulkOpeningLaa(), before.GetBulkOpeningLaa(); !near(got, want, 1e-6) {
-		t.Errorf("January's opening balance moved to %v (was %v)", got, want)
+		t.Errorf("April's opening balance moved to %v (was %v)", got, want)
 	}
 	// And the period's own lines are unchanged: nothing after the period
 	// leaked into a receipt or a withdrawal either.
 	if got, want := after.GetBulkProductionLaa(), 700.0; !near(got, want, 1e-6) {
-		t.Errorf("production in January: got %v, want %v — June's run was counted", got, want)
+		t.Errorf("production in April: got %v, want %v — June's run was counted", got, want)
 	}
 	if got := after.GetBulkLossesLaa(); !near(got, 0, 1e-6) {
-		t.Errorf("losses in January: got %v, want 0 — July's loss was counted", got)
+		t.Errorf("losses in April: got %v, want 0 — July's loss was counted", got)
 	}
 	// The books still close on the as-of figures.
 	receipts := after.GetBulkProductionLaa() + after.GetBulkReceivedInBondLaa()
@@ -111,12 +115,12 @@ func TestB266PackagedClosingIsAsOfPeriodEnd(t *testing.T) {
 	if _, err := f.bottling.CreateBottlingRun(f.ctx, connect.NewRequest(&stillhousev1.CreateBottlingRunRequest{
 		ProductId: prod.ID.String(), SourceContainerId: tank.ID.String(),
 		DestinationJurisdiction: "CA-ON", BottleCount: 400, LotCode: lot,
-		BottlingDate: "2026-02-10",
+		BottlingDate: "2026-05-10",
 	})); err != nil {
 		t.Fatalf("CreateBottlingRun (in period): %v", err)
 	}
 
-	const periodStart, periodEnd = "2026-02-01", "2026-02-28"
+	const periodStart, periodEnd = "2026-05-01", "2026-05-31"
 	first, err := b266.GenerateB266(f.ctx, connect.NewRequest(&stillhousev1.GenerateB266Request{
 		PeriodStart: periodStart, PeriodEnd: periodEnd,
 	}))
@@ -157,19 +161,19 @@ func TestB266PackagedClosingIsAsOfPeriodEnd(t *testing.T) {
 	after := second.Msg.GetReport()
 
 	if got, want := after.GetPackagedClosingBottles(), before.GetPackagedClosingBottles(); got != want {
-		t.Errorf("February's closing bottles moved to %d after June and July activity (was %d)", got, want)
+		t.Errorf("May's closing bottles moved to %d after June and July activity (was %d)", got, want)
 	}
 	if got, want := after.GetPackagedClosingLaa(), before.GetPackagedClosingLaa(); !near(got, want, 1e-6) {
-		t.Errorf("February's closing LAA moved to %v (was %v)", got, want)
+		t.Errorf("May's closing LAA moved to %v (was %v)", got, want)
 	}
 	if got, want := after.GetPackagedOpeningLaa(), before.GetPackagedOpeningLaa(); !near(got, want, 1e-6) {
-		t.Errorf("February's opening LAA moved to %v (was %v)", got, want)
+		t.Errorf("May's opening LAA moved to %v (was %v)", got, want)
 	}
 	if got := after.GetPackagedRemovedDutyPaidBottles(); got != 0 {
-		t.Errorf("July's removal landed on February's return: %d bottles", got)
+		t.Errorf("July's removal landed on May's return: %d bottles", got)
 	}
 	if got := after.GetDutyPayableCad(); !near(got, 0, 1e-9) {
-		t.Errorf("July's duty landed on February's return: %v", got)
+		t.Errorf("July's duty landed on May's return: %v", got)
 	}
 }
 
@@ -237,13 +241,13 @@ func TestLedgerExplainsTheRunningBalance(t *testing.T) {
 	prod := f.product(t, "Invariant Rye", 750, 45)
 
 	if err := f.movement(t, tank.ID, 1000, 70, sqlcgen.BulkMovementReasonProductionGauge,
-		time.Date(2026, 3, 4, 10, 0, 0, 0, time.UTC)); err != nil {
+		time.Date(2026, 5, 4, 10, 0, 0, 0, time.UTC)); err != nil {
 		t.Fatalf("production: %v", err)
 	}
 	bottled, err := f.bottling.CreateBottlingRun(f.ctx, connect.NewRequest(&stillhousev1.CreateBottlingRunRequest{
 		ProductId: prod.ID.String(), SourceContainerId: tank.ID.String(),
 		DestinationJurisdiction: "CA-ON", BottleCount: 400, BottlingLossL: 2.5,
-		LotCode: "INV-" + uuid.NewString()[:8], BottlingDate: "2026-03-11",
+		LotCode: "INV-" + uuid.NewString()[:8], BottlingDate: "2026-05-11",
 	}))
 	if err != nil {
 		t.Fatalf("CreateBottlingRun: %v", err)
@@ -251,12 +255,12 @@ func TestLedgerExplainsTheRunningBalance(t *testing.T) {
 	if _, err := f.removal.CreateRemoval(f.ctx, connect.NewRequest(&stillhousev1.CreateRemovalRequest{
 		PackagedInventoryId: bottled.Msg.GetPackaged().GetId(), BottlesRemoved: 150,
 		DestinationKind: stillhousev1.RemovalDestinationKind_REMOVAL_DESTINATION_KIND_DUTY_PAID_CUSTOMER,
-		RemovalDate:     "2026-03-20",
+		RemovalDate:     "2026-05-20",
 	})); err != nil {
 		t.Fatalf("CreateRemoval: %v", err)
 	}
 	if err := f.movementOut(t, tank.ID, 20, 70, sqlcgen.BulkMovementReasonLossEvaporation,
-		time.Date(2026, 3, 25, 10, 0, 0, 0, time.UTC)); err != nil {
+		time.Date(2026, 5, 25, 10, 0, 0, 0, time.UTC)); err != nil {
 		t.Fatalf("loss: %v", err)
 	}
 
@@ -278,4 +282,75 @@ func TestLedgerExplainsTheRunningBalance(t *testing.T) {
 			"something moved a container balance without recording a movement, "+
 			"and every backdated return is wrong by that much", residual)
 	}
+}
+
+// A date the rate table cannot source must refuse at the handler, not be
+// priced at whatever band happens to be compiled in. Duty computed at
+// today's rate against last year's quantities is wrong on a filed return
+// and nothing about it looks wrong.
+func TestB266AndRemovalRefuseDatesWithNoRate(t *testing.T) {
+	f := newDutyFixture(t)
+	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
+	b266 := NewB266Service(f.db, log)
+
+	from, to := excise.Coverage()
+	before := from.AddDate(0, -1, 0).Format("2006-01-02")
+
+	t.Run("a return for a period before the table", func(t *testing.T) {
+		_, err := b266.GenerateB266(f.ctx, connect.NewRequest(&stillhousev1.GenerateB266Request{
+			PeriodStart: before, PeriodEnd: from.AddDate(0, 0, -1).Format("2006-01-02"),
+		}))
+		if err == nil {
+			t.Fatal("a return was generated for a period with no rate on file")
+		}
+		if got := connect.CodeOf(err); got != connect.CodeFailedPrecondition {
+			t.Errorf("code = %v, want failed_precondition (err: %v)", got, err)
+		}
+	})
+
+	t.Run("a period straddling a rate change", func(t *testing.T) {
+		// The last band's KnownUntil is the next indexation date. A period
+		// crossing it would need two sets of rates on a form that has one
+		// line for each.
+		_, err := b266.GenerateB266(f.ctx, connect.NewRequest(&stillhousev1.GenerateB266Request{
+			PeriodStart: to.AddDate(0, 0, -5).Format("2006-01-02"),
+			PeriodEnd:   to.AddDate(0, 0, 5).Format("2006-01-02"),
+		}))
+		if err == nil {
+			t.Fatal("a return was generated across a rate boundary")
+		}
+		if got := connect.CodeOf(err); got != connect.CodeFailedPrecondition {
+			t.Errorf("code = %v, want failed_precondition (err: %v)", got, err)
+		}
+	})
+
+	t.Run("a removal dated before the table", func(t *testing.T) {
+		f.stamps(t, "CA-ON", 200)
+		tank := f.tank(t, "No-rate tank", 1000, 70)
+		prod := f.product(t, "No-rate Gin", 750, 40)
+		bottled, err := f.bottling.CreateBottlingRun(f.ctx, connect.NewRequest(&stillhousev1.CreateBottlingRunRequest{
+			ProductId: prod.ID.String(), SourceContainerId: tank.ID.String(),
+			DestinationJurisdiction: "CA-ON", BottleCount: 100,
+			LotCode: "NORATE-" + uuid.NewString()[:8],
+		}))
+		if err != nil {
+			t.Fatalf("CreateBottlingRun: %v", err)
+		}
+		_, err = f.removal.CreateRemoval(f.ctx, connect.NewRequest(&stillhousev1.CreateRemovalRequest{
+			PackagedInventoryId: bottled.Msg.GetPackaged().GetId(), BottlesRemoved: 10,
+			DestinationKind: stillhousev1.RemovalDestinationKind_REMOVAL_DESTINATION_KIND_DUTY_PAID_CUSTOMER,
+			RemovalDate:     before,
+		}))
+		if err == nil {
+			t.Fatal("a removal was dutied on a date with no rate on file")
+		}
+		if got := connect.CodeOf(err); got != connect.CodeFailedPrecondition {
+			t.Errorf("code = %v, want failed_precondition (err: %v)", got, err)
+		}
+		// The operator has to be told what to do about it, not handed a
+		// bare code.
+		if !strings.Contains(err.Error(), "will not extrapolate") {
+			t.Errorf("message doesn't explain the refusal: %v", err)
+		}
+	})
 }

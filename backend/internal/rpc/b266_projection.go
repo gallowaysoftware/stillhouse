@@ -56,6 +56,17 @@ type b266Totals struct {
 	removedUnder7Litres  float64
 	removedUnder7DutyCAD float64
 	removedUnder7Bottles int32
+
+	// The duty rates in force over the period, and the CRA notice they
+	// were read from. Quoted on the return so each band's line can be
+	// checked against the quantity it is charged on, and so an operator
+	// can see which notice the figures came from rather than trusting
+	// that whatever is compiled in is current.
+	//
+	// Resolved by the gather step from the period's dates rather than
+	// read from a constant: a return for a period before the last
+	// indexation must quote that period's rate, not today's.
+	dutyBand excise.Band
 }
 
 // laa returns the LAA summed against a bulk movement reason, or zero if
@@ -103,8 +114,8 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		// checked against the quantity it is charged on. Quoting only the
 		// per-LAA rate beside a blended LAA total made the arithmetic fail
 		// for any period holding both bands.
-		DutyRatePerLaa:         excise.DutyRatePerLAAOver7Pct,
-		DutyRatePerLitreUnder7: excise.DutyRatePerLAtOrUnder7,
+		DutyRatePerLaa:         t.dutyBand.PerLAAOver7Pct,
+		DutyRatePerLitreUnder7: t.dutyBand.PerLitreAtOrUnder7,
 		DutyPayableCad:         round2cents(t.removedDutyCAD),
 		GeneratedAt:            timestamppb.New(generatedAt),
 	}

@@ -52,20 +52,25 @@ timing error on a filed return, carrying interest.
   period-lock has to hold the old basis. Decide which before writing the
   migration — reopening filed periods to change duty is not free.
 
-### A2 · Excise duty rates are hardcoded and date-blind — P0
+### A2 · The rate table holds one band — P1
 
-`excise.Owed(_ time.Time, …)` ignores its date argument and returns the
-constants effective 2026-04-01. Rates index every April 1 (currently capped at
-2% inflation, extended through 2028). Any amended, late, or reopened
-prior-period return computes duty at today's rate against last year's
-quantities and is silently wrong.
+Stage 142 made rates date-effective and made the lookup refuse outside what
+it can cite, which is the half that stops a wrong number reaching a return.
+What remains is data:
 
-- Date-effective rate table keyed on the duty event date, seeded from the EDN
-  notice history (EDN104 and predecessors).
-- Includes the special duty on imported spirits delivered to licensed users
-  (Schedule 5, $0.12/LAA) — currently absent entirely.
-- The lookup **refuses** past its last known band rather than extrapolating,
-  consistent with the pricing engine's provenance discipline.
+- Earlier bands from the EDN notice series (EDN104 and predecessors), so a
+  reopened or amended pre-2026 period computes rather than refusing. Until
+  then any duty event before 2026-04-01 is refused with a message naming
+  the covered span.
+- The 2027-04-01 indexation, before it arrives. The current band is marked
+  known until that date and Stillhouse stops computing duty on it — loudly,
+  which is the intent, but it is a date to put in a calendar.
+- The special duty on imported spirits delivered to licensed users
+  (Schedule 5, $0.12/LAA), which pairs with page 1 line 6 in `A3` and is
+  absent entirely.
+
+Each is a struct literal in `internal/excise/rates.go`; the table test
+enforces that bands abut exactly and that every band cites a notice.
 
 ### A3 · B266 covers a subset of the form's lines — P0
 
@@ -641,12 +646,11 @@ the three options.
 Correctness first, in this order, because each depends on the one before:
 
 1. `A1` duty point — everything else computes from the wrong event until this lands
-2. `A2` date-effective rates
-3. `C1` instrument register
-4. `A3` `A4` B266 completeness and adjustments
-5. `A5` `A6` losses and reporting periods
-6. `H1` `H2` liability and backups — before any second distillery's records land here
-7. `C2` audit binder — the artifact that makes the case for everything above
+2. `C1` instrument register
+3. `A3` `A4` B266 completeness and adjustments
+4. `A5` `A6` losses and reporting periods
+5. `H1` `H2` liability and backups — before any second distillery's records land here
+6. `C2` audit binder — the artifact that makes the case for everything above
 
 `A3` and `A4` are the difference between a return that ties out and one that is
 also true; `A10`, which was the third of that group, shipped in stage 141. `K1`

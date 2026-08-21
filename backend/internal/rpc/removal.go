@@ -89,7 +89,18 @@ func (s *RemovalService) CreateRemoval(
 
 		totalLitres := float64(in.GetBottlesRemoved()) * float64(product.BottleSizeMl) / 1000
 		totalLAA := totalLitres * product.TargetAbvPct / 100
-		ratePerLAA, dutyCAD := excise.Owed(removalDate.Time, totalLitres, product.TargetAbvPct)
+		// The rate is the one in force on the removal date, not today's.
+		// A date the table cannot source refuses rather than being priced
+		// at whatever the current band happens to be — see internal/excise.
+		var ratePerLAA, dutyCAD float64
+		ratePerLAA, dutyCAD, e = excise.Owed(removalDate.Time, totalLitres, product.TargetAbvPct)
+		if e != nil {
+			var unknown *excise.UnknownRateError
+			if errors.As(e, &unknown) {
+				return connect.NewError(connect.CodeFailedPrecondition, e)
+			}
+			return e
+		}
 
 		// Serialise number allocation before reading the maximum — see
 		// LockDocumentSequence. Without it two removals started at the

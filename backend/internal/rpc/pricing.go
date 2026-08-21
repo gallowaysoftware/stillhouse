@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -55,11 +56,19 @@ func (s *PricingService) ComputeProvincialPricing(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 
+	// Pricing is forward-looking, so the band that applies is today's.
+	// If today falls outside the rate table there is no honest number to
+	// build a price list on, and saying so beats quoting a stale rate.
+	band, err := excise.RateOn(time.Now())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
+	}
+
 	in := pricing.Input{
 		FOBCAD:               req.Msg.GetFobCad(),
 		BottleSizeML:         product.BottleSizeMl,
 		BottleABVPct:         product.TargetAbvPct,
-		FederalDutyPerLAA:    excise.DutyRatePerLAAOver7Pct,
+		FederalDutyPerLAA:    band.PerLAAOver7Pct,
 		FreightCAD:           req.Msg.GetFreightCad(),
 		ImportDutiesCAD:      req.Msg.GetImportDutiesCad(),
 		Imported:             req.Msg.GetImported(),
@@ -71,7 +80,7 @@ func (s *PricingService) ComputeProvincialPricing(
 		ProductName:       product.Name,
 		BottleSizeMl:      product.BottleSizeMl,
 		BottleAbvPct:      product.TargetAbvPct,
-		FederalDutyPerLaa: excise.DutyRatePerLAAOver7Pct,
+		FederalDutyPerLaa: band.PerLAAOver7Pct,
 		LaaPerBottle:      round4(in.LAA()),
 		Jurisdictions:     make([]*stillhousev1.JurisdictionPricing, 0, len(rows)),
 	}

@@ -232,7 +232,11 @@ func TestCreateRemovalComputesDutyOver7(t *testing.T) {
 
 	wantLitres := float64(removed) * 750 / 1000 // 180 L
 	wantLAA := wantLitres * 40 / 100            // 72 LAA
-	wantDuty := wantLAA * excise.DutyRatePerLAAOver7Pct
+	band, err := excise.RateOn(time.Now())
+	if err != nil {
+		t.Fatalf("RateOn: %v", err)
+	}
+	wantDuty := wantLAA * band.PerLAAOver7Pct
 
 	if got := r.GetTotalLitres(); !near(got, wantLitres, 1e-9) {
 		t.Errorf("total litres: got %v, want %v", got, wantLitres)
@@ -240,8 +244,8 @@ func TestCreateRemovalComputesDutyOver7(t *testing.T) {
 	if got := r.GetTotalLaa(); !near(got, wantLAA, 1e-9) {
 		t.Errorf("total LAA: got %v, want %v", got, wantLAA)
 	}
-	if got := r.GetDutyRatePerLaa(); got != excise.DutyRatePerLAAOver7Pct {
-		t.Errorf("rate per LAA: got %v, want %v", got, excise.DutyRatePerLAAOver7Pct)
+	if got := r.GetDutyRatePerLaa(); got != band.PerLAAOver7Pct {
+		t.Errorf("rate per LAA: got %v, want %v", got, band.PerLAAOver7Pct)
 	}
 	if got := r.GetDutyAmountCad(); !near(got, wantDuty, 1e-6) {
 		t.Errorf("duty: got %v, want %v", got, wantDuty)
@@ -295,7 +299,11 @@ func TestCreateRemovalComputesDutyUnder7(t *testing.T) {
 	r := resp.Msg.GetRemoval()
 
 	wantLitres := float64(removed) * 355 / 1000 // 71 L of product
-	wantDuty := wantLitres * excise.DutyRatePerLAtOrUnder7
+	band, err := excise.RateOn(time.Now())
+	if err != nil {
+		t.Fatalf("RateOn: %v", err)
+	}
+	wantDuty := wantLitres * band.PerLitreAtOrUnder7
 
 	if got := r.GetTotalLitres(); !near(got, wantLitres, 1e-9) {
 		t.Errorf("total litres: got %v, want %v", got, wantLitres)
@@ -308,7 +316,7 @@ func TestCreateRemovalComputesDutyUnder7(t *testing.T) {
 	}
 	// The mistake this guards: charging the ≤7% band at the >7% rate
 	// against its LAA overstates the duty by more than 4×.
-	if near(r.GetDutyAmountCad(), wantLitres*5/100*excise.DutyRatePerLAAOver7Pct, 1e-6) {
+	if near(r.GetDutyAmountCad(), wantLitres*5/100*band.PerLAAOver7Pct, 1e-6) {
 		t.Error("≤7% removal was charged at the per-LAA rate")
 	}
 }
