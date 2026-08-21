@@ -151,3 +151,21 @@ required to retain excise records.
 The app also exposes a per-tenant export (Settings → Export) that writes
 a zip of every table as CSV, which is the right thing to keep if you ever
 want your data outside this system.
+
+## Keeping it alive
+
+Backups, the restore procedure, the restore drill, recovery targets, data
+residency and retention: [`docs/operations.md`](../docs/operations.md).
+
+The short version:
+
+```sh
+STILLHOUSE_BACKUP_DIR=/srv/stillhouse/backups deploy/backup.sh        # nightly
+STILLHOUSE_BACKUP_DIR=/srv/stillhouse/backups deploy/restore-drill.sh --source stillhouse-postgres
+deploy/restore.sh /srv/stillhouse/backups/stillhouse-<stamp>.dump     # when it matters
+```
+
+A backup consists of **two** files — the dump and the cluster roles beside
+it. Roles are cluster-wide, so a dump alone will not restore onto a fresh
+Postgres. `backup.sh` writes both; the drill fails loudly if one is
+missing.

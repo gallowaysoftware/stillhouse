@@ -354,14 +354,6 @@ rediscovered as a gap.
 
 ## Track H — platform
 
-### H2 · Backups, restore drill, residency — P0
-
-The tenant CSV/ZIP export is data portability, not a backup — it cannot
-reconstitute a running install and nobody has restored from it under pressure.
-Needs a documented cadence, offsite encrypted copies, a *tested* restore, a
-stated RTO, and a statement of where data physically lives (a fair question
-under PIPEDA and Quebec's Law 25).
-
 ### H3 · Bulk importer — P1
 
 Stage 124's adopt-existing-stock path is the clever half — real casks in from a
@@ -596,12 +588,10 @@ What is left in track A is blocked on other items rather than on itself:
 the rest of `A3` waits on `B3`, `A2` and `A9`; `A7` is inert until the first
 contract fill; `A8` and `A9` are their own features.
 
-Next, in this order:
-
-1. `H2` — a tested restore, before any second distillery's records land here
-2. `C2` — the audit binder. Stages 144–147 gave it real content to assemble:
-   instruments behind every determination, reason-coded adjustments, and a
-   complete page 3.
+Next: `C2`, the audit binder. Stages 144–149 gave it real content to
+assemble — instruments behind every determination, reason-coded
+adjustments, a complete page 3, losses that say how they are treated, and
+a named person's confirmation on every filed period.
 
 Then breadth. `D1` (customers) and `F1` (locations) unblock the most downstream
 work and are worth doing early even though neither is urgent on its own.
