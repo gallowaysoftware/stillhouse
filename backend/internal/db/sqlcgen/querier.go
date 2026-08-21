@@ -224,6 +224,11 @@ type Querier interface {
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
+	// Sets the RLS GUC inside an already-open transaction. Used by signup,
+	// where the tenant does not exist when the transaction begins but must be
+	// in scope before the audit row is written. Transaction-local (the `true`
+	// argument), so it cannot leak across pooled connections.
+	SetTenantContext(ctx context.Context, setConfig string) error
 	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
 	// SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
 	// packaged_inventory and bulk separately, so they shouldn't count toward

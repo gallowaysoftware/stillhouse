@@ -44,6 +44,24 @@ func (d *DB) WithTenantTx(
 	})
 }
 
+// SetTenantContext sets app.current_tenant_id inside an already-open
+// transaction opened by WithoutTenantTx.
+//
+// Signup is the case this exists for: the tenant does not exist when the
+// transaction begins, so there is no id to scope by — but by the time the
+// audit row is written there is, and audit_events has FORCE ROW LEVEL
+// SECURITY. Without this the INSERT is refused, the transaction rolls
+// back, and self-service signup fails with a 500 in any deployment where
+// RLS is actually enforcing. It appeared to work only where the server
+// connected as a superuser, which is precisely where RLS isn't protecting
+// anything.
+func SetTenantContext(ctx context.Context, q *sqlcgen.Queries, tenantID uuid.UUID) error {
+	if err := q.SetTenantContext(ctx, tenantID.String()); err != nil {
+		return fmt.Errorf("set tenant context mid-transaction: %w", err)
+	}
+	return nil
+}
+
 // WithoutTenantTx opens a transaction WITHOUT setting a tenant context.
 // Only safe for cross-tenant or pre-tenant operations: signup (creates the
 // first row in tenants), invite redemption, password reset lookups by
