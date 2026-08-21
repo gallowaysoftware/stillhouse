@@ -14,6 +14,7 @@ import {
   productClient,
 } from "@/lib/clients";
 import { CreateBottlingRunRequestSchema, VoidBottlingRunRequestSchema } from "@/gen/stillhouse/v1/bottling_pb";
+import { estimateDraw } from "@/lib/bottling";
 import { formatLAA, formatQty } from "@/lib/format";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
@@ -62,11 +63,22 @@ export function BottlingPage() {
   const source = containers.data?.containers.find((c) => c.id === sourceId);
   const jurisdictionSummary = stamps.data?.summaries.find((s) => s.jurisdiction === jurisdiction);
 
-  const requiredVol = useMemo(() => {
-    const n = Number(bottleCount);
-    if (!product || !Number.isFinite(n) || n <= 0) return null;
-    return n * product.bottleSizeMl / 1000 + Number(bottlingLoss || 0);
-  }, [product, bottleCount, bottlingLoss]);
+  // What comes OUT of the tank, not what goes into bottles. Those differ
+  // whenever the source is stronger than the product, which is the normal
+  // cask-strength-to-bottling-strength case — see lib/bottling.
+  const draw = useMemo(
+    () =>
+      product
+        ? estimateDraw({
+            bottleCount: Number(bottleCount),
+            bottleSizeMl: product.bottleSizeMl,
+            targetAbvPct: product.targetAbvPct,
+            bottlingLossL: Number(bottlingLoss || 0),
+            sourceAbvPct: source?.currentAbvPctSet ? source.currentAbvPct : undefined,
+          })
+        : null,
+    [product, bottleCount, bottlingLoss, source],
+  );
 
   const createRun = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof CreateBottlingRunRequestSchema>>) =>
@@ -178,7 +190,7 @@ export function BottlingPage() {
                 .filter((c) => !c.archived && c.currentVolumeL > 0)
                 .map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name} ({formatQty(c.currentVolumeL)} L @ {c.currentAbvPct.toFixed(1)}%)
+                    {c.name} ({formatQty(c.currentVolumeL)} L{c.currentAbvPctSet ? ` @ ${c.currentAbvPct.toFixed(1)}%` : " — strength not recorded"})
                   </option>
                 ))}
             </select>
@@ -200,9 +212,19 @@ export function BottlingPage() {
           <div>
             <label className="mb-2 block text-sm font-medium text-fg-muted">Bottle count</label>
             <input value={bottleCount} onChange={(e) => setBottleCount(e.target.value)} type="number" min="1" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
-            {requiredVol !== null && (
+            {draw && (
               <p className="mt-1 text-xs text-fg-muted">
-                Will draw {formatQty(requiredVol)} L from {source?.name ?? "source"}
+                {formatQty(draw.bottledVolumeL)} L bottled ({formatLAA(draw.requiredLAA)} LAA)
+                {draw.drawnVolumeL !== null ? (
+                  <>
+                    {" — draws "}
+                    <span className="text-fg">{formatQty(draw.drawnVolumeL)} L</span>
+                    {" from "}
+                    {source?.name ?? "source"}
+                  </>
+                ) : (
+                  " — draw unknown until the source has a recorded strength"
+                )}
               </p>
             )}
           </div>

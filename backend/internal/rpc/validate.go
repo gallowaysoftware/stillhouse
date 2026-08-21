@@ -3,6 +3,7 @@ package rpc
 import (
 	"errors"
 	"fmt"
+	"math"
 )
 
 // Shared input guards. The pattern these close: a field whose name implies
@@ -17,6 +18,9 @@ import (
 // as a real one. The message shows the value they probably meant, because
 // the field name is the reason they got it wrong.
 func validateFraction(name string, v float64) error {
+	if err := validateFinite(name, v); err != nil {
+		return err
+	}
 	if v < 0 || v > 1 {
 		if v > 1 && v <= 100 {
 			return fmt.Errorf("%s is a fraction, not a percentage: %g is out of range — did you mean %g?",
@@ -29,6 +33,9 @@ func validateFraction(name string, v float64) error {
 
 // validateAbvPct checks a strength expressed the ordinary way, 0–100.
 func validateAbvPct(name string, v float64) error {
+	if err := validateFinite(name, v); err != nil {
+		return err
+	}
 	if v < 0 || v > 100 {
 		return fmt.Errorf("%s must be in [0, 100], got %g", name, v)
 	}
@@ -39,6 +46,9 @@ func validateAbvPct(name string, v float64) error {
 // as well as negative: a zero-capacity vessel passes the "is capacity
 // recorded" test and then fails every fill against it.
 func validateCapacityL(v float64) error {
+	if err := validateFinite("capacity_l", v); err != nil {
+		return err
+	}
 	if v <= 0 {
 		return fmt.Errorf("capacity_l must be > 0, got %g", v)
 	}
@@ -53,3 +63,24 @@ func validateCapacityL(v float64) error {
 var errInvalidInput = errors.New("invalid input")
 
 func invalidInput(err error) error { return fmt.Errorf("%w: %w", errInvalidInput, err) }
+
+// validateFinite rejects NaN and ±Inf.
+//
+// Every range check in this codebase is a comparison, and every comparison
+// against NaN is false — so `if v < 0 || v > 100` waves NaN straight
+// through, as does `v <= 0 || v > 1`. NaN is reachable because the wire
+// format is JSON: proto3 encodes a double NaN as the string "NaN" and
+// protojson accepts it, and the browser produces one from any
+// unguarded Number("") on a form field. A NaN strength poisons every
+// figure computed from it — LAA, duty, the B266 — and it propagates
+// silently, because NaN compares false against every bound that might
+// otherwise have caught it downstream.
+func validateFinite(name string, v float64) error {
+	if math.IsNaN(v) {
+		return fmt.Errorf("%s must be a number, got NaN", name)
+	}
+	if math.IsInf(v, 0) {
+		return fmt.Errorf("%s must be finite, got %v", name, v)
+	}
+	return nil
+}

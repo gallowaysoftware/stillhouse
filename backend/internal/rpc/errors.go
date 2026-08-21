@@ -2,6 +2,7 @@ package rpc
 
 import (
 	"errors"
+	"fmt"
 
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -17,6 +18,15 @@ const pgFKViolation = "23503"
 // fermenter into this run" — not a server fault, so they must not fall
 // through to a 500 that tells the operator nothing.
 const pgUniqueViolation = "23505"
+
+// pgCheckViolation is the SQLSTATE code for check_violation. The schema
+// carries dozens of CHECK constraints — strengths in [0,100], volumes and
+// counts above zero, sensory scores in [0,10] — and they are the last line
+// of defence when a handler forgets to validate. They were unmapped, so
+// every one of them reached the operator as "internal error": a 500 for
+// something they typed, with nothing saying which field. The constraint
+// name is the only clue available, so it goes in the message.
+const pgCheckViolation = "23514"
 
 // uniqueViolationMessages turns a constraint name into something an
 // operator can act on. Postgres truncates generated constraint names to 63
@@ -41,6 +51,24 @@ var uniqueViolationMessages = map[string]string{
 // notFoundMsg is the human-readable message to attach when the
 // underlying problem is a missing parent row — usually something like
 // "fermentation run not found".
+// checkViolationMessages turns the constraint names an operator is most
+// likely to trip into a sentence naming the field.
+var checkViolationMessages = map[string]string{
+	"bulk_movements_abv_pct_check":             "abv_pct must be in [0, 100]",
+	"bulk_movements_volume_l_check":            "volume_l must be greater than zero",
+	"bulk_movements_laa_check":                 "laa cannot be negative",
+	"bulk_containers_current_abv_pct_check":    "the resulting strength would be outside [0, 100]",
+	"distillation_cuts_abv_pct_check":          "abv_pct must be in [0, 100]",
+	"distillation_cuts_volume_l_check":         "volume_l must be greater than zero",
+	"distillation_charges_abv_pct_check":       "abv_pct must be in [0, 100]",
+	"production_gauges_abv_pct_check":          "abv_pct must be in [0, 100]",
+	"products_target_abv_pct_check":            "target_abv_pct must be in (0, 100]",
+	"products_bottle_size_ml_check":            "bottle_size_ml must be greater than zero",
+	"bottling_runs_bottle_count_check":         "bottle_count must be greater than zero",
+	"bottling_runs_bottling_loss_l_check":      "bottling_loss_l cannot be negative",
+	"packaged_inventory_bottles_on_hand_check": "that would leave a negative number of bottles on hand",
+}
+
 func classifyWriteErr(err error, notFoundMsg string) error {
 	if err == nil {
 		return nil
@@ -62,6 +90,12 @@ func classifyWriteErr(err error, notFoundMsg string) error {
 			msg = "that record already exists"
 		}
 		return connect.NewError(connect.CodeAlreadyExists, errors.New(msg))
+	case pgCheckViolation:
+		if msg, ok := checkViolationMessages[pgErr.ConstraintName]; ok {
+			return connect.NewError(connect.CodeInvalidArgument, errors.New(msg))
+		}
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+			"a value is out of the range the database allows (%s)", pgErr.ConstraintName))
 	}
 	return nil // caller should fall back to Internal
 }

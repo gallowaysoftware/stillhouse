@@ -396,7 +396,16 @@ func computeB266Report(
 	}
 
 	// Reverse-walk opening balances.
-	bulkReceipts := report.BulkProductionLaa + report.BulkReceivedInBondLaa + report.BulkBlendInLaa
+	// Blending is an internal move — alcohol goes from one of the
+	// distillery's vessels into another, and nothing enters or leaves the
+	// premises. It was being added to receipts with no matching
+	// withdrawal, so a blend left the closing balance untouched (correctly)
+	// while driving the reverse-walked opening balance DOWN by the blended
+	// LAA and reporting a receipt that never happened. Barrel fills and
+	// dumps, which are the same kind of internal move, are already in
+	// neither column; blend was the outlier. BulkBlendInLaa is still
+	// reported, for information.
+	bulkReceipts := report.BulkProductionLaa + report.BulkReceivedInBondLaa
 	bulkWithdrawals := report.BulkTransferredToPackagingLaa + report.BulkTransferredOutInBondLaa + report.BulkLossesLaa + report.BulkDestroyedLaa
 	report.BulkOpeningLaa = round4(report.BulkClosingLaa - bulkReceipts + bulkWithdrawals)
 

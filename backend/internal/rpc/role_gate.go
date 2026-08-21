@@ -31,6 +31,17 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.APITokenService/ListAPITokens":  roleViewer,
 	"/stillhouse.v1.APITokenService/RevokeAPIToken": roleViewer,
 
+	// AlcoholometryService — pure calculation against the published
+	// tables, touching nothing. Viewer is the floor because the strength
+	// widget every operator uses at the tank calls ResolveStrength on
+	// every keystroke; left unclassified it fell to the owner-only
+	// default and the correction silently stopped working for the people
+	// the feature exists for.
+	"/stillhouse.v1.AlcoholometryService/ResolveStrength": roleViewer,
+	"/stillhouse.v1.AlcoholometryService/TablesInfo":      roleViewer,
+	"/stillhouse.v1.AlcoholometryService/PlanReduction":   roleViewer,
+	"/stillhouse.v1.AlcoholometryService/PlanBlend":       roleViewer,
+
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
@@ -98,6 +109,8 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.MashService/UpdateMashStatus":  roleOperator,
 	"/stillhouse.v1.MashService/AddMashIngredient": roleOperator,
 	"/stillhouse.v1.MashService/AddMashMetric":     roleOperator,
+	// Strike-water calculation; reads nothing and writes nothing.
+	"/stillhouse.v1.MashService/PlanStrike": roleViewer,
 
 	// MaterialService
 	"/stillhouse.v1.MaterialService/CreateMaterial":        roleOperator,
@@ -185,6 +198,22 @@ func userRoleRank(r sqlcgen.UserRole) minRole {
 // connect-typed error otherwise. Public procedures bypass entirely; private
 // procedures with no entry in procedureMinRole fail closed at owner so a
 // newly added endpoint is loud rather than silently open.
+// AuthorizeProcedure applies the role gate outside the ConnectRPC
+// interceptor chain.
+//
+// The MCP server at /mcp is mounted as a plain http.Handler, so the
+// interceptors — including the role gate — never run for it. It
+// authenticated the bearer token and then called the service methods
+// directly, and those methods carry no role checks of their own, so a
+// viewer could mint a token (IssueAPIToken is deliberately viewer-level so
+// everyone can manage their own) and use it to fill, dump and regauge
+// barrels: writes that move dutiable alcohol onto the B266. Any transport
+// that reaches a service method without passing through the interceptor
+// must call this with the procedure it is standing in for.
+func AuthorizeProcedure(procedure string, role sqlcgen.UserRole) error {
+	return checkRole(procedure, true, role)
+}
+
 func checkRole(procedure string, hasUser bool, role sqlcgen.UserRole) error {
 	if publicProcedures[procedure] {
 		return nil

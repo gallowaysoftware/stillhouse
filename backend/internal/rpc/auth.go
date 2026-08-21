@@ -7,7 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"log/slog"
-	"net/http"
+	"net"
 	"strings"
 	"time"
 
@@ -29,18 +29,28 @@ type PasswordResetMailer interface {
 }
 
 type AuthService struct {
-	q              *sqlcgen.Queries
-	session        *scs.SessionManager
-	logger         *slog.Logger
-	limiter        *SlidingWindowLimiter
-	resetLimiter   *SlidingWindowLimiter
-	mailer         PasswordResetMailer
-	resetURLPrefix string // e.g. https://stillhouse.example.com/reset-password?token=
+	q            *sqlcgen.Queries
+	session      *scs.SessionManager
+	logger       *slog.Logger
+	limiter      *SlidingWindowLimiter
+	resetLimiter *SlidingWindowLimiter
+	// emailLimiter throttles attempts against a single account regardless
+	// of where they come from. The primary limiter keys on address AND
+	// email, so anything that varies the address — a botnet, or a forged
+	// header on a deployment that trusts them — sidesteps it entirely.
+	emailLimiter *SlidingWindowLimiter
+	// trustProxyHeaders says a trusted reverse proxy sets X-Forwarded-For.
+	// Off by default: trusting it unconditionally makes the limiter a
+	// formality.
+	trustProxyHeaders bool
+	mailer            PasswordResetMailer
+	resetURLPrefix    string // e.g. https://stillhouse.example.com/reset-password?token=
 }
 
-func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Logger, mailer PasswordResetMailer, resetURLPrefix string) *AuthService {
+func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Logger, mailer PasswordResetMailer, resetURLPrefix string, trustProxyHeaders bool) *AuthService {
 	return &AuthService{
 		q: q, session: sm, logger: logger, mailer: mailer, resetURLPrefix: resetURLPrefix,
+		trustProxyHeaders: trustProxyHeaders,
 		// 10 attempts / 60s per (remote_ip, email-lowercased) — typical
 		// password-guessing attacks need many more attempts than that, but
 		// a real user typo'ing won't hit it.
@@ -49,6 +59,10 @@ func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Log
 		// isn't useful for keying since we don't tell the caller whether
 		// it's registered).
 		resetLimiter: NewSlidingWindowLimiter(5, 5*time.Minute),
+		// 30 attempts / 15 min against one account from anywhere. Well
+		// above a real user fumbling a password, well below useful for
+		// guessing one.
+		emailLimiter: NewSlidingWindowLimiter(30, 15*time.Minute),
 	}
 }
 
@@ -56,21 +70,41 @@ func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Log
 // email means an attacker scanning many addresses against one IP gets
 // throttled, AND an attacker spreading attempts across IPs against one
 // email also gets throttled.
-func loginKey(req connect.AnyRequest, email string) string {
-	ip := clientIP(req.Header())
-	return ip + "\x00" + strings.ToLower(email)
+func loginKey(req connect.AnyRequest, email string, trustProxy bool) string {
+	return clientIP(req, trustProxy) + "\x00" + strings.ToLower(email)
 }
 
-func clientIP(h http.Header) string {
-	if v := h.Get("X-Forwarded-For"); v != "" {
-		// First entry in XFF is the original client; trim whitespace.
-		if i := strings.Index(v, ","); i >= 0 {
-			return strings.TrimSpace(v[:i])
+// clientIP identifies the caller for rate-limiting purposes.
+//
+// Forwarded headers are only consulted when the deployment says a trusted
+// proxy sets them. They used to be trusted unconditionally, which made the
+// limiter a formality: any client could send a fresh X-Forwarded-For per
+// request and never be throttled. That is not hypothetical here — the
+// production compose file gives the app its own LAN address, so the
+// reverse proxy that would normally overwrite the header can simply be
+// stepped around.
+//
+// The peer address can't be forged over TCP, so it is the default.
+func clientIP(req connect.AnyRequest, trustProxy bool) string {
+	if trustProxy {
+		h := req.Header()
+		if v := h.Get("X-Forwarded-For"); v != "" {
+			// First entry in XFF is the original client; trim whitespace.
+			if i := strings.Index(v, ","); i >= 0 {
+				return strings.TrimSpace(v[:i])
+			}
+			return strings.TrimSpace(v)
 		}
-		return strings.TrimSpace(v)
+		if v := h.Get("X-Real-IP"); v != "" {
+			return strings.TrimSpace(v)
+		}
 	}
-	if v := h.Get("X-Real-IP"); v != "" {
-		return strings.TrimSpace(v)
+	if addr := req.Peer().Addr; addr != "" {
+		// Strip the port so repeated attempts from one host share a key.
+		if host, _, err := net.SplitHostPort(addr); err == nil {
+			return host
+		}
+		return addr
 	}
 	return "unknown"
 }
@@ -84,10 +118,16 @@ func (s *AuthService) Login(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("email and password are required"))
 	}
 
-	rlKey := loginKey(req, in.GetEmail())
+	rlKey := loginKey(req, in.GetEmail(), s.trustProxyHeaders)
 	if !s.limiter.Allow(rlKey) {
 		return nil, connect.NewError(connect.CodeResourceExhausted,
 			errors.New("too many login attempts; try again in a minute"))
+	}
+	// And a per-account budget, so spreading attempts across addresses
+	// doesn't buy an attacker an unlimited number of guesses at one login.
+	if !s.emailLimiter.Allow(strings.ToLower(in.GetEmail())) {
+		return nil, connect.NewError(connect.CodeResourceExhausted,
+			errors.New("too many login attempts for this account; try again later"))
 	}
 
 	u, err := s.q.GetUserByEmail(ctx, in.GetEmail())
@@ -114,7 +154,8 @@ func (s *AuthService) Login(
 	}
 	s.session.Put(ctx, "user_id", u.ID.String())
 	s.session.Put(ctx, "tenant_id", u.TenantID.String())
-	s.limiter.Forget(rlKey) // legitimate user; reset their counter
+	s.limiter.Forget(rlKey)
+	s.emailLimiter.Forget(strings.ToLower(in.GetEmail())) // legitimate user; reset their counter
 
 	return connect.NewResponse(&stillhousev1.LoginResponse{
 		User:   userToProto(u),
@@ -139,7 +180,7 @@ func (s *AuthService) RequestPasswordReset(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.RequestPasswordResetRequest],
 ) (*connect.Response[stillhousev1.RequestPasswordResetResponse], error) {
-	if !s.resetLimiter.Allow(clientIP(req.Header())) {
+	if !s.resetLimiter.Allow(clientIP(req, s.trustProxyHeaders)) {
 		// Quietly succeed even when rate-limited so the caller can't probe
 		// for the limit boundary.
 		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil

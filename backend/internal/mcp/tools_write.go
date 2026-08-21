@@ -44,7 +44,10 @@ func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Name:        "fill_barrel",
 		Description: "Record a fill from a bulk container into a barrel. Updates both balances, writes a barrel event, sets the barrel's fill_date if this is its first fill (starting the maturation clock).",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.BarrelService/FillBarrel")
+		if err != nil {
+			return nil, nil, err
+		}
 		resp, err := d.Barrel.FillBarrel(ctx, connect.NewRequest(&pb.FillBarrelRequest{
 			BarrelId:          args.BarrelID,
 			SourceContainerId: args.SourceContainerID,
@@ -76,7 +79,10 @@ func addRegaugeBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Name:        "regauge_barrel",
 		Description: "Record actual barrel contents on inspection (e.g. after sampling or evaporation loss). The lost LAA is written to the journal as a loss_evaporation movement. Regauges can only record losses, not gains, and cannot zero out a non-empty barrel — use dump_barrel for that.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.BarrelService/RegaugeBarrel")
+		if err != nil {
+			return nil, nil, err
+		}
 		resp, err := d.Barrel.RegaugeBarrel(ctx, connect.NewRequest(&pb.RegaugeBarrelRequest{
 			BarrelId:        args.BarrelID,
 			NewVolumeL:      args.NewVolumeL,
@@ -108,7 +114,10 @@ func addDumpBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Name:        "dump_barrel",
 		Description: "Empty a barrel into a destination bulk container. Captures days aged on the barrel attributes for downstream Canadian Whisky eligibility checks.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.BarrelService/DumpBarrel")
+		if err != nil {
+			return nil, nil, err
+		}
 		resp, err := d.Barrel.DumpBarrel(ctx, connect.NewRequest(&pb.DumpBarrelRequest{
 			BarrelId:               args.BarrelID,
 			DestinationContainerId: args.DestinationContainerID,
@@ -143,7 +152,10 @@ func addAddFermentationReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Name:        "add_fermentation_reading",
 		Description: "Log a point-in-time reading on an active fermentation: SG, pH, and/or temperature. Any field can be omitted if not measured; a literal 0 is treated as a measurement, not as 'omitted'.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.FermentationService/AddFermentationLog")
+		if err != nil {
+			return nil, nil, err
+		}
 		req := &pb.AddFermentationLogRequest{
 			FermentationRunId: args.FermentationRunID,
 			Notes:             args.Notes,
@@ -180,7 +192,10 @@ func addAddMashReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Name:        "add_mash_reading",
 		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, wash volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, wash_volume_l, strike_temp_c, other. (value is required; 0 is a valid reading.) OG plus a water or wash volume unlocks the conversion-efficiency figure on get_mash.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.MashService/AddMashMetric")
+		if err != nil {
+			return nil, nil, err
+		}
 		kind, err := parseMashMetricKind(args.Kind)
 		if err != nil {
 			return errResult(err), nil, nil
@@ -224,7 +239,10 @@ func addSaveRecipeVersionSensory(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Name:        "save_recipe_version_sensory",
 		Description: "Score a gin recipe version on the 10-axis tasting bench (juniper / citrus / herbal / spice / floral / earth / body / heat / balance / overall, each 0-10). Upsert — running this replaces any prior scores for the same version. Use after distilling a small test batch and tasting; combine with get_recipe + list_recipe_versions to iterate.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.RecipeService/SaveRecipeVersionSensory")
+		if err != nil {
+			return nil, nil, err
+		}
 		scores := &pb.GinSensoryScores{TastingPanel: args.TastingPanel}
 		if args.Juniper != nil {
 			scores.Juniper = *args.Juniper
@@ -302,7 +320,10 @@ func addSaveRecipeVersionWhiskySensory(s *mcpsdk.Server, d Deps, user sqlcgen.Us
 		Name:        "save_recipe_version_whisky_sensory",
 		Description: "Score a whisky-family (whisky / canadian_whisky / rye_whisky) recipe version on the 11-axis tasting bench. Axes are the 8 SWRI Flavour Wheel primary classes (cereal / estery / floral / peaty / feinty / sulphury / woody / winey) plus body / finish / overall from the standard panel scorecard. Each 0-10. Upsert with partial-update semantics — sending a single axis preserves the others. Sulphury is primarily an off-note class (low = clean).",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
-		ctx = withUser(ctx, user)
+		ctx, err := guard(ctx, user, "/stillhouse.v1.RecipeService/SaveRecipeVersionWhiskySensory")
+		if err != nil {
+			return nil, nil, err
+		}
 		scores := &pb.WhiskySensoryScores{TastingPanel: args.TastingPanel}
 		setInt := func(field *int32, src *int32, setFlag *bool) {
 			if src != nil {

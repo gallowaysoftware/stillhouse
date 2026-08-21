@@ -57,9 +57,17 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 132 | Say which field and why — the day-one adoption path gets the overfill guard the fill path already had, `extract_pct` stops accepting 78 where 0.78 belongs (it was projecting a 1077% ABV wash), the yield check gains an absolute anchor so it can catch an extract its own ceilings are derived from, and validation errors stop arriving as `internal` |
 | 133 | A B266 that closes — the packaged section counted alcohol drawn from the tank rather than alcohol that became bottles, so any loss at the filler pushed the reverse-walked opening balance negative on a first-ever return. Packaging loss becomes its own line, and the two sections now reconcile |
 | 134 | B266 periods stop overlapping (two returns could cover the same day and report the same alcohol twice) and duty reports per rate band, so a period holding both >7% and ≤7% spirits reconciles against its own figures instead of stating one rate that doesn't multiply out. Materials take extract and moisture the way a malt spec sheet quotes them |
+| 135 | Security review — the tenant export was dumping every tenant's users and CRA licence numbers (neither table is RLS-scoped), password hashes included; `/mcp` sat outside the interceptor chain so a viewer's token could move alcohol; seven RPCs were classified nowhere and so silently owner-only, including the strength widget every operator uses; NaN defeated every range check; and editing a product's ABV was unvalidated, which silently reclassifies its excise band |
+| 136 | Committee findings — blending was counted as a B266 receipt with no matching withdrawal, so an internal move pushed the opening balance down; the bottling form told operators it would draw the bottled volume rather than the (smaller) volume actually pulled from a stronger tank; database CHECK violations all surfaced as 500s; and the mash bench answered an all-unknown-cereal bill with 0–0 °C instead of saying it doesn't know. Frontend gets its first tests |
+| 137 | Dependency currency — Go 1.27, React 19, Vite 8 (Rolldown), TypeScript 7, react-router 7, and every Go and npm dependency at latest. Node 20 had been EOL since April and was pinned in three files. Codegen tool versions pinned so a developer's regeneration can't drift from what CI expects |
 
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
+
+**What's next:** [`PLAN.md`](PLAN.md) is the open backlog — the excise
+correctness work, the returns beyond B266, and the operational surface
+still missing against the commercial alternatives. This table records what
+shipped; that file records what hasn't.
 
 ## Architecture
 

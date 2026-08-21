@@ -63,7 +63,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	if baseURL == "" {
 		baseURL = "http://localhost:8080"
 	}
-	authSvc := rpc.NewAuthService(queries, sm, logger, mailerImpl, baseURL+"/reset-password?token=")
+	authSvc := rpc.NewAuthService(queries, sm, logger, mailerImpl, baseURL+"/reset-password?token=", cfg.TrustProxyHeaders)
 	tenantSvc := rpc.NewTenantService(pool, queries, logger)
 	userSvc := rpc.NewUserService(queries, logger)
 	materialSvc := rpc.NewMaterialService(tdb, logger)
@@ -145,7 +145,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 
 	httpSrv := &http.Server{
 		Addr:              cfg.Addr,
-		Handler:           loggingMiddleware(sm.LoadAndSave(mux), logger),
+		Handler:           securityHeaders(loggingMiddleware(sm.LoadAndSave(mux), logger), cfg.Dev),
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      60 * time.Second, // big enough for CSV exports

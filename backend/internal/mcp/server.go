@@ -82,10 +82,23 @@ func newSessionServer(d Deps, user sqlcgen.User) *mcpsdk.Server {
 	return s
 }
 
-// withUser injects the authenticated user into a fresh context for a
-// downstream RPC call.
-func withUser(ctx context.Context, user sqlcgen.User) context.Context {
-	return rpc.WithUser(ctx, user)
+// guard injects the authenticated user into the context for a downstream
+// RPC call AND enforces the role gate for the procedure being stood in
+// for.
+//
+// /mcp is mounted as a plain http.Handler, outside the ConnectRPC
+// interceptor chain, so the gate never runs for it. Tools used to inject
+// the user and call the service method directly, and those methods carry
+// no role check of their own — so a viewer could mint a token
+// (IssueAPIToken is viewer-level by design so everyone can manage their
+// own) and use it to fill, dump and regauge barrels through this surface.
+// Keeping the procedure string here means role_gate.go stays the single
+// source of truth for who may do what.
+func guard(ctx context.Context, user sqlcgen.User, procedure string) (context.Context, error) {
+	if err := rpc.AuthorizeProcedure(procedure, user.Role); err != nil {
+		return nil, err
+	}
+	return rpc.WithUser(ctx, user), nil
 }
 
 // jsonResult marshals a proto message into a textual MCP result. We

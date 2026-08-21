@@ -216,6 +216,7 @@ func TestConcurrentFillsDoNotLoseWithdrawals(t *testing.T) {
 	wg.Wait()
 
 	moved := 0.0
+	succeeded := 0
 	for i, err := range errs {
 		if err != nil {
 			// A refusal is acceptable (serialization failure surfaces as
@@ -225,6 +226,14 @@ func TestConcurrentFillsDoNotLoseWithdrawals(t *testing.T) {
 			continue
 		}
 		moved += each
+		succeeded++
+	}
+	// Without this floor the test passes vacuously: if every fill failed,
+	// nothing moved, the tank didn't change, and both assertions below
+	// hold. A regression that made FillBarrel always error would show
+	// green.
+	if succeeded == 0 {
+		t.Fatal("no fill succeeded — the test proves nothing about concurrency")
 	}
 	afterVol, afterLAA := f.balance(t, tank.ID)
 

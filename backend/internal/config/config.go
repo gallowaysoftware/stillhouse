@@ -39,6 +39,12 @@ type Config struct {
 	// temperature correction is unavailable and the rest of the app runs
 	// normally.
 	AlcoholometricTablesPath string
+
+	// TrustProxyHeaders says a reverse proxy in front of this server sets
+	// X-Forwarded-For / X-Real-IP and strips any the client sent. Only
+	// then are those headers safe to rate-limit on; otherwise any caller
+	// can pick a fresh identity per request and never be throttled.
+	TrustProxyHeaders bool
 }
 
 // defaultAlcoholometricTablesPath is where the compose stack mounts the
@@ -59,6 +65,7 @@ func Load() (*Config, error) {
 
 		AlcoholometricTablesPath: getenv("STILLHOUSE_ALCOHOLOMETRIC_TABLES",
 			defaultAlcoholometricTablesPath),
+		TrustProxyHeaders: os.Getenv("STILLHOUSE_TRUST_PROXY_HEADERS") == "1",
 	}
 	if c.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")

@@ -61,3 +61,36 @@ func TestOwed(t *testing.T) {
 }
 
 func near(a, b, tol float64) bool { return math.Abs(a-b) <= tol }
+
+// TestRatesArePinnedToPublishedFigures: every other test in this package
+// expresses its expectation in terms of the constants, so the package
+// reported 100% coverage while asserting nothing about the numbers. Setting
+// DutyRatePerLAAOver7Pct to 141.17 passed the entire suite. These are the
+// figures CRA publishes; they change once a year on 1 April, and changing
+// them should require deliberately editing this test.
+//
+// Source: EDN104, adjusted rates of excise duty on spirits and wine
+// effective April 1, 2026.
+func TestRatesArePinnedToPublishedFigures(t *testing.T) {
+	if DutyRatePerLAAOver7Pct != 14.117 {
+		t.Errorf("spirits over 7%% ABV: %v per LAA, want 14.117 (EDN104, effective 2026-04-01)",
+			DutyRatePerLAAOver7Pct)
+	}
+	if DutyRatePerLAtOrUnder7 != 0.358 {
+		t.Errorf("spirits at or under 7%% ABV: %v per litre, want 0.358 (EDN104, effective 2026-04-01)",
+			DutyRatePerLAtOrUnder7)
+	}
+	if AbvThresholdPct != 7.0 {
+		t.Errorf("band threshold: %v%% ABV, want 7.0", AbvThresholdPct)
+	}
+	// A worked example an auditor could check by hand: one 750 mL bottle
+	// at 40% is 0.3 LAA, so $4.2351 of duty.
+	if _, got := Owed(time.Time{}, 0.75, 40); math.Abs(got-4.2351) > 1e-9 {
+		t.Errorf("duty on a 750 mL bottle at 40%%: $%v, want $4.2351", got)
+	}
+	// And one at 5% is charged per litre of product, not per LAA:
+	// 0.355 L x $0.358.
+	if _, got := Owed(time.Time{}, 0.355, 5); math.Abs(got-0.12709) > 1e-9 {
+		t.Errorf("duty on a 355 mL cooler at 5%%: $%v, want $0.12709", got)
+	}
+}

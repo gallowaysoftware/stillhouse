@@ -90,5 +90,19 @@ func decodeHash(encoded string) (*argonParams, []byte, []byte, error) {
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("auth: decode hash: %w", err)
 	}
+	// Length checks, not cosmetics. VerifyPassword derives with
+	// uint32(len(hash)) as the key length, and argon2.IDKey panics on a
+	// zero key length — so a stored hash ending in "$" (empty digest
+	// segment) takes down the request. That path is reachable from the
+	// unauthenticated login handler, which makes a corrupt or hand-edited
+	// row a denial of service rather than a failed login. A short digest
+	// would also silently shorten the comparison.
+	if len(salt) == 0 {
+		return nil, nil, nil, fmt.Errorf("auth: %w: empty salt", ErrInvalidHash)
+	}
+	if len(hash) != int(argonKeyLen) {
+		return nil, nil, nil, fmt.Errorf("auth: %w: digest is %d bytes, want %d",
+			ErrInvalidHash, len(hash), argonKeyLen)
+	}
 	return p, salt, hash, nil
 }

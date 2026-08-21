@@ -19,15 +19,22 @@ import (
 )
 
 // exportTables is the ordered list of tables included in /export/tenant.zip.
-// RLS scopes each SELECT * to the caller's tenant automatically — see
-// WithTenantTx for how app.current_tenant_id gets set on the transaction.
+// Every table named here MUST be RLS-scoped, because the dump is a bare
+// SELECT * and RLS is the only thing keeping it to one tenant.
+//
+// tenants and users are NOT in this list and must never be added. Both are
+// deliberately created without row-level security (migration 000001) —
+// login has to find a user before any tenant context exists — so a
+// SELECT * over either returns EVERY tenant's rows. Exporting them handed
+// the caller every distillery's CRA licence number and every user's
+// Argon2id password hash. They are exported through
+// exportOwnTenantIdentity below instead, scoped by parameter and with the
+// credential column left out.
 //
 // Order is roughly the data-flow direction (materials → recipes → production
 // → barrels → bottling → removals → B266 → audit) so a reviewer reading the
 // zip top-to-bottom can follow the chain.
 var exportTables = []string{
-	"tenants",
-	"users",
 	"materials",
 	"material_receipts",
 	"recipes",
@@ -112,6 +119,11 @@ func tenantExportHandler(sm *scs.SessionManager, pool *pgxpool.Pool, queries *sq
 			); err != nil {
 				return fmt.Errorf("set tenant context: %w", err)
 			}
+			// The two non-RLS tables, scoped by parameter rather than by
+			// tenant context.
+			if err := exportOwnTenantIdentity(ctx, tx, zw, tenantID); err != nil {
+				return fmt.Errorf("export tenant identity: %w", err)
+			}
 			for _, table := range exportTables {
 				if err := dumpTableToZip(ctx, tx, zw, table); err != nil {
 					// Tables not present in this deployment (e.g., features rolled
@@ -130,14 +142,34 @@ func tenantExportHandler(sm *scs.SessionManager, pool *pgxpool.Pool, queries *sq
 	})
 }
 
+// exportOwnTenantIdentity writes tenants.csv and users.csv scoped by an
+// explicit WHERE, since neither table is RLS-protected. users.csv carries
+// no password_hash: an operator's data export has no business containing
+// credential material, and those hashes are offline-crackable.
+func exportOwnTenantIdentity(ctx context.Context, tx pgx.Tx, zw *zip.Writer, tenantID uuid.UUID) error {
+	if err := dumpQueryToZip(ctx, tx, zw, "tenants",
+		`SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number,
+		        default_jurisdiction, created_at, updated_at
+		   FROM tenants WHERE id = $1`, tenantID); err != nil {
+		return err
+	}
+	return dumpQueryToZip(ctx, tx, zw, "users",
+		`SELECT id, tenant_id, email, display_name, role, created_at, updated_at
+		   FROM users WHERE tenant_id = $1 ORDER BY created_at`, tenantID)
+}
+
 func dumpTableToZip(ctx context.Context, tx pgx.Tx, zw *zip.Writer, table string) error {
-	rows, err := tx.Query(ctx, "SELECT * FROM "+table)
+	return dumpQueryToZip(ctx, tx, zw, table, "SELECT * FROM "+table)
+}
+
+func dumpQueryToZip(ctx context.Context, tx pgx.Tx, zw *zip.Writer, name, sql string, args ...any) error {
+	rows, err := tx.Query(ctx, sql, args...)
 	if err != nil {
 		return err
 	}
 	defer rows.Close()
 
-	entry, err := zw.Create(table + ".csv")
+	entry, err := zw.Create(name + ".csv")
 	if err != nil {
 		return err
 	}

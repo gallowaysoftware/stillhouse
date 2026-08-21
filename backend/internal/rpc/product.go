@@ -40,6 +40,9 @@ func (s *ProductService) CreateProduct(
 	if in.GetBottleSizeMl() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("bottle_size_ml must be > 0"))
 	}
+	if err := validateFinite("target_abv_pct", in.GetTargetAbvPct()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
 	if in.GetTargetAbvPct() <= 0 || in.GetTargetAbvPct() > 100 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("target_abv_pct must be in (0, 100]"))
 	}
@@ -91,6 +94,26 @@ func (s *ProductService) UpdateProduct(
 	kind, err := spiritKindToDB(req.Msg.GetSpiritKind())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	// The same guards CreateProduct applies. Editing was unvalidated, and
+	// the dangerous value here is IN range: a 40% product saved as 0.40
+	// crosses the 7% ABV excise threshold, so removals stop being charged
+	// per litre of absolute alcohol and start being charged per litre of
+	// product — about a sixteenfold understatement of duty on a 750 mL
+	// bottle, landing on the B266 under the wrong line, with nothing
+	// anywhere looking wrong.
+	if req.Msg.GetName() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
+	}
+	if req.Msg.GetBottleSizeMl() <= 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("bottle_size_ml must be > 0"))
+	}
+	if err := validateFinite("target_abv_pct", req.Msg.GetTargetAbvPct()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if req.Msg.GetTargetAbvPct() <= 0 || req.Msg.GetTargetAbvPct() > 100 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("target_abv_pct must be in (0, 100]"))
 	}
 	var p sqlcgen.Product
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {

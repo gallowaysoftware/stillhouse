@@ -13,12 +13,12 @@ jobs:
       - uses: bufbuild/buf-action@v1
         with:
           setup_only: true
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: backend/go.mod
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: web/package-lock.json
       # Pinned to the versions in backend/go.mod, NOT @latest. The drift
@@ -27,6 +27,13 @@ jobs:
       # writes — so an @latest install makes this job fail the moment a
       # new plugin release lands, on a one-line comment, with nothing
       # actually wrong. Bump these deliberately alongside go.mod.
+      # Note the plugins must also be BUILT with the same Go version: the
+      # generator runs the output through go/printer, whose comment
+      # reflowing changed between 1.26 and 1.27, so a plugin of the right
+      # version compiled by the wrong toolchain still produces a diff.
+      # setup-go above pins this job to go-version-file, which is what
+      # makes `go install` here agree with a developer running it from
+      # backend/.
       - name: Install Go protoc plugins
         run: |
           PROTOBUF_VERSION=$(cd backend && go list -m -f '{{.Version}}' google.golang.org/protobuf)
@@ -39,6 +46,19 @@ jobs:
         run: cd web && npm ci
       - name: Lint .proto
         run: cd proto && buf lint
+
+      # buf.yaml has declared `breaking: use: FILE` from the start and
+      # nothing ever ran it. Generated clients are committed and the MCP
+      # surface is reachable by external bearer tokens, so a wire break is
+      # not a local matter.
+      - name: Check for breaking .proto changes
+        # Compares against origin/main, fetched explicitly: actions/checkout
+        # takes a shallow clone of the PR head, so a local `main` ref does
+        # not exist and buf can't resolve it.
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=1 origin main
+          cd proto && buf breaking --against '../.git#ref=FETCH_HEAD,subdir=proto' 
       - name: Regenerate Go code
         run: cd proto && buf generate --template buf.gen.yaml
       - name: Regenerate TS code
@@ -58,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
@@ -77,7 +97,7 @@ jobs:
       - name: golangci-lint (backend)
         uses: golangci/golangci-lint-action@v8
         with:
-          version: v2.12.2
+          version: v2.13.1
           working-directory: backend
 
   vulncheck:
@@ -85,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           # Read the toolchain from go.mod so a stdlib advisory is fixed by
           # bumping one line, and the version CI scans is the version the
@@ -102,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
@@ -150,7 +170,7 @@ jobs:
           --health-retries 10
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version-file: backend/go.mod
           cache-dependency-path: backend/go.sum
@@ -171,19 +191,24 @@ jobs:
           STILLHOUSE_INTEGRATION_TEST_DSN: postgres://stillhouse_app:stillhouse_app@localhost:5432/stillhouse?sslmode=disable
         run: |
           cd backend
-          go test -v ./internal/tenantdb/
-          go test -v ./internal/rpc/
+          # -race because the integration tier is where concurrency is
+          # actually exercised: TestConcurrentFillsDoNotLoseWithdrawals
+          # drives 8 goroutines through the service layer, and without
+          # this a Go-level data race in that path goes undetected.
+          go test -race -v ./internal/tenantdb/
+          go test -race -v ./internal/rpc/
 
   web:
     name: web / typecheck + build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: cd web && npm ci
       - run: cd web && npm run lint
+      - run: cd web && npm test
       - run: cd web && npm run build
