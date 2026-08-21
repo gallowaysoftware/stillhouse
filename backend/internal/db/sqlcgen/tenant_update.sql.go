@@ -12,6 +12,36 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const setDutyPointEffectiveFrom = `-- name: SetDutyPointEffectiveFrom :one
+UPDATE tenants SET duty_point_effective_from = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from
+`
+
+type SetDutyPointEffectiveFromParams struct {
+	ID                     uuid.UUID   `json:"id"`
+	DutyPointEffectiveFrom pgtype.Date `json:"duty_point_effective_from"`
+}
+
+// Moves the cutover. Not exposed in the UI: the date is set once, when the
+// tenant is created or when this migration ran, and moving it re-attributes
+// duty across events that may already have been filed. Here so a support
+// path exists that is deliberate rather than improvised.
+func (q *Queries) SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error) {
+	row := q.db.QueryRow(ctx, setDutyPointEffectiveFrom, arg.ID, arg.DutyPointEffectiveFrom)
+	var i Tenant
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.CraSpiritsLicenceNumber,
+		&i.ExciseWarehouseLicenceNumber,
+		&i.DefaultJurisdiction,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DutyPoint,
+		&i.DutyPointEffectiveFrom,
+	)
+	return i, err
+}
+
 const updateTenant = `-- name: UpdateTenant :one
 UPDATE tenants
 SET name                            = $2,
@@ -19,7 +49,7 @@ SET name                            = $2,
     excise_warehouse_licence_number = $4,
     default_jurisdiction            = $5
 WHERE id = $1
-RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at
+RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from
 `
 
 type UpdateTenantParams struct {
@@ -47,6 +77,8 @@ func (q *Queries) UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Ten
 		&i.DefaultJurisdiction,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DutyPoint,
+		&i.DutyPointEffectiveFrom,
 	)
 	return i, err
 }

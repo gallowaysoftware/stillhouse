@@ -29,6 +29,20 @@ message BottlingRun {
   string voided_by = 22;
   string voided_reason = 23;
 
+  // Duty crystallised at this run, for a tenant whose duty point is
+  // AT_PACKAGING. Zero for an at-removal tenant and for runs dated before
+  // the tenant's duty-point cutover — that stock is dutied on removal
+  // instead, so it is never dutied twice and never dutied never.
+  //
+  // duty_rate_per_laa is 0 for the at-or-under-7% band, which is charged
+  // per litre of product rather than per litre of absolute alcohol.
+  bool   duty_paid_at_packaging = 24;
+  double duty_rate_per_laa = 25;
+  double duty_amount_cad = 26;
+  // The CRA notice the rate was read from, so a figure on a filed return
+  // can be checked against its source years later.
+  string duty_rate_source = 27;
+
   repeated BottlingRunStampUsage stamp_usage = 30;
 }
 

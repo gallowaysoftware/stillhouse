@@ -88,7 +88,7 @@ func (s *B266Service) GenerateB266(
 		}
 
 		// Compute report.
-		report, e = computeB266Report(ctx, q, pStart, pEnd, queryEnd)
+		report, e = computeB266Report(ctx, q, u.TenantID, pStart, pEnd, queryEnd)
 		return e
 	})
 	if err != nil {
@@ -136,7 +136,7 @@ func (s *B266Service) SubmitB266(
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("period already submitted"))
 		}
 		queryEnd := existing.PeriodEnd.Time.AddDate(0, 0, 1)
-		report, e = computeB266Report(ctx, q, existing.PeriodStart.Time, existing.PeriodEnd.Time, queryEnd)
+		report, e = computeB266Report(ctx, q, u.TenantID, existing.PeriodStart.Time, existing.PeriodEnd.Time, queryEnd)
 		if e != nil {
 			return e
 		}
@@ -306,9 +306,10 @@ func (s *B266Service) ListB266Periods(
 func computeB266Report(
 	ctx context.Context,
 	q *sqlcgen.Queries,
+	tenantID uuid.UUID,
 	periodStart, periodEnd, queryEnd time.Time,
 ) (*stillhousev1.B266Report, error) {
-	totals, err := gatherB266Totals(ctx, q, periodStart, periodEnd, queryEnd)
+	totals, err := gatherB266Totals(ctx, q, tenantID, periodStart, periodEnd, queryEnd)
 	if err != nil {
 		return nil, err
 	}
@@ -331,6 +332,7 @@ func computeB266Report(
 func gatherB266Totals(
 	ctx context.Context,
 	q *sqlcgen.Queries,
+	tenantID uuid.UUID,
 	periodStart, periodEnd, queryEnd time.Time,
 ) (b266Totals, error) {
 	var t b266Totals
@@ -417,6 +419,33 @@ func gatherB266Totals(
 	t.removedUnder7Litres = removals.Under7Litres
 	t.removedUnder7DutyCAD = removals.Under7Duty
 	t.removedUnder7Bottles = removals.Under7Bottles
+
+	// Duty crystallised at packaging during the period. Zero for an
+	// at-removal tenant; the whole duty figure for an at-packaging one.
+	packagingDuty, err := q.SumBottlingDutyInPeriod(ctx, sqlcgen.SumBottlingDutyInPeriodParams{
+		BottlingDate:   pStartDate,
+		BottlingDate_2: pEndDate,
+	})
+	if err != nil {
+		return t, err
+	}
+	t.packagedDutyCAD = packagingDuty.TotalDuty
+	t.packagedDutyOver7LAA = packagingDuty.Over7Laa
+	t.packagedDutyOver7CAD = packagingDuty.Over7Duty
+	t.packagedDutyUnder7Litres = packagingDuty.Under7Litres
+	t.packagedDutyUnder7CAD = packagingDuty.Under7Duty
+	t.packagedDutyPaidLAA = packagingDuty.DutyPaidLaa
+	t.packagedDutyPaidBottles = packagingDuty.DutyPaidBottles
+
+	// The basis the period was computed on, carried onto the return: the
+	// figures cannot be checked without knowing which event crystallised
+	// them.
+	tenant, err := q.GetTenantByID(ctx, tenantID)
+	if err != nil {
+		return t, err
+	}
+	t.dutyPoint = tenant.DutyPoint
+	t.dutyPointFrom = tenant.DutyPointEffectiveFrom.Time
 
 	return t, nil
 }

@@ -92,6 +92,17 @@ export function SettingsPage() {
         <div>
           <label className="mb-2 block text-sm font-medium text-fg-muted">Excise warehouse licence # (optional)</label>
           <input value={warehouse} onChange={(e) => setWarehouse(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
+          {/* This field is not cosmetic: it decides when duty becomes
+              payable, and therefore which month it lands on. Saying so
+              here is cheaper than explaining a timing error to CRA. */}
+          <p className="mt-2 text-xs text-fg-muted">
+            {warehouse.trim()
+              ? "Holding a warehouse licence means duty becomes payable when spirits are removed to the duty-paid market."
+              : "Without a warehouse licence you cannot hold packaged spirits non-duty-paid, so duty becomes payable when spirits are packaged (EDM3-1-1 ¶29)."}
+            {tenant.data?.tenant?.dutyPointEffectiveFrom
+              ? ` Stillhouse has been on this basis since ${tenant.data.tenant.dutyPointEffectiveFrom}; anything dated before then keeps the basis it was recorded on.`
+              : ""}
+          </p>
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-fg-muted">Default jurisdiction (ISO 3166-2)</label>

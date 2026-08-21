@@ -325,6 +325,9 @@ func TestB266AndRemovalRefuseDatesWithNoRate(t *testing.T) {
 	})
 
 	t.Run("a removal dated before the table", func(t *testing.T) {
+		// An at-removal tenant, so the removal is the duty event and has
+		// to resolve a rate for its own date.
+		f.warehouseLicensed(t)
 		f.stamps(t, "CA-ON", 200)
 		tank := f.tank(t, "No-rate tank", 1000, 70)
 		prod := f.product(t, "No-rate Gin", 750, 40)

@@ -28,7 +28,7 @@ INSERT INTO tenants (
     name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction
 ) VALUES (
     $1, $2, $3, $4
-) RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at
+) RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from
 `
 
 type CreateTenantParams struct {
@@ -54,6 +54,8 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 		&i.DefaultJurisdiction,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DutyPoint,
+		&i.DutyPointEffectiveFrom,
 	)
 	return i, err
 }
@@ -72,7 +74,7 @@ func (q *Queries) DeleteTenant(ctx context.Context, id uuid.UUID) error {
 }
 
 const getTenantByID = `-- name: GetTenantByID :one
-SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at FROM tenants WHERE id = $1
+SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from FROM tenants WHERE id = $1
 `
 
 func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error) {
@@ -86,6 +88,8 @@ func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, erro
 		&i.DefaultJurisdiction,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.DutyPoint,
+		&i.DutyPointEffectiveFrom,
 	)
 	return i, err
 }

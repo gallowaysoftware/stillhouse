@@ -181,7 +181,7 @@ func TestB266GenerationEndToEnd(t *testing.T) {
 	}
 
 	// Call computeB266Report directly with the admin Queries.
-	report, err := computeB266Report(ctx, q, periodStart, periodEnd, queryEnd)
+	report, err := computeB266Report(ctx, q, tenant.ID, periodStart, periodEnd, queryEnd)
 	if err != nil {
 		t.Fatalf("computeB266Report: %v", err)
 	}

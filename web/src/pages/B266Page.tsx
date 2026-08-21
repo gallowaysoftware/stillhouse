@@ -13,6 +13,7 @@ import {
   GenerateB266RequestSchema,
   SubmitB266RequestSchema,
 } from "@/gen/stillhouse/v1/b266_pb";
+import { DutyPoint } from "@/gen/stillhouse/v1/tenant_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
 import { WriteOnly, OwnerOnly } from "@/lib/role";
 
@@ -257,14 +258,78 @@ function ReportView({
         <Card title="Packaged spirits (LAA)">
           <Row k="Opening on hand"        v={formatLAA(report.packagedOpeningLaa)} />
           <Row k="Packaged this period"   v={`${formatLAA(report.packagedPackagedLaa)} (${report.packagedPackagedBottles.toLocaleString()} bottles)`} />
+          {/* Of what was packaged, how much went in duty-paid. An
+              at-packaging licensee cannot hold packaged spirits
+              non-duty-paid at all, so for most craft distillers this is all
+              of it. */}
+          {report.packagedDutyPaidBottles > 0 && (
+            <Row
+              k="  of which duty-paid"
+              v={`${formatLAA(report.packagedDutyPaidLaa)} (${report.packagedDutyPaidBottles.toLocaleString()} bottles)`}
+              dim
+            />
+          )}
+          {report.packagedNonDutyPaidBottles > 0 && (
+            <Row
+              k="  of which non-duty-paid"
+              v={`${formatLAA(report.packagedNonDutyPaidLaa)} (${report.packagedNonDutyPaidBottles.toLocaleString()} bottles)`}
+              dim
+            />
+          )}
           <Row k="Removed duty-paid"      v={`${formatLAA(report.packagedRemovedDutyPaidLaa)} (${report.packagedRemovedDutyPaidBottles.toLocaleString()} bottles)`} dim />
           <Row k="Closing on hand"        v={`${formatLAA(report.packagedClosingLaa)} (${report.packagedClosingBottles.toLocaleString()} bottles)`} bold />
         </Card>
       </div>
 
       <Card title="Duty payable">
-        <Row k="Removed LAA (duty-paid)" v={formatLAA(report.packagedRemovedDutyPaidLaa)} />
+        {/* Which event crystallised the duty. Without it the figures below
+            can't be checked: the same LAA produces the same duty at either
+            event, but in different months. */}
+        <Row
+          k="Duty point"
+          v={
+            report.dutyPoint === DutyPoint.AT_PACKAGING
+              ? "At packaging (no excise warehouse licence)"
+              : report.dutyPoint === DutyPoint.AT_REMOVAL
+                ? "At removal (excise warehouse licence held)"
+                : "—"
+          }
+        />
+        {report.dutyPointEffectiveFrom && (
+          <Row k="  on this basis since" v={report.dutyPointEffectiveFrom} dim />
+        )}
+
+        {/* Both halves are shown whenever either is non-zero. Only a period
+            containing a change of basis carries both — stock packaged
+            before the change is still dutied on its way out — and that is
+            precisely the period where showing one and hiding the other
+            would make the total look wrong. */}
+        {(report.packagedDutiedOver7DutyCad > 0 || report.packagedDutiedUnder7DutyCad > 0) && (
+          <>
+            <Row k="Packaged >7% (LAA)" v={formatLAA(report.packagedDutiedOver7Laa)} dim />
+            <Row k="  duty at packaging" v={formatCAD(report.packagedDutiedOver7DutyCad)} dim />
+            {report.packagedDutiedUnder7DutyCad > 0 && (
+              <>
+                <Row k="Packaged ≤7% (litres)" v={report.packagedDutiedUnder7Litres.toFixed(2)} dim />
+                <Row k="  duty at packaging" v={formatCAD(report.packagedDutiedUnder7DutyCad)} dim />
+              </>
+            )}
+          </>
+        )}
+        {(report.packagedRemovedOver7DutyCad > 0 || report.packagedRemovedUnder7DutyCad > 0) && (
+          <>
+            <Row k="Removed >7% (LAA)" v={formatLAA(report.packagedRemovedOver7Laa)} dim />
+            <Row k="  duty at removal" v={formatCAD(report.packagedRemovedOver7DutyCad)} dim />
+            {report.packagedRemovedUnder7DutyCad > 0 && (
+              <>
+                <Row k="Removed ≤7% (litres)" v={report.packagedRemovedUnder7Litres.toFixed(2)} dim />
+                <Row k="  duty at removal" v={formatCAD(report.packagedRemovedUnder7DutyCad)} dim />
+              </>
+            )}
+          </>
+        )}
         <Row k="Rate (CAD / LAA, >7%)"  v={`$${report.dutyRatePerLaa.toFixed(3)}`} />
+        <Row k="Rate (CAD / litre, ≤7%)" v={`$${report.dutyRatePerLitreUnder7.toFixed(3)}`} dim />
         <Row k="Duty payable (CAD)"     v={`${formatCAD(report.dutyPayableCad)}`} bold highlight />
       </Card>
 

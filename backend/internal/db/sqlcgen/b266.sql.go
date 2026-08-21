@@ -251,6 +251,81 @@ func (q *Queries) SubmitB266Period(ctx context.Context, arg SubmitB266PeriodPara
 	return i, err
 }
 
+const sumBottlingDutyInPeriod = `-- name: SumBottlingDutyInPeriod :one
+SELECT COALESCE(SUM(br.duty_amount_cad), 0)::double precision AS total_duty,
+       COALESCE(SUM(br.bottle_count) FILTER (WHERE p.target_abv_pct > 7), 0)::int
+           AS over7_bottles,
+       COALESCE(SUM(br.bottle_count * p.bottle_size_ml / 1000.0 * p.target_abv_pct / 100.0)
+                FILTER (WHERE p.target_abv_pct > 7), 0)::double precision
+           AS over7_laa,
+       COALESCE(SUM(br.duty_amount_cad) FILTER (WHERE p.target_abv_pct > 7), 0)::double precision
+           AS over7_duty,
+       COALESCE(SUM(br.bottle_count) FILTER (WHERE p.target_abv_pct <= 7), 0)::int
+           AS under7_bottles,
+       COALESCE(SUM(br.bottle_count * p.bottle_size_ml / 1000.0)
+                FILTER (WHERE p.target_abv_pct <= 7), 0)::double precision
+           AS under7_litres,
+       COALESCE(SUM(br.duty_amount_cad) FILTER (WHERE p.target_abv_pct <= 7), 0)::double precision
+           AS under7_duty,
+       -- Bottles and LAA packaged as duty-paid: everything with a duty
+       -- amount on it. The complement — packaged non-duty-paid — is the
+       -- rest of the period's bottling, and the projection takes the
+       -- difference rather than running a second scan.
+       COALESCE(SUM(br.bottle_count), 0)::int AS duty_paid_bottles,
+       COALESCE(SUM(br.bottle_count * p.bottle_size_ml / 1000.0 * p.target_abv_pct / 100.0),
+                0)::double precision AS duty_paid_laa
+FROM bottling_runs br
+JOIN products p ON p.id = br.product_id
+WHERE br.bottling_date >= $1 AND br.bottling_date < $2
+  AND br.voided_at IS NULL
+  AND br.duty_amount_cad IS NOT NULL
+`
+
+type SumBottlingDutyInPeriodParams struct {
+	BottlingDate   pgtype.Date `json:"bottling_date"`
+	BottlingDate_2 pgtype.Date `json:"bottling_date_2"`
+}
+
+type SumBottlingDutyInPeriodRow struct {
+	TotalDuty       float64 `json:"total_duty"`
+	Over7Bottles    int32   `json:"over7_bottles"`
+	Over7Laa        float64 `json:"over7_laa"`
+	Over7Duty       float64 `json:"over7_duty"`
+	Under7Bottles   int32   `json:"under7_bottles"`
+	Under7Litres    float64 `json:"under7_litres"`
+	Under7Duty      float64 `json:"under7_duty"`
+	DutyPaidBottles int32   `json:"duty_paid_bottles"`
+	DutyPaidLaa     float64 `json:"duty_paid_laa"`
+}
+
+// Duty that crystallised at packaging during the period, split by the two
+// rate bands, because they are not charged in the same unit: above 7% ABV
+// per litre of absolute alcohol, at or below 7% per litre of product. The
+// mirror of SumRemovalsInPeriod, and it exists for the same reason — a
+// return that quotes one blended rate against a mixed total fails its own
+// arithmetic.
+//
+// Only runs carrying a duty amount count. A run with NULL duty is not a
+// duty event: either the tenant pays at removal, or the run predates the
+// tenant's duty-point cutover and its stock is dutied on its way out
+// instead.
+func (q *Queries) SumBottlingDutyInPeriod(ctx context.Context, arg SumBottlingDutyInPeriodParams) (SumBottlingDutyInPeriodRow, error) {
+	row := q.db.QueryRow(ctx, sumBottlingDutyInPeriod, arg.BottlingDate, arg.BottlingDate_2)
+	var i SumBottlingDutyInPeriodRow
+	err := row.Scan(
+		&i.TotalDuty,
+		&i.Over7Bottles,
+		&i.Over7Laa,
+		&i.Over7Duty,
+		&i.Under7Bottles,
+		&i.Under7Litres,
+		&i.Under7Duty,
+		&i.DutyPaidBottles,
+		&i.DutyPaidLaa,
+	)
+	return i, err
+}
+
 const sumBottlingRunsInPeriod = `-- name: SumBottlingRunsInPeriod :one
 SELECT COALESCE(SUM(br.tank_gauge_laa), 0)::double precision AS total_laa,
        COALESCE(SUM(br.bottle_count * p.bottle_size_ml / 1000.0 * p.target_abv_pct / 100.0),

@@ -66,6 +66,31 @@ export function BottlingRunDetailPage() {
         </dl>
       </section>
 
+      {/* A licensee without an excise warehouse licence cannot hold packaged
+          spirits non-duty-paid, so duty crystallises here rather than at the
+          removal months later — and this run is the document behind that
+          line on the return. Shown only when this run is the duty event;
+          for a warehouse licensee the duty sits on the removal instead. */}
+      {r.dutyPaidAtPackaging && (
+        <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+          <h2 className="mb-3 text-sm font-semibold text-fg-muted">Excise duty — payable at packaging</h2>
+          <dl className="grid grid-cols-3 gap-3 text-sm">
+            {r.dutyRatePerLaa > 0 ? (
+              <Row k="Rate">${r.dutyRatePerLaa.toFixed(3)} / LAA</Row>
+            ) : (
+              <Row k="Rate">per litre of product (≤7% ABV)</Row>
+            )}
+            <Row k="Duty">{formatCAD(r.dutyAmountCad)}</Row>
+            {r.dutyRateSource && <Row k="Rate source">{r.dutyRateSource}</Row>}
+          </dl>
+          <p className="mt-3 text-xs text-fg-muted">
+            Charged on the sealed bottles, not on what was drawn from the tank —
+            the packaging loss never became packaged spirits. Removals of this
+            lot carry no further duty.
+          </p>
+        </section>
+      )}
+
       {cost.data && cost.data.lines.length > 0 && (
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-fg-muted">Material cost</h2>

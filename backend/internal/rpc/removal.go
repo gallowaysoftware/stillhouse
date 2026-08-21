@@ -89,17 +89,38 @@ func (s *RemovalService) CreateRemoval(
 
 		totalLitres := float64(in.GetBottlesRemoved()) * float64(product.BottleSizeMl) / 1000
 		totalLAA := totalLitres * product.TargetAbvPct / 100
-		// The rate is the one in force on the removal date, not today's.
-		// A date the table cannot source refuses rather than being priced
-		// at whatever the current band happens to be — see internal/excise.
-		var ratePerLAA, dutyCAD float64
-		ratePerLAA, dutyCAD, e = excise.Owed(removalDate.Time, totalLitres, product.TargetAbvPct)
-		if e != nil {
-			var unknown *excise.UnknownRateError
-			if errors.As(e, &unknown) {
-				return connect.NewError(connect.CodeFailedPrecondition, e)
+		// Duty here only if this stock was not already dutied when it was
+		// packaged.
+		//
+		// The test is the bottling run's own duty amount rather than a
+		// date comparison, so the two sides can never drift: if the run
+		// crystallised duty, the removal carries none, and if it did not,
+		// the removal carries it. Across a duty-point cutover both cases
+		// coexist — stock bottled under the old basis is still dutied on
+		// its way out — and no litre is dutied twice or dutied never.
+		//
+		// A lot with no bottling run behind it (adopted stock, backfill)
+		// counts as not dutied, which is the direction that cannot
+		// under-report.
+		dutiedAtPackaging := false
+		if matched.BottlingRunID.Valid {
+			run, re := q.GetBottlingRun(ctx, matched.BottlingRunID.UUID)
+			if re != nil && !errors.Is(re, pgx.ErrNoRows) {
+				return re
 			}
-			return e
+			dutiedAtPackaging = re == nil && run.DutyAmountCad.Valid
+		}
+
+		var ratePerLAA, dutyCAD float64
+		if !dutiedAtPackaging {
+			// The rate is the one in force on the removal date, not
+			// today's. A date the table cannot source refuses rather than
+			// being priced at whatever the current band happens to be —
+			// see internal/excise.
+			ratePerLAA, dutyCAD, e = excise.Owed(removalDate.Time, totalLitres, product.TargetAbvPct)
+			if e != nil {
+				return asRateRefusal(e)
+			}
 		}
 
 		// Serialise number allocation before reading the maximum — see
@@ -156,7 +177,10 @@ func (s *RemovalService) CreateRemoval(
 				"bottles":      removal.BottlesRemoved,
 				"total_laa":    removal.TotalLaa,
 				"duty_cad":     removal.DutyAmountCad,
-				"destination":  removal.DestinationName,
+				// Zero duty on a removal is a fact about the duty point,
+				// not an omission — say which, so the trail explains it.
+				"dutied_at_packaging": dutiedAtPackaging,
+				"destination":         removal.DestinationName,
 			})
 	})
 	if err != nil {

@@ -25,33 +25,6 @@ picked up in any order, though the dependency notes are real.
 
 The return has to be right before anything else matters.
 
-### A1 · Duty crystallises at the wrong event — P0
-
-`excise.Owed` is called in exactly one place (`internal/rpc/removal.go:92`) and
-`b266.go` derives `duty_payable_cad` entirely from removal totals. That is the
-**excise-warehouse pattern**: hold packaged spirits non-duty-paid, pay on
-removal to the duty-paid market.
-
-A spirits licensee *without* an excise warehouse licence cannot possess
-non-duty-paid packaged spirits at all (EDM3-1-1 ¶18). Duty becomes payable **at
-the time the spirits are packaged** (¶29). For that licensee, Stillhouse reports
-duty in the month of sale when CRA expects it in the month of bottling — a
-timing error on a filed return, carrying interest.
-
-- Add a duty point to the tenant: `AT_PACKAGING` (no warehouse licence) or
-  `AT_REMOVAL` (warehouse licence held). Derive it from the licence register
-  (`B1`) rather than making it a free-standing toggle.
-- When the duty point is `AT_PACKAGING`, the bottling run emits the duty event.
-  Removals still move inventory and still matter for traceability and
-  provincial reporting, but they stop carrying `duty_amount_cad`.
-- B266 page 3 gains the real "Removed to packaging activities" split:
-  *Packaged: duty-paid* against *Packaged: non-duty-paid (>7% / ≤7%)* and
-  *Packaged in marked special containers*. Today only the warehouse case is
-  representable.
-- Backfill: existing tenants need their historical duty re-attributed, or the
-  period-lock has to hold the old basis. Decide which before writing the
-  migration — reopening filed periods to change duty is not free.
-
 ### A2 · The rate table holds one band — P1
 
 Stage 142 made rates date-effective and made the lookup refuse outside what
@@ -164,6 +137,10 @@ EDM3-8-1. Containers 100–1,500 L marked for delivery to registered users or
 bottle-your-own premises. They are *packaging*, they have their own B266 and
 B262 lines, they can be unmarked and returned to bulk (s.156), and the keg
 channel is a live revenue line for craft distillers. Currently unrepresentable.
+
+Stage 143 split B266's packaging figures by duty treatment (duty-paid against
+non-duty-paid); the third column on that line — *packaged in marked special
+containers* — waits on this item.
 
 ### B4 · B263 — licensed user return — P2
 
@@ -645,12 +622,15 @@ the three options.
 
 Correctness first, in this order, because each depends on the one before:
 
-1. `A1` duty point — everything else computes from the wrong event until this lands
-2. `C1` instrument register
-3. `A3` `A4` B266 completeness and adjustments
-4. `A5` `A6` losses and reporting periods
-5. `H1` `H2` liability and backups — before any second distillery's records land here
-6. `C2` audit binder — the artifact that makes the case for everything above
+1. `C1` instrument register
+2. `A3` `A4` B266 completeness and adjustments
+3. `A5` `A6` losses and reporting periods
+4. `H1` `H2` liability and backups — before any second distillery's records land here
+5. `C2` audit binder — the artifact that makes the case for everything above
+
+`A1`, which was the head of this list, shipped in stage 143: duty now
+crystallises at packaging for a licensee without a warehouse licence, and the
+returns compute from the event that actually made it payable.
 
 `A3` and `A4` are the difference between a return that ties out and one that is
 also true; `A10`, which was the third of that group, shipped in stage 141. `K1`

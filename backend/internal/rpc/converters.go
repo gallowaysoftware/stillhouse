@@ -27,6 +27,11 @@ func tenantToProto(t sqlcgen.Tenant) *stillhousev1.Tenant {
 		DefaultJurisdiction:     t.DefaultJurisdiction,
 		CreatedAt:               timestamppb.New(t.CreatedAt.Time),
 		UpdatedAt:               timestamppb.New(t.UpdatedAt.Time),
+		// Derived from the warehouse licence in the database, so it can
+		// never disagree with it. Read-only over the wire for the same
+		// reason.
+		DutyPoint:              dutyPointToProto(t.DutyPoint),
+		DutyPointEffectiveFrom: t.DutyPointEffectiveFrom.Time.Format("2006-01-02"),
 	}
 	if t.ExciseWarehouseLicenceNumber.Valid {
 		out.ExciseWarehouseLicenceNumber = t.ExciseWarehouseLicenceNumber.String

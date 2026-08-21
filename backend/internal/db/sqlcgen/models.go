@@ -382,6 +382,48 @@ func (ns NullDistillationStatus) Value() (driver.Value, error) {
 	return string(ns.DistillationStatus), nil
 }
 
+type DutyPoint string
+
+const (
+	DutyPointAtPackaging DutyPoint = "at_packaging"
+	DutyPointAtRemoval   DutyPoint = "at_removal"
+)
+
+func (e *DutyPoint) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = DutyPoint(s)
+	case string:
+		*e = DutyPoint(s)
+	default:
+		return fmt.Errorf("unsupported scan type for DutyPoint: %T", src)
+	}
+	return nil
+}
+
+type NullDutyPoint struct {
+	DutyPoint DutyPoint `json:"duty_point"`
+	Valid     bool      `json:"valid"` // Valid is true if DutyPoint is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullDutyPoint) Scan(value interface{}) error {
+	if value == nil {
+		ns.DutyPoint, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.DutyPoint.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullDutyPoint) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.DutyPoint), nil
+}
+
 type ExciseStampOrderStatus string
 
 const (
@@ -887,6 +929,9 @@ type BottlingRun struct {
 	VoidedAt                pgtype.Timestamptz `json:"voided_at"`
 	VoidedBy                uuid.NullUUID      `json:"voided_by"`
 	VoidedReason            string             `json:"voided_reason"`
+	DutyRatePerLaa          pgtype.Float8      `json:"duty_rate_per_laa"`
+	DutyAmountCad           pgtype.Float8      `json:"duty_amount_cad"`
+	DutyRateSource          string             `json:"duty_rate_source"`
 }
 
 type BottlingRunStampUsage struct {
@@ -1267,6 +1312,10 @@ type Tenant struct {
 	DefaultJurisdiction          string             `json:"default_jurisdiction"`
 	CreatedAt                    pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                    pgtype.Timestamptz `json:"updated_at"`
+	// Derived from excise_warehouse_licence_number: a licensee without a warehouse licence pays at packaging (EDM3-1-1 para 29), one with a warehouse licence pays at removal.
+	DutyPoint DutyPoint `json:"duty_point"`
+	// First day duty_point governs. Duty events before this date used the at-removal basis, which is what has already been filed.
+	DutyPointEffectiveFrom pgtype.Date `json:"duty_point_effective_from"`
 }
 
 type User struct {

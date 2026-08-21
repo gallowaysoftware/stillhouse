@@ -36,29 +36,38 @@ INSERT INTO bottling_runs (
     tenant_id, run_no, product_id, source_container_id, destination_jurisdiction,
     bottling_date, bottle_count, bottling_loss_l, lot_code,
     tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa,
-    bulk_movement_id, notes
+    bulk_movement_id, notes,
+    duty_rate_per_laa, duty_amount_cad, duty_rate_source
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
-) RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+    $15, $16, $17
+) RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source
 `
 
 type CreateBottlingRunParams struct {
-	TenantID                uuid.UUID   `json:"tenant_id"`
-	RunNo                   int32       `json:"run_no"`
-	ProductID               uuid.UUID   `json:"product_id"`
-	SourceContainerID       uuid.UUID   `json:"source_container_id"`
-	DestinationJurisdiction string      `json:"destination_jurisdiction"`
-	BottlingDate            pgtype.Date `json:"bottling_date"`
-	BottleCount             int32       `json:"bottle_count"`
-	BottlingLossL           float64     `json:"bottling_loss_l"`
-	LotCode                 string      `json:"lot_code"`
-	TankGaugeVolumeL        float64     `json:"tank_gauge_volume_l"`
-	TankGaugeAbvPct         float64     `json:"tank_gauge_abv_pct"`
-	TankGaugeLaa            float64     `json:"tank_gauge_laa"`
-	BulkMovementID          uuid.UUID   `json:"bulk_movement_id"`
-	Notes                   string      `json:"notes"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	RunNo                   int32         `json:"run_no"`
+	ProductID               uuid.UUID     `json:"product_id"`
+	SourceContainerID       uuid.UUID     `json:"source_container_id"`
+	DestinationJurisdiction string        `json:"destination_jurisdiction"`
+	BottlingDate            pgtype.Date   `json:"bottling_date"`
+	BottleCount             int32         `json:"bottle_count"`
+	BottlingLossL           float64       `json:"bottling_loss_l"`
+	LotCode                 string        `json:"lot_code"`
+	TankGaugeVolumeL        float64       `json:"tank_gauge_volume_l"`
+	TankGaugeAbvPct         float64       `json:"tank_gauge_abv_pct"`
+	TankGaugeLaa            float64       `json:"tank_gauge_laa"`
+	BulkMovementID          uuid.UUID     `json:"bulk_movement_id"`
+	Notes                   string        `json:"notes"`
+	DutyRatePerLaa          pgtype.Float8 `json:"duty_rate_per_laa"`
+	DutyAmountCad           pgtype.Float8 `json:"duty_amount_cad"`
+	DutyRateSource          string        `json:"duty_rate_source"`
 }
 
+// duty_rate_per_laa and duty_amount_cad are NULL when this run is not a
+// duty event — an at-removal tenant, or a run dated before the tenant's
+// duty-point cutover. NULL is deliberately different from zero: zero would
+// read as "dutied, at nothing".
 func (q *Queries) CreateBottlingRun(ctx context.Context, arg CreateBottlingRunParams) (BottlingRun, error) {
 	row := q.db.QueryRow(ctx, createBottlingRun,
 		arg.TenantID,
@@ -75,6 +84,9 @@ func (q *Queries) CreateBottlingRun(ctx context.Context, arg CreateBottlingRunPa
 		arg.TankGaugeLaa,
 		arg.BulkMovementID,
 		arg.Notes,
+		arg.DutyRatePerLaa,
+		arg.DutyAmountCad,
+		arg.DutyRateSource,
 	)
 	var i BottlingRun
 	err := row.Scan(
@@ -98,6 +110,9 @@ func (q *Queries) CreateBottlingRun(ctx context.Context, arg CreateBottlingRunPa
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.DutyRatePerLaa,
+		&i.DutyAmountCad,
+		&i.DutyRateSource,
 	)
 	return i, err
 }
@@ -216,7 +231,7 @@ func (q *Queries) DecrementStampOrderApplied(ctx context.Context, arg DecrementS
 }
 
 const getBottlingRun = `-- name: GetBottlingRun :one
-SELECT id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason FROM bottling_runs WHERE id = $1
+SELECT id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source FROM bottling_runs WHERE id = $1
 `
 
 func (q *Queries) GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error) {
@@ -243,6 +258,9 @@ func (q *Queries) GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.DutyRatePerLaa,
+		&i.DutyAmountCad,
+		&i.DutyRateSource,
 	)
 	return i, err
 }
@@ -307,7 +325,7 @@ func (q *Queries) ListBottlingRunStampUsage(ctx context.Context, bottlingRunID u
 }
 
 const listBottlingRuns = `-- name: ListBottlingRuns :many
-SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br.destination_jurisdiction, br.bottling_date, br.bottle_count, br.bottling_loss_l, br.lot_code, br.tank_gauge_volume_l, br.tank_gauge_abv_pct, br.tank_gauge_laa, br.bulk_movement_id, br.notes, br.created_at, br.updated_at, br.voided_at, br.voided_by, br.voided_reason,
+SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br.destination_jurisdiction, br.bottling_date, br.bottle_count, br.bottling_loss_l, br.lot_code, br.tank_gauge_volume_l, br.tank_gauge_abv_pct, br.tank_gauge_laa, br.bulk_movement_id, br.notes, br.created_at, br.updated_at, br.voided_at, br.voided_by, br.voided_reason, br.duty_rate_per_laa, br.duty_amount_cad, br.duty_rate_source,
        p.name AS product_name,
        p.bottle_size_ml AS product_bottle_size_ml,
        p.target_abv_pct AS product_target_abv_pct
@@ -347,6 +365,9 @@ type ListBottlingRunsRow struct {
 	VoidedAt                pgtype.Timestamptz `json:"voided_at"`
 	VoidedBy                uuid.NullUUID      `json:"voided_by"`
 	VoidedReason            string             `json:"voided_reason"`
+	DutyRatePerLaa          pgtype.Float8      `json:"duty_rate_per_laa"`
+	DutyAmountCad           pgtype.Float8      `json:"duty_amount_cad"`
+	DutyRateSource          string             `json:"duty_rate_source"`
 	ProductName             string             `json:"product_name"`
 	ProductBottleSizeMl     int32              `json:"product_bottle_size_ml"`
 	ProductTargetAbvPct     float64            `json:"product_target_abv_pct"`
@@ -387,6 +408,9 @@ func (q *Queries) ListBottlingRuns(ctx context.Context, arg ListBottlingRunsPara
 			&i.VoidedAt,
 			&i.VoidedBy,
 			&i.VoidedReason,
+			&i.DutyRatePerLaa,
+			&i.DutyAmountCad,
+			&i.DutyRateSource,
 			&i.ProductName,
 			&i.ProductBottleSizeMl,
 			&i.ProductTargetAbvPct,
@@ -610,7 +634,7 @@ SET voided_at = NOW(),
     voided_by = $2,
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
-RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason
+RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source
 `
 
 type VoidBottlingRunParams struct {
@@ -643,6 +667,9 @@ func (q *Queries) VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.DutyRatePerLaa,
+		&i.DutyAmountCad,
+		&i.DutyRateSource,
 	)
 	return i, err
 }

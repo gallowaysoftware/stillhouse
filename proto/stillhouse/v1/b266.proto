@@ -6,6 +6,7 @@ syntax = "proto3";
 package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/tenant.proto";
 
 enum B266Status {
   B266_STATUS_UNSPECIFIED = 0;
@@ -73,9 +74,35 @@ message B266Report {
   int32  packaged_removed_under7_bottles = 43;
   double duty_rate_per_litre_under7 = 44;
 
+  // Packaging, split by duty treatment. Which side a run lands on follows
+  // from the tenant's duty point: an at-packaging licensee cannot hold
+  // non-duty-paid packaged spirits at all, so everything it bottles is
+  // duty-paid the moment it is packaged.
+  double packaged_duty_paid_laa = 45;
+  int32  packaged_duty_paid_bottles = 46;
+  double packaged_non_duty_paid_laa = 47;
+  int32  packaged_non_duty_paid_bottles = 48;
+
+  // Duty crystallised at packaging in this period, by strength band —
+  // the mirror of the removal split above, charged on the same two units.
+  double packaged_dutied_over7_laa = 52;        // charged per LAA
+  double packaged_dutied_over7_duty_cad = 53;
+  double packaged_dutied_under7_litres = 54;    // charged per litre of product
+  double packaged_dutied_under7_duty_cad = 55;
+
   // Duty section.
-  double duty_rate_per_laa = 50;          // current rate (CAD/LAA) >7%
-  double duty_payable_cad = 51;           // sum of removals.duty_amount_cad
+  double duty_rate_per_laa = 50;          // rate in force over the period (CAD/LAA) >7%
+  // Total duty payable for the period: duty crystallised at packaging plus
+  // duty crystallised at removal. For any one tenant in any one period
+  // both are populated only across a duty-point cutover, when stock
+  // packaged before the change is still dutied on its way out.
+  double duty_payable_cad = 51;
+
+  // Which basis this return was computed on, and the cutover date it
+  // applies from. On the return itself because the figures cannot be
+  // checked without knowing which event they were crystallised at.
+  DutyPoint duty_point = 56;
+  string duty_point_effective_from = 57;
 
   google.protobuf.Timestamp generated_at = 60;
 }

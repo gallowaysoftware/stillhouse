@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 )
@@ -67,6 +68,22 @@ type b266Totals struct {
 	// read from a constant: a return for a period before the last
 	// indexation must quote that period's rate, not today's.
 	dutyBand excise.Band
+
+	// The tenant's duty point and the date it started governing. On the
+	// return because the figures cannot be checked without knowing which
+	// event crystallised them.
+	dutyPoint     sqlcgen.DutyPoint
+	dutyPointFrom time.Time
+
+	// Duty crystallised at packaging during the period, split by the same
+	// two rate bands as removals, plus the quantity packaged duty-paid.
+	packagedDutyCAD          float64
+	packagedDutyOver7LAA     float64
+	packagedDutyOver7CAD     float64
+	packagedDutyUnder7Litres float64
+	packagedDutyUnder7CAD    float64
+	packagedDutyPaidLAA      float64
+	packagedDutyPaidBottles  int32
 }
 
 // laa returns the LAA summed against a bulk movement reason, or zero if
@@ -114,9 +131,31 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		// checked against the quantity it is charged on. Quoting only the
 		// per-LAA rate beside a blended LAA total made the arithmetic fail
 		// for any period holding both bands.
+		// Packaging split by duty treatment. An at-packaging licensee
+		// cannot hold non-duty-paid packaged spirits at all, so everything
+		// it bottles is duty-paid the moment it is packaged; the
+		// non-duty-paid line is the remainder, which is what an
+		// at-removal tenant's whole production is.
+		PackagedDutyPaidLaa:        round4(t.packagedDutyPaidLAA),
+		PackagedDutyPaidBottles:    t.packagedDutyPaidBottles,
+		PackagedNonDutyPaidLaa:     round4(t.bottlingPackagedLAA - t.packagedDutyPaidLAA),
+		PackagedNonDutyPaidBottles: t.bottlingBottles - t.packagedDutyPaidBottles,
+
+		PackagedDutiedOver7Laa:      round4(t.packagedDutyOver7LAA),
+		PackagedDutiedOver7DutyCad:  round2cents(t.packagedDutyOver7CAD),
+		PackagedDutiedUnder7Litres:  round4(t.packagedDutyUnder7Litres),
+		PackagedDutiedUnder7DutyCad: round2cents(t.packagedDutyUnder7CAD),
+
 		DutyRatePerLaa:         t.dutyBand.PerLAAOver7Pct,
 		DutyRatePerLitreUnder7: t.dutyBand.PerLitreAtOrUnder7,
-		DutyPayableCad:         round2cents(t.removedDutyCAD),
+		// Both sources. For any one tenant in any one period only one is
+		// normally populated — but across a duty-point cutover both are,
+		// because stock packaged before the change is still dutied on its
+		// way out. Summing rather than choosing is what makes that period
+		// add up.
+		DutyPayableCad:         round2cents(t.packagedDutyCAD + t.removedDutyCAD),
+		DutyPoint:              dutyPointToProto(t.dutyPoint),
+		DutyPointEffectiveFrom: t.dutyPointFrom.Format("2006-01-02"),
 		GeneratedAt:            timestamppb.New(generatedAt),
 	}
 

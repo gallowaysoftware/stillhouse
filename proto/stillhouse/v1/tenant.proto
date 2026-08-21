@@ -6,6 +6,22 @@ package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
 
+// DutyPoint is the event at which excise duty becomes payable.
+//
+// It is derived from whether the tenant holds an excise warehouse licence,
+// not chosen: a spirits licensee without one cannot possess non-duty-paid
+// packaged spirits at all (EDM3-1-1 para 18), so duty becomes payable when
+// the spirits are packaged (para 29). A licensee holding a warehouse
+// licence may hold packaged spirits non-duty-paid and pays on removal to
+// the duty-paid market.
+enum DutyPoint {
+  DUTY_POINT_UNSPECIFIED = 0;
+  // No excise warehouse licence: duty is payable at bottling.
+  DUTY_POINT_AT_PACKAGING = 1;
+  // Excise warehouse licence held: duty is payable at removal.
+  DUTY_POINT_AT_REMOVAL = 2;
+}
+
 message Tenant {
   string id = 1;                                // UUID
   string name = 2;
@@ -14,6 +30,14 @@ message Tenant {
   string default_jurisdiction = 5;              // ISO 3166-2 subdivision (e.g., "CA-ON")
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
+
+  // Derived from excise_warehouse_licence_number; read-only. Setting or
+  // clearing the licence number moves it.
+  DutyPoint duty_point = 8;
+  // First day duty_point governs, ISO date. Duty events before it used the
+  // at-removal basis, which is what has already been filed — nothing filed
+  // moves when the duty point changes.
+  string duty_point_effective_from = 9;
 }
 
 message CreateTenantRequest {

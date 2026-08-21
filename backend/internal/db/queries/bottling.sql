@@ -2,13 +2,19 @@
 SELECT COALESCE(MAX(run_no), 0)::int + 1 AS next FROM bottling_runs;
 
 -- name: CreateBottlingRun :one
+-- duty_rate_per_laa and duty_amount_cad are NULL when this run is not a
+-- duty event — an at-removal tenant, or a run dated before the tenant's
+-- duty-point cutover. NULL is deliberately different from zero: zero would
+-- read as "dutied, at nothing".
 INSERT INTO bottling_runs (
     tenant_id, run_no, product_id, source_container_id, destination_jurisdiction,
     bottling_date, bottle_count, bottling_loss_l, lot_code,
     tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa,
-    bulk_movement_id, notes
+    bulk_movement_id, notes,
+    duty_rate_per_laa, duty_amount_cad, duty_rate_source
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+    $15, $16, $17
 ) RETURNING *;
 
 -- name: GetBottlingRun :one

@@ -229,12 +229,35 @@ type B266Report struct {
 	PackagedRemovedUnder7DutyCad float64 `protobuf:"fixed64,42,opt,name=packaged_removed_under7_duty_cad,json=packagedRemovedUnder7DutyCad,proto3" json:"packaged_removed_under7_duty_cad,omitempty"`
 	PackagedRemovedUnder7Bottles int32   `protobuf:"varint,43,opt,name=packaged_removed_under7_bottles,json=packagedRemovedUnder7Bottles,proto3" json:"packaged_removed_under7_bottles,omitempty"`
 	DutyRatePerLitreUnder7       float64 `protobuf:"fixed64,44,opt,name=duty_rate_per_litre_under7,json=dutyRatePerLitreUnder7,proto3" json:"duty_rate_per_litre_under7,omitempty"`
+	// Packaging, split by duty treatment. Which side a run lands on follows
+	// from the tenant's duty point: an at-packaging licensee cannot hold
+	// non-duty-paid packaged spirits at all, so everything it bottles is
+	// duty-paid the moment it is packaged.
+	PackagedDutyPaidLaa        float64 `protobuf:"fixed64,45,opt,name=packaged_duty_paid_laa,json=packagedDutyPaidLaa,proto3" json:"packaged_duty_paid_laa,omitempty"`
+	PackagedDutyPaidBottles    int32   `protobuf:"varint,46,opt,name=packaged_duty_paid_bottles,json=packagedDutyPaidBottles,proto3" json:"packaged_duty_paid_bottles,omitempty"`
+	PackagedNonDutyPaidLaa     float64 `protobuf:"fixed64,47,opt,name=packaged_non_duty_paid_laa,json=packagedNonDutyPaidLaa,proto3" json:"packaged_non_duty_paid_laa,omitempty"`
+	PackagedNonDutyPaidBottles int32   `protobuf:"varint,48,opt,name=packaged_non_duty_paid_bottles,json=packagedNonDutyPaidBottles,proto3" json:"packaged_non_duty_paid_bottles,omitempty"`
+	// Duty crystallised at packaging in this period, by strength band —
+	// the mirror of the removal split above, charged on the same two units.
+	PackagedDutiedOver7Laa      float64 `protobuf:"fixed64,52,opt,name=packaged_dutied_over7_laa,json=packagedDutiedOver7Laa,proto3" json:"packaged_dutied_over7_laa,omitempty"` // charged per LAA
+	PackagedDutiedOver7DutyCad  float64 `protobuf:"fixed64,53,opt,name=packaged_dutied_over7_duty_cad,json=packagedDutiedOver7DutyCad,proto3" json:"packaged_dutied_over7_duty_cad,omitempty"`
+	PackagedDutiedUnder7Litres  float64 `protobuf:"fixed64,54,opt,name=packaged_dutied_under7_litres,json=packagedDutiedUnder7Litres,proto3" json:"packaged_dutied_under7_litres,omitempty"` // charged per litre of product
+	PackagedDutiedUnder7DutyCad float64 `protobuf:"fixed64,55,opt,name=packaged_dutied_under7_duty_cad,json=packagedDutiedUnder7DutyCad,proto3" json:"packaged_dutied_under7_duty_cad,omitempty"`
 	// Duty section.
-	DutyRatePerLaa float64                `protobuf:"fixed64,50,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"` // current rate (CAD/LAA) >7%
-	DutyPayableCad float64                `protobuf:"fixed64,51,opt,name=duty_payable_cad,json=dutyPayableCad,proto3" json:"duty_payable_cad,omitempty"`   // sum of removals.duty_amount_cad
-	GeneratedAt    *timestamppb.Timestamp `protobuf:"bytes,60,opt,name=generated_at,json=generatedAt,proto3" json:"generated_at,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	DutyRatePerLaa float64 `protobuf:"fixed64,50,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"` // rate in force over the period (CAD/LAA) >7%
+	// Total duty payable for the period: duty crystallised at packaging plus
+	// duty crystallised at removal. For any one tenant in any one period
+	// both are populated only across a duty-point cutover, when stock
+	// packaged before the change is still dutied on its way out.
+	DutyPayableCad float64 `protobuf:"fixed64,51,opt,name=duty_payable_cad,json=dutyPayableCad,proto3" json:"duty_payable_cad,omitempty"`
+	// Which basis this return was computed on, and the cutover date it
+	// applies from. On the return itself because the figures cannot be
+	// checked without knowing which event they were crystallised at.
+	DutyPoint              DutyPoint              `protobuf:"varint,56,opt,name=duty_point,json=dutyPoint,proto3,enum=stillhouse.v1.DutyPoint" json:"duty_point,omitempty"`
+	DutyPointEffectiveFrom string                 `protobuf:"bytes,57,opt,name=duty_point_effective_from,json=dutyPointEffectiveFrom,proto3" json:"duty_point_effective_from,omitempty"`
+	GeneratedAt            *timestamppb.Timestamp `protobuf:"bytes,60,opt,name=generated_at,json=generatedAt,proto3" json:"generated_at,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *B266Report) Reset() {
@@ -456,6 +479,62 @@ func (x *B266Report) GetDutyRatePerLitreUnder7() float64 {
 	return 0
 }
 
+func (x *B266Report) GetPackagedDutyPaidLaa() float64 {
+	if x != nil {
+		return x.PackagedDutyPaidLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedDutyPaidBottles() int32 {
+	if x != nil {
+		return x.PackagedDutyPaidBottles
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedNonDutyPaidLaa() float64 {
+	if x != nil {
+		return x.PackagedNonDutyPaidLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedNonDutyPaidBottles() int32 {
+	if x != nil {
+		return x.PackagedNonDutyPaidBottles
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedDutiedOver7Laa() float64 {
+	if x != nil {
+		return x.PackagedDutiedOver7Laa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedDutiedOver7DutyCad() float64 {
+	if x != nil {
+		return x.PackagedDutiedOver7DutyCad
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedDutiedUnder7Litres() float64 {
+	if x != nil {
+		return x.PackagedDutiedUnder7Litres
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedDutiedUnder7DutyCad() float64 {
+	if x != nil {
+		return x.PackagedDutiedUnder7DutyCad
+	}
+	return 0
+}
+
 func (x *B266Report) GetDutyRatePerLaa() float64 {
 	if x != nil {
 		return x.DutyRatePerLaa
@@ -468,6 +547,20 @@ func (x *B266Report) GetDutyPayableCad() float64 {
 		return x.DutyPayableCad
 	}
 	return 0
+}
+
+func (x *B266Report) GetDutyPoint() DutyPoint {
+	if x != nil {
+		return x.DutyPoint
+	}
+	return DutyPoint_DUTY_POINT_UNSPECIFIED
+}
+
+func (x *B266Report) GetDutyPointEffectiveFrom() string {
+	if x != nil {
+		return x.DutyPointEffectiveFrom
+	}
+	return ""
 }
 
 func (x *B266Report) GetGeneratedAt() *timestamppb.Timestamp {
@@ -959,7 +1052,7 @@ var File_stillhouse_v1_b266_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/b266.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xff\x02\n" +
+	"\x18stillhouse/v1/b266.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/tenant.proto\"\xff\x02\n" +
 	"\n" +
 	"B266Period\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
@@ -973,7 +1066,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb3\r\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xa1\x12\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1004,9 +1097,20 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x1epackaged_removed_under7_litres\x18) \x01(\x01R\x1bpackagedRemovedUnder7Litres\x12F\n" +
 	" packaged_removed_under7_duty_cad\x18* \x01(\x01R\x1cpackagedRemovedUnder7DutyCad\x12E\n" +
 	"\x1fpackaged_removed_under7_bottles\x18+ \x01(\x05R\x1cpackagedRemovedUnder7Bottles\x12:\n" +
-	"\x1aduty_rate_per_litre_under7\x18, \x01(\x01R\x16dutyRatePerLitreUnder7\x12)\n" +
+	"\x1aduty_rate_per_litre_under7\x18, \x01(\x01R\x16dutyRatePerLitreUnder7\x123\n" +
+	"\x16packaged_duty_paid_laa\x18- \x01(\x01R\x13packagedDutyPaidLaa\x12;\n" +
+	"\x1apackaged_duty_paid_bottles\x18. \x01(\x05R\x17packagedDutyPaidBottles\x12:\n" +
+	"\x1apackaged_non_duty_paid_laa\x18/ \x01(\x01R\x16packagedNonDutyPaidLaa\x12B\n" +
+	"\x1epackaged_non_duty_paid_bottles\x180 \x01(\x05R\x1apackagedNonDutyPaidBottles\x129\n" +
+	"\x19packaged_dutied_over7_laa\x184 \x01(\x01R\x16packagedDutiedOver7Laa\x12B\n" +
+	"\x1epackaged_dutied_over7_duty_cad\x185 \x01(\x01R\x1apackagedDutiedOver7DutyCad\x12A\n" +
+	"\x1dpackaged_dutied_under7_litres\x186 \x01(\x01R\x1apackagedDutiedUnder7Litres\x12D\n" +
+	"\x1fpackaged_dutied_under7_duty_cad\x187 \x01(\x01R\x1bpackagedDutiedUnder7DutyCad\x12)\n" +
 	"\x11duty_rate_per_laa\x182 \x01(\x01R\x0edutyRatePerLaa\x12(\n" +
-	"\x10duty_payable_cad\x183 \x01(\x01R\x0edutyPayableCad\x12=\n" +
+	"\x10duty_payable_cad\x183 \x01(\x01R\x0edutyPayableCad\x127\n" +
+	"\n" +
+	"duty_point\x188 \x01(\x0e2\x18.stillhouse.v1.DutyPointR\tdutyPoint\x129\n" +
+	"\x19duty_point_effective_from\x189 \x01(\tR\x16dutyPointEffectiveFrom\x12=\n" +
 	"\fgenerated_at\x18< \x01(\v2\x1a.google.protobuf.TimestampR\vgeneratedAt\"W\n" +
 	"\x13GenerateB266Request\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1076,36 +1180,38 @@ var file_stillhouse_v1_b266_proto_goTypes = []any{
 	(*ReopenB266PeriodRequest)(nil),  // 11: stillhouse.v1.ReopenB266PeriodRequest
 	(*ReopenB266PeriodResponse)(nil), // 12: stillhouse.v1.ReopenB266PeriodResponse
 	(*timestamppb.Timestamp)(nil),    // 13: google.protobuf.Timestamp
+	(DutyPoint)(0),                   // 14: stillhouse.v1.DutyPoint
 }
 var file_stillhouse_v1_b266_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.B266Period.status:type_name -> stillhouse.v1.B266Status
 	13, // 1: stillhouse.v1.B266Period.submitted_at:type_name -> google.protobuf.Timestamp
 	13, // 2: stillhouse.v1.B266Period.created_at:type_name -> google.protobuf.Timestamp
 	13, // 3: stillhouse.v1.B266Period.updated_at:type_name -> google.protobuf.Timestamp
-	13, // 4: stillhouse.v1.B266Report.generated_at:type_name -> google.protobuf.Timestamp
-	1,  // 5: stillhouse.v1.GenerateB266Response.period:type_name -> stillhouse.v1.B266Period
-	2,  // 6: stillhouse.v1.GenerateB266Response.report:type_name -> stillhouse.v1.B266Report
-	1,  // 7: stillhouse.v1.SubmitB266Response.period:type_name -> stillhouse.v1.B266Period
-	2,  // 8: stillhouse.v1.SubmitB266Response.snapshot:type_name -> stillhouse.v1.B266Report
-	1,  // 9: stillhouse.v1.ListB266PeriodsResponse.periods:type_name -> stillhouse.v1.B266Period
-	1,  // 10: stillhouse.v1.GetB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
-	2,  // 11: stillhouse.v1.GetB266PeriodResponse.snapshot:type_name -> stillhouse.v1.B266Report
-	1,  // 12: stillhouse.v1.ReopenB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
-	3,  // 13: stillhouse.v1.B266Service.GenerateB266:input_type -> stillhouse.v1.GenerateB266Request
-	5,  // 14: stillhouse.v1.B266Service.SubmitB266:input_type -> stillhouse.v1.SubmitB266Request
-	7,  // 15: stillhouse.v1.B266Service.ListB266Periods:input_type -> stillhouse.v1.ListB266PeriodsRequest
-	9,  // 16: stillhouse.v1.B266Service.GetB266Period:input_type -> stillhouse.v1.GetB266PeriodRequest
-	11, // 17: stillhouse.v1.B266Service.ReopenB266Period:input_type -> stillhouse.v1.ReopenB266PeriodRequest
-	4,  // 18: stillhouse.v1.B266Service.GenerateB266:output_type -> stillhouse.v1.GenerateB266Response
-	6,  // 19: stillhouse.v1.B266Service.SubmitB266:output_type -> stillhouse.v1.SubmitB266Response
-	8,  // 20: stillhouse.v1.B266Service.ListB266Periods:output_type -> stillhouse.v1.ListB266PeriodsResponse
-	10, // 21: stillhouse.v1.B266Service.GetB266Period:output_type -> stillhouse.v1.GetB266PeriodResponse
-	12, // 22: stillhouse.v1.B266Service.ReopenB266Period:output_type -> stillhouse.v1.ReopenB266PeriodResponse
-	18, // [18:23] is the sub-list for method output_type
-	13, // [13:18] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	14, // 4: stillhouse.v1.B266Report.duty_point:type_name -> stillhouse.v1.DutyPoint
+	13, // 5: stillhouse.v1.B266Report.generated_at:type_name -> google.protobuf.Timestamp
+	1,  // 6: stillhouse.v1.GenerateB266Response.period:type_name -> stillhouse.v1.B266Period
+	2,  // 7: stillhouse.v1.GenerateB266Response.report:type_name -> stillhouse.v1.B266Report
+	1,  // 8: stillhouse.v1.SubmitB266Response.period:type_name -> stillhouse.v1.B266Period
+	2,  // 9: stillhouse.v1.SubmitB266Response.snapshot:type_name -> stillhouse.v1.B266Report
+	1,  // 10: stillhouse.v1.ListB266PeriodsResponse.periods:type_name -> stillhouse.v1.B266Period
+	1,  // 11: stillhouse.v1.GetB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
+	2,  // 12: stillhouse.v1.GetB266PeriodResponse.snapshot:type_name -> stillhouse.v1.B266Report
+	1,  // 13: stillhouse.v1.ReopenB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
+	3,  // 14: stillhouse.v1.B266Service.GenerateB266:input_type -> stillhouse.v1.GenerateB266Request
+	5,  // 15: stillhouse.v1.B266Service.SubmitB266:input_type -> stillhouse.v1.SubmitB266Request
+	7,  // 16: stillhouse.v1.B266Service.ListB266Periods:input_type -> stillhouse.v1.ListB266PeriodsRequest
+	9,  // 17: stillhouse.v1.B266Service.GetB266Period:input_type -> stillhouse.v1.GetB266PeriodRequest
+	11, // 18: stillhouse.v1.B266Service.ReopenB266Period:input_type -> stillhouse.v1.ReopenB266PeriodRequest
+	4,  // 19: stillhouse.v1.B266Service.GenerateB266:output_type -> stillhouse.v1.GenerateB266Response
+	6,  // 20: stillhouse.v1.B266Service.SubmitB266:output_type -> stillhouse.v1.SubmitB266Response
+	8,  // 21: stillhouse.v1.B266Service.ListB266Periods:output_type -> stillhouse.v1.ListB266PeriodsResponse
+	10, // 22: stillhouse.v1.B266Service.GetB266Period:output_type -> stillhouse.v1.GetB266PeriodResponse
+	12, // 23: stillhouse.v1.B266Service.ReopenB266Period:output_type -> stillhouse.v1.ReopenB266PeriodResponse
+	19, // [19:24] is the sub-list for method output_type
+	14, // [14:19] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_b266_proto_init() }
@@ -1113,6 +1219,7 @@ func file_stillhouse_v1_b266_proto_init() {
 	if File_stillhouse_v1_b266_proto != nil {
 		return
 	}
+	file_stillhouse_v1_tenant_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

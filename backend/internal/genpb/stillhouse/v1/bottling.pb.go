@@ -23,33 +23,46 @@ const (
 )
 
 type BottlingRun struct {
-	state                   protoimpl.MessageState   `protogen:"open.v1"`
-	Id                      string                   `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	TenantId                string                   `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
-	RunNo                   int32                    `protobuf:"varint,3,opt,name=run_no,json=runNo,proto3" json:"run_no,omitempty"`
-	ProductId               string                   `protobuf:"bytes,4,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
-	ProductName             string                   `protobuf:"bytes,5,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"` // denormalized for list views
-	ProductBottleSizeMl     int32                    `protobuf:"varint,6,opt,name=product_bottle_size_ml,json=productBottleSizeMl,proto3" json:"product_bottle_size_ml,omitempty"`
-	ProductTargetAbvPct     float64                  `protobuf:"fixed64,7,opt,name=product_target_abv_pct,json=productTargetAbvPct,proto3" json:"product_target_abv_pct,omitempty"`
-	SourceContainerId       string                   `protobuf:"bytes,8,opt,name=source_container_id,json=sourceContainerId,proto3" json:"source_container_id,omitempty"`
-	DestinationJurisdiction string                   `protobuf:"bytes,9,opt,name=destination_jurisdiction,json=destinationJurisdiction,proto3" json:"destination_jurisdiction,omitempty"`
-	BottlingDate            string                   `protobuf:"bytes,10,opt,name=bottling_date,json=bottlingDate,proto3" json:"bottling_date,omitempty"` // ISO date
-	BottleCount             int32                    `protobuf:"varint,11,opt,name=bottle_count,json=bottleCount,proto3" json:"bottle_count,omitempty"`
-	BottlingLossL           float64                  `protobuf:"fixed64,12,opt,name=bottling_loss_l,json=bottlingLossL,proto3" json:"bottling_loss_l,omitempty"`
-	LotCode                 string                   `protobuf:"bytes,13,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
-	TankGaugeVolumeL        float64                  `protobuf:"fixed64,14,opt,name=tank_gauge_volume_l,json=tankGaugeVolumeL,proto3" json:"tank_gauge_volume_l,omitempty"`
-	TankGaugeAbvPct         float64                  `protobuf:"fixed64,15,opt,name=tank_gauge_abv_pct,json=tankGaugeAbvPct,proto3" json:"tank_gauge_abv_pct,omitempty"`
-	TankGaugeLaa            float64                  `protobuf:"fixed64,16,opt,name=tank_gauge_laa,json=tankGaugeLaa,proto3" json:"tank_gauge_laa,omitempty"`
-	BulkMovementId          string                   `protobuf:"bytes,17,opt,name=bulk_movement_id,json=bulkMovementId,proto3" json:"bulk_movement_id,omitempty"`
-	Notes                   string                   `protobuf:"bytes,18,opt,name=notes,proto3" json:"notes,omitempty"`
-	CreatedAt               *timestamppb.Timestamp   `protobuf:"bytes,19,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt               *timestamppb.Timestamp   `protobuf:"bytes,20,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	VoidedAt                *timestamppb.Timestamp   `protobuf:"bytes,21,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
-	VoidedBy                string                   `protobuf:"bytes,22,opt,name=voided_by,json=voidedBy,proto3" json:"voided_by,omitempty"`
-	VoidedReason            string                   `protobuf:"bytes,23,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
-	StampUsage              []*BottlingRunStampUsage `protobuf:"bytes,30,rep,name=stamp_usage,json=stampUsage,proto3" json:"stamp_usage,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	state                   protoimpl.MessageState `protogen:"open.v1"`
+	Id                      string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId                string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	RunNo                   int32                  `protobuf:"varint,3,opt,name=run_no,json=runNo,proto3" json:"run_no,omitempty"`
+	ProductId               string                 `protobuf:"bytes,4,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	ProductName             string                 `protobuf:"bytes,5,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"` // denormalized for list views
+	ProductBottleSizeMl     int32                  `protobuf:"varint,6,opt,name=product_bottle_size_ml,json=productBottleSizeMl,proto3" json:"product_bottle_size_ml,omitempty"`
+	ProductTargetAbvPct     float64                `protobuf:"fixed64,7,opt,name=product_target_abv_pct,json=productTargetAbvPct,proto3" json:"product_target_abv_pct,omitempty"`
+	SourceContainerId       string                 `protobuf:"bytes,8,opt,name=source_container_id,json=sourceContainerId,proto3" json:"source_container_id,omitempty"`
+	DestinationJurisdiction string                 `protobuf:"bytes,9,opt,name=destination_jurisdiction,json=destinationJurisdiction,proto3" json:"destination_jurisdiction,omitempty"`
+	BottlingDate            string                 `protobuf:"bytes,10,opt,name=bottling_date,json=bottlingDate,proto3" json:"bottling_date,omitempty"` // ISO date
+	BottleCount             int32                  `protobuf:"varint,11,opt,name=bottle_count,json=bottleCount,proto3" json:"bottle_count,omitempty"`
+	BottlingLossL           float64                `protobuf:"fixed64,12,opt,name=bottling_loss_l,json=bottlingLossL,proto3" json:"bottling_loss_l,omitempty"`
+	LotCode                 string                 `protobuf:"bytes,13,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
+	TankGaugeVolumeL        float64                `protobuf:"fixed64,14,opt,name=tank_gauge_volume_l,json=tankGaugeVolumeL,proto3" json:"tank_gauge_volume_l,omitempty"`
+	TankGaugeAbvPct         float64                `protobuf:"fixed64,15,opt,name=tank_gauge_abv_pct,json=tankGaugeAbvPct,proto3" json:"tank_gauge_abv_pct,omitempty"`
+	TankGaugeLaa            float64                `protobuf:"fixed64,16,opt,name=tank_gauge_laa,json=tankGaugeLaa,proto3" json:"tank_gauge_laa,omitempty"`
+	BulkMovementId          string                 `protobuf:"bytes,17,opt,name=bulk_movement_id,json=bulkMovementId,proto3" json:"bulk_movement_id,omitempty"`
+	Notes                   string                 `protobuf:"bytes,18,opt,name=notes,proto3" json:"notes,omitempty"`
+	CreatedAt               *timestamppb.Timestamp `protobuf:"bytes,19,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt               *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	VoidedAt                *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
+	VoidedBy                string                 `protobuf:"bytes,22,opt,name=voided_by,json=voidedBy,proto3" json:"voided_by,omitempty"`
+	VoidedReason            string                 `protobuf:"bytes,23,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
+	// Duty crystallised at this run, for a tenant whose duty point is
+	// AT_PACKAGING. Zero for an at-removal tenant and for runs dated before
+	// the tenant's duty-point cutover — that stock is dutied on removal
+	// instead, so it is never dutied twice and never dutied never.
+	//
+	// duty_rate_per_laa is 0 for the at-or-under-7% band, which is charged
+	// per litre of product rather than per litre of absolute alcohol.
+	DutyPaidAtPackaging bool    `protobuf:"varint,24,opt,name=duty_paid_at_packaging,json=dutyPaidAtPackaging,proto3" json:"duty_paid_at_packaging,omitempty"`
+	DutyRatePerLaa      float64 `protobuf:"fixed64,25,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"`
+	DutyAmountCad       float64 `protobuf:"fixed64,26,opt,name=duty_amount_cad,json=dutyAmountCad,proto3" json:"duty_amount_cad,omitempty"`
+	// The CRA notice the rate was read from, so a figure on a filed return
+	// can be checked against its source years later.
+	DutyRateSource string                   `protobuf:"bytes,27,opt,name=duty_rate_source,json=dutyRateSource,proto3" json:"duty_rate_source,omitempty"`
+	StampUsage     []*BottlingRunStampUsage `protobuf:"bytes,30,rep,name=stamp_usage,json=stampUsage,proto3" json:"stamp_usage,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *BottlingRun) Reset() {
@@ -239,6 +252,34 @@ func (x *BottlingRun) GetVoidedBy() string {
 func (x *BottlingRun) GetVoidedReason() string {
 	if x != nil {
 		return x.VoidedReason
+	}
+	return ""
+}
+
+func (x *BottlingRun) GetDutyPaidAtPackaging() bool {
+	if x != nil {
+		return x.DutyPaidAtPackaging
+	}
+	return false
+}
+
+func (x *BottlingRun) GetDutyRatePerLaa() float64 {
+	if x != nil {
+		return x.DutyRatePerLaa
+	}
+	return 0
+}
+
+func (x *BottlingRun) GetDutyAmountCad() float64 {
+	if x != nil {
+		return x.DutyAmountCad
+	}
+	return 0
+}
+
+func (x *BottlingRun) GetDutyRateSource() string {
+	if x != nil {
+		return x.DutyRateSource
 	}
 	return ""
 }
@@ -1038,7 +1079,7 @@ var File_stillhouse_v1_bottling_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"\n" +
-	"\x1cstillhouse/v1/bottling.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xed\a\n" +
+	"\x1cstillhouse/v1/bottling.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9f\t\n" +
 	"\vBottlingRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x15\n" +
@@ -1066,7 +1107,11 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"updated_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x127\n" +
 	"\tvoided_at\x18\x15 \x01(\v2\x1a.google.protobuf.TimestampR\bvoidedAt\x12\x1b\n" +
 	"\tvoided_by\x18\x16 \x01(\tR\bvoidedBy\x12#\n" +
-	"\rvoided_reason\x18\x17 \x01(\tR\fvoidedReason\x12E\n" +
+	"\rvoided_reason\x18\x17 \x01(\tR\fvoidedReason\x123\n" +
+	"\x16duty_paid_at_packaging\x18\x18 \x01(\bR\x13dutyPaidAtPackaging\x12)\n" +
+	"\x11duty_rate_per_laa\x18\x19 \x01(\x01R\x0edutyRatePerLaa\x12&\n" +
+	"\x0fduty_amount_cad\x18\x1a \x01(\x01R\rdutyAmountCad\x12(\n" +
+	"\x10duty_rate_source\x18\x1b \x01(\tR\x0edutyRateSource\x12E\n" +
 	"\vstamp_usage\x18\x1e \x03(\v2$.stillhouse.v1.BottlingRunStampUsageR\n" +
 	"stampUsage\"\xcf\x02\n" +
 	"\x15BottlingRunStampUsage\x12\x0e\n" +

@@ -5,8 +5,8 @@
 // @generated from file stillhouse/v1/tenant.proto (package stillhouse.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/tenant.proto.
  */
 export const file_stillhouse_v1_tenant: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLtAQoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKuAQoTQ3JlYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEhwKFGRlZmF1bHRfanVyaXNkaWN0aW9uGAMgASgJEhMKC293bmVyX2VtYWlsGAQgASgJEhYKDm93bmVyX3Bhc3N3b3JkGAUgASgJEhoKEm93bmVyX2Rpc3BsYXlfbmFtZRgGIAEoCSI9ChRDcmVhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCISChBHZXRUZW5hbnRSZXF1ZXN0IjoKEUdldFRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCItChVEZWxldGVNeVRlbmFudFJlcXVlc3QSFAoMY29uZmlybV9uYW1lGAEgASgJIhgKFkRlbGV0ZU15VGVuYW50UmVzcG9uc2Uy8AIKDVRlbmFudFNlcnZpY2USVwoMQ3JlYXRlVGVuYW50EiIuc3RpbGxob3VzZS52MS5DcmVhdGVUZW5hbnRSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5DcmVhdGVUZW5hbnRSZXNwb25zZRJOCglHZXRUZW5hbnQSHy5zdGlsbGhvdXNlLnYxLkdldFRlbmFudFJlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLkdldFRlbmFudFJlc3BvbnNlElcKDFVwZGF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuVXBkYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuVXBkYXRlVGVuYW50UmVzcG9uc2USXQoORGVsZXRlTXlUZW5hbnQSJC5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVxdWVzdBolLnN0aWxsaG91c2UudjEuRGVsZXRlTXlUZW5hbnRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSK+AgoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCSKuAQoTQ3JlYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEhwKFGRlZmF1bHRfanVyaXNkaWN0aW9uGAMgASgJEhMKC293bmVyX2VtYWlsGAQgASgJEhYKDm93bmVyX3Bhc3N3b3JkGAUgASgJEhoKEm93bmVyX2Rpc3BsYXlfbmFtZRgGIAEoCSI9ChRDcmVhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCISChBHZXRUZW5hbnRSZXF1ZXN0IjoKEUdldFRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCItChVEZWxldGVNeVRlbmFudFJlcXVlc3QSFAoMY29uZmlybV9uYW1lGAEgASgJIhgKFkRlbGV0ZU15VGVuYW50UmVzcG9uc2UqXwoJRHV0eVBvaW50EhoKFkRVVFlfUE9JTlRfVU5TUEVDSUZJRUQQABIbChdEVVRZX1BPSU5UX0FUX1BBQ0tBR0lORxABEhkKFURVVFlfUE9JTlRfQVRfUkVNT1ZBTBACMvACCg1UZW5hbnRTZXJ2aWNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZRJXCgxVcGRhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlc3BvbnNlEl0KDkRlbGV0ZU15VGVuYW50EiQuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Tenant
@@ -61,6 +61,23 @@ export type Tenant = Message<"stillhouse.v1.Tenant"> & {
    * @generated from field: google.protobuf.Timestamp updated_at = 7;
    */
   updatedAt?: Timestamp | undefined;
+
+  /**
+   * Derived from excise_warehouse_licence_number; read-only. Setting or
+   * clearing the licence number moves it.
+   *
+   * @generated from field: stillhouse.v1.DutyPoint duty_point = 8;
+   */
+  dutyPoint: DutyPoint;
+
+  /**
+   * First day duty_point governs, ISO date. Duty events before it used the
+   * at-removal basis, which is what has already been filed — nothing filed
+   * moves when the duty point changes.
+   *
+   * @generated from field: string duty_point_effective_from = 9;
+   */
+  dutyPointEffectiveFrom: string;
 };
 
 /**
@@ -249,6 +266,45 @@ export type DeleteMyTenantResponse = Message<"stillhouse.v1.DeleteMyTenantRespon
  */
 export const DeleteMyTenantResponseSchema: GenMessage<DeleteMyTenantResponse> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_tenant, 8);
+
+/**
+ * DutyPoint is the event at which excise duty becomes payable.
+ *
+ * It is derived from whether the tenant holds an excise warehouse licence,
+ * not chosen: a spirits licensee without one cannot possess non-duty-paid
+ * packaged spirits at all (EDM3-1-1 para 18), so duty becomes payable when
+ * the spirits are packaged (para 29). A licensee holding a warehouse
+ * licence may hold packaged spirits non-duty-paid and pays on removal to
+ * the duty-paid market.
+ *
+ * @generated from enum stillhouse.v1.DutyPoint
+ */
+export enum DutyPoint {
+  /**
+   * @generated from enum value: DUTY_POINT_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * No excise warehouse licence: duty is payable at bottling.
+   *
+   * @generated from enum value: DUTY_POINT_AT_PACKAGING = 1;
+   */
+  AT_PACKAGING = 1,
+
+  /**
+   * Excise warehouse licence held: duty is payable at removal.
+   *
+   * @generated from enum value: DUTY_POINT_AT_REMOVAL = 2;
+   */
+  AT_REMOVAL = 2,
+}
+
+/**
+ * Describes the enum stillhouse.v1.DutyPoint.
+ */
+export const DutyPointSchema: GenEnum<DutyPoint> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_tenant, 0);
 
 /**
  * TenantService manages tenant metadata.

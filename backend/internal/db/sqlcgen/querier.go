@@ -58,6 +58,10 @@ type Querier interface {
 	CountTenants(ctx context.Context) (int64, error)
 	CreateAPIToken(ctx context.Context, arg CreateAPITokenParams) (ApiToken, error)
 	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
+	// duty_rate_per_laa and duty_amount_cad are NULL when this run is not a
+	// duty event — an at-removal tenant, or a run dated before the tenant's
+	// duty-point cutover. NULL is deliberately different from zero: zero would
+	// read as "dutied, at nothing".
 	CreateBottlingRun(ctx context.Context, arg CreateBottlingRunParams) (BottlingRun, error)
 	CreateBottlingRunStampUsage(ctx context.Context, arg CreateBottlingRunStampUsageParams) (BottlingRunStampUsage, error)
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
@@ -258,6 +262,11 @@ type Querier interface {
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
+	// Moves the cutover. Not exposed in the UI: the date is set once, when the
+	// tenant is created or when this migration ran, and moving it re-attributes
+	// duty across events that may already have been filed. Here so a support
+	// path exists that is deliberate rather than improvised.
+	SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error)
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
@@ -267,6 +276,18 @@ type Querier interface {
 	// argument), so it cannot leak across pooled connections.
 	SetTenantContext(ctx context.Context, setConfig string) error
 	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
+	// Duty that crystallised at packaging during the period, split by the two
+	// rate bands, because they are not charged in the same unit: above 7% ABV
+	// per litre of absolute alcohol, at or below 7% per litre of product. The
+	// mirror of SumRemovalsInPeriod, and it exists for the same reason — a
+	// return that quotes one blended rate against a mixed total fails its own
+	// arithmetic.
+	//
+	// Only runs carrying a duty amount count. A run with NULL duty is not a
+	// duty event: either the tenant pays at removal, or the run predates the
+	// tenant's duty-point cutover and its stock is dutied on its way out
+	// instead.
+	SumBottlingDutyInPeriod(ctx context.Context, arg SumBottlingDutyInPeriodParams) (SumBottlingDutyInPeriodRow, error)
 	// SumBottlingRunsInPeriod excludes voided runs; voided runs are reversed in
 	// packaged_inventory and bulk separately, so they shouldn't count toward
 	// either the packaging or production lines on B266.

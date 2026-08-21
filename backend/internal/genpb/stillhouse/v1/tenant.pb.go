@@ -25,6 +25,65 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// DutyPoint is the event at which excise duty becomes payable.
+//
+// It is derived from whether the tenant holds an excise warehouse licence,
+// not chosen: a spirits licensee without one cannot possess non-duty-paid
+// packaged spirits at all (EDM3-1-1 para 18), so duty becomes payable when
+// the spirits are packaged (para 29). A licensee holding a warehouse
+// licence may hold packaged spirits non-duty-paid and pays on removal to
+// the duty-paid market.
+type DutyPoint int32
+
+const (
+	DutyPoint_DUTY_POINT_UNSPECIFIED DutyPoint = 0
+	// No excise warehouse licence: duty is payable at bottling.
+	DutyPoint_DUTY_POINT_AT_PACKAGING DutyPoint = 1
+	// Excise warehouse licence held: duty is payable at removal.
+	DutyPoint_DUTY_POINT_AT_REMOVAL DutyPoint = 2
+)
+
+// Enum value maps for DutyPoint.
+var (
+	DutyPoint_name = map[int32]string{
+		0: "DUTY_POINT_UNSPECIFIED",
+		1: "DUTY_POINT_AT_PACKAGING",
+		2: "DUTY_POINT_AT_REMOVAL",
+	}
+	DutyPoint_value = map[string]int32{
+		"DUTY_POINT_UNSPECIFIED":  0,
+		"DUTY_POINT_AT_PACKAGING": 1,
+		"DUTY_POINT_AT_REMOVAL":   2,
+	}
+)
+
+func (x DutyPoint) Enum() *DutyPoint {
+	p := new(DutyPoint)
+	*p = x
+	return p
+}
+
+func (x DutyPoint) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DutyPoint) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_tenant_proto_enumTypes[0].Descriptor()
+}
+
+func (DutyPoint) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_tenant_proto_enumTypes[0]
+}
+
+func (x DutyPoint) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DutyPoint.Descriptor instead.
+func (DutyPoint) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{0}
+}
+
 type Tenant struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	Id                           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -34,8 +93,15 @@ type Tenant struct {
 	DefaultJurisdiction          string                 `protobuf:"bytes,5,opt,name=default_jurisdiction,json=defaultJurisdiction,proto3" json:"default_jurisdiction,omitempty"`                                // ISO 3166-2 subdivision (e.g., "CA-ON")
 	CreatedAt                    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt                    *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields                protoimpl.UnknownFields
-	sizeCache                    protoimpl.SizeCache
+	// Derived from excise_warehouse_licence_number; read-only. Setting or
+	// clearing the licence number moves it.
+	DutyPoint DutyPoint `protobuf:"varint,8,opt,name=duty_point,json=dutyPoint,proto3,enum=stillhouse.v1.DutyPoint" json:"duty_point,omitempty"`
+	// First day duty_point governs, ISO date. Duty events before it used the
+	// at-removal basis, which is what has already been filed — nothing filed
+	// moves when the duty point changes.
+	DutyPointEffectiveFrom string `protobuf:"bytes,9,opt,name=duty_point_effective_from,json=dutyPointEffectiveFrom,proto3" json:"duty_point_effective_from,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *Tenant) Reset() {
@@ -115,6 +181,20 @@ func (x *Tenant) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Tenant) GetDutyPoint() DutyPoint {
+	if x != nil {
+		return x.DutyPoint
+	}
+	return DutyPoint_DUTY_POINT_UNSPECIFIED
+}
+
+func (x *Tenant) GetDutyPointEffectiveFrom() string {
+	if x != nil {
+		return x.DutyPointEffectiveFrom
+	}
+	return ""
 }
 
 type CreateTenantRequest struct {
@@ -529,7 +609,7 @@ var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\n" +
-	"\x1astillhouse/v1/tenant.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd9\x02\n" +
+	"\x1astillhouse/v1/tenant.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcd\x03\n" +
 	"\x06Tenant\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12;\n" +
@@ -539,7 +619,10 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8f\x02\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x127\n" +
+	"\n" +
+	"duty_point\x18\b \x01(\x0e2\x18.stillhouse.v1.DutyPointR\tdutyPoint\x129\n" +
+	"\x19duty_point_effective_from\x18\t \x01(\tR\x16dutyPointEffectiveFrom\"\x8f\x02\n" +
 	"\x13CreateTenantRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
 	"\x1acra_spirits_licence_number\x18\x02 \x01(\tR\x17craSpiritsLicenceNumber\x121\n" +
@@ -562,7 +645,11 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\":\n" +
 	"\x15DeleteMyTenantRequest\x12!\n" +
 	"\fconfirm_name\x18\x01 \x01(\tR\vconfirmName\"\x18\n" +
-	"\x16DeleteMyTenantResponse2\xf0\x02\n" +
+	"\x16DeleteMyTenantResponse*_\n" +
+	"\tDutyPoint\x12\x1a\n" +
+	"\x16DUTY_POINT_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17DUTY_POINT_AT_PACKAGING\x10\x01\x12\x19\n" +
+	"\x15DUTY_POINT_AT_REMOVAL\x10\x022\xf0\x02\n" +
 	"\rTenantService\x12W\n" +
 	"\fCreateTenant\x12\".stillhouse.v1.CreateTenantRequest\x1a#.stillhouse.v1.CreateTenantResponse\x12N\n" +
 	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
@@ -582,38 +669,41 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_tenant_proto_rawDescData
 }
 
+var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
-	(*Tenant)(nil),                 // 0: stillhouse.v1.Tenant
-	(*CreateTenantRequest)(nil),    // 1: stillhouse.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),   // 2: stillhouse.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),       // 3: stillhouse.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),      // 4: stillhouse.v1.GetTenantResponse
-	(*UpdateTenantRequest)(nil),    // 5: stillhouse.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),   // 6: stillhouse.v1.UpdateTenantResponse
-	(*DeleteMyTenantRequest)(nil),  // 7: stillhouse.v1.DeleteMyTenantRequest
-	(*DeleteMyTenantResponse)(nil), // 8: stillhouse.v1.DeleteMyTenantResponse
-	(*timestamppb.Timestamp)(nil),  // 9: google.protobuf.Timestamp
+	(DutyPoint)(0),                 // 0: stillhouse.v1.DutyPoint
+	(*Tenant)(nil),                 // 1: stillhouse.v1.Tenant
+	(*CreateTenantRequest)(nil),    // 2: stillhouse.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),   // 3: stillhouse.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),       // 4: stillhouse.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),      // 5: stillhouse.v1.GetTenantResponse
+	(*UpdateTenantRequest)(nil),    // 6: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),   // 7: stillhouse.v1.UpdateTenantResponse
+	(*DeleteMyTenantRequest)(nil),  // 8: stillhouse.v1.DeleteMyTenantRequest
+	(*DeleteMyTenantResponse)(nil), // 9: stillhouse.v1.DeleteMyTenantResponse
+	(*timestamppb.Timestamp)(nil),  // 10: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	9, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	9, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
-	0, // 2: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	0, // 3: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	0, // 4: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	1, // 5: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	3, // 6: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	5, // 7: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	7, // 8: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	2, // 9: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	4, // 10: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	6, // 11: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	8, // 12: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	9, // [9:13] is the sub-list for method output_type
-	5, // [5:9] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	10, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	10, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
+	1,  // 3: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	1,  // 4: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	1,  // 5: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	2,  // 6: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	4,  // 7: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	6,  // 8: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	8,  // 9: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	3,  // 10: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	5,  // 11: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	7,  // 12: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	9,  // 13: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -626,13 +716,14 @@ func file_stillhouse_v1_tenant_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_stillhouse_v1_tenant_proto_goTypes,
 		DependencyIndexes: file_stillhouse_v1_tenant_proto_depIdxs,
+		EnumInfos:         file_stillhouse_v1_tenant_proto_enumTypes,
 		MessageInfos:      file_stillhouse_v1_tenant_proto_msgTypes,
 	}.Build()
 	File_stillhouse_v1_tenant_proto = out.File

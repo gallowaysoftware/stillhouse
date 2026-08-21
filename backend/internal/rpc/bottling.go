@@ -198,7 +198,34 @@ func (s *BottlingService) CreateBottlingRun(
 			return e
 		}
 
-		// 6. Insert bottling_run.
+		// 6. Duty, if this run is the duty event.
+		//
+		// A licensee without an excise warehouse licence cannot hold
+		// non-duty-paid packaged spirits, so duty crystallises here rather
+		// than at a removal months later. Charged on the sealed bottles:
+		// the packaging loss never became packaged spirits, and its
+		// treatment is a separate question (PLAN A5).
+		basis, e := tenantDutyBasis(ctx, q, u.TenantID)
+		if e != nil {
+			return e
+		}
+		var (
+			dutyRate   pgtype.Float8
+			dutyAmount pgtype.Float8
+			dutySource string
+		)
+		if basis.dutiesAtPackaging(bottlingDate.Time) {
+			rate, amount, src, de := packagingDuty(bottlingDate.Time,
+				in.GetBottleCount(), product.BottleSizeMl, product.TargetAbvPct)
+			if de != nil {
+				return asRateRefusal(de)
+			}
+			dutyRate = pgtype.Float8{Float64: rate, Valid: true}
+			dutyAmount = pgtype.Float8{Float64: amount, Valid: true}
+			dutySource = src
+		}
+
+		// 7. Insert bottling_run.
 		if e := q.LockDocumentSequence(ctx, "bottling_runs"); e != nil {
 			return e
 		}
@@ -221,6 +248,9 @@ func (s *BottlingService) CreateBottlingRun(
 			TankGaugeLaa:            laa,
 			BulkMovementID:          mv.ID,
 			Notes:                   in.GetNotes(),
+			DutyRatePerLaa:          dutyRate,
+			DutyAmountCad:           dutyAmount,
+			DutyRateSource:          dutySource,
 		})
 		if e != nil {
 			return e
@@ -670,6 +700,18 @@ func bottlingRunToProto(r sqlcgen.BottlingRun, p sqlcgen.Product, _ any) *stillh
 		CreatedAt:               timestamppb.New(r.CreatedAt.Time),
 		UpdatedAt:               timestamppb.New(r.UpdatedAt.Time),
 		VoidedReason:            r.VoidedReason,
+		DutyRateSource:          r.DutyRateSource,
+	}
+	// A NULL duty amount means this run was not a duty event — an
+	// at-removal tenant, or a run before the tenant's duty-point cutover —
+	// which is different from a run dutied at zero. The bool carries that
+	// distinction across the wire, where a bare 0.0 could not.
+	if r.DutyAmountCad.Valid {
+		out.DutyPaidAtPackaging = true
+		out.DutyAmountCad = r.DutyAmountCad.Float64
+	}
+	if r.DutyRatePerLaa.Valid {
+		out.DutyRatePerLaa = r.DutyRatePerLaa.Float64
 	}
 	if r.VoidedAt.Valid {
 		out.VoidedAt = timestamppb.New(r.VoidedAt.Time)

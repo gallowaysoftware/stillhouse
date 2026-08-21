@@ -30,6 +30,10 @@ type dutyFixture struct {
 	*ledgerFixture
 	bottling *BottlingService
 	removal  *RemovalService
+
+	// basisTank is set by newBasisFixture for the duty-point tests, which
+	// bottle several times from one source.
+	basisTank sqlcgen.BulkContainer
 }
 
 func newDutyFixture(t *testing.T) *dutyFixture {
@@ -204,6 +208,11 @@ func TestCreateBottlingRunRefusesWithoutStamps(t *testing.T) {
 // absolute alcohol.
 func TestCreateRemovalComputesDutyOver7(t *testing.T) {
 	f := newDutyFixture(t)
+	// Duty at removal is the excise-warehouse pattern, so this tenant has
+	// to hold the licence that puts it on that basis. Without one, duty
+	// crystallises at bottling instead and the removal carries none —
+	// which is what TestDutyCrystallisesAtPackaging covers.
+	f.warehouseLicensed(t)
 	f.stamps(t, "CA-ON", 1000)
 	tank := f.tank(t, "Duty tank", 1000, 70)
 	prod := f.product(t, "Duty Vodka", 750, 40)
@@ -273,6 +282,7 @@ func TestCreateRemovalComputesDutyOver7(t *testing.T) {
 // the row that feeds it.
 func TestCreateRemovalComputesDutyUnder7(t *testing.T) {
 	f := newDutyFixture(t)
+	f.warehouseLicensed(t)
 	f.stamps(t, "CA-ON", 1000)
 	tank := f.tank(t, "Cooler tank", 1000, 40)
 	prod := f.product(t, "Ready to Drink", 355, 5)
@@ -600,4 +610,61 @@ func (f *dutyFixture) moveBalance(t *testing.T, containerID uuid.UUID, volumeL, 
 		CurrentLaa:     newLAA,
 	})
 	return err
+}
+
+// warehouseLicensed puts an excise warehouse licence on the fixture's
+// tenant, which flips its duty point to AT_REMOVAL. The column is
+// generated from the licence number, so this is the only way to move it —
+// there is no toggle, deliberately.
+func (f *dutyFixture) warehouseLicensed(t *testing.T) {
+	t.Helper()
+	if _, err := f.pool.Exec(f.ctx,
+		`UPDATE tenants SET excise_warehouse_licence_number = $2 WHERE id = $1`,
+		f.tenant.ID, "L63W-"+uuid.NewString()[:8]); err != nil {
+		t.Fatalf("set warehouse licence: %v", err)
+	}
+	f.assertDutyPoint(t, sqlcgen.DutyPointAtRemoval)
+}
+
+// cutover moves the date from which the derived duty point governs.
+func (f *dutyFixture) cutover(t *testing.T, on time.Time) {
+	t.Helper()
+	if _, err := f.q.SetDutyPointEffectiveFrom(f.ctx, sqlcgen.SetDutyPointEffectiveFromParams{
+		ID:                     f.tenant.ID,
+		DutyPointEffectiveFrom: pgtype.Date{Valid: true, Time: on},
+	}); err != nil {
+		t.Fatalf("set cutover: %v", err)
+	}
+}
+
+func (f *dutyFixture) assertDutyPoint(t *testing.T, want sqlcgen.DutyPoint) {
+	t.Helper()
+	tn, err := f.q.GetTenantByID(f.ctx, f.tenant.ID)
+	if err != nil {
+		t.Fatalf("read tenant: %v", err)
+	}
+	if tn.DutyPoint != want {
+		t.Fatalf("duty point: got %v, want %v", tn.DutyPoint, want)
+	}
+}
+
+// runDuty reads back what a bottling run recorded as its duty event.
+func (f *dutyFixture) runDuty(t *testing.T, runID string) (dutied bool, amount float64) {
+	t.Helper()
+	r, err := f.q.GetBottlingRun(f.ctx, uuid.MustParse(runID))
+	if err != nil {
+		t.Fatalf("read bottling run: %v", err)
+	}
+	return r.DutyAmountCad.Valid, r.DutyAmountCad.Float64
+}
+
+// basisFixture is a dutyFixture with one large tank and stamps already on
+// hand, so a duty-point test can bottle several times without restating
+// the setup each time.
+func newBasisFixture(t *testing.T) *dutyFixture {
+	t.Helper()
+	f := newDutyFixture(t)
+	f.stamps(t, "CA-ON", 5000)
+	f.basisTank = f.tank(t, "Basis tank", 20000, 70)
+	return f
 }
