@@ -1140,7 +1140,11 @@ type B266Period struct {
 	CreatedAt   pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 	// Last day of the fiscal month following the reporting period (EDM3-1-1 para 50). Frozen at generation so a later change of election does not restate when a past return was due.
-	DueOn pgtype.Date `json:"due_on"`
+	DueOn                pgtype.Date        `json:"due_on"`
+	FilingAcknowledgedAt pgtype.Timestamptz `json:"filing_acknowledged_at"`
+	FilingAcknowledgedBy uuid.NullUUID      `json:"filing_acknowledged_by"`
+	// The exact wording the person agreed to, frozen. A boolean would not survive a later change to the text.
+	FilingAcknowledgement string `json:"filing_acknowledgement"`
 }
 
 type BarrelAttribute struct {

@@ -37,6 +37,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// B266ServiceGetFilingAcknowledgementProcedure is the fully-qualified name of the B266Service's
+	// GetFilingAcknowledgement RPC.
+	B266ServiceGetFilingAcknowledgementProcedure = "/stillhouse.v1.B266Service/GetFilingAcknowledgement"
 	// B266ServiceSuggestB266PeriodProcedure is the fully-qualified name of the B266Service's
 	// SuggestB266Period RPC.
 	B266ServiceSuggestB266PeriodProcedure = "/stillhouse.v1.B266Service/SuggestB266Period"
@@ -58,6 +61,8 @@ const (
 
 // B266ServiceClient is a client for the stillhouse.v1.B266Service service.
 type B266ServiceClient interface {
+	// The statements shown before a period is marked submitted.
+	GetFilingAcknowledgement(context.Context, *connect.Request[v1.FilingAcknowledgementRequest]) (*connect.Response[v1.FilingAcknowledgementResponse], error)
 	// The period the licensee should be filing, on their own fiscal calendar.
 	SuggestB266Period(context.Context, *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error)
 	GenerateB266(context.Context, *connect.Request[v1.GenerateB266Request]) (*connect.Response[v1.GenerateB266Response], error)
@@ -78,6 +83,12 @@ func NewB266ServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	b266ServiceMethods := v1.File_stillhouse_v1_b266_proto.Services().ByName("B266Service").Methods()
 	return &b266ServiceClient{
+		getFilingAcknowledgement: connect.NewClient[v1.FilingAcknowledgementRequest, v1.FilingAcknowledgementResponse](
+			httpClient,
+			baseURL+B266ServiceGetFilingAcknowledgementProcedure,
+			connect.WithSchema(b266ServiceMethods.ByName("GetFilingAcknowledgement")),
+			connect.WithClientOptions(opts...),
+		),
 		suggestB266Period: connect.NewClient[v1.SuggestB266PeriodRequest, v1.SuggestB266PeriodResponse](
 			httpClient,
 			baseURL+B266ServiceSuggestB266PeriodProcedure,
@@ -119,12 +130,18 @@ func NewB266ServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // b266ServiceClient implements B266ServiceClient.
 type b266ServiceClient struct {
-	suggestB266Period *connect.Client[v1.SuggestB266PeriodRequest, v1.SuggestB266PeriodResponse]
-	generateB266      *connect.Client[v1.GenerateB266Request, v1.GenerateB266Response]
-	submitB266        *connect.Client[v1.SubmitB266Request, v1.SubmitB266Response]
-	listB266Periods   *connect.Client[v1.ListB266PeriodsRequest, v1.ListB266PeriodsResponse]
-	getB266Period     *connect.Client[v1.GetB266PeriodRequest, v1.GetB266PeriodResponse]
-	reopenB266Period  *connect.Client[v1.ReopenB266PeriodRequest, v1.ReopenB266PeriodResponse]
+	getFilingAcknowledgement *connect.Client[v1.FilingAcknowledgementRequest, v1.FilingAcknowledgementResponse]
+	suggestB266Period        *connect.Client[v1.SuggestB266PeriodRequest, v1.SuggestB266PeriodResponse]
+	generateB266             *connect.Client[v1.GenerateB266Request, v1.GenerateB266Response]
+	submitB266               *connect.Client[v1.SubmitB266Request, v1.SubmitB266Response]
+	listB266Periods          *connect.Client[v1.ListB266PeriodsRequest, v1.ListB266PeriodsResponse]
+	getB266Period            *connect.Client[v1.GetB266PeriodRequest, v1.GetB266PeriodResponse]
+	reopenB266Period         *connect.Client[v1.ReopenB266PeriodRequest, v1.ReopenB266PeriodResponse]
+}
+
+// GetFilingAcknowledgement calls stillhouse.v1.B266Service.GetFilingAcknowledgement.
+func (c *b266ServiceClient) GetFilingAcknowledgement(ctx context.Context, req *connect.Request[v1.FilingAcknowledgementRequest]) (*connect.Response[v1.FilingAcknowledgementResponse], error) {
+	return c.getFilingAcknowledgement.CallUnary(ctx, req)
 }
 
 // SuggestB266Period calls stillhouse.v1.B266Service.SuggestB266Period.
@@ -159,6 +176,8 @@ func (c *b266ServiceClient) ReopenB266Period(ctx context.Context, req *connect.R
 
 // B266ServiceHandler is an implementation of the stillhouse.v1.B266Service service.
 type B266ServiceHandler interface {
+	// The statements shown before a period is marked submitted.
+	GetFilingAcknowledgement(context.Context, *connect.Request[v1.FilingAcknowledgementRequest]) (*connect.Response[v1.FilingAcknowledgementResponse], error)
 	// The period the licensee should be filing, on their own fiscal calendar.
 	SuggestB266Period(context.Context, *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error)
 	GenerateB266(context.Context, *connect.Request[v1.GenerateB266Request]) (*connect.Response[v1.GenerateB266Response], error)
@@ -175,6 +194,12 @@ type B266ServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	b266ServiceMethods := v1.File_stillhouse_v1_b266_proto.Services().ByName("B266Service").Methods()
+	b266ServiceGetFilingAcknowledgementHandler := connect.NewUnaryHandler(
+		B266ServiceGetFilingAcknowledgementProcedure,
+		svc.GetFilingAcknowledgement,
+		connect.WithSchema(b266ServiceMethods.ByName("GetFilingAcknowledgement")),
+		connect.WithHandlerOptions(opts...),
+	)
 	b266ServiceSuggestB266PeriodHandler := connect.NewUnaryHandler(
 		B266ServiceSuggestB266PeriodProcedure,
 		svc.SuggestB266Period,
@@ -213,6 +238,8 @@ func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/stillhouse.v1.B266Service/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case B266ServiceGetFilingAcknowledgementProcedure:
+			b266ServiceGetFilingAcknowledgementHandler.ServeHTTP(w, r)
 		case B266ServiceSuggestB266PeriodProcedure:
 			b266ServiceSuggestB266PeriodHandler.ServeHTTP(w, r)
 		case B266ServiceGenerateB266Procedure:
@@ -233,6 +260,10 @@ func NewB266ServiceHandler(svc B266ServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedB266ServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedB266ServiceHandler struct{}
+
+func (UnimplementedB266ServiceHandler) GetFilingAcknowledgement(context.Context, *connect.Request[v1.FilingAcknowledgementRequest]) (*connect.Response[v1.FilingAcknowledgementResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.B266Service.GetFilingAcknowledgement is not implemented"))
+}
 
 func (UnimplementedB266ServiceHandler) SuggestB266Period(context.Context, *connect.Request[v1.SuggestB266PeriodRequest]) (*connect.Response[v1.SuggestB266PeriodResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.B266Service.SuggestB266Period is not implemented"))

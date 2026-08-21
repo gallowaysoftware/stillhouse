@@ -360,7 +360,8 @@ func TestAdjustmentRespectsThePeriodLock(t *testing.T) {
 		t.Fatalf("GenerateB266: %v", err)
 	}
 	if _, err := b266.SubmitB266(f.ctx, connect.NewRequest(&stillhousev1.SubmitB266Request{
-		PeriodId: gen.Msg.GetPeriod().GetId(),
+		PeriodId:        gen.Msg.GetPeriod().GetId(),
+		Acknowledgement: filingAcknowledgementText(),
 	})); err != nil {
 		t.Fatalf("SubmitB266: %v", err)
 	}

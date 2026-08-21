@@ -1,6 +1,14 @@
 -- name: GetB266Period :one
 SELECT * FROM b266_periods WHERE id = $1;
 
+-- name: GetB266PeriodWithAcknowledger :one
+-- The period plus the name of whoever confirmed the figures, for the
+-- screens that show the trail rather than act on it.
+SELECT p.*, COALESCE(u.display_name, '')::text AS acknowledged_by_name
+FROM b266_periods p
+LEFT JOIN users u ON u.id = p.filing_acknowledged_by
+WHERE p.id = $1;
+
 -- name: GetB266PeriodByDates :one
 SELECT * FROM b266_periods
 WHERE period_start = $1 AND period_end = $2;
@@ -21,11 +29,18 @@ SET updated_at = NOW(),
 RETURNING *;
 
 -- name: SubmitB266Period :one
+-- The acknowledgement is written in the same statement that sets the
+-- status, so a submitted period can never exist without one. The table's
+-- CHECK holds the other half of that guarantee for any path that is not
+-- this one.
 UPDATE b266_periods
-SET status       = 'submitted',
-    snapshot     = $2,
-    submitted_at = NOW(),
-    submitted_by = $3
+SET status                 = 'submitted',
+    snapshot               = $2,
+    submitted_at           = NOW(),
+    submitted_by           = $3,
+    filing_acknowledged_at = NOW(),
+    filing_acknowledged_by = $3,
+    filing_acknowledgement = $4
 WHERE id = $1
   AND status = 'draft'
 RETURNING *;

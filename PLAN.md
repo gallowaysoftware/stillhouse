@@ -354,15 +354,6 @@ rediscovered as a gap.
 
 ## Track H — platform
 
-### H1 · Liability boundary — P0
-
-Stage 104 got the hard part right: Stillhouse never submits to CRA and says so.
-But there is no terms of service, no warranty disclaimer, and no acknowledgement
-step between "here are your figures" and someone typing them into My Business
-Account. AGPL §15–16 disclaims the software; it does not cover a hosting
-relationship. A short ToS plus a verify-before-filing confirmation on the return
-screens is an afternoon and the cheapest insurance in the plan.
-
 ### H2 · Backups, restore drill, residency — P0
 
 The tenant CSV/ZIP export is data portability, not a backup — it cannot
@@ -607,8 +598,7 @@ contract fill; `A8` and `A9` are their own features.
 
 Next, in this order:
 
-1. `H1` `H2` — liability boundary and a tested restore, before any second
-   distillery's records land here
+1. `H2` — a tested restore, before any second distillery's records land here
 2. `C2` — the audit binder. Stages 144–147 gave it real content to assemble:
    instruments behind every determination, reason-coded adjustments, and a
    complete page 3.

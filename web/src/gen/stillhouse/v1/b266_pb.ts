@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/b266.proto.
  */
 export const file_stillhouse_v1_b266: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2IyNjYucHJvdG8SDXN0aWxsaG91c2UudjEiJgoYU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0EgoKAm9uGAEgASgJIqkBChlTdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRIWCg5kYXlzX3VudGlsX2R1ZRgEIAEoBRIdChVwcmV2aW91c19wZXJpb2Rfc3RhcnQYBSABKAkSGwoTcHJldmlvdXNfcGVyaW9kX2VuZBgGIAEoCSK0AgoKQjI2NlBlcmlvZBIKCgJpZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCRIpCgZzdGF0dXMYBCABKA4yGS5zdGlsbGhvdXNlLnYxLkIyNjZTdGF0dXMSMAoMc3VibWl0dGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxzdWJtaXR0ZWRfYnkYBiABKAkSDQoFbm90ZXMYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDgoGZHVlX29uGAogASgJItQQCgpCMjY2UmVwb3J0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEhgKEGJ1bGtfb3BlbmluZ19sYWEYCiABKAESGwoTYnVsa19wcm9kdWN0aW9uX2xhYRgLIAEoARIhChlidWxrX3JlY2VpdmVkX2luX2JvbmRfbGFhGAwgASgBEhkKEWJ1bGtfYmxlbmRfaW5fbGFhGA0gASgBEikKIWJ1bGtfdHJhbnNmZXJyZWRfdG9fcGFja2FnaW5nX2xhYRgOIAEoARIoCiBidWxrX3RyYW5zZmVycmVkX291dF9pbl9ib25kX2xhYRgPIAEoARIXCg9idWxrX2xvc3Nlc19sYWEYECABKAESGgoSYnVsa19kZXN0cm95ZWRfbGFhGBEgASgBEhgKEGJ1bGtfY2xvc2luZ19sYWEYEiABKAESKgoiYnVsa19vcGVuaW5nX2ludmVudG9yeV9hZG9wdGVkX2xhYRgTIAEoARIcChRidWxrX2FkanVzdG1lbnRzX2xhYRgUIAEoARIlCh1idWxrX2FkanVzdG1lbnRzX2luY3JlYXNlX2xhYRgVIAEoARIlCh1idWxrX2FkanVzdG1lbnRzX2RlY3JlYXNlX2xhYRgWIAEoARIeChZidWxrX2FkanVzdG1lbnRzX2NvdW50GBcgASgFEhkKEWJ1bGtfaW1wb3J0ZWRfbGFhGBggASgBEicKH2J1bGtfcmVjZWl2ZWRfZnJvbV9saWNlbnNlZV9sYWEYGSABKAESLAokYnVsa19yZWNlaXZlZF9mcm9tX2xpY2Vuc2VkX3VzZXJfbGFhGBogASgBEioKImJ1bGtfcGFja2FnZWRfcmV0dXJuZWRfdG9fYnVsa19sYWEYGyABKAESJgoeYnVsa19kZWxpdmVyZWRfdG9fbGljZW5zZWVfbGFhGBwgASgBEisKI2J1bGtfZGVsaXZlcmVkX3RvX2xpY2Vuc2VkX3VzZXJfbGFhGB0gASgBEhkKEWJ1bGtfZXhwb3J0ZWRfbGFhGEAgASgBEh0KFWJ1bGtfZGVuYXR1cmVkX2RhX2xhYRhBIAEoARIeChZidWxrX2RlbmF0dXJlZF9zZGFfbGFhGEIgASgBEicKH2J1bGtfcmV0dXJuZWRfdG9fcHJvZHVjdGlvbl9sYWEYQyABKAESIAoYYnVsa19sb3NzZXNfcmVsaWV2ZWRfbGFhGEQgASgBEiAKGGJ1bGtfbG9zc2VzX2R1dGlhYmxlX2xhYRhFIAEoARIkChxidWxrX2xvc3Nlc191bmNsYXNzaWZpZWRfbGFhGEYgASgBEhoKEmR1dHlfb25fbG9zc2VzX2NhZBhHIAEoARIXCg9maWxpbmdfYmxvY2tlcnMYSCADKAkSDgoGZHVlX29uGEkgASgJEhYKDmRheXNfdW50aWxfZHVlGEogASgFEhwKFHBhY2thZ2VkX29wZW5pbmdfbGFhGB4gASgBEh0KFXBhY2thZ2VkX3BhY2thZ2VkX2xhYRgfIAEoARIhChlwYWNrYWdlZF9wYWNrYWdlZF9ib3R0bGVzGCAgASgFEiYKHnBhY2thZ2VkX3JlbW92ZWRfZHV0eV9wYWlkX2xhYRghIAEoARIqCiJwYWNrYWdlZF9yZW1vdmVkX2R1dHlfcGFpZF9ib3R0bGVzGCIgASgFEhwKFHBhY2thZ2VkX2Nsb3NpbmdfbGFhGCMgASgBEiAKGHBhY2thZ2VkX2Nsb3NpbmdfYm90dGxlcxgkIAEoBRIjChtwYWNrYWdlZF9wYWNrYWdpbmdfbG9zc19sYWEYJSABKAESIgoacGFja2FnZWRfcmVtb3ZlZF9vdmVyN19sYWEYJiABKAESJwofcGFja2FnZWRfcmVtb3ZlZF9vdmVyN19kdXR5X2NhZBgnIAEoARImCh5wYWNrYWdlZF9yZW1vdmVkX292ZXI3X2JvdHRsZXMYKCABKAUSJgoecGFja2FnZWRfcmVtb3ZlZF91bmRlcjdfbGl0cmVzGCkgASgBEigKIHBhY2thZ2VkX3JlbW92ZWRfdW5kZXI3X2R1dHlfY2FkGCogASgBEicKH3BhY2thZ2VkX3JlbW92ZWRfdW5kZXI3X2JvdHRsZXMYKyABKAUSIgoaZHV0eV9yYXRlX3Blcl9saXRyZV91bmRlcjcYLCABKAESHgoWcGFja2FnZWRfZHV0eV9wYWlkX2xhYRgtIAEoARIiChpwYWNrYWdlZF9kdXR5X3BhaWRfYm90dGxlcxguIAEoBRIiChpwYWNrYWdlZF9ub25fZHV0eV9wYWlkX2xhYRgvIAEoARImCh5wYWNrYWdlZF9ub25fZHV0eV9wYWlkX2JvdHRsZXMYMCABKAUSIQoZcGFja2FnZWRfZHV0aWVkX292ZXI3X2xhYRg0IAEoARImCh5wYWNrYWdlZF9kdXRpZWRfb3ZlcjdfZHV0eV9jYWQYNSABKAESJQodcGFja2FnZWRfZHV0aWVkX3VuZGVyN19saXRyZXMYNiABKAESJwofcGFja2FnZWRfZHV0aWVkX3VuZGVyN19kdXR5X2NhZBg3IAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgyIAEoARIYChBkdXR5X3BheWFibGVfY2FkGDMgASgBEiwKCmR1dHlfcG9pbnQYOCABKA4yGC5zdGlsbGhvdXNlLnYxLkR1dHlQb2ludBIhChlkdXR5X3BvaW50X2VmZmVjdGl2ZV9mcm9tGDkgASgJEjAKDGdlbmVyYXRlZF9hdBg8IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiPwoTR2VuZXJhdGVCMjY2UmVxdWVzdBIUCgxwZXJpb2Rfc3RhcnQYASABKAkSEgoKcGVyaW9kX2VuZBgCIAEoCSJsChRHZW5lcmF0ZUIyNjZSZXNwb25zZRIpCgZwZXJpb2QYASABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QSKQoGcmVwb3J0GAIgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UmVwb3J0IiYKEVN1Ym1pdEIyNjZSZXF1ZXN0EhEKCXBlcmlvZF9pZBgBIAEoCSJsChJTdWJtaXRCMjY2UmVzcG9uc2USKQoGcGVyaW9kGAEgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UGVyaW9kEisKCHNuYXBzaG90GAIgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UmVwb3J0IhgKFkxpc3RCMjY2UGVyaW9kc1JlcXVlc3QiRQoXTGlzdEIyNjZQZXJpb2RzUmVzcG9uc2USKgoHcGVyaW9kcxgBIAMoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZCIiChRHZXRCMjY2UGVyaW9kUmVxdWVzdBIKCgJpZBgBIAEoCSJvChVHZXRCMjY2UGVyaW9kUmVzcG9uc2USKQoGcGVyaW9kGAEgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UGVyaW9kEisKCHNuYXBzaG90GAIgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UmVwb3J0IjUKF1Jlb3BlbkIyNjZQZXJpb2RSZXF1ZXN0EgoKAmlkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSJFChhSZW9wZW5CMjY2UGVyaW9kUmVzcG9uc2USKQoGcGVyaW9kGAEgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UGVyaW9kKlsKCkIyNjZTdGF0dXMSGwoXQjI2Nl9TVEFUVVNfVU5TUEVDSUZJRUQQABIVChFCMjY2X1NUQVRVU19EUkFGVBABEhkKFUIyNjZfU1RBVFVTX1NVQk1JVFRFRBACMsQECgtCMjY2U2VydmljZRJmChFTdWdnZXN0QjI2NlBlcmlvZBInLnN0aWxsaG91c2UudjEuU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5TdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlElcKDEdlbmVyYXRlQjI2NhIiLnN0aWxsaG91c2UudjEuR2VuZXJhdGVCMjY2UmVxdWVzdBojLnN0aWxsaG91c2UudjEuR2VuZXJhdGVCMjY2UmVzcG9uc2USUQoKU3VibWl0QjI2NhIgLnN0aWxsaG91c2UudjEuU3VibWl0QjI2NlJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLlN1Ym1pdEIyNjZSZXNwb25zZRJgCg9MaXN0QjI2NlBlcmlvZHMSJS5zdGlsbGhvdXNlLnYxLkxpc3RCMjY2UGVyaW9kc1JlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkxpc3RCMjY2UGVyaW9kc1Jlc3BvbnNlEloKDUdldEIyNjZQZXJpb2QSIy5zdGlsbGhvdXNlLnYxLkdldEIyNjZQZXJpb2RSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5HZXRCMjY2UGVyaW9kUmVzcG9uc2USYwoQUmVvcGVuQjI2NlBlcmlvZBImLnN0aWxsaG91c2UudjEuUmVvcGVuQjI2NlBlcmlvZFJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLlJlb3BlbkIyNjZQZXJpb2RSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_tenant]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2IyNjYucHJvdG8SDXN0aWxsaG91c2UudjEiJgoYU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0EgoKAm9uGAEgASgJIqkBChlTdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRIWCg5kYXlzX3VudGlsX2R1ZRgEIAEoBRIdChVwcmV2aW91c19wZXJpb2Rfc3RhcnQYBSABKAkSGwoTcHJldmlvdXNfcGVyaW9kX2VuZBgGIAEoCSLVAwoKQjI2NlBlcmlvZBIKCgJpZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCRIpCgZzdGF0dXMYBCABKA4yGS5zdGlsbGhvdXNlLnYxLkIyNjZTdGF0dXMSMAoMc3VibWl0dGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxzdWJtaXR0ZWRfYnkYBiABKAkSDQoFbm90ZXMYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASOgoWZmlsaW5nX2Fja25vd2xlZGdlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASHgoWZmlsaW5nX2Fja25vd2xlZGdlZF9ieRgMIAEoCRIjChtmaWxpbmdfYWNrbm93bGVkZ2VkX2J5X25hbWUYDSABKAkSHgoWZmlsaW5nX2Fja25vd2xlZGdlbWVudBgOIAEoCRIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZkdWVfb24YCiABKAki1BAKCkIyNjZSZXBvcnQSFAoMcGVyaW9kX3N0YXJ0GAEgASgJEhIKCnBlcmlvZF9lbmQYAiABKAkSGAoQYnVsa19vcGVuaW5nX2xhYRgKIAEoARIbChNidWxrX3Byb2R1Y3Rpb25fbGFhGAsgASgBEiEKGWJ1bGtfcmVjZWl2ZWRfaW5fYm9uZF9sYWEYDCABKAESGQoRYnVsa19ibGVuZF9pbl9sYWEYDSABKAESKQohYnVsa190cmFuc2ZlcnJlZF90b19wYWNrYWdpbmdfbGFhGA4gASgBEigKIGJ1bGtfdHJhbnNmZXJyZWRfb3V0X2luX2JvbmRfbGFhGA8gASgBEhcKD2J1bGtfbG9zc2VzX2xhYRgQIAEoARIaChJidWxrX2Rlc3Ryb3llZF9sYWEYESABKAESGAoQYnVsa19jbG9zaW5nX2xhYRgSIAEoARIqCiJidWxrX29wZW5pbmdfaW52ZW50b3J5X2Fkb3B0ZWRfbGFhGBMgASgBEhwKFGJ1bGtfYWRqdXN0bWVudHNfbGFhGBQgASgBEiUKHWJ1bGtfYWRqdXN0bWVudHNfaW5jcmVhc2VfbGFhGBUgASgBEiUKHWJ1bGtfYWRqdXN0bWVudHNfZGVjcmVhc2VfbGFhGBYgASgBEh4KFmJ1bGtfYWRqdXN0bWVudHNfY291bnQYFyABKAUSGQoRYnVsa19pbXBvcnRlZF9sYWEYGCABKAESJwofYnVsa19yZWNlaXZlZF9mcm9tX2xpY2Vuc2VlX2xhYRgZIAEoARIsCiRidWxrX3JlY2VpdmVkX2Zyb21fbGljZW5zZWRfdXNlcl9sYWEYGiABKAESKgoiYnVsa19wYWNrYWdlZF9yZXR1cm5lZF90b19idWxrX2xhYRgbIAEoARImCh5idWxrX2RlbGl2ZXJlZF90b19saWNlbnNlZV9sYWEYHCABKAESKwojYnVsa19kZWxpdmVyZWRfdG9fbGljZW5zZWRfdXNlcl9sYWEYHSABKAESGQoRYnVsa19leHBvcnRlZF9sYWEYQCABKAESHQoVYnVsa19kZW5hdHVyZWRfZGFfbGFhGEEgASgBEh4KFmJ1bGtfZGVuYXR1cmVkX3NkYV9sYWEYQiABKAESJwofYnVsa19yZXR1cm5lZF90b19wcm9kdWN0aW9uX2xhYRhDIAEoARIgChhidWxrX2xvc3Nlc19yZWxpZXZlZF9sYWEYRCABKAESIAoYYnVsa19sb3NzZXNfZHV0aWFibGVfbGFhGEUgASgBEiQKHGJ1bGtfbG9zc2VzX3VuY2xhc3NpZmllZF9sYWEYRiABKAESGgoSZHV0eV9vbl9sb3NzZXNfY2FkGEcgASgBEhcKD2ZpbGluZ19ibG9ja2VycxhIIAMoCRIOCgZkdWVfb24YSSABKAkSFgoOZGF5c191bnRpbF9kdWUYSiABKAUSHAoUcGFja2FnZWRfb3BlbmluZ19sYWEYHiABKAESHQoVcGFja2FnZWRfcGFja2FnZWRfbGFhGB8gASgBEiEKGXBhY2thZ2VkX3BhY2thZ2VkX2JvdHRsZXMYICABKAUSJgoecGFja2FnZWRfcmVtb3ZlZF9kdXR5X3BhaWRfbGFhGCEgASgBEioKInBhY2thZ2VkX3JlbW92ZWRfZHV0eV9wYWlkX2JvdHRsZXMYIiABKAUSHAoUcGFja2FnZWRfY2xvc2luZ19sYWEYIyABKAESIAoYcGFja2FnZWRfY2xvc2luZ19ib3R0bGVzGCQgASgFEiMKG3BhY2thZ2VkX3BhY2thZ2luZ19sb3NzX2xhYRglIAEoARIiChpwYWNrYWdlZF9yZW1vdmVkX292ZXI3X2xhYRgmIAEoARInCh9wYWNrYWdlZF9yZW1vdmVkX292ZXI3X2R1dHlfY2FkGCcgASgBEiYKHnBhY2thZ2VkX3JlbW92ZWRfb3ZlcjdfYm90dGxlcxgoIAEoBRImCh5wYWNrYWdlZF9yZW1vdmVkX3VuZGVyN19saXRyZXMYKSABKAESKAogcGFja2FnZWRfcmVtb3ZlZF91bmRlcjdfZHV0eV9jYWQYKiABKAESJwofcGFja2FnZWRfcmVtb3ZlZF91bmRlcjdfYm90dGxlcxgrIAEoBRIiChpkdXR5X3JhdGVfcGVyX2xpdHJlX3VuZGVyNxgsIAEoARIeChZwYWNrYWdlZF9kdXR5X3BhaWRfbGFhGC0gASgBEiIKGnBhY2thZ2VkX2R1dHlfcGFpZF9ib3R0bGVzGC4gASgFEiIKGnBhY2thZ2VkX25vbl9kdXR5X3BhaWRfbGFhGC8gASgBEiYKHnBhY2thZ2VkX25vbl9kdXR5X3BhaWRfYm90dGxlcxgwIAEoBRIhChlwYWNrYWdlZF9kdXRpZWRfb3ZlcjdfbGFhGDQgASgBEiYKHnBhY2thZ2VkX2R1dGllZF9vdmVyN19kdXR5X2NhZBg1IAEoARIlCh1wYWNrYWdlZF9kdXRpZWRfdW5kZXI3X2xpdHJlcxg2IAEoARInCh9wYWNrYWdlZF9kdXRpZWRfdW5kZXI3X2R1dHlfY2FkGDcgASgBEhkKEWR1dHlfcmF0ZV9wZXJfbGFhGDIgASgBEhgKEGR1dHlfcGF5YWJsZV9jYWQYMyABKAESLAoKZHV0eV9wb2ludBg4IAEoDjIYLnN0aWxsaG91c2UudjEuRHV0eVBvaW50EiEKGWR1dHlfcG9pbnRfZWZmZWN0aXZlX2Zyb20YOSABKAkSMAoMZ2VuZXJhdGVkX2F0GDwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCI/ChNHZW5lcmF0ZUIyNjZSZXF1ZXN0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJImwKFEdlbmVyYXRlQjI2NlJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZBIpCgZyZXBvcnQYAiABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZSZXBvcnQiHgocRmlsaW5nQWNrbm93bGVkZ2VtZW50UmVxdWVzdCJRCh1GaWxpbmdBY2tub3dsZWRnZW1lbnRSZXNwb25zZRISCgpzdGF0ZW1lbnRzGAEgAygJEhwKFGFja25vd2xlZGdlbWVudF90ZXh0GAIgASgJIj8KEVN1Ym1pdEIyNjZSZXF1ZXN0EhEKCXBlcmlvZF9pZBgBIAEoCRIXCg9hY2tub3dsZWRnZW1lbnQYAiABKAkibAoSU3VibWl0QjI2NlJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZBIrCghzbmFwc2hvdBgCIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlJlcG9ydCIYChZMaXN0QjI2NlBlcmlvZHNSZXF1ZXN0IkUKF0xpc3RCMjY2UGVyaW9kc1Jlc3BvbnNlEioKB3BlcmlvZHMYASADKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QiIgoUR2V0QjI2NlBlcmlvZFJlcXVlc3QSCgoCaWQYASABKAkibwoVR2V0QjI2NlBlcmlvZFJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZBIrCghzbmFwc2hvdBgCIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlJlcG9ydCI1ChdSZW9wZW5CMjY2UGVyaW9kUmVxdWVzdBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkiRQoYUmVvcGVuQjI2NlBlcmlvZFJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZCpbCgpCMjY2U3RhdHVzEhsKF0IyNjZfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFQoRQjI2Nl9TVEFUVVNfRFJBRlQQARIZChVCMjY2X1NUQVRVU19TVUJNSVRURUQQAjK7BQoLQjI2NlNlcnZpY2USdQoYR2V0RmlsaW5nQWNrbm93bGVkZ2VtZW50Eisuc3RpbGxob3VzZS52MS5GaWxpbmdBY2tub3dsZWRnZW1lbnRSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5GaWxpbmdBY2tub3dsZWRnZW1lbnRSZXNwb25zZRJmChFTdWdnZXN0QjI2NlBlcmlvZBInLnN0aWxsaG91c2UudjEuU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5TdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlElcKDEdlbmVyYXRlQjI2NhIiLnN0aWxsaG91c2UudjEuR2VuZXJhdGVCMjY2UmVxdWVzdBojLnN0aWxsaG91c2UudjEuR2VuZXJhdGVCMjY2UmVzcG9uc2USUQoKU3VibWl0QjI2NhIgLnN0aWxsaG91c2UudjEuU3VibWl0QjI2NlJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLlN1Ym1pdEIyNjZSZXNwb25zZRJgCg9MaXN0QjI2NlBlcmlvZHMSJS5zdGlsbGhvdXNlLnYxLkxpc3RCMjY2UGVyaW9kc1JlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkxpc3RCMjY2UGVyaW9kc1Jlc3BvbnNlEloKDUdldEIyNjZQZXJpb2QSIy5zdGlsbGhvdXNlLnYxLkdldEIyNjZQZXJpb2RSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5HZXRCMjY2UGVyaW9kUmVzcG9uc2USYwoQUmVvcGVuQjI2NlBlcmlvZBImLnN0aWxsaG91c2UudjEuUmVvcGVuQjI2NlBlcmlvZFJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLlJlb3BlbkIyNjZQZXJpb2RSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_tenant]);
 
 /**
  * @generated from message stillhouse.v1.SuggestB266PeriodRequest
@@ -131,6 +131,29 @@ export type B266Period = Message<"stillhouse.v1.B266Period"> & {
    * @generated from field: google.protobuf.Timestamp created_at = 8;
    */
   createdAt?: Timestamp | undefined;
+
+  /**
+   * Who confirmed they had checked the figures, when, and against what
+   * wording. Read years later, so the text is stored rather than a flag.
+   *
+   * @generated from field: google.protobuf.Timestamp filing_acknowledged_at = 11;
+   */
+  filingAcknowledgedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: string filing_acknowledged_by = 12;
+   */
+  filingAcknowledgedBy: string;
+
+  /**
+   * @generated from field: string filing_acknowledged_by_name = 13;
+   */
+  filingAcknowledgedByName: string;
+
+  /**
+   * @generated from field: string filing_acknowledgement = 14;
+   */
+  filingAcknowledgement: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp updated_at = 9;
@@ -606,6 +629,53 @@ export const GenerateB266ResponseSchema: GenMessage<GenerateB266Response> = /*@_
   messageDesc(file_stillhouse_v1_b266, 5);
 
 /**
+ * The statements a person confirms before a period is marked submitted.
+ *
+ * Served by the server rather than written into the client, so the wording
+ * recorded against a period is the wording that was shown, and both come
+ * from one place. The client sends back the text it displayed, and the
+ * server refuses if it does not match — a confirmation to text the person
+ * never saw is not a confirmation.
+ *
+ * @generated from message stillhouse.v1.FilingAcknowledgementRequest
+ */
+export type FilingAcknowledgementRequest = Message<"stillhouse.v1.FilingAcknowledgementRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.FilingAcknowledgementRequest.
+ * Use `create(FilingAcknowledgementRequestSchema)` to create a new message.
+ */
+export const FilingAcknowledgementRequestSchema: GenMessage<FilingAcknowledgementRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_b266, 6);
+
+/**
+ * @generated from message stillhouse.v1.FilingAcknowledgementResponse
+ */
+export type FilingAcknowledgementResponse = Message<"stillhouse.v1.FilingAcknowledgementResponse"> & {
+  /**
+   * Each statement the person is confirming, shown as its own line.
+   *
+   * @generated from field: repeated string statements = 1;
+   */
+  statements: string[];
+
+  /**
+   * The exact text recorded against the period, frozen with it.
+   *
+   * @generated from field: string acknowledgement_text = 2;
+   */
+  acknowledgementText: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.FilingAcknowledgementResponse.
+ * Use `create(FilingAcknowledgementResponseSchema)` to create a new message.
+ */
+export const FilingAcknowledgementResponseSchema: GenMessage<FilingAcknowledgementResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_b266, 7);
+
+/**
  * @generated from message stillhouse.v1.SubmitB266Request
  */
 export type SubmitB266Request = Message<"stillhouse.v1.SubmitB266Request"> & {
@@ -613,6 +683,15 @@ export type SubmitB266Request = Message<"stillhouse.v1.SubmitB266Request"> & {
    * @generated from field: string period_id = 1;
    */
   periodId: string;
+
+  /**
+   * The acknowledgement text as displayed. Must match what
+   * GetFilingAcknowledgement returns; a period cannot be submitted
+   * without it.
+   *
+   * @generated from field: string acknowledgement = 2;
+   */
+  acknowledgement: string;
 };
 
 /**
@@ -620,7 +699,7 @@ export type SubmitB266Request = Message<"stillhouse.v1.SubmitB266Request"> & {
  * Use `create(SubmitB266RequestSchema)` to create a new message.
  */
 export const SubmitB266RequestSchema: GenMessage<SubmitB266Request> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 6);
+  messageDesc(file_stillhouse_v1_b266, 8);
 
 /**
  * @generated from message stillhouse.v1.SubmitB266Response
@@ -642,7 +721,7 @@ export type SubmitB266Response = Message<"stillhouse.v1.SubmitB266Response"> & {
  * Use `create(SubmitB266ResponseSchema)` to create a new message.
  */
 export const SubmitB266ResponseSchema: GenMessage<SubmitB266Response> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 7);
+  messageDesc(file_stillhouse_v1_b266, 9);
 
 /**
  * @generated from message stillhouse.v1.ListB266PeriodsRequest
@@ -655,7 +734,7 @@ export type ListB266PeriodsRequest = Message<"stillhouse.v1.ListB266PeriodsReque
  * Use `create(ListB266PeriodsRequestSchema)` to create a new message.
  */
 export const ListB266PeriodsRequestSchema: GenMessage<ListB266PeriodsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 8);
+  messageDesc(file_stillhouse_v1_b266, 10);
 
 /**
  * @generated from message stillhouse.v1.ListB266PeriodsResponse
@@ -672,7 +751,7 @@ export type ListB266PeriodsResponse = Message<"stillhouse.v1.ListB266PeriodsResp
  * Use `create(ListB266PeriodsResponseSchema)` to create a new message.
  */
 export const ListB266PeriodsResponseSchema: GenMessage<ListB266PeriodsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 9);
+  messageDesc(file_stillhouse_v1_b266, 11);
 
 /**
  * @generated from message stillhouse.v1.GetB266PeriodRequest
@@ -689,7 +768,7 @@ export type GetB266PeriodRequest = Message<"stillhouse.v1.GetB266PeriodRequest">
  * Use `create(GetB266PeriodRequestSchema)` to create a new message.
  */
 export const GetB266PeriodRequestSchema: GenMessage<GetB266PeriodRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 10);
+  messageDesc(file_stillhouse_v1_b266, 12);
 
 /**
  * @generated from message stillhouse.v1.GetB266PeriodResponse
@@ -714,7 +793,7 @@ export type GetB266PeriodResponse = Message<"stillhouse.v1.GetB266PeriodResponse
  * Use `create(GetB266PeriodResponseSchema)` to create a new message.
  */
 export const GetB266PeriodResponseSchema: GenMessage<GetB266PeriodResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 11);
+  messageDesc(file_stillhouse_v1_b266, 13);
 
 /**
  * Reopen flips a submitted period back to draft. Owner-only — needed
@@ -741,7 +820,7 @@ export type ReopenB266PeriodRequest = Message<"stillhouse.v1.ReopenB266PeriodReq
  * Use `create(ReopenB266PeriodRequestSchema)` to create a new message.
  */
 export const ReopenB266PeriodRequestSchema: GenMessage<ReopenB266PeriodRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 12);
+  messageDesc(file_stillhouse_v1_b266, 14);
 
 /**
  * @generated from message stillhouse.v1.ReopenB266PeriodResponse
@@ -758,7 +837,7 @@ export type ReopenB266PeriodResponse = Message<"stillhouse.v1.ReopenB266PeriodRe
  * Use `create(ReopenB266PeriodResponseSchema)` to create a new message.
  */
 export const ReopenB266PeriodResponseSchema: GenMessage<ReopenB266PeriodResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 13);
+  messageDesc(file_stillhouse_v1_b266, 15);
 
 /**
  * @generated from enum stillhouse.v1.B266Status
@@ -790,6 +869,16 @@ export const B266StatusSchema: GenEnum<B266Status> = /*@__PURE__*/
  * @generated from service stillhouse.v1.B266Service
  */
 export const B266Service: GenService<{
+  /**
+   * The statements shown before a period is marked submitted.
+   *
+   * @generated from rpc stillhouse.v1.B266Service.GetFilingAcknowledgement
+   */
+  getFilingAcknowledgement: {
+    methodKind: "unary";
+    input: typeof FilingAcknowledgementRequestSchema;
+    output: typeof FilingAcknowledgementResponseSchema;
+  },
   /**
    * The period the licensee should be filing, on their own fiscal calendar.
    *

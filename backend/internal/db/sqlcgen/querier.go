@@ -122,6 +122,9 @@ type Querier interface {
 	GetAPITokenRowByHash(ctx context.Context, tokenHash []byte) (ApiToken, error)
 	GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByDatesParams) (B266Period, error)
+	// The period plus the name of whoever confirmed the figures, for the
+	// screens that show the trail rather than act on it.
+	GetB266PeriodWithAcknowledger(ctx context.Context, id uuid.UUID) (GetB266PeriodWithAcknowledgerRow, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
 	GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent, error)
 	GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error)
@@ -318,6 +321,10 @@ type Querier interface {
 	// in scope before the audit row is written. Transaction-local (the `true`
 	// argument), so it cannot leak across pooled connections.
 	SetTenantContext(ctx context.Context, setConfig string) error
+	// The acknowledgement is written in the same statement that sets the
+	// status, so a submitted period can never exist without one. The table's
+	// CHECK holds the other half of that guarantee for any path that is not
+	// this one.
 	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
 	// Duty that crystallised at packaging during the period, split by the two
 	// rate bands, because they are not charged in the same unit: above 7% ABV

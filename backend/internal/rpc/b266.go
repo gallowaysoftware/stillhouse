@@ -133,6 +133,12 @@ func (s *B266Service) SubmitB266(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_id"))
 	}
+	// The step between "here are your figures" and a filed return. Checked
+	// before anything is written, so a missing confirmation costs nothing
+	// but the round trip.
+	if err := checkFilingAcknowledgement(req.Msg.GetAcknowledgement()); err != nil {
+		return nil, err
+	}
 
 	var (
 		period sqlcgen.B266Period
@@ -156,9 +162,10 @@ func (s *B266Service) SubmitB266(
 			return e
 		}
 		period, e = q.SubmitB266Period(ctx, sqlcgen.SubmitB266PeriodParams{
-			ID:          id,
-			Snapshot:    snapshot,
-			SubmittedBy: uuid.NullUUID{UUID: u.ID, Valid: true},
+			ID:                    id,
+			Snapshot:              snapshot,
+			SubmittedBy:           uuid.NullUUID{UUID: u.ID, Valid: true},
+			FilingAcknowledgement: req.Msg.GetAcknowledgement(),
 		})
 		if e != nil {
 			return e
@@ -168,6 +175,8 @@ func (s *B266Service) SubmitB266(
 				"period_start":     existing.PeriodStart.Time.Format("2006-01-02"),
 				"period_end":       existing.PeriodEnd.Time.Format("2006-01-02"),
 				"duty_payable_cad": report.DutyPayableCad,
+				// The wording, not a flag: this row is read years later.
+				"acknowledgement": req.Msg.GetAcknowledgement(),
 			})
 	})
 	if err != nil {
@@ -249,11 +258,28 @@ func (s *B266Service) GetB266Period(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
 	}
-	var period sqlcgen.B266Period
+	var (
+		period         sqlcgen.B266Period
+		acknowledgedBy string
+	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
-		period, e = q.GetB266Period(ctx, id)
-		return e
+		row, e := q.GetB266PeriodWithAcknowledger(ctx, id)
+		if e != nil {
+			return e
+		}
+		acknowledgedBy = row.AcknowledgedByName
+		period = sqlcgen.B266Period{
+			ID: row.ID, TenantID: row.TenantID,
+			PeriodStart: row.PeriodStart, PeriodEnd: row.PeriodEnd,
+			Status: row.Status, Snapshot: row.Snapshot,
+			SubmittedAt: row.SubmittedAt, SubmittedBy: row.SubmittedBy,
+			Notes: row.Notes, CreatedAt: row.CreatedAt, UpdatedAt: row.UpdatedAt,
+			DueOn:                 row.DueOn,
+			FilingAcknowledgedAt:  row.FilingAcknowledgedAt,
+			FilingAcknowledgedBy:  row.FilingAcknowledgedBy,
+			FilingAcknowledgement: row.FilingAcknowledgement,
+		}
+		return nil
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -262,8 +288,10 @@ func (s *B266Service) GetB266Period(
 		s.logger.Error("GetB266Period", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	periodProto := b266PeriodToProto(period)
+	periodProto.FilingAcknowledgedByName = acknowledgedBy
 	out := &stillhousev1.GetB266PeriodResponse{
-		Period: b266PeriodToProto(period),
+		Period: periodProto,
 	}
 	if len(period.Snapshot) > 0 {
 		var snap stillhousev1.B266Report
@@ -536,14 +564,21 @@ func gatherB266Totals(
 
 func b266PeriodToProto(p sqlcgen.B266Period) *stillhousev1.B266Period {
 	out := &stillhousev1.B266Period{
-		Id:          p.ID.String(),
-		PeriodStart: formatDate(p.PeriodStart),
-		PeriodEnd:   formatDate(p.PeriodEnd),
-		Status:      b266StatusToProto(p.Status),
-		Notes:       p.Notes,
-		CreatedAt:   timestamppb.New(p.CreatedAt.Time),
-		UpdatedAt:   timestamppb.New(p.UpdatedAt.Time),
-		DueOn:       formatDate(p.DueOn),
+		Id:                    p.ID.String(),
+		PeriodStart:           formatDate(p.PeriodStart),
+		PeriodEnd:             formatDate(p.PeriodEnd),
+		Status:                b266StatusToProto(p.Status),
+		Notes:                 p.Notes,
+		CreatedAt:             timestamppb.New(p.CreatedAt.Time),
+		UpdatedAt:             timestamppb.New(p.UpdatedAt.Time),
+		DueOn:                 formatDate(p.DueOn),
+		FilingAcknowledgement: p.FilingAcknowledgement,
+	}
+	if p.FilingAcknowledgedAt.Valid {
+		out.FilingAcknowledgedAt = timestamppb.New(p.FilingAcknowledgedAt.Time)
+	}
+	if p.FilingAcknowledgedBy.Valid {
+		out.FilingAcknowledgedBy = p.FilingAcknowledgedBy.UUID.String()
 	}
 	if p.SubmittedAt.Valid {
 		out.SubmittedAt = timestamppb.New(p.SubmittedAt.Time)

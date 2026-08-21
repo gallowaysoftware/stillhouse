@@ -13,7 +13,7 @@ import (
 )
 
 const b266PeriodCoveringDate = `-- name: B266PeriodCoveringDate :one
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods
 WHERE status = 'submitted'
   AND period_start <= $1
   AND period_end   >= $1
@@ -40,12 +40,15 @@ func (q *Queries) B266PeriodCoveringDate(ctx context.Context, periodStart pgtype
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
 	)
 	return i, err
 }
 
 const b266PeriodsOverlapping = `-- name: B266PeriodsOverlapping :many
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods
 WHERE period_start <= $1
   AND period_end   >= $2
   AND NOT (period_start = $2 AND period_end = $1)
@@ -87,6 +90,9 @@ func (q *Queries) B266PeriodsOverlapping(ctx context.Context, arg B266PeriodsOve
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DueOn,
+			&i.FilingAcknowledgedAt,
+			&i.FilingAcknowledgedBy,
+			&i.FilingAcknowledgement,
 		); err != nil {
 			return nil, err
 		}
@@ -99,7 +105,7 @@ func (q *Queries) B266PeriodsOverlapping(ctx context.Context, arg B266PeriodsOve
 }
 
 const getB266Period = `-- name: GetB266Period :one
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods WHERE id = $1
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods WHERE id = $1
 `
 
 func (q *Queries) GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, error) {
@@ -118,12 +124,15 @@ func (q *Queries) GetB266Period(ctx context.Context, id uuid.UUID) (B266Period, 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
 	)
 	return i, err
 }
 
 const getB266PeriodByDates = `-- name: GetB266PeriodByDates :one
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods
 WHERE period_start = $1 AND period_end = $2
 `
 
@@ -148,12 +157,67 @@ func (q *Queries) GetB266PeriodByDates(ctx context.Context, arg GetB266PeriodByD
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
+	)
+	return i, err
+}
+
+const getB266PeriodWithAcknowledger = `-- name: GetB266PeriodWithAcknowledger :one
+SELECT p.id, p.tenant_id, p.period_start, p.period_end, p.status, p.snapshot, p.submitted_at, p.submitted_by, p.notes, p.created_at, p.updated_at, p.due_on, p.filing_acknowledged_at, p.filing_acknowledged_by, p.filing_acknowledgement, COALESCE(u.display_name, '')::text AS acknowledged_by_name
+FROM b266_periods p
+LEFT JOIN users u ON u.id = p.filing_acknowledged_by
+WHERE p.id = $1
+`
+
+type GetB266PeriodWithAcknowledgerRow struct {
+	ID                    uuid.UUID          `json:"id"`
+	TenantID              uuid.UUID          `json:"tenant_id"`
+	PeriodStart           pgtype.Date        `json:"period_start"`
+	PeriodEnd             pgtype.Date        `json:"period_end"`
+	Status                B266Status         `json:"status"`
+	Snapshot              []byte             `json:"snapshot"`
+	SubmittedAt           pgtype.Timestamptz `json:"submitted_at"`
+	SubmittedBy           uuid.NullUUID      `json:"submitted_by"`
+	Notes                 string             `json:"notes"`
+	CreatedAt             pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz `json:"updated_at"`
+	DueOn                 pgtype.Date        `json:"due_on"`
+	FilingAcknowledgedAt  pgtype.Timestamptz `json:"filing_acknowledged_at"`
+	FilingAcknowledgedBy  uuid.NullUUID      `json:"filing_acknowledged_by"`
+	FilingAcknowledgement string             `json:"filing_acknowledgement"`
+	AcknowledgedByName    string             `json:"acknowledged_by_name"`
+}
+
+// The period plus the name of whoever confirmed the figures, for the
+// screens that show the trail rather than act on it.
+func (q *Queries) GetB266PeriodWithAcknowledger(ctx context.Context, id uuid.UUID) (GetB266PeriodWithAcknowledgerRow, error) {
+	row := q.db.QueryRow(ctx, getB266PeriodWithAcknowledger, id)
+	var i GetB266PeriodWithAcknowledgerRow
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.PeriodStart,
+		&i.PeriodEnd,
+		&i.Status,
+		&i.Snapshot,
+		&i.SubmittedAt,
+		&i.SubmittedBy,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
+		&i.AcknowledgedByName,
 	)
 	return i, err
 }
 
 const listB266Periods = `-- name: ListB266Periods :many
-SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on FROM b266_periods
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods
 ORDER BY period_start DESC
 `
 
@@ -179,6 +243,9 @@ func (q *Queries) ListB266Periods(ctx context.Context) ([]B266Period, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.DueOn,
+			&i.FilingAcknowledgedAt,
+			&i.FilingAcknowledgedBy,
+			&i.FilingAcknowledgement,
 		); err != nil {
 			return nil, err
 		}
@@ -194,7 +261,7 @@ const reopenB266Period = `-- name: ReopenB266Period :one
 UPDATE b266_periods
 SET status = 'draft'
 WHERE id = $1 AND status = 'submitted'
-RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement
 `
 
 // Flips a submitted period back to draft. Snapshot stays in place for
@@ -217,29 +284,45 @@ func (q *Queries) ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Perio
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
 	)
 	return i, err
 }
 
 const submitB266Period = `-- name: SubmitB266Period :one
 UPDATE b266_periods
-SET status       = 'submitted',
-    snapshot     = $2,
-    submitted_at = NOW(),
-    submitted_by = $3
+SET status                 = 'submitted',
+    snapshot               = $2,
+    submitted_at           = NOW(),
+    submitted_by           = $3,
+    filing_acknowledged_at = NOW(),
+    filing_acknowledged_by = $3,
+    filing_acknowledgement = $4
 WHERE id = $1
   AND status = 'draft'
-RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement
 `
 
 type SubmitB266PeriodParams struct {
-	ID          uuid.UUID     `json:"id"`
-	Snapshot    []byte        `json:"snapshot"`
-	SubmittedBy uuid.NullUUID `json:"submitted_by"`
+	ID                    uuid.UUID     `json:"id"`
+	Snapshot              []byte        `json:"snapshot"`
+	SubmittedBy           uuid.NullUUID `json:"submitted_by"`
+	FilingAcknowledgement string        `json:"filing_acknowledgement"`
 }
 
+// The acknowledgement is written in the same statement that sets the
+// status, so a submitted period can never exist without one. The table's
+// CHECK holds the other half of that guarantee for any path that is not
+// this one.
 func (q *Queries) SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error) {
-	row := q.db.QueryRow(ctx, submitB266Period, arg.ID, arg.Snapshot, arg.SubmittedBy)
+	row := q.db.QueryRow(ctx, submitB266Period,
+		arg.ID,
+		arg.Snapshot,
+		arg.SubmittedBy,
+		arg.FilingAcknowledgement,
+	)
 	var i B266Period
 	err := row.Scan(
 		&i.ID,
@@ -254,6 +337,9 @@ func (q *Queries) SubmitB266Period(ctx context.Context, arg SubmitB266PeriodPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
 	)
 	return i, err
 }
@@ -608,7 +694,7 @@ VALUES ($1, $2, $3, 'draft', $4)
 ON CONFLICT (tenant_id, period_start, period_end) DO UPDATE
 SET updated_at = NOW(),
     due_on     = COALESCE(b266_periods.due_on, EXCLUDED.due_on)
-RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on
+RETURNING id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement
 `
 
 type UpsertB266PeriodDraftParams struct {
@@ -642,6 +728,9 @@ func (q *Queries) UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266Perio
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
 	)
 	return i, err
 }

@@ -171,7 +171,14 @@ export function B266Page() {
         <ReportView
           report={result.report}
           period={result.period}
-          onSubmit={() => submit.mutate(create(SubmitB266RequestSchema, { periodId: result.period!.id }))}
+          onSubmit={(acknowledgement) =>
+            submit.mutate(
+              create(SubmitB266RequestSchema, {
+                periodId: result.period!.id,
+                acknowledgement,
+              }),
+            )
+          }
           submitting={submit.isPending}
           submitError={submit.error}
           submittedStatus={submitted?.period?.status ?? result.period?.status}
@@ -247,7 +254,7 @@ function ReportView({
 }: {
   report: B266Report;
   period: { id: string; periodStart?: string; periodEnd?: string; submittedAt?: { seconds: bigint } } | undefined;
-  onSubmit: () => void;
+  onSubmit: (acknowledgement: string) => void;
   submitting: boolean;
   submitError: Error | null;
   submittedStatus: B266Status | undefined;
@@ -496,36 +503,12 @@ function ReportView({
 
       {period && submittedStatus !== B266Status.SUBMITTED && (
         <OwnerOnly>
-        <div data-print-hide className="space-y-3">
-          <Callout tone="warning" title="Stillhouse does NOT file with CRA">
-            Marking submitted only freezes this snapshot inside Stillhouse for your audit
-            trail. The actual return has to be entered into{" "}
-            <a
-              href="https://www.canada.ca/en/revenue-agency/services/e-services/digital-services-businesses/business-account.html"
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-            >
-              CRA My Business Account
-            </a>
-            {" "}separately. Confirm the numbers above match what you filed before clicking
-            the button.
-          </Callout>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={onSubmit}
-              disabled={submitting}
-              className="rounded bg-success px-3 py-2 text-sm font-medium text-white hover:bg-success/80 disabled:opacity-50"
-            >
-              {submitting ? "Freezing…" : "I've filed in CRA — freeze the snapshot"}
-            </button>
-            {submitError && (
-              <span className="text-sm text-danger-fg">
-                {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
-              </span>
-            )}
-          </div>
-        </div>
+          <SubmitPanel
+            onSubmit={onSubmit}
+            submitting={submitting}
+            submitError={submitError}
+            blocked={report.filingBlockers.length > 0}
+          />
         </OwnerOnly>
       )}
       {submittedStatus === B266Status.SUBMITTED && period && (
@@ -537,11 +520,134 @@ function ReportView({
   );
 }
 
+// SubmitPanel — the step between "here are your figures" and a filed
+// return.
+//
+// Stage 104 said on the screen that Stillhouse never files. What was
+// missing was a moment where a named person says they have checked the
+// figures — recorded, dated, and kept with the wording they agreed to.
+//
+// The statements come from the server, not from this file. Whatever is
+// stored against the period years from now has to be what was actually on
+// the screen, and one source is the only way that holds.
+function SubmitPanel({
+  onSubmit,
+  submitting,
+  submitError,
+  blocked,
+}: {
+  onSubmit: (acknowledgement: string) => void;
+  submitting: boolean;
+  submitError: unknown;
+  blocked: boolean;
+}) {
+  const ack = useQuery({
+    queryKey: ["filingAcknowledgement"],
+    queryFn: () => b266Client.getFilingAcknowledgement({}),
+  });
+  const [agreed, setAgreed] = useState<Set<number>>(new Set());
+
+  const statements = ack.data?.statements ?? [];
+  const allAgreed = statements.length > 0 && agreed.size === statements.length;
+
+  return (
+    <div data-print-hide className="space-y-3">
+      <Callout tone="warning" title="Stillhouse does NOT file with CRA">
+        Marking submitted only freezes this snapshot inside Stillhouse for your audit
+        trail. The actual return has to be entered into{" "}
+        <a
+          href="https://www.canada.ca/en/revenue-agency/services/e-services/digital-services-businesses/business-account.html"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          CRA My Business Account
+        </a>
+        {" "}separately.
+      </Callout>
+
+      {/* Blockers are a reason to stop, not a lock. An operator who has
+          decided a warning does not apply to them is entitled to file —
+          it is their return — and a tool that refuses is one they work
+          around. It says so and lets them through. */}
+      {blocked && (
+        <p className="text-xs text-warning">
+          This period still reports something outstanding above. You can still freeze
+          the snapshot, but resolve those first if they apply to you.
+        </p>
+      )}
+
+      <div className="rounded-lg border border-border bg-surface-2 p-4">
+        <h3 className="mb-3 text-sm font-semibold text-fg">Before you freeze this</h3>
+        {/* One line per claim, each separately ticked. A paragraph of
+            legal throat-clearing gets clicked past, and the point of this
+            step is that it does not. */}
+        <ul className="space-y-2">
+          {statements.map((line, i) => (
+            <li key={line} className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={agreed.has(i)}
+                onChange={() =>
+                  setAgreed((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(i)) next.delete(i);
+                    else next.add(i);
+                    return next;
+                  })
+                }
+                className="mt-1"
+              />
+              <span>{line}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-xs text-fg-subtle">
+          Your name and the date are recorded against this period, together with the
+          wording above. See{" "}
+          <a href="https://github.com/gallowaysoftware/stillhouse/blob/main/TERMS.md"
+             target="_blank" rel="noreferrer" className="underline">terms of use</a>.
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => onSubmit(ack.data!.acknowledgementText)}
+          disabled={submitting || !allAgreed}
+          className="rounded bg-success px-3 py-2 text-sm font-medium text-white hover:bg-success/80 disabled:opacity-50"
+        >
+          {submitting ? "Freezing…" : "I've filed in CRA — freeze the snapshot"}
+        </button>
+        {submitError != null && (
+          <span className="text-sm text-danger-fg">
+            {submitError instanceof ConnectError ? submitError.rawMessage : String(submitError)}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ReopenPanel — owner-only escape hatch when a filed return genuinely
 // needs to be corrected. Flips status back to draft so backdated voids
 // / inserts pass the period-lock guard. Audit-logged with the reason.
 function ReopenPanel({ periodId }: { periodId: string }) {
   const qc = useQueryClient();
+  const detail = useQuery({
+    queryKey: ["getB266Period", periodId],
+    queryFn: () => b266Client.getB266Period({ id: periodId }),
+  });
+  const p = detail.data?.period;
+  const acknowledgement =
+    p?.filingAcknowledgement
+      ? {
+          text: p.filingAcknowledgement,
+          byName: p.filingAcknowledgedByName,
+          at: p.filingAcknowledgedAt
+            ? new Date(Number(p.filingAcknowledgedAt.seconds) * 1000).toLocaleString()
+            : "",
+        }
+      : null;
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   const reopen = useMutation({
@@ -560,6 +666,19 @@ function ReopenPanel({ periodId }: { periodId: string }) {
         lives in My Business Account — if you haven't entered it there yet, this lock
         doesn't change that.
       </Callout>
+      {/* Who confirmed the figures, when, and against what wording. The
+          wording is stored rather than a flag, because this is read years
+          later when the release that displayed it is long gone. */}
+      {acknowledgement && (
+        <div className="rounded-lg border border-border bg-surface-2 p-4 text-xs text-fg-muted">
+          <div className="mb-1 font-semibold text-fg">Confirmed by</div>
+          <div>
+            {acknowledgement.byName || "an account since removed"}
+            {acknowledgement.at && ` · ${acknowledgement.at}`}
+          </div>
+          <p className="mt-2 italic">{acknowledgement.text}</p>
+        </div>
+      )}
       {!open ? (
         <button
           onClick={() => setOpen(true)}

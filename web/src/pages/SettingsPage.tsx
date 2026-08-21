@@ -261,6 +261,39 @@ export function SettingsPage() {
 
       <AlcoholometricTablesPanel />
 
+      {/* The warranty disclaimer, where somebody will actually meet it.
+          The AGPL disclaims the software; it says nothing about a hosting
+          relationship, which is the gap TERMS.md exists to close. */}
+      <section className="mt-10 rounded-lg border border-border bg-surface-2 p-5">
+        <h2 className="mb-2 text-sm font-semibold text-fg">Terms and warranty</h2>
+        <p className="text-xs text-fg-muted">
+          Stillhouse is provided <strong>as is</strong>, without warranty of any kind.
+          It never files anything with CRA — every return is filed by a person, by
+          hand, and you remain the licensee. Where it cannot compute something
+          honestly it refuses rather than guessing; a refusal is the software working.
+        </p>
+        <p className="mt-2 text-xs text-fg-muted">
+          Full text:{" "}
+          <a
+            href="https://github.com/gallowaysoftware/stillhouse/blob/main/TERMS.md"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            terms of use
+          </a>
+          {" · "}
+          <a
+            href="https://github.com/gallowaysoftware/stillhouse/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+            className="underline"
+          >
+            AGPL-3.0
+          </a>
+        </p>
+      </section>
+
       {isOwner && (
         <section className="mt-10">
           <h2 className="mb-3 text-sm font-semibold text-fg-muted">Tenant data export</h2>

@@ -40,6 +40,12 @@ message B266Period {
   string submitted_by = 6;
   string notes = 7;
   google.protobuf.Timestamp created_at = 8;
+  // Who confirmed they had checked the figures, when, and against what
+  // wording. Read years later, so the text is stored rather than a flag.
+  google.protobuf.Timestamp filing_acknowledged_at = 11;
+  string filing_acknowledged_by = 12;
+  string filing_acknowledged_by_name = 13;
+  string filing_acknowledgement = 14;
   google.protobuf.Timestamp updated_at = 9;
   // Frozen at generation, so a later change of fiscal-month election does
   // not silently restate when a past return was due.
@@ -183,8 +189,27 @@ message GenerateB266Response {
   B266Report report = 2;
 }
 
+// The statements a person confirms before a period is marked submitted.
+//
+// Served by the server rather than written into the client, so the wording
+// recorded against a period is the wording that was shown, and both come
+// from one place. The client sends back the text it displayed, and the
+// server refuses if it does not match — a confirmation to text the person
+// never saw is not a confirmation.
+message FilingAcknowledgementRequest {}
+message FilingAcknowledgementResponse {
+  // Each statement the person is confirming, shown as its own line.
+  repeated string statements = 1;
+  // The exact text recorded against the period, frozen with it.
+  string acknowledgement_text = 2;
+}
+
 message SubmitB266Request {
   string period_id = 1;
+  // The acknowledgement text as displayed. Must match what
+  // GetFilingAcknowledgement returns; a period cannot be submitted
+  // without it.
+  string acknowledgement = 2;
 }
 message SubmitB266Response {
   B266Period period = 1;
@@ -213,6 +238,8 @@ message ReopenB266PeriodRequest {
 message ReopenB266PeriodResponse { B266Period period = 1; }
 
 service B266Service {
+  // The statements shown before a period is marked submitted.
+  rpc GetFilingAcknowledgement(FilingAcknowledgementRequest) returns (FilingAcknowledgementResponse);
   // The period the licensee should be filing, on their own fiscal calendar.
   rpc SuggestB266Period(SuggestB266PeriodRequest) returns (SuggestB266PeriodResponse);
   rpc GenerateB266(GenerateB266Request) returns (GenerateB266Response);

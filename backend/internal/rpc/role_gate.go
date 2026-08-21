@@ -78,8 +78,9 @@ var procedureMinRole = map[string]minRole{
 	// it is an operator action; reading the outstanding list is not.
 	// The reporting calendar is a pair of CRA elections, so changing it is
 	// owner-only; asking which period to file is not.
-	"/stillhouse.v1.TenantService/UpdateFilingCalendar": roleOwner,
-	"/stillhouse.v1.B266Service/SuggestB266Period":      roleViewer,
+	"/stillhouse.v1.TenantService/UpdateFilingCalendar":   roleOwner,
+	"/stillhouse.v1.B266Service/SuggestB266Period":        roleViewer,
+	"/stillhouse.v1.B266Service/GetFilingAcknowledgement": roleViewer,
 
 	"/stillhouse.v1.BulkService/ListLosses":     roleViewer,
 	"/stillhouse.v1.BulkService/ClassifyLosses": roleOperator,

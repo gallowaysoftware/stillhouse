@@ -317,6 +317,9 @@ func TestBarrelWritesRefusedInSubmittedPeriod(t *testing.T) {
 	if _, err := f.q.SubmitB266Period(f.ctx, sqlcgen.SubmitB266PeriodParams{
 		ID: period.ID, Snapshot: []byte("{}"),
 		SubmittedBy: uuid.NullUUID{UUID: f.user.ID, Valid: true},
+		// A submitted period must carry its acknowledgement — the table
+		// CHECK holds that for every path, this fixture included.
+		FilingAcknowledgement: filingAcknowledgementText(),
 	}); err != nil {
 		t.Fatalf("submit period: %v", err)
 	}
