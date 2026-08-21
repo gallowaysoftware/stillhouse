@@ -62,21 +62,21 @@ func (s *RemovalService) CreateRemoval(
 		if e := assertDateNotInLockedPeriod(ctx, q, removalDate); e != nil {
 			return e
 		}
-		// Look up the packaged inventory row to derive product info + verify stock.
-		var e error
-		rows, e := q.ListPackagedInventory(ctx, true)
+		// Read the lot with the intent to change it. FOR UPDATE is what
+		// makes the stock check below mean anything: without it two
+		// removals against the same lot both read the same on-hand count,
+		// both decide there are enough bottles, and both decrement. The
+		// table CHECK caught the resulting negative and turned it into an
+		// opaque error, which is the same lost update fixed for bulk
+		// containers in stage 131 — two people on two tablets is the
+		// ordinary case at any distillery with staff.
+		//
+		// It also replaces a full ListPackagedInventory scan that pulled
+		// every lot in the tenant to find one row, and which could not be
+		// locked because of its LEFT JOIN.
+		matched, e := q.GetPackagedInventoryForUpdate(ctx, piID)
 		if e != nil {
 			return e
-		}
-		var matched *sqlcgen.ListPackagedInventoryRow
-		for i := range rows {
-			if rows[i].ID == piID {
-				matched = &rows[i]
-				break
-			}
-		}
-		if matched == nil {
-			return connect.NewError(connect.CodeNotFound, errors.New("packaged inventory not found"))
 		}
 		if matched.BottlesOnHand < in.GetBottlesRemoved() {
 			return connect.NewError(connect.CodeFailedPrecondition,
@@ -91,6 +91,13 @@ func (s *RemovalService) CreateRemoval(
 		totalLAA := totalLitres * product.TargetAbvPct / 100
 		ratePerLAA, dutyCAD := excise.Owed(removalDate.Time, totalLitres, product.TargetAbvPct)
 
+		// Serialise number allocation before reading the maximum — see
+		// LockDocumentSequence. Without it two removals started at the
+		// same moment claim the same removal_no and one dies on the
+		// UNIQUE constraint with the shipment unrecorded.
+		if e := q.LockDocumentSequence(ctx, "packaging_removals"); e != nil {
+			return e
+		}
 		nextNo, e := q.NextRemovalNo(ctx)
 		if e != nil {
 			return e
@@ -119,6 +126,13 @@ func (s *RemovalService) CreateRemoval(
 			ID:            piID,
 			BottlesOnHand: in.GetBottlesRemoved(),
 		})
+		if errors.Is(e, pgx.ErrNoRows) {
+			// Unreachable while the lock above is held — kept so that a
+			// future caller that forgets the lock fails with a sentence an
+			// operator can act on rather than a 500.
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("those bottles are no longer on hand — someone else removed them; reload and try again"))
+		}
 		if e != nil {
 			return e
 		}

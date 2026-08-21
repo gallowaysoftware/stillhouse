@@ -50,6 +50,9 @@ func (s *MashService) CreateMashRun(
 		if _, e := q.GetRecipeVersion(ctx, rvID); e != nil {
 			return e
 		}
+		if e := q.LockDocumentSequence(ctx, "mash_runs"); e != nil {
+			return e
+		}
 		nextNo, e := q.NextMashNo(ctx)
 		if e != nil {
 			return e

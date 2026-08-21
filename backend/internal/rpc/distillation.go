@@ -44,6 +44,9 @@ func (s *DistillationService) CreateDistillationRun(
 
 	var r sqlcgen.DistillationRun
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := q.LockDocumentSequence(ctx, "distillation_runs"); e != nil {
+			return e
+		}
 		next, e := q.NextDistillationRunNo(ctx)
 		if e != nil {
 			return e

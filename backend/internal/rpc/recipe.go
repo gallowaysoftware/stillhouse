@@ -218,6 +218,12 @@ func (s *RecipeService) SaveRecipeVersion(
 		if e != nil {
 			return e
 		}
+		// Version numbers are UNIQUE per recipe, so the counter is keyed
+		// per recipe too — two people saving versions of two different
+		// recipes never wait on each other.
+		if e := q.LockDocumentSequence(ctx, "recipe_versions:"+recipeID.String()); e != nil {
+			return e
+		}
 		nextNo, e := q.NextRecipeVersionNo(ctx, recipeID)
 		if e != nil {
 			return e
@@ -520,6 +526,9 @@ func (s *RecipeService) DuplicateRecipe(
 		}
 		srcIngredients, e := q.ListRecipeIngredients(ctx, srcVersion.ID)
 		if e != nil {
+			return e
+		}
+		if e := q.LockDocumentSequence(ctx, "recipe_versions:"+newRecipe.ID.String()); e != nil {
 			return e
 		}
 		nextNo, e := q.NextRecipeVersionNo(ctx, newRecipe.ID)

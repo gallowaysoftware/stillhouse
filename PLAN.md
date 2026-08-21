@@ -623,19 +623,6 @@ status, scheduling.
 
 Not features. The reasons to believe the numbers above are right.
 
-### K2 · The two paths that write duty onto a return have no handler tests — P1
-
-`BottlingService.CreateBottlingRun` and `RemovalService.CreateRemoval` are never
-invoked by any test. Between them they compute the LAA that lands in packaged
-inventory and the duty that lands on the return. The existing DB-backed tests
-seed through raw sqlc and assert on query results — they cover the SQL, not the
-handlers.
-
-Related: removals read stock with no row lock and then decrement, which is the
-same shape as the lost update fixed for barrels in stage 131. A `CHECK` keeps
-the data sane; the operator gets an opaque error rather than "someone else took
-those bottles".
-
 ### K3 · `_pct` means two different scales — P2
 
 `abv_pct` is 0–100. `extract_pct`, `moisture_pct` and the three recipe
@@ -677,10 +664,9 @@ Correctness first, in this order, because each depends on the one before:
 7. `C2` audit binder — the artifact that makes the case for everything above
 
 `A10` belongs with `A3`/`A4`: all three are the difference between a return that
-ties out and one that is also true. `K2` is worth doing before, not after, the
-track-A work it would be testing — `K1` split the projection out ahead of the
-same work, and every line track A adds to the return now lands somewhere a test
-can reach.
+ties out and one that is also true. `K1` and `K2` are done: the projection is
+split out and pure, and both handlers that write duty onto a return are covered,
+so every line track A adds now lands somewhere a test can reach.
 
 Then breadth. `D1` (customers) and `F1` (locations) unblock the most downstream
 work and are worth doing early even though neither is urgent on its own.

@@ -108,7 +108,7 @@ const decrementPackagedOnHand = `-- name: DecrementPackagedOnHand :one
 UPDATE packaged_inventory
 SET bottles_on_hand = bottles_on_hand - $2,
     bottles_removed = bottles_removed + $2
-WHERE id = $1
+WHERE id = $1 AND bottles_on_hand >= $2
 RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at
 `
 
@@ -117,8 +117,42 @@ type DecrementPackagedOnHandParams struct {
 	BottlesOnHand int32     `json:"bottles_on_hand"`
 }
 
+// The `bottles_on_hand >= $2` guard is belt to the lock's braces: if a
+// caller ever reaches here without having taken the row lock, this
+// returns no rows rather than tripping the table CHECK, and the caller
+// turns that into "someone else took those bottles" instead of a 500.
 func (q *Queries) DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error) {
 	row := q.db.QueryRow(ctx, decrementPackagedOnHand, arg.ID, arg.BottlesOnHand)
+	var i PackagedInventory
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ProductID,
+		&i.LotCode,
+		&i.Jurisdiction,
+		&i.BottlingRunID,
+		&i.BottlesOnHand,
+		&i.BottlesPackaged,
+		&i.BottlesRemoved,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getPackagedInventoryForUpdate = `-- name: GetPackagedInventoryForUpdate :one
+SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at FROM packaged_inventory WHERE id = $1 FOR UPDATE
+`
+
+// Read a lot's bottle count with the intent to change it. Without the
+// lock, two removals against the same lot both read the same on-hand
+// count, both pass the "enough bottles?" check in Go, and both decrement
+// — the same lost-update shape fixed for bulk containers in stage 131.
+// The CHECK (bottles_on_hand >= 0) stops the data going negative, so the
+// loser got an opaque error instead of a wrong number; the lock is what
+// makes the check in front of it mean something.
+func (q *Queries) GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUID) (PackagedInventory, error) {
+	row := q.db.QueryRow(ctx, getPackagedInventoryForUpdate, id)
 	var i PackagedInventory
 	err := row.Scan(
 		&i.ID,

@@ -11,11 +11,25 @@ INSERT INTO packaging_removals (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
 ) RETURNING *;
 
+-- name: GetPackagedInventoryForUpdate :one
+-- Read a lot's bottle count with the intent to change it. Without the
+-- lock, two removals against the same lot both read the same on-hand
+-- count, both pass the "enough bottles?" check in Go, and both decrement
+-- — the same lost-update shape fixed for bulk containers in stage 131.
+-- The CHECK (bottles_on_hand >= 0) stops the data going negative, so the
+-- loser got an opaque error instead of a wrong number; the lock is what
+-- makes the check in front of it mean something.
+SELECT * FROM packaged_inventory WHERE id = $1 FOR UPDATE;
+
 -- name: DecrementPackagedOnHand :one
+-- The `bottles_on_hand >= $2` guard is belt to the lock's braces: if a
+-- caller ever reaches here without having taken the row lock, this
+-- returns no rows rather than tripping the table CHECK, and the caller
+-- turns that into "someone else took those bottles" instead of a 500.
 UPDATE packaged_inventory
 SET bottles_on_hand = bottles_on_hand - $2,
     bottles_removed = bottles_removed + $2
-WHERE id = $1
+WHERE id = $1 AND bottles_on_hand >= $2
 RETURNING *;
 
 -- name: ListRemovals :many

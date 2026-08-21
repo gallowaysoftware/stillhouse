@@ -199,6 +199,9 @@ func (s *BottlingService) CreateBottlingRun(
 		}
 
 		// 6. Insert bottling_run.
+		if e := q.LockDocumentSequence(ctx, "bottling_runs"); e != nil {
+			return e
+		}
 		nextNo, e := q.NextBottlingRunNo(ctx)
 		if e != nil {
 			return e

@@ -86,6 +86,10 @@ type Querier interface {
 	// zeroes out — keeping the row preserves the (product, lot_code, jurisdiction)
 	// key for audit traceability.
 	DecrementPackagedInventoryByRun(ctx context.Context, arg DecrementPackagedInventoryByRunParams) (PackagedInventory, error)
+	// The `bottles_on_hand >= $2` guard is belt to the lock's braces: if a
+	// caller ever reaches here without having taken the row lock, this
+	// returns no rows rather than tripping the table CHECK, and the caller
+	// turns that into "someone else took those bottles" instead of a 500.
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
@@ -133,6 +137,14 @@ type Querier interface {
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error)
+	// Read a lot's bottle count with the intent to change it. Without the
+	// lock, two removals against the same lot both read the same on-hand
+	// count, both pass the "enough bottles?" check in Go, and both decrement
+	// — the same lost-update shape fixed for bulk containers in stage 131.
+	// The CHECK (bottles_on_hand >= 0) stops the data going negative, so the
+	// loser got an opaque error instead of a wrong number; the lock is what
+	// makes the check in front of it mean something.
+	GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUID) (PackagedInventory, error)
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
 	GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error)
@@ -202,6 +214,31 @@ type Querier interface {
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
 	ListStampOrdersWithAvailable(ctx context.Context, jurisdiction string) ([]ListStampOrdersWithAvailableRow, error)
 	ListUsersForTenant(ctx context.Context, tenantID uuid.UUID) ([]User, error)
+	// Document-number allocation.
+	//
+	// Every `next_*_no` query below is `SELECT MAX(n) + 1` against a column
+	// carrying a UNIQUE constraint. That is a read-modify-write, and with two
+	// operators working at once both transactions read the same maximum, both
+	// claim the same number, and the second dies on the constraint — a 500
+	// for the operator and an unrecorded run or shipment. Six concurrent
+	// removals against six different lots lost four of them.
+	//
+	// LockDocumentSequence serialises the allocation. The lock is advisory and
+	// transaction-scoped: taken inside the same tx that does the INSERT, it is
+	// released at commit or rollback with nothing to clean up, and it blocks
+	// only other allocators of the same counter in the same tenant. Callers
+	// must take it BEFORE reading the next number, in the same transaction.
+	//
+	// Keyed on tenant + counter name so two tenants, and two different
+	// counters within a tenant, never wait on each other.
+	//
+	// Lock ordering: a transaction that takes both row locks and a sequence
+	// lock must take the ROW locks first — see GetBulkContainerForUpdate and
+	// GetPackagedInventoryForUpdate. Every caller does today (bottling and
+	// removal lock their container or lot, then allocate; distillation, mash
+	// and recipe versions take no row lock at all). Reversing that in one
+	// caller and not another is how two of these deadlock.
+	LockDocumentSequence(ctx context.Context, counter string) error
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
