@@ -61,6 +61,11 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 **v1 milestone:** *file one real B266 from Stillhouse for a production
 month.* Achieved at Stage 7.
 
+**What's next:** [`PLAN.md`](PLAN.md) is the open backlog — the excise
+correctness work, the returns beyond B266, and the operational surface
+still missing against the commercial alternatives. This table records what
+shipped; that file records what hasn't.
+
 ## Architecture
 
 - **Backend** — Go ([backend/](backend/)). Single binary that serves a
