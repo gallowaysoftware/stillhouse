@@ -353,10 +353,24 @@ one.
 
 ### J2 · Anonymised cross-tenant benchmarks — P2
 
-Yield per tonne, angel's share by warehouse position and shelf height, cut
-ratios, conversion efficiency. A network effect no single-distillery incumbent
-can build. The CIBD-grounded science layer is what makes the numbers comparable
-rather than noise. Needs an explicit opt-in and a k-anonymity floor.
+The privacy machinery and the first two metrics shipped in stage 202:
+opt-in, reciprocity, a k-floor counted in licensees, dominance
+suppression, and quartiles rather than extremes. Angel's share and the
+hearts cut are live.
+
+The remaining metrics the item named are each a query against the same
+`Summarise`, and are cheap now the rules exist:
+
+- **Yield per tonne** — mash grain weight against the LAA the gauge
+  produced. Wants the WIP walk from stage 193 to attribute a gauge to its
+  mashes, which now exists.
+- **Conversion efficiency** — `internal/mashing` computes it per mash
+  already; it needs exposing through the keyhole.
+- **Angel's share by shelf height** — the data is on
+  `barrel_attributes` (`level_position`), but splitting a cohort by
+  position multiplies the number of cohorts and each needs its own k
+  floor. Worth doing only once there are enough participants that the
+  splits survive it.
 
 ### J3 · Cask ownership programmes — P2
 

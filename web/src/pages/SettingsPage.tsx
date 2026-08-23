@@ -5,6 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { AlcoholometricTablesPanel } from "@/components/AlcoholometricTablesPanel";
+import { BenchmarksPanel } from "@/components/BenchmarksPanel";
 import { WebhooksPanel } from "@/components/WebhooksPanel";
 import { BuildPanel } from "@/components/BuildPanel";
 import { MFAPanel } from "@/components/MFAPanel";
@@ -282,6 +283,7 @@ export function SettingsPage() {
       <APITokensPanel />
 
       <AlcoholometricTablesPanel />
+      <BenchmarksPanel />
       <WebhooksPanel />
 
       <BuildPanel />

@@ -85,6 +85,10 @@ type Querier interface {
 	// For a barrel_dump-tagged bulk_movement, return the barrel + its fill
 	// history (so we can include the original distillation behind the fill).
 	BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID) ([]BarrelDumpsForContainerFillRow, error)
+	// Through the keyhole; see 000067. Opted-in tenants only, enforced in the
+	// function rather than here.
+	BenchmarkAngelsShare(ctx context.Context) ([]BenchmarkAngelsShareRow, error)
+	BenchmarkCutRatio(ctx context.Context) ([]BenchmarkCutRatioRow, error)
 	// Bottles spoken for on shipments that are still being picked. Picking
 	// does not decrement the lot — stock leaves once, at the shipment — so
 	// this is what stands between two pickers promising the same bottles.
@@ -365,6 +369,7 @@ type Querier interface {
 	GetB266PeriodWithAcknowledger(ctx context.Context, id uuid.UUID) (GetB266PeriodWithAcknowledgerRow, error)
 	GetBarrelAttributes(ctx context.Context, containerID uuid.UUID) (BarrelAttribute, error)
 	GetBarrelEvent(ctx context.Context, id uuid.UUID) (BarrelEvent, error)
+	GetBenchmarkOptIn(ctx context.Context, id uuid.UUID) (GetBenchmarkOptInRow, error)
 	GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error)
 	GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error)
 	// Read a container's balance with the intent to change it. FOR UPDATE is
@@ -770,6 +775,9 @@ type Querier interface {
 	// Voided removals are excluded: the stock did not leave, so it was not
 	// demand.
 	MonthlyRemovalsByProduct(ctx context.Context, since pgtype.Date) ([]MonthlyRemovalsByProductRow, error)
+	// The caller's own figure, computed the same way, so "you against the
+	// cohort" is a comparison rather than two different measurements.
+	MyAngelsShare(ctx context.Context) (MyAngelsShareRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)
@@ -997,6 +1005,9 @@ type Querier interface {
 	ScheduledWorkByEquipment(ctx context.Context, arg ScheduledWorkByEquipmentParams) ([]ScheduledWorkByEquipmentRow, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
+	// Opting in stamps who and when; opting out clears them, so the record
+	// never says somebody consented when they have since withdrawn.
+	SetBenchmarkOptIn(ctx context.Context, arg SetBenchmarkOptInParams) (SetBenchmarkOptInRow, error)
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
 	SetBulkContainerLocation(ctx context.Context, arg SetBulkContainerLocationParams) (BulkContainer, error)
 	SetBulkContainerOwner(ctx context.Context, arg SetBulkContainerOwnerParams) (BulkContainer, error)

@@ -1,5 +1,6 @@
 import { createClient } from "@connectrpc/connect";
 
+import { BenchmarkService } from "@/gen/stillhouse/v1/benchmark_pb";
 import { KegService } from "@/gen/stillhouse/v1/keg_pb";
 import { POSService } from "@/gen/stillhouse/v1/pos_pb";
 import { WebhookService } from "@/gen/stillhouse/v1/webhook_pb";
@@ -93,3 +94,4 @@ export const alcoholometryClient = createClient(AlcoholometryService, transport)
 export const webhookClient = createClient(WebhookService, transport);
 export const kegClient = createClient(KegService, transport);
 export const posClient = createClient(POSService, transport);
+export const benchmarkClient = createClient(BenchmarkService, transport);

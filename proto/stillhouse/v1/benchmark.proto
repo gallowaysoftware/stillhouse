@@ -1,0 +1,73 @@
+// Anonymised cross-tenant benchmarks. PLAN J2.
+//
+// Every other read in Stillhouse is bounded by row-level security: a
+// licensee sees its own rows and nothing else. This one deliberately
+// reaches across that line, which makes it the single place where getting
+// the privacy wrong publishes one distillery's operations to its
+// competitors.
+//
+// Four rules, and the service refuses rather than bends any of them:
+//
+//   Opt-in, off by default and never inferred.
+//   Reciprocity — only a participant may read. A reader who contributes
+//     nothing is a data tap, not a network.
+//   A k-anonymity floor counted in distinct LICENSEES, not measurements:
+//     one distillery with four hundred casks is still one distillery.
+//   Dominance suppression — if one participant supplies most of the
+//     sample, the cohort figure is theirs with a label on it.
+//
+// And what comes back is quartiles. Never a maximum: a maximum IS one
+// participant's exact number.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+message BenchmarkCohort {
+  bool   available = 1;
+  // Why there is no figure. An operator is entitled to know the answer is
+  // being withheld rather than that there isn't one.
+  string missing = 2;
+  double p25 = 3;
+  double median = 4;
+  double p75 = 5;
+  // Safe to report: never present unless it is at or above the floor.
+  int32  tenants = 6;
+  int32  observations = 7;
+}
+
+message BenchmarkMetric {
+  string key = 1;
+  string name = 2;
+  string unit = 3;
+  // What the number means and how it is computed, so a distillery
+  // comparing itself knows what it is being compared on.
+  string basis = 4;
+  BenchmarkCohort cohort = 5;
+  // The caller's own figure, computed identically. Absent when they have
+  // nothing to measure.
+  double you = 6;
+  bool   you_set = 7;
+  int32  your_observations = 8;
+}
+
+message BenchmarksRequest {}
+message BenchmarksResponse {
+  repeated BenchmarkMetric metrics = 1;
+  bool   opted_in = 2;
+  string opted_in_at = 3;
+  // Set when the caller has not opted in. Nothing else is populated.
+  string refused = 4;
+  // On the response rather than in the documentation.
+  string privacy_note = 5;
+}
+
+message SetBenchmarkOptInRequest { bool opt_in = 1; }
+message SetBenchmarkOptInResponse {
+  bool   opted_in = 1;
+  string opted_in_at = 2;
+}
+
+service BenchmarkService {
+  rpc Benchmarks(BenchmarksRequest) returns (BenchmarksResponse);
+  rpc SetBenchmarkOptIn(SetBenchmarkOptInRequest) returns (SetBenchmarkOptInResponse);
+}

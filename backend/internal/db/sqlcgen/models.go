@@ -3875,6 +3875,10 @@ type Tenant struct {
 	// How demand is projected. NULL means the licensee has not chosen one and forecasts are refused rather than guessed.
 	ForecastMethod         NullForecastMethod `json:"forecast_method"`
 	ForecastTrailingMonths int32              `json:"forecast_trailing_months"`
+	// Whether this licensee has agreed to contribute anonymised operational figures to the cross-tenant benchmarks, and thereby to read them. Off by default and never inferred.
+	BenchmarkOptIn   bool               `json:"benchmark_opt_in"`
+	BenchmarkOptInAt pgtype.Timestamptz `json:"benchmark_opt_in_at"`
+	BenchmarkOptInBy uuid.NullUUID      `json:"benchmark_opt_in_by"`
 }
 
 type User struct {

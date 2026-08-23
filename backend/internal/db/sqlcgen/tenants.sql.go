@@ -28,7 +28,7 @@ INSERT INTO tenants (
     name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction
 ) VALUES (
     $1, $2, $3, $4
-) RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months
+) RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months, benchmark_opt_in, benchmark_opt_in_at, benchmark_opt_in_by
 `
 
 type CreateTenantParams struct {
@@ -65,6 +65,9 @@ func (q *Queries) CreateTenant(ctx context.Context, arg CreateTenantParams) (Ten
 		&i.WipChargeBasis,
 		&i.ForecastMethod,
 		&i.ForecastTrailingMonths,
+		&i.BenchmarkOptIn,
+		&i.BenchmarkOptInAt,
+		&i.BenchmarkOptInBy,
 	)
 	return i, err
 }
@@ -83,7 +86,7 @@ func (q *Queries) DeleteTenant(ctx context.Context, id uuid.UUID) error {
 }
 
 const getTenantByID = `-- name: GetTenantByID :one
-SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months FROM tenants WHERE id = $1
+SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months, benchmark_opt_in, benchmark_opt_in_at, benchmark_opt_in_by FROM tenants WHERE id = $1
 `
 
 func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error) {
@@ -108,12 +111,15 @@ func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, erro
 		&i.WipChargeBasis,
 		&i.ForecastMethod,
 		&i.ForecastTrailingMonths,
+		&i.BenchmarkOptIn,
+		&i.BenchmarkOptInAt,
+		&i.BenchmarkOptInBy,
 	)
 	return i, err
 }
 
 const listAllTenants = `-- name: ListAllTenants :many
-SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months FROM tenants ORDER BY created_at
+SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months, benchmark_opt_in, benchmark_opt_in_at, benchmark_opt_in_by FROM tenants ORDER BY created_at
 `
 
 // Cross-tenant on purpose, and one of very few places that is. The alert
@@ -149,6 +155,9 @@ func (q *Queries) ListAllTenants(ctx context.Context) ([]Tenant, error) {
 			&i.WipChargeBasis,
 			&i.ForecastMethod,
 			&i.ForecastTrailingMonths,
+			&i.BenchmarkOptIn,
+			&i.BenchmarkOptInAt,
+			&i.BenchmarkOptInBy,
 		); err != nil {
 			return nil, err
 		}

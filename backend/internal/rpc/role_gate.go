@@ -389,6 +389,12 @@ var procedureMinRole = map[string]minRole{
 	// The forecast is a read. The method behind it is a planning policy
 	// and the hand-entered numbers override a computed figure, so both
 	// sit with the back office.
+	// Reading the benchmarks is a read. Agreeing to contribute this
+	// distillery's operational figures to a cohort other licensees can
+	// see is not something an operator should be able to do on the
+	// owner's behalf.
+	"/stillhouse.v1.BenchmarkService/Benchmarks":              roleViewer,
+	"/stillhouse.v1.BenchmarkService/SetBenchmarkOptIn":       roleOwner,
 	"/stillhouse.v1.SchedulingService/DemandForecast":         roleViewer,
 	"/stillhouse.v1.SchedulingService/SetForecastMethod":      roleOwner,
 	"/stillhouse.v1.SchedulingService/SaveDemandForecast":     roleOwner,
