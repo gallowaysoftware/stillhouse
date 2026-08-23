@@ -208,14 +208,109 @@ reconstructed.
 
 ---
 
+## Releases
+
+A hosted install tracks a **tagged release**, never `main`. The difference
+matters the first time something goes wrong: you cannot pin what you
+cannot name, and "the image from Tuesday" is not a version.
+
+### Cutting one
+
+```sh
+make release VERSION=v0.156.0
+```
+
+That refuses a dirty tree and an existing tag, runs `make lint`, `make
+test` and `make test-integration` — the DB-backed tests are where LAA
+conservation, the B266 walk, duty at packaging and the migration round
+trip live, so a release that skipped them is not a release — then tags
+the commit and builds an image stamped with the version.
+
+It prints the push commands rather than running them. Publishing is a
+separate decision:
+
+```sh
+make release-push VERSION=v0.156.0
+```
+
+which pushes the git tag and three image tags: `:v0.156.0`, the short
+SHA, and `:latest`.
+
+Version numbering follows the stage number, because that is the unit
+Stillhouse ships in: stage 156 is `v0.156.0`. The patch component is for
+a fix cut against an already-published release. Still `0.` — the schema
+and the API are not yet promised to be stable across releases.
+
+### Knowing what is running
+
+```sh
+curl -s https://stillhouse.example.com/version
+```
+
+```json
+{"version":"v0.156.0","commit":"4eeb79b","build_date":"…","release":true}
+```
+
+The same values appear under **Settings → This install**, and in the
+first line of the server log at boot. A build reporting `"version":"dev"`
+is somebody's working tree, not a release — on a hosted install, that is
+a finding, and the settings panel says so.
+
+---
+
 ## Upgrading
 
-1. **Back up first.** `deploy/backup.sh`, and check it exited 0.
-2. Pull the new image and restart the stack. Migrations run at boot.
-3. If it goes wrong: restore the backup, then pin the previous image tag.
+Deployment is not automated. Whoever runs the host does this.
 
-Migrations are forward-only in practice. Every one ships a `.down.sql` and
-they are tested both ways, but rolling a schema backwards over data
-written by the newer version is not something to attempt during an
-incident. **Restore the backup instead.** That is what it is for, and it
-is why step 1 is step 1.
+1. **Back up first.** `deploy/backup.sh`, and check it exited 0. Step 1
+   is step 1 because step 5 depends on it.
+2. **Note what is running now**, so you know what to go back to:
+   `curl -s https://your-host/version`.
+3. **Pull the new tag and restart.** Pin the version — never `:latest` on
+   an install anyone relies on, because `:latest` cannot be rolled back
+   to a known point.
+   ```sh
+   podman pull registry.example.com/stillhouse:v0.156.0
+   # point the compose file at that tag, then
+   podman compose up -d
+   ```
+   Migrations run at boot, from the same binary, against
+   `ADMIN_DATABASE_URL`.
+4. **Check it came up as expected**: `/version` reports the tag you
+   deployed, `/healthz` returns `ok`, and the boot log says
+   `row-level security enforced` with `db_role=stillhouse_app`. If it
+   says anything else about RLS, stop — the server refuses to start on a
+   superuser DSN precisely so this is loud rather than silent.
+5. **If it goes wrong: restore the backup, then pin the previous tag.**
+   In that order.
+
+### Why not roll the schema back
+
+Migrations are forward-only in practice. Every one ships a `.down.sql`
+and `TestMigrationsRoundTrip` walks the whole chain down to nothing and
+back up on every run, so the down path is known to execute — that test
+is how the `stillhouse_app` role's down migration was found to be broken
+(it dropped a cluster-wide role, which fails when any other database in
+the cluster still holds grants, and would have been worse if it had
+succeeded).
+
+But "the down migration executes" is a much smaller claim than "rolling
+backwards over data the newer version wrote is safe", and only the first
+one is true. A column dropped on the way down takes its data with it.
+**Restore the backup instead.** That is what it is for.
+
+The one case where rolling back is fine: a fresh or just-restored
+database that the new version has not yet written to.
+
+### During a reporting period
+
+A distillery mid-period has figures in flight. Prefer to upgrade:
+
+- after a B266 has been submitted for the period, not before;
+- outside a bottling or distillation run, since those write across
+  several tables in one transaction;
+- with the operators told, because a restart signs nobody out but does
+  drop in-flight requests.
+
+None of that is enforced. It is the difference between an upgrade that
+is a non-event and one that arrives in the middle of a gauge.

@@ -29,8 +29,9 @@ deploy/                Dockerfile + compose
 
 ## Build / test / lint
 
-Direct commands (the Makefile assumes `/usr/bin/env bash` resolves
-cleanly; on some distros that breaks — fall back to plain invocations):
+The Makefile works (stage 156 fixed the `SHELL` line that broke every
+recipe needing a real shell). `make help` lists the targets. The direct
+commands, for when you want one step rather than a target:
 
 ```sh
 # Codegen

@@ -383,13 +383,6 @@ Half the prerequisite is done: stage 155 made email unique per tenant, so one
 person can hold an account at each, and login already asks which one they
 mean. What is missing is switching between them without signing out.
 
-### H8 · Release discipline for hosted tenants — P1
-
-Today a breaking migration costs one evening. With tenants it costs a
-maintenance window, a rollback plan, and a message to people mid-period.
-Hosted tenants track a tagged release, not `main`. Needs the tagging
-convention, a migration rollback story, and a documented upgrade runbook.
-
 ### H9 · Billing and self-serve signup — P2
 
 Deliberately low. Invite codes and an e-transfer handle a dozen tenants. Revisit

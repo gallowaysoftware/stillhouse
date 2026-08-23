@@ -5,6 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { AlcoholometricTablesPanel } from "@/components/AlcoholometricTablesPanel";
+import { BuildPanel } from "@/components/BuildPanel";
 import { Shell } from "@/components/Shell";
 import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
 import {
@@ -260,6 +261,8 @@ export function SettingsPage() {
       <APITokensPanel />
 
       <AlcoholometricTablesPanel />
+
+      <BuildPanel />
 
       {/* The warranty disclaimer, where somebody will actually meet it.
           The AGPL disclaims the software; it says nothing about a hosting

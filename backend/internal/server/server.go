@@ -4,6 +4,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"time"
@@ -20,6 +21,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/mcp"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/version"
 )
 
 type Server struct {
@@ -141,6 +143,18 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		Alcoholometry: alcoholometrySvc,
 		Logger:        logger,
 	}))
+	// What is running. Unauthenticated on purpose: it is the first thing
+	// an operator or a monitor asks after a restart, and it discloses
+	// nothing a container digest doesn't.
+	mux.HandleFunc("/version", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"version":    version.Version,
+			"commit":     version.Commit,
+			"build_date": version.BuildDate,
+			"release":    version.IsRelease(),
+		})
+	})
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
 		if err := pool.Ping(r.Context()); err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)

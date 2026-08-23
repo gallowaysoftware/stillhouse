@@ -1,4 +1,10 @@
-SHELL := /usr/bin/env bash
+# GNU Make execs SHELL directly: it is a path to an executable, not a
+# command line. `/usr/bin/env bash` is therefore looked up as a file
+# whose name contains a space, and every recipe needing a real shell —
+# anything with a pipe, a $$(...) or a loop — dies with "No such file or
+# directory". It appeared to work only because Make skips the shell
+# entirely for simple one-word recipes. Resolve bash from PATH instead.
+SHELL := $(shell command -v bash 2>/dev/null || command -v sh)
 .ONESHELL:
 .DEFAULT_GOAL := help
 
@@ -19,6 +25,14 @@ REGISTRY        ?= registry.example.com
 IMAGE_NAME      ?= stillhouse
 IMAGE_TAG       ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
 IMAGE           := $(REGISTRY)/$(IMAGE_NAME)
+
+# What a build calls itself. VERSION defaults to the tag at HEAD, so an
+# image built from a release commit is stamped even when `make image` is
+# run by hand; anything else is honestly "dev". These reach the binary as
+# ldflags via deploy/Dockerfile and come back out of /version.
+GIT_SHA         ?= $(shell git rev-parse --short HEAD 2>/dev/null || echo unknown)
+VERSION         ?= $(shell git describe --tags --exact-match 2>/dev/null || echo dev)
+BUILD_DATE      ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 
 # Two DSNs:
 #   PG_ADMIN_DSN — superuser; runs migrations + seed. Bypasses RLS.
@@ -121,11 +135,15 @@ test: ## Run all unit tests.
 	(cd backend && go test ./...)
 	(cd web && npm test --if-present)
 
-test-integration: ## Run integration tests against the local Postgres (requires dev-up).
+test-integration: ## Run DB-backed tests against the local Postgres (requires dev-up).
+	@set -euo pipefail
+	# One DSN is enough since stage 153: the pool the code under test runs
+	# through is derived from the admin one with SET ROLE, so the tests
+	# exercise RLS the way production does without a second password to
+	# keep in step. PG_APP_DSN is still honoured if you set it.
 	cd backend && \
-	    STILLHOUSE_INTEGRATION_TEST_DSN="$(PG_APP_DSN)" \
 	    STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN="$(PG_ADMIN_DSN)" \
-	    go test -v -tags integration ./...
+	    go test -count=1 ./...
 
 lint: ## Run linters. Mirrors what CI enforces.
 	@unformatted="$$(gofmt -l backend qa)"; \
@@ -148,6 +166,9 @@ fmt: ## Format code.
 image: ## Build the production container image. Tags :latest and :$(IMAGE_TAG).
 	$(CONTAINER) build \
 	    -f deploy/Dockerfile \
+	    --build-arg STILLHOUSE_VERSION=$(VERSION) \
+	    --build-arg STILLHOUSE_COMMIT=$(GIT_SHA) \
+	    --build-arg STILLHOUSE_BUILD_DATE=$(BUILD_DATE) \
 	    -t $(IMAGE):$(IMAGE_TAG) \
 	    -t $(IMAGE):latest \
 	    .
@@ -159,11 +180,64 @@ push: ## Push the production image to $(REGISTRY). Pushes both :latest and :$(IM
 image-push: image push ## Build and push in one step.
 
 image-info: ## Print the image coordinates that would be built / pushed.
-	@echo "REGISTRY  = $(REGISTRY)"
-	@echo "IMAGE     = $(IMAGE)"
-	@echo "IMAGE_TAG = $(IMAGE_TAG)"
+	@echo "REGISTRY   = $(REGISTRY)"
+	@echo "IMAGE      = $(IMAGE)"
+	@echo "IMAGE_TAG  = $(IMAGE_TAG)"
+	@echo "VERSION    = $(VERSION)"
+	@echo "GIT_SHA    = $(GIT_SHA)"
+	@echo "BUILD_DATE = $(BUILD_DATE)"
+
+# ----- Release ----------------------------------------------------------------
+# A hosted install tracks a tagged release, never main. `make release
+# VERSION=v0.156.0` is the whole ceremony: refuse a dirty or already-tagged
+# tree, run what CI runs, tag, then build and push an image carrying that
+# version so /version on the running host answers with it.
+
+release: ## Cut a release. Usage: make release VERSION=v0.156.0
+	@set -euo pipefail
+	if [ "$(VERSION)" = "dev" ]; then
+	    echo "VERSION is required, e.g. make release VERSION=v0.156.0" >&2; exit 1
+	fi
+	case "$(VERSION)" in
+	    v[0-9]*.[0-9]*.[0-9]*) ;;
+	    *) echo "VERSION must look like v0.156.0" >&2; exit 1 ;;
+	esac
+	if [ -n "$$(git status --porcelain)" ]; then
+	    echo "working tree is dirty; commit or stash first" >&2; exit 1
+	fi
+	if git rev-parse -q --verify "refs/tags/$(VERSION)" >/dev/null; then
+	    echo "tag $(VERSION) already exists" >&2; exit 1
+	fi
+	$(MAKE) lint
+	$(MAKE) test
+	# The DB-backed tests are where the load-bearing math lives — LAA
+	# conservation, the B266 walk, duty at packaging, the migration round
+	# trip. A release that skipped them is not a release. Needs `make
+	# dev-up`; this fails rather than passing quietly on a skip.
+	$(MAKE) test-integration
+	git tag -a "$(VERSION)" -m "Stillhouse $(VERSION)"
+	$(MAKE) image IMAGE_TAG=$(VERSION)
+	$(CONTAINER) tag $(IMAGE):$(VERSION) $(IMAGE):$(GIT_SHA)
+	@echo
+	@echo "Tagged $(VERSION). To publish:"
+	@echo "  git push origin $(VERSION)"
+	@echo "  $(CONTAINER) push $(IMAGE):$(VERSION)"
+	@echo "  $(CONTAINER) push $(IMAGE):$(GIT_SHA)"
+	@echo "  $(CONTAINER) push $(IMAGE):latest"
+	@echo
+	@echo "Then tell whoever runs the host. Deployment is not automated."
+
+release-push: ## Push an already-cut release. Usage: make release-push VERSION=v0.156.0
+	@set -euo pipefail
+	if [ "$(VERSION)" = "dev" ]; then
+	    echo "VERSION is required" >&2; exit 1
+	fi
+	git push origin "$(VERSION)"
+	$(CONTAINER) push $(IMAGE):$(VERSION)
+	$(CONTAINER) push $(IMAGE):$(GIT_SHA)
+	$(CONTAINER) push $(IMAGE):latest
 
 .PHONY: help tools generate buf-generate sqlc-generate dev-up dev-down dev-logs \
 	migrate-up migrate-down migrate-new migrate-force seed mcp-token backend-dev web-dev \
 	build build-web build-backend test lint fmt \
-	image push image-push image-info
+	image push image-push image-info release release-push

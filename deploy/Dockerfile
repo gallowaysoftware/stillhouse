@@ -25,6 +25,14 @@ FROM docker.io/library/golang:1.27.0-alpine AS go-builder
 RUN apk add --no-cache git ca-certificates
 WORKDIR /src
 
+# What this build is. Passed by `make release`; an image built any other
+# way reports "dev", which is the honest answer for one. /version serves
+# these and the startup log line carries them, so "what is running on the
+# host?" has an answer that isn't a container digest.
+ARG STILLHOUSE_VERSION=dev
+ARG STILLHOUSE_COMMIT=""
+ARG STILLHOUSE_BUILD_DATE=""
+
 COPY backend/go.mod backend/go.sum ./backend/
 RUN cd backend && go mod download
 
@@ -32,13 +40,18 @@ COPY proto /src/proto
 COPY backend /src/backend
 
 # Generated Go code is committed, so no buf generate step needed here.
+ENV VERSION_PKG=github.com/gallowaysoftware/stillhouse/backend/internal/version
 RUN cd backend && \
+    LDFLAGS="-s -w \
+      -X $VERSION_PKG.Version=$STILLHOUSE_VERSION \
+      -X $VERSION_PKG.Commit=$STILLHOUSE_COMMIT \
+      -X $VERSION_PKG.BuildDate=$STILLHOUSE_BUILD_DATE" && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-server    ./cmd/server && \
+    go build -trimpath -ldflags="$LDFLAGS" -o /out/stillhouse-server    ./cmd/server && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-seed      ./cmd/seed && \
+    go build -trimpath -ldflags="$LDFLAGS" -o /out/stillhouse-seed      ./cmd/seed && \
     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -trimpath -ldflags='-s -w' -o /out/stillhouse-mcp-token ./cmd/mcp-token
+    go build -trimpath -ldflags="$LDFLAGS" -o /out/stillhouse-mcp-token ./cmd/mcp-token
 
 # ----- Stage 3: minimal runtime ----------------------------------------------
 FROM gcr.io/distroless/static-debian12:nonroot

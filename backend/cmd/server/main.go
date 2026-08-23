@@ -18,11 +18,16 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/config"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/dbmigrate"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/server"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/version"
 )
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
+
+	logger.Info("stillhouse starting",
+		"version", version.Version, "commit", version.Commit, "built", version.BuildDate,
+		"release", version.IsRelease())
 
 	cfg, err := config.Load()
 	if err != nil {
