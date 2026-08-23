@@ -27,6 +27,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/wire"
 )
 
 // Deps bundles every RPC service the MCP tools call into. Same instances
@@ -112,6 +113,11 @@ func guard(ctx context.Context, user sqlcgen.User, procedure string) (context.Co
 // true` flags paired with elided zero values were the source of QA
 // finding F8 — both go away when we emit zero values directly.
 func jsonResult(m proto.Message) *mcpsdk.CallToolResult {
+	// The MCP tools call the service implementations directly, so they
+	// never pass through the ConnectRPC interceptors — including the one
+	// that strips floating-point residue. Without this line an assistant
+	// reading the tank reads 18.000000000000004 LAA. See internal/wire.
+	wire.Message(m)
 	b, err := protojson.MarshalOptions{
 		EmitUnpopulated: true,
 		UseProtoNames:   true,
@@ -128,6 +134,7 @@ func jsonResult(m proto.Message) *mcpsdk.CallToolResult {
 // jsonResultRaw is for ad-hoc result shapes (e.g. dashboard rollup)
 // that aren't protobufs.
 func jsonResultRaw(v any) *mcpsdk.CallToolResult {
+	v = wire.Struct(v)
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
 		return errResult(err)

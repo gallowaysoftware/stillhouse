@@ -146,9 +146,16 @@ themselves — ping them with the new tag and stop. Site-specific values
 - **Don't `gofmt -w` a whole directory.** Several files under
   `internal/rpc/` aren't gofmt-clean; formatting them sweeps unrelated
   churn into a stage commit. Format the specific files you edited.
-- **Float display.** LAA / volume / duty values get full IEEE-754
-  noise on the wire (`0.8399999999999999`). Not pretty — known issue
-  (QA finding F17). Display rounding lives in `web/src/lib/format.ts`.
+- **Figures on the wire.** Every float leaving Stillhouse is stated to
+  six decimal places by `internal/wire`, applied once at the boundary:
+  a ConnectRPC interceptor for the API, and inside `jsonResult` /
+  `jsonResultRaw` for MCP, which calls the service impls directly and so
+  never sees an interceptor. Nothing stored or computed is rounded — six
+  places is below anything a distillery measures and above every
+  artefact of the arithmetic (QA finding F17, closed in stage 175). Do
+  not add per-field rounding at conversion sites; that is the habit the
+  one rule replaced. Display rounding — the coarser, domain-specific
+  kind — still lives in `web/src/lib/format.ts`.
 
 ## MCP server
 

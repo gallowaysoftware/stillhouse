@@ -298,13 +298,6 @@ mean. What is missing is switching between them without signing out.
 Deliberately low. Invite codes and an e-transfer handle a dozen tenants. Revisit
 if it stops being a dozen.
 
-### H10 · Float display on the wire — P2
-
-Known issue F17: LAA, volume and duty carry full IEEE-754 noise
-(`0.8399999999999999`) and are rounded only at display. Decide whether the wire
-format should carry decimals instead.
-
-
 ### H13 · Tailwind 4 and the browser floor — P2
 
 The only upgrade left after stage 137, and deliberately deferred. Tailwind 4

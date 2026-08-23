@@ -116,6 +116,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	interceptors := connect.WithInterceptors(
 		rpc.NewAuthInterceptor(sm, queries),
 		rpc.NewRoleGateInterceptor(),
+		// Outermost of the three on the way out, so it sees the finished
+		// response whatever produced it.
+		rpc.NewFloatRoundingInterceptor(),
 	)
 
 	mux := http.NewServeMux()
