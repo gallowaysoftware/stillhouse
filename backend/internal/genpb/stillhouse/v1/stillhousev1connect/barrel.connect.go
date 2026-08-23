@@ -57,6 +57,9 @@ const (
 	// BarrelServiceVoidBarrelEventProcedure is the fully-qualified name of the BarrelService's
 	// VoidBarrelEvent RPC.
 	BarrelServiceVoidBarrelEventProcedure = "/stillhouse.v1.BarrelService/VoidBarrelEvent"
+	// BarrelServiceCaskStatementProcedure is the fully-qualified name of the BarrelService's
+	// CaskStatement RPC.
+	BarrelServiceCaskStatementProcedure = "/stillhouse.v1.BarrelService/CaskStatement"
 )
 
 // BarrelServiceClient is a client for the stillhouse.v1.BarrelService service.
@@ -68,6 +71,8 @@ type BarrelServiceClient interface {
 	DumpBarrel(context.Context, *connect.Request[v1.DumpBarrelRequest]) (*connect.Response[v1.DumpBarrelResponse], error)
 	RegaugeBarrel(context.Context, *connect.Request[v1.RegaugeBarrelRequest]) (*connect.Response[v1.RegaugeBarrelResponse], error)
 	VoidBarrelEvent(context.Context, *connect.Request[v1.VoidBarrelEventRequest]) (*connect.Response[v1.VoidBarrelEventResponse], error)
+	// A statement of what a cask holds, for the person who owns it.
+	CaskStatement(context.Context, *connect.Request[v1.CaskStatementRequest]) (*connect.Response[v1.CaskStatementResponse], error)
 }
 
 // NewBarrelServiceClient constructs a client for the stillhouse.v1.BarrelService service. By
@@ -123,6 +128,12 @@ func NewBarrelServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(barrelServiceMethods.ByName("VoidBarrelEvent")),
 			connect.WithClientOptions(opts...),
 		),
+		caskStatement: connect.NewClient[v1.CaskStatementRequest, v1.CaskStatementResponse](
+			httpClient,
+			baseURL+BarrelServiceCaskStatementProcedure,
+			connect.WithSchema(barrelServiceMethods.ByName("CaskStatement")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -135,6 +146,7 @@ type barrelServiceClient struct {
 	dumpBarrel      *connect.Client[v1.DumpBarrelRequest, v1.DumpBarrelResponse]
 	regaugeBarrel   *connect.Client[v1.RegaugeBarrelRequest, v1.RegaugeBarrelResponse]
 	voidBarrelEvent *connect.Client[v1.VoidBarrelEventRequest, v1.VoidBarrelEventResponse]
+	caskStatement   *connect.Client[v1.CaskStatementRequest, v1.CaskStatementResponse]
 }
 
 // CreateBarrel calls stillhouse.v1.BarrelService.CreateBarrel.
@@ -172,6 +184,11 @@ func (c *barrelServiceClient) VoidBarrelEvent(ctx context.Context, req *connect.
 	return c.voidBarrelEvent.CallUnary(ctx, req)
 }
 
+// CaskStatement calls stillhouse.v1.BarrelService.CaskStatement.
+func (c *barrelServiceClient) CaskStatement(ctx context.Context, req *connect.Request[v1.CaskStatementRequest]) (*connect.Response[v1.CaskStatementResponse], error) {
+	return c.caskStatement.CallUnary(ctx, req)
+}
+
 // BarrelServiceHandler is an implementation of the stillhouse.v1.BarrelService service.
 type BarrelServiceHandler interface {
 	CreateBarrel(context.Context, *connect.Request[v1.CreateBarrelRequest]) (*connect.Response[v1.CreateBarrelResponse], error)
@@ -181,6 +198,8 @@ type BarrelServiceHandler interface {
 	DumpBarrel(context.Context, *connect.Request[v1.DumpBarrelRequest]) (*connect.Response[v1.DumpBarrelResponse], error)
 	RegaugeBarrel(context.Context, *connect.Request[v1.RegaugeBarrelRequest]) (*connect.Response[v1.RegaugeBarrelResponse], error)
 	VoidBarrelEvent(context.Context, *connect.Request[v1.VoidBarrelEventRequest]) (*connect.Response[v1.VoidBarrelEventResponse], error)
+	// A statement of what a cask holds, for the person who owns it.
+	CaskStatement(context.Context, *connect.Request[v1.CaskStatementRequest]) (*connect.Response[v1.CaskStatementResponse], error)
 }
 
 // NewBarrelServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -232,6 +251,12 @@ func NewBarrelServiceHandler(svc BarrelServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(barrelServiceMethods.ByName("VoidBarrelEvent")),
 		connect.WithHandlerOptions(opts...),
 	)
+	barrelServiceCaskStatementHandler := connect.NewUnaryHandler(
+		BarrelServiceCaskStatementProcedure,
+		svc.CaskStatement,
+		connect.WithSchema(barrelServiceMethods.ByName("CaskStatement")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.BarrelService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BarrelServiceCreateBarrelProcedure:
@@ -248,6 +273,8 @@ func NewBarrelServiceHandler(svc BarrelServiceHandler, opts ...connect.HandlerOp
 			barrelServiceRegaugeBarrelHandler.ServeHTTP(w, r)
 		case BarrelServiceVoidBarrelEventProcedure:
 			barrelServiceVoidBarrelEventHandler.ServeHTTP(w, r)
+		case BarrelServiceCaskStatementProcedure:
+			barrelServiceCaskStatementHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -283,4 +310,8 @@ func (UnimplementedBarrelServiceHandler) RegaugeBarrel(context.Context, *connect
 
 func (UnimplementedBarrelServiceHandler) VoidBarrelEvent(context.Context, *connect.Request[v1.VoidBarrelEventRequest]) (*connect.Response[v1.VoidBarrelEventResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BarrelService.VoidBarrelEvent is not implemented"))
+}
+
+func (UnimplementedBarrelServiceHandler) CaskStatement(context.Context, *connect.Request[v1.CaskStatementRequest]) (*connect.Response[v1.CaskStatementResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BarrelService.CaskStatement is not implemented"))
 }

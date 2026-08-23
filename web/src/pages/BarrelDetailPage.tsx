@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { CaskStatementPanel } from "@/components/CaskStatementPanel";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
@@ -135,6 +136,11 @@ export function BarrelDetailPage() {
                 .join(" · ")}
             </p>
           )}
+          {/* On the cask page rather than a customers page: the person
+              asked for a statement is looking at the cask. */}
+          <div className="mt-3">
+            <CaskStatementPanel containerId={b.id} />
+          </div>
         </div>
         <div className="text-right">
           {b.fillDate ? (

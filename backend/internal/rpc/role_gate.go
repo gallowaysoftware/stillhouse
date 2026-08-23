@@ -371,6 +371,9 @@ var procedureMinRole = map[string]minRole{
 	// distillery's production and duty data to a third party, and its
 	// secret signs deliveries as us. Registering one is an owner's
 	// decision; reading the delivery log is not.
+	// A cask statement is a document about a customer's own property,
+	// assembled from records a viewer can already read one by one.
+	"/stillhouse.v1.BarrelService/CaskStatement":              roleViewer,
 	"/stillhouse.v1.WebhookService/ListWebhookEndpoints":      roleViewer,
 	"/stillhouse.v1.WebhookService/ListWebhookDeliveries":     roleViewer,
 	"/stillhouse.v1.WebhookService/CreateWebhookEndpoint":     roleOwner,

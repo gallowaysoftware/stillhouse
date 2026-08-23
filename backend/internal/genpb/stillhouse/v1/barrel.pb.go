@@ -2056,6 +2056,435 @@ func (*VoidBarrelEventResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{17}
 }
 
+// A statement of what a cask holds, for the person who owns it.
+//
+// PLAN J3. Cask-ownership programmes are the case this exists for: the
+// cask is in our possession and is somebody else's property, and they are
+// entitled to know what has happened to it.
+//
+// What this deliberately is NOT: a certificate of age or origin. Those
+// are signed by a Canadian official (EDM3-1-1 ¶43–46) and stage 189 is
+// careful to assemble evidence rather than issue one. This is the same
+// discipline — a statement of our own records, said to be that.
+type CaskStatementGauge struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Date          string                 `protobuf:"bytes,1,opt,name=date,proto3" json:"date,omitempty"`
+	VolumeL       float64                `protobuf:"fixed64,2,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"`
+	AbvPct        float64                `protobuf:"fixed64,3,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`
+	Laa           float64                `protobuf:"fixed64,4,opt,name=laa,proto3" json:"laa,omitempty"`
+	Kind          string                 `protobuf:"bytes,5,opt,name=kind,proto3" json:"kind,omitempty"` // fill | regauge | dump
+	GaugedBy      string                 `protobuf:"bytes,6,opt,name=gauged_by,json=gaugedBy,proto3" json:"gauged_by,omitempty"`
+	Notes         string                 `protobuf:"bytes,7,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CaskStatementGauge) Reset() {
+	*x = CaskStatementGauge{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CaskStatementGauge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CaskStatementGauge) ProtoMessage() {}
+
+func (x *CaskStatementGauge) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CaskStatementGauge.ProtoReflect.Descriptor instead.
+func (*CaskStatementGauge) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *CaskStatementGauge) GetDate() string {
+	if x != nil {
+		return x.Date
+	}
+	return ""
+}
+
+func (x *CaskStatementGauge) GetVolumeL() float64 {
+	if x != nil {
+		return x.VolumeL
+	}
+	return 0
+}
+
+func (x *CaskStatementGauge) GetAbvPct() float64 {
+	if x != nil {
+		return x.AbvPct
+	}
+	return 0
+}
+
+func (x *CaskStatementGauge) GetLaa() float64 {
+	if x != nil {
+		return x.Laa
+	}
+	return 0
+}
+
+func (x *CaskStatementGauge) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *CaskStatementGauge) GetGaugedBy() string {
+	if x != nil {
+		return x.GaugedBy
+	}
+	return ""
+}
+
+func (x *CaskStatementGauge) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+type CaskStatementRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ContainerId   string                 `protobuf:"bytes,1,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CaskStatementRequest) Reset() {
+	*x = CaskStatementRequest{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CaskStatementRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CaskStatementRequest) ProtoMessage() {}
+
+func (x *CaskStatementRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CaskStatementRequest.ProtoReflect.Descriptor instead.
+func (*CaskStatementRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *CaskStatementRequest) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+type CaskStatementResponse struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ContainerId string                 `protobuf:"bytes,1,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	CaskName    string                 `protobuf:"bytes,2,opt,name=cask_name,json=caskName,proto3" json:"cask_name,omitempty"`
+	// Whose cask it is. Empty owner means the distillery's own, which is a
+	// legitimate thing to print a statement for but is stated rather than
+	// implied.
+	OwnerCustomerId string `protobuf:"bytes,3,opt,name=owner_customer_id,json=ownerCustomerId,proto3" json:"owner_customer_id,omitempty"`
+	OwnerName       string `protobuf:"bytes,4,opt,name=owner_name,json=ownerName,proto3" json:"owner_name,omitempty"`
+	Possession      string `protobuf:"bytes,5,opt,name=possession,proto3" json:"possession,omitempty"`
+	// The wood.
+	CooperageSupplier string `protobuf:"bytes,6,opt,name=cooperage_supplier,json=cooperageSupplier,proto3" json:"cooperage_supplier,omitempty"`
+	WoodSpecies       string `protobuf:"bytes,7,opt,name=wood_species,json=woodSpecies,proto3" json:"wood_species,omitempty"`
+	PriorUse          string `protobuf:"bytes,8,opt,name=prior_use,json=priorUse,proto3" json:"prior_use,omitempty"`
+	CharLevel         int32  `protobuf:"varint,9,opt,name=char_level,json=charLevel,proto3" json:"char_level,omitempty"`
+	Rickhouse         string `protobuf:"bytes,10,opt,name=rickhouse,proto3" json:"rickhouse,omitempty"`
+	// Filled, and now.
+	FillDate       string  `protobuf:"bytes,11,opt,name=fill_date,json=fillDate,proto3" json:"fill_date,omitempty"`
+	FilledVolumeL  float64 `protobuf:"fixed64,12,opt,name=filled_volume_l,json=filledVolumeL,proto3" json:"filled_volume_l,omitempty"`
+	FilledAbvPct   float64 `protobuf:"fixed64,13,opt,name=filled_abv_pct,json=filledAbvPct,proto3" json:"filled_abv_pct,omitempty"`
+	FilledLaa      float64 `protobuf:"fixed64,14,opt,name=filled_laa,json=filledLaa,proto3" json:"filled_laa,omitempty"`
+	CurrentVolumeL float64 `protobuf:"fixed64,15,opt,name=current_volume_l,json=currentVolumeL,proto3" json:"current_volume_l,omitempty"`
+	CurrentAbvPct  float64 `protobuf:"fixed64,16,opt,name=current_abv_pct,json=currentAbvPct,proto3" json:"current_abv_pct,omitempty"`
+	CurrentLaa     float64 `protobuf:"fixed64,17,opt,name=current_laa,json=currentLaa,proto3" json:"current_laa,omitempty"`
+	DaysInWood     int32   `protobuf:"varint,18,opt,name=days_in_wood,json=daysInWood,proto3" json:"days_in_wood,omitempty"`
+	// The angel's share since fill: LAA lost, and the same as a percentage
+	// of what went in per year. Only present when the fill gauge recorded a
+	// strength — computing a loss against a fill figure nobody wrote down
+	// would be inventing the number this whole statement exists to report.
+	AngelsShareKnown      bool    `protobuf:"varint,19,opt,name=angels_share_known,json=angelsShareKnown,proto3" json:"angels_share_known,omitempty"`
+	AngelsShareLaa        float64 `protobuf:"fixed64,20,opt,name=angels_share_laa,json=angelsShareLaa,proto3" json:"angels_share_laa,omitempty"`
+	AngelsSharePctPerYear float64 `protobuf:"fixed64,21,opt,name=angels_share_pct_per_year,json=angelsSharePctPerYear,proto3" json:"angels_share_pct_per_year,omitempty"`
+	AngelsShareMissing    string  `protobuf:"bytes,22,opt,name=angels_share_missing,json=angelsShareMissing,proto3" json:"angels_share_missing,omitempty"`
+	// Every gauge on this cask, newest first.
+	Gauges []*CaskStatementGauge `protobuf:"bytes,23,rep,name=gauges,proto3" json:"gauges,omitempty"`
+	// What duty would fall due if the cask were bottled today, at today's
+	// rate. Present only when a rate can be cited for today — the rate
+	// table refuses outside what it can source, and a duty figure on a
+	// statement a customer keeps is not a place to guess.
+	DutyKnown             bool    `protobuf:"varint,24,opt,name=duty_known,json=dutyKnown,proto3" json:"duty_known,omitempty"`
+	DutyRatePerLaa        float64 `protobuf:"fixed64,25,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"`
+	DutyIfBottledTodayCad float64 `protobuf:"fixed64,26,opt,name=duty_if_bottled_today_cad,json=dutyIfBottledTodayCad,proto3" json:"duty_if_bottled_today_cad,omitempty"`
+	DutyMissing           string  `protobuf:"bytes,27,opt,name=duty_missing,json=dutyMissing,proto3" json:"duty_missing,omitempty"`
+	// Said on the document, not in the documentation.
+	Basis         string `protobuf:"bytes,28,opt,name=basis,proto3" json:"basis,omitempty"`
+	GeneratedAt   string `protobuf:"bytes,29,opt,name=generated_at,json=generatedAt,proto3" json:"generated_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CaskStatementResponse) Reset() {
+	*x = CaskStatementResponse{}
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CaskStatementResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CaskStatementResponse) ProtoMessage() {}
+
+func (x *CaskStatementResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_barrel_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CaskStatementResponse.ProtoReflect.Descriptor instead.
+func (*CaskStatementResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_barrel_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *CaskStatementResponse) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetCaskName() string {
+	if x != nil {
+		return x.CaskName
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetOwnerCustomerId() string {
+	if x != nil {
+		return x.OwnerCustomerId
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetOwnerName() string {
+	if x != nil {
+		return x.OwnerName
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetPossession() string {
+	if x != nil {
+		return x.Possession
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetCooperageSupplier() string {
+	if x != nil {
+		return x.CooperageSupplier
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetWoodSpecies() string {
+	if x != nil {
+		return x.WoodSpecies
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetPriorUse() string {
+	if x != nil {
+		return x.PriorUse
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetCharLevel() int32 {
+	if x != nil {
+		return x.CharLevel
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetRickhouse() string {
+	if x != nil {
+		return x.Rickhouse
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetFillDate() string {
+	if x != nil {
+		return x.FillDate
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetFilledVolumeL() float64 {
+	if x != nil {
+		return x.FilledVolumeL
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetFilledAbvPct() float64 {
+	if x != nil {
+		return x.FilledAbvPct
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetFilledLaa() float64 {
+	if x != nil {
+		return x.FilledLaa
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetCurrentVolumeL() float64 {
+	if x != nil {
+		return x.CurrentVolumeL
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetCurrentAbvPct() float64 {
+	if x != nil {
+		return x.CurrentAbvPct
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetCurrentLaa() float64 {
+	if x != nil {
+		return x.CurrentLaa
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetDaysInWood() int32 {
+	if x != nil {
+		return x.DaysInWood
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetAngelsShareKnown() bool {
+	if x != nil {
+		return x.AngelsShareKnown
+	}
+	return false
+}
+
+func (x *CaskStatementResponse) GetAngelsShareLaa() float64 {
+	if x != nil {
+		return x.AngelsShareLaa
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetAngelsSharePctPerYear() float64 {
+	if x != nil {
+		return x.AngelsSharePctPerYear
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetAngelsShareMissing() string {
+	if x != nil {
+		return x.AngelsShareMissing
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetGauges() []*CaskStatementGauge {
+	if x != nil {
+		return x.Gauges
+	}
+	return nil
+}
+
+func (x *CaskStatementResponse) GetDutyKnown() bool {
+	if x != nil {
+		return x.DutyKnown
+	}
+	return false
+}
+
+func (x *CaskStatementResponse) GetDutyRatePerLaa() float64 {
+	if x != nil {
+		return x.DutyRatePerLaa
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetDutyIfBottledTodayCad() float64 {
+	if x != nil {
+		return x.DutyIfBottledTodayCad
+	}
+	return 0
+}
+
+func (x *CaskStatementResponse) GetDutyMissing() string {
+	if x != nil {
+		return x.DutyMissing
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetBasis() string {
+	if x != nil {
+		return x.Basis
+	}
+	return ""
+}
+
+func (x *CaskStatementResponse) GetGeneratedAt() string {
+	if x != nil {
+		return x.GeneratedAt
+	}
+	return ""
+}
+
 var File_stillhouse_v1_barrel_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_barrel_proto_rawDesc = "" +
@@ -2263,7 +2692,56 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x16VoidBarrelEventRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"\x19\n" +
-	"\x17VoidBarrelEventResponse*\xe4\x01\n" +
+	"\x17VoidBarrelEventResponse\"\xb5\x01\n" +
+	"\x12CaskStatementGauge\x12\x12\n" +
+	"\x04date\x18\x01 \x01(\tR\x04date\x12\x19\n" +
+	"\bvolume_l\x18\x02 \x01(\x01R\avolumeL\x12\x17\n" +
+	"\aabv_pct\x18\x03 \x01(\x01R\x06abvPct\x12\x10\n" +
+	"\x03laa\x18\x04 \x01(\x01R\x03laa\x12\x12\n" +
+	"\x04kind\x18\x05 \x01(\tR\x04kind\x12\x1b\n" +
+	"\tgauged_by\x18\x06 \x01(\tR\bgaugedBy\x12\x14\n" +
+	"\x05notes\x18\a \x01(\tR\x05notes\"9\n" +
+	"\x14CaskStatementRequest\x12!\n" +
+	"\fcontainer_id\x18\x01 \x01(\tR\vcontainerId\"\xec\b\n" +
+	"\x15CaskStatementResponse\x12!\n" +
+	"\fcontainer_id\x18\x01 \x01(\tR\vcontainerId\x12\x1b\n" +
+	"\tcask_name\x18\x02 \x01(\tR\bcaskName\x12*\n" +
+	"\x11owner_customer_id\x18\x03 \x01(\tR\x0fownerCustomerId\x12\x1d\n" +
+	"\n" +
+	"owner_name\x18\x04 \x01(\tR\townerName\x12\x1e\n" +
+	"\n" +
+	"possession\x18\x05 \x01(\tR\n" +
+	"possession\x12-\n" +
+	"\x12cooperage_supplier\x18\x06 \x01(\tR\x11cooperageSupplier\x12!\n" +
+	"\fwood_species\x18\a \x01(\tR\vwoodSpecies\x12\x1b\n" +
+	"\tprior_use\x18\b \x01(\tR\bpriorUse\x12\x1d\n" +
+	"\n" +
+	"char_level\x18\t \x01(\x05R\tcharLevel\x12\x1c\n" +
+	"\trickhouse\x18\n" +
+	" \x01(\tR\trickhouse\x12\x1b\n" +
+	"\tfill_date\x18\v \x01(\tR\bfillDate\x12&\n" +
+	"\x0ffilled_volume_l\x18\f \x01(\x01R\rfilledVolumeL\x12$\n" +
+	"\x0efilled_abv_pct\x18\r \x01(\x01R\ffilledAbvPct\x12\x1d\n" +
+	"\n" +
+	"filled_laa\x18\x0e \x01(\x01R\tfilledLaa\x12(\n" +
+	"\x10current_volume_l\x18\x0f \x01(\x01R\x0ecurrentVolumeL\x12&\n" +
+	"\x0fcurrent_abv_pct\x18\x10 \x01(\x01R\rcurrentAbvPct\x12\x1f\n" +
+	"\vcurrent_laa\x18\x11 \x01(\x01R\n" +
+	"currentLaa\x12 \n" +
+	"\fdays_in_wood\x18\x12 \x01(\x05R\n" +
+	"daysInWood\x12,\n" +
+	"\x12angels_share_known\x18\x13 \x01(\bR\x10angelsShareKnown\x12(\n" +
+	"\x10angels_share_laa\x18\x14 \x01(\x01R\x0eangelsShareLaa\x128\n" +
+	"\x19angels_share_pct_per_year\x18\x15 \x01(\x01R\x15angelsSharePctPerYear\x120\n" +
+	"\x14angels_share_missing\x18\x16 \x01(\tR\x12angelsShareMissing\x129\n" +
+	"\x06gauges\x18\x17 \x03(\v2!.stillhouse.v1.CaskStatementGaugeR\x06gauges\x12\x1d\n" +
+	"\n" +
+	"duty_known\x18\x18 \x01(\bR\tdutyKnown\x12)\n" +
+	"\x11duty_rate_per_laa\x18\x19 \x01(\x01R\x0edutyRatePerLaa\x128\n" +
+	"\x19duty_if_bottled_today_cad\x18\x1a \x01(\x01R\x15dutyIfBottledTodayCad\x12!\n" +
+	"\fduty_missing\x18\x1b \x01(\tR\vdutyMissing\x12\x14\n" +
+	"\x05basis\x18\x1c \x01(\tR\x05basis\x12!\n" +
+	"\fgenerated_at\x18\x1d \x01(\tR\vgeneratedAt*\xe4\x01\n" +
 	"\x0fBarrelEventKind\x12!\n" +
 	"\x1dBARREL_EVENT_KIND_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16BARREL_EVENT_KIND_FILL\x10\x01\x12\x1d\n" +
@@ -2276,7 +2754,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"'MATURATION_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12$\n" +
 	" MATURATION_FINDING_SEVERITY_INFO\x10\x01\x12'\n" +
 	"#MATURATION_FINDING_SEVERITY_WARNING\x10\x02\x12'\n" +
-	"#MATURATION_FINDING_SEVERITY_PROBLEM\x10\x032\xf2\x04\n" +
+	"#MATURATION_FINDING_SEVERITY_PROBLEM\x10\x032\xce\x05\n" +
 	"\rBarrelService\x12W\n" +
 	"\fCreateBarrel\x12\".stillhouse.v1.CreateBarrelRequest\x1a#.stillhouse.v1.CreateBarrelResponse\x12T\n" +
 	"\vListBarrels\x12!.stillhouse.v1.ListBarrelsRequest\x1a\".stillhouse.v1.ListBarrelsResponse\x12N\n" +
@@ -2286,7 +2764,8 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\n" +
 	"DumpBarrel\x12 .stillhouse.v1.DumpBarrelRequest\x1a!.stillhouse.v1.DumpBarrelResponse\x12Z\n" +
 	"\rRegaugeBarrel\x12#.stillhouse.v1.RegaugeBarrelRequest\x1a$.stillhouse.v1.RegaugeBarrelResponse\x12`\n" +
-	"\x0fVoidBarrelEvent\x12%.stillhouse.v1.VoidBarrelEventRequest\x1a&.stillhouse.v1.VoidBarrelEventResponseB\xcf\x01\n" +
+	"\x0fVoidBarrelEvent\x12%.stillhouse.v1.VoidBarrelEventRequest\x1a&.stillhouse.v1.VoidBarrelEventResponse\x12Z\n" +
+	"\rCaskStatement\x12#.stillhouse.v1.CaskStatementRequest\x1a$.stillhouse.v1.CaskStatementResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vBarrelProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -2302,7 +2781,7 @@ func file_stillhouse_v1_barrel_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_barrel_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_barrel_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_stillhouse_v1_barrel_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_stillhouse_v1_barrel_proto_goTypes = []any{
 	(BarrelEventKind)(0),             // 0: stillhouse.v1.BarrelEventKind
 	(MaturationFindingSeverity)(0),   // 1: stillhouse.v1.MaturationFindingSeverity
@@ -2324,60 +2803,66 @@ var file_stillhouse_v1_barrel_proto_goTypes = []any{
 	(*RegaugeBarrelResponse)(nil),    // 17: stillhouse.v1.RegaugeBarrelResponse
 	(*VoidBarrelEventRequest)(nil),   // 18: stillhouse.v1.VoidBarrelEventRequest
 	(*VoidBarrelEventResponse)(nil),  // 19: stillhouse.v1.VoidBarrelEventResponse
-	(*timestamppb.Timestamp)(nil),    // 20: google.protobuf.Timestamp
-	(BulkPossession)(0),              // 21: stillhouse.v1.BulkPossession
-	(StrengthSource)(0),              // 22: stillhouse.v1.StrengthSource
-	(*DeterminationInstruments)(nil), // 23: stillhouse.v1.DeterminationInstruments
-	(*InstrumentRefs)(nil),           // 24: stillhouse.v1.InstrumentRefs
+	(*CaskStatementGauge)(nil),       // 20: stillhouse.v1.CaskStatementGauge
+	(*CaskStatementRequest)(nil),     // 21: stillhouse.v1.CaskStatementRequest
+	(*CaskStatementResponse)(nil),    // 22: stillhouse.v1.CaskStatementResponse
+	(*timestamppb.Timestamp)(nil),    // 23: google.protobuf.Timestamp
+	(BulkPossession)(0),              // 24: stillhouse.v1.BulkPossession
+	(StrengthSource)(0),              // 25: stillhouse.v1.StrengthSource
+	(*DeterminationInstruments)(nil), // 26: stillhouse.v1.DeterminationInstruments
+	(*InstrumentRefs)(nil),           // 27: stillhouse.v1.InstrumentRefs
 }
 var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
-	20, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
-	20, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
+	23, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
+	23, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
 	4,  // 2: stillhouse.v1.Barrel.maturation:type_name -> stillhouse.v1.MaturationAssessment
-	21, // 3: stillhouse.v1.Barrel.possession:type_name -> stillhouse.v1.BulkPossession
+	24, // 3: stillhouse.v1.Barrel.possession:type_name -> stillhouse.v1.BulkPossession
 	1,  // 4: stillhouse.v1.MaturationFinding.severity:type_name -> stillhouse.v1.MaturationFindingSeverity
 	3,  // 5: stillhouse.v1.MaturationAssessment.findings:type_name -> stillhouse.v1.MaturationFinding
 	0,  // 6: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
-	20, // 7: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
-	20, // 8: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
-	22, // 9: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
-	23, // 10: stillhouse.v1.BarrelEvent.instruments:type_name -> stillhouse.v1.DeterminationInstruments
+	23, // 7: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
+	23, // 8: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
+	25, // 9: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
+	26, // 10: stillhouse.v1.BarrelEvent.instruments:type_name -> stillhouse.v1.DeterminationInstruments
 	2,  // 11: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
 	2,  // 12: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
 	2,  // 13: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
 	5,  // 14: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
 	4,  // 15: stillhouse.v1.GetBarrelResponse.maturation:type_name -> stillhouse.v1.MaturationAssessment
-	20, // 16: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	24, // 17: stillhouse.v1.FillBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	23, // 16: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	27, // 17: stillhouse.v1.FillBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
 	5,  // 18: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
 	2,  // 19: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	20, // 20: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	24, // 21: stillhouse.v1.DumpBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	23, // 20: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	27, // 21: stillhouse.v1.DumpBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
 	5,  // 22: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
 	2,  // 23: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	20, // 24: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	24, // 25: stillhouse.v1.RegaugeBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	23, // 24: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	27, // 25: stillhouse.v1.RegaugeBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
 	5,  // 26: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
 	2,  // 27: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	6,  // 28: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
-	8,  // 29: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
-	10, // 30: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
-	12, // 31: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
-	14, // 32: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
-	16, // 33: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
-	18, // 34: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
-	7,  // 35: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
-	9,  // 36: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
-	11, // 37: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
-	13, // 38: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
-	15, // 39: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
-	17, // 40: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
-	19, // 41: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
-	35, // [35:42] is the sub-list for method output_type
-	28, // [28:35] is the sub-list for method input_type
-	28, // [28:28] is the sub-list for extension type_name
-	28, // [28:28] is the sub-list for extension extendee
-	0,  // [0:28] is the sub-list for field type_name
+	20, // 28: stillhouse.v1.CaskStatementResponse.gauges:type_name -> stillhouse.v1.CaskStatementGauge
+	6,  // 29: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
+	8,  // 30: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
+	10, // 31: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
+	12, // 32: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
+	14, // 33: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
+	16, // 34: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
+	18, // 35: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
+	21, // 36: stillhouse.v1.BarrelService.CaskStatement:input_type -> stillhouse.v1.CaskStatementRequest
+	7,  // 37: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
+	9,  // 38: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
+	11, // 39: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
+	13, // 40: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
+	15, // 41: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
+	17, // 42: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
+	19, // 43: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
+	22, // 44: stillhouse.v1.BarrelService.CaskStatement:output_type -> stillhouse.v1.CaskStatementResponse
+	37, // [37:45] is the sub-list for method output_type
+	29, // [29:37] is the sub-list for method input_type
+	29, // [29:29] is the sub-list for extension type_name
+	29, // [29:29] is the sub-list for extension extendee
+	0,  // [0:29] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_barrel_proto_init() }
@@ -2394,7 +2879,7 @@ func file_stillhouse_v1_barrel_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_barrel_proto_rawDesc), len(file_stillhouse_v1_barrel_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   18,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

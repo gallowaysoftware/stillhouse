@@ -308,4 +308,80 @@ service BarrelService {
   rpc DumpBarrel(DumpBarrelRequest) returns (DumpBarrelResponse);
   rpc RegaugeBarrel(RegaugeBarrelRequest) returns (RegaugeBarrelResponse);
   rpc VoidBarrelEvent(VoidBarrelEventRequest) returns (VoidBarrelEventResponse);
+  // A statement of what a cask holds, for the person who owns it.
+  rpc CaskStatement(CaskStatementRequest) returns (CaskStatementResponse);
+}
+
+// A statement of what a cask holds, for the person who owns it.
+//
+// PLAN J3. Cask-ownership programmes are the case this exists for: the
+// cask is in our possession and is somebody else's property, and they are
+// entitled to know what has happened to it.
+//
+// What this deliberately is NOT: a certificate of age or origin. Those
+// are signed by a Canadian official (EDM3-1-1 ¶43–46) and stage 189 is
+// careful to assemble evidence rather than issue one. This is the same
+// discipline — a statement of our own records, said to be that.
+message CaskStatementGauge {
+  string date = 1;
+  double volume_l = 2;
+  double abv_pct = 3;
+  double laa = 4;
+  string kind = 5;         // fill | regauge | dump
+  string gauged_by = 6;
+  string notes = 7;
+}
+
+message CaskStatementRequest { string container_id = 1; }
+message CaskStatementResponse {
+  string container_id = 1;
+  string cask_name = 2;
+  // Whose cask it is. Empty owner means the distillery's own, which is a
+  // legitimate thing to print a statement for but is stated rather than
+  // implied.
+  string owner_customer_id = 3;
+  string owner_name = 4;
+  string possession = 5;
+
+  // The wood.
+  string cooperage_supplier = 6;
+  string wood_species = 7;
+  string prior_use = 8;
+  int32  char_level = 9;
+  string rickhouse = 10;
+
+  // Filled, and now.
+  string fill_date = 11;
+  double filled_volume_l = 12;
+  double filled_abv_pct = 13;
+  double filled_laa = 14;
+  double current_volume_l = 15;
+  double current_abv_pct = 16;
+  double current_laa = 17;
+  int32  days_in_wood = 18;
+
+  // The angel's share since fill: LAA lost, and the same as a percentage
+  // of what went in per year. Only present when the fill gauge recorded a
+  // strength — computing a loss against a fill figure nobody wrote down
+  // would be inventing the number this whole statement exists to report.
+  bool   angels_share_known = 19;
+  double angels_share_laa = 20;
+  double angels_share_pct_per_year = 21;
+  string angels_share_missing = 22;
+
+  // Every gauge on this cask, newest first.
+  repeated CaskStatementGauge gauges = 23;
+
+  // What duty would fall due if the cask were bottled today, at today's
+  // rate. Present only when a rate can be cited for today — the rate
+  // table refuses outside what it can source, and a duty figure on a
+  // statement a customer keeps is not a place to guess.
+  bool   duty_known = 24;
+  double duty_rate_per_laa = 25;
+  double duty_if_bottled_today_cad = 26;
+  string duty_missing = 27;
+
+  // Said on the document, not in the documentation.
+  string basis = 28;
+  string generated_at = 29;
 }

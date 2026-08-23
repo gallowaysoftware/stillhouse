@@ -22,7 +22,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/barrel.proto.
  */
 export const file_stillhouse_v1_barrel: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL2JhcnJlbC5wcm90bxINc3RpbGxob3VzZS52MSK1BwoGQmFycmVsEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY2FwYWNpdHlfbBgDIAEoARIWCg5jYXBhY2l0eV9sX3NldBgEIAEoCBIQCghsb2NhdGlvbhgFIAEoCRINCgVub3RlcxgGIAEoCRIQCghhcmNoaXZlZBgHIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAggASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgJIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAogASgIEhMKC2N1cnJlbnRfbGFhGAsgASgBEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmNvb3BlcmFnZV9zdXBwbGllchgUIAEoCRISCgpjaGFyX2xldmVsGBUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GBYgASgIEhQKDHdvb2Rfc3BlY2llcxgXIAEoCRIRCglwcmlvcl91c2UYGCABKAkSFQoNc2VyaWFsX2J1cm5pbhgZIAEoCRIRCglyaWNraG91c2UYGiABKAkSFAoMcm93X3Bvc2l0aW9uGBsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGBwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgdIAEoCRIRCglmaWxsX2RhdGUYKCABKAkSEQoJZGF5c19hZ2VkGCkgASgFEhkKEWRheXNfYWdlZF9hdF9kdW1wGCogASgFEh0KFWRheXNfYWdlZF9hdF9kdW1wX3NldBgrIAEoCBISCgpzbWFsbF93b29kGDIgASgIEiAKGGNhbmFkaWFuX3doaXNreV9lbGlnaWJsZRgzIAEoCBIoCiBkYXlzX3RvX2NhbmFkaWFuX3doaXNreV9lbGlnaWJsZRg0IAEoBRI3CgptYXR1cmF0aW9uGDUgASgLMiMuc3RpbGxob3VzZS52MS5NYXR1cmF0aW9uQXNzZXNzbWVudBIZChFvd25lcl9jdXN0b21lcl9pZBg2IAEoCRISCgpvd25lcl9uYW1lGDcgASgJEjEKCnBvc3Nlc3Npb24YOCABKA4yHS5zdGlsbGhvdXNlLnYxLkJ1bGtQb3NzZXNzaW9uEhQKDGhlbGRfYnlfbmFtZRg5IAEoCRIaChJoZWxkX2J5X2xpY2VuY2Vfbm8YOiABKAkifAoRTWF0dXJhdGlvbkZpbmRpbmcSOgoIc2V2ZXJpdHkYASABKA4yKC5zdGlsbGhvdXNlLnYxLk1hdHVyYXRpb25GaW5kaW5nU2V2ZXJpdHkSDAoEY29kZRgCIAEoCRINCgV0aXRsZRgDIAEoCRIOCgZkZXRhaWwYBCABKAkiywIKFE1hdHVyYXRpb25Bc3Nlc3NtZW50EhIKCm1lYXN1cmFibGUYASABKAgSDwoHd2h5X25vdBgCIAEoCRIeChZhbm51YWxfdm9sdW1lX2xvc3NfcGN0GAMgASgBEhsKE2FubnVhbF9sYWFfbG9zc19wY3QYBCABKAESHwoXc3RyZW5ndGhfZHJpZnRfcGVyX3llYXIYBSABKAESGAoQZXhwZWN0ZWRfbWluX3BjdBgGIAEoARIYChBleHBlY3RlZF9tYXhfcGN0GAcgASgBEhsKE2V4cGVjdGVkX2RyaWZ0X3NpZ24YCCABKAESGgoSY2xpbWF0ZV9mcm9tX2xldmVsGAkgASgIEg8KB2hvdF9kcnkYCiABKAgSMgoIZmluZGluZ3MYCyADKAsyIC5zdGlsbGhvdXNlLnYxLk1hdHVyYXRpb25GaW5kaW5nIpsFCgtCYXJyZWxFdmVudBIKCgJpZBgBIAEoCRIUCgxjb250YWluZXJfaWQYAiABKAkSLAoEa2luZBgDIAEoDjIeLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnRLaW5kEi4KCmV2ZW50X2RhdGUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhAKCHZvbHVtZV9sGAUgASgBEhQKDHZvbHVtZV9sX3NldBgGIAEoCBIPCgdhYnZfcGN0GAcgASgBEhMKC2Fidl9wY3Rfc2V0GAggASgIEgsKA2xhYRgJIAEoARIPCgdsYWFfc2V0GAogASgIEhgKEGJ1bGtfbW92ZW1lbnRfaWQYCyABKAkSFgoObG9jYXRpb25fYWZ0ZXIYDCABKAkSDQoFbm90ZXMYDSABKAkSDwoHdXNlcl9pZBgOIAEoCRIuCgpjcmVhdGVkX2F0GA8gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg10ZW1wZXJhdHVyZV9jGBAgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GBEgASgIEhkKEW9ic2VydmVkX3ZvbHVtZV9sGBIgASgBEh4KFm9ic2VydmVkX2RlbnNpdHlfa2dfbTMYEyABKAESIgoab2JzZXJ2ZWRfZGVuc2l0eV9rZ19tM19zZXQYFCABKAgSFwoPdm9sdW1lX2ZhY3Rvcl9jGBUgASgBEjYKD3N0cmVuZ3RoX3NvdXJjZRgWIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USPAoLaW5zdHJ1bWVudHMYFyABKAsyJy5zdGlsbGhvdXNlLnYxLkRldGVybWluYXRpb25JbnN0cnVtZW50cyLSAgoTQ3JlYXRlQmFycmVsUmVxdWVzdBIMCgRuYW1lGAEgASgJEhIKCmNhcGFjaXR5X2wYAiABKAESFgoOY2FwYWNpdHlfbF9zZXQYAyABKAgSGgoSY29vcGVyYWdlX3N1cHBsaWVyGAQgASgJEhIKCmNoYXJfbGV2ZWwYBSABKAUSFgoOY2hhcl9sZXZlbF9zZXQYBiABKAgSFAoMd29vZF9zcGVjaWVzGAcgASgJEhEKCXByaW9yX3VzZRgIIAEoCRIVCg1zZXJpYWxfYnVybmluGAkgASgJEhEKCXJpY2tob3VzZRgKIAEoCRIUCgxyb3dfcG9zaXRpb24YCyABKAkSFgoObGV2ZWxfcG9zaXRpb24YDCABKAkSFwoPY29sdW1uX3Bvc2l0aW9uGA0gASgJEhAKCGxvY2F0aW9uGA4gASgJEg0KBW5vdGVzGA8gASgJIj0KFENyZWF0ZUJhcnJlbFJlc3BvbnNlEiUKBmJhcnJlbBgBIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsIi4KEkxpc3RCYXJyZWxzUmVxdWVzdBIYChBpbmNsdWRlX2FyY2hpdmVkGAEgASgIIq4CChNMaXN0QmFycmVsc1Jlc3BvbnNlEiYKB2JhcnJlbHMYASADKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBITCgt0b3RhbF9jb3VudBgCIAEoBRITCgthZ2luZ19jb3VudBgDIAEoBRIWCg5lbGlnaWJsZV9jb3VudBgEIAEoBRIRCgl0b3RhbF9sYWEYBSABKAESEQoJb3duZWRfbGFhGAYgASgBEhAKCGhlbGRfbGFhGAcgASgBEhsKE2hlbGRfZm9yX290aGVyc19sYWEYCCABKAESGgoSaGVsZF9lbHNld2hlcmVfbGFhGAkgASgBEiEKGXRoaXJkX3BhcnR5X2Vsc2V3aGVyZV9sYWEYCyABKAESGQoRdGhpcmRfcGFydHlfY291bnQYCiABKAUiHgoQR2V0QmFycmVsUmVxdWVzdBIKCgJpZBgBIAEoCSKfAQoRR2V0QmFycmVsUmVzcG9uc2USJQoGYmFycmVsGAEgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSKgoGZXZlbnRzGAIgAygLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBI3CgptYXR1cmF0aW9uGAMgASgLMiMuc3RpbGxob3VzZS52MS5NYXR1cmF0aW9uQXNzZXNzbWVudCK9AgoRRmlsbEJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhsKE3NvdXJjZV9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgSMgoLaW5zdHJ1bWVudHMYCyABKAsyHS5zdGlsbGhvdXNlLnYxLkluc3RydW1lbnRSZWZzIngKEkZpbGxCYXJyZWxSZXNwb25zZRIpCgVldmVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQSJQoGYmFycmVsGAIgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSEAoId2FybmluZ3MYAyADKAkiwgIKEUR1bXBCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIgChhkZXN0aW5hdGlvbl9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgSMgoLaW5zdHJ1bWVudHMYCyABKAsyHS5zdGlsbGhvdXNlLnYxLkluc3RydW1lbnRSZWZzIngKEkR1bXBCYXJyZWxSZXNwb25zZRIpCgVldmVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQSJQoGYmFycmVsGAIgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSEAoId2FybmluZ3MYAyADKAkiqwIKFFJlZ2F1Z2VCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIUCgxuZXdfdm9sdW1lX2wYAiABKAESEwoLbmV3X2Fidl9wY3QYAyABKAESLgoKZXZlbnRfZGF0ZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBSABKAkSFQoNdGVtcGVyYXR1cmVfYxgGIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgHIAEoCBIVCg1kZW5zaXR5X2tnX20zGAggASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAkgASgIEjIKC2luc3RydW1lbnRzGAogASgLMh0uc3RpbGxob3VzZS52MS5JbnN0cnVtZW50UmVmcyKNAQoVUmVnYXVnZUJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBIQCghsb3N0X2xhYRgDIAEoARIQCgh3YXJuaW5ncxgEIAMoCSI0ChZWb2lkQmFycmVsRXZlbnRSZXF1ZXN0EgoKAmlkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSIZChdWb2lkQmFycmVsRXZlbnRSZXNwb25zZSrkAQoPQmFycmVsRXZlbnRLaW5kEiEKHUJBUlJFTF9FVkVOVF9LSU5EX1VOU1BFQ0lGSUVEEAASGgoWQkFSUkVMX0VWRU5UX0tJTkRfRklMTBABEh0KGUJBUlJFTF9FVkVOVF9LSU5EX1JFR0FVR0UQAhIcChhCQVJSRUxfRVZFTlRfS0lORF9TQU1QTEUQAxIaChZCQVJSRUxfRVZFTlRfS0lORF9EVU1QEAQSGgoWQkFSUkVMX0VWRU5UX0tJTkRfTU9WRRAFEh0KGUJBUlJFTF9FVkVOVF9LSU5EX0RFU1RST1kQBirAAQoZTWF0dXJhdGlvbkZpbmRpbmdTZXZlcml0eRIrCidNQVRVUkFUSU9OX0ZJTkRJTkdfU0VWRVJJVFlfVU5TUEVDSUZJRUQQABIkCiBNQVRVUkFUSU9OX0ZJTkRJTkdfU0VWRVJJVFlfSU5GTxABEicKI01BVFVSQVRJT05fRklORElOR19TRVZFUklUWV9XQVJOSU5HEAISJwojTUFUVVJBVElPTl9GSU5ESU5HX1NFVkVSSVRZX1BST0JMRU0QAzLyBAoNQmFycmVsU2VydmljZRJXCgxDcmVhdGVCYXJyZWwSIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJhcnJlbFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZUJhcnJlbFJlc3BvbnNlElQKC0xpc3RCYXJyZWxzEiEuc3RpbGxob3VzZS52MS5MaXN0QmFycmVsc1JlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkxpc3RCYXJyZWxzUmVzcG9uc2USTgoJR2V0QmFycmVsEh8uc3RpbGxob3VzZS52MS5HZXRCYXJyZWxSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRCYXJyZWxSZXNwb25zZRJRCgpGaWxsQmFycmVsEiAuc3RpbGxob3VzZS52MS5GaWxsQmFycmVsUmVxdWVzdBohLnN0aWxsaG91c2UudjEuRmlsbEJhcnJlbFJlc3BvbnNlElEKCkR1bXBCYXJyZWwSIC5zdGlsbGhvdXNlLnYxLkR1bXBCYXJyZWxSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5EdW1wQmFycmVsUmVzcG9uc2USWgoNUmVnYXVnZUJhcnJlbBIjLnN0aWxsaG91c2UudjEuUmVnYXVnZUJhcnJlbFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlJlZ2F1Z2VCYXJyZWxSZXNwb25zZRJgCg9Wb2lkQmFycmVsRXZlbnQSJS5zdGlsbGhvdXNlLnYxLlZvaWRCYXJyZWxFdmVudFJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLlZvaWRCYXJyZWxFdmVudFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_bulk, file_stillhouse_v1_instrument, file_stillhouse_v1_alcoholometry]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL2JhcnJlbC5wcm90bxINc3RpbGxob3VzZS52MSK1BwoGQmFycmVsEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSEgoKY2FwYWNpdHlfbBgDIAEoARIWCg5jYXBhY2l0eV9sX3NldBgEIAEoCBIQCghsb2NhdGlvbhgFIAEoCRINCgVub3RlcxgGIAEoCRIQCghhcmNoaXZlZBgHIAEoCBIYChBjdXJyZW50X3ZvbHVtZV9sGAggASgBEhcKD2N1cnJlbnRfYWJ2X3BjdBgJIAEoARIbChNjdXJyZW50X2Fidl9wY3Rfc2V0GAogASgIEhMKC2N1cnJlbnRfbGFhGAsgASgBEi4KCmNyZWF0ZWRfYXQYDCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmNvb3BlcmFnZV9zdXBwbGllchgUIAEoCRISCgpjaGFyX2xldmVsGBUgASgFEhYKDmNoYXJfbGV2ZWxfc2V0GBYgASgIEhQKDHdvb2Rfc3BlY2llcxgXIAEoCRIRCglwcmlvcl91c2UYGCABKAkSFQoNc2VyaWFsX2J1cm5pbhgZIAEoCRIRCglyaWNraG91c2UYGiABKAkSFAoMcm93X3Bvc2l0aW9uGBsgASgJEhYKDmxldmVsX3Bvc2l0aW9uGBwgASgJEhcKD2NvbHVtbl9wb3NpdGlvbhgdIAEoCRIRCglmaWxsX2RhdGUYKCABKAkSEQoJZGF5c19hZ2VkGCkgASgFEhkKEWRheXNfYWdlZF9hdF9kdW1wGCogASgFEh0KFWRheXNfYWdlZF9hdF9kdW1wX3NldBgrIAEoCBISCgpzbWFsbF93b29kGDIgASgIEiAKGGNhbmFkaWFuX3doaXNreV9lbGlnaWJsZRgzIAEoCBIoCiBkYXlzX3RvX2NhbmFkaWFuX3doaXNreV9lbGlnaWJsZRg0IAEoBRI3CgptYXR1cmF0aW9uGDUgASgLMiMuc3RpbGxob3VzZS52MS5NYXR1cmF0aW9uQXNzZXNzbWVudBIZChFvd25lcl9jdXN0b21lcl9pZBg2IAEoCRISCgpvd25lcl9uYW1lGDcgASgJEjEKCnBvc3Nlc3Npb24YOCABKA4yHS5zdGlsbGhvdXNlLnYxLkJ1bGtQb3NzZXNzaW9uEhQKDGhlbGRfYnlfbmFtZRg5IAEoCRIaChJoZWxkX2J5X2xpY2VuY2Vfbm8YOiABKAkifAoRTWF0dXJhdGlvbkZpbmRpbmcSOgoIc2V2ZXJpdHkYASABKA4yKC5zdGlsbGhvdXNlLnYxLk1hdHVyYXRpb25GaW5kaW5nU2V2ZXJpdHkSDAoEY29kZRgCIAEoCRINCgV0aXRsZRgDIAEoCRIOCgZkZXRhaWwYBCABKAkiywIKFE1hdHVyYXRpb25Bc3Nlc3NtZW50EhIKCm1lYXN1cmFibGUYASABKAgSDwoHd2h5X25vdBgCIAEoCRIeChZhbm51YWxfdm9sdW1lX2xvc3NfcGN0GAMgASgBEhsKE2FubnVhbF9sYWFfbG9zc19wY3QYBCABKAESHwoXc3RyZW5ndGhfZHJpZnRfcGVyX3llYXIYBSABKAESGAoQZXhwZWN0ZWRfbWluX3BjdBgGIAEoARIYChBleHBlY3RlZF9tYXhfcGN0GAcgASgBEhsKE2V4cGVjdGVkX2RyaWZ0X3NpZ24YCCABKAESGgoSY2xpbWF0ZV9mcm9tX2xldmVsGAkgASgIEg8KB2hvdF9kcnkYCiABKAgSMgoIZmluZGluZ3MYCyADKAsyIC5zdGlsbGhvdXNlLnYxLk1hdHVyYXRpb25GaW5kaW5nIpsFCgtCYXJyZWxFdmVudBIKCgJpZBgBIAEoCRIUCgxjb250YWluZXJfaWQYAiABKAkSLAoEa2luZBgDIAEoDjIeLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnRLaW5kEi4KCmV2ZW50X2RhdGUYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhAKCHZvbHVtZV9sGAUgASgBEhQKDHZvbHVtZV9sX3NldBgGIAEoCBIPCgdhYnZfcGN0GAcgASgBEhMKC2Fidl9wY3Rfc2V0GAggASgIEgsKA2xhYRgJIAEoARIPCgdsYWFfc2V0GAogASgIEhgKEGJ1bGtfbW92ZW1lbnRfaWQYCyABKAkSFgoObG9jYXRpb25fYWZ0ZXIYDCABKAkSDQoFbm90ZXMYDSABKAkSDwoHdXNlcl9pZBgOIAEoCRIuCgpjcmVhdGVkX2F0GA8gASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg10ZW1wZXJhdHVyZV9jGBAgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GBEgASgIEhkKEW9ic2VydmVkX3ZvbHVtZV9sGBIgASgBEh4KFm9ic2VydmVkX2RlbnNpdHlfa2dfbTMYEyABKAESIgoab2JzZXJ2ZWRfZGVuc2l0eV9rZ19tM19zZXQYFCABKAgSFwoPdm9sdW1lX2ZhY3Rvcl9jGBUgASgBEjYKD3N0cmVuZ3RoX3NvdXJjZRgWIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USPAoLaW5zdHJ1bWVudHMYFyABKAsyJy5zdGlsbGhvdXNlLnYxLkRldGVybWluYXRpb25JbnN0cnVtZW50cyLSAgoTQ3JlYXRlQmFycmVsUmVxdWVzdBIMCgRuYW1lGAEgASgJEhIKCmNhcGFjaXR5X2wYAiABKAESFgoOY2FwYWNpdHlfbF9zZXQYAyABKAgSGgoSY29vcGVyYWdlX3N1cHBsaWVyGAQgASgJEhIKCmNoYXJfbGV2ZWwYBSABKAUSFgoOY2hhcl9sZXZlbF9zZXQYBiABKAgSFAoMd29vZF9zcGVjaWVzGAcgASgJEhEKCXByaW9yX3VzZRgIIAEoCRIVCg1zZXJpYWxfYnVybmluGAkgASgJEhEKCXJpY2tob3VzZRgKIAEoCRIUCgxyb3dfcG9zaXRpb24YCyABKAkSFgoObGV2ZWxfcG9zaXRpb24YDCABKAkSFwoPY29sdW1uX3Bvc2l0aW9uGA0gASgJEhAKCGxvY2F0aW9uGA4gASgJEg0KBW5vdGVzGA8gASgJIj0KFENyZWF0ZUJhcnJlbFJlc3BvbnNlEiUKBmJhcnJlbBgBIAEoCzIVLnN0aWxsaG91c2UudjEuQmFycmVsIi4KEkxpc3RCYXJyZWxzUmVxdWVzdBIYChBpbmNsdWRlX2FyY2hpdmVkGAEgASgIIq4CChNMaXN0QmFycmVsc1Jlc3BvbnNlEiYKB2JhcnJlbHMYASADKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBITCgt0b3RhbF9jb3VudBgCIAEoBRITCgthZ2luZ19jb3VudBgDIAEoBRIWCg5lbGlnaWJsZV9jb3VudBgEIAEoBRIRCgl0b3RhbF9sYWEYBSABKAESEQoJb3duZWRfbGFhGAYgASgBEhAKCGhlbGRfbGFhGAcgASgBEhsKE2hlbGRfZm9yX290aGVyc19sYWEYCCABKAESGgoSaGVsZF9lbHNld2hlcmVfbGFhGAkgASgBEiEKGXRoaXJkX3BhcnR5X2Vsc2V3aGVyZV9sYWEYCyABKAESGQoRdGhpcmRfcGFydHlfY291bnQYCiABKAUiHgoQR2V0QmFycmVsUmVxdWVzdBIKCgJpZBgBIAEoCSKfAQoRR2V0QmFycmVsUmVzcG9uc2USJQoGYmFycmVsGAEgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSKgoGZXZlbnRzGAIgAygLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBI3CgptYXR1cmF0aW9uGAMgASgLMiMuc3RpbGxob3VzZS52MS5NYXR1cmF0aW9uQXNzZXNzbWVudCK9AgoRRmlsbEJhcnJlbFJlcXVlc3QSEQoJYmFycmVsX2lkGAEgASgJEhsKE3NvdXJjZV9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgSMgoLaW5zdHJ1bWVudHMYCyABKAsyHS5zdGlsbGhvdXNlLnYxLkluc3RydW1lbnRSZWZzIngKEkZpbGxCYXJyZWxSZXNwb25zZRIpCgVldmVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQSJQoGYmFycmVsGAIgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSEAoId2FybmluZ3MYAyADKAkiwgIKEUR1bXBCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIgChhkZXN0aW5hdGlvbl9jb250YWluZXJfaWQYAiABKAkSEAoIdm9sdW1lX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIuCgpldmVudF9kYXRlGAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgGIAEoCRIVCg10ZW1wZXJhdHVyZV9jGAcgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAggASgIEhUKDWRlbnNpdHlfa2dfbTMYCSABKAESGQoRZGVuc2l0eV9rZ19tM19zZXQYCiABKAgSMgoLaW5zdHJ1bWVudHMYCyABKAsyHS5zdGlsbGhvdXNlLnYxLkluc3RydW1lbnRSZWZzIngKEkR1bXBCYXJyZWxSZXNwb25zZRIpCgVldmVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQmFycmVsRXZlbnQSJQoGYmFycmVsGAIgASgLMhUuc3RpbGxob3VzZS52MS5CYXJyZWwSEAoId2FybmluZ3MYAyADKAkiqwIKFFJlZ2F1Z2VCYXJyZWxSZXF1ZXN0EhEKCWJhcnJlbF9pZBgBIAEoCRIUCgxuZXdfdm9sdW1lX2wYAiABKAESEwoLbmV3X2Fidl9wY3QYAyABKAESLgoKZXZlbnRfZGF0ZRgEIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYBSABKAkSFQoNdGVtcGVyYXR1cmVfYxgGIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgHIAEoCBIVCg1kZW5zaXR5X2tnX20zGAggASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAkgASgIEjIKC2luc3RydW1lbnRzGAogASgLMh0uc3RpbGxob3VzZS52MS5JbnN0cnVtZW50UmVmcyKNAQoVUmVnYXVnZUJhcnJlbFJlc3BvbnNlEikKBWV2ZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5CYXJyZWxFdmVudBIlCgZiYXJyZWwYAiABKAsyFS5zdGlsbGhvdXNlLnYxLkJhcnJlbBIQCghsb3N0X2xhYRgDIAEoARIQCgh3YXJuaW5ncxgEIAMoCSI0ChZWb2lkQmFycmVsRXZlbnRSZXF1ZXN0EgoKAmlkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSIZChdWb2lkQmFycmVsRXZlbnRSZXNwb25zZSKCAQoSQ2Fza1N0YXRlbWVudEdhdWdlEgwKBGRhdGUYASABKAkSEAoIdm9sdW1lX2wYAiABKAESDwoHYWJ2X3BjdBgDIAEoARILCgNsYWEYBCABKAESDAoEa2luZBgFIAEoCRIRCglnYXVnZWRfYnkYBiABKAkSDQoFbm90ZXMYByABKAkiLAoUQ2Fza1N0YXRlbWVudFJlcXVlc3QSFAoMY29udGFpbmVyX2lkGAEgASgJItwFChVDYXNrU3RhdGVtZW50UmVzcG9uc2USFAoMY29udGFpbmVyX2lkGAEgASgJEhEKCWNhc2tfbmFtZRgCIAEoCRIZChFvd25lcl9jdXN0b21lcl9pZBgDIAEoCRISCgpvd25lcl9uYW1lGAQgASgJEhIKCnBvc3Nlc3Npb24YBSABKAkSGgoSY29vcGVyYWdlX3N1cHBsaWVyGAYgASgJEhQKDHdvb2Rfc3BlY2llcxgHIAEoCRIRCglwcmlvcl91c2UYCCABKAkSEgoKY2hhcl9sZXZlbBgJIAEoBRIRCglyaWNraG91c2UYCiABKAkSEQoJZmlsbF9kYXRlGAsgASgJEhcKD2ZpbGxlZF92b2x1bWVfbBgMIAEoARIWCg5maWxsZWRfYWJ2X3BjdBgNIAEoARISCgpmaWxsZWRfbGFhGA4gASgBEhgKEGN1cnJlbnRfdm9sdW1lX2wYDyABKAESFwoPY3VycmVudF9hYnZfcGN0GBAgASgBEhMKC2N1cnJlbnRfbGFhGBEgASgBEhQKDGRheXNfaW5fd29vZBgSIAEoBRIaChJhbmdlbHNfc2hhcmVfa25vd24YEyABKAgSGAoQYW5nZWxzX3NoYXJlX2xhYRgUIAEoARIhChlhbmdlbHNfc2hhcmVfcGN0X3Blcl95ZWFyGBUgASgBEhwKFGFuZ2Vsc19zaGFyZV9taXNzaW5nGBYgASgJEjEKBmdhdWdlcxgXIAMoCzIhLnN0aWxsaG91c2UudjEuQ2Fza1N0YXRlbWVudEdhdWdlEhIKCmR1dHlfa25vd24YGCABKAgSGQoRZHV0eV9yYXRlX3Blcl9sYWEYGSABKAESIQoZZHV0eV9pZl9ib3R0bGVkX3RvZGF5X2NhZBgaIAEoARIUCgxkdXR5X21pc3NpbmcYGyABKAkSDQoFYmFzaXMYHCABKAkSFAoMZ2VuZXJhdGVkX2F0GB0gASgJKuQBCg9CYXJyZWxFdmVudEtpbmQSIQodQkFSUkVMX0VWRU5UX0tJTkRfVU5TUEVDSUZJRUQQABIaChZCQVJSRUxfRVZFTlRfS0lORF9GSUxMEAESHQoZQkFSUkVMX0VWRU5UX0tJTkRfUkVHQVVHRRACEhwKGEJBUlJFTF9FVkVOVF9LSU5EX1NBTVBMRRADEhoKFkJBUlJFTF9FVkVOVF9LSU5EX0RVTVAQBBIaChZCQVJSRUxfRVZFTlRfS0lORF9NT1ZFEAUSHQoZQkFSUkVMX0VWRU5UX0tJTkRfREVTVFJPWRAGKsABChlNYXR1cmF0aW9uRmluZGluZ1NldmVyaXR5EisKJ01BVFVSQVRJT05fRklORElOR19TRVZFUklUWV9VTlNQRUNJRklFRBAAEiQKIE1BVFVSQVRJT05fRklORElOR19TRVZFUklUWV9JTkZPEAESJwojTUFUVVJBVElPTl9GSU5ESU5HX1NFVkVSSVRZX1dBUk5JTkcQAhInCiNNQVRVUkFUSU9OX0ZJTkRJTkdfU0VWRVJJVFlfUFJPQkxFTRADMs4FCg1CYXJyZWxTZXJ2aWNlElcKDENyZWF0ZUJhcnJlbBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlQmFycmVsUmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlQmFycmVsUmVzcG9uc2USVAoLTGlzdEJhcnJlbHMSIS5zdGlsbGhvdXNlLnYxLkxpc3RCYXJyZWxzUmVxdWVzdBoiLnN0aWxsaG91c2UudjEuTGlzdEJhcnJlbHNSZXNwb25zZRJOCglHZXRCYXJyZWwSHy5zdGlsbGhvdXNlLnYxLkdldEJhcnJlbFJlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLkdldEJhcnJlbFJlc3BvbnNlElEKCkZpbGxCYXJyZWwSIC5zdGlsbGhvdXNlLnYxLkZpbGxCYXJyZWxSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5GaWxsQmFycmVsUmVzcG9uc2USUQoKRHVtcEJhcnJlbBIgLnN0aWxsaG91c2UudjEuRHVtcEJhcnJlbFJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkR1bXBCYXJyZWxSZXNwb25zZRJaCg1SZWdhdWdlQmFycmVsEiMuc3RpbGxob3VzZS52MS5SZWdhdWdlQmFycmVsUmVxdWVzdBokLnN0aWxsaG91c2UudjEuUmVnYXVnZUJhcnJlbFJlc3BvbnNlEmAKD1ZvaWRCYXJyZWxFdmVudBIlLnN0aWxsaG91c2UudjEuVm9pZEJhcnJlbEV2ZW50UmVxdWVzdBomLnN0aWxsaG91c2UudjEuVm9pZEJhcnJlbEV2ZW50UmVzcG9uc2USWgoNQ2Fza1N0YXRlbWVudBIjLnN0aWxsaG91c2UudjEuQ2Fza1N0YXRlbWVudFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLkNhc2tTdGF0ZW1lbnRSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_bulk, file_stillhouse_v1_instrument, file_stillhouse_v1_alcoholometry]);
 
 /**
  * Barrel is the joined view of a bulk_container (kind=barrel) + barrel_attributes
@@ -1098,6 +1098,262 @@ export const VoidBarrelEventResponseSchema: GenMessage<VoidBarrelEventResponse> 
   messageDesc(file_stillhouse_v1_barrel, 17);
 
 /**
+ * A statement of what a cask holds, for the person who owns it.
+ *
+ * PLAN J3. Cask-ownership programmes are the case this exists for: the
+ * cask is in our possession and is somebody else's property, and they are
+ * entitled to know what has happened to it.
+ *
+ * What this deliberately is NOT: a certificate of age or origin. Those
+ * are signed by a Canadian official (EDM3-1-1 ¶43–46) and stage 189 is
+ * careful to assemble evidence rather than issue one. This is the same
+ * discipline — a statement of our own records, said to be that.
+ *
+ * @generated from message stillhouse.v1.CaskStatementGauge
+ */
+export type CaskStatementGauge = Message<"stillhouse.v1.CaskStatementGauge"> & {
+  /**
+   * @generated from field: string date = 1;
+   */
+  date: string;
+
+  /**
+   * @generated from field: double volume_l = 2;
+   */
+  volumeL: number;
+
+  /**
+   * @generated from field: double abv_pct = 3;
+   */
+  abvPct: number;
+
+  /**
+   * @generated from field: double laa = 4;
+   */
+  laa: number;
+
+  /**
+   * fill | regauge | dump
+   *
+   * @generated from field: string kind = 5;
+   */
+  kind: string;
+
+  /**
+   * @generated from field: string gauged_by = 6;
+   */
+  gaugedBy: string;
+
+  /**
+   * @generated from field: string notes = 7;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.CaskStatementGauge.
+ * Use `create(CaskStatementGaugeSchema)` to create a new message.
+ */
+export const CaskStatementGaugeSchema: GenMessage<CaskStatementGauge> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_barrel, 18);
+
+/**
+ * @generated from message stillhouse.v1.CaskStatementRequest
+ */
+export type CaskStatementRequest = Message<"stillhouse.v1.CaskStatementRequest"> & {
+  /**
+   * @generated from field: string container_id = 1;
+   */
+  containerId: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.CaskStatementRequest.
+ * Use `create(CaskStatementRequestSchema)` to create a new message.
+ */
+export const CaskStatementRequestSchema: GenMessage<CaskStatementRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_barrel, 19);
+
+/**
+ * @generated from message stillhouse.v1.CaskStatementResponse
+ */
+export type CaskStatementResponse = Message<"stillhouse.v1.CaskStatementResponse"> & {
+  /**
+   * @generated from field: string container_id = 1;
+   */
+  containerId: string;
+
+  /**
+   * @generated from field: string cask_name = 2;
+   */
+  caskName: string;
+
+  /**
+   * Whose cask it is. Empty owner means the distillery's own, which is a
+   * legitimate thing to print a statement for but is stated rather than
+   * implied.
+   *
+   * @generated from field: string owner_customer_id = 3;
+   */
+  ownerCustomerId: string;
+
+  /**
+   * @generated from field: string owner_name = 4;
+   */
+  ownerName: string;
+
+  /**
+   * @generated from field: string possession = 5;
+   */
+  possession: string;
+
+  /**
+   * The wood.
+   *
+   * @generated from field: string cooperage_supplier = 6;
+   */
+  cooperageSupplier: string;
+
+  /**
+   * @generated from field: string wood_species = 7;
+   */
+  woodSpecies: string;
+
+  /**
+   * @generated from field: string prior_use = 8;
+   */
+  priorUse: string;
+
+  /**
+   * @generated from field: int32 char_level = 9;
+   */
+  charLevel: number;
+
+  /**
+   * @generated from field: string rickhouse = 10;
+   */
+  rickhouse: string;
+
+  /**
+   * Filled, and now.
+   *
+   * @generated from field: string fill_date = 11;
+   */
+  fillDate: string;
+
+  /**
+   * @generated from field: double filled_volume_l = 12;
+   */
+  filledVolumeL: number;
+
+  /**
+   * @generated from field: double filled_abv_pct = 13;
+   */
+  filledAbvPct: number;
+
+  /**
+   * @generated from field: double filled_laa = 14;
+   */
+  filledLaa: number;
+
+  /**
+   * @generated from field: double current_volume_l = 15;
+   */
+  currentVolumeL: number;
+
+  /**
+   * @generated from field: double current_abv_pct = 16;
+   */
+  currentAbvPct: number;
+
+  /**
+   * @generated from field: double current_laa = 17;
+   */
+  currentLaa: number;
+
+  /**
+   * @generated from field: int32 days_in_wood = 18;
+   */
+  daysInWood: number;
+
+  /**
+   * The angel's share since fill: LAA lost, and the same as a percentage
+   * of what went in per year. Only present when the fill gauge recorded a
+   * strength — computing a loss against a fill figure nobody wrote down
+   * would be inventing the number this whole statement exists to report.
+   *
+   * @generated from field: bool angels_share_known = 19;
+   */
+  angelsShareKnown: boolean;
+
+  /**
+   * @generated from field: double angels_share_laa = 20;
+   */
+  angelsShareLaa: number;
+
+  /**
+   * @generated from field: double angels_share_pct_per_year = 21;
+   */
+  angelsSharePctPerYear: number;
+
+  /**
+   * @generated from field: string angels_share_missing = 22;
+   */
+  angelsShareMissing: string;
+
+  /**
+   * Every gauge on this cask, newest first.
+   *
+   * @generated from field: repeated stillhouse.v1.CaskStatementGauge gauges = 23;
+   */
+  gauges: CaskStatementGauge[];
+
+  /**
+   * What duty would fall due if the cask were bottled today, at today's
+   * rate. Present only when a rate can be cited for today — the rate
+   * table refuses outside what it can source, and a duty figure on a
+   * statement a customer keeps is not a place to guess.
+   *
+   * @generated from field: bool duty_known = 24;
+   */
+  dutyKnown: boolean;
+
+  /**
+   * @generated from field: double duty_rate_per_laa = 25;
+   */
+  dutyRatePerLaa: number;
+
+  /**
+   * @generated from field: double duty_if_bottled_today_cad = 26;
+   */
+  dutyIfBottledTodayCad: number;
+
+  /**
+   * @generated from field: string duty_missing = 27;
+   */
+  dutyMissing: string;
+
+  /**
+   * Said on the document, not in the documentation.
+   *
+   * @generated from field: string basis = 28;
+   */
+  basis: string;
+
+  /**
+   * @generated from field: string generated_at = 29;
+   */
+  generatedAt: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.CaskStatementResponse.
+ * Use `create(CaskStatementResponseSchema)` to create a new message.
+ */
+export const CaskStatementResponseSchema: GenMessage<CaskStatementResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_barrel, 20);
+
+/**
  * @generated from enum stillhouse.v1.BarrelEventKind
  */
 export enum BarrelEventKind {
@@ -1236,6 +1492,16 @@ export const BarrelService: GenService<{
     methodKind: "unary";
     input: typeof VoidBarrelEventRequestSchema;
     output: typeof VoidBarrelEventResponseSchema;
+  },
+  /**
+   * A statement of what a cask holds, for the person who owns it.
+   *
+   * @generated from rpc stillhouse.v1.BarrelService.CaskStatement
+   */
+  caskStatement: {
+    methodKind: "unary";
+    input: typeof CaskStatementRequestSchema;
+    output: typeof CaskStatementResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_barrel, 0);

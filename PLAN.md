@@ -328,8 +328,17 @@ rather than noise. Needs an explicit opt-in and a k-anonymity floor.
 
 ### J3 · Cask ownership programmes — P2
 
-Private cask sales as a product: buyer records, maturation statements, duty at
-bottling. Depends on `A7`.
+The maturation statement shipped in stage 197, and the two other pieces
+this item named turn out to exist already: buyer records are customers,
+and duty at bottling is what `A1` made the duty point in stage 145.
+
+What is left is the commercial wrapper, which is genuinely a sales
+feature and belongs with track D rather than here:
+
+- Selling a cask — the order, the money, and the contract term.
+- A periodic statement *sent* rather than looked up. The document exists;
+  what is missing is scheduling and delivery, and stage 196's webhooks
+  are the plumbing for the second half of that.
 
 ### J4 · Expanded MCP surface — P2
 
