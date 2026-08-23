@@ -1,0 +1,76 @@
+// CSV in.
+//
+// Stage 124's adopt-existing-stock path is the careful half of getting a
+// running distillery into Stillhouse — one cask at a time, from a scale
+// and a hydrometer, with the determination trail intact. This is the
+// boring half: the four hundred rows somebody already has in a
+// spreadsheet.
+//
+// Three properties matter more than the parsing. A dry run is always
+// available, because an import that can only be found out about by doing
+// it is one nobody runs on real data. Every row lands in one
+// transaction, so a failure on row 380 leaves nothing behind. And every
+// rejection names its row and says what is wrong in a sentence.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+enum ImportKind {
+  IMPORT_KIND_UNSPECIFIED = 0;
+  IMPORT_KIND_MATERIALS = 1;
+  IMPORT_KIND_MATERIAL_LOTS = 2;
+  IMPORT_KIND_PRODUCTS = 3;
+  IMPORT_KIND_CUSTOMERS = 4;
+  IMPORT_KIND_BARRELS = 5;
+  IMPORT_KIND_PACKAGED_INVENTORY = 6;
+}
+
+message ImportColumn {
+  string name = 1;
+  bool required = 2;
+  string help = 3;
+}
+
+message ImportProblem {
+  // The line as a person sees it in their spreadsheet: 1 is the header,
+  // so data starts at 2.
+  int32 row = 1;
+  string column = 2;
+  string detail = 3;
+}
+
+message DescribeImportRequest { ImportKind kind = 1; }
+message DescribeImportResponse {
+  repeated ImportColumn columns = 1;
+  string help = 2;
+  // The header line, ready to paste into a spreadsheet.
+  string template_csv = 3;
+}
+
+message RunImportRequest {
+  ImportKind kind = 1;
+  // The file itself. Sent inline rather than as an upload because these
+  // are spreadsheets of hundreds of rows, not gigabytes.
+  string csv = 2;
+  // False validates and reports without writing anything. The default,
+  // deliberately: committing has to be asked for.
+  bool commit = 3;
+}
+message RunImportResponse {
+  int32 rows_read = 1;
+  int32 rows_accepted = 2;
+  repeated ImportProblem problems = 3;
+  // Things worth saying that are not failures — a strength recorded
+  // uncorrected, a lot with no price. The import proceeds; the operator
+  // should still know.
+  repeated string notes = 4;
+  // False for a dry run, and false for a commit abandoned because a row
+  // failed. A file with any problem in it does not import at all:
+  // partial imports are what make people distrust importers.
+  bool committed = 5;
+}
+
+service ImportService {
+  rpc DescribeImport(DescribeImportRequest) returns (DescribeImportResponse);
+  rpc RunImport(RunImportRequest) returns (RunImportResponse);
+}

@@ -327,14 +327,6 @@ rediscovered as a gap.
 
 ## Track H — platform
 
-### H3 · Bulk importer — P1
-
-Stage 124's adopt-existing-stock path is the clever half — real casks in from a
-scale reading and a hydrometer, no invented history, CW eligibility preserved.
-This is the boring half: CSV in for materials, products, barrels, packaged
-inventory and customers, with a dry-run and a rollback. The difference between
-a distillery trying Stillhouse and finishing.
-
 ### H6 · Full bilingual coverage — P1
 
 `lib/i18n` works but is imported in 4 of 46 components. Quebec is 73

@@ -49,6 +49,14 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// ImportService. A bulk import creates casks, stock and customers in
+	// one action with no upstream production behind any of it — the same
+	// power as AdoptOpeningInventory, at scale — so it sits with the back
+	// office rather than with the operator at the still. Reading the
+	// column list is not a write and is not gated.
+	"/stillhouse.v1.ImportService/DescribeImport": roleViewer,
+	"/stillhouse.v1.ImportService/RunImport":      roleOwner,
+
 	// JournalService. The chart of accounts is the licensee's own
 	// bookkeeping, so mapping is owner-level; previewing what would be
 	// exported is a viewer read.

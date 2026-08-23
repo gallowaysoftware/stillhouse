@@ -118,3 +118,16 @@ UPDATE excise_stamp_orders
 SET quantity_applied = quantity_applied - $2
 WHERE id = $1 AND quantity_applied >= $2
 RETURNING *;
+
+-- name: CreatePackagedInventoryAdopted :one
+-- Packaged stock that was already on the shelf when the distillery
+-- started using Stillhouse. bottling_run_id is NULL by construction:
+-- there is no run behind it, and inventing one would put fabricated
+-- production into the ledger. Everything downstream already treats a
+-- lot with no run as unvalued rather than free — see the accounting
+-- journal's cost-of-sales line.
+INSERT INTO packaged_inventory (
+    tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
+    bottles_on_hand, bottles_packaged
+) VALUES ($1, $2, $3, $4, NULL, $5, $5)
+RETURNING *;

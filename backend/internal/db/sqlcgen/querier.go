@@ -104,6 +104,13 @@ type Querier interface {
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
+	// Packaged stock that was already on the shelf when the distillery
+	// started using Stillhouse. bottling_run_id is NULL by construction:
+	// there is no run behind it, and inventing one would put fabricated
+	// production into the ledger. Everything downstream already treats a
+	// lot with no run as unvalued rather than free — see the accounting
+	// journal's cost-of-sales line.
+	CreatePackagedInventoryAdopted(ctx context.Context, arg CreatePackagedInventoryAdoptedParams) (PackagedInventory, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePriceList(ctx context.Context, arg CreatePriceListParams) (PriceList, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)

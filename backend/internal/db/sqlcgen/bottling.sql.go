@@ -160,6 +160,53 @@ func (q *Queries) CreateBottlingRunStampUsage(ctx context.Context, arg CreateBot
 	return i, err
 }
 
+const createPackagedInventoryAdopted = `-- name: CreatePackagedInventoryAdopted :one
+INSERT INTO packaged_inventory (
+    tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
+    bottles_on_hand, bottles_packaged
+) VALUES ($1, $2, $3, $4, NULL, $5, $5)
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at
+`
+
+type CreatePackagedInventoryAdoptedParams struct {
+	TenantID      uuid.UUID `json:"tenant_id"`
+	ProductID     uuid.UUID `json:"product_id"`
+	LotCode       string    `json:"lot_code"`
+	Jurisdiction  string    `json:"jurisdiction"`
+	BottlesOnHand int32     `json:"bottles_on_hand"`
+}
+
+// Packaged stock that was already on the shelf when the distillery
+// started using Stillhouse. bottling_run_id is NULL by construction:
+// there is no run behind it, and inventing one would put fabricated
+// production into the ledger. Everything downstream already treats a
+// lot with no run as unvalued rather than free — see the accounting
+// journal's cost-of-sales line.
+func (q *Queries) CreatePackagedInventoryAdopted(ctx context.Context, arg CreatePackagedInventoryAdoptedParams) (PackagedInventory, error) {
+	row := q.db.QueryRow(ctx, createPackagedInventoryAdopted,
+		arg.TenantID,
+		arg.ProductID,
+		arg.LotCode,
+		arg.Jurisdiction,
+		arg.BottlesOnHand,
+	)
+	var i PackagedInventory
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.ProductID,
+		&i.LotCode,
+		&i.Jurisdiction,
+		&i.BottlingRunID,
+		&i.BottlesOnHand,
+		&i.BottlesPackaged,
+		&i.BottlesRemoved,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const decrementPackagedInventoryByRun = `-- name: DecrementPackagedInventoryByRun :one
 UPDATE packaged_inventory
 SET bottles_on_hand  = bottles_on_hand  - $2,
