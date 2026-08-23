@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { authClient, userClient } from "@/lib/clients";
 import { setLang, useLang, useT } from "@/lib/i18n";
+import { ScanBox } from "@/components/ScanBox";
 
 type NavItem = { to: string; en: string; fr: string };
 type NavGroup = { en: string; fr: string; items: NavItem[] };
@@ -26,6 +27,7 @@ const navGroups: NavGroup[] = [
       { to: "/products", en: "Products", fr: "Produits" },
       { to: "/stamps", en: "Excise stamps", fr: "Timbres d'accise" },
       { to: "/instruments", en: "Instruments", fr: "Instruments" },
+      { to: "/labels", en: "Labels", fr: "Étiquettes" },
       { to: "/customers", en: "Customers", fr: "Clients" },
       { to: "/import", en: "Import", fr: "Importer" },
       { to: "/pricing", en: "Provincial pricing", fr: "Prix provincial" },
@@ -96,6 +98,11 @@ export function Shell({ children }: { children: ReactNode }) {
             {data.tenant.name}
           </p>
         )}
+        {/* A scanner types and presses Enter, so this is where a scan
+            lands from anywhere in the app. Press / to open it. */}
+        <div className="mt-3">
+          <ScanBox />
+        </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         <NavItemLink item={homeItem} t={t} />
@@ -163,6 +170,8 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="inline-block h-2 w-2 rounded-full bg-accent" />
           Stillhouse
         </Link>
+        <div className="flex items-center gap-2">
+        <ScanBox />
         <button
           onClick={() => setMobileNavOpen(true)}
           className="rounded-md p-2 text-fg-muted hover:bg-surface-3 hover:text-fg"
@@ -173,6 +182,7 @@ export function Shell({ children }: { children: ReactNode }) {
             <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
+        </div>
       </header>
 
       {/* Mobile drawer + scrim. Render only when open so it doesn't trap

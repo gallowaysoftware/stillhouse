@@ -1,0 +1,82 @@
+// Barcodes for a rackhouse.
+//
+// Finding cask 0417 by scrolling a list is not how a rackhouse is
+// operated. What is operated is: a tag on the bung stave, a label on the
+// case, and a wedge scanner that behaves like a keyboard. That needs two
+// things Stillhouse did not have — something short enough to print and
+// scan on every row, and one place that turns whatever came off the
+// scanner back into the row it names.
+//
+// The code is derived from the row's id rather than stored: 14
+// characters, a kind letter and 13 base-32 digits. Nothing to generate,
+// nothing to backfill, and every cask that has ever existed has one from
+// the moment this ships. See backend/internal/labelcode.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+// What a code points at. The kind letter is part of the printed code, so
+// a scan says what it addresses before anything is looked up — scanning a
+// case label at the regauge screen is refused for the right reason rather
+// than answering "not found".
+enum LabelKind {
+  LABEL_KIND_UNSPECIFIED = 0;
+  LABEL_KIND_BARREL = 1;
+  LABEL_KIND_CONTAINER = 2;   // a tank or any non-barrel vessel
+  LABEL_KIND_LOT = 3;         // packaged inventory
+  LABEL_KIND_SHIPMENT = 4;
+  LABEL_KIND_PRODUCT = 5;
+}
+
+message LabelTarget {
+  LabelKind kind = 1;
+  string id = 2;
+  // The 14 characters printed under the barcode, and the thing to read
+  // out over a noisy still house.
+  string code = 3;
+  // What to put on the label and show after a scan.
+  string title = 4;
+  string subtitle = 5;
+  // Quantities, for the tag on the cask. Zero where they do not apply.
+  double volume_l = 6;
+  double abv_pct = 7;
+  double laa = 8;
+  int32  bottles = 9;
+  // Jurisdiction of the stamps on a packaged lot; empty otherwise.
+  string jurisdiction = 10;
+  // Retail barcode for a product or a case of one, where the SKU registry
+  // has one. This is a GTIN, printed as itself — it is somebody else's
+  // number and Stillhouse does not invent it.
+  string gtin = 11;
+  string fill_date = 12;   // ISO; casks only
+  int32  days_aged = 13;
+}
+
+message ResolveLabelRequest {
+  // Whatever came off the scanner or out of the operator's fingers: a
+  // label code, a lot code, a cask name or burn-in serial, or a GTIN.
+  string scanned = 1;
+  // Optional: refuse anything that is not this kind. The pick screen sets
+  // it to LOT so scanning a cask tag says what is wrong rather than
+  // wandering off to another page.
+  LabelKind expect = 2;
+}
+message ResolveLabelResponse {
+  LabelTarget target = 1;
+  // Set when the scan matched more than one row. Nothing is returned in
+  // target then: guessing which cask the operator meant is worse than
+  // asking.
+  repeated LabelTarget ambiguous = 2;
+}
+
+message ListLabelTargetsRequest {
+  LabelKind kind = 1;
+  // Casks and vessels only: include archived ones.
+  bool include_archived = 2;
+}
+message ListLabelTargetsResponse { repeated LabelTarget targets = 1; }
+
+service LabelService {
+  rpc ResolveLabel(ResolveLabelRequest) returns (ResolveLabelResponse);
+  rpc ListLabelTargets(ListLabelTargetsRequest) returns (ListLabelTargetsResponse);
+}

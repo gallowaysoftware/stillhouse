@@ -8,6 +8,7 @@ import { bottlingClient, customerClient, productClient, salesClient, tenantClien
 import { SalesOrderStatus, ShipmentStatus } from "@/gen/stillhouse/v1/sales_pb";
 import { formatLAA, formatQty } from "@/lib/format";
 import { OwnerOnly, WriteOnly } from "@/lib/role";
+import { ScanToPick } from "@/components/ScanToPick";
 
 const orderStatusLabel: Record<number, string> = {
   [SalesOrderStatus.DRAFT]: "Draft",
@@ -577,6 +578,12 @@ function ShipmentDetail({ id }: { id: string }) {
           >
             <div className="sm:col-span-2">
               <label className="mb-1 block text-xs text-fg-muted">Lot</label>
+              <ScanToPick
+                onPicked={(lotId) => {
+                  const sel = document.querySelector<HTMLSelectElement>('select[name="lot_id"]');
+                  if (sel) sel.value = lotId;
+                }}
+              />
               <select name="lot_id" required className="w-full rounded border border-border-strong px-2 py-1.5 text-sm">
                 <option value="">— choose —</option>
                 {lots.data?.rows

@@ -333,6 +333,14 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.BulkService/SetBulkContainerPossession": roleOperator,
 	"/stillhouse.v1.BulkService/SetBulkContainerOwner":      roleOwner,
 
+	// LabelService. Scanning a tag and printing a sheet of them are both
+	// reads — the code is derived from an id that the caller could already
+	// see, so a label reveals nothing a list does not. Viewer is the floor
+	// because the person with the scanner in the rackhouse is exactly who
+	// should be able to use it.
+	"/stillhouse.v1.LabelService/ResolveLabel":     roleViewer,
+	"/stillhouse.v1.LabelService/ListLabelTargets": roleViewer,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

@@ -259,11 +259,6 @@ removal automatically. This is a compliance feature wearing a sales costume —
 every sale keyed by hand is a chance to under-report. The pricing engine
 already models `SALES_CHANNEL_ON_SITE_RETAIL`; nothing feeds it.
 
-### G5 · Barcode and label printing — P1
-
-Barrel tags, case labels, scan-to-regauge, scan-to-pick. How a rackhouse is
-actually operated; finding cask 0417 in a list is not it.
-
 ### G6 · Public API and webhooks — P2
 
 The ConnectRPC surface is already the API — this is documenting it, versioning

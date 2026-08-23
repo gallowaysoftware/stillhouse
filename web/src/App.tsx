@@ -27,6 +27,7 @@ import { JournalPage } from "./pages/JournalPage";
 import { ImportPage } from "./pages/ImportPage";
 import { PurchasingPage } from "./pages/PurchasingPage";
 import { SalesPage } from "./pages/SalesPage";
+import { LabelsPage } from "./pages/LabelsPage";
 import { WorkOrdersPage } from "./pages/WorkOrdersPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
@@ -77,6 +78,7 @@ export function App() {
       <Route path="/import" element={<Guarded><ImportPage /></Guarded>} />
       <Route path="/purchasing" element={<Guarded><PurchasingPage /></Guarded>} />
       <Route path="/sales" element={<Guarded><SalesPage /></Guarded>} />
+      <Route path="/labels" element={<Guarded><LabelsPage /></Guarded>} />
       <Route path="/work" element={<Guarded><WorkOrdersPage /></Guarded>} />
       <Route path="/settings" element={<Guarded><SettingsPage /></Guarded>} />
     </Routes>

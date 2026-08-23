@@ -219,6 +219,21 @@ type Querier interface {
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
 	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error)
+	// A label code carries the first 64 bits of a row's id, which is the
+	// first 16 characters of its hex form. Matching on a prefix rather than a
+	// whole id is why every one of these returns a set: two rows sharing a
+	// prefix is astronomically unlikely and is still an ambiguity to report
+	// rather than a coin to flip. See internal/labelcode.
+	FindBulkContainersByIDPrefix(ctx context.Context, prefix string) ([]FindBulkContainersByIDPrefixRow, error)
+	FindBulkContainersByName(ctx context.Context, name string) ([]FindBulkContainersByNameRow, error)
+	FindPackagedInventoryByIDPrefix(ctx context.Context, prefix string) ([]FindPackagedInventoryByIDPrefixRow, error)
+	// The other half of scanning: what an operator types, or what is printed
+	// on a case by somebody other than us. A retail barcode is a GTIN, and a
+	// lot code is what is on the bottling record.
+	FindPackagedInventoryByLotCode(ctx context.Context, code string) ([]FindPackagedInventoryByLotCodeRow, error)
+	FindProductByGTIN(ctx context.Context, gtin string) ([]Product, error)
+	FindProductsByIDPrefix(ctx context.Context, prefix string) ([]Product, error)
+	FindShipmentsByIDPrefix(ctx context.Context, prefix string) ([]FindShipmentsByIDPrefixRow, error)
 	// The pre-tenant keyhole. Bearer auth has to resolve a token hash to its
 	// owner before any tenant context exists — that lookup is what
 	// establishes the tenant — so it cannot satisfy the RLS policy migration
