@@ -89,6 +89,14 @@ message B266Report {
   // account for it and a licensee reconciling them should not have to
   // wonder where the difference went.
   double bulk_third_party_elsewhere_laa = 77;
+  // Line D's packaged half, which had no path until stage 186. Signed
+  // net with each direction beside it, for the same reason the bulk one
+  // has: a period that found a case in one lot and lost one in another
+  // nets to zero, and a line showing only the net says nothing happened.
+  double packaged_adjustments_net_laa = 85;
+  double packaged_adjustments_increase_laa = 86;
+  double packaged_adjustments_decrease_laa = 87;
+  int32  packaged_adjustments_count = 88;
   // Line D — reason-coded adjustments reconciling book inventory to
   // physical. Signed net, with each direction also reported: a period that
   // found 3 LAA in one tank and lost 3 in another nets to zero, and a line

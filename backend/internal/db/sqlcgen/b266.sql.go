@@ -638,6 +638,48 @@ func (q *Queries) SumBulkOnHandAsOf(ctx context.Context, asOf pgtype.Timestamptz
 	return total_laa, err
 }
 
+const sumPackagedAdjustmentsInPeriod = `-- name: SumPackagedAdjustmentsInPeriod :one
+SELECT COALESCE(SUM(laa_delta), 0)::double precision AS net_laa,
+       COALESCE(SUM(laa_delta) FILTER (WHERE laa_delta > 0), 0)::double precision AS increase_laa,
+       COALESCE(-SUM(laa_delta) FILTER (WHERE laa_delta < 0), 0)::double precision AS decrease_laa,
+       COALESCE(SUM(bottles_delta), 0)::int AS net_bottles,
+       COUNT(*)::int AS adjustment_count
+FROM packaged_adjustments
+WHERE occurred_on >= $1::date
+  AND occurred_on <  $2::date
+`
+
+type SumPackagedAdjustmentsInPeriodParams struct {
+	PeriodStart pgtype.Date `json:"period_start"`
+	PeriodEnd   pgtype.Date `json:"period_end"`
+}
+
+type SumPackagedAdjustmentsInPeriodRow struct {
+	NetLaa          float64 `json:"net_laa"`
+	IncreaseLaa     float64 `json:"increase_laa"`
+	DecreaseLaa     float64 `json:"decrease_laa"`
+	NetBottles      int32   `json:"net_bottles"`
+	AdjustmentCount int32   `json:"adjustment_count"`
+}
+
+// Line D's packaged half: reason-coded reconciliation of packaged stock
+// to physical. Signed net, with each direction also reported, for the
+// same reason the bulk one is — a period that found a case in one lot and
+// lost one in another nets to zero, and a line showing only the net says
+// nothing happened.
+func (q *Queries) SumPackagedAdjustmentsInPeriod(ctx context.Context, arg SumPackagedAdjustmentsInPeriodParams) (SumPackagedAdjustmentsInPeriodRow, error) {
+	row := q.db.QueryRow(ctx, sumPackagedAdjustmentsInPeriod, arg.PeriodStart, arg.PeriodEnd)
+	var i SumPackagedAdjustmentsInPeriodRow
+	err := row.Scan(
+		&i.NetLaa,
+		&i.IncreaseLaa,
+		&i.DecreaseLaa,
+		&i.NetBottles,
+		&i.AdjustmentCount,
+	)
+	return i, err
+}
+
 const sumPackagedOnHandAsOf = `-- name: SumPackagedOnHandAsOf :one
 WITH running AS (
     SELECT COALESCE(SUM(pi.bottles_on_hand * p.bottle_size_ml * p.target_abv_pct / 100000.0), 0)::double precision AS total_laa,
@@ -655,10 +697,23 @@ WITH running AS (
            COALESCE(SUM(bottles_removed), 0)::int AS bottles
     FROM packaging_removals
     WHERE removal_date >= $1 AND voided_at IS NULL
+), adjusted_after AS (
+    -- Stage 186. Until it, packaged inventory only ever gained from a
+    -- run and lost to a removal, and this walk relied on that. A count
+    -- that found a case missing now writes a row here, and the row is
+    -- undone the same way the other two are — a balance that changed
+    -- with nothing in the ledger to undo would silently restate a period
+    -- already filed.
+    SELECT COALESCE(SUM(laa_delta), 0)::double precision AS laa,
+           COALESCE(SUM(bottles_delta), 0)::int AS bottles
+    FROM packaged_adjustments
+    WHERE occurred_on >= $1
 )
-SELECT (running.total_laa     - packaged_after.laa     + removed_after.laa)::double precision AS total_laa,
-       (running.total_bottles - packaged_after.bottles + removed_after.bottles)::int          AS total_bottles
-FROM running, packaged_after, removed_after
+SELECT (running.total_laa     - packaged_after.laa     + removed_after.laa
+        - adjusted_after.laa)::double precision AS total_laa,
+       (running.total_bottles - packaged_after.bottles + removed_after.bottles
+        - adjusted_after.bottles)::int          AS total_bottles
+FROM running, packaged_after, removed_after, adjusted_after
 `
 
 type SumPackagedOnHandAsOfRow struct {

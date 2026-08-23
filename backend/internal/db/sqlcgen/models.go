@@ -1922,6 +1922,94 @@ func (ns NullStampDispositionKind) Value() (driver.Value, error) {
 	return string(ns.StampDispositionKind), nil
 }
 
+type StockCountScope string
+
+const (
+	StockCountScopeBulk      StockCountScope = "bulk"
+	StockCountScopePackaged  StockCountScope = "packaged"
+	StockCountScopeMaterials StockCountScope = "materials"
+	StockCountScopeAll       StockCountScope = "all"
+)
+
+func (e *StockCountScope) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StockCountScope(s)
+	case string:
+		*e = StockCountScope(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StockCountScope: %T", src)
+	}
+	return nil
+}
+
+type NullStockCountScope struct {
+	StockCountScope StockCountScope `json:"stock_count_scope"`
+	Valid           bool            `json:"valid"` // Valid is true if StockCountScope is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStockCountScope) Scan(value interface{}) error {
+	if value == nil {
+		ns.StockCountScope, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StockCountScope.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStockCountScope) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StockCountScope), nil
+}
+
+type StockCountStatus string
+
+const (
+	StockCountStatusOpen      StockCountStatus = "open"
+	StockCountStatusCounted   StockCountStatus = "counted"
+	StockCountStatusPosted    StockCountStatus = "posted"
+	StockCountStatusCancelled StockCountStatus = "cancelled"
+)
+
+func (e *StockCountStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StockCountStatus(s)
+	case string:
+		*e = StockCountStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StockCountStatus: %T", src)
+	}
+	return nil
+}
+
+type NullStockCountStatus struct {
+	StockCountStatus StockCountStatus `json:"stock_count_status"`
+	Valid            bool             `json:"valid"` // Valid is true if StockCountStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStockCountStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.StockCountStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StockCountStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStockCountStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StockCountStatus), nil
+}
+
 type StrengthSource string
 
 const (
@@ -2815,6 +2903,22 @@ type MaterialLot struct {
 	LandedUnitCostCad   pgtype.Float8      `json:"landed_unit_cost_cad"`
 }
 
+type PackagedAdjustment struct {
+	ID                  uuid.UUID                 `json:"id"`
+	TenantID            uuid.UUID                 `json:"tenant_id"`
+	PackagedInventoryID uuid.UUID                 `json:"packaged_inventory_id"`
+	OccurredOn          pgtype.Date               `json:"occurred_on"`
+	BottlesDelta        int32                     `json:"bottles_delta"`
+	BookBottles         int32                     `json:"book_bottles"`
+	CountedBottles      int32                     `json:"counted_bottles"`
+	LaaDelta            float64                   `json:"laa_delta"`
+	Reason              InventoryAdjustmentReason `json:"reason"`
+	Explanation         string                    `json:"explanation"`
+	StockCountID        uuid.NullUUID             `json:"stock_count_id"`
+	RecordedBy          uuid.UUID                 `json:"recorded_by"`
+	CreatedAt           pgtype.Timestamptz        `json:"created_at"`
+}
+
 type PackagedInventory struct {
 	ID              uuid.UUID          `json:"id"`
 	TenantID        uuid.UUID          `json:"tenant_id"`
@@ -3195,6 +3299,44 @@ type ShipmentLine struct {
 	PackagingRemovalID  uuid.NullUUID      `json:"packaging_removal_id"`
 	Notes               string             `json:"notes"`
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+}
+
+type StockCount struct {
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	CountNo      int32              `json:"count_no"`
+	Name         string             `json:"name"`
+	Scope        StockCountScope    `json:"scope"`
+	LocationID   uuid.NullUUID      `json:"location_id"`
+	Status       StockCountStatus   `json:"status"`
+	OpenedAt     pgtype.Timestamptz `json:"opened_at"`
+	CountedAt    pgtype.Timestamptz `json:"counted_at"`
+	PostedAt     pgtype.Timestamptz `json:"posted_at"`
+	PostedBy     uuid.NullUUID      `json:"posted_by"`
+	CancelReason string             `json:"cancel_reason"`
+	Notes        string             `json:"notes"`
+	CreatedBy    uuid.UUID          `json:"created_by"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type StockCountLine struct {
+	ID                  uuid.UUID                     `json:"id"`
+	TenantID            uuid.UUID                     `json:"tenant_id"`
+	StockCountID        uuid.UUID                     `json:"stock_count_id"`
+	BulkContainerID     uuid.NullUUID                 `json:"bulk_container_id"`
+	PackagedInventoryID uuid.NullUUID                 `json:"packaged_inventory_id"`
+	MaterialLotID       uuid.NullUUID                 `json:"material_lot_id"`
+	BookQuantity        float64                       `json:"book_quantity"`
+	CountedQuantity     pgtype.Float8                 `json:"counted_quantity"`
+	CountedAbvPct       pgtype.Float8                 `json:"counted_abv_pct"`
+	Uom                 string                        `json:"uom"`
+	Reason              NullInventoryAdjustmentReason `json:"reason"`
+	Explanation         string                        `json:"explanation"`
+	CountedBy           string                        `json:"counted_by"`
+	PostedAt            pgtype.Timestamptz            `json:"posted_at"`
+	AdjustmentID        uuid.NullUUID                 `json:"adjustment_id"`
+	Notes               string                        `json:"notes"`
+	CreatedAt           pgtype.Timestamptz            `json:"created_at"`
 }
 
 type Supplier struct {

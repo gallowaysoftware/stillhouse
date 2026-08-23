@@ -419,6 +419,17 @@ var procedureMinRole = map[string]minRole{
 	// make the whisky is exactly who should be looking at it.
 	"/stillhouse.v1.SchedulingService/ProductionPlan": roleViewer,
 
+	// StockCountService. Counting the warehouse is operator work — it is
+	// the person with the clipboard. Posting the variances writes
+	// reason-coded adjustments onto a return, which is the same class of
+	// act as classifying a loss, so it sits with the owner.
+	"/stillhouse.v1.StockCountService/ListStockCounts":  roleViewer,
+	"/stillhouse.v1.StockCountService/GetStockCount":    roleViewer,
+	"/stillhouse.v1.StockCountService/OpenStockCount":   roleOperator,
+	"/stillhouse.v1.StockCountService/RecordCount":      roleOperator,
+	"/stillhouse.v1.StockCountService/CancelStockCount": roleOperator,
+	"/stillhouse.v1.StockCountService/PostStockCount":   roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

@@ -35,6 +35,7 @@ type Querier interface {
 	AddPurchaseOrderLine(ctx context.Context, arg AddPurchaseOrderLineParams) (PurchaseOrderLine, error)
 	AddSalesOrderLine(ctx context.Context, arg AddSalesOrderLineParams) (SalesOrderLine, error)
 	AddShipmentLine(ctx context.Context, arg AddShipmentLineParams) (ShipmentLine, error)
+	AddStockCountLine(ctx context.Context, arg AddStockCountLineParams) (StockCountLine, error)
 	// Spirit that left stock into the still and has no output recorded after
 	// long enough that it should have. Alcohol off the books is the one
 	// shape of gap a period-end reconciliation cannot explain.
@@ -207,6 +208,7 @@ type Querier interface {
 	CreateShipment(ctx context.Context, arg CreateShipmentParams) (Shipment, error)
 	CreateStampDisposition(ctx context.Context, arg CreateStampDispositionParams) (ExciseStampDisposition, error)
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
+	CreateStockCount(ctx context.Context, arg CreateStockCountParams) (StockCount, error)
 	CreateSupplier(ctx context.Context, arg CreateSupplierParams) (Supplier, error)
 	CreateTOTPRecoveryCode(ctx context.Context, arg CreateTOTPRecoveryCodeParams) error
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
@@ -378,6 +380,9 @@ type Querier interface {
 	GetShipmentForUpdate(ctx context.Context, id uuid.UUID) (Shipment, error)
 	GetShipmentLine(ctx context.Context, id uuid.UUID) (ShipmentLine, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
+	GetStockCount(ctx context.Context, id uuid.UUID) (StockCount, error)
+	GetStockCountForUpdate(ctx context.Context, id uuid.UUID) (StockCount, error)
+	GetStockCountLine(ctx context.Context, id uuid.UUID) (StockCountLine, error)
 	GetSupplier(ctx context.Context, id uuid.UUID) (Supplier, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
@@ -537,6 +542,7 @@ type Querier interface {
 	ListMaterialLots(ctx context.Context, arg ListMaterialLotsParams) ([]MaterialLot, error)
 	ListMaterials(ctx context.Context, arg ListMaterialsParams) ([]Material, error)
 	ListOpenAlerts(ctx context.Context) ([]ListOpenAlertsRow, error)
+	ListPackagedAdjustments(ctx context.Context) ([]ListPackagedAdjustmentsRow, error)
 	// LEFT JOINs the originating bottling_run so we can carry first_bottled_date
 	// back to the client for an aging calc. packaged_inventory.bottling_run_id
 	// is nullable to support backfill cases.
@@ -578,6 +584,8 @@ type Querier interface {
 	// Voided runs are included and flagged: the stamps were applied to
 	// bottles, and voiding the run does not un-apply them.
 	ListStampUsageForOrder(ctx context.Context, stampOrderID uuid.UUID) ([]ListStampUsageForOrderRow, error)
+	ListStockCountLines(ctx context.Context, stockCountID uuid.UUID) ([]ListStockCountLinesRow, error)
+	ListStockCounts(ctx context.Context) ([]ListStockCountsRow, error)
 	ListSuppliers(ctx context.Context, includeArchived bool) ([]Supplier, error)
 	ListTaxRates(ctx context.Context) ([]TaxRate, error)
 	// Everything that is not simply ours-and-here, which is the list an
@@ -626,6 +634,7 @@ type Querier interface {
 	MarkProvincialReportFiled(ctx context.Context, arg MarkProvincialReportFiledParams) (ProvincialReportPeriod, error)
 	MarkRedistillationLossClassified(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	MarkShipmentShipped(ctx context.Context, arg MarkShipmentShippedParams) (Shipment, error)
+	MarkStockCountLinePosted(ctx context.Context, arg MarkStockCountLinePostedParams) error
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
@@ -638,6 +647,7 @@ type Querier interface {
 	NextRemovalNo(ctx context.Context) (int32, error)
 	NextSalesOrderNo(ctx context.Context) (int32, error)
 	NextShipmentNo(ctx context.Context) (int32, error)
+	NextStockCountNo(ctx context.Context) (int32, error)
 	NextWorkOrderNo(ctx context.Context) (int32, error)
 	// Issued invoices past their due date with money still on them, for the
 	// alert evaluator.
@@ -680,6 +690,7 @@ type Querier interface {
 	RecordEquipmentService(ctx context.Context, arg RecordEquipmentServiceParams) (EquipmentServiceEvent, error)
 	RecordInvoicePayment(ctx context.Context, arg RecordInvoicePaymentParams) (InvoicePayment, error)
 	RecordLabour(ctx context.Context, arg RecordLabourParams) (LabourEntry, error)
+	RecordPackagedAdjustment(ctx context.Context, arg RecordPackagedAdjustmentParams) (PackagedAdjustment, error)
 	// Closes the loop. laa_produced and produced_on are set together — the
 	// CHECK enforces it — so a run can never be half-recorded, and loss_laa
 	// becomes computable at exactly the moment both halves are known.
@@ -773,6 +784,8 @@ type Querier interface {
 	// which is correct: the cost of getting it here did not change, only
 	// when we learned it.
 	SetMaterialLotLandedCharges(ctx context.Context, arg SetMaterialLotLandedChargesParams) (MaterialLot, error)
+	SetMaterialLotQuantity(ctx context.Context, arg SetMaterialLotQuantityParams) (MaterialLot, error)
+	SetPackagedBottles(ctx context.Context, arg SetPackagedBottlesParams) (PackagedInventory, error)
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	// The status is cast explicitly at every use. Postgres cannot deduce one
 	// type for a parameter that is both assigned to an enum column and
@@ -784,6 +797,8 @@ type Querier interface {
 	SetRemovalShipment(ctx context.Context, arg SetRemovalShipmentParams) error
 	SetSalesOrderStatus(ctx context.Context, arg SetSalesOrderStatusParams) (SalesOrder, error)
 	SetShipmentShipDate(ctx context.Context, arg SetShipmentShipDateParams) (Shipment, error)
+	SetStockCountLineCount(ctx context.Context, arg SetStockCountLineCountParams) (StockCountLine, error)
+	SetStockCountStatus(ctx context.Context, arg SetStockCountStatusParams) (StockCount, error)
 	SetTenantBatchReleaseRequired(ctx context.Context, arg SetTenantBatchReleaseRequiredParams) (Tenant, error)
 	// Sets the RLS GUC inside an already-open transaction. Used by signup,
 	// where the tenant does not exist when the transaction begins but must be
@@ -810,6 +825,10 @@ type Querier interface {
 	// from movements only; but the screen still tells an operator that the
 	// cases in front of them are already promised to somebody.
 	StockCommitments(ctx context.Context) ([]StockCommitmentsRow, error)
+	// Seeding a sheet: everything in scope, with what the book says now.
+	StockCountBulkSubjects(ctx context.Context, locationID uuid.NullUUID) ([]StockCountBulkSubjectsRow, error)
+	StockCountMaterialSubjects(ctx context.Context) ([]StockCountMaterialSubjectsRow, error)
+	StockCountPackagedSubjects(ctx context.Context, locationID uuid.NullUUID) ([]StockCountPackagedSubjectsRow, error)
 	// The acknowledgement is written in the same statement that sets the
 	// status, so a submitted period can never exist without one. The table's
 	// CHECK holds the other half of that guarantee for any path that is not
@@ -943,6 +962,12 @@ type Querier interface {
 	// their coming back.
 	SumMarkedContainersPackagedInPeriod(ctx context.Context, arg SumMarkedContainersPackagedInPeriodParams) (SumMarkedContainersPackagedInPeriodRow, error)
 	SumMarkedDeliveriesInPeriod(ctx context.Context, arg SumMarkedDeliveriesInPeriodParams) (SumMarkedDeliveriesInPeriodRow, error)
+	// Line D's packaged half: reason-coded reconciliation of packaged stock
+	// to physical. Signed net, with each direction also reported, for the
+	// same reason the bulk one is — a period that found a case in one lot and
+	// lost one in another nets to zero, and a line showing only the net says
+	// nothing happened.
+	SumPackagedAdjustmentsInPeriod(ctx context.Context, arg SumPackagedAdjustmentsInPeriodParams) (SumPackagedAdjustmentsInPeriodRow, error)
 	// Packaged LAA and bottles on hand as at a moment. Same reverse walk as
 	// SumBulkOnHandAsOf and for the same reason: packaged inventory only ever
 	// receives bottling runs and only ever loses removals, so undoing both back

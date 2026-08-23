@@ -74,6 +74,11 @@ var exportTables = []string{
 	// Line D: the reason-coded entries reconciling book to physical, with
 	// the explanation and the author an auditor reads.
 	"inventory_adjustments",
+	// And their packaged counterpart, plus the count sheets that produced
+	// them.
+	"packaged_adjustments",
+	"stock_counts",
+	"stock_count_lines",
 	"distillation_runs",
 	"distillation_charges",
 	"distillation_cuts",

@@ -457,6 +457,17 @@ func gatherB266Totals(
 	} else {
 		return t, de
 	}
+	if a, ae := q.SumPackagedAdjustmentsInPeriod(ctx,
+		sqlcgen.SumPackagedAdjustmentsInPeriodParams{
+			PeriodStart: markStart, PeriodEnd: markEnd,
+		}); ae == nil {
+		t.packagedAdjNetLAA = a.NetLaa
+		t.packagedAdjIncreaseLAA = a.IncreaseLaa
+		t.packagedAdjDecreaseLAA = a.DecreaseLaa
+		t.packagedAdjCount = a.AdjustmentCount
+	} else {
+		return t, ae
+	}
 	packaged, err := q.SumPackagedOnHandAsOf(ctx, pgtype.Date{Valid: true, Time: queryEnd})
 	if err != nil {
 		return t, err

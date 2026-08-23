@@ -289,10 +289,23 @@ WITH running AS (
            COALESCE(SUM(bottles_removed), 0)::int AS bottles
     FROM packaging_removals
     WHERE removal_date >= sqlc.arg(as_of) AND voided_at IS NULL
+), adjusted_after AS (
+    -- Stage 186. Until it, packaged inventory only ever gained from a
+    -- run and lost to a removal, and this walk relied on that. A count
+    -- that found a case missing now writes a row here, and the row is
+    -- undone the same way the other two are — a balance that changed
+    -- with nothing in the ledger to undo would silently restate a period
+    -- already filed.
+    SELECT COALESCE(SUM(laa_delta), 0)::double precision AS laa,
+           COALESCE(SUM(bottles_delta), 0)::int AS bottles
+    FROM packaged_adjustments
+    WHERE occurred_on >= sqlc.arg(as_of)
 )
-SELECT (running.total_laa     - packaged_after.laa     + removed_after.laa)::double precision AS total_laa,
-       (running.total_bottles - packaged_after.bottles + removed_after.bottles)::int          AS total_bottles
-FROM running, packaged_after, removed_after;
+SELECT (running.total_laa     - packaged_after.laa     + removed_after.laa
+        - adjusted_after.laa)::double precision AS total_laa,
+       (running.total_bottles - packaged_after.bottles + removed_after.bottles
+        - adjusted_after.bottles)::int          AS total_bottles
+FROM running, packaged_after, removed_after, adjusted_after;
 
 -- name: BulkOwnershipSplitAsOf :one
 -- What the closing balance is made of. Not a line on the form: EDM10-1-7
@@ -319,3 +332,18 @@ SELECT
         AS third_party_elsewhere_laa
 FROM bulk_containers
 WHERE NOT archived;
+
+-- name: SumPackagedAdjustmentsInPeriod :one
+-- Line D's packaged half: reason-coded reconciliation of packaged stock
+-- to physical. Signed net, with each direction also reported, for the
+-- same reason the bulk one is — a period that found a case in one lot and
+-- lost one in another nets to zero, and a line showing only the net says
+-- nothing happened.
+SELECT COALESCE(SUM(laa_delta), 0)::double precision AS net_laa,
+       COALESCE(SUM(laa_delta) FILTER (WHERE laa_delta > 0), 0)::double precision AS increase_laa,
+       COALESCE(-SUM(laa_delta) FILTER (WHERE laa_delta < 0), 0)::double precision AS decrease_laa,
+       COALESCE(SUM(bottles_delta), 0)::int AS net_bottles,
+       COUNT(*)::int AS adjustment_count
+FROM packaged_adjustments
+WHERE occurred_on >= sqlc.arg(period_start)::date
+  AND occurred_on <  sqlc.arg(period_end)::date;

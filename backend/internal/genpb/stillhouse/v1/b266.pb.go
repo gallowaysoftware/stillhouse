@@ -397,6 +397,14 @@ type B266Report struct {
 	// account for it and a licensee reconciling them should not have to
 	// wonder where the difference went.
 	BulkThirdPartyElsewhereLaa float64 `protobuf:"fixed64,77,opt,name=bulk_third_party_elsewhere_laa,json=bulkThirdPartyElsewhereLaa,proto3" json:"bulk_third_party_elsewhere_laa,omitempty"`
+	// Line D's packaged half, which had no path until stage 186. Signed
+	// net with each direction beside it, for the same reason the bulk one
+	// has: a period that found a case in one lot and lost one in another
+	// nets to zero, and a line showing only the net says nothing happened.
+	PackagedAdjustmentsNetLaa      float64 `protobuf:"fixed64,85,opt,name=packaged_adjustments_net_laa,json=packagedAdjustmentsNetLaa,proto3" json:"packaged_adjustments_net_laa,omitempty"`
+	PackagedAdjustmentsIncreaseLaa float64 `protobuf:"fixed64,86,opt,name=packaged_adjustments_increase_laa,json=packagedAdjustmentsIncreaseLaa,proto3" json:"packaged_adjustments_increase_laa,omitempty"`
+	PackagedAdjustmentsDecreaseLaa float64 `protobuf:"fixed64,87,opt,name=packaged_adjustments_decrease_laa,json=packagedAdjustmentsDecreaseLaa,proto3" json:"packaged_adjustments_decrease_laa,omitempty"`
+	PackagedAdjustmentsCount       int32   `protobuf:"varint,88,opt,name=packaged_adjustments_count,json=packagedAdjustmentsCount,proto3" json:"packaged_adjustments_count,omitempty"`
 	// Line D — reason-coded adjustments reconciling book inventory to
 	// physical. Signed net, with each direction also reported: a period that
 	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
@@ -643,6 +651,34 @@ func (x *B266Report) GetBulkHeldElsewhereLaa() float64 {
 func (x *B266Report) GetBulkThirdPartyElsewhereLaa() float64 {
 	if x != nil {
 		return x.BulkThirdPartyElsewhereLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedAdjustmentsNetLaa() float64 {
+	if x != nil {
+		return x.PackagedAdjustmentsNetLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedAdjustmentsIncreaseLaa() float64 {
+	if x != nil {
+		return x.PackagedAdjustmentsIncreaseLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedAdjustmentsDecreaseLaa() float64 {
+	if x != nil {
+		return x.PackagedAdjustmentsDecreaseLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedAdjustmentsCount() int32 {
+	if x != nil {
+		return x.PackagedAdjustmentsCount
 	}
 	return 0
 }
@@ -1659,7 +1695,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
 	"\x06due_on\x18\n" +
-	" \x01(\tR\x05dueOn\"\x96!\n" +
+	" \x01(\tR\x05dueOn\"\xab#\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1678,7 +1714,11 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\"bulk_opening_inventory_adopted_laa\x18\x13 \x01(\x01R\x1ebulkOpeningInventoryAdoptedLaa\x12E\n" +
 	" bulk_closing_held_for_others_laa\x18K \x01(\x01R\x1bbulkClosingHeldForOthersLaa\x125\n" +
 	"\x17bulk_held_elsewhere_laa\x18L \x01(\x01R\x14bulkHeldElsewhereLaa\x12B\n" +
-	"\x1ebulk_third_party_elsewhere_laa\x18M \x01(\x01R\x1abulkThirdPartyElsewhereLaa\x120\n" +
+	"\x1ebulk_third_party_elsewhere_laa\x18M \x01(\x01R\x1abulkThirdPartyElsewhereLaa\x12?\n" +
+	"\x1cpackaged_adjustments_net_laa\x18U \x01(\x01R\x19packagedAdjustmentsNetLaa\x12I\n" +
+	"!packaged_adjustments_increase_laa\x18V \x01(\x01R\x1epackagedAdjustmentsIncreaseLaa\x12I\n" +
+	"!packaged_adjustments_decrease_laa\x18W \x01(\x01R\x1epackagedAdjustmentsDecreaseLaa\x12<\n" +
+	"\x1apackaged_adjustments_count\x18X \x01(\x05R\x18packagedAdjustmentsCount\x120\n" +
 	"\x14bulk_adjustments_laa\x18\x14 \x01(\x01R\x12bulkAdjustmentsLaa\x12A\n" +
 	"\x1dbulk_adjustments_increase_laa\x18\x15 \x01(\x01R\x1abulkAdjustmentsIncreaseLaa\x12A\n" +
 	"\x1dbulk_adjustments_decrease_laa\x18\x16 \x01(\x01R\x1abulkAdjustmentsDecreaseLaa\x124\n" +

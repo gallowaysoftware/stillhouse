@@ -44,6 +44,7 @@ const navGroups: NavGroup[] = [
       { to: "/fermentations", en: "Fermentations", fr: "Fermentations" },
       { to: "/distillations", en: "Distillations", fr: "Distillations" },
       { to: "/bulk", en: "Bulk inventory", fr: "Inventaire en vrac" },
+      { to: "/counts", en: "Stock counts", fr: "Inventaires physiques" },
       { to: "/barrels", en: "Barrels", fr: "Fûts" },
       { to: "/bottling", en: "Bottling", fr: "Embouteillage" },
       { to: "/marked", en: "Marked containers", fr: "Contenants spéciaux marqués" },

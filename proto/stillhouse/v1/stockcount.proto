@@ -1,0 +1,143 @@
+// Counting the warehouse, and what to do about the difference.
+//
+// Stage 149 gave bulk containers a reason-coded adjustment, but one
+// container at a time, reached from that container's own page. Counting a
+// warehouse is not that shape: it is a sheet, worked through in order,
+// with the book figure beside a blank, and the differences dealt with
+// afterwards rather than as they are found.
+//
+// The book figure is captured when the count is opened, not when the line
+// is posted. A count that took a morning while somebody else was shipping
+// would otherwise measure the shipping rather than the discrepancy.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/bulk.proto";
+
+enum StockCountStatus {
+  STOCK_COUNT_STATUS_UNSPECIFIED = 0;
+  STOCK_COUNT_STATUS_OPEN = 1;
+  STOCK_COUNT_STATUS_COUNTED = 2;
+  STOCK_COUNT_STATUS_POSTED = 3;
+  STOCK_COUNT_STATUS_CANCELLED = 4;
+}
+
+enum StockCountScope {
+  STOCK_COUNT_SCOPE_UNSPECIFIED = 0;
+  STOCK_COUNT_SCOPE_BULK = 1;
+  STOCK_COUNT_SCOPE_PACKAGED = 2;
+  STOCK_COUNT_SCOPE_MATERIALS = 3;
+  STOCK_COUNT_SCOPE_ALL = 4;
+}
+
+message StockCountLine {
+  string id = 1;
+  // Exactly one of these names what is being counted.
+  string bulk_container_id = 2;
+  string packaged_inventory_id = 3;
+  string material_lot_id = 4;
+  // What it is, in words, for the sheet.
+  string subject = 5;
+  string detail = 6;
+  string uom = 7;
+
+  // As at the moment the count was opened.
+  double book_quantity = 8;
+  // Absent until somebody counts it, which is a different statement from
+  // a count of zero.
+  double counted_quantity = 9;
+  bool   counted = 10;
+  double counted_abv_pct = 11;
+  bool   counted_abv_pct_set = 12;
+  // counted − book. Zero when they agree, and when nothing was counted.
+  double variance = 13;
+
+  InventoryAdjustmentReason reason = 14;
+  string explanation = 15;
+  string counted_by = 16;
+  string notes = 17;
+  bool   posted = 18;
+}
+
+message StockCount {
+  string id = 1;
+  int32  count_no = 2;
+  string name = 3;
+  StockCountScope scope = 4;
+  string location_id = 5;
+  string location_name = 6;
+  StockCountStatus status = 7;
+  google.protobuf.Timestamp opened_at = 8;
+  google.protobuf.Timestamp counted_at = 9;
+  google.protobuf.Timestamp posted_at = 10;
+  string cancel_reason = 11;
+  string notes = 12;
+  int32  line_count = 13;
+  int32  counted_lines = 14;
+  int32  posted_lines = 15;
+  repeated StockCountLine lines = 16;
+  // Lines that were counted and differ from the book. What the whole
+  // exercise is for.
+  int32  variance_lines = 17;
+}
+
+message OpenStockCountRequest {
+  string name = 1;
+  StockCountScope scope = 2;
+  // Optional: count one premises rather than everything.
+  string location_id = 3;
+  string notes = 4;
+}
+message OpenStockCountResponse { StockCount count = 1; }
+
+message ListStockCountsRequest {}
+message ListStockCountsResponse { repeated StockCount counts = 1; }
+
+message GetStockCountRequest { string id = 1; }
+message GetStockCountResponse { StockCount count = 1; }
+
+message RecordCountRequest {
+  string line_id = 1;
+  double counted_quantity = 2;
+  // Bulk only. A volume without a strength says nothing about the
+  // alcohol, so a bulk line counted without one is refused.
+  double counted_abv_pct = 3;
+  bool   counted_abv_pct_set = 4;
+  // Required when the count differs from the book. A variance nobody
+  // explained is a number.
+  InventoryAdjustmentReason reason = 5;
+  string explanation = 6;
+  string counted_by = 7;
+  string notes = 8;
+}
+message RecordCountResponse { StockCount count = 1; }
+
+message PostStockCountRequest {
+  string id = 1;
+  // Post on this date. Empty is today. It decides which return the
+  // adjustments land on, so it cannot fall inside a filed period.
+  string occurred_on = 2;
+}
+message PostStockCountResponse {
+  StockCount count = 1;
+  int32  adjustments_written = 2;
+  // Lines that could not be posted, and why. Never silently skipped.
+  repeated string skipped = 3;
+}
+
+message CancelStockCountRequest {
+  string id = 1;
+  string reason = 2;
+}
+message CancelStockCountResponse { StockCount count = 1; }
+
+service StockCountService {
+  rpc OpenStockCount(OpenStockCountRequest) returns (OpenStockCountResponse);
+  rpc ListStockCounts(ListStockCountsRequest) returns (ListStockCountsResponse);
+  rpc GetStockCount(GetStockCountRequest) returns (GetStockCountResponse);
+  rpc RecordCount(RecordCountRequest) returns (RecordCountResponse);
+  rpc PostStockCount(PostStockCountRequest) returns (PostStockCountResponse);
+  rpc CancelStockCount(CancelStockCountRequest) returns (CancelStockCountResponse);
+}

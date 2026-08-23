@@ -169,11 +169,6 @@ Minimum levels per material, cover-days from consumption rate, and an alert
 before the glass runs out. The stamp panel already computes bottles-per-day
 cover — generalise it.
 
-### E6 · Inventory reconciliation and cycle counts — P2
-
-A counted-versus-book workflow that feeds the reason-coded adjustment in `A4`
-rather than a silent correction.
-
 ---
 
 ## Track F — planning and operations

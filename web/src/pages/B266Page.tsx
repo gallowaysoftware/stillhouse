@@ -464,6 +464,24 @@ function ReportView({
             />
           )}
           <Row k="Removed duty-paid"      v={`${formatLAA(report.packagedRemovedDutyPaidLaa)} (${report.packagedRemovedDutyPaidBottles.toLocaleString()} bottles)`} dim />
+          {/* Line D's packaged half. Both directions, because a period
+              that found a case in one lot and lost one in another nets to
+              zero and a single figure would say nothing happened. */}
+          {report.packagedAdjustmentsCount > 0 && (
+            <>
+              <Row
+                k="Adjustments (net)"
+                v={formatLAA(report.packagedAdjustmentsNetLaa)}
+                dim
+              />
+              {report.packagedAdjustmentsIncreaseLaa > 0 && (
+                <Row k="  found" v={formatLAA(report.packagedAdjustmentsIncreaseLaa)} dim />
+              )}
+              {report.packagedAdjustmentsDecreaseLaa > 0 && (
+                <Row k="  missing" v={formatLAA(report.packagedAdjustmentsDecreaseLaa)} dim />
+              )}
+            </>
+          )}
           <Row k="Closing on hand"        v={`${formatLAA(report.packagedClosingLaa)} (${report.packagedClosingBottles.toLocaleString()} bottles)`} bold />
         </Card>
       </div>

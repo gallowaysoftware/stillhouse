@@ -49,8 +49,14 @@ type b266Totals struct {
 	markedDeliveredLitres float64
 	markedDeliveredCount  int32
 	markedDeliveredDuty   float64
-	packagedClosingLAA    float64
-	packagedClosingBottle int32
+
+	// Line D's packaged half.
+	packagedAdjNetLAA      float64
+	packagedAdjIncreaseLAA float64
+	packagedAdjDecreaseLAA float64
+	packagedAdjCount       int32
+	packagedClosingLAA     float64
+	packagedClosingBottle  int32
 
 	// Bottling runs in the period, voided runs excluded.
 	//
@@ -165,6 +171,10 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		DeliveredMarkedContainersLitres:  round4(t.markedDeliveredLitres),
 		DeliveredMarkedContainersCount:   t.markedDeliveredCount,
 		DeliveredMarkedContainersDutyCad: round2(t.markedDeliveredDuty),
+		PackagedAdjustmentsNetLaa:        round4(t.packagedAdjNetLAA),
+		PackagedAdjustmentsIncreaseLaa:   round4(t.packagedAdjIncreaseLAA),
+		PackagedAdjustmentsDecreaseLaa:   round4(t.packagedAdjDecreaseLAA),
+		PackagedAdjustmentsCount:         t.packagedAdjCount,
 		// Adopted stock is reported but deliberately NOT counted among the
 		// receipts below, so the reverse-walk puts it in the opening
 		// balance. It was in the warehouse before the period; only the
