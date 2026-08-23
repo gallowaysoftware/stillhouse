@@ -192,6 +192,7 @@ type Querier interface {
 	CreateInventoryAdjustment(ctx context.Context, arg CreateInventoryAdjustmentParams) (InventoryAdjustment, error)
 	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
 	CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error)
+	CreateKeg(ctx context.Context, arg CreateKegParams) (Keg, error)
 	CreateLabResult(ctx context.Context, arg CreateLabResultParams) (LabResult, error)
 	CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error)
 	CreateMarkedContainer(ctx context.Context, arg CreateMarkedContainerParams) (MarkedSpecialContainer, error)
@@ -391,6 +392,8 @@ type Querier interface {
 	GetInvoice(ctx context.Context, id uuid.UUID) (GetInvoiceRow, error)
 	GetInvoiceForUpdate(ctx context.Context, id uuid.UUID) (Invoice, error)
 	GetInvoiceLineOwner(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	GetKeg(ctx context.Context, id uuid.UUID) (Keg, error)
+	GetKegBySerial(ctx context.Context, serial string) (Keg, error)
 	GetLocation(ctx context.Context, id uuid.UUID) (Location, error)
 	GetMarkedContainer(ctx context.Context, id uuid.UUID) (GetMarkedContainerRow, error)
 	GetMarkedContainerForUpdate(ctx context.Context, id uuid.UUID) (MarkedSpecialContainer, error)
@@ -480,6 +483,14 @@ type Querier interface {
 	// Packaged stock leaving, with the bottling run behind it so its material
 	// cost can be apportioned per bottle.
 	JournalRemovalsForCOGS(ctx context.Context, arg JournalRemovalsForCOGSParams) ([]JournalRemovalsForCOGSRow, error)
+	// What is owed back, by customer. The running sum of deposit deltas, so
+	// a keg that went out and came back nets to nothing without anybody
+	// having to remember to clear a balance.
+	//
+	// Customers with a zero net are excluded: a list of everyone who has ever
+	// had a keg is not the question being asked.
+	KegDepositLiability(ctx context.Context) ([]KegDepositLiabilityRow, error)
+	KegRegisterSummary(ctx context.Context) (KegRegisterSummaryRow, error)
 	LabourHoursInPeriod(ctx context.Context, arg LabourHoursInPeriodParams) (LabourHoursInPeriodRow, error)
 	// The most recent PASSED calibration. A failed check is history worth
 	// keeping, but it is not the date the next one is counted from — an
@@ -579,6 +590,13 @@ type Querier interface {
 	ListInvoicePayments(ctx context.Context, invoiceID uuid.UUID) ([]InvoicePayment, error)
 	ListInvoices(ctx context.Context, openOnly bool) ([]ListInvoicesRow, error)
 	ListJournalAccounts(ctx context.Context) ([]JournalAccount, error)
+	ListKegEvents(ctx context.Context, kegID uuid.UUID) ([]ListKegEventsRow, error)
+	// The register, with the freshness figure the fill/return cycle needs:
+	// how long the current contents have been in the keg.
+	//
+	// days_since_fill is NULL for an empty keg, which is different from zero
+	// and has to stay different — an empty keg is not fresh, it is empty.
+	ListKegs(ctx context.Context) ([]ListKegsRow, error)
 	// Filtered by whichever subject the caller names; all of them NULL
 	// returns the tenant's whole lab history, newest first.
 	ListLabResults(ctx context.Context, arg ListLabResultsParams) ([]ListLabResultsRow, error)
@@ -854,6 +872,7 @@ type Querier interface {
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
 	RecordEquipmentService(ctx context.Context, arg RecordEquipmentServiceParams) (EquipmentServiceEvent, error)
 	RecordInvoicePayment(ctx context.Context, arg RecordInvoicePaymentParams) (InvoicePayment, error)
+	RecordKegEvent(ctx context.Context, arg RecordKegEventParams) (KegEvent, error)
 	RecordLabour(ctx context.Context, arg RecordLabourParams) (LabourEntry, error)
 	RecordPackagedAdjustment(ctx context.Context, arg RecordPackagedAdjustmentParams) (PackagedAdjustment, error)
 	// Closes the loop. laa_produced and produced_on are set together — the
@@ -959,6 +978,11 @@ type Querier interface {
 	SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error)
 	SetInstrumentStatus(ctx context.Context, arg SetInstrumentStatusParams) (Instrument, error)
 	SetInvoicePaymentStatus(ctx context.Context, arg SetInvoicePaymentStatusParams) (Invoice, error)
+	// One statement for every transition, so the status, the location, the
+	// contents and the dates can never be updated separately and disagree.
+	// The table's CHECK enforces the one pairing that must hold — full
+	// against having contents — and this is where it is kept true.
+	SetKegState(ctx context.Context, arg SetKegStateParams) (Keg, error)
 	SetMarkedContainerStatus(ctx context.Context, arg SetMarkedContainerStatusParams) (MarkedSpecialContainer, error)
 	// Unconditional, unlike SetMarkedContainerStatus, which only advances a
 	// container that is still on the premises. Voiding a delivery has to be

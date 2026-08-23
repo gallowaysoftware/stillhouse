@@ -1202,6 +1202,99 @@ func (ns NullJournalEventKind) Value() (driver.Value, error) {
 	return string(ns.JournalEventKind), nil
 }
 
+type KegEventKind string
+
+const (
+	KegEventKindAcquired  KegEventKind = "acquired"
+	KegEventKindFilled    KegEventKind = "filled"
+	KegEventKindShipped   KegEventKind = "shipped"
+	KegEventKindReturned  KegEventKind = "returned"
+	KegEventKindCleaned   KegEventKind = "cleaned"
+	KegEventKindCondemned KegEventKind = "condemned"
+	KegEventKindLost      KegEventKind = "lost"
+)
+
+func (e *KegEventKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = KegEventKind(s)
+	case string:
+		*e = KegEventKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for KegEventKind: %T", src)
+	}
+	return nil
+}
+
+type NullKegEventKind struct {
+	KegEventKind KegEventKind `json:"keg_event_kind"`
+	Valid        bool         `json:"valid"` // Valid is true if KegEventKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullKegEventKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.KegEventKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.KegEventKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullKegEventKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.KegEventKind), nil
+}
+
+type KegStatus string
+
+const (
+	KegStatusAvailable     KegStatus = "available"
+	KegStatusFilled        KegStatus = "filled"
+	KegStatusAtCustomer    KegStatus = "at_customer"
+	KegStatusReturnedDirty KegStatus = "returned_dirty"
+	KegStatusOutOfService  KegStatus = "out_of_service"
+	KegStatusLost          KegStatus = "lost"
+)
+
+func (e *KegStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = KegStatus(s)
+	case string:
+		*e = KegStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for KegStatus: %T", src)
+	}
+	return nil
+}
+
+type NullKegStatus struct {
+	KegStatus KegStatus `json:"keg_status"`
+	Valid     bool      `json:"valid"` // Valid is true if KegStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullKegStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.KegStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.KegStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullKegStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.KegStatus), nil
+}
+
 type LabResultStatus string
 
 const (
@@ -2893,6 +2986,42 @@ type JournalAccount struct {
 	MemoPrefix    string             `json:"memo_prefix"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Keg struct {
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	Serial              string             `json:"serial"`
+	CapacityL           float64            `json:"capacity_l"`
+	Material            string             `json:"material"`
+	PurchaseCostCad     pgtype.Numeric     `json:"purchase_cost_cad"`
+	DepositCad          pgtype.Numeric     `json:"deposit_cad"`
+	PurchasedOn         pgtype.Date        `json:"purchased_on"`
+	Status              KegStatus          `json:"status"`
+	CurrentCustomerID   uuid.NullUUID      `json:"current_customer_id"`
+	CurrentLocationID   uuid.NullUUID      `json:"current_location_id"`
+	MarkedContainerID   uuid.NullUUID      `json:"marked_container_id"`
+	PackagedInventoryID uuid.NullUUID      `json:"packaged_inventory_id"`
+	LastFilledOn        pgtype.Date        `json:"last_filled_on"`
+	LastReturnedOn      pgtype.Date        `json:"last_returned_on"`
+	Notes               string             `json:"notes"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+}
+
+type KegEvent struct {
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	KegID               uuid.UUID          `json:"keg_id"`
+	Kind                KegEventKind       `json:"kind"`
+	OccurredOn          pgtype.Date        `json:"occurred_on"`
+	CustomerID          uuid.NullUUID      `json:"customer_id"`
+	MarkedContainerID   uuid.NullUUID      `json:"marked_container_id"`
+	PackagedInventoryID uuid.NullUUID      `json:"packaged_inventory_id"`
+	DepositDeltaCad     pgtype.Numeric     `json:"deposit_delta_cad"`
+	Notes               string             `json:"notes"`
+	UserID              uuid.NullUUID      `json:"user_id"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 }
 
 type LabResult struct {

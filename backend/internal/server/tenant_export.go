@@ -106,6 +106,10 @@ var exportTables = []string{
 	"customers",
 	"price_lists",
 	"price_list_entries",
+	// The returnable-asset register. Deposits are a liability and a lost
+	// keg is a write-off, both of which belong in a retention export.
+	"kegs",
+	"keg_events",
 	"packaging_removals",
 	// Stock coming back from the duty-paid market. Exported rather than
 	// exempted: it is a movement of dutiable goods with a credit attached,

@@ -1,0 +1,165 @@
+// The keg register. PLAN D5.
+//
+// The distinction this file holds is between the VESSEL and its CONTENTS.
+// A keg's spirits are already recorded elsewhere, and their volume,
+// strength, LAA and duty reach the B266 from there. A keg carries none of
+// those figures — it points at the row that owns them. Putting volume_l
+// and abv_pct on a keg is the obvious design and it puts the same alcohol
+// on a filed return twice.
+//
+// Which row it points at follows from the keg's size, and the threshold
+// is the Act's rather than ours: a marked special container under
+// EDM3-8-1 is 100 to 1500 litres. Spirits in anything smaller are
+// packaged exactly as a bottle is — a 50 L keg is a large bottle as far
+// as the Act is concerned — so its contents are a packaged lot.
+//
+// What the register adds is what nothing else knows: where the physical
+// asset is, what deposit is outstanding on it, and how long its contents
+// have been sitting.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+enum KegStatus {
+  KEG_STATUS_UNSPECIFIED = 0;
+  // Ours, empty, clean, ready to fill.
+  KEG_STATUS_AVAILABLE = 1;
+  // Ours, full. The contents are a marked special container.
+  KEG_STATUS_FILLED = 2;
+  // Gone out. The deposit is outstanding.
+  KEG_STATUS_AT_CUSTOMER = 3;
+  // Back and not yet cleaned. Distinct from available on purpose: a keg
+  // nobody has cleaned is not ready to fill.
+  KEG_STATUS_RETURNED_DIRTY = 4;
+  KEG_STATUS_OUT_OF_SERVICE = 5;
+  // Not coming back. Kept as a row because "we lost eleven kegs last
+  // year" is a number somebody needs.
+  KEG_STATUS_LOST = 6;
+}
+
+enum KegEventKind {
+  KEG_EVENT_KIND_UNSPECIFIED = 0;
+  KEG_EVENT_KIND_ACQUIRED = 1;
+  KEG_EVENT_KIND_FILLED = 2;
+  KEG_EVENT_KIND_SHIPPED = 3;
+  KEG_EVENT_KIND_RETURNED = 4;
+  KEG_EVENT_KIND_CLEANED = 5;
+  KEG_EVENT_KIND_CONDEMNED = 6;
+  KEG_EVENT_KIND_LOST = 7;
+}
+
+message Keg {
+  string id = 1;
+  string serial = 2;
+  double capacity_l = 3;
+  string material = 4;
+  double purchase_cost_cad = 5;
+  bool   purchase_cost_set = 6;
+  double deposit_cad = 7;
+  bool   deposit_set = 8;
+  string purchased_on = 9;
+  KegStatus status = 10;
+  string customer_id = 11;
+  string customer_name = 12;
+  string location_name = 13;
+  string notes = 14;
+
+  // The contents, read from the marked special container this keg points
+  // at. Reported for convenience and owned there — nothing on the B266
+  // reads these fields.
+  string marked_container_id = 15;
+  // Set instead of marked_container_id for a keg under 100 L, whose
+  // contents are packaged spirits rather than a special container.
+  string packaged_inventory_id = 24;
+  string contents_lot_code = 25;
+  int32  marked_container_no = 16;
+  double contents_volume_l = 17;
+  double contents_abv_pct = 18;
+  double contents_laa = 19;
+
+  string last_filled_on = 20;
+  string last_returned_on = 21;
+  // How long the current contents have been in the keg. Absent for an
+  // empty keg, which is not the same as zero.
+  int32  days_since_fill = 22;
+  bool   days_since_fill_set = 23;
+}
+
+message KegEvent {
+  string id = 1;
+  KegEventKind kind = 2;
+  string occurred_on = 3;
+  string customer_name = 4;
+  double deposit_delta_cad = 5;
+  bool   deposit_delta_set = 6;
+  string notes = 7;
+}
+
+message KegDepositLine {
+  string customer_id = 1;
+  string customer_name = 2;
+  double outstanding_cad = 3;
+  int32  kegs_shipped = 4;
+  int32  kegs_returned = 5;
+}
+
+message ListKegsRequest {}
+message ListKegsResponse {
+  repeated Keg kegs = 1;
+  int32 total = 2;
+  int32 available = 3;
+  int32 filled = 4;
+  int32 at_customer = 5;
+  int32 returned_dirty = 6;
+  int32 out_of_service = 7;
+  int32 lost = 8;
+  // What is owed back, by customer.
+  repeated KegDepositLine deposits = 9;
+  double total_outstanding_deposits_cad = 10;
+}
+
+message CreateKegRequest {
+  string serial = 1;
+  double capacity_l = 2;
+  string material = 3;
+  double purchase_cost_cad = 4;
+  bool   purchase_cost_set = 5;
+  double deposit_cad = 6;
+  bool   deposit_set = 7;
+  string purchased_on = 8;
+  string notes = 9;
+}
+message CreateKegResponse { Keg keg = 1; }
+
+// One call for every step of the cycle, so a transition cannot update the
+// status without also writing the event that explains it.
+message MoveKegRequest {
+  string keg_id = 1;
+  KegEventKind kind = 2;
+  string occurred_on = 3;
+  // Required when shipping; ignored otherwise.
+  string customer_id = 4;
+  // Required when filling. Exactly one, and which one follows from the
+  // keg's capacity against the Act's 100 L threshold — the server
+  // refuses the wrong one rather than guessing. The keg does not record
+  // the alcohol itself either way.
+  string marked_container_id = 5;
+  string packaged_inventory_id = 7;
+  string notes = 6;
+}
+message MoveKegResponse {
+  Keg keg = 1;
+  // What the deposit did, if anything.
+  double deposit_delta_cad = 2;
+  bool   deposit_delta_set = 3;
+}
+
+message ListKegEventsRequest { string keg_id = 1; }
+message ListKegEventsResponse { repeated KegEvent events = 1; }
+
+service KegService {
+  rpc ListKegs(ListKegsRequest) returns (ListKegsResponse);
+  rpc CreateKeg(CreateKegRequest) returns (CreateKegResponse);
+  rpc MoveKeg(MoveKegRequest) returns (MoveKegResponse);
+  rpc ListKegEvents(ListKegEventsRequest) returns (ListKegEventsResponse);
+}

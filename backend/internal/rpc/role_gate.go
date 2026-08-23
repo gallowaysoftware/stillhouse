@@ -378,6 +378,13 @@ var procedureMinRole = map[string]minRole{
 	// operator action like a removal — the person on the loading dock is
 	// who knows what came back and what condition it is in. Voiding one
 	// is a correction to the record and sits with the back office.
+	// The keg register is asset tracking: the person moving the keg is
+	// who knows where it went. Buying one into the register is a
+	// purchase, so it sits with the back office.
+	"/stillhouse.v1.KegService/ListKegs":                      roleViewer,
+	"/stillhouse.v1.KegService/ListKegEvents":                 roleViewer,
+	"/stillhouse.v1.KegService/MoveKeg":                       roleOperator,
+	"/stillhouse.v1.KegService/CreateKeg":                     roleOwner,
 	"/stillhouse.v1.RemovalService/ListPackagedReturns":       roleViewer,
 	"/stillhouse.v1.RemovalService/RecordPackagedReturn":      roleOperator,
 	"/stillhouse.v1.RemovalService/VoidPackagedReturn":        roleOwner,

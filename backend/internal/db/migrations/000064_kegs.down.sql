@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS keg_events;
+DROP TABLE IF EXISTS kegs;
+DROP TYPE IF EXISTS keg_event_kind;
+DROP TYPE IF EXISTS keg_status;

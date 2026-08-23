@@ -119,8 +119,20 @@ supply their own form, so this is only worth doing for the ones that don't.
 
 ### D5 · Keg and returnable container tracking — P2
 
-Keg registry, deposits, fill/return cycle, freshness. Overlaps with marked
-special containers (`B3`) but is a distinct asset-tracking problem.
+Shipped in stage 199: the register, the deposit ledger, the fill/return
+cycle as an enforced state machine, and freshness. The overlap with marked
+special containers turned out to be a *split* rather than an overlap — a
+keg at or above 100 L holds one, below it holds packaged spirits, and the
+register points at whichever applies without copying any of its figures.
+
+What is left is smaller than the item made it sound:
+
+- Other returnable containers — pallets, crates, CO2 cylinders. Same
+  shape, no excise dimension at all, so it is the keg register with the
+  contents reference removed.
+- Deposit accounting proper. The liability is reported; posting it to the
+  licensee's chart of accounts needs a `journal_event_kind` and the
+  mapping seam from 000040.
 
 ### D7 · Consignment, returns and credits — P2
 
