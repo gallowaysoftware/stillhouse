@@ -221,6 +221,23 @@ type Querier interface {
 	// the counterparty, the document, the determination and the author, none of
 	// which a side-effect movement needs because its parent row has them.
 	InsertExternalBulkMovement(ctx context.Context, arg InsertExternalBulkMovementParams) (BulkMovement, error)
+	// Duty crystallised in the period, from wherever the duty point falls.
+	//
+	// Both sources are read and neither is filtered out, because across a
+	// duty-point cutover both coexist: stock bottled under the old basis is
+	// dutied on its way out, stock bottled under the new basis was dutied on
+	// the way in. Taking only one would understate the period. Voided rows
+	// are excluded — they were withdrawn, and the duty with them.
+	JournalDutyEvents(ctx context.Context, arg JournalDutyEventsParams) ([]JournalDutyEventsRow, error)
+	// Raw material into a mash, valued at the lot it came from.
+	JournalMaterialConsumption(ctx context.Context, arg JournalMaterialConsumptionParams) ([]JournalMaterialConsumptionRow, error)
+	// Raw material in, at the lot cost actually recorded. A lot with no unit
+	// cost contributes nothing and is reported as unpriced rather than as
+	// zero — a zero would silently understate inventory.
+	JournalMaterialReceipts(ctx context.Context, arg JournalMaterialReceiptsParams) ([]JournalMaterialReceiptsRow, error)
+	// Packaged stock leaving, with the bottling run behind it so its material
+	// cost can be apportioned per bottle.
+	JournalRemovalsForCOGS(ctx context.Context, arg JournalRemovalsForCOGSParams) ([]JournalRemovalsForCOGSRow, error)
 	// The most recent PASSED calibration. A failed check is history worth
 	// keeping, but it is not the date the next one is counted from — an
 	// instrument that failed its check has not been calibrated.
@@ -285,6 +302,7 @@ type Querier interface {
 	// history and the period review behind B266 line D.
 	ListInventoryAdjustments(ctx context.Context, arg ListInventoryAdjustmentsParams) ([]ListInventoryAdjustmentsRow, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
+	ListJournalAccounts(ctx context.Context) ([]JournalAccount, error)
 	// Losses and their duty treatment.
 	//
 	// "A loss" is any movement whose reason takes alcohol out of the ledger
@@ -563,6 +581,7 @@ type Querier interface {
 	// fiscal-month election must not silently restate when a past return was
 	// due. COALESCE keeps whatever the row already had.
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
+	UpsertJournalAccount(ctx context.Context, arg UpsertJournalAccountParams) (JournalAccount, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 	UpsertPriceListEntry(ctx context.Context, arg UpsertPriceListEntryParams) (PriceListEntry, error)
 	// One row per recipe_version. Partial-update: an axis that's NULL in

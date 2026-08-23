@@ -99,6 +99,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	// rare enough that it is not a load-bearing query pattern.
 	alertRunner := alerting.NewRunner(tdb, queries, mailerImpl, baseURL, 15*time.Minute, logger)
 	alertSvc := rpc.NewAlertService(tdb, alertRunner, logger)
+	journalSvc := rpc.NewJournalService(tdb, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
 	inviteSvc := rpc.NewInviteService(queries, tdb, sm, mailerImpl, logger)
 	apiTokenSvc := rpc.NewAPITokenService(tdb, logger)
@@ -131,12 +132,16 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewPricingServiceHandler(pricingSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewCustomerServiceHandler(customerSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAlertServiceHandler(alertSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewJournalServiceHandler(journalSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewTraceabilityServiceHandler(traceabilitySvc, interceptors))
 	mux.Handle(stillhousev1connect.NewInviteServiceHandler(inviteSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAPITokenServiceHandler(apiTokenSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAlcoholometryServiceHandler(alcoholometrySvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
 	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
+	// The monthly close: duty payable, material in and out, cost of
+	// sales, as one CSV with its own caveats attached.
+	mux.Handle("/export/journal.csv", journalExportHandler(sm, tdb, logger))
 	// One bundle per reporting period: the figures as filed, the movements
 	// behind each line, the determinations and instruments behind each
 	// movement, and the trail.

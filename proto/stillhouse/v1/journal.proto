@@ -1,0 +1,81 @@
+// The seam that lets Stillhouse not become an accounting package.
+//
+// Stillhouse knows what happened and what it was worth. It does not know
+// which account each belongs in — that is the licensee's chart of
+// accounts — so the mapping is data the operator supplies, and an event
+// with no mapping is reported as unmapped rather than posted somewhere
+// invented. A journal line in the wrong account is worse than a missing
+// one: it reconciles, and nobody looks again.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+enum JournalEventKind {
+  JOURNAL_EVENT_KIND_UNSPECIFIED = 0;
+  JOURNAL_EVENT_KIND_DUTY_PAYABLE = 1;
+  JOURNAL_EVENT_KIND_MATERIAL_RECEIPT = 2;
+  JOURNAL_EVENT_KIND_MATERIAL_CONSUMPTION = 3;
+  JOURNAL_EVENT_KIND_COGS_ON_REMOVAL = 4;
+}
+
+message JournalAccountMapping {
+  JournalEventKind kind = 1;
+  string debit_account = 2;
+  string credit_account = 3;
+  string debit_name = 4;
+  string credit_name = 5;
+  string memo_prefix = 6;
+}
+
+message JournalLine {
+  string date = 1;  // ISO
+  JournalEventKind kind = 2;
+  string description = 3;
+  string reference = 4;
+  double amount_cad = 5;
+  string debit_account = 6;
+  string debit_name = 7;
+  string credit_account = 8;
+  string credit_name = 9;
+  string memo = 10;
+  // How the amount was arrived at, in words, on every line. A cost from
+  // a weighted average is not the same number as one from an invoice,
+  // and whoever imports this needs to know which without asking.
+  string basis = 11;
+}
+
+// Something the export could not do, said out loud. Not an error — the
+// export still runs — but each one means a figure somebody will
+// reconcile against is incomplete, so they travel with the data.
+message JournalWarning {
+  string kind = 1;
+  string detail = 2;
+}
+
+message JournalKindTotal {
+  JournalEventKind kind = 1;
+  double amount_cad = 2;
+  int32 line_count = 3;
+}
+
+message PreviewJournalRequest {
+  string period_start = 1;  // ISO date, inclusive
+  string period_end = 2;    // ISO date, inclusive
+}
+message PreviewJournalResponse {
+  repeated JournalLine lines = 1;
+  repeated JournalWarning warnings = 2;
+  repeated JournalKindTotal totals = 3;
+}
+
+message ListJournalAccountsRequest {}
+message ListJournalAccountsResponse { repeated JournalAccountMapping mappings = 1; }
+
+message SetJournalAccountRequest { JournalAccountMapping mapping = 1; }
+message SetJournalAccountResponse { JournalAccountMapping mapping = 1; }
+
+service JournalService {
+  rpc PreviewJournal(PreviewJournalRequest) returns (PreviewJournalResponse);
+  rpc ListJournalAccounts(ListJournalAccountsRequest) returns (ListJournalAccountsResponse);
+  rpc SetJournalAccount(SetJournalAccountRequest) returns (SetJournalAccountResponse);
+}

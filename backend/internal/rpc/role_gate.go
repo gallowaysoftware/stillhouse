@@ -49,6 +49,13 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// JournalService. The chart of accounts is the licensee's own
+	// bookkeeping, so mapping is owner-level; previewing what would be
+	// exported is a viewer read.
+	"/stillhouse.v1.JournalService/PreviewJournal":      roleViewer,
+	"/stillhouse.v1.JournalService/ListJournalAccounts": roleViewer,
+	"/stillhouse.v1.JournalService/SetJournalAccount":   roleOwner,
+
 	// AlertService. Everything here is viewer-level on purpose: an alert
 	// exists to reach whoever is looking, and the person most likely to
 	// notice that a ferment has gone quiet is the one on the floor, not
@@ -305,6 +312,11 @@ var accountantAlso = map[string]bool{
 	// Whether a loss is relieved or duty-payable is an excise judgement,
 	// not an operational one.
 	"/stillhouse.v1.BulkService/ClassifyLosses": true,
+	// The chart of accounts is the engagement's other half. An outside
+	// bookkeeper who cannot map Stillhouse's events to their own accounts
+	// has to ask the owner to do it for them, which is nobody's idea of
+	// a division of labour.
+	"/stillhouse.v1.JournalService/SetJournalAccount": true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a

@@ -877,6 +877,50 @@ func (ns NullInventoryAdjustmentReason) Value() (driver.Value, error) {
 	return string(ns.InventoryAdjustmentReason), nil
 }
 
+type JournalEventKind string
+
+const (
+	JournalEventKindDutyPayable         JournalEventKind = "duty_payable"
+	JournalEventKindMaterialReceipt     JournalEventKind = "material_receipt"
+	JournalEventKindMaterialConsumption JournalEventKind = "material_consumption"
+	JournalEventKindCogsOnRemoval       JournalEventKind = "cogs_on_removal"
+)
+
+func (e *JournalEventKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = JournalEventKind(s)
+	case string:
+		*e = JournalEventKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for JournalEventKind: %T", src)
+	}
+	return nil
+}
+
+type NullJournalEventKind struct {
+	JournalEventKind JournalEventKind `json:"journal_event_kind"`
+	Valid            bool             `json:"valid"` // Valid is true if JournalEventKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullJournalEventKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.JournalEventKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.JournalEventKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullJournalEventKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.JournalEventKind), nil
+}
+
 type LossDutyTreatment string
 
 const (
@@ -1613,6 +1657,18 @@ type InviteCode struct {
 	RedeemedTenantID  uuid.NullUUID      `json:"redeemed_tenant_id"`
 	RevokedAt         pgtype.Timestamptz `json:"revoked_at"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+}
+
+type JournalAccount struct {
+	TenantID      uuid.UUID          `json:"tenant_id"`
+	Kind          JournalEventKind   `json:"kind"`
+	DebitAccount  string             `json:"debit_account"`
+	CreditAccount string             `json:"credit_account"`
+	DebitName     string             `json:"debit_name"`
+	CreditName    string             `json:"credit_name"`
+	MemoPrefix    string             `json:"memo_prefix"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }
 
 type MashIngredientUsage struct {

@@ -13,6 +13,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/costing"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/mashing"
@@ -364,71 +365,16 @@ func (s *MaterialService) BottlingRunCost(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid bottling_run_id"))
 	}
 
+	// The chain walk lives in internal/costing, because the accounting
+	// journal's cost-of-sales line needs the same answer and two
+	// implementations would eventually disagree — with the version that
+	// reached the accountant being the one nobody had been looking at.
 	out := &stillhousev1.BottlingRunCostResponse{BottlingRunId: runID.String()}
+	var cost costing.Result
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		run, e := q.GetBottlingRun(ctx, runID)
-		if e != nil {
-			return e
-		}
-		out.BottleCount = run.BottleCount
-
-		feedCutoff := run.BottlingDate.Time.Add(24 * time.Hour)
-		feeds, e := q.BottlingRunChainFeeds(ctx, sqlcgen.BottlingRunChainFeedsParams{
-			DestinationContainerID: uuid.NullUUID{UUID: run.SourceContainerID, Valid: true},
-			OccurredAt:             pgtype.Timestamptz{Time: feedCutoff, Valid: true},
-		})
-		if e != nil {
-			return e
-		}
-
-		// Dedupe mashes across the (potentially multi-feed) chain so a mash
-		// feeding twice doesn't double-count.
-		seen := make(map[string]bool)
-		for _, fd := range feeds {
-			if fd.Reason != sqlcgen.BulkMovementReasonProductionGauge {
-				continue
-			}
-			charges, ce := q.DistillationChainFromGauge(ctx, fd.ID)
-			if errors.Is(ce, pgx.ErrNoRows) || len(charges) == 0 {
-				continue
-			}
-			if ce != nil {
-				return ce
-			}
-			for _, ch := range charges {
-				if !ch.MashRunID.Valid || seen[ch.MashRunID.UUID.String()] {
-					continue
-				}
-				seen[ch.MashRunID.UUID.String()] = true
-
-				ings, ie := q.ListMashIngredients(ctx, ch.MashRunID.UUID)
-				if ie != nil {
-					return ie
-				}
-				for _, ing := range ings {
-					if !ing.MaterialLotID.Valid {
-						continue
-					}
-					lot, le := q.GetMaterialLot(ctx, ing.MaterialLotID.UUID)
-					if le != nil {
-						return le
-					}
-					line := &stillhousev1.BottlingRunCostLine{
-						MaterialName: ing.MaterialName,
-						SupplierLot:  ing.SupplierLot.String,
-						QuantityUsed: ing.QuantityUsed,
-						Uom:          ing.Uom,
-					}
-					if lot.UnitCostCad.Valid {
-						line.UnitCostCad = lot.UnitCostCad.Float64
-						line.LineCostCad = ing.QuantityUsed * lot.UnitCostCad.Float64
-						out.TotalMaterialCostCad += line.LineCostCad
-					}
-					out.Lines = append(out.Lines, line)
-				}
-			}
-		}
-		return nil
+		var e error
+		cost, e = costing.BottlingRunMaterialCost(ctx, q, runID)
+		return e
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -437,8 +383,18 @@ func (s *MaterialService) BottlingRunCost(
 		s.logger.Error("BottlingRunCost", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	if out.BottleCount > 0 {
-		out.MaterialCostPerBottleCad = out.TotalMaterialCostCad / float64(out.BottleCount)
+	out.BottleCount = cost.BottleCount
+	out.TotalMaterialCostCad = cost.TotalCAD
+	out.MaterialCostPerBottleCad = cost.PerBottleCAD()
+	for _, l := range cost.Lines {
+		out.Lines = append(out.Lines, &stillhousev1.BottlingRunCostLine{
+			MaterialName: l.MaterialName,
+			SupplierLot:  l.SupplierLot,
+			QuantityUsed: l.QuantityUsed,
+			Uom:          l.UOM,
+			UnitCostCad:  l.UnitCostCAD,
+			LineCostCad:  l.LineCostCAD,
+		})
 	}
 	return connect.NewResponse(out), nil
 }

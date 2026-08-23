@@ -236,6 +236,10 @@ rather than sitting in an expense account. Purtrak added this explicitly.
 flag runs with missing prices. Missing: labour, overhead absorption, WIP
 valuation, and finished-goods inventory value for the balance sheet.
 
+Stage 161 pulled the chain walk into `internal/costing` so the cost screen and
+the accounting journal share one answer, and left the two WIP journal kinds
+unemitted rather than inventing a valuation — those are this item.
+
 ### E5 · Reorder points and low-stock alerts — P2
 
 Minimum levels per material, cover-days from consumption rate, and an alert
@@ -300,16 +304,14 @@ makes `F3` more than a calendar.
 
 ## Track G — integrations
 
-### G1 · Accounting journal export — P1
-
-The seam that lets us not rebuild an ERP. Periodic journal export — duty
-payable, inventory movement, COGS by run — as CSV/IIF for the monthly close.
-Ship this before `G2`; it may turn out to be enough.
-
 ### G2 · QuickBooks Online sync — P1
 
 OAuth, chart-of-accounts mapping, invoices and bills pushed, payments pulled.
 Every competitor has it and it is the first question on every evaluation.
+
+Stage 161 shipped `G1` first, deliberately, and it may turn out to be enough:
+the account mapping and the event set it needs already exist, so this becomes
+a transport rather than a design.
 
 ### G3 · Xero sync — P2
 
