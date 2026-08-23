@@ -36,6 +36,18 @@ type Querier interface {
 	AddSalesOrderLine(ctx context.Context, arg AddSalesOrderLineParams) (SalesOrderLine, error)
 	AddShipmentLine(ctx context.Context, arg AddShipmentLineParams) (ShipmentLine, error)
 	AddStockCountLine(ctx context.Context, arg AddStockCountLineParams) (StockCountLine, error)
+	// The casks behind a bottling run, and how long each was in small wood.
+	//
+	// EDM3-1-1 ¶43–46: age runs from original warehousing in small wood to
+	// removal for export sale, and resets on redistillation. Stillhouse holds
+	// the maturation clock already; this is the walk that reads it — the run's
+	// source vessel, back through the movements that filled it, to the dumps
+	// that came out of casks.
+	//
+	// days_aged_at_dump is what the cask recorded when it was emptied, which
+	// is the figure that matters: the age at removal from wood, not the age
+	// today.
+	AgeEvidenceForBottlingRun(ctx context.Context, arg AgeEvidenceForBottlingRunParams) ([]AgeEvidenceForBottlingRunRow, error)
 	// Spirit that left stock into the still and has no output recorded after
 	// long enough that it should have. Alcohol off the books is the one
 	// shape of gap a period-end reconciliation cannot explain.
@@ -734,6 +746,9 @@ type Querier interface {
 	// What went back through the still in a period, and what it cost. The
 	// figures EDM3-1-1 para 41 asks to be kept.
 	RedistillationPeriodSummary(ctx context.Context, arg RedistillationPeriodSummaryParams) (RedistillationPeriodSummaryRow, error)
+	// Anything put back through the still from this vessel. Age resets on
+	// redistillation, so a certificate has to say whether one happened.
+	RedistillationsTouchingContainer(ctx context.Context, sourceContainerID uuid.UUID) ([]RedistillationsTouchingContainerRow, error)
 	// Releasing clears any hold: a lot that has been looked at again and
 	// passed is released, not simultaneously held.
 	ReleasePackagedLot(ctx context.Context, arg ReleasePackagedLotParams) (PackagedInventory, error)

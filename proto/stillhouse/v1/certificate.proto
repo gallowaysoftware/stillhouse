@@ -1,0 +1,78 @@
+// Certificates of age and origin.
+//
+// EDM3-1-1 ¶43–46: several trading partners require a certificate signed
+// by a Canadian official attesting the age and origin of exported
+// spirits. Age runs from original warehousing in small wood to removal
+// for export sale, and resets on redistillation.
+//
+// Stillhouse already holds the maturation clock, so what is missing is
+// the packet that reads it — and, more to the point, the honesty about
+// what it can and cannot attest. Stillhouse does not sign anything: it
+// assembles the evidence, states the age it can support and where that
+// figure came from, and names every cask it could not account for. A
+// certificate that quietly rounded up over a gap in the record is the one
+// failure mode that matters here.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+message AgeEvidenceCask {
+  string container_id = 1;
+  string cask_name = 2;
+  string serial_burnin = 3;
+  double capacity_l = 4;
+  bool   small_wood = 5;
+  // Days in wood as recorded when the cask was emptied — the age at
+  // removal from wood, not the age today.
+  int32  days_aged = 6;
+  bool   days_aged_known = 7;
+  string dumped_on = 8;        // ISO date
+  double dumped_laa = 9;
+  string wood_species = 10;
+  string prior_use = 11;
+  // Why this cask cannot support an age claim, when it cannot.
+  string why_not = 12;
+}
+
+message AgeCertificateRequest {
+  // The bottling run the exported spirits came from.
+  string bottling_run_id = 1;
+  // Who it is being certified for, printed on the packet.
+  string consignee = 2;
+  string destination_country = 3;
+  string reference = 4;
+}
+message AgeCertificateResponse {
+  string bottling_run_id = 1;
+  string lot_code = 2;
+  string product_name = 3;
+  double bottle_abv_pct = 4;
+  int32  bottle_count = 5;
+  string bottled_on = 6;
+  string consignee = 7;
+  string destination_country = 8;
+  string reference = 9;
+
+  // The licensee, as the certificate must name them.
+  string producer_name = 10;
+  string producer_licence_no = 11;
+
+  repeated AgeEvidenceCask casks = 12;
+  // The age Stillhouse can support: the youngest cask that went into the
+  // run, in whole years, since a blend is only as old as its youngest
+  // component. Zero when it cannot be supported at all.
+  int32  supportable_age_years = 13;
+  bool   age_supportable = 14;
+  // Everything that stops a claim being made, or narrows it. Never
+  // silently omitted — a certificate that rounded up over a gap in the
+  // record is the failure that matters.
+  repeated string caveats = 15;
+
+  // What Stillhouse is attesting, which is not the certificate. Never
+  // empty.
+  string basis = 16;
+}
+
+service CertificateService {
+  rpc AgeCertificate(AgeCertificateRequest) returns (AgeCertificateResponse);
+}

@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Shell } from "@/components/Shell";
 import { LabourPanel } from "@/components/LabourPanel";
+import { AgeCertificatePanel } from "@/components/AgeCertificatePanel";
 import { LabourSubject } from "@/gen/stillhouse/v1/costing_pb";
 import { bottlingClient, costingClient, materialClient, traceabilityClient } from "@/lib/clients";
 import { formatCAD, formatLAA, formatQty } from "@/lib/format";
@@ -97,6 +98,8 @@ export function BottlingRunDetailPage() {
           </p>
         </section>
       )}
+
+      <AgeCertificatePanel bottlingRunId={r.id} />
 
       <section className="mb-8">
         <LabourPanel subject={{ bottlingRunId: r.id } as LabourSubject} what="run" />

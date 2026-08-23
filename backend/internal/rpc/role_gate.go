@@ -440,6 +440,10 @@ var procedureMinRole = map[string]minRole{
 	// caller can already see, and squarely the accountant's engagement.
 	"/stillhouse.v1.TenantService/SecuritySufficiency": roleViewer,
 
+	// The evidence behind a certificate of age and origin. A read, and
+	// the person assembling an export packet needs it.
+	"/stillhouse.v1.CertificateService/AgeCertificate": roleViewer,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

@@ -85,3 +85,47 @@ SET voided_at = NOW(),
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
 RETURNING *;
+
+-- name: AgeEvidenceForBottlingRun :many
+-- The casks behind a bottling run, and how long each was in small wood.
+--
+-- EDM3-1-1 ¶43–46: age runs from original warehousing in small wood to
+-- removal for export sale, and resets on redistillation. Stillhouse holds
+-- the maturation clock already; this is the walk that reads it — the run's
+-- source vessel, back through the movements that filled it, to the dumps
+-- that came out of casks.
+--
+-- days_aged_at_dump is what the cask recorded when it was emptied, which
+-- is the figure that matters: the age at removal from wood, not the age
+-- today.
+SELECT bc.id AS container_id,
+       bc.name AS cask_name,
+       bc.capacity_l,
+       ba.serial_burnin,
+       ba.days_aged_at_dump,
+       ba.wood_species,
+       ba.prior_use,
+       ba.char_level,
+       be.event_date AS dumped_on,
+       be.laa AS dumped_laa
+FROM bulk_movements fed
+JOIN bulk_containers bc ON bc.id = fed.source_container_id
+JOIN barrel_attributes ba ON ba.container_id = bc.id
+LEFT JOIN LATERAL (
+    SELECT e.event_date, e.laa
+    FROM barrel_events e
+    WHERE e.container_id = bc.id AND e.kind = 'dump' AND e.voided_at IS NULL
+    ORDER BY e.event_date DESC LIMIT 1
+) be ON TRUE
+WHERE fed.destination_container_id = sqlc.arg(source_container_id)::uuid
+  AND fed.occurred_at <= sqlc.arg(before)::timestamptz
+  AND bc.kind = 'barrel'
+ORDER BY ba.days_aged_at_dump NULLS LAST;
+
+-- name: RedistillationsTouchingContainer :many
+-- Anything put back through the still from this vessel. Age resets on
+-- redistillation, so a certificate has to say whether one happened.
+SELECT id, taken_on, source_container_id, laa_taken, reason
+FROM redistillations
+WHERE source_container_id = $1
+ORDER BY taken_on DESC;

@@ -12,6 +12,92 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const ageEvidenceForBottlingRun = `-- name: AgeEvidenceForBottlingRun :many
+SELECT bc.id AS container_id,
+       bc.name AS cask_name,
+       bc.capacity_l,
+       ba.serial_burnin,
+       ba.days_aged_at_dump,
+       ba.wood_species,
+       ba.prior_use,
+       ba.char_level,
+       be.event_date AS dumped_on,
+       be.laa AS dumped_laa
+FROM bulk_movements fed
+JOIN bulk_containers bc ON bc.id = fed.source_container_id
+JOIN barrel_attributes ba ON ba.container_id = bc.id
+LEFT JOIN LATERAL (
+    SELECT e.event_date, e.laa
+    FROM barrel_events e
+    WHERE e.container_id = bc.id AND e.kind = 'dump' AND e.voided_at IS NULL
+    ORDER BY e.event_date DESC LIMIT 1
+) be ON TRUE
+WHERE fed.destination_container_id = $1::uuid
+  AND fed.occurred_at <= $2::timestamptz
+  AND bc.kind = 'barrel'
+ORDER BY ba.days_aged_at_dump NULLS LAST
+`
+
+type AgeEvidenceForBottlingRunParams struct {
+	SourceContainerID uuid.UUID          `json:"source_container_id"`
+	Before            pgtype.Timestamptz `json:"before"`
+}
+
+type AgeEvidenceForBottlingRunRow struct {
+	ContainerID    uuid.UUID          `json:"container_id"`
+	CaskName       string             `json:"cask_name"`
+	CapacityL      pgtype.Float8      `json:"capacity_l"`
+	SerialBurnin   string             `json:"serial_burnin"`
+	DaysAgedAtDump pgtype.Int4        `json:"days_aged_at_dump"`
+	WoodSpecies    string             `json:"wood_species"`
+	PriorUse       string             `json:"prior_use"`
+	CharLevel      pgtype.Int4        `json:"char_level"`
+	DumpedOn       pgtype.Timestamptz `json:"dumped_on"`
+	DumpedLaa      pgtype.Float8      `json:"dumped_laa"`
+}
+
+// The casks behind a bottling run, and how long each was in small wood.
+//
+// EDM3-1-1 ¶43–46: age runs from original warehousing in small wood to
+// removal for export sale, and resets on redistillation. Stillhouse holds
+// the maturation clock already; this is the walk that reads it — the run's
+// source vessel, back through the movements that filled it, to the dumps
+// that came out of casks.
+//
+// days_aged_at_dump is what the cask recorded when it was emptied, which
+// is the figure that matters: the age at removal from wood, not the age
+// today.
+func (q *Queries) AgeEvidenceForBottlingRun(ctx context.Context, arg AgeEvidenceForBottlingRunParams) ([]AgeEvidenceForBottlingRunRow, error) {
+	rows, err := q.db.Query(ctx, ageEvidenceForBottlingRun, arg.SourceContainerID, arg.Before)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AgeEvidenceForBottlingRunRow{}
+	for rows.Next() {
+		var i AgeEvidenceForBottlingRunRow
+		if err := rows.Scan(
+			&i.ContainerID,
+			&i.CaskName,
+			&i.CapacityL,
+			&i.SerialBurnin,
+			&i.DaysAgedAtDump,
+			&i.WoodSpecies,
+			&i.PriorUse,
+			&i.CharLevel,
+			&i.DumpedOn,
+			&i.DumpedLaa,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const createBarrelAttributes = `-- name: CreateBarrelAttributes :one
 INSERT INTO barrel_attributes (
     container_id, tenant_id, cooperage_supplier, char_level, wood_species,
@@ -423,6 +509,49 @@ func (q *Queries) ListBarrels(ctx context.Context, includeArchived bool) ([]List
 			&i.FillVolumeL,
 			&i.FillAbvPct,
 			&i.FillLaa,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const redistillationsTouchingContainer = `-- name: RedistillationsTouchingContainer :many
+SELECT id, taken_on, source_container_id, laa_taken, reason
+FROM redistillations
+WHERE source_container_id = $1
+ORDER BY taken_on DESC
+`
+
+type RedistillationsTouchingContainerRow struct {
+	ID                uuid.UUID            `json:"id"`
+	TakenOn           pgtype.Date          `json:"taken_on"`
+	SourceContainerID uuid.UUID            `json:"source_container_id"`
+	LaaTaken          float64              `json:"laa_taken"`
+	Reason            RedistillationReason `json:"reason"`
+}
+
+// Anything put back through the still from this vessel. Age resets on
+// redistillation, so a certificate has to say whether one happened.
+func (q *Queries) RedistillationsTouchingContainer(ctx context.Context, sourceContainerID uuid.UUID) ([]RedistillationsTouchingContainerRow, error) {
+	rows, err := q.db.Query(ctx, redistillationsTouchingContainer, sourceContainerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RedistillationsTouchingContainerRow{}
+	for rows.Next() {
+		var i RedistillationsTouchingContainerRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TakenOn,
+			&i.SourceContainerID,
+			&i.LaaTaken,
+			&i.Reason,
 		); err != nil {
 			return nil, err
 		}
