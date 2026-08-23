@@ -1113,9 +1113,10 @@ func (ns NullStrengthSource) Value() (driver.Value, error) {
 type UserRole string
 
 const (
-	UserRoleOwner    UserRole = "owner"
-	UserRoleOperator UserRole = "operator"
-	UserRoleViewer   UserRole = "viewer"
+	UserRoleOwner      UserRole = "owner"
+	UserRoleOperator   UserRole = "operator"
+	UserRoleViewer     UserRole = "viewer"
+	UserRoleAccountant UserRole = "accountant"
 )
 
 func (e *UserRole) Scan(src interface{}) error {

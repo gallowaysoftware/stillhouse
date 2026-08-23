@@ -347,12 +347,6 @@ This is the boring half: CSV in for materials, products, barrels, packaged
 inventory and customers, with a dry-run and a rollback. The difference between
 a distillery trying Stillhouse and finishing.
 
-### H4 · MFA and an accountant role — P1
-
-Sessions and bearer tokens only, three roles. TOTP at minimum. And the person
-who most wants access — the outside bookkeeper or excise consultant — has no
-role that fits, which is a shame given they are also the best referral channel.
-
 ### H5 · Notifications — P1
 
 A mailer exists for password resets and nothing else. Filing due in N days

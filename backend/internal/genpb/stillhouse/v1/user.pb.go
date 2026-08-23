@@ -29,6 +29,15 @@ const (
 	UserRole_USER_ROLE_OWNER       UserRole = 1
 	UserRole_USER_ROLE_OPERATOR    UserRole = 2
 	UserRole_USER_ROLE_VIEWER      UserRole = 3
+	// The outside bookkeeper or excise consultant. Deliberately not on the
+	// owner > operator > viewer line: more than a viewer on the compliance
+	// surface — generate, submit and reopen a return, set the reporting
+	// calendar, rule on a loss's duty treatment — and less than an
+	// operator everywhere else. It can record no gauge, no bottling and no
+	// removal, because someone who both books a movement and rules on its
+	// treatment is the segregation-of-duties problem the audit trail
+	// exists to make visible.
+	UserRole_USER_ROLE_ACCOUNTANT UserRole = 4
 )
 
 // Enum value maps for UserRole.
@@ -38,12 +47,14 @@ var (
 		1: "USER_ROLE_OWNER",
 		2: "USER_ROLE_OPERATOR",
 		3: "USER_ROLE_VIEWER",
+		4: "USER_ROLE_ACCOUNTANT",
 	}
 	UserRole_value = map[string]int32{
 		"USER_ROLE_UNSPECIFIED": 0,
 		"USER_ROLE_OWNER":       1,
 		"USER_ROLE_OPERATOR":    2,
 		"USER_ROLE_VIEWER":      3,
+		"USER_ROLE_ACCOUNTANT":  4,
 	}
 )
 
@@ -569,12 +580,13 @@ const file_stillhouse_v1_user_proto_rawDesc = "" +
 	"\x17ChangeMyPasswordRequest\x12)\n" +
 	"\x10current_password\x18\x01 \x01(\tR\x0fcurrentPassword\x12!\n" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\x1a\n" +
-	"\x18ChangeMyPasswordResponse*h\n" +
+	"\x18ChangeMyPasswordResponse*\x82\x01\n" +
 	"\bUserRole\x12\x19\n" +
 	"\x15USER_ROLE_UNSPECIFIED\x10\x00\x12\x13\n" +
 	"\x0fUSER_ROLE_OWNER\x10\x01\x12\x16\n" +
 	"\x12USER_ROLE_OPERATOR\x10\x02\x12\x14\n" +
-	"\x10USER_ROLE_VIEWER\x10\x032\xd9\x02\n" +
+	"\x10USER_ROLE_VIEWER\x10\x03\x12\x18\n" +
+	"\x14USER_ROLE_ACCOUNTANT\x10\x042\xd9\x02\n" +
 	"\vUserService\x12B\n" +
 	"\x05GetMe\x12\x1b.stillhouse.v1.GetMeRequest\x1a\x1c.stillhouse.v1.GetMeResponse\x12Q\n" +
 	"\n" +

@@ -251,8 +251,48 @@ func userRoleRank(r sqlcgen.UserRole) minRole {
 		return roleOperator
 	case sqlcgen.UserRoleViewer:
 		return roleViewer
+	case sqlcgen.UserRoleAccountant:
+		// An accountant reads like a viewer. What they may do beyond
+		// that is enumerated in accountantAlso rather than expressed as
+		// a rank, because their permissions are not a prefix of anyone
+		// else's: more than a viewer on the compliance surface, and less
+		// than an operator everywhere else.
+		return roleViewer
 	}
 	return 0
+}
+
+// accountantAlso is the compliance surface an accountant reaches on top
+// of everything a viewer can see. It is a list rather than a rank
+// because the role deliberately does not sit on the
+// owner > operator > viewer line.
+//
+// What is on it is what an outside bookkeeper or excise consultant is
+// engaged to do: prepare and file the return, rule on a loss's duty
+// treatment, set the reporting calendar, and pull the binder that
+// evidences all of it.
+//
+// What is *not* on it matters more. No production writes — no gauge, no
+// bottling, no removal, no adjustment. Someone who both books a movement
+// and rules on its treatment is precisely the segregation-of-duties
+// problem the audit trail exists to make visible, and handing the
+// outside accountant an owner account (which is what happens today,
+// because nothing else fits) gives them exactly that, plus user
+// management and tenant deletion.
+var accountantAlso = map[string]bool{
+	// Preparing and filing the return.
+	"/stillhouse.v1.B266Service/GenerateB266":     true,
+	"/stillhouse.v1.B266Service/SubmitB266":       true,
+	"/stillhouse.v1.B266Service/ReopenB266Period": true,
+	// The statements shown before a period is marked submitted — the
+	// accountant is the one reading them.
+	"/stillhouse.v1.B266Service/GetFilingAcknowledgement": true,
+	// The reporting calendar is a pair of CRA elections (B268, B284).
+	// Advising on which to make is the engagement.
+	"/stillhouse.v1.TenantService/UpdateFilingCalendar": true,
+	// Whether a loss is relieved or duty-payable is an excise judgement,
+	// not an operational one.
+	"/stillhouse.v1.BulkService/ClassifyLosses": true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a
@@ -281,6 +321,9 @@ func checkRole(procedure string, hasUser bool, role sqlcgen.UserRole) error {
 	}
 	if !hasUser {
 		return connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	if role == sqlcgen.UserRoleAccountant && accountantAlso[procedure] {
+		return nil
 	}
 	required, listed := procedureMinRole[procedure]
 	if !listed {

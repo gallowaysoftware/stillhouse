@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
@@ -7,7 +7,6 @@ import { Callout } from "@/components/Callout";
 import { LossClassificationCard } from "@/components/LossClassificationCard";
 import { Shell } from "@/components/Shell";
 import { b266Client } from "@/lib/clients";
-import { useCurrentUser } from "@/lib/role";
 import {
   B266Report,
   B266Status,
@@ -16,7 +15,7 @@ import {
 } from "@/gen/stillhouse/v1/b266_pb";
 import { DutyPoint } from "@/gen/stillhouse/v1/tenant_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
-import { WriteOnly, OwnerOnly } from "@/lib/role";
+import { canFile, canWrite, FilingOnly, useCurrentRole, useCurrentUser } from "@/lib/role";
 
 
 function todayISO(): string {
@@ -31,6 +30,15 @@ function firstOfThisMonth(): string {
 function lastOfThisMonth(): string {
   const d = new Date();
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
+}
+
+// Generating a return is reached from two directions: the operator who
+// keeps the ledger and the accountant engaged to file it. Neither is a
+// superset of the other, so the gate is the union rather than a rank.
+function FilingOrWriteOnly({ children }: { children: ReactNode }) {
+  const role = useCurrentRole();
+  if (!canWrite(role) && !canFile(role)) return null;
+  return <>{children}</>;
 }
 
 export function B266Page() {
@@ -118,7 +126,7 @@ export function B266Page() {
           <label className="mb-2 block text-sm font-medium text-fg-muted">Period end</label>
           <input type="date" value={periodEnd} onChange={(e) => { setTouched(true); setPeriodEnd(e.target.value); }} required className="rounded border border-border-strong px-3 py-2 text-sm" />
         </div>
-        <WriteOnly>
+        <FilingOrWriteOnly>
           <button
             type="submit"
             disabled={generate.isPending}
@@ -126,7 +134,7 @@ export function B266Page() {
           >
             {generate.isPending ? "Generating…" : "Generate"}
           </button>
-        </WriteOnly>
+        </FilingOrWriteOnly>
         {generate.error && (
           <span className="text-sm text-danger-fg">
             {generate.error instanceof ConnectError ? generate.error.rawMessage : String(generate.error)}
@@ -502,19 +510,19 @@ function ReportView({
       </div>
 
       {period && submittedStatus !== B266Status.SUBMITTED && (
-        <OwnerOnly>
+        <FilingOnly>
           <SubmitPanel
             onSubmit={onSubmit}
             submitting={submitting}
             submitError={submitError}
             blocked={report.filingBlockers.length > 0}
           />
-        </OwnerOnly>
+        </FilingOnly>
       )}
       {submittedStatus === B266Status.SUBMITTED && period && (
-        <OwnerOnly>
+        <FilingOnly>
           <ReopenPanel periodId={period.id} />
-        </OwnerOnly>
+        </FilingOnly>
       )}
     </section>
   );

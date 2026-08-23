@@ -21,6 +21,7 @@ const roleLabels: Record<UserRole, string> = {
   [UserRole.OWNER]: "Owner",
   [UserRole.OPERATOR]: "Operator",
   [UserRole.VIEWER]: "Viewer",
+  [UserRole.ACCOUNTANT]: "Accountant",
 };
 
 export function SettingsPage() {
@@ -543,9 +544,10 @@ function UsersPanel({ isOwner, users, onCreated }: {
           <div>
             <label className="mb-2 block text-sm font-medium text-fg-muted">Role</label>
             <select value={role} onChange={(e) => setRole(Number(e.target.value) as UserRole)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
-              <option value={UserRole.OPERATOR}>Operator</option>
-              <option value={UserRole.OWNER}>Owner</option>
-              <option value={UserRole.VIEWER}>Viewer</option>
+              <option value={UserRole.OPERATOR}>Operator — records production</option>
+              <option value={UserRole.OWNER}>Owner — everything, including people</option>
+              <option value={UserRole.VIEWER}>Viewer — reads only</option>
+              <option value={UserRole.ACCOUNTANT}>Accountant — files the return, records no production</option>
             </select>
           </div>
           <div className="col-span-3 flex items-center gap-3">

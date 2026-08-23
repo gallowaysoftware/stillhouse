@@ -10,6 +10,15 @@ enum UserRole {
   USER_ROLE_OWNER = 1;
   USER_ROLE_OPERATOR = 2;
   USER_ROLE_VIEWER = 3;
+  // The outside bookkeeper or excise consultant. Deliberately not on the
+  // owner > operator > viewer line: more than a viewer on the compliance
+  // surface — generate, submit and reopen a return, set the reporting
+  // calendar, rule on a loss's duty treatment — and less than an
+  // operator everywhere else. It can record no gauge, no bottling and no
+  // removal, because someone who both books a movement and rules on its
+  // treatment is the segregation-of-duties problem the audit trail
+  // exists to make visible.
+  USER_ROLE_ACCOUNTANT = 4;
 }
 
 message User {

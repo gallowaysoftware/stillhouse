@@ -55,6 +55,8 @@ func roleToProto(r sqlcgen.UserRole) stillhousev1.UserRole {
 		return stillhousev1.UserRole_USER_ROLE_OPERATOR
 	case sqlcgen.UserRoleViewer:
 		return stillhousev1.UserRole_USER_ROLE_VIEWER
+	case sqlcgen.UserRoleAccountant:
+		return stillhousev1.UserRole_USER_ROLE_ACCOUNTANT
 	}
 	return stillhousev1.UserRole_USER_ROLE_UNSPECIFIED
 }

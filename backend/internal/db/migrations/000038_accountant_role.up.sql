@@ -1,0 +1,24 @@
+-- 000038_accountant_role: a role for the person who files the return.
+--
+-- Three roles — owner, operator, viewer — and none of them fit the
+-- outside bookkeeper or excise consultant. Viewer cannot record the
+-- filing acknowledgement or rule on a loss's duty treatment, which is
+-- most of what they are engaged to do. Owner hands them user management,
+-- tenant deletion and the ability to reclassify anything on the ledger.
+-- In practice they get an owner account, which is a real privilege
+-- escalation dressed up as convenience — and they are also the best
+-- referral channel this product has, so it is worth getting right.
+--
+-- accountant does not sit on the owner > operator > viewer line. It
+-- needs *more* than a viewer on the compliance surface and *less* than
+-- an operator everywhere else: it must never record a gauge, a bottling
+-- or a removal, because someone who both books a movement and rules on
+-- its treatment is the segregation-of-duties problem the audit trail
+-- exists to make visible.
+--
+-- So the enum gains a value and the gate gains a second dimension: an
+-- accountant ranks as a viewer, plus an explicit list of procedures.
+-- See accountantAlso in role_gate.go, which the procedure-coverage test
+-- keeps honest.
+
+ALTER TYPE user_role ADD VALUE IF NOT EXISTS 'accountant';

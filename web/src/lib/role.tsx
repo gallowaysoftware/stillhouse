@@ -19,10 +19,19 @@ export function useCurrentRole(): UserRole | undefined {
   return useCurrentUser().data?.user?.role;
 }
 
-// canWrite gates create/update/delete actions. Mirrors the backend's
-// procedureMinRole: viewer cannot mutate.
+// canWrite gates create/update/delete actions on the *production*
+// surface. Mirrors the backend's procedureMinRole: viewer cannot mutate,
+// and neither can an accountant — someone who both books a movement and
+// rules on its treatment is the conflict that role exists to avoid. The
+// compliance actions an accountant does reach are gated by canFile.
 export function canWrite(role: UserRole | undefined): boolean {
   return role === UserRole.OPERATOR || role === UserRole.OWNER;
+}
+
+// canFile gates the return: generate, submit, reopen, set the reporting
+// calendar, rule on a loss. Mirrors accountantAlso in role_gate.go.
+export function canFile(role: UserRole | undefined): boolean {
+  return role === UserRole.OWNER || role === UserRole.ACCOUNTANT;
 }
 
 // canOwn gates owner-only actions (UpdateTenant, CreateUser, SubmitB266).
@@ -36,6 +45,14 @@ export function canOwn(role: UserRole | undefined): boolean {
 export function WriteOnly({ children }: { children: ReactNode }) {
   const role = useCurrentRole();
   if (!canWrite(role)) return null;
+  return <>{children}</>;
+}
+
+// FilingOnly shows children to whoever may act on a return — the owner
+// and the accountant.
+export function FilingOnly({ children }: { children: ReactNode }) {
+  const role = useCurrentRole();
+  if (!canFile(role)) return null;
   return <>{children}</>;
 }
 

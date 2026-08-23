@@ -207,6 +207,8 @@ func userRoleToDB(r stillhousev1.UserRole) (sqlcgen.UserRole, error) {
 		return sqlcgen.UserRoleOperator, nil
 	case stillhousev1.UserRole_USER_ROLE_VIEWER:
 		return sqlcgen.UserRoleViewer, nil
+	case stillhousev1.UserRole_USER_ROLE_ACCOUNTANT:
+		return sqlcgen.UserRoleAccountant, nil
 	}
 	return "", errors.New("invalid user role")
 }

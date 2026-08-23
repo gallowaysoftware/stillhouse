@@ -71,6 +71,14 @@ func TestNoClassificationForUnknownProcedure(t *testing.T) {
 			t.Errorf("publicProcedures lists %q, which no longer exists in the generated code", p)
 		}
 	}
+	// accountantAlso is the one place a typo grants nothing and says
+	// nothing: an entry naming a procedure that doesn't exist silently
+	// leaves the accountant locked out of whatever was meant.
+	for p := range accountantAlso {
+		if !real[p] {
+			t.Errorf("accountantAlso lists %q, which no longer exists in the generated code", p)
+		}
+	}
 }
 
 // generatedProcedures reads the procedure path constants out of the
