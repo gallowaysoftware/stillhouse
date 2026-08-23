@@ -56,6 +56,13 @@ func newLedgerFixture(t *testing.T) *ledgerFixture {
 	}
 	t.Cleanup(func() { _, _ = pool.Exec(ctx, "DELETE FROM tenants WHERE id = $1", tenant.ID) })
 
+	// Every tenant has one, the way signup and cmd/seed make one.
+	if _, err := q.CreateDefaultLocation(ctx, sqlcgen.CreateDefaultLocationParams{
+		TenantID: tenant.ID, Name: tenant.Name,
+	}); err != nil {
+		t.Fatalf("create default location: %v", err)
+	}
+
 	user, err := q.CreateUser(ctx, sqlcgen.CreateUserParams{
 		TenantID: tenant.ID, Email: "ledger-" + uuid.NewString() + "@example.com",
 		PasswordHash: "x", DisplayName: "Ledger Test", Role: sqlcgen.UserRoleOwner,

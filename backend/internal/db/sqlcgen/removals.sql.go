@@ -39,7 +39,7 @@ INSERT INTO packaging_removals (
     duty_rate_per_laa, duty_amount_cad, notes, customer_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
-) RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id
+) RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id, location_id
 `
 
 type CreateRemovalParams struct {
@@ -103,6 +103,7 @@ func (q *Queries) CreateRemoval(ctx context.Context, arg CreateRemovalParams) (P
 		&i.VoidedBy,
 		&i.VoidedReason,
 		&i.CustomerID,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -112,7 +113,7 @@ UPDATE packaged_inventory
 SET bottles_on_hand = bottles_on_hand - $2,
     bottles_removed = bottles_removed + $2
 WHERE id = $1 AND bottles_on_hand >= $2
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type DecrementPackagedOnHandParams struct {
@@ -145,12 +146,13 @@ func (q *Queries) DecrementPackagedOnHand(ctx context.Context, arg DecrementPack
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
 
 const getPackagedInventoryForUpdate = `-- name: GetPackagedInventoryForUpdate :one
-SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason FROM packaged_inventory WHERE id = $1 FOR UPDATE
+SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id FROM packaged_inventory WHERE id = $1 FOR UPDATE
 `
 
 // Read a lot's bottle count with the intent to change it. Without the
@@ -181,12 +183,13 @@ func (q *Queries) GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUI
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
 
 const getRemoval = `-- name: GetRemoval :one
-SELECT id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id FROM packaging_removals WHERE id = $1
+SELECT id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id, location_id FROM packaging_removals WHERE id = $1
 `
 
 func (q *Queries) GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error) {
@@ -214,6 +217,7 @@ func (q *Queries) GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemova
 		&i.VoidedBy,
 		&i.VoidedReason,
 		&i.CustomerID,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -223,7 +227,7 @@ UPDATE packaged_inventory
 SET bottles_on_hand = bottles_on_hand + $2,
     bottles_removed = bottles_removed - $2
 WHERE id = $1
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type IncrementPackagedOnHandParams struct {
@@ -252,12 +256,13 @@ func (q *Queries) IncrementPackagedOnHand(ctx context.Context, arg IncrementPack
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
 
 const listRemovals = `-- name: ListRemovals :many
-SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_date, pr.bottles_removed, pr.destination_kind, pr.destination_name, pr.reference, pr.bottle_size_ml, pr.bottle_abv_pct, pr.total_litres, pr.total_laa, pr.duty_rate_per_laa, pr.duty_amount_cad, pr.notes, pr.created_at, pr.voided_at, pr.voided_by, pr.voided_reason, pr.customer_id,
+SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_date, pr.bottles_removed, pr.destination_kind, pr.destination_name, pr.reference, pr.bottle_size_ml, pr.bottle_abv_pct, pr.total_litres, pr.total_laa, pr.duty_rate_per_laa, pr.duty_amount_cad, pr.notes, pr.created_at, pr.voided_at, pr.voided_by, pr.voided_reason, pr.customer_id, pr.location_id,
        pi.lot_code        AS lot_code,
        pi.jurisdiction    AS jurisdiction,
        p.name             AS product_name,
@@ -301,6 +306,7 @@ type ListRemovalsRow struct {
 	VoidedBy            uuid.NullUUID          `json:"voided_by"`
 	VoidedReason        string                 `json:"voided_reason"`
 	CustomerID          uuid.NullUUID          `json:"customer_id"`
+	LocationID          uuid.NullUUID          `json:"location_id"`
 	LotCode             string                 `json:"lot_code"`
 	Jurisdiction        string                 `json:"jurisdiction"`
 	ProductName         string                 `json:"product_name"`
@@ -343,6 +349,7 @@ func (q *Queries) ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]L
 			&i.VoidedBy,
 			&i.VoidedReason,
 			&i.CustomerID,
+			&i.LocationID,
 			&i.LotCode,
 			&i.Jurisdiction,
 			&i.ProductName,
@@ -375,7 +382,7 @@ SET voided_at = NOW(),
     voided_by = $2,
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
-RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id
+RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id, location_id
 `
 
 type VoidRemovalParams struct {
@@ -409,6 +416,7 @@ func (q *Queries) VoidRemoval(ctx context.Context, arg VoidRemovalParams) (Packa
 		&i.VoidedBy,
 		&i.VoidedReason,
 		&i.CustomerID,
+		&i.LocationID,
 	)
 	return i, err
 }

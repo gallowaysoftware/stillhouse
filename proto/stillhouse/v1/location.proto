@@ -1,0 +1,94 @@
+// Where, within a licensee.
+//
+// One tenant was one licence with no place inside it, so a distillery
+// with a production site and a rackhouse across town had one
+// undifferentiated pile of alcohol. That is a compliance limit before it
+// is a convenience one: an excise warehouse licence can specify multiple
+// premises, the 30% single-retail-store supply rule is computed per
+// premises, and a separate return per branch needs something to divide
+// by.
+//
+// A location is where something *is*, not who owns it. Row-level
+// security stays keyed on tenant_id and nothing here narrows it —
+// adding a second isolation boundary would double the number of ways to
+// get isolation wrong for a gain nobody has asked for.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message Location {
+  string id = 1;
+  string name = 2;
+  // The address as it appears on the licence, which is what makes this a
+  // premises rather than a label.
+  string address = 3;
+  // Which licence covers this premises, when one does. An office is a
+  // location and is not licensed.
+  string excise_licence_id = 4;
+  string licence_number = 5;
+  // Whether packaged spirits may be sold to the public here. The 30%
+  // rule turns on this.
+  bool retail_store = 6;
+  // Exactly one per tenant: where a movement that names no location is
+  // taken to have happened.
+  bool is_default = 7;
+  string notes = 8;
+  int32 container_count = 9;
+  google.protobuf.Timestamp archived_at = 10;
+}
+
+message ListLocationsRequest { bool include_archived = 1; }
+message ListLocationsResponse { repeated Location locations = 1; }
+
+message SaveLocationRequest {
+  string id = 1;  // empty creates
+  string name = 2;
+  string address = 3;
+  string excise_licence_id = 4;
+  bool   retail_store = 5;
+  string notes = 6;
+  bool   archived = 7;
+  // Make this the tenant's default. Clearing the previous one and
+  // setting this happen together, so there is never a moment with none.
+  bool   make_default = 8;
+}
+message SaveLocationResponse { Location location = 1; }
+
+message SetContainerLocationRequest {
+  string container_id = 1;
+  string location_id = 2;
+}
+message SetContainerLocationResponse { string container_id = 1; string location_id = 2; }
+
+message RetailSupplyLine {
+  string location_id = 1;
+  string location_name = 2;
+  bool   retail_store = 3;
+  double laa_removed = 4;
+  int32  bottles_removed = 5;
+  // This location's share of everything removed in the period. The
+  // licensee's own side of the 30% rule.
+  double share_of_total_pct = 6;
+}
+message RetailSupplyReportRequest {
+  string period_start = 1;  // ISO date
+  string period_end = 2;
+}
+message RetailSupplyReportResponse {
+  repeated RetailSupplyLine lines = 1;
+  double total_laa_removed = 2;
+  // Says plainly what this report cannot answer. The rule is about a
+  // store's whole stock, and Stillhouse does not know what else the
+  // store bought — reporting a ratio whose denominator it cannot see
+  // would be inventing the number the rule turns on.
+  string caveat = 3;
+}
+
+service LocationService {
+  rpc ListLocations(ListLocationsRequest) returns (ListLocationsResponse);
+  rpc SaveLocation(SaveLocationRequest) returns (SaveLocationResponse);
+  rpc SetContainerLocation(SetContainerLocationRequest) returns (SetContainerLocationResponse);
+  rpc RetailSupplyReport(RetailSupplyReportRequest) returns (RetailSupplyReportResponse);
+}

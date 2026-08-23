@@ -196,3 +196,52 @@ func openSchemaTestPool(t *testing.T) *pgxpool.Pool {
 	t.Cleanup(pool.Close)
 	return pool
 }
+
+// TestEveryTenantHasExactlyOneDefaultLocation is what a trigger would
+// have enforced, and why there is no trigger.
+//
+// The obvious implementation of "every tenant has a default location" is
+// an AFTER INSERT trigger on tenants. It does not work: signup creates a
+// tenant in a transaction with no tenant context — there is no id to
+// scope by until the INSERT returns — and locations FORCEs row-level
+// security, so the trigger's write is refused. Making it SECURITY
+// DEFINER would fix it by punching a hole in the tenant boundary to save
+// typing in three call sites, which is the trade stage 152 exists to
+// refuse.
+//
+// So the insert lives in the callers and this asserts the invariant
+// instead. A new path that creates a tenant and forgets fails here
+// rather than producing a tenant whose stock has nowhere to be.
+//
+// Needs a database: STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN.
+func TestEveryTenantHasExactlyOneDefaultLocation(t *testing.T) {
+	pool := openSchemaTestPool(t)
+	ctx := context.Background()
+
+	rows, err := pool.Query(ctx, `
+		SELECT t.id, t.name,
+		       COUNT(l.id) FILTER (WHERE l.is_default)::int AS defaults,
+		       COUNT(l.id)::int                             AS total
+		FROM tenants t
+		LEFT JOIN locations l ON l.tenant_id = t.id
+		GROUP BY t.id, t.name
+		HAVING COUNT(l.id) FILTER (WHERE l.is_default) <> 1`)
+	if err != nil {
+		t.Fatalf("check default locations: %v", err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id, name string
+		var defaults, total int
+		if err := rows.Scan(&id, &name, &defaults, &total); err != nil {
+			t.Fatalf("scan: %v", err)
+		}
+		t.Errorf("tenant %q (%s) has %d default location(s) out of %d. Every tenant "+
+			"needs exactly one — whatever created this tenant should call "+
+			"CreateDefaultLocation, the way signup and cmd/seed do.",
+			name, id, defaults, total)
+	}
+	if err := rows.Err(); err != nil {
+		t.Fatalf("rows: %v", err)
+	}
+}

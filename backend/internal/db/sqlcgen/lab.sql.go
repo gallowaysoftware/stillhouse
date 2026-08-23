@@ -145,7 +145,7 @@ SET held_at     = NOW(),
     held_by     = $2,
     hold_reason = $3
 WHERE id = $1
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type HoldPackagedLotParams struct {
@@ -178,6 +178,7 @@ func (q *Queries) HoldPackagedLot(ctx context.Context, arg HoldPackagedLotParams
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -287,7 +288,7 @@ SET released_at   = NOW(),
     held_by       = NULL,
     hold_reason   = ''
 WHERE id = $1
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type ReleasePackagedLotParams struct {
@@ -319,6 +320,7 @@ func (q *Queries) ReleasePackagedLot(ctx context.Context, arg ReleasePackagedLot
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }

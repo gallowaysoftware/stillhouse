@@ -218,6 +218,15 @@ func (s *InviteService) SignupWithInvite(
 		if e := tenantdb.SetTenantContext(ctx, q, tenant.ID); e != nil {
 			return e
 		}
+		// The tenant's first location. After SetTenantContext, because
+		// locations FORCEs row-level security and the transaction had no
+		// tenant to scope by until the tenant existed — see migration
+		// 000047 for why this is not a trigger.
+		if _, e := q.CreateDefaultLocation(ctx, sqlcgen.CreateDefaultLocationParams{
+			TenantID: tenant.ID, Name: tenant.Name,
+		}); e != nil {
+			return e
+		}
 		// Seed the licence register with the spirits licence they just
 		// gave us. Without this a new tenant's register is empty while
 		// the tenant record carries a licence number — two places

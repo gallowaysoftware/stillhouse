@@ -59,7 +59,7 @@ INSERT INTO bulk_containers (
     tenant_id, name, kind, capacity_l, location, notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at
+) RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
 `
 
 type CreateBulkContainerParams struct {
@@ -95,12 +95,13 @@ func (q *Queries) CreateBulkContainer(ctx context.Context, arg CreateBulkContain
 		&i.CurrentLaa,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LocationID,
 	)
 	return i, err
 }
 
 const getBulkContainer = `-- name: GetBulkContainer :one
-SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at FROM bulk_containers WHERE id = $1
+SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id FROM bulk_containers WHERE id = $1
 `
 
 func (q *Queries) GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error) {
@@ -120,12 +121,13 @@ func (q *Queries) GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkConta
 		&i.CurrentLaa,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LocationID,
 	)
 	return i, err
 }
 
 const getBulkContainerForUpdate = `-- name: GetBulkContainerForUpdate :one
-SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at FROM bulk_containers WHERE id = $1 FOR UPDATE
+SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id FROM bulk_containers WHERE id = $1 FOR UPDATE
 `
 
 // Read a container's balance with the intent to change it. FOR UPDATE is
@@ -156,6 +158,7 @@ func (q *Queries) GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (
 		&i.CurrentLaa,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -352,7 +355,7 @@ func (q *Queries) InsertExternalBulkMovement(ctx context.Context, arg InsertExte
 }
 
 const listBulkContainers = `-- name: ListBulkContainers :many
-SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at FROM bulk_containers
+SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id FROM bulk_containers
 WHERE ($1::boolean OR NOT archived)
   AND kind != 'barrel'
 ORDER BY archived, name
@@ -386,6 +389,7 @@ func (q *Queries) ListBulkContainers(ctx context.Context, includeArchived bool) 
 			&i.CurrentLaa,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.LocationID,
 		); err != nil {
 			return nil, err
 		}
@@ -602,7 +606,7 @@ func (q *Queries) ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulk
 }
 
 const setBulkContainerArchived = `-- name: SetBulkContainerArchived :one
-UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at
+UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
 `
 
 type SetBulkContainerArchivedParams struct {
@@ -627,6 +631,7 @@ func (q *Queries) SetBulkContainerArchived(ctx context.Context, arg SetBulkConta
 		&i.CurrentLaa,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -656,7 +661,7 @@ SET name       = $2,
     location   = $5,
     notes      = $6
 WHERE id = $1
-RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at
+RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
 `
 
 type UpdateBulkContainerParams struct {
@@ -692,6 +697,7 @@ func (q *Queries) UpdateBulkContainer(ctx context.Context, arg UpdateBulkContain
 		&i.CurrentLaa,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -702,7 +708,7 @@ SET current_volume_l = $2,
     current_abv_pct  = $3,
     current_laa      = $4
 WHERE id = $1
-RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at
+RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
 `
 
 type UpdateBulkContainerBalanceParams struct {
@@ -734,6 +740,7 @@ func (q *Queries) UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulk
 		&i.CurrentLaa,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.LocationID,
 	)
 	return i, err
 }

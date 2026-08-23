@@ -120,8 +120,9 @@ spirits. Carries the special duty interaction with `A2`.
 
 ### B5 · Branch and division returns — P2
 
-B269 authorization for separate returns per branch or division. Depends on
-locations (`F1`).
+B269 authorization for separate returns per branch or division. `F1` shipped in
+stage 170, so there is now something to divide by; what is left is the
+authorization itself and a return scoped to one location.
 
 ### B6 · Licence renewal and security tracking — **shipped, stage 162**
 
@@ -226,14 +227,6 @@ rather than a silent correction.
 ---
 
 ## Track F — planning and operations
-
-### F1 · Locations within a tenant — P1
-
-One tenant is one licence with no location dimension inside it. This is a
-compliance limit as much as a convenience one: an excise warehouse licence can
-specify multiple premises, and the 30% single-retail-store supply rule
-(EDM8-1-1 ¶20) is computed per premises. Also blocks `B5` and multi-site
-inventory.
 
 ### F2 · Work orders and task assignment — P1
 

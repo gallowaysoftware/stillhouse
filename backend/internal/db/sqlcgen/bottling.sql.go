@@ -165,7 +165,7 @@ INSERT INTO packaged_inventory (
     tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
     bottles_on_hand, bottles_packaged
 ) VALUES ($1, $2, $3, $4, NULL, $5, $5)
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type CreatePackagedInventoryAdoptedParams struct {
@@ -209,6 +209,7 @@ func (q *Queries) CreatePackagedInventoryAdopted(ctx context.Context, arg Create
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -218,7 +219,7 @@ UPDATE packaged_inventory
 SET bottles_on_hand  = bottles_on_hand  - $2,
     bottles_packaged = bottles_packaged - $2
 WHERE id = $1 AND bottles_on_hand >= $2
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type DecrementPackagedInventoryByRunParams struct {
@@ -250,6 +251,7 @@ func (q *Queries) DecrementPackagedInventoryByRun(ctx context.Context, arg Decre
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -528,7 +530,7 @@ func (q *Queries) ListBottlingRunsForProduct(ctx context.Context, productID uuid
 }
 
 const listPackagedInventory = `-- name: ListPackagedInventory :many
-SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason,
+SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id,
        p.name           AS product_name,
        p.bottle_size_ml AS bottle_size_ml,
        p.target_abv_pct AS target_abv_pct,
@@ -563,6 +565,7 @@ type ListPackagedInventoryRow struct {
 	HeldAt           pgtype.Timestamptz `json:"held_at"`
 	HeldBy           uuid.NullUUID      `json:"held_by"`
 	HoldReason       string             `json:"hold_reason"`
+	LocationID       uuid.NullUUID      `json:"location_id"`
 	ProductName      string             `json:"product_name"`
 	BottleSizeMl     int32              `json:"bottle_size_ml"`
 	TargetAbvPct     float64            `json:"target_abv_pct"`
@@ -601,6 +604,7 @@ func (q *Queries) ListPackagedInventory(ctx context.Context, includeEmpty bool) 
 			&i.HeldAt,
 			&i.HeldBy,
 			&i.HoldReason,
+			&i.LocationID,
 			&i.ProductName,
 			&i.BottleSizeMl,
 			&i.TargetAbvPct,
@@ -630,7 +634,7 @@ func (q *Queries) NextBottlingRunNo(ctx context.Context) (int32, error) {
 }
 
 const packagedInventoryByLot = `-- name: PackagedInventoryByLot :one
-SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason FROM packaged_inventory
+SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id FROM packaged_inventory
 WHERE product_id = $1 AND lot_code = $2 AND jurisdiction = $3
 `
 
@@ -661,6 +665,7 @@ func (q *Queries) PackagedInventoryByLot(ctx context.Context, arg PackagedInvent
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }
@@ -675,7 +680,7 @@ INSERT INTO packaged_inventory (
 ON CONFLICT (product_id, lot_code, jurisdiction) DO UPDATE
 SET bottles_on_hand  = packaged_inventory.bottles_on_hand  + EXCLUDED.bottles_on_hand,
     bottles_packaged = packaged_inventory.bottles_packaged + EXCLUDED.bottles_packaged
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
 `
 
 type UpsertPackagedInventoryParams struct {
@@ -715,6 +720,7 @@ func (q *Queries) UpsertPackagedInventory(ctx context.Context, arg UpsertPackage
 		&i.HeldAt,
 		&i.HeldBy,
 		&i.HoldReason,
+		&i.LocationID,
 	)
 	return i, err
 }

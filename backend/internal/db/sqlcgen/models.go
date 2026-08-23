@@ -1625,6 +1625,7 @@ type BulkContainer struct {
 	CurrentLaa     float64            `json:"current_laa"`
 	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+	LocationID     uuid.NullUUID      `json:"location_id"`
 }
 
 type BulkMovement struct {
@@ -1909,6 +1910,20 @@ type LabResult struct {
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 }
 
+type Location struct {
+	ID              uuid.UUID          `json:"id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	Name            string             `json:"name"`
+	Address         string             `json:"address"`
+	ExciseLicenceID uuid.NullUUID      `json:"excise_licence_id"`
+	RetailStore     bool               `json:"retail_store"`
+	IsDefault       bool               `json:"is_default"`
+	Notes           string             `json:"notes"`
+	ArchivedAt      pgtype.Timestamptz `json:"archived_at"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
 type MashIngredientUsage struct {
 	ID            uuid.UUID          `json:"id"`
 	TenantID      uuid.UUID          `json:"tenant_id"`
@@ -2003,6 +2018,7 @@ type PackagedInventory struct {
 	HeldAt          pgtype.Timestamptz `json:"held_at"`
 	HeldBy          uuid.NullUUID      `json:"held_by"`
 	HoldReason      string             `json:"hold_reason"`
+	LocationID      uuid.NullUUID      `json:"location_id"`
 }
 
 type PackagingRemoval struct {
@@ -2027,6 +2043,7 @@ type PackagingRemoval struct {
 	VoidedBy            uuid.NullUUID          `json:"voided_by"`
 	VoidedReason        string                 `json:"voided_reason"`
 	CustomerID          uuid.NullUUID          `json:"customer_id"`
+	LocationID          uuid.NullUUID          `json:"location_id"`
 }
 
 type PasswordResetToken struct {

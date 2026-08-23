@@ -67,6 +67,10 @@ type Querier interface {
 	// in Go so that a caller cannot quietly attach a duty treatment to a
 	// production gauge and have it counted.
 	ClassifyLoss(ctx context.Context, arg ClassifyLossParams) (BulkMovement, error)
+	// Run before setting a new default. The partial unique index would
+	// otherwise refuse the second one, and doing it in the same transaction
+	// means there is never a moment with no default at all.
+	ClearDefaultLocation(ctx context.Context) error
 	ConfirmUserTOTP(ctx context.Context, arg ConfirmUserTOTPParams) (UserTotp, error)
 	// Single-use semantics: WHERE used_at IS NULL guarantees the same token
 	// can't be redeemed twice. Expiry check inline so we don't accidentally
@@ -100,6 +104,10 @@ type Querier interface {
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
 	CreateCalibration(ctx context.Context, arg CreateCalibrationParams) (InstrumentCalibration, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
+	// The first location for a new tenant, named from the tenant itself.
+	// Called wherever a tenant is created, after the tenant context is set —
+	// see the note in migration 000047 about why this is not a trigger.
+	CreateDefaultLocation(ctx context.Context, arg CreateDefaultLocationParams) (Location, error)
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
 	CreateExciseLicence(ctx context.Context, arg CreateExciseLicenceParams) (ExciseLicence, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
@@ -107,6 +115,7 @@ type Querier interface {
 	CreateInventoryAdjustment(ctx context.Context, arg CreateInventoryAdjustmentParams) (InventoryAdjustment, error)
 	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
 	CreateLabResult(ctx context.Context, arg CreateLabResultParams) (LabResult, error)
+	CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
@@ -206,6 +215,7 @@ type Querier interface {
 	GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (BulkContainer, error)
 	GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUID) (BulkMovement, error)
 	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
+	GetDefaultLocation(ctx context.Context) (Location, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetExciseLicence(ctx context.Context, id uuid.UUID) (ExciseLicence, error)
@@ -214,6 +224,7 @@ type Querier interface {
 	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
 	// expires_at to decide if the code is actually usable.
 	GetInviteCode(ctx context.Context, code string) (InviteCode, error)
+	GetLocation(ctx context.Context, id uuid.UUID) (Location, error)
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error)
@@ -364,6 +375,7 @@ type Querier interface {
 	// guessing at would produce a reminder for the wrong day — which is
 	// worse than none, because it would be believed.
 	ListLicencesForRenewalAlert(ctx context.Context) ([]ExciseLicence, error)
+	ListLocations(ctx context.Context, includeArchived bool) ([]ListLocationsRow, error)
 	// Losses and their duty treatment.
 	//
 	// "A loss" is any movement whose reason takes alcohol out of the ledger
@@ -489,6 +501,17 @@ type Querier interface {
 	// any skew either resolves alerts that are still true or leaves ones
 	// that are not. This must run in the same transaction as the upserts.
 	ResolveStaleAlerts(ctx context.Context, kinds []string) ([]Alert, error)
+	// The 30% single-retail-store supply rule (EDM8-1-1 ¶20): a licensee may
+	// not supply more than 30% of a retail store's stock from its own
+	// production. What Stillhouse can compute is its own side of that —
+	// how much it sent to each of its retail locations against how much it
+	// removed in total for the period.
+	//
+	// It deliberately does NOT report a percentage against the store's whole
+	// stock, because Stillhouse does not know what else the store bought.
+	// Reporting a ratio it cannot see the denominator of would be inventing
+	// the number the rule turns on.
+	RetailSupplyByLocation(ctx context.Context, arg RetailSupplyByLocationParams) ([]RetailSupplyByLocationRow, error)
 	RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error)
 	// The "revoke everything" half of a credential reset. Returns the rows it
 	// revoked so the caller can report a count and audit it; already-revoked
@@ -498,7 +521,9 @@ type Querier interface {
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
+	SetBulkContainerLocation(ctx context.Context, arg SetBulkContainerLocationParams) (BulkContainer, error)
 	SetCustomerArchived(ctx context.Context, arg SetCustomerArchivedParams) (Customer, error)
+	SetDefaultLocation(ctx context.Context, id uuid.UUID) (Location, error)
 	// Moves the cutover. Not exposed in the UI: the date is set once, when the
 	// tenant is created or when this migration ran, and moving it re-attributes
 	// duty across events that may already have been filed. Here so a support
@@ -654,6 +679,7 @@ type Querier interface {
 	// silently re-point every determination already made with it at a
 	// different physical device.
 	UpdateInstrument(ctx context.Context, arg UpdateInstrumentParams) (Instrument, error)
+	UpdateLocation(ctx context.Context, arg UpdateLocationParams) (Location, error)
 	UpdateMashStatus(ctx context.Context, arg UpdateMashStatusParams) (MashRun, error)
 	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)

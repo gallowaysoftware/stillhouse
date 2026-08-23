@@ -9,6 +9,7 @@ import { BuildPanel } from "@/components/BuildPanel";
 import { MFAPanel } from "@/components/MFAPanel";
 import { AlertEmailPanel } from "@/components/AlertEmailPanel";
 import { LicenceRegisterPanel } from "@/components/LicenceRegisterPanel";
+import { LocationsPanel } from "@/components/LocationsPanel";
 import { BatchReleaseSettingPanel } from "@/components/BatchReleaseSettingPanel";
 import { Shell } from "@/components/Shell";
 import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
@@ -266,6 +267,8 @@ export function SettingsPage() {
       <BatchReleaseSettingPanel />
 
       <LicenceRegisterPanel />
+
+      <LocationsPanel />
 
       <AlertEmailPanel />
 

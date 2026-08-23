@@ -68,6 +68,12 @@ func main() {
 	// fixed for in stage 162. The expiry is left unset on purpose: this
 	// is a demo number and inventing a renewal date would produce a
 	// reminder for a day that means nothing.
+	if _, err := q.CreateDefaultLocation(ctx, sqlcgen.CreateDefaultLocationParams{
+		TenantID: tenant.ID, Name: tenant.Name,
+	}); err != nil {
+		log.Fatalf("create default location: %v", err)
+	}
+
 	if _, err := q.CreateExciseLicence(ctx, sqlcgen.CreateExciseLicenceParams{
 		TenantID:      tenant.ID,
 		Kind:          sqlcgen.ExciseLicenceKindSpirits,

@@ -49,6 +49,14 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// LocationService. Moving a cask between premises is an operator
+	// action — the person with the forklift is who knows. Defining what
+	// the premises *are* follows the licence, so it sits with the owner.
+	"/stillhouse.v1.LocationService/ListLocations":        roleViewer,
+	"/stillhouse.v1.LocationService/RetailSupplyReport":   roleViewer,
+	"/stillhouse.v1.LocationService/SetContainerLocation": roleOperator,
+	"/stillhouse.v1.LocationService/SaveLocation":         roleOwner,
+
 	// PurchasingService. Receiving is an operator action — the person on
 	// the loading dock is who knows what arrived. Committing the
 	// distillery to a purchase is not, and neither is the supplier
@@ -377,6 +385,9 @@ var accountantAlso = map[string]bool{
 	// establishes, and keeping the register current is part of the
 	// engagement rather than something to ask the owner for.
 	"/stillhouse.v1.TenantService/SaveExciseLicence": true,
+	// Premises follow the licence, and the licence register is already
+	// on this list.
+	"/stillhouse.v1.LocationService/SaveLocation": true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a
