@@ -16,6 +16,7 @@ func userToProto(u sqlcgen.User) *stillhousev1.User {
 		Role:        roleToProto(u.Role),
 		CreatedAt:   timestamppb.New(u.CreatedAt.Time),
 		UpdatedAt:   timestamppb.New(u.UpdatedAt.Time),
+		AlertEmail:  u.AlertEmail,
 	}
 }
 

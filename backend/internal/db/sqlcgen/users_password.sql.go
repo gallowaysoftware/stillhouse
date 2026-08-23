@@ -15,7 +15,7 @@ const markUserEmailVerified = `-- name: MarkUserEmailVerified :one
 UPDATE users
 SET email_verified_at = NOW()
 WHERE id = $1 AND email_verified_at IS NULL
-RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at
+RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at, alert_email
 `
 
 func (q *Queries) MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error) {
@@ -32,6 +32,7 @@ func (q *Queries) MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
 		&i.SessionsRevokedAt,
+		&i.AlertEmail,
 	)
 	return i, err
 }
@@ -41,7 +42,7 @@ UPDATE users
 SET password_hash       = $2,
     sessions_revoked_at = NOW()
 WHERE id = $1
-RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at
+RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at, alert_email
 `
 
 type UpdateUserPasswordParams struct {
@@ -68,6 +69,7 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
 		&i.SessionsRevokedAt,
+		&i.AlertEmail,
 	)
 	return i, err
 }

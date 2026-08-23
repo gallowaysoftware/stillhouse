@@ -103,3 +103,47 @@ func (q *Queries) GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, erro
 	)
 	return i, err
 }
+
+const listAllTenants = `-- name: ListAllTenants :many
+SELECT id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref FROM tenants ORDER BY created_at
+`
+
+// Cross-tenant on purpose, and one of very few places that is. The alert
+// evaluator runs on a timer with no request behind it, so it has to find
+// the tenants itself before scoping to each in turn. tenants is outside
+// RLS (000001) precisely because it is the authority on what a tenant
+// id is.
+func (q *Queries) ListAllTenants(ctx context.Context) ([]Tenant, error) {
+	rows, err := q.db.Query(ctx, listAllTenants)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Tenant{}
+	for rows.Next() {
+		var i Tenant
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.CraSpiritsLicenceNumber,
+			&i.ExciseWarehouseLicenceNumber,
+			&i.DefaultJurisdiction,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.DutyPoint,
+			&i.DutyPointEffectiveFrom,
+			&i.FilingFrequency,
+			&i.FiscalMonthBasis,
+			&i.FiscalMonthEndDay,
+			&i.FiscalMonthNotificationRef,
+			&i.FilingFrequencyAuthorizationRef,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

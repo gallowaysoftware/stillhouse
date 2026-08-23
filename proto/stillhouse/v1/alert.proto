@@ -1,0 +1,77 @@
+// Things Stillhouse noticed, before somebody had to go looking.
+//
+// An alert is a condition with a life cycle, not a message: it opens
+// when the condition becomes true, stays open while it remains true, and
+// resolves itself when it stops. Acknowledging records that a human has
+// seen it — a different claim from the condition having gone away, and
+// conflating the two is how alerting systems become things people mute.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum AlertKind {
+  ALERT_KIND_UNSPECIFIED = 0;
+  ALERT_KIND_FILING_DUE = 1;            // a return is due soon, unsubmitted
+  ALERT_KIND_FILING_OVERDUE = 2;        // its due date has passed
+  ALERT_KIND_STAMPS_LOW = 3;            // excise stamps below a week of cover
+  ALERT_KIND_FERMENTATION_STALLED = 4;  // an active ferment with no recent reading
+  ALERT_KIND_BARREL_UNMEASURED = 5;     // a cask with no gauge in over a year
+}
+
+enum AlertSeverity {
+  ALERT_SEVERITY_UNSPECIFIED = 0;
+  ALERT_SEVERITY_INFO = 1;
+  ALERT_SEVERITY_WARNING = 2;
+  ALERT_SEVERITY_CRITICAL = 3;
+}
+
+message Alert {
+  string id = 1;
+  AlertKind kind = 2;
+  AlertSeverity severity = 3;
+  string title = 4;
+  string detail = 5;
+  // What to link to, when there is something to link to.
+  string entity_type = 6;
+  string entity_id = 7;
+  // How long this has been true, which is usually the most useful fact
+  // about it.
+  google.protobuf.Timestamp opened_at = 8;
+  google.protobuf.Timestamp last_seen_at = 9;
+  google.protobuf.Timestamp resolved_at = 10;
+  google.protobuf.Timestamp acknowledged_at = 11;
+  string acknowledged_by_name = 12;
+}
+
+message ListAlertsRequest {
+  // Include alerts that have already resolved. Off by default: the
+  // question on a Tuesday is what is true now.
+  bool include_resolved = 1;
+  int32 limit = 2;  // only meaningful with include_resolved; 0 = 50
+}
+message ListAlertsResponse {
+  repeated Alert alerts = 1;
+  int32 open_count = 2;
+  int32 critical_count = 3;
+}
+
+message AcknowledgeAlertRequest { string id = 1; }
+message AcknowledgeAlertResponse { Alert alert = 1; }
+
+// Force an evaluation now rather than waiting for the timer. What the
+// dashboard calls when someone has just fixed the thing and wants to see
+// it go away.
+message EvaluateAlertsRequest {}
+message EvaluateAlertsResponse { ListAlertsResponse alerts = 1; }
+
+message SetAlertEmailRequest { bool enabled = 1; }
+message SetAlertEmailResponse { bool enabled = 1; }
+
+service AlertService {
+  rpc ListAlerts(ListAlertsRequest) returns (ListAlertsResponse);
+  rpc AcknowledgeAlert(AcknowledgeAlertRequest) returns (AcknowledgeAlertResponse);
+  rpc EvaluateAlerts(EvaluateAlertsRequest) returns (EvaluateAlertsResponse);
+  rpc SetAlertEmail(SetAlertEmailRequest) returns (SetAlertEmailResponse);
+}

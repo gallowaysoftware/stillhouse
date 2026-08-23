@@ -12,6 +12,94 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AlertKind string
+
+const (
+	AlertKindFilingDue           AlertKind = "filing_due"
+	AlertKindFilingOverdue       AlertKind = "filing_overdue"
+	AlertKindStampsLow           AlertKind = "stamps_low"
+	AlertKindFermentationStalled AlertKind = "fermentation_stalled"
+	AlertKindBarrelUnmeasured    AlertKind = "barrel_unmeasured"
+)
+
+func (e *AlertKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AlertKind(s)
+	case string:
+		*e = AlertKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AlertKind: %T", src)
+	}
+	return nil
+}
+
+type NullAlertKind struct {
+	AlertKind AlertKind `json:"alert_kind"`
+	Valid     bool      `json:"valid"` // Valid is true if AlertKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAlertKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.AlertKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AlertKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAlertKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AlertKind), nil
+}
+
+type AlertSeverity string
+
+const (
+	AlertSeverityInfo     AlertSeverity = "info"
+	AlertSeverityWarning  AlertSeverity = "warning"
+	AlertSeverityCritical AlertSeverity = "critical"
+)
+
+func (e *AlertSeverity) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = AlertSeverity(s)
+	case string:
+		*e = AlertSeverity(s)
+	default:
+		return fmt.Errorf("unsupported scan type for AlertSeverity: %T", src)
+	}
+	return nil
+}
+
+type NullAlertSeverity struct {
+	AlertSeverity AlertSeverity `json:"alert_severity"`
+	Valid         bool          `json:"valid"` // Valid is true if AlertSeverity is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullAlertSeverity) Scan(value interface{}) error {
+	if value == nil {
+		ns.AlertSeverity, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.AlertSeverity.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullAlertSeverity) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.AlertSeverity), nil
+}
+
 type AuditAction string
 
 const (
@@ -1154,6 +1242,25 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type Alert struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	Kind           AlertKind          `json:"kind"`
+	Severity       AlertSeverity      `json:"severity"`
+	SubjectKey     string             `json:"subject_key"`
+	Title          string             `json:"title"`
+	Detail         string             `json:"detail"`
+	EntityType     string             `json:"entity_type"`
+	EntityID       uuid.NullUUID      `json:"entity_id"`
+	OpenedAt       pgtype.Timestamptz `json:"opened_at"`
+	LastSeenAt     pgtype.Timestamptz `json:"last_seen_at"`
+	ResolvedAt     pgtype.Timestamptz `json:"resolved_at"`
+	AcknowledgedAt pgtype.Timestamptz `json:"acknowledged_at"`
+	AcknowledgedBy uuid.NullUUID      `json:"acknowledged_by"`
+	NotifiedAt     pgtype.Timestamptz `json:"notified_at"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+}
+
 type ApiToken struct {
 	TokenHash  []byte             `json:"token_hash"`
 	TenantID   uuid.UUID          `json:"tenant_id"`
@@ -1794,6 +1901,7 @@ type User struct {
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 	EmailVerifiedAt   pgtype.Timestamptz `json:"email_verified_at"`
 	SessionsRevokedAt pgtype.Timestamptz `json:"sessions_revoked_at"`
+	AlertEmail        bool               `json:"alert_email"`
 }
 
 type UserTotp struct {

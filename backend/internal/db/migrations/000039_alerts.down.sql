@@ -1,0 +1,4 @@
+ALTER TABLE users DROP COLUMN IF EXISTS alert_email;
+DROP TABLE IF EXISTS alerts;
+DROP TYPE IF EXISTS alert_severity;
+DROP TYPE IF EXISTS alert_kind;

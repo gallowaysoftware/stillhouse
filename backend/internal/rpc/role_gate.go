@@ -49,6 +49,18 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// AlertService. Everything here is viewer-level on purpose: an alert
+	// exists to reach whoever is looking, and the person most likely to
+	// notice that a ferment has gone quiet is the one on the floor, not
+	// the owner. Acknowledging is a statement about the acknowledger's
+	// own attention; nobody can resolve an alert through this service at
+	// any role, because only the evaluator may say a condition has
+	// stopped being true.
+	"/stillhouse.v1.AlertService/ListAlerts":       roleViewer,
+	"/stillhouse.v1.AlertService/AcknowledgeAlert": roleViewer,
+	"/stillhouse.v1.AlertService/EvaluateAlerts":   roleViewer,
+	"/stillhouse.v1.AlertService/SetAlertEmail":    roleViewer,
+
 	// Managing your own second factor is never a role question. The
 	// viewer who reads the ledger from a phone in a rackhouse needs it
 	// as much as the owner does.

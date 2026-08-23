@@ -135,8 +135,11 @@ locations (`F1`).
 ### B6 · Licence renewal and security tracking — P2
 
 Two-year licence terms, renewal 30 days before expiry, and the spirits licence
-security requirement ($5,000–$2M, sufficient to cover amounts owing). Both are
-dashboard alerts nobody currently gets.
+security requirement ($5,000–$2M, sufficient to cover amounts owing).
+
+The alerting machinery to carry these shipped in stage 160 — a rule here is a
+function returning `[]alerting.Alert` and a value on the `alert_kind` enum. What
+is missing is the subject: there is no licence register to expire, which is `B1`.
 
 ---
 
@@ -346,13 +349,6 @@ scale reading and a hydrometer, no invented history, CW eligibility preserved.
 This is the boring half: CSV in for materials, products, barrels, packaged
 inventory and customers, with a dry-run and a rollback. The difference between
 a distillery trying Stillhouse and finishing.
-
-### H5 · Notifications — P1
-
-A mailer exists for password resets and nothing else. Filing due in N days
-(unblocked: stage 148 computes the due date), stamps below a week of cover, ferment stuck, cask outside its
-angel's-share band, licence expiring (`B6`). A dashboard nobody opens on a
-Tuesday is not an alert.
 
 ### H6 · Full bilingual coverage — P1
 

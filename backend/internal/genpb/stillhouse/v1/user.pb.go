@@ -86,14 +86,18 @@ func (UserRole) EnumDescriptor() ([]byte, []int) {
 }
 
 type User struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	TenantId      string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
-	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	Role          UserRole               `protobuf:"varint,5,opt,name=role,proto3,enum=stillhouse.v1.UserRole" json:"role,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId    string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Email       string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	DisplayName string                 `protobuf:"bytes,4,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	Role        UserRole               `protobuf:"varint,5,opt,name=role,proto3,enum=stillhouse.v1.UserRole" json:"role,omitempty"`
+	CreatedAt   *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt   *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// Whether this account is emailed when an alert opens. Per-person
+	// rather than per-tenant: one shared switch means somebody turns the
+	// whole thing off for everyone.
+	AlertEmail    bool `protobuf:"varint,8,opt,name=alert_email,json=alertEmail,proto3" json:"alert_email,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -175,6 +179,13 @@ func (x *User) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *User) GetAlertEmail() bool {
+	if x != nil {
+		return x.AlertEmail
+	}
+	return false
 }
 
 type GetMeRequest struct {
@@ -552,7 +563,7 @@ var File_stillhouse_v1_user_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_user_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/user.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/tenant.proto\"\x8f\x02\n" +
+	"\x18stillhouse/v1/user.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/tenant.proto\"\xb0\x02\n" +
 	"\x04User\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x14\n" +
@@ -562,7 +573,9 @@ const file_stillhouse_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x0e\n" +
+	"updated_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x1f\n" +
+	"\valert_email\x18\b \x01(\bR\n" +
+	"alertEmail\"\x0e\n" +
 	"\fGetMeRequest\"g\n" +
 	"\rGetMeResponse\x12'\n" +
 	"\x04user\x18\x01 \x01(\v2\x13.stillhouse.v1.UserR\x04user\x12-\n" +

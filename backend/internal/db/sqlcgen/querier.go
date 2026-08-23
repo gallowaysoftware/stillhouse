@@ -12,11 +12,25 @@ import (
 )
 
 type Querier interface {
+	// Says a human has seen it. Deliberately not the same as resolving:
+	// resolution is a claim about the world and only the evaluator can make
+	// it. An acknowledged alert stays open while its condition holds.
+	AcknowledgeAlert(ctx context.Context, arg AcknowledgeAlertParams) (Alert, error)
 	AddDistillationCharge(ctx context.Context, arg AddDistillationChargeParams) (DistillationCharge, error)
 	AddDistillationCut(ctx context.Context, arg AddDistillationCutParams) (DistillationCut, error)
 	AddFermentationLog(ctx context.Context, arg AddFermentationLogParams) (FermentationLog, error)
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
+	// A live fermentation whose most recent log is older than the cutoff.
+	// Both live statuses count: a ferment pitched three days ago with no
+	// readings at all is exactly as unattended as one that stopped being
+	// read. Either it finished and nobody recorded it, or it is stuck, and
+	// both want a person.
+	AlertStaleFermentations(ctx context.Context, cutoff pgtype.Timestamptz) ([]AlertStaleFermentationsRow, error)
+	// A filled cask whose last gauge — fill or regauge — predates the cutoff.
+	// This is a records question before it is an operational one: a balance
+	// you have not measured in over a year is a balance you cannot evidence.
+	AlertUnmeasuredBarrels(ctx context.Context, cutoff pgtype.Timestamptz) ([]AlertUnmeasuredBarrelsRow, error)
 	ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	// Returns a submitted period that covers the given date, if any. Mutations
 	// whose effective date lands in such a period should be rejected — the
@@ -216,6 +230,19 @@ type Querier interface {
 	// regardless of how many instruments a distillery holds.
 	LatestCalibrationsForInstruments(ctx context.Context) ([]InstrumentCalibration, error)
 	ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
+	// Who hears about it. Viewers are excluded: an alert is a call to act,
+	// and someone who cannot act on anything should not be paged about it.
+	ListAlertEmailRecipients(ctx context.Context) ([]User, error)
+	// Open, unnotified, and worth an email. Info-level alerts never mail;
+	// they are for the dashboard, and a system that emails about everything
+	// gets filtered.
+	ListAlertsNeedingNotification(ctx context.Context) ([]Alert, error)
+	// Cross-tenant on purpose, and one of very few places that is. The alert
+	// evaluator runs on a timer with no request behind it, so it has to find
+	// the tenants itself before scoping to each in turn. tenants is outside
+	// RLS (000001) precisely because it is the authority on what a tenant
+	// id is.
+	ListAllTenants(ctx context.Context) ([]Tenant, error)
 	ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]ListAuditEventsRow, error)
 	ListB266Periods(ctx context.Context) ([]B266Period, error)
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
@@ -271,6 +298,7 @@ type Querier interface {
 	ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]ListMashRunsRow, error)
 	ListMaterialLots(ctx context.Context, arg ListMaterialLotsParams) ([]MaterialLot, error)
 	ListMaterials(ctx context.Context, arg ListMaterialsParams) ([]Material, error)
+	ListOpenAlerts(ctx context.Context) ([]ListOpenAlertsRow, error)
 	// LEFT JOINs the originating bottling_run so we can carry first_bottled_date
 	// back to the client for an aging calc. packaged_inventory.bottling_run_id
 	// is nullable to support backfill cases.
@@ -279,6 +307,7 @@ type Querier interface {
 	// as_of empty means every list; otherwise only those in force that day.
 	ListPriceLists(ctx context.Context, asOf pgtype.Date) ([]PriceList, error)
 	ListProducts(ctx context.Context, includeArchived bool) ([]Product, error)
+	ListRecentAlerts(ctx context.Context, limit int32) ([]ListRecentAlertsRow, error)
 	ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulkMovementsRow, error)
 	ListRecipeIngredients(ctx context.Context, recipeVersionID uuid.UUID) ([]ListRecipeIngredientsRow, error)
 	// LEFT JOIN both sensory tables so callers can iterate the version
@@ -329,6 +358,7 @@ type Querier interface {
 	// and recipe versions take no row lock at all). Reversing that in one
 	// caller and not another is how two of these deadlock.
 	LockDocumentSequence(ctx context.Context, counter string) error
+	MarkAlertNotified(ctx context.Context, id uuid.UUID) error
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
@@ -346,6 +376,20 @@ type Querier interface {
 	// WHERE status = 'submitted' guard makes this a no-op on already-draft
 	// periods, returning no rows.
 	ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
+	// The other half of the life cycle. Anything of these kinds that the
+	// evaluation just ran did NOT touch is no longer true, so it closes
+	// itself. Scoped to the kinds actually evaluated, so a failure in one
+	// rule cannot silently resolve another rule's alerts.
+	//
+	// "This sweep" is NOW(), not a timestamp the caller passes in, and that
+	// matters. Inside a transaction NOW() is the transaction's start time
+	// and is constant, so every alert this sweep upserted carries exactly
+	// it and every alert it did not carries something earlier — the
+	// comparison is precise rather than approximate. Passing a Go timestamp
+	// instead compares the application's clock against the database's, and
+	// any skew either resolves alerts that are still true or leaves ones
+	// that are not. This must run in the same transaction as the upserts.
+	ResolveStaleAlerts(ctx context.Context, kinds []string) ([]Alert, error)
 	RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error)
 	// The "revoke everything" half of a credential reset. Returns the rows it
 	// revoked so the caller can report a count and audit it; already-revoked
@@ -370,6 +414,7 @@ type Querier interface {
 	// in scope before the audit row is written. Transaction-local (the `true`
 	// argument), so it cannot leak across pooled connections.
 	SetTenantContext(ctx context.Context, setConfig string) error
+	SetUserAlertEmail(ctx context.Context, arg SetUserAlertEmailParams) (User, error)
 	// The acknowledgement is written in the same statement that sets the
 	// status, so a submitted period can never exist without one. The table's
 	// CHECK holds the other half of that guarantee for any path that is not
@@ -508,6 +553,12 @@ type Querier interface {
 	// is. The caller that still holds a live session (ChangeMyPassword)
 	// re-stamps its own session from the returned sessions_revoked_at.
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
+	// Idempotent by (tenant, kind, subject). An evaluation that finds the
+	// same condition still true bumps last_seen_at and refreshes the text —
+	// "four days of cover" becomes "two days of cover" without becoming a
+	// second alert — but never moves opened_at, because how long a thing has
+	// been true is the most useful fact about it.
+	UpsertAlert(ctx context.Context, arg UpsertAlertParams) (Alert, error)
 	// due_on is set on first generation and left alone afterwards: a change of
 	// fiscal-month election must not silently restate when a past return was
 	// due. COALESCE keeps whatever the row already had.

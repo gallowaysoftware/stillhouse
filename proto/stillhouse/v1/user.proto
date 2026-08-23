@@ -29,6 +29,10 @@ message User {
   UserRole role = 5;
   google.protobuf.Timestamp created_at = 6;
   google.protobuf.Timestamp updated_at = 7;
+  // Whether this account is emailed when an alert opens. Per-person
+  // rather than per-tenant: one shared switch means somebody turns the
+  // whole thing off for everyone.
+  bool alert_email = 8;
 }
 
 message GetMeRequest {}

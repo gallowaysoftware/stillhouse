@@ -24,6 +24,12 @@ import (
 type Mailer interface {
 	SendWelcome(ctx context.Context, to, displayName, tenantName string) error
 	SendPasswordReset(ctx context.Context, to, displayName, resetURL string) error
+	// SendAlert delivers one open alert. Deliberately one email per
+	// condition rather than a digest: the conditions Stillhouse raises
+	// are individually actionable — a return due, stamps running out —
+	// and a digest is what you build when none of the items justify an
+	// email on their own.
+	SendAlert(ctx context.Context, to, displayName, title, detail, url string) error
 }
 
 // FromEnv constructs whichever Mailer the env says. Defaults to console so
@@ -54,6 +60,12 @@ func (c *Console) SendWelcome(_ context.Context, to, displayName, tenantName str
 
 func (c *Console) SendPasswordReset(_ context.Context, to, displayName, resetURL string) error {
 	c.logger.Info("PASSWORD RESET EMAIL", "to", to, "name", displayName, "url", resetURL)
+	return nil
+}
+
+func (c *Console) SendAlert(_ context.Context, to, displayName, title, detail, url string) error {
+	c.logger.Info("ALERT EMAIL", "to", to, "name", displayName,
+		"title", title, "detail", detail, "url", url)
 	return nil
 }
 
@@ -102,6 +114,17 @@ func (r *Resend) SendWelcome(ctx context.Context, to, displayName, tenantName st
 <p>Your Stillhouse tenant <strong>%s</strong> is live. Sign in to start tracking your distillery.</p>
 <p>If you didn't sign up, ignore this email.</p>`, htmlEscape(displayName), htmlEscape(tenantName))
 	return r.send(ctx, resendReq{From: r.from, To: to, Subject: subject, HTML: html})
+}
+
+func (r *Resend) SendAlert(ctx context.Context, to, displayName, title, detail, url string) error {
+	html := fmt.Sprintf(`<p>Hi %s,</p>
+<p><strong>%s</strong></p>
+<p>%s</p>
+<p><a href="%s">Open Stillhouse</a></p>
+<p style="color:#888;font-size:12px">You are getting this because alert email is on for
+your account. Turn it off under Settings.</p>`,
+		htmlEscape(displayName), htmlEscape(title), htmlEscape(detail), htmlEscape(url))
+	return r.send(ctx, resendReq{From: r.from, To: to, Subject: "Stillhouse: " + title, HTML: html})
 }
 
 func (r *Resend) SendPasswordReset(ctx context.Context, to, displayName, resetURL string) error {

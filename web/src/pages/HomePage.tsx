@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Callout } from "@/components/Callout";
 import { Shell } from "@/components/Shell";
+import { ServerAlerts, useOpenAlertCount } from "@/components/AlertsPanel";
 import {
   auditClient,
   b266Client,
@@ -79,9 +80,6 @@ export function HomePage() {
       <AlertsPanel
         barrels={barrels.data?.barrels ?? []}
         containers={bulk.data?.containers ?? []}
-        stampSummaries={stamps.data?.summaries ?? []}
-        periodEnd={end}
-        hasBottling={hasBottling}
         showAllClear={completedAll}
       />
       <CWForecastSection barrels={barrels.data?.barrels ?? []} />
@@ -261,47 +259,48 @@ type BarrelAlertRow = {
   maturation?: { measurable: boolean; findings: { severity: number; title: string }[] };
 };
 type ContainerAlertRow = { id: string; name: string; currentLaa: number; lastMovementAt?: { seconds: bigint }; createdAt?: { seconds: bigint }; archived: boolean };
-type StampAlertRow = { jurisdiction: string; totalOnHand: number; bottlesPerDay30d: number };
 
 /**
- * AlertsPanel — single section that consolidates every "you should look
- * at this" banner. Each child callout is responsible for deciding if it
- * fires (returns null otherwise). The panel renders an "Alerts" header
- * with a count when at least one fires, and an "All clear" tile when
- * the operator has finished onboarding but has nothing to act on.
+ * AlertsPanel — the single section that consolidates every "you should
+ * look at this" banner.
  *
- * Ordering matters: B266 overdue is the most urgent (legal deadline),
- * then dump-ready (cash conversion), stamps (blocks bottling), stagnant
- * bulk (slowest-moving signal).
+ * Two kinds live here now. The server-raised alerts come first: they
+ * persist, have a life cycle, and somebody was emailed about them. Below
+ * those are callouts computed in the browser from lists this page
+ * already fetched — opportunities rather than obligations, which is why
+ * they do not need to outlive the page view.
+ *
+ * The return-due and stamp-cover callouts used to be in the second group
+ * and are now in the first (stage 160). Ordering among what remains:
+ * dump-ready (cash conversion), angel's share, stagnant bulk (the
+ * slowest-moving signal).
  */
 function AlertsPanel({
   barrels,
   containers,
-  stampSummaries,
-  periodEnd,
-  hasBottling,
   showAllClear,
 }: {
   barrels: BarrelAlertRow[];
   containers: ContainerAlertRow[];
-  stampSummaries: StampAlertRow[];
-  periodEnd: string;
-  hasBottling: boolean;
   showAllClear: boolean;
 }) {
+  // The return-due and stamp-cover callouts used to live here, computed
+  // in the browser. They are server-side alert rules now (stage 160):
+  // persisted, with a life cycle, and emailed. Keeping a client-side copy
+  // would show the same fact twice, and the two would disagree the first
+  // time a fiscal calendar was anything other than a calendar month.
   const items: ReactElement[] = [];
-  const b266 = renderB266DueCallout(periodEnd, hasBottling);
-  if (b266) items.push(<div key="b266">{b266}</div>);
   const dump = renderReadyToDumpCallout(barrels);
   if (dump) items.push(<div key="dump">{dump}</div>);
   const evap = renderAngelsShareCallout(barrels);
   if (evap) items.push(<div key="evap">{evap}</div>);
-  const stamps = renderStampLowStockCallout(stampSummaries);
-  if (stamps) items.push(<div key="stamps">{stamps}</div>);
   const stagnant = renderStagnantBulkCallout(containers);
   if (stagnant) items.push(<div key="stagnant">{stagnant}</div>);
 
-  if (items.length === 0) {
+  const serverCount = useOpenAlertCount();
+  const total = items.length + serverCount;
+
+  if (total === 0) {
     if (!showAllClear) return null;
     return (
       <section className="mb-8">
@@ -315,9 +314,14 @@ function AlertsPanel({
   return (
     <section className="mb-8">
       <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">
-        Alerts <span className="text-fg-muted">({items.length})</span>
+        Alerts <span className="text-fg-muted">({total})</span>
       </h2>
-      <div className="space-y-2">{items}</div>
+      <div className="space-y-2">
+        {/* Server-raised first: these are the ones that persist, that
+            somebody was emailed about, and that a due date hangs off. */}
+        <ServerAlerts />
+        {items}
+      </div>
     </section>
   );
 }
@@ -370,37 +374,6 @@ function renderAngelsShareCallout(barrels: BarrelAlertRow[]) {
   );
 }
 
-function renderB266DueCallout(periodEnd: string, hasBottling: boolean) {
-  if (!hasBottling) return null;
-  // B266 is due by the last day of the month following the reporting period.
-  const end = new Date(periodEnd + "T00:00:00Z");
-  const dueDate = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 2, 0));
-  const today = new Date();
-  const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  const overdue = daysToDue < 0;
-  const urgent = daysToDue <= 7 && !overdue;
-  const tone = overdue ? "danger" : urgent ? "warning" : "info";
-  return (
-    <Callout tone={tone}>
-      {overdue && <span className="mr-2 rounded bg-danger px-1.5 py-0.5 text-xs font-semibold text-white">OVERDUE</span>}
-      <span className="font-semibold">B266 for {periodEnd}</span> is due {dueDate.toISOString().slice(0, 10)}
-      {" "}({daysToDue >= 0 ? `${daysToDue} day${daysToDue === 1 ? "" : "s"} from now` : `${-daysToDue} day${-daysToDue === 1 ? "" : "s"} overdue — file as soon as possible`}).
-      {" "}<Link to="/b266" className="underline">Open the return →</Link>
-    </Callout>
-  );
-}
-
-// StagnantBulkCallout warns when a container (tank, blend tank, spirit
-// receiver, etc.) has had no movement for 90+ days AND holds non-trivial
-// alcohol.
-//
-// Barrels are excluded, but upstream: ListBulkContainers filters them in
-// SQL, because long stagnation IS the goal for aging spirit and a cask
-// has its own maturation view. This function used to re-filter them with
-// `kind === 7`, which was wrong twice over — 7 is OTHER, not BARREL, and
-// the proto enum has no BARREL case to compare against. The only thing
-// that test ever did was silently drop containers the operator had
-// classified as "Other" out of the alert.
 function renderStagnantBulkCallout(containers: ContainerAlertRow[]) {
   const STAGNANT_DAYS = 90;
   const flagged: { id: string; name: string; days: number; currentLaa: number }[] = [];
@@ -425,30 +398,6 @@ function renderStagnantBulkCallout(containers: ContainerAlertRow[]) {
       ))} — no movement in 90+ days. Evap losses accrue silently; consider
       gauging or transferring.{" "}
       <Link to="/bulk" className="underline">Open bulk →</Link>
-    </Callout>
-  );
-}
-
-function renderStampLowStockCallout(summaries: StampAlertRow[]) {
-  // "Days of stock" = on-hand / 30-day bottling rate. Tighter signal than a
-  // static threshold — a 500-stamp safety net is plenty for a quiet province
-  // and dangerously low for a busy one.
-  const WARN_DAYS = 14;
-  const flagged = summaries
-    .filter((s) => s.totalOnHand > 0 && s.bottlesPerDay30d > 0)
-    .map((s) => ({ ...s, daysLeft: s.totalOnHand / s.bottlesPerDay30d }))
-    .filter((s) => s.daysLeft < WARN_DAYS);
-  if (flagged.length === 0) return null;
-  return (
-    <Callout tone="warning">
-      <span className="font-semibold">Stamps running low:</span>{" "}
-      {flagged.map((s, i) => (
-        <span key={s.jurisdiction}>
-          {i > 0 && ", "}
-          {s.jurisdiction} (~{Math.floor(s.daysLeft)} day{Math.floor(s.daysLeft) === 1 ? "" : "s"} left at current bottling rate)
-        </span>
-      ))}. CRA orders take weeks — place a replenishment order now.{" "}
-      <Link to="/stamps" className="underline">Open stamps →</Link>
     </Callout>
   );
 }

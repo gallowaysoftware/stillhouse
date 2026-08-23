@@ -14,6 +14,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/alerting"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/config"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1connect "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1/stillhousev1connect"
@@ -30,6 +31,11 @@ type Server struct {
 	pool    *pgxpool.Pool
 	session *scs.SessionManager
 	http    *http.Server
+	// alertRunner evaluates the alert rules on a timer. Started by
+	// ListenAndServe and stopped by Shutdown, so it lives exactly as
+	// long as the server does.
+	alertRunner *alerting.Runner
+	stopAlerts  context.CancelFunc
 }
 
 func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
@@ -88,6 +94,11 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	auditSvc := rpc.NewAuditService(tdb, logger)
 	pricingSvc := rpc.NewPricingService(tdb, logger)
 	customerSvc := rpc.NewCustomerService(tdb, logger)
+	// The alert evaluator. Fifteen minutes is often enough that a filing
+	// deadline or a stamp shortage surfaces the same working day, and
+	// rare enough that it is not a load-bearing query pattern.
+	alertRunner := alerting.NewRunner(tdb, queries, mailerImpl, baseURL, 15*time.Minute, logger)
+	alertSvc := rpc.NewAlertService(tdb, alertRunner, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
 	inviteSvc := rpc.NewInviteService(queries, tdb, sm, mailerImpl, logger)
 	apiTokenSvc := rpc.NewAPITokenService(tdb, logger)
@@ -119,6 +130,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewAuditServiceHandler(auditSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewPricingServiceHandler(pricingSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewCustomerServiceHandler(customerSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewAlertServiceHandler(alertSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewTraceabilityServiceHandler(traceabilitySvc, interceptors))
 	mux.Handle(stillhousev1connect.NewInviteServiceHandler(inviteSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAPITokenServiceHandler(apiTokenSvc, interceptors))
@@ -179,17 +191,29 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	}
 
 	return &Server{
-		cfg:     cfg,
-		logger:  logger,
-		pool:    pool,
-		session: sm,
-		http:    httpSrv,
+		cfg:         cfg,
+		logger:      logger,
+		pool:        pool,
+		session:     sm,
+		http:        httpSrv,
+		alertRunner: alertRunner,
 	}, nil
 }
 
-func (s *Server) ListenAndServe() error { return s.http.ListenAndServe() }
+func (s *Server) ListenAndServe() error {
+	// The alert evaluator runs for as long as the server does. Started
+	// here rather than in New so a server that is constructed and never
+	// served — a test, a config check — does not start writing alerts.
+	alertCtx, cancel := context.WithCancel(context.Background())
+	s.stopAlerts = cancel
+	go s.alertRunner.Start(alertCtx)
+	return s.http.ListenAndServe()
+}
 
 func (s *Server) Shutdown(ctx context.Context) error {
+	if s.stopAlerts != nil {
+		s.stopAlerts()
+	}
 	if err := s.http.Shutdown(ctx); err != nil {
 		return err
 	}

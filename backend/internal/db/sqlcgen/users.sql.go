@@ -16,7 +16,7 @@ INSERT INTO users (
     tenant_id, email, password_hash, display_name, role
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at
+) RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at, alert_email
 `
 
 type CreateUserParams struct {
@@ -47,12 +47,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
 		&i.SessionsRevokedAt,
+		&i.AlertEmail,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE id = $1
+SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at, alert_email FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
@@ -69,12 +70,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
 		&i.SessionsRevokedAt,
+		&i.AlertEmail,
 	)
 	return i, err
 }
 
 const listUsersByEmail = `-- name: ListUsersByEmail :many
-SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE email = $1 ORDER BY created_at LIMIT 8
+SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at, alert_email FROM users WHERE email = $1 ORDER BY created_at LIMIT 8
 `
 
 // An email address no longer identifies one account: it is unique per
@@ -107,6 +109,7 @@ func (q *Queries) ListUsersByEmail(ctx context.Context, email string) ([]User, e
 			&i.UpdatedAt,
 			&i.EmailVerifiedAt,
 			&i.SessionsRevokedAt,
+			&i.AlertEmail,
 		); err != nil {
 			return nil, err
 		}
