@@ -1114,6 +1114,7 @@ type ApiToken struct {
 	LastUsedAt pgtype.Timestamptz `json:"last_used_at"`
 	RevokedAt  pgtype.Timestamptz `json:"revoked_at"`
 	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+	ExpiresAt  pgtype.Timestamptz `json:"expires_at"`
 }
 
 type AuditEvent struct {
@@ -1688,13 +1689,14 @@ type Tenant struct {
 }
 
 type User struct {
-	ID              uuid.UUID          `json:"id"`
-	TenantID        uuid.UUID          `json:"tenant_id"`
-	Email           string             `json:"email"`
-	PasswordHash    string             `json:"password_hash"`
-	DisplayName     string             `json:"display_name"`
-	Role            UserRole           `json:"role"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
-	EmailVerifiedAt pgtype.Timestamptz `json:"email_verified_at"`
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	Email             string             `json:"email"`
+	PasswordHash      string             `json:"password_hash"`
+	DisplayName       string             `json:"display_name"`
+	Role              UserRole           `json:"role"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	EmailVerifiedAt   pgtype.Timestamptz `json:"email_verified_at"`
+	SessionsRevokedAt pgtype.Timestamptz `json:"sessions_revoked_at"`
 }

@@ -60,6 +60,8 @@ type Querier interface {
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
 	CountTenants(ctx context.Context) (int64, error)
+	// expires_at NULL means the token never expires. That is a deliberate
+	// choice at the RPC layer, not a default — see IssueAPIToken.
 	CreateAPIToken(ctx context.Context, arg CreateAPITokenParams) (ApiToken, error)
 	CreateBarrelAttributes(ctx context.Context, arg CreateBarrelAttributesParams) (BarrelAttribute, error)
 	// duty_rate_per_laa and duty_amount_cad are NULL when this run is not a
@@ -308,6 +310,10 @@ type Querier interface {
 	// periods, returning no rows.
 	ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
 	RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error)
+	// The "revoke everything" half of a credential reset. Returns the rows it
+	// revoked so the caller can report a count and audit it; already-revoked
+	// tokens are left alone so the count means what it says.
+	RevokeAllAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
@@ -457,6 +463,11 @@ type Querier interface {
 	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
+	// Writing a new password revokes every session that authenticated before
+	// this moment. It happens in the same statement as the hash update so no
+	// caller can do the half that feels like the fix and skip the half that
+	// is. The caller that still holds a live session (ChangeMyPassword)
+	// re-stamps its own session from the returned sessions_revoked_at.
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
 	// due_on is set on first generation and left alone afterwards: a change of
 	// fiscal-month election must not silently restate when a past return was

@@ -46,6 +46,9 @@ const (
 	// APITokenServiceRevokeAPITokenProcedure is the fully-qualified name of the APITokenService's
 	// RevokeAPIToken RPC.
 	APITokenServiceRevokeAPITokenProcedure = "/stillhouse.v1.APITokenService/RevokeAPIToken"
+	// APITokenServiceRevokeAllMyAPITokensProcedure is the fully-qualified name of the APITokenService's
+	// RevokeAllMyAPITokens RPC.
+	APITokenServiceRevokeAllMyAPITokensProcedure = "/stillhouse.v1.APITokenService/RevokeAllMyAPITokens"
 )
 
 // APITokenServiceClient is a client for the stillhouse.v1.APITokenService service.
@@ -53,6 +56,7 @@ type APITokenServiceClient interface {
 	IssueAPIToken(context.Context, *connect.Request[v1.IssueAPITokenRequest]) (*connect.Response[v1.IssueAPITokenResponse], error)
 	ListAPITokens(context.Context, *connect.Request[v1.ListAPITokensRequest]) (*connect.Response[v1.ListAPITokensResponse], error)
 	RevokeAPIToken(context.Context, *connect.Request[v1.RevokeAPITokenRequest]) (*connect.Response[v1.RevokeAPITokenResponse], error)
+	RevokeAllMyAPITokens(context.Context, *connect.Request[v1.RevokeAllMyAPITokensRequest]) (*connect.Response[v1.RevokeAllMyAPITokensResponse], error)
 }
 
 // NewAPITokenServiceClient constructs a client for the stillhouse.v1.APITokenService service. By
@@ -84,14 +88,21 @@ func NewAPITokenServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 			connect.WithSchema(aPITokenServiceMethods.ByName("RevokeAPIToken")),
 			connect.WithClientOptions(opts...),
 		),
+		revokeAllMyAPITokens: connect.NewClient[v1.RevokeAllMyAPITokensRequest, v1.RevokeAllMyAPITokensResponse](
+			httpClient,
+			baseURL+APITokenServiceRevokeAllMyAPITokensProcedure,
+			connect.WithSchema(aPITokenServiceMethods.ByName("RevokeAllMyAPITokens")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // aPITokenServiceClient implements APITokenServiceClient.
 type aPITokenServiceClient struct {
-	issueAPIToken  *connect.Client[v1.IssueAPITokenRequest, v1.IssueAPITokenResponse]
-	listAPITokens  *connect.Client[v1.ListAPITokensRequest, v1.ListAPITokensResponse]
-	revokeAPIToken *connect.Client[v1.RevokeAPITokenRequest, v1.RevokeAPITokenResponse]
+	issueAPIToken        *connect.Client[v1.IssueAPITokenRequest, v1.IssueAPITokenResponse]
+	listAPITokens        *connect.Client[v1.ListAPITokensRequest, v1.ListAPITokensResponse]
+	revokeAPIToken       *connect.Client[v1.RevokeAPITokenRequest, v1.RevokeAPITokenResponse]
+	revokeAllMyAPITokens *connect.Client[v1.RevokeAllMyAPITokensRequest, v1.RevokeAllMyAPITokensResponse]
 }
 
 // IssueAPIToken calls stillhouse.v1.APITokenService.IssueAPIToken.
@@ -109,11 +120,17 @@ func (c *aPITokenServiceClient) RevokeAPIToken(ctx context.Context, req *connect
 	return c.revokeAPIToken.CallUnary(ctx, req)
 }
 
+// RevokeAllMyAPITokens calls stillhouse.v1.APITokenService.RevokeAllMyAPITokens.
+func (c *aPITokenServiceClient) RevokeAllMyAPITokens(ctx context.Context, req *connect.Request[v1.RevokeAllMyAPITokensRequest]) (*connect.Response[v1.RevokeAllMyAPITokensResponse], error) {
+	return c.revokeAllMyAPITokens.CallUnary(ctx, req)
+}
+
 // APITokenServiceHandler is an implementation of the stillhouse.v1.APITokenService service.
 type APITokenServiceHandler interface {
 	IssueAPIToken(context.Context, *connect.Request[v1.IssueAPITokenRequest]) (*connect.Response[v1.IssueAPITokenResponse], error)
 	ListAPITokens(context.Context, *connect.Request[v1.ListAPITokensRequest]) (*connect.Response[v1.ListAPITokensResponse], error)
 	RevokeAPIToken(context.Context, *connect.Request[v1.RevokeAPITokenRequest]) (*connect.Response[v1.RevokeAPITokenResponse], error)
+	RevokeAllMyAPITokens(context.Context, *connect.Request[v1.RevokeAllMyAPITokensRequest]) (*connect.Response[v1.RevokeAllMyAPITokensResponse], error)
 }
 
 // NewAPITokenServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -141,6 +158,12 @@ func NewAPITokenServiceHandler(svc APITokenServiceHandler, opts ...connect.Handl
 		connect.WithSchema(aPITokenServiceMethods.ByName("RevokeAPIToken")),
 		connect.WithHandlerOptions(opts...),
 	)
+	aPITokenServiceRevokeAllMyAPITokensHandler := connect.NewUnaryHandler(
+		APITokenServiceRevokeAllMyAPITokensProcedure,
+		svc.RevokeAllMyAPITokens,
+		connect.WithSchema(aPITokenServiceMethods.ByName("RevokeAllMyAPITokens")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.APITokenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case APITokenServiceIssueAPITokenProcedure:
@@ -149,6 +172,8 @@ func NewAPITokenServiceHandler(svc APITokenServiceHandler, opts ...connect.Handl
 			aPITokenServiceListAPITokensHandler.ServeHTTP(w, r)
 		case APITokenServiceRevokeAPITokenProcedure:
 			aPITokenServiceRevokeAPITokenHandler.ServeHTTP(w, r)
+		case APITokenServiceRevokeAllMyAPITokensProcedure:
+			aPITokenServiceRevokeAllMyAPITokensHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -168,4 +193,8 @@ func (UnimplementedAPITokenServiceHandler) ListAPITokens(context.Context, *conne
 
 func (UnimplementedAPITokenServiceHandler) RevokeAPIToken(context.Context, *connect.Request[v1.RevokeAPITokenRequest]) (*connect.Response[v1.RevokeAPITokenResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.APITokenService.RevokeAPIToken is not implemented"))
+}
+
+func (UnimplementedAPITokenServiceHandler) RevokeAllMyAPITokens(context.Context, *connect.Request[v1.RevokeAllMyAPITokensRequest]) (*connect.Response[v1.RevokeAllMyAPITokensResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.APITokenService.RevokeAllMyAPITokens is not implemented"))
 }

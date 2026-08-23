@@ -30,6 +30,10 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.APITokenService/IssueAPIToken":  roleViewer,
 	"/stillhouse.v1.APITokenService/ListAPITokens":  roleViewer,
 	"/stillhouse.v1.APITokenService/RevokeAPIToken": roleViewer,
+	// Revoking your own tokens is never an action to gate behind a role —
+	// the person who most needs it is the one who thinks they have been
+	// compromised, whatever their role.
+	"/stillhouse.v1.APITokenService/RevokeAllMyAPITokens": roleViewer,
 
 	// AlcoholometryService — pure calculation against the published
 	// tables, touching nothing. Viewer is the floor because the strength

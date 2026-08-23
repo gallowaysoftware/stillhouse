@@ -19,6 +19,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/auth"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
 // PasswordResetMailer narrows the mailer.Mailer surface to just what
@@ -29,7 +30,14 @@ type PasswordResetMailer interface {
 }
 
 type AuthService struct {
-	q            *sqlcgen.Queries
+	q *sqlcgen.Queries
+	// tdb is needed by ResetPassword, which revokes the user's API
+	// tokens. api_tokens is under row-level security, so that UPDATE
+	// matches nothing at all without a tenant context — silently, since
+	// "revoked no tokens" is a legitimate outcome for a user who has
+	// none. Found by driving the live server: a token minted before a
+	// password reset still authenticated after it.
+	tdb          *tenantdb.DB
 	session      *scs.SessionManager
 	logger       *slog.Logger
 	limiter      *SlidingWindowLimiter
@@ -47,9 +55,9 @@ type AuthService struct {
 	resetURLPrefix    string // e.g. https://stillhouse.example.com/reset-password?token=
 }
 
-func NewAuthService(q *sqlcgen.Queries, sm *scs.SessionManager, logger *slog.Logger, mailer PasswordResetMailer, resetURLPrefix string, trustProxyHeaders bool) *AuthService {
+func NewAuthService(q *sqlcgen.Queries, tdb *tenantdb.DB, sm *scs.SessionManager, logger *slog.Logger, mailer PasswordResetMailer, resetURLPrefix string, trustProxyHeaders bool) *AuthService {
 	return &AuthService{
-		q: q, session: sm, logger: logger, mailer: mailer, resetURLPrefix: resetURLPrefix,
+		q: q, tdb: tdb, session: sm, logger: logger, mailer: mailer, resetURLPrefix: resetURLPrefix,
 		trustProxyHeaders: trustProxyHeaders,
 		// 10 attempts / 60s per (remote_ip, email-lowercased) — typical
 		// password-guessing attacks need many more attempts than that, but
@@ -154,6 +162,9 @@ func (s *AuthService) Login(
 	}
 	s.session.Put(ctx, "user_id", u.ID.String())
 	s.session.Put(ctx, "tenant_id", u.TenantID.String())
+	// Records when this session authenticated, so a later password change
+	// can tell it apart from one minted before. See SessionSurvivesRevocation.
+	StampSessionAuth(s.session, ctx, time.Now())
 	s.limiter.Forget(rlKey)
 	s.emailLimiter.Forget(strings.ToLower(in.GetEmail())) // legitimate user; reset their counter
 
@@ -245,11 +256,44 @@ func (s *AuthService) ResetPassword(
 		s.logger.Error("password reset: hash", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	// UpdateUserPassword sets sessions_revoked_at in the same statement,
+	// so every session this user has anywhere is now dead. Nothing is
+	// re-stamped here: the reset flow is anonymous by construction, there
+	// is no session of ours to preserve, and locking out whoever else
+	// held one is the entire point.
 	if _, err := s.q.UpdateUserPassword(ctx, sqlcgen.UpdateUserPasswordParams{
 		ID: row.UserID, PasswordHash: pwHash,
 	}); err != nil {
 		s.logger.Error("password reset: update", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	// API tokens go too. This is the recovery path — the one a person
+	// reaches for when they think their password has leaked — and a token
+	// minted with the leaked password outliving the reset is precisely
+	// the hole being closed. A token the user still wants is one Issue
+	// away; a token an attacker minted is not worth the convenience.
+	//
+	// Through WithTenantTx, because api_tokens is under RLS: run without
+	// a tenant context and the UPDATE matches nothing and reports
+	// success, which is how this shipped broken the first time.
+	user, err := s.q.GetUserByID(ctx, row.UserID)
+	if err != nil {
+		s.logger.Error("password reset: user lookup", "err", err, "user_id", row.UserID)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	var revoked int
+	if err := s.tdb.WithTenantTx(ctx, user.TenantID,
+		func(ctx context.Context, q *sqlcgen.Queries) error {
+			rows, err := q.RevokeAllAPITokensForUser(ctx, row.UserID)
+			revoked = len(rows)
+			return err
+		}); err != nil {
+		s.logger.Error("password reset: revoke tokens", "err", err, "user_id", row.UserID)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if revoked > 0 {
+		s.logger.Info("password reset revoked api tokens",
+			"user_id", row.UserID, "count", revoked)
 	}
 	return connect.NewResponse(&stillhousev1.ResetPasswordResponse{}), nil
 }

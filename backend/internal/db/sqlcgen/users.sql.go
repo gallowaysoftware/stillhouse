@@ -16,7 +16,7 @@ INSERT INTO users (
     tenant_id, email, password_hash, display_name, role
 ) VALUES (
     $1, $2, $3, $4, $5
-) RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at
+) RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at
 `
 
 type CreateUserParams struct {
@@ -46,12 +46,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
+		&i.SessionsRevokedAt,
 	)
 	return i, err
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at FROM users WHERE email = $1
+SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE email = $1
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -67,12 +68,13 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
+		&i.SessionsRevokedAt,
 	)
 	return i, err
 }
 
 const getUserByID = `-- name: GetUserByID :one
-SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at FROM users WHERE id = $1
+SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
@@ -88,6 +90,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
+		&i.SessionsRevokedAt,
 	)
 	return i, err
 }

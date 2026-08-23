@@ -422,6 +422,13 @@ function ChangePasswordPanel() {
     <section className="mt-10">
       <h2 className="mb-3 text-sm font-semibold text-fg-muted">Change my password</h2>
       <form onSubmit={submit} className="grid grid-cols-3 gap-3 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+        <p className="col-span-3 -mt-1 text-sm text-fg-muted">
+          Changing your password signs out every other session — a laptop left at the
+          distillery, a phone you no longer have, anyone else signed in as you. This
+          one stays signed in. API tokens are separate credentials and are{" "}
+          <span className="text-fg">not</span> revoked; if you think your password
+          leaked, revoke those too under API tokens below.
+        </p>
         <div>
           <label className="mb-2 block text-sm font-medium text-fg-muted">Current password</label>
           <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" autoComplete="current-password" required className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
@@ -442,7 +449,11 @@ function ChangePasswordPanel() {
           >
             {change.isPending ? "Updating…" : "Update password"}
           </button>
-          {done && <span className="text-sm text-success-fg">Password updated.</span>}
+          {done && (
+            <span className="text-sm text-success-fg">
+              Password updated. Every other session has been signed out.
+            </span>
+          )}
           {mismatch && <span className="text-sm text-danger-fg">Passwords don't match.</span>}
           {tooShort && !mismatch && <span className="text-sm text-danger-fg">Must be at least 12 characters.</span>}
           {change.error && (
@@ -718,11 +729,19 @@ function APITokensPanel() {
     queryFn: () => apiTokenClient.listAPITokens({}),
   });
   const [name, setName] = useState("");
+  // Lifetime in days; "0" is the explicit never-expires choice, which the
+  // server treats as a separate request field rather than a magic number.
+  const [lifetime, setLifetime] = useState("90");
   const [justIssued, setJustIssued] = useState<{ name: string; plaintext: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const issue = useMutation({
-    mutationFn: (n: string) => apiTokenClient.issueAPIToken({ name: n }),
+    mutationFn: (n: string) =>
+      apiTokenClient.issueAPIToken(
+        lifetime === "0"
+          ? { name: n, neverExpires: true }
+          : { name: n, expiresInDays: Number(lifetime) },
+      ),
     onSuccess: (resp) => {
       setJustIssued({ name: resp.token?.name ?? "", plaintext: resp.plaintext });
       setName("");
@@ -733,6 +752,11 @@ function APITokensPanel() {
     mutationFn: (id: string) => apiTokenClient.revokeAPIToken({ id }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["listAPITokens"] }),
   });
+  const revokeAll = useMutation({
+    mutationFn: () => apiTokenClient.revokeAllMyAPITokens({}),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["listAPITokens"] }),
+  });
+  const liveTokens = (list.data?.tokens ?? []).filter((t) => !t.revokedAt).length;
 
   function copyPlaintext() {
     if (!justIssued) return;
@@ -779,6 +803,19 @@ function APITokensPanel() {
               className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
             />
           </div>
+          <div className="min-w-[10rem]">
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Expires</label>
+            <select
+              value={lifetime}
+              onChange={(e) => setLifetime(e.target.value)}
+              className="w-full rounded border border-border-strong bg-surface px-3 py-2 text-sm text-fg"
+            >
+              <option value="30">in 30 days</option>
+              <option value="90">in 90 days</option>
+              <option value="365">in a year</option>
+              <option value="0">never</option>
+            </select>
+          </div>
           <button
             type="submit"
             disabled={issue.isPending || !name.trim()}
@@ -786,6 +823,12 @@ function APITokensPanel() {
           >
             {issue.isPending ? "Issuing…" : "Issue token"}
           </button>
+          {lifetime === "0" && (
+            <p className="w-full text-xs text-warning-fg">
+              A token that never expires stays valid until you revoke it — including if
+              the device holding it is lost. Changing your password won't retire it.
+            </p>
+          )}
           {issue.error && (
             <span className="text-sm text-danger-fg">
               {issue.error instanceof ConnectError ? issue.error.rawMessage : String(issue.error)}
@@ -823,24 +866,32 @@ function APITokensPanel() {
               <th className="px-2 py-2">Name</th>
               <th className="px-2 py-2">Created</th>
               <th className="px-2 py-2">Last used</th>
+              <th className="px-2 py-2">Expires</th>
               <th className="px-2 py-2">Status</th>
               <th className="px-2 py-2 text-right"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {list.data?.tokens.length === 0 && (
-              <tr><td colSpan={5} className="px-2 py-3 text-fg-muted">No tokens yet.</td></tr>
+              <tr><td colSpan={6} className="px-2 py-3 text-fg-muted">No tokens yet.</td></tr>
             )}
             {list.data?.tokens.map((t) => {
               const created = t.createdAt ? new Date(Number(t.createdAt.seconds) * 1000) : null;
               const lastUsed = t.lastUsedAt ? new Date(Number(t.lastUsedAt.seconds) * 1000) : null;
               const revoked = !!t.revokedAt;
+              const expires = t.expiresAt ? new Date(Number(t.expiresAt.seconds) * 1000) : null;
+              // `expired` is computed server-side so the row doesn't have
+              // to agree with the server about what time it is.
+              const status = revoked ? "Revoked" : t.expired ? "Expired" : "Active";
               return (
-                <tr key={t.id} className={revoked ? "opacity-60" : ""}>
+                <tr key={t.id} className={revoked || t.expired ? "opacity-60" : ""}>
                   <td className="px-2 py-2 text-fg">{t.name}</td>
                   <td className="px-2 py-2 text-fg-muted">{created ? created.toLocaleDateString() : "—"}</td>
                   <td className="px-2 py-2 text-fg-muted">{lastUsed ? lastUsed.toLocaleString() : <span className="text-fg-subtle">never</span>}</td>
-                  <td className="px-2 py-2 text-fg-muted">{revoked ? "Revoked" : "Active"}</td>
+                  <td className="px-2 py-2 text-fg-muted">
+                    {expires ? expires.toLocaleDateString() : <span className="text-warning-fg">never</span>}
+                  </td>
+                  <td className="px-2 py-2 text-fg-muted">{status}</td>
                   <td className="px-2 py-2 text-right">
                     {!revoked && (
                       <button
@@ -857,6 +908,38 @@ function APITokensPanel() {
             })}
           </tbody>
         </table>
+
+        {liveTokens > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+            <button
+              onClick={() => {
+                if (window.confirm(
+                  `Revoke all ${liveTokens} live token${liveTokens === 1 ? "" : "s"}? ` +
+                  "Anything using them — the MCP server on your phone, any script — stops " +
+                  "working immediately and will need a new token.",
+                )) revokeAll.mutate();
+              }}
+              disabled={revokeAll.isPending}
+              className="rounded border border-danger/40 px-3 py-2 text-sm font-medium text-danger-fg hover:bg-danger/10 disabled:opacity-50"
+            >
+              {revokeAll.isPending ? "Revoking…" : "Revoke all my tokens"}
+            </button>
+            <p className="text-xs text-fg-muted">
+              Use this if you think your password has leaked. Changing a password signs
+              out every other session, but tokens are separate credentials and survive it.
+            </p>
+            {revokeAll.error && (
+              <span className="text-sm text-danger-fg">
+                {revokeAll.error instanceof ConnectError ? revokeAll.error.rawMessage : String(revokeAll.error)}
+              </span>
+            )}
+          </div>
+        )}
+        {revokeAll.isSuccess && revokeAll.data.revokedCount > 0 && (
+          <p className="mt-2 text-sm text-success-fg">
+            Revoked {revokeAll.data.revokedCount} token{revokeAll.data.revokedCount === 1 ? "" : "s"}.
+          </p>
+        )}
       </div>
     </section>
   );

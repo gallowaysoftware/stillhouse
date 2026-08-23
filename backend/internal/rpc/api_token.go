@@ -6,17 +6,32 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"log/slog"
 	"strings"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
+
+// defaultTokenLifetimeDays is what a token gets when the caller doesn't
+// say. Ninety days is short enough that a token forgotten in a script
+// stops being a standing credential, and long enough that an operator
+// isn't re-pairing a rackhouse phone every few weeks.
+const defaultTokenLifetimeDays = 90
+
+// maxTokenLifetimeDays caps what the API will grant. Anything longer has
+// to be the explicit never-expires choice, which is at least legible in
+// the UI as the decision it is.
+const maxTokenLifetimeDays = 365
 
 // APITokenService manages a user's personal access tokens. Tokens are
 // per-user; tenants don't share them. The plaintext value is shown
@@ -57,6 +72,26 @@ func (s *APITokenService) IssueAPIToken(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is too long (max 100 chars)"))
 	}
 
+	// Lifetime. Zero takes the default; never_expires is the one way to
+	// get a standing credential, and it has to be asked for by name.
+	var expiresAt pgtype.Timestamptz
+	days := req.Msg.GetExpiresInDays()
+	switch {
+	case days < 0:
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("expires_in_days cannot be negative"))
+	case days > maxTokenLifetimeDays:
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			fmt.Errorf("expires_in_days cannot exceed %d; set never_expires to issue a token with no expiry",
+				maxTokenLifetimeDays))
+	}
+	if !req.Msg.GetNeverExpires() {
+		if days == 0 {
+			days = defaultTokenLifetimeDays
+		}
+		expiresAt = pgtype.Timestamptz{Valid: true, Time: time.Now().AddDate(0, 0, int(days))}
+	}
+
 	plaintext, hash, err := generateAPIToken()
 	if err != nil {
 		s.logger.Error("IssueAPIToken: rand", "err", err)
@@ -70,6 +105,7 @@ func (s *APITokenService) IssueAPIToken(
 			TenantID:  u.TenantID,
 			UserID:    u.ID,
 			Name:      name,
+			ExpiresAt: expiresAt,
 		})
 		return err
 	})
@@ -161,6 +197,43 @@ func (s *APITokenService) RevokeAPIToken(
 	return connect.NewResponse(&stillhousev1.RevokeAPITokenResponse{Token: apiTokenToProto(row)}), nil
 }
 
+// RevokeAllMyAPITokens revokes every token the caller holds. It sits
+// next to the password form because that is where it is needed: a
+// password change that leaves the tokens minted with the old one alive
+// has not taken anything away from whoever had it.
+func (s *APITokenService) RevokeAllMyAPITokens(
+	ctx context.Context,
+	_ *connect.Request[stillhousev1.RevokeAllMyAPITokensRequest],
+) (*connect.Response[stillhousev1.RevokeAllMyAPITokensResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	var rows []sqlcgen.ApiToken
+	err := s.tdb.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var err error
+		rows, err = q.RevokeAllAPITokensForUser(ctx, u.ID)
+		if err != nil {
+			return err
+		}
+		if len(rows) == 0 {
+			return nil
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "api_token", u.ID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"event":         "all_tokens_revoked",
+				"revoked_count": len(rows),
+			})
+	})
+	if err != nil {
+		s.logger.Error("RevokeAllMyAPITokens", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.RevokeAllMyAPITokensResponse{
+		RevokedCount: int32(len(rows)),
+	}), nil
+}
+
 // generateAPIToken returns (plaintext, sha256(plaintext)). Same
 // recipe used by cmd/mcp-token; both routes produce indistinguishable
 // tokens on the wire.
@@ -185,6 +258,10 @@ func apiTokenToProto(r sqlcgen.ApiToken) *stillhousev1.APIToken {
 	}
 	if r.RevokedAt.Valid {
 		out.RevokedAt = timestamppb.New(r.RevokedAt.Time)
+	}
+	if r.ExpiresAt.Valid {
+		out.ExpiresAt = timestamppb.New(r.ExpiresAt.Time)
+		out.Expired = r.ExpiresAt.Time.Before(time.Now())
 	}
 	return out
 }

@@ -8,6 +8,7 @@ import (
 	"log/slog"
 
 	"connectrpc.com/connect"
+	"github.com/alexedwards/scs/v2"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/auth"
@@ -16,12 +17,17 @@ import (
 )
 
 type UserService struct {
-	q      *sqlcgen.Queries
-	logger *slog.Logger
+	q *sqlcgen.Queries
+	// session is needed by ChangeMyPassword only: writing a password
+	// revokes every session the user has, and the caller's own session
+	// then has to be re-stamped so the person doing the right thing
+	// isn't the one signed out for it.
+	session *scs.SessionManager
+	logger  *slog.Logger
 }
 
-func NewUserService(q *sqlcgen.Queries, logger *slog.Logger) *UserService {
-	return &UserService{q: q, logger: logger}
+func NewUserService(q *sqlcgen.Queries, session *scs.SessionManager, logger *slog.Logger) *UserService {
+	return &UserService{q: q, session: session, logger: logger}
 }
 
 func (s *UserService) GetMe(
@@ -97,7 +103,22 @@ func (s *UserService) CreateUser(
 }
 
 // ChangeMyPassword updates the calling user's password after verifying
-// the current one. The session stays valid (we don't force re-login).
+// the current one.
+//
+// Changing a password takes something away: UpdateUserPassword writes
+// users.sessions_revoked_at in the same statement, which kills every
+// session this user holds anywhere — the laptop left at the distillery,
+// the phone that was stolen, whoever else was signed in as them. The
+// caller's own session is then re-stamped with exactly that watermark so
+// they stay signed in; doing the safe thing should not log you out.
+//
+// API tokens are deliberately *not* revoked here. The caller proved they
+// know the current password, so this is routine hygiene rather than
+// compromise recovery, and silently killing a rackhouse tablet's MCP
+// token would be a surprise. RevokeAllMyAPITokens sits next to this form
+// for when it is compromise recovery — and ResetPassword, the flow
+// someone reaches for when they think their password has leaked, revokes
+// tokens without being asked.
 func (s *UserService) ChangeMyPassword(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.ChangeMyPasswordRequest],
@@ -121,15 +142,25 @@ func (s *UserService) ChangeMyPassword(
 		s.logger.Error("ChangeMyPassword: hash", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	if _, err := s.q.UpdateUserPassword(ctx, sqlcgen.UpdateUserPasswordParams{
+	updated, err := s.q.UpdateUserPassword(ctx, sqlcgen.UpdateUserPasswordParams{
 		ID:           caller.ID,
 		PasswordHash: hash,
-	}); err != nil {
+	})
+	if err != nil {
 		s.logger.Error("ChangeMyPassword: update", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	// Re-stamp this session with the watermark the UPDATE just wrote, so
+	// it is not-before rather than before it. Every other session the
+	// user has authenticated earlier and is now dead.
+	if s.session != nil && updated.SessionsRevokedAt.Valid {
+		StampSessionAuth(s.session, ctx, updated.SessionsRevokedAt.Time)
+	}
 	if err := audit.Write(ctx, s.q, caller.TenantID, caller.ID, "user", caller.ID.String(),
-		sqlcgen.AuditActionUpdate, map[string]any{"event": "password_changed"}); err != nil {
+		sqlcgen.AuditActionUpdate, map[string]any{
+			"event":            "password_changed",
+			"sessions_revoked": true,
+		}); err != nil {
 		s.logger.Warn("ChangeMyPassword: audit", "err", err)
 	}
 	return connect.NewResponse(&stillhousev1.ChangeMyPasswordResponse{}), nil

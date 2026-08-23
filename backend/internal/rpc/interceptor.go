@@ -56,6 +56,12 @@ func NewAuthInterceptor(sm *scs.SessionManager, q *sqlcgen.Queries) connect.Unar
 				ctx = WithUser(ctx, user)
 				return next(ctx, req)
 			}
+			// The session-revocation middleware has already loaded and
+			// vetted the user for any session that survives; reuse it
+			// rather than reading the same row twice per request.
+			if _, ok := CurrentUser(ctx); ok {
+				return next(ctx, req)
+			}
 			userIDStr := sm.GetString(ctx, "user_id")
 			if userIDStr == "" {
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
@@ -67,6 +73,13 @@ func NewAuthInterceptor(sm *scs.SessionManager, q *sqlcgen.Queries) connect.Unar
 			user, err := q.GetUserByID(ctx, userID)
 			if err != nil {
 				return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("session refers to missing user"))
+			}
+			// Reached only when the middleware is not in the chain (tests
+			// drive services directly). Check the watermark here too, so
+			// the guarantee doesn't depend on the wiring.
+			if !SessionSurvivesRevocation(sm, ctx, user) {
+				return nil, connect.NewError(connect.CodeUnauthenticated,
+					errors.New("session ended by a credential change; sign in again"))
 			}
 			ctx = WithUser(ctx, user)
 			return next(ctx, req)

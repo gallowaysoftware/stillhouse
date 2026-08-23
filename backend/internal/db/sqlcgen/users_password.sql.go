@@ -15,7 +15,7 @@ const markUserEmailVerified = `-- name: MarkUserEmailVerified :one
 UPDATE users
 SET email_verified_at = NOW()
 WHERE id = $1 AND email_verified_at IS NULL
-RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at
+RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at
 `
 
 func (q *Queries) MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error) {
@@ -31,12 +31,17 @@ func (q *Queries) MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
+		&i.SessionsRevokedAt,
 	)
 	return i, err
 }
 
 const updateUserPassword = `-- name: UpdateUserPassword :one
-UPDATE users SET password_hash = $2 WHERE id = $1 RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at
+UPDATE users
+SET password_hash       = $2,
+    sessions_revoked_at = NOW()
+WHERE id = $1
+RETURNING id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at
 `
 
 type UpdateUserPasswordParams struct {
@@ -44,6 +49,11 @@ type UpdateUserPasswordParams struct {
 	PasswordHash string    `json:"password_hash"`
 }
 
+// Writing a new password revokes every session that authenticated before
+// this moment. It happens in the same statement as the hash update so no
+// caller can do the half that feels like the fix and skip the half that
+// is. The caller that still holds a live session (ChangeMyPassword)
+// re-stamps its own session from the returned sessions_revoked_at.
 func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error) {
 	row := q.db.QueryRow(ctx, updateUserPassword, arg.ID, arg.PasswordHash)
 	var i User
@@ -57,6 +67,7 @@ func (q *Queries) UpdateUserPassword(ctx context.Context, arg UpdateUserPassword
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.EmailVerifiedAt,
+		&i.SessionsRevokedAt,
 	)
 	return i, err
 }

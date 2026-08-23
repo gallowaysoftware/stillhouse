@@ -243,6 +243,7 @@ func (s *InviteService) SignupWithInvite(
 	}
 	s.session.Put(ctx, "user_id", user.ID.String())
 	s.session.Put(ctx, "tenant_id", tenant.ID.String())
+	StampSessionAuth(s.session, ctx, time.Now())
 
 	if s.mailer != nil {
 		// Best-effort; don't fail signup if email fails (operator can

@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/api_token.proto.
  */
 export const file_stillhouse_v1_api_token: GenFile = /*@__PURE__*/
-  fileDesc("Ch1zdGlsbGhvdXNlL3YxL2FwaV90b2tlbi5wcm90bxINc3RpbGxob3VzZS52MSK2AQoIQVBJVG9rZW4SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIuCgpjcmVhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIwCgxsYXN0X3VzZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnJldm9rZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIiQKFElzc3VlQVBJVG9rZW5SZXF1ZXN0EgwKBG5hbWUYASABKAkiUgoVSXNzdWVBUElUb2tlblJlc3BvbnNlEiYKBXRva2VuGAEgASgLMhcuc3RpbGxob3VzZS52MS5BUElUb2tlbhIRCglwbGFpbnRleHQYAiABKAkiFgoUTGlzdEFQSVRva2Vuc1JlcXVlc3QiQAoVTGlzdEFQSVRva2Vuc1Jlc3BvbnNlEicKBnRva2VucxgBIAMoCzIXLnN0aWxsaG91c2UudjEuQVBJVG9rZW4iIwoVUmV2b2tlQVBJVG9rZW5SZXF1ZXN0EgoKAmlkGAEgASgJIkAKFlJldm9rZUFQSVRva2VuUmVzcG9uc2USJgoFdG9rZW4YASABKAsyFy5zdGlsbGhvdXNlLnYxLkFQSVRva2VuMqgCCg9BUElUb2tlblNlcnZpY2USWgoNSXNzdWVBUElUb2tlbhIjLnN0aWxsaG91c2UudjEuSXNzdWVBUElUb2tlblJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLklzc3VlQVBJVG9rZW5SZXNwb25zZRJaCg1MaXN0QVBJVG9rZW5zEiMuc3RpbGxob3VzZS52MS5MaXN0QVBJVG9rZW5zUmVxdWVzdBokLnN0aWxsaG91c2UudjEuTGlzdEFQSVRva2Vuc1Jlc3BvbnNlEl0KDlJldm9rZUFQSVRva2VuEiQuc3RpbGxob3VzZS52MS5SZXZva2VBUElUb2tlblJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLlJldm9rZUFQSVRva2VuUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("Ch1zdGlsbGhvdXNlL3YxL2FwaV90b2tlbi5wcm90bxINc3RpbGxob3VzZS52MSL3AQoIQVBJVG9rZW4SCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIuCgpjcmVhdGVkX2F0GAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIwCgxsYXN0X3VzZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnJldm9rZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCmV4cGlyZXNfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg8KB2V4cGlyZWQYByABKAgiVAoUSXNzdWVBUElUb2tlblJlcXVlc3QSDAoEbmFtZRgBIAEoCRIXCg9leHBpcmVzX2luX2RheXMYAiABKAUSFQoNbmV2ZXJfZXhwaXJlcxgDIAEoCCJSChVJc3N1ZUFQSVRva2VuUmVzcG9uc2USJgoFdG9rZW4YASABKAsyFy5zdGlsbGhvdXNlLnYxLkFQSVRva2VuEhEKCXBsYWludGV4dBgCIAEoCSIWChRMaXN0QVBJVG9rZW5zUmVxdWVzdCJAChVMaXN0QVBJVG9rZW5zUmVzcG9uc2USJwoGdG9rZW5zGAEgAygLMhcuc3RpbGxob3VzZS52MS5BUElUb2tlbiIjChVSZXZva2VBUElUb2tlblJlcXVlc3QSCgoCaWQYASABKAkiQAoWUmV2b2tlQVBJVG9rZW5SZXNwb25zZRImCgV0b2tlbhgBIAEoCzIXLnN0aWxsaG91c2UudjEuQVBJVG9rZW4iHQobUmV2b2tlQWxsTXlBUElUb2tlbnNSZXF1ZXN0IjUKHFJldm9rZUFsbE15QVBJVG9rZW5zUmVzcG9uc2USFQoNcmV2b2tlZF9jb3VudBgBIAEoBTKZAwoPQVBJVG9rZW5TZXJ2aWNlEloKDUlzc3VlQVBJVG9rZW4SIy5zdGlsbGhvdXNlLnYxLklzc3VlQVBJVG9rZW5SZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5Jc3N1ZUFQSVRva2VuUmVzcG9uc2USWgoNTGlzdEFQSVRva2VucxIjLnN0aWxsaG91c2UudjEuTGlzdEFQSVRva2Vuc1JlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLkxpc3RBUElUb2tlbnNSZXNwb25zZRJdCg5SZXZva2VBUElUb2tlbhIkLnN0aWxsaG91c2UudjEuUmV2b2tlQVBJVG9rZW5SZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5SZXZva2VBUElUb2tlblJlc3BvbnNlEm8KFFJldm9rZUFsbE15QVBJVG9rZW5zEiouc3RpbGxob3VzZS52MS5SZXZva2VBbGxNeUFQSVRva2Vuc1JlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLlJldm9rZUFsbE15QVBJVG9rZW5zUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.APIToken
@@ -56,6 +56,24 @@ export type APIToken = Message<"stillhouse.v1.APIToken"> & {
    * @generated from field: google.protobuf.Timestamp revoked_at = 5;
    */
   revokedAt?: Timestamp | undefined;
+
+  /**
+   * When the token stops being accepted. Unset means it never expires,
+   * which is what every token issued before stage 154 is — the column
+   * did not exist, so an attacker who phished a password and minted a
+   * token kept it through every subsequent password change.
+   *
+   * @generated from field: google.protobuf.Timestamp expires_at = 6;
+   */
+  expiresAt?: Timestamp | undefined;
+
+  /**
+   * True once expires_at is in the past. Computed server-side so the UI
+   * doesn't have to agree with the server about what time it is.
+   *
+   * @generated from field: bool expired = 7;
+   */
+  expired: boolean;
 };
 
 /**
@@ -73,6 +91,25 @@ export type IssueAPITokenRequest = Message<"stillhouse.v1.IssueAPITokenRequest">
    * @generated from field: string name = 1;
    */
   name: string;
+
+  /**
+   * Lifetime in days. Zero (or unset) takes the server default of 90.
+   * Capped at 365 — anything longer has to be the explicit choice below,
+   * so that "forever" is never something a caller backs into.
+   *
+   * @generated from field: int32 expires_in_days = 2;
+   */
+  expiresInDays: number;
+
+  /**
+   * Issue a token that never expires. Allowed on purpose: a token wired
+   * into a rackhouse tablet that dies quarterly is its own kind of
+   * hazard. But it is a separate field rather than a sentinel value so
+   * the UI has to say what it is choosing, and so does this request.
+   *
+   * @generated from field: bool never_expires = 3;
+   */
+  neverExpires: boolean;
 };
 
 /**
@@ -173,6 +210,40 @@ export const RevokeAPITokenResponseSchema: GenMessage<RevokeAPITokenResponse> = 
   messageDesc(file_stillhouse_v1_api_token, 6);
 
 /**
+ * Revokes every token the calling user holds, in one action. Sits next
+ * to the password form: changing a password that may have leaked is
+ * worth nothing if the tokens minted with it keep working.
+ *
+ * @generated from message stillhouse.v1.RevokeAllMyAPITokensRequest
+ */
+export type RevokeAllMyAPITokensRequest = Message<"stillhouse.v1.RevokeAllMyAPITokensRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.RevokeAllMyAPITokensRequest.
+ * Use `create(RevokeAllMyAPITokensRequestSchema)` to create a new message.
+ */
+export const RevokeAllMyAPITokensRequestSchema: GenMessage<RevokeAllMyAPITokensRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_api_token, 7);
+
+/**
+ * @generated from message stillhouse.v1.RevokeAllMyAPITokensResponse
+ */
+export type RevokeAllMyAPITokensResponse = Message<"stillhouse.v1.RevokeAllMyAPITokensResponse"> & {
+  /**
+   * @generated from field: int32 revoked_count = 1;
+   */
+  revokedCount: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.RevokeAllMyAPITokensResponse.
+ * Use `create(RevokeAllMyAPITokensResponseSchema)` to create a new message.
+ */
+export const RevokeAllMyAPITokensResponseSchema: GenMessage<RevokeAllMyAPITokensResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_api_token, 8);
+
+/**
  * @generated from service stillhouse.v1.APITokenService
  */
 export const APITokenService: GenService<{
@@ -199,6 +270,14 @@ export const APITokenService: GenService<{
     methodKind: "unary";
     input: typeof RevokeAPITokenRequestSchema;
     output: typeof RevokeAPITokenResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.APITokenService.RevokeAllMyAPITokens
+   */
+  revokeAllMyAPITokens: {
+    methodKind: "unary";
+    input: typeof RevokeAllMyAPITokensRequestSchema;
+    output: typeof RevokeAllMyAPITokensResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_api_token, 0);

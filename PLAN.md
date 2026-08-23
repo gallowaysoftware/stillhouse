@@ -398,16 +398,6 @@ Known issue F17: LAA, volume and duty carry full IEEE-754 noise
 format should carry decimals instead.
 
 
-### H12 · Changing a password doesn't revoke anything — P1
-
-`ResetPassword` and `ChangeMyPassword` update the hash and return; the comment
-in `user.go` says outright that the session stays valid. Sessions last 7 days
-with no idle timeout, and API tokens have **no expiry column at all** — so an
-attacker who phished a password and minted a token keeps both after the victim
-does the one thing everybody knows to do. Needs session invalidation on
-credential change, a "revoke all my tokens" action next to the password form,
-and an `expires_at` on tokens with a sensible default.
-
 ### H13 · Tailwind 4 and the browser floor — P2
 
 The only upgrade left after stage 137, and deliberately deferred. Tailwind 4

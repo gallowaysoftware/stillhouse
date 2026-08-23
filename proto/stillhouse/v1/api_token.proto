@@ -16,10 +16,28 @@ message APIToken {
   google.protobuf.Timestamp created_at = 3;
   google.protobuf.Timestamp last_used_at = 4; // unset until first use
   google.protobuf.Timestamp revoked_at = 5;   // unset = active
+
+  // When the token stops being accepted. Unset means it never expires,
+  // which is what every token issued before stage 154 is — the column
+  // did not exist, so an attacker who phished a password and minted a
+  // token kept it through every subsequent password change.
+  google.protobuf.Timestamp expires_at = 6;
+  // True once expires_at is in the past. Computed server-side so the UI
+  // doesn't have to agree with the server about what time it is.
+  bool expired = 7;
 }
 
 message IssueAPITokenRequest {
   string name = 1;
+  // Lifetime in days. Zero (or unset) takes the server default of 90.
+  // Capped at 365 — anything longer has to be the explicit choice below,
+  // so that "forever" is never something a caller backs into.
+  int32 expires_in_days = 2;
+  // Issue a token that never expires. Allowed on purpose: a token wired
+  // into a rackhouse tablet that dies quarterly is its own kind of
+  // hazard. But it is a separate field rather than a sentinel value so
+  // the UI has to say what it is choosing, and so does this request.
+  bool never_expires = 3;
 }
 
 // IssueAPITokenResponse carries the plaintext token exactly once. The
@@ -36,8 +54,15 @@ message ListAPITokensResponse { repeated APIToken tokens = 1; }
 message RevokeAPITokenRequest { string id = 1; }
 message RevokeAPITokenResponse { APIToken token = 1; }
 
+// Revokes every token the calling user holds, in one action. Sits next
+// to the password form: changing a password that may have leaked is
+// worth nothing if the tokens minted with it keep working.
+message RevokeAllMyAPITokensRequest {}
+message RevokeAllMyAPITokensResponse { int32 revoked_count = 1; }
+
 service APITokenService {
   rpc IssueAPIToken(IssueAPITokenRequest)   returns (IssueAPITokenResponse);
   rpc ListAPITokens(ListAPITokensRequest)   returns (ListAPITokensResponse);
   rpc RevokeAPIToken(RevokeAPITokenRequest) returns (RevokeAPITokenResponse);
+  rpc RevokeAllMyAPITokens(RevokeAllMyAPITokensRequest) returns (RevokeAllMyAPITokensResponse);
 }

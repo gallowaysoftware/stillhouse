@@ -31,11 +31,19 @@ type APIToken struct {
 	// Stable per-token identifier. The base64-encoded SHA-256 of the
 	// plaintext token; safe to expose to the UI because it cannot be
 	// reversed to the token value. Used as the handle for RevokeToken.
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // human label, e.g. "phone"
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	LastUsedAt    *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=last_used_at,json=lastUsedAt,proto3" json:"last_used_at,omitempty"` // unset until first use
-	RevokedAt     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=revoked_at,json=revokedAt,proto3" json:"revoked_at,omitempty"`      // unset = active
+	Id         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name       string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"` // human label, e.g. "phone"
+	CreatedAt  *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	LastUsedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=last_used_at,json=lastUsedAt,proto3" json:"last_used_at,omitempty"` // unset until first use
+	RevokedAt  *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=revoked_at,json=revokedAt,proto3" json:"revoked_at,omitempty"`      // unset = active
+	// When the token stops being accepted. Unset means it never expires,
+	// which is what every token issued before stage 154 is — the column
+	// did not exist, so an attacker who phished a password and minted a
+	// token kept it through every subsequent password change.
+	ExpiresAt *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=expires_at,json=expiresAt,proto3" json:"expires_at,omitempty"`
+	// True once expires_at is in the past. Computed server-side so the UI
+	// doesn't have to agree with the server about what time it is.
+	Expired       bool `protobuf:"varint,7,opt,name=expired,proto3" json:"expired,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -105,9 +113,32 @@ func (x *APIToken) GetRevokedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *APIToken) GetExpiresAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExpiresAt
+	}
+	return nil
+}
+
+func (x *APIToken) GetExpired() bool {
+	if x != nil {
+		return x.Expired
+	}
+	return false
+}
+
 type IssueAPITokenRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Lifetime in days. Zero (or unset) takes the server default of 90.
+	// Capped at 365 — anything longer has to be the explicit choice below,
+	// so that "forever" is never something a caller backs into.
+	ExpiresInDays int32 `protobuf:"varint,2,opt,name=expires_in_days,json=expiresInDays,proto3" json:"expires_in_days,omitempty"`
+	// Issue a token that never expires. Allowed on purpose: a token wired
+	// into a rackhouse tablet that dies quarterly is its own kind of
+	// hazard. But it is a separate field rather than a sentinel value so
+	// the UI has to say what it is choosing, and so does this request.
+	NeverExpires  bool `protobuf:"varint,3,opt,name=never_expires,json=neverExpires,proto3" json:"never_expires,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -147,6 +178,20 @@ func (x *IssueAPITokenRequest) GetName() string {
 		return x.Name
 	}
 	return ""
+}
+
+func (x *IssueAPITokenRequest) GetExpiresInDays() int32 {
+	if x != nil {
+		return x.ExpiresInDays
+	}
+	return 0
+}
+
+func (x *IssueAPITokenRequest) GetNeverExpires() bool {
+	if x != nil {
+		return x.NeverExpires
+	}
+	return false
 }
 
 // IssueAPITokenResponse carries the plaintext token exactly once. The
@@ -372,11 +417,94 @@ func (x *RevokeAPITokenResponse) GetToken() *APIToken {
 	return nil
 }
 
+// Revokes every token the calling user holds, in one action. Sits next
+// to the password form: changing a password that may have leaked is
+// worth nothing if the tokens minted with it keep working.
+type RevokeAllMyAPITokensRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAllMyAPITokensRequest) Reset() {
+	*x = RevokeAllMyAPITokensRequest{}
+	mi := &file_stillhouse_v1_api_token_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAllMyAPITokensRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAllMyAPITokensRequest) ProtoMessage() {}
+
+func (x *RevokeAllMyAPITokensRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_api_token_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAllMyAPITokensRequest.ProtoReflect.Descriptor instead.
+func (*RevokeAllMyAPITokensRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_api_token_proto_rawDescGZIP(), []int{7}
+}
+
+type RevokeAllMyAPITokensResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RevokedCount  int32                  `protobuf:"varint,1,opt,name=revoked_count,json=revokedCount,proto3" json:"revoked_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokeAllMyAPITokensResponse) Reset() {
+	*x = RevokeAllMyAPITokensResponse{}
+	mi := &file_stillhouse_v1_api_token_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokeAllMyAPITokensResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokeAllMyAPITokensResponse) ProtoMessage() {}
+
+func (x *RevokeAllMyAPITokensResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_api_token_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokeAllMyAPITokensResponse.ProtoReflect.Descriptor instead.
+func (*RevokeAllMyAPITokensResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_api_token_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *RevokeAllMyAPITokensResponse) GetRevokedCount() int32 {
+	if x != nil {
+		return x.RevokedCount
+	}
+	return 0
+}
+
 var File_stillhouse_v1_api_token_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_api_token_proto_rawDesc = "" +
 	"\n" +
-	"\x1dstillhouse/v1/api_token.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe2\x01\n" +
+	"\x1dstillhouse/v1/api_token.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb7\x02\n" +
 	"\bAPIToken\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x129\n" +
@@ -385,9 +513,14 @@ const file_stillhouse_v1_api_token_proto_rawDesc = "" +
 	"\flast_used_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"lastUsedAt\x129\n" +
 	"\n" +
-	"revoked_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\trevokedAt\"*\n" +
+	"revoked_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\trevokedAt\x129\n" +
+	"\n" +
+	"expires_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\x12\x18\n" +
+	"\aexpired\x18\a \x01(\bR\aexpired\"w\n" +
 	"\x14IssueAPITokenRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"d\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12&\n" +
+	"\x0fexpires_in_days\x18\x02 \x01(\x05R\rexpiresInDays\x12#\n" +
+	"\rnever_expires\x18\x03 \x01(\bR\fneverExpires\"d\n" +
 	"\x15IssueAPITokenResponse\x12-\n" +
 	"\x05token\x18\x01 \x01(\v2\x17.stillhouse.v1.APITokenR\x05token\x12\x1c\n" +
 	"\tplaintext\x18\x02 \x01(\tR\tplaintext\"\x16\n" +
@@ -397,11 +530,15 @@ const file_stillhouse_v1_api_token_proto_rawDesc = "" +
 	"\x15RevokeAPITokenRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"G\n" +
 	"\x16RevokeAPITokenResponse\x12-\n" +
-	"\x05token\x18\x01 \x01(\v2\x17.stillhouse.v1.APITokenR\x05token2\xa8\x02\n" +
+	"\x05token\x18\x01 \x01(\v2\x17.stillhouse.v1.APITokenR\x05token\"\x1d\n" +
+	"\x1bRevokeAllMyAPITokensRequest\"C\n" +
+	"\x1cRevokeAllMyAPITokensResponse\x12#\n" +
+	"\rrevoked_count\x18\x01 \x01(\x05R\frevokedCount2\x99\x03\n" +
 	"\x0fAPITokenService\x12Z\n" +
 	"\rIssueAPIToken\x12#.stillhouse.v1.IssueAPITokenRequest\x1a$.stillhouse.v1.IssueAPITokenResponse\x12Z\n" +
 	"\rListAPITokens\x12#.stillhouse.v1.ListAPITokensRequest\x1a$.stillhouse.v1.ListAPITokensResponse\x12]\n" +
-	"\x0eRevokeAPIToken\x12$.stillhouse.v1.RevokeAPITokenRequest\x1a%.stillhouse.v1.RevokeAPITokenResponseB\xd1\x01\n" +
+	"\x0eRevokeAPIToken\x12$.stillhouse.v1.RevokeAPITokenRequest\x1a%.stillhouse.v1.RevokeAPITokenResponse\x12o\n" +
+	"\x14RevokeAllMyAPITokens\x12*.stillhouse.v1.RevokeAllMyAPITokensRequest\x1a+.stillhouse.v1.RevokeAllMyAPITokensResponseB\xd1\x01\n" +
 	"\x11com.stillhouse.v1B\rApiTokenProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -416,35 +553,40 @@ func file_stillhouse_v1_api_token_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_api_token_proto_rawDescData
 }
 
-var file_stillhouse_v1_api_token_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_stillhouse_v1_api_token_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_stillhouse_v1_api_token_proto_goTypes = []any{
-	(*APIToken)(nil),               // 0: stillhouse.v1.APIToken
-	(*IssueAPITokenRequest)(nil),   // 1: stillhouse.v1.IssueAPITokenRequest
-	(*IssueAPITokenResponse)(nil),  // 2: stillhouse.v1.IssueAPITokenResponse
-	(*ListAPITokensRequest)(nil),   // 3: stillhouse.v1.ListAPITokensRequest
-	(*ListAPITokensResponse)(nil),  // 4: stillhouse.v1.ListAPITokensResponse
-	(*RevokeAPITokenRequest)(nil),  // 5: stillhouse.v1.RevokeAPITokenRequest
-	(*RevokeAPITokenResponse)(nil), // 6: stillhouse.v1.RevokeAPITokenResponse
-	(*timestamppb.Timestamp)(nil),  // 7: google.protobuf.Timestamp
+	(*APIToken)(nil),                     // 0: stillhouse.v1.APIToken
+	(*IssueAPITokenRequest)(nil),         // 1: stillhouse.v1.IssueAPITokenRequest
+	(*IssueAPITokenResponse)(nil),        // 2: stillhouse.v1.IssueAPITokenResponse
+	(*ListAPITokensRequest)(nil),         // 3: stillhouse.v1.ListAPITokensRequest
+	(*ListAPITokensResponse)(nil),        // 4: stillhouse.v1.ListAPITokensResponse
+	(*RevokeAPITokenRequest)(nil),        // 5: stillhouse.v1.RevokeAPITokenRequest
+	(*RevokeAPITokenResponse)(nil),       // 6: stillhouse.v1.RevokeAPITokenResponse
+	(*RevokeAllMyAPITokensRequest)(nil),  // 7: stillhouse.v1.RevokeAllMyAPITokensRequest
+	(*RevokeAllMyAPITokensResponse)(nil), // 8: stillhouse.v1.RevokeAllMyAPITokensResponse
+	(*timestamppb.Timestamp)(nil),        // 9: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_api_token_proto_depIdxs = []int32{
-	7, // 0: stillhouse.v1.APIToken.created_at:type_name -> google.protobuf.Timestamp
-	7, // 1: stillhouse.v1.APIToken.last_used_at:type_name -> google.protobuf.Timestamp
-	7, // 2: stillhouse.v1.APIToken.revoked_at:type_name -> google.protobuf.Timestamp
-	0, // 3: stillhouse.v1.IssueAPITokenResponse.token:type_name -> stillhouse.v1.APIToken
-	0, // 4: stillhouse.v1.ListAPITokensResponse.tokens:type_name -> stillhouse.v1.APIToken
-	0, // 5: stillhouse.v1.RevokeAPITokenResponse.token:type_name -> stillhouse.v1.APIToken
-	1, // 6: stillhouse.v1.APITokenService.IssueAPIToken:input_type -> stillhouse.v1.IssueAPITokenRequest
-	3, // 7: stillhouse.v1.APITokenService.ListAPITokens:input_type -> stillhouse.v1.ListAPITokensRequest
-	5, // 8: stillhouse.v1.APITokenService.RevokeAPIToken:input_type -> stillhouse.v1.RevokeAPITokenRequest
-	2, // 9: stillhouse.v1.APITokenService.IssueAPIToken:output_type -> stillhouse.v1.IssueAPITokenResponse
-	4, // 10: stillhouse.v1.APITokenService.ListAPITokens:output_type -> stillhouse.v1.ListAPITokensResponse
-	6, // 11: stillhouse.v1.APITokenService.RevokeAPIToken:output_type -> stillhouse.v1.RevokeAPITokenResponse
-	9, // [9:12] is the sub-list for method output_type
-	6, // [6:9] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	9,  // 0: stillhouse.v1.APIToken.created_at:type_name -> google.protobuf.Timestamp
+	9,  // 1: stillhouse.v1.APIToken.last_used_at:type_name -> google.protobuf.Timestamp
+	9,  // 2: stillhouse.v1.APIToken.revoked_at:type_name -> google.protobuf.Timestamp
+	9,  // 3: stillhouse.v1.APIToken.expires_at:type_name -> google.protobuf.Timestamp
+	0,  // 4: stillhouse.v1.IssueAPITokenResponse.token:type_name -> stillhouse.v1.APIToken
+	0,  // 5: stillhouse.v1.ListAPITokensResponse.tokens:type_name -> stillhouse.v1.APIToken
+	0,  // 6: stillhouse.v1.RevokeAPITokenResponse.token:type_name -> stillhouse.v1.APIToken
+	1,  // 7: stillhouse.v1.APITokenService.IssueAPIToken:input_type -> stillhouse.v1.IssueAPITokenRequest
+	3,  // 8: stillhouse.v1.APITokenService.ListAPITokens:input_type -> stillhouse.v1.ListAPITokensRequest
+	5,  // 9: stillhouse.v1.APITokenService.RevokeAPIToken:input_type -> stillhouse.v1.RevokeAPITokenRequest
+	7,  // 10: stillhouse.v1.APITokenService.RevokeAllMyAPITokens:input_type -> stillhouse.v1.RevokeAllMyAPITokensRequest
+	2,  // 11: stillhouse.v1.APITokenService.IssueAPIToken:output_type -> stillhouse.v1.IssueAPITokenResponse
+	4,  // 12: stillhouse.v1.APITokenService.ListAPITokens:output_type -> stillhouse.v1.ListAPITokensResponse
+	6,  // 13: stillhouse.v1.APITokenService.RevokeAPIToken:output_type -> stillhouse.v1.RevokeAPITokenResponse
+	8,  // 14: stillhouse.v1.APITokenService.RevokeAllMyAPITokens:output_type -> stillhouse.v1.RevokeAllMyAPITokensResponse
+	11, // [11:15] is the sub-list for method output_type
+	7,  // [7:11] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_api_token_proto_init() }
@@ -458,7 +600,7 @@ func file_stillhouse_v1_api_token_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_api_token_proto_rawDesc), len(file_stillhouse_v1_api_token_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

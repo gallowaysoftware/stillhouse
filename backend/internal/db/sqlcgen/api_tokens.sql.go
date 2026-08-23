@@ -13,24 +13,28 @@ import (
 )
 
 const createAPIToken = `-- name: CreateAPIToken :one
-INSERT INTO api_tokens (token_hash, tenant_id, user_id, name)
-VALUES ($1, $2, $3, $4)
-RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
+INSERT INTO api_tokens (token_hash, tenant_id, user_id, name, expires_at)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at, expires_at
 `
 
 type CreateAPITokenParams struct {
-	TokenHash []byte    `json:"token_hash"`
-	TenantID  uuid.UUID `json:"tenant_id"`
-	UserID    uuid.UUID `json:"user_id"`
-	Name      string    `json:"name"`
+	TokenHash []byte             `json:"token_hash"`
+	TenantID  uuid.UUID          `json:"tenant_id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Name      string             `json:"name"`
+	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
 }
 
+// expires_at NULL means the token never expires. That is a deliberate
+// choice at the RPC layer, not a default — see IssueAPIToken.
 func (q *Queries) CreateAPIToken(ctx context.Context, arg CreateAPITokenParams) (ApiToken, error) {
 	row := q.db.QueryRow(ctx, createAPIToken,
 		arg.TokenHash,
 		arg.TenantID,
 		arg.UserID,
 		arg.Name,
+		arg.ExpiresAt,
 	)
 	var i ApiToken
 	err := row.Scan(
@@ -41,6 +45,7 @@ func (q *Queries) CreateAPIToken(ctx context.Context, arg CreateAPITokenParams) 
 		&i.LastUsedAt,
 		&i.RevokedAt,
 		&i.CreatedAt,
+		&i.ExpiresAt,
 	)
 	return i, err
 }
@@ -101,9 +106,7 @@ func (q *Queries) GetAPITokenByHash(ctx context.Context, tokenHash []byte) (GetA
 }
 
 const getAPITokenRowByHash = `-- name: GetAPITokenRowByHash :one
-SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
-FROM api_tokens
-WHERE token_hash = $1
+SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at, expires_at FROM api_tokens WHERE token_hash = $1
 `
 
 // Like GetAPITokenByHash but doesn't filter on revoked_at; used by the
@@ -119,13 +122,13 @@ func (q *Queries) GetAPITokenRowByHash(ctx context.Context, tokenHash []byte) (A
 		&i.LastUsedAt,
 		&i.RevokedAt,
 		&i.CreatedAt,
+		&i.ExpiresAt,
 	)
 	return i, err
 }
 
 const listAPITokensForUser = `-- name: ListAPITokensForUser :many
-SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
-FROM api_tokens
+SELECT token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at, expires_at FROM api_tokens
 WHERE user_id = $1
 ORDER BY created_at DESC
 `
@@ -147,6 +150,7 @@ func (q *Queries) ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([
 			&i.LastUsedAt,
 			&i.RevokedAt,
 			&i.CreatedAt,
+			&i.ExpiresAt,
 		); err != nil {
 			return nil, err
 		}
@@ -163,7 +167,7 @@ UPDATE api_tokens
 SET revoked_at = NOW()
 WHERE token_hash = $1
   AND revoked_at IS NULL
-RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at
+RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at, expires_at
 `
 
 func (q *Queries) RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error) {
@@ -177,8 +181,49 @@ func (q *Queries) RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToke
 		&i.LastUsedAt,
 		&i.RevokedAt,
 		&i.CreatedAt,
+		&i.ExpiresAt,
 	)
 	return i, err
+}
+
+const revokeAllAPITokensForUser = `-- name: RevokeAllAPITokensForUser :many
+UPDATE api_tokens
+SET revoked_at = NOW()
+WHERE user_id = $1
+  AND revoked_at IS NULL
+RETURNING token_hash, tenant_id, user_id, name, last_used_at, revoked_at, created_at, expires_at
+`
+
+// The "revoke everything" half of a credential reset. Returns the rows it
+// revoked so the caller can report a count and audit it; already-revoked
+// tokens are left alone so the count means what it says.
+func (q *Queries) RevokeAllAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error) {
+	rows, err := q.db.Query(ctx, revokeAllAPITokensForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ApiToken{}
+	for rows.Next() {
+		var i ApiToken
+		if err := rows.Scan(
+			&i.TokenHash,
+			&i.TenantID,
+			&i.UserID,
+			&i.Name,
+			&i.LastUsedAt,
+			&i.RevokedAt,
+			&i.CreatedAt,
+			&i.ExpiresAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const touchAPIToken = `-- name: TouchAPIToken :exec
