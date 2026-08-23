@@ -95,28 +95,12 @@ B269 authorization for separate returns per branch or division. `F1` shipped in
 stage 170, so there is now something to divide by; what is left is the
 authorization itself and a return scoped to one location.
 
-### B6 · Licence security sufficiency — P2
-
-The renewal reminders shipped in stage 162: two-year terms, the 30-day window
-and the s.23 security expiry are all alerts now that `B1` gives them a subject.
-What is left is the part that is not a reminder — whether the posted security is
-*sufficient* to cover amounts owing, which needs the duty liability at a point
-in time rather than a date.
-
 ---
 
 ## Track C — the measurement and audit chain
 
 The one area where Stillhouse is already ahead of everything commercial. These
 finish the job.
-
-### C4 · Certificates of age and origin — P2
-
-Several trading partners require a certificate signed by a Canadian official
-attesting age and origin for exported spirits (EDM3-1-1 ¶43–46). Age is
-computed from original warehousing in small wood to removal for export sale,
-and resets on redistillation. Stillhouse already holds the maturation clock —
-this is the export packet that uses it.
 
 ### C5 · Records retention as a stated policy — P2
 

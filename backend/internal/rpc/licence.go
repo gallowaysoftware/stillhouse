@@ -14,7 +14,9 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/money"
 )
 
 // ListExciseLicences returns the register, ceased entries included.
@@ -224,4 +226,112 @@ func parseOptionalDate(v, field string) (pgtype.Date, error) {
 		return pgtype.Date{}, fmt.Errorf("%s must be YYYY-MM-DD", field)
 	}
 	return pgtype.Date{Valid: true, Time: t}, nil
+}
+
+// SecuritySufficiency sets what the licensee would owe beside what they
+// have posted.
+//
+// Deliberately not a verdict. What security is *required* under s.23 is
+// CRA's determination and turns on things outside Stillhouse; printing a
+// pass or a fail here would be inventing a threshold, which is the same
+// mistake as inventing a rate. What Stillhouse can do is compute the
+// exposure — a figure the licensee otherwise does not have — and say
+// plainly what is in it and what is not.
+func (s *TenantService) SecuritySufficiency(
+	ctx context.Context,
+	_ *connect.Request[stillhousev1.SecuritySufficiencyRequest],
+) (*connect.Response[stillhousev1.SecuritySufficiencyResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	var (
+		licences []sqlcgen.ExciseLicence
+		exposure sqlcgen.DutyExposureAsOfRow
+	)
+	// Duty on returns already submitted is counted back two years, which
+	// is the outer edge of what an unremitted balance plausibly reaches
+	// and matches the licence term the register tracks.
+	since := pgtype.Date{Valid: true, Time: time.Now().UTC().AddDate(-2, 0, 0)}
+	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		if licences, e = q.ListExciseLicences(ctx); e != nil {
+			return e
+		}
+		exposure, e = q.DutyExposureAsOf(ctx, since)
+		return e
+	}); err != nil {
+		s.logger.Error("SecuritySufficiency", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+
+	// The contingent figure needs today's rate. If it cannot be sourced
+	// the LAA is still reported and the money is not, rather than the
+	// total quietly coming up short — see internal/excise.
+	var contingentDuty float64
+	contingentPriced := false
+	if exposure.ContingentLaa > 0 {
+		if band, err := excise.RateOn(time.Now().UTC()); err == nil {
+			// Priced at the over-7 % band, which is every spirit a
+			// distillery packages. A licensee bottling something at or
+			// below 7 % would be charged per litre of product instead,
+			// and this figure would overstate their exposure — the safe
+			// direction for a security comparison.
+			contingentDuty = round2(exposure.ContingentLaa * band.PerLAAOver7Pct)
+			contingentPriced = true
+		}
+	}
+
+	out := &stillhousev1.SecuritySufficiencyResponse{}
+	for _, l := range licences {
+		if l.CeasedOn.Valid {
+			continue
+		}
+		item := &stillhousev1.SecuritySufficiency{
+			LicenceId:         l.ID.String(),
+			LicenceNumber:     l.LicenceNumber,
+			SecurityExpiresOn: formatDate(l.SecurityExpiresOn),
+			FiledDutyCad:      round2(exposure.FiledDuty),
+			UnfiledDutyCad:    round2(exposure.UnfiledDuty),
+			ContingentLaa:     round4(exposure.ContingentLaa),
+			ContingentDutyCad: contingentDuty,
+			ContingentPriced:  contingentPriced,
+			Basis: "Exposure is duty on returns already submitted (whether it has " +
+				"been remitted is not something Stillhouse can know), plus duty " +
+				"crystallised in periods with no submitted return, plus duty that " +
+				"would fall on packaged stock you still hold that was not dutied at " +
+				"packaging. What security s.23 requires is CRA's determination, not " +
+				"this figure — Stillhouse sets the two side by side and stops there.",
+		}
+		item.TotalExposureCad = round2(
+			item.GetFiledDutyCad() + item.GetUnfiledDutyCad() + item.GetContingentDutyCad())
+
+		if l.SecurityAmountCad.Valid {
+			posted := money.FromNumeric(l.SecurityAmountCad)
+			item.SecurityAmountCad = posted.String(2)
+			item.SecurityAmountSet = true
+			item.HeadroomCad = round2(posted.Float() - item.GetTotalExposureCad())
+			item.HeadroomKnown = true
+		} else {
+			item.Caveats = append(item.Caveats,
+				"No security amount is recorded against this licence, so there is "+
+					"nothing to compare the exposure with. It is on the licence "+
+					"itself; record it in the register.")
+		}
+		if !contingentPriced && exposure.ContingentLaa > 0 {
+			item.Caveats = append(item.Caveats, fmt.Sprintf(
+				"%.4f LAA of packaged stock would attract duty on removal, and "+
+					"today's rate could not be sourced, so it is not in the total. "+
+					"The exposure is short by whatever that comes to.",
+				exposure.ContingentLaa))
+		}
+		if item.GetFiledDutyCad() > 0 {
+			item.Caveats = append(item.Caveats,
+				"Duty on submitted returns is included as owing. If you have "+
+					"remitted it, the exposure is smaller by that much — Stillhouse "+
+					"has no way to see a payment to CRA.")
+		}
+		out.Licences = append(out.Licences, item)
+	}
+	return connect.NewResponse(out), nil
 }

@@ -436,6 +436,10 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.MaterialService/MaterialCover":      roleViewer,
 	"/stillhouse.v1.MaterialService/SetMaterialReorder": roleOwner,
 
+	// What is owed against what is posted. A read over figures the
+	// caller can already see, and squarely the accountant's engagement.
+	"/stillhouse.v1.TenantService/SecuritySufficiency": roleViewer,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

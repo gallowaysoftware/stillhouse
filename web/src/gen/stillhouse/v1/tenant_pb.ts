@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/tenant.proto.
  */
 export const file_stillhouse_v1_tenant: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLFBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkSHQoVcmVxdWlyZV9iYXRjaF9yZWxlYXNlGA8gASgIIq4BChNDcmVhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YAyABKAkSEwoLb3duZXJfZW1haWwYBCABKAkSFgoOb3duZXJfcGFzc3dvcmQYBSABKAkSGgoSb3duZXJfZGlzcGxheV9uYW1lGAYgASgJIj0KFENyZWF0ZVRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50IhIKEEdldFRlbmFudFJlcXVlc3QiOgoRR2V0VGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQihQIKG1VwZGF0ZUZpbGluZ0NhbGVuZGFyUmVxdWVzdBI4ChBmaWxpbmdfZnJlcXVlbmN5GAEgASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAIgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAMgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGAQgASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYBSABKAkiRQocVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKOAQoTVXBkYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEicKH2V4Y2lzZV93YXJlaG91c2VfbGljZW5jZV9udW1iZXIYAyABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YBCABKAkiPQoUVXBkYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiLQoVRGVsZXRlTXlUZW5hbnRSZXF1ZXN0EhQKDGNvbmZpcm1fbmFtZRgBIAEoCSIYChZEZWxldGVNeVRlbmFudFJlc3BvbnNlIjIKHlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVxdWVzdBIQCghyZXF1aXJlZBgBIAEoCCIzCh9TZXRCYXRjaFJlbGVhc2VSZXF1aXJlZFJlc3BvbnNlEhAKCHJlcXVpcmVkGAEgASgIIv0BCg1FeGNpc2VMaWNlbmNlEgoKAmlkGAEgASgJEi4KBGtpbmQYAiABKA4yIC5zdGlsbGhvdXNlLnYxLkV4Y2lzZUxpY2VuY2VLaW5kEhYKDmxpY2VuY2VfbnVtYmVyGAMgASgJEhYKDmVmZmVjdGl2ZV9mcm9tGAQgASgJEhIKCmV4cGlyZXNfb24YBSABKAkSEAoIcHJlbWlzZXMYBiABKAkSGwoTc2VjdXJpdHlfYW1vdW50X2NhZBgHIAEoCRIbChNzZWN1cml0eV9leHBpcmVzX29uGAggASgJEg0KBW5vdGVzGAkgASgJEhEKCWNlYXNlZF9vbhgKIAEoCSIbChlMaXN0RXhjaXNlTGljZW5jZXNSZXF1ZXN0ImoKGkxpc3RFeGNpc2VMaWNlbmNlc1Jlc3BvbnNlEi4KCGxpY2VuY2VzGAEgAygLMhwuc3RpbGxob3VzZS52MS5FeGNpc2VMaWNlbmNlEhwKFG1pc3NpbmdfZXhwaXJ5X2NvdW50GAIgASgFIogCChhTYXZlRXhjaXNlTGljZW5jZVJlcXVlc3QSCgoCaWQYASABKAkSLgoEa2luZBgCIAEoDjIgLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZUtpbmQSFgoObGljZW5jZV9udW1iZXIYAyABKAkSFgoOZWZmZWN0aXZlX2Zyb20YBCABKAkSEgoKZXhwaXJlc19vbhgFIAEoCRIQCghwcmVtaXNlcxgGIAEoCRIbChNzZWN1cml0eV9hbW91bnRfY2FkGAcgASgJEhsKE3NlY3VyaXR5X2V4cGlyZXNfb24YCCABKAkSDQoFbm90ZXMYCSABKAkSEQoJY2Vhc2VkX29uGAogASgJIkoKGVNhdmVFeGNpc2VMaWNlbmNlUmVzcG9uc2USLQoHbGljZW5jZRgBIAEoCzIcLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZSpfCglEdXR5UG9pbnQSGgoWRFVUWV9QT0lOVF9VTlNQRUNJRklFRBAAEhsKF0RVVFlfUE9JTlRfQVRfUEFDS0FHSU5HEAESGQoVRFVUWV9QT0lOVF9BVF9SRU1PVkFMEAIqcwoPRmlsaW5nRnJlcXVlbmN5EiAKHEZJTElOR19GUkVRVUVOQ1lfVU5TUEVDSUZJRUQQABIcChhGSUxJTkdfRlJFUVVFTkNZX01PTlRITFkQARIgChxGSUxJTkdfRlJFUVVFTkNZX1NFTUlfQU5OVUFMEAIqiAEKEEZpc2NhbE1vbnRoQmFzaXMSIgoeRklTQ0FMX01PTlRIX0JBU0lTX1VOU1BFQ0lGSUVEEAASJQohRklTQ0FMX01PTlRIX0JBU0lTX0NBTEVOREFSX01PTlRIEAESKQolRklTQ0FMX01PTlRIX0JBU0lTX0ZJWEVEX0RBWV9PRl9NT05USBACKt8BChFFeGNpc2VMaWNlbmNlS2luZBIjCh9FWENJU0VfTElDRU5DRV9LSU5EX1VOU1BFQ0lGSUVEEAASHwobRVhDSVNFX0xJQ0VOQ0VfS0lORF9TUElSSVRTEAESKAokRVhDSVNFX0xJQ0VOQ0VfS0lORF9FWENJU0VfV0FSRUhPVVNFEAISHQoZRVhDSVNFX0xJQ0VOQ0VfS0lORF9VU0VSUxADEhwKGEVYQ0lTRV9MSUNFTkNFX0tJTkRfV0lORRAEEh0KGUVYQ0lTRV9MSUNFTkNFX0tJTkRfT1RIRVIQBTKuBgoNVGVuYW50U2VydmljZRJ4ChdTZXRCYXRjaFJlbGVhc2VSZXF1aXJlZBItLnN0aWxsaG91c2UudjEuU2V0QmF0Y2hSZWxlYXNlUmVxdWlyZWRSZXF1ZXN0Gi4uc3RpbGxob3VzZS52MS5TZXRCYXRjaFJlbGVhc2VSZXF1aXJlZFJlc3BvbnNlEmkKEkxpc3RFeGNpc2VMaWNlbmNlcxIoLnN0aWxsaG91c2UudjEuTGlzdEV4Y2lzZUxpY2VuY2VzUmVxdWVzdBopLnN0aWxsaG91c2UudjEuTGlzdEV4Y2lzZUxpY2VuY2VzUmVzcG9uc2USZgoRU2F2ZUV4Y2lzZUxpY2VuY2USJy5zdGlsbGhvdXNlLnYxLlNhdmVFeGNpc2VMaWNlbmNlUmVxdWVzdBooLnN0aWxsaG91c2UudjEuU2F2ZUV4Y2lzZUxpY2VuY2VSZXNwb25zZRJvChRVcGRhdGVGaWxpbmdDYWxlbmRhchIqLnN0aWxsaG91c2UudjEuVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5VcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZRJXCgxVcGRhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlc3BvbnNlEl0KDkRlbGV0ZU15VGVuYW50EiQuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLFBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkSHQoVcmVxdWlyZV9iYXRjaF9yZWxlYXNlGA8gASgIIq4BChNDcmVhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YAyABKAkSEwoLb3duZXJfZW1haWwYBCABKAkSFgoOb3duZXJfcGFzc3dvcmQYBSABKAkSGgoSb3duZXJfZGlzcGxheV9uYW1lGAYgASgJIj0KFENyZWF0ZVRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50IhIKEEdldFRlbmFudFJlcXVlc3QiOgoRR2V0VGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQihQIKG1VwZGF0ZUZpbGluZ0NhbGVuZGFyUmVxdWVzdBI4ChBmaWxpbmdfZnJlcXVlbmN5GAEgASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAIgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAMgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGAQgASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYBSABKAkiRQocVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKOAQoTVXBkYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEicKH2V4Y2lzZV93YXJlaG91c2VfbGljZW5jZV9udW1iZXIYAyABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YBCABKAkiPQoUVXBkYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiLQoVRGVsZXRlTXlUZW5hbnRSZXF1ZXN0EhQKDGNvbmZpcm1fbmFtZRgBIAEoCSIYChZEZWxldGVNeVRlbmFudFJlc3BvbnNlIjIKHlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVxdWVzdBIQCghyZXF1aXJlZBgBIAEoCCIzCh9TZXRCYXRjaFJlbGVhc2VSZXF1aXJlZFJlc3BvbnNlEhAKCHJlcXVpcmVkGAEgASgIIv0BCg1FeGNpc2VMaWNlbmNlEgoKAmlkGAEgASgJEi4KBGtpbmQYAiABKA4yIC5zdGlsbGhvdXNlLnYxLkV4Y2lzZUxpY2VuY2VLaW5kEhYKDmxpY2VuY2VfbnVtYmVyGAMgASgJEhYKDmVmZmVjdGl2ZV9mcm9tGAQgASgJEhIKCmV4cGlyZXNfb24YBSABKAkSEAoIcHJlbWlzZXMYBiABKAkSGwoTc2VjdXJpdHlfYW1vdW50X2NhZBgHIAEoCRIbChNzZWN1cml0eV9leHBpcmVzX29uGAggASgJEg0KBW5vdGVzGAkgASgJEhEKCWNlYXNlZF9vbhgKIAEoCSIbChlMaXN0RXhjaXNlTGljZW5jZXNSZXF1ZXN0ImoKGkxpc3RFeGNpc2VMaWNlbmNlc1Jlc3BvbnNlEi4KCGxpY2VuY2VzGAEgAygLMhwuc3RpbGxob3VzZS52MS5FeGNpc2VMaWNlbmNlEhwKFG1pc3NpbmdfZXhwaXJ5X2NvdW50GAIgASgFIogCChhTYXZlRXhjaXNlTGljZW5jZVJlcXVlc3QSCgoCaWQYASABKAkSLgoEa2luZBgCIAEoDjIgLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZUtpbmQSFgoObGljZW5jZV9udW1iZXIYAyABKAkSFgoOZWZmZWN0aXZlX2Zyb20YBCABKAkSEgoKZXhwaXJlc19vbhgFIAEoCRIQCghwcmVtaXNlcxgGIAEoCRIbChNzZWN1cml0eV9hbW91bnRfY2FkGAcgASgJEhsKE3NlY3VyaXR5X2V4cGlyZXNfb24YCCABKAkSDQoFbm90ZXMYCSABKAkSEQoJY2Vhc2VkX29uGAogASgJIkoKGVNhdmVFeGNpc2VMaWNlbmNlUmVzcG9uc2USLQoHbGljZW5jZRgBIAEoCzIcLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZSKEAwoTU2VjdXJpdHlTdWZmaWNpZW5jeRISCgpsaWNlbmNlX2lkGAEgASgJEhYKDmxpY2VuY2VfbnVtYmVyGAIgASgJEhsKE3NlY3VyaXR5X2Ftb3VudF9jYWQYAyABKAkSGwoTc2VjdXJpdHlfYW1vdW50X3NldBgEIAEoCBIbChNzZWN1cml0eV9leHBpcmVzX29uGAUgASgJEhYKDmZpbGVkX2R1dHlfY2FkGAYgASgBEhgKEHVuZmlsZWRfZHV0eV9jYWQYByABKAESFgoOY29udGluZ2VudF9sYWEYCCABKAESGwoTY29udGluZ2VudF9kdXR5X2NhZBgJIAEoARIZChFjb250aW5nZW50X3ByaWNlZBgKIAEoCBIaChJ0b3RhbF9leHBvc3VyZV9jYWQYCyABKAESFAoMaGVhZHJvb21fY2FkGAwgASgBEhYKDmhlYWRyb29tX2tub3duGA0gASgIEg0KBWJhc2lzGA4gASgJEg8KB2NhdmVhdHMYDyADKAkiHAoaU2VjdXJpdHlTdWZmaWNpZW5jeVJlcXVlc3QiUwobU2VjdXJpdHlTdWZmaWNpZW5jeVJlc3BvbnNlEjQKCGxpY2VuY2VzGAEgAygLMiIuc3RpbGxob3VzZS52MS5TZWN1cml0eVN1ZmZpY2llbmN5Kl8KCUR1dHlQb2ludBIaChZEVVRZX1BPSU5UX1VOU1BFQ0lGSUVEEAASGwoXRFVUWV9QT0lOVF9BVF9QQUNLQUdJTkcQARIZChVEVVRZX1BPSU5UX0FUX1JFTU9WQUwQAipzCg9GaWxpbmdGcmVxdWVuY3kSIAocRklMSU5HX0ZSRVFVRU5DWV9VTlNQRUNJRklFRBAAEhwKGEZJTElOR19GUkVRVUVOQ1lfTU9OVEhMWRABEiAKHEZJTElOR19GUkVRVUVOQ1lfU0VNSV9BTk5VQUwQAiqIAQoQRmlzY2FsTW9udGhCYXNpcxIiCh5GSVNDQUxfTU9OVEhfQkFTSVNfVU5TUEVDSUZJRUQQABIlCiFGSVNDQUxfTU9OVEhfQkFTSVNfQ0FMRU5EQVJfTU9OVEgQARIpCiVGSVNDQUxfTU9OVEhfQkFTSVNfRklYRURfREFZX09GX01PTlRIEAIq3wEKEUV4Y2lzZUxpY2VuY2VLaW5kEiMKH0VYQ0lTRV9MSUNFTkNFX0tJTkRfVU5TUEVDSUZJRUQQABIfChtFWENJU0VfTElDRU5DRV9LSU5EX1NQSVJJVFMQARIoCiRFWENJU0VfTElDRU5DRV9LSU5EX0VYQ0lTRV9XQVJFSE9VU0UQAhIdChlFWENJU0VfTElDRU5DRV9LSU5EX1VTRVJTEAMSHAoYRVhDSVNFX0xJQ0VOQ0VfS0lORF9XSU5FEAQSHQoZRVhDSVNFX0xJQ0VOQ0VfS0lORF9PVEhFUhAFMpwHCg1UZW5hbnRTZXJ2aWNlEmwKE1NlY3VyaXR5U3VmZmljaWVuY3kSKS5zdGlsbGhvdXNlLnYxLlNlY3VyaXR5U3VmZmljaWVuY3lSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5TZWN1cml0eVN1ZmZpY2llbmN5UmVzcG9uc2USeAoXU2V0QmF0Y2hSZWxlYXNlUmVxdWlyZWQSLS5zdGlsbGhvdXNlLnYxLlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVxdWVzdBouLnN0aWxsaG91c2UudjEuU2V0QmF0Y2hSZWxlYXNlUmVxdWlyZWRSZXNwb25zZRJpChJMaXN0RXhjaXNlTGljZW5jZXMSKC5zdGlsbGhvdXNlLnYxLkxpc3RFeGNpc2VMaWNlbmNlc1JlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLkxpc3RFeGNpc2VMaWNlbmNlc1Jlc3BvbnNlEmYKEVNhdmVFeGNpc2VMaWNlbmNlEicuc3RpbGxob3VzZS52MS5TYXZlRXhjaXNlTGljZW5jZVJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNhdmVFeGNpc2VMaWNlbmNlUmVzcG9uc2USbwoUVXBkYXRlRmlsaW5nQ2FsZW5kYXISKi5zdGlsbGhvdXNlLnYxLlVwZGF0ZUZpbGluZ0NhbGVuZGFyUmVxdWVzdBorLnN0aWxsaG91c2UudjEuVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXNwb25zZRJXCgxDcmVhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVRlbmFudFJlc3BvbnNlEk4KCUdldFRlbmFudBIfLnN0aWxsaG91c2UudjEuR2V0VGVuYW50UmVxdWVzdBogLnN0aWxsaG91c2UudjEuR2V0VGVuYW50UmVzcG9uc2USVwoMVXBkYXRlVGVuYW50EiIuc3RpbGxob3VzZS52MS5VcGRhdGVUZW5hbnRSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5VcGRhdGVUZW5hbnRSZXNwb25zZRJdCg5EZWxldGVNeVRlbmFudBIkLnN0aWxsaG91c2UudjEuRGVsZXRlTXlUZW5hbnRSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Tenant
@@ -595,6 +595,154 @@ export const SaveExciseLicenceResponseSchema: GenMessage<SaveExciseLicenceRespon
   messageDesc(file_stillhouse_v1_tenant, 17);
 
 /**
+ * What the licensee would owe if everything crystallised now, set beside
+ * the security actually posted.
+ *
+ * Stillhouse does not decide what security is *required*. That is CRA's
+ * determination under s.23 and turns on things outside this system —
+ * which is why the response says so rather than printing a verdict. What
+ * it can do is compute the exposure, which is otherwise a figure nobody
+ * has.
+ *
+ * @generated from message stillhouse.v1.SecuritySufficiency
+ */
+export type SecuritySufficiency = Message<"stillhouse.v1.SecuritySufficiency"> & {
+  /**
+   * @generated from field: string licence_id = 1;
+   */
+  licenceId: string;
+
+  /**
+   * @generated from field: string licence_number = 2;
+   */
+  licenceNumber: string;
+
+  /**
+   * Posted under s.23. Absent when the register has no figure, which is
+   * different from a security of nothing.
+   *
+   * @generated from field: string security_amount_cad = 3;
+   */
+  securityAmountCad: string;
+
+  /**
+   * @generated from field: bool security_amount_set = 4;
+   */
+  securityAmountSet: boolean;
+
+  /**
+   * @generated from field: string security_expires_on = 5;
+   */
+  securityExpiresOn: string;
+
+  /**
+   * Duty on returns already submitted. Whether it has actually been
+   * remitted is not something Stillhouse can know, so it is reported and
+   * labelled rather than assumed paid.
+   *
+   * @generated from field: double filed_duty_cad = 6;
+   */
+  filedDutyCad: number;
+
+  /**
+   * Duty crystallised in periods with no submitted return.
+   *
+   * @generated from field: double unfiled_duty_cad = 7;
+   */
+  unfiledDutyCad: number;
+
+  /**
+   * Not yet crystallised: packaged stock still held that was not dutied
+   * at packaging, so duty falls when it leaves.
+   *
+   * @generated from field: double contingent_laa = 8;
+   */
+  contingentLaa: number;
+
+  /**
+   * @generated from field: double contingent_duty_cad = 9;
+   */
+  contingentDutyCad: number;
+
+  /**
+   * Whether the contingent figure could be priced at all. False when the
+   * rate for today cannot be sourced, in which case it is zero and the
+   * note says why rather than the total quietly being short.
+   *
+   * @generated from field: bool contingent_priced = 10;
+   */
+  contingentPriced: boolean;
+
+  /**
+   * @generated from field: double total_exposure_cad = 11;
+   */
+  totalExposureCad: number;
+
+  /**
+   * Posted security less the exposure. Negative means the exposure is
+   * larger; it is not a statement that the security is insufficient,
+   * which only CRA can make.
+   *
+   * @generated from field: double headroom_cad = 12;
+   */
+  headroomCad: number;
+
+  /**
+   * @generated from field: bool headroom_known = 13;
+   */
+  headroomKnown: boolean;
+
+  /**
+   * What this figure is and is not. Never empty.
+   *
+   * @generated from field: string basis = 14;
+   */
+  basis: string;
+
+  /**
+   * @generated from field: repeated string caveats = 15;
+   */
+  caveats: string[];
+};
+
+/**
+ * Describes the message stillhouse.v1.SecuritySufficiency.
+ * Use `create(SecuritySufficiencySchema)` to create a new message.
+ */
+export const SecuritySufficiencySchema: GenMessage<SecuritySufficiency> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 18);
+
+/**
+ * @generated from message stillhouse.v1.SecuritySufficiencyRequest
+ */
+export type SecuritySufficiencyRequest = Message<"stillhouse.v1.SecuritySufficiencyRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.SecuritySufficiencyRequest.
+ * Use `create(SecuritySufficiencyRequestSchema)` to create a new message.
+ */
+export const SecuritySufficiencyRequestSchema: GenMessage<SecuritySufficiencyRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 19);
+
+/**
+ * @generated from message stillhouse.v1.SecuritySufficiencyResponse
+ */
+export type SecuritySufficiencyResponse = Message<"stillhouse.v1.SecuritySufficiencyResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.SecuritySufficiency licences = 1;
+   */
+  licences: SecuritySufficiency[];
+};
+
+/**
+ * Describes the message stillhouse.v1.SecuritySufficiencyResponse.
+ * Use `create(SecuritySufficiencyResponseSchema)` to create a new message.
+ */
+export const SecuritySufficiencyResponseSchema: GenMessage<SecuritySufficiencyResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 20);
+
+/**
  * DutyPoint is the event at which excise duty becomes payable.
  *
  * It is derived from whether the tenant holds an excise warehouse licence,
@@ -750,6 +898,14 @@ export const ExciseLicenceKindSchema: GenEnum<ExciseLicenceKind> = /*@__PURE__*/
  * @generated from service stillhouse.v1.TenantService
  */
 export const TenantService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.TenantService.SecuritySufficiency
+   */
+  securitySufficiency: {
+    methodKind: "unary";
+    input: typeof SecuritySufficiencyRequestSchema;
+    output: typeof SecuritySufficiencyResponseSchema;
+  },
   /**
    * @generated from rpc stillhouse.v1.TenantService.SetBatchReleaseRequired
    */

@@ -188,7 +188,57 @@ message SaveExciseLicenceRequest {
 }
 message SaveExciseLicenceResponse { ExciseLicence licence = 1; }
 
+// What the licensee would owe if everything crystallised now, set beside
+// the security actually posted.
+//
+// Stillhouse does not decide what security is *required*. That is CRA's
+// determination under s.23 and turns on things outside this system —
+// which is why the response says so rather than printing a verdict. What
+// it can do is compute the exposure, which is otherwise a figure nobody
+// has.
+message SecuritySufficiency {
+  string licence_id = 1;
+  string licence_number = 2;
+  // Posted under s.23. Absent when the register has no figure, which is
+  // different from a security of nothing.
+  string security_amount_cad = 3;
+  bool   security_amount_set = 4;
+  string security_expires_on = 5;
+
+  // Duty on returns already submitted. Whether it has actually been
+  // remitted is not something Stillhouse can know, so it is reported and
+  // labelled rather than assumed paid.
+  double filed_duty_cad = 6;
+  // Duty crystallised in periods with no submitted return.
+  double unfiled_duty_cad = 7;
+  // Not yet crystallised: packaged stock still held that was not dutied
+  // at packaging, so duty falls when it leaves.
+  double contingent_laa = 8;
+  double contingent_duty_cad = 9;
+  // Whether the contingent figure could be priced at all. False when the
+  // rate for today cannot be sourced, in which case it is zero and the
+  // note says why rather than the total quietly being short.
+  bool   contingent_priced = 10;
+
+  double total_exposure_cad = 11;
+  // Posted security less the exposure. Negative means the exposure is
+  // larger; it is not a statement that the security is insufficient,
+  // which only CRA can make.
+  double headroom_cad = 12;
+  bool   headroom_known = 13;
+
+  // What this figure is and is not. Never empty.
+  string basis = 14;
+  repeated string caveats = 15;
+}
+
+message SecuritySufficiencyRequest {}
+message SecuritySufficiencyResponse {
+  repeated SecuritySufficiency licences = 1;
+}
+
 service TenantService {
+  rpc SecuritySufficiency(SecuritySufficiencyRequest) returns (SecuritySufficiencyResponse);
   rpc SetBatchReleaseRequired(SetBatchReleaseRequiredRequest) returns (SetBatchReleaseRequiredResponse);
   rpc ListExciseLicences(ListExciseLicencesRequest) returns (ListExciseLicencesResponse);
   rpc SaveExciseLicence(SaveExciseLicenceRequest) returns (SaveExciseLicenceResponse);

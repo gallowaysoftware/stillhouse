@@ -9,6 +9,7 @@ import { BuildPanel } from "@/components/BuildPanel";
 import { MFAPanel } from "@/components/MFAPanel";
 import { AlertEmailPanel } from "@/components/AlertEmailPanel";
 import { LicenceRegisterPanel } from "@/components/LicenceRegisterPanel";
+import { SecurityPanel } from "@/components/SecurityPanel";
 import { LocationsPanel } from "@/components/LocationsPanel";
 import { BatchReleaseSettingPanel } from "@/components/BatchReleaseSettingPanel";
 import { Shell } from "@/components/Shell";
@@ -267,6 +268,7 @@ export function SettingsPage() {
       <BatchReleaseSettingPanel />
 
       <LicenceRegisterPanel />
+      <SecurityPanel />
 
       <LocationsPanel />
 

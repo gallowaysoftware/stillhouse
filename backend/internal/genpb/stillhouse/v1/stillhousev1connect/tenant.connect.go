@@ -36,6 +36,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// TenantServiceSecuritySufficiencyProcedure is the fully-qualified name of the TenantService's
+	// SecuritySufficiency RPC.
+	TenantServiceSecuritySufficiencyProcedure = "/stillhouse.v1.TenantService/SecuritySufficiency"
 	// TenantServiceSetBatchReleaseRequiredProcedure is the fully-qualified name of the TenantService's
 	// SetBatchReleaseRequired RPC.
 	TenantServiceSetBatchReleaseRequiredProcedure = "/stillhouse.v1.TenantService/SetBatchReleaseRequired"
@@ -63,6 +66,7 @@ const (
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
 type TenantServiceClient interface {
+	SecuritySufficiency(context.Context, *connect.Request[v1.SecuritySufficiencyRequest]) (*connect.Response[v1.SecuritySufficiencyResponse], error)
 	SetBatchReleaseRequired(context.Context, *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error)
 	ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error)
 	SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error)
@@ -84,6 +88,12 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 	baseURL = strings.TrimRight(baseURL, "/")
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
 	return &tenantServiceClient{
+		securitySufficiency: connect.NewClient[v1.SecuritySufficiencyRequest, v1.SecuritySufficiencyResponse](
+			httpClient,
+			baseURL+TenantServiceSecuritySufficiencyProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("SecuritySufficiency")),
+			connect.WithClientOptions(opts...),
+		),
 		setBatchReleaseRequired: connect.NewClient[v1.SetBatchReleaseRequiredRequest, v1.SetBatchReleaseRequiredResponse](
 			httpClient,
 			baseURL+TenantServiceSetBatchReleaseRequiredProcedure,
@@ -137,6 +147,7 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // tenantServiceClient implements TenantServiceClient.
 type tenantServiceClient struct {
+	securitySufficiency     *connect.Client[v1.SecuritySufficiencyRequest, v1.SecuritySufficiencyResponse]
 	setBatchReleaseRequired *connect.Client[v1.SetBatchReleaseRequiredRequest, v1.SetBatchReleaseRequiredResponse]
 	listExciseLicences      *connect.Client[v1.ListExciseLicencesRequest, v1.ListExciseLicencesResponse]
 	saveExciseLicence       *connect.Client[v1.SaveExciseLicenceRequest, v1.SaveExciseLicenceResponse]
@@ -145,6 +156,11 @@ type tenantServiceClient struct {
 	getTenant               *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
 	updateTenant            *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
 	deleteMyTenant          *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+}
+
+// SecuritySufficiency calls stillhouse.v1.TenantService.SecuritySufficiency.
+func (c *tenantServiceClient) SecuritySufficiency(ctx context.Context, req *connect.Request[v1.SecuritySufficiencyRequest]) (*connect.Response[v1.SecuritySufficiencyResponse], error) {
+	return c.securitySufficiency.CallUnary(ctx, req)
 }
 
 // SetBatchReleaseRequired calls stillhouse.v1.TenantService.SetBatchReleaseRequired.
@@ -189,6 +205,7 @@ func (c *tenantServiceClient) DeleteMyTenant(ctx context.Context, req *connect.R
 
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
+	SecuritySufficiency(context.Context, *connect.Request[v1.SecuritySufficiencyRequest]) (*connect.Response[v1.SecuritySufficiencyResponse], error)
 	SetBatchReleaseRequired(context.Context, *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error)
 	ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error)
 	SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error)
@@ -206,6 +223,12 @@ type TenantServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
+	tenantServiceSecuritySufficiencyHandler := connect.NewUnaryHandler(
+		TenantServiceSecuritySufficiencyProcedure,
+		svc.SecuritySufficiency,
+		connect.WithSchema(tenantServiceMethods.ByName("SecuritySufficiency")),
+		connect.WithHandlerOptions(opts...),
+	)
 	tenantServiceSetBatchReleaseRequiredHandler := connect.NewUnaryHandler(
 		TenantServiceSetBatchReleaseRequiredProcedure,
 		svc.SetBatchReleaseRequired,
@@ -256,6 +279,8 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case TenantServiceSecuritySufficiencyProcedure:
+			tenantServiceSecuritySufficiencyHandler.ServeHTTP(w, r)
 		case TenantServiceSetBatchReleaseRequiredProcedure:
 			tenantServiceSetBatchReleaseRequiredHandler.ServeHTTP(w, r)
 		case TenantServiceListExciseLicencesProcedure:
@@ -280,6 +305,10 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 
 // UnimplementedTenantServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTenantServiceHandler struct{}
+
+func (UnimplementedTenantServiceHandler) SecuritySufficiency(context.Context, *connect.Request[v1.SecuritySufficiencyRequest]) (*connect.Response[v1.SecuritySufficiencyResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.SecuritySufficiency is not implemented"))
+}
 
 func (UnimplementedTenantServiceHandler) SetBatchReleaseRequired(context.Context, *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.SetBatchReleaseRequired is not implemented"))

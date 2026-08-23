@@ -1,0 +1,62 @@
+
+-- name: DutyExposureAsOf :one
+-- What the licensee would owe if everything crystallised now.
+--
+-- Three parts, each a figure Stillhouse already computes for its own
+-- reasons, brought together so a security amount can be set beside
+-- something rather than beside nothing:
+--
+--   filed_unpaid    duty on returns that have been submitted. Whether it
+--                   has actually been remitted is not something Stillhouse
+--                   can know, so it is reported as owing and labelled.
+--   unfiled         duty crystallised in periods with no submitted return.
+--   contingent      duty that has not crystallised yet but would, on
+--                   packaged stock the licensee still holds that was not
+--                   dutied at packaging.
+--
+-- Stillhouse does not decide what security is *required* — that is CRA's
+-- determination under s.23 and depends on things outside this system. It
+-- computes the exposure and shows it beside what is posted.
+WITH filed AS (
+    SELECT COALESCE(SUM((snapshot->>'dutyPayableCad')::numeric), 0)::double precision AS duty
+    FROM b266_periods
+    WHERE status = 'submitted'
+      AND snapshot IS NOT NULL
+      AND period_end >= sqlc.arg(since)::date
+), crystallised AS (
+    -- Duty taken at packaging, in periods with no submitted return.
+    SELECT COALESCE(SUM(br.duty_amount_cad), 0)::double precision AS duty
+    FROM bottling_runs br
+    WHERE br.voided_at IS NULL
+      AND br.duty_amount_cad IS NOT NULL
+      AND NOT EXISTS (
+          SELECT 1 FROM b266_periods p
+          WHERE p.status = 'submitted'
+            AND br.bottling_date BETWEEN p.period_start AND p.period_end
+      )
+), removed AS (
+    -- Duty taken at removal, in periods with no submitted return.
+    SELECT COALESCE(SUM(r.duty_amount_cad), 0)::double precision AS duty
+    FROM packaging_removals r
+    WHERE r.voided_at IS NULL
+      AND NOT EXISTS (
+          SELECT 1 FROM b266_periods p
+          WHERE p.status = 'submitted'
+            AND r.removal_date BETWEEN p.period_start AND p.period_end
+      )
+), contingent AS (
+    -- Packaged stock still on hand whose bottling run took no duty: it
+    -- will be dutied when it leaves.
+    SELECT COALESCE(SUM(pi.bottles_on_hand * p.bottle_size_ml / 1000.0
+                        * p.target_abv_pct / 100.0), 0)::double precision AS laa
+    FROM packaged_inventory pi
+    JOIN products p ON p.id = pi.product_id
+    LEFT JOIN bottling_runs br ON br.id = pi.bottling_run_id
+    WHERE pi.bottles_on_hand > 0
+      AND pi.owner_customer_id IS NULL
+      AND (br.id IS NULL OR br.duty_amount_cad IS NULL)
+)
+SELECT filed.duty::double precision        AS filed_duty,
+       (crystallised.duty + removed.duty)::double precision AS unfiled_duty,
+       contingent.laa::double precision    AS contingent_laa
+FROM filed, crystallised, removed, contingent;

@@ -265,6 +265,24 @@ type Querier interface {
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
 	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error)
+	// What the licensee would owe if everything crystallised now.
+	//
+	// Three parts, each a figure Stillhouse already computes for its own
+	// reasons, brought together so a security amount can be set beside
+	// something rather than beside nothing:
+	//
+	//   filed_unpaid    duty on returns that have been submitted. Whether it
+	//                   has actually been remitted is not something Stillhouse
+	//                   can know, so it is reported as owing and labelled.
+	//   unfiled         duty crystallised in periods with no submitted return.
+	//   contingent      duty that has not crystallised yet but would, on
+	//                   packaged stock the licensee still holds that was not
+	//                   dutied at packaging.
+	//
+	// Stillhouse does not decide what security is *required* — that is CRA's
+	// determination under s.23 and depends on things outside this system. It
+	// computes the exposure and shows it beside what is posted.
+	DutyExposureAsOf(ctx context.Context, since pgtype.Date) (DutyExposureAsOfRow, error)
 	EquipmentDown(ctx context.Context) ([]EquipmentDownRow, error)
 	// What runs on this actually took, from the work orders that recorded a
 	// start and a finish. The estimate F3 will need comes from here rather

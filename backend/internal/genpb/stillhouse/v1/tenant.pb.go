@@ -1412,6 +1412,265 @@ func (x *SaveExciseLicenceResponse) GetLicence() *ExciseLicence {
 	return nil
 }
 
+// What the licensee would owe if everything crystallised now, set beside
+// the security actually posted.
+//
+// Stillhouse does not decide what security is *required*. That is CRA's
+// determination under s.23 and turns on things outside this system —
+// which is why the response says so rather than printing a verdict. What
+// it can do is compute the exposure, which is otherwise a figure nobody
+// has.
+type SecuritySufficiency struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	LicenceId     string                 `protobuf:"bytes,1,opt,name=licence_id,json=licenceId,proto3" json:"licence_id,omitempty"`
+	LicenceNumber string                 `protobuf:"bytes,2,opt,name=licence_number,json=licenceNumber,proto3" json:"licence_number,omitempty"`
+	// Posted under s.23. Absent when the register has no figure, which is
+	// different from a security of nothing.
+	SecurityAmountCad string `protobuf:"bytes,3,opt,name=security_amount_cad,json=securityAmountCad,proto3" json:"security_amount_cad,omitempty"`
+	SecurityAmountSet bool   `protobuf:"varint,4,opt,name=security_amount_set,json=securityAmountSet,proto3" json:"security_amount_set,omitempty"`
+	SecurityExpiresOn string `protobuf:"bytes,5,opt,name=security_expires_on,json=securityExpiresOn,proto3" json:"security_expires_on,omitempty"`
+	// Duty on returns already submitted. Whether it has actually been
+	// remitted is not something Stillhouse can know, so it is reported and
+	// labelled rather than assumed paid.
+	FiledDutyCad float64 `protobuf:"fixed64,6,opt,name=filed_duty_cad,json=filedDutyCad,proto3" json:"filed_duty_cad,omitempty"`
+	// Duty crystallised in periods with no submitted return.
+	UnfiledDutyCad float64 `protobuf:"fixed64,7,opt,name=unfiled_duty_cad,json=unfiledDutyCad,proto3" json:"unfiled_duty_cad,omitempty"`
+	// Not yet crystallised: packaged stock still held that was not dutied
+	// at packaging, so duty falls when it leaves.
+	ContingentLaa     float64 `protobuf:"fixed64,8,opt,name=contingent_laa,json=contingentLaa,proto3" json:"contingent_laa,omitempty"`
+	ContingentDutyCad float64 `protobuf:"fixed64,9,opt,name=contingent_duty_cad,json=contingentDutyCad,proto3" json:"contingent_duty_cad,omitempty"`
+	// Whether the contingent figure could be priced at all. False when the
+	// rate for today cannot be sourced, in which case it is zero and the
+	// note says why rather than the total quietly being short.
+	ContingentPriced bool    `protobuf:"varint,10,opt,name=contingent_priced,json=contingentPriced,proto3" json:"contingent_priced,omitempty"`
+	TotalExposureCad float64 `protobuf:"fixed64,11,opt,name=total_exposure_cad,json=totalExposureCad,proto3" json:"total_exposure_cad,omitempty"`
+	// Posted security less the exposure. Negative means the exposure is
+	// larger; it is not a statement that the security is insufficient,
+	// which only CRA can make.
+	HeadroomCad   float64 `protobuf:"fixed64,12,opt,name=headroom_cad,json=headroomCad,proto3" json:"headroom_cad,omitempty"`
+	HeadroomKnown bool    `protobuf:"varint,13,opt,name=headroom_known,json=headroomKnown,proto3" json:"headroom_known,omitempty"`
+	// What this figure is and is not. Never empty.
+	Basis         string   `protobuf:"bytes,14,opt,name=basis,proto3" json:"basis,omitempty"`
+	Caveats       []string `protobuf:"bytes,15,rep,name=caveats,proto3" json:"caveats,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SecuritySufficiency) Reset() {
+	*x = SecuritySufficiency{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SecuritySufficiency) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecuritySufficiency) ProtoMessage() {}
+
+func (x *SecuritySufficiency) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecuritySufficiency.ProtoReflect.Descriptor instead.
+func (*SecuritySufficiency) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SecuritySufficiency) GetLicenceId() string {
+	if x != nil {
+		return x.LicenceId
+	}
+	return ""
+}
+
+func (x *SecuritySufficiency) GetLicenceNumber() string {
+	if x != nil {
+		return x.LicenceNumber
+	}
+	return ""
+}
+
+func (x *SecuritySufficiency) GetSecurityAmountCad() string {
+	if x != nil {
+		return x.SecurityAmountCad
+	}
+	return ""
+}
+
+func (x *SecuritySufficiency) GetSecurityAmountSet() bool {
+	if x != nil {
+		return x.SecurityAmountSet
+	}
+	return false
+}
+
+func (x *SecuritySufficiency) GetSecurityExpiresOn() string {
+	if x != nil {
+		return x.SecurityExpiresOn
+	}
+	return ""
+}
+
+func (x *SecuritySufficiency) GetFiledDutyCad() float64 {
+	if x != nil {
+		return x.FiledDutyCad
+	}
+	return 0
+}
+
+func (x *SecuritySufficiency) GetUnfiledDutyCad() float64 {
+	if x != nil {
+		return x.UnfiledDutyCad
+	}
+	return 0
+}
+
+func (x *SecuritySufficiency) GetContingentLaa() float64 {
+	if x != nil {
+		return x.ContingentLaa
+	}
+	return 0
+}
+
+func (x *SecuritySufficiency) GetContingentDutyCad() float64 {
+	if x != nil {
+		return x.ContingentDutyCad
+	}
+	return 0
+}
+
+func (x *SecuritySufficiency) GetContingentPriced() bool {
+	if x != nil {
+		return x.ContingentPriced
+	}
+	return false
+}
+
+func (x *SecuritySufficiency) GetTotalExposureCad() float64 {
+	if x != nil {
+		return x.TotalExposureCad
+	}
+	return 0
+}
+
+func (x *SecuritySufficiency) GetHeadroomCad() float64 {
+	if x != nil {
+		return x.HeadroomCad
+	}
+	return 0
+}
+
+func (x *SecuritySufficiency) GetHeadroomKnown() bool {
+	if x != nil {
+		return x.HeadroomKnown
+	}
+	return false
+}
+
+func (x *SecuritySufficiency) GetBasis() string {
+	if x != nil {
+		return x.Basis
+	}
+	return ""
+}
+
+func (x *SecuritySufficiency) GetCaveats() []string {
+	if x != nil {
+		return x.Caveats
+	}
+	return nil
+}
+
+type SecuritySufficiencyRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SecuritySufficiencyRequest) Reset() {
+	*x = SecuritySufficiencyRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SecuritySufficiencyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecuritySufficiencyRequest) ProtoMessage() {}
+
+func (x *SecuritySufficiencyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecuritySufficiencyRequest.ProtoReflect.Descriptor instead.
+func (*SecuritySufficiencyRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{19}
+}
+
+type SecuritySufficiencyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Licences      []*SecuritySufficiency `protobuf:"bytes,1,rep,name=licences,proto3" json:"licences,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SecuritySufficiencyResponse) Reset() {
+	*x = SecuritySufficiencyResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SecuritySufficiencyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SecuritySufficiencyResponse) ProtoMessage() {}
+
+func (x *SecuritySufficiencyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SecuritySufficiencyResponse.ProtoReflect.Descriptor instead.
+func (*SecuritySufficiencyResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *SecuritySufficiencyResponse) GetLicences() []*SecuritySufficiency {
+	if x != nil {
+		return x.Licences
+	}
+	return nil
+}
+
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
@@ -1503,7 +1762,28 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\tceased_on\x18\n" +
 	" \x01(\tR\bceasedOn\"S\n" +
 	"\x19SaveExciseLicenceResponse\x126\n" +
-	"\alicence\x18\x01 \x01(\v2\x1c.stillhouse.v1.ExciseLicenceR\alicence*_\n" +
+	"\alicence\x18\x01 \x01(\v2\x1c.stillhouse.v1.ExciseLicenceR\alicence\"\xe7\x04\n" +
+	"\x13SecuritySufficiency\x12\x1d\n" +
+	"\n" +
+	"licence_id\x18\x01 \x01(\tR\tlicenceId\x12%\n" +
+	"\x0elicence_number\x18\x02 \x01(\tR\rlicenceNumber\x12.\n" +
+	"\x13security_amount_cad\x18\x03 \x01(\tR\x11securityAmountCad\x12.\n" +
+	"\x13security_amount_set\x18\x04 \x01(\bR\x11securityAmountSet\x12.\n" +
+	"\x13security_expires_on\x18\x05 \x01(\tR\x11securityExpiresOn\x12$\n" +
+	"\x0efiled_duty_cad\x18\x06 \x01(\x01R\ffiledDutyCad\x12(\n" +
+	"\x10unfiled_duty_cad\x18\a \x01(\x01R\x0eunfiledDutyCad\x12%\n" +
+	"\x0econtingent_laa\x18\b \x01(\x01R\rcontingentLaa\x12.\n" +
+	"\x13contingent_duty_cad\x18\t \x01(\x01R\x11contingentDutyCad\x12+\n" +
+	"\x11contingent_priced\x18\n" +
+	" \x01(\bR\x10contingentPriced\x12,\n" +
+	"\x12total_exposure_cad\x18\v \x01(\x01R\x10totalExposureCad\x12!\n" +
+	"\fheadroom_cad\x18\f \x01(\x01R\vheadroomCad\x12%\n" +
+	"\x0eheadroom_known\x18\r \x01(\bR\rheadroomKnown\x12\x14\n" +
+	"\x05basis\x18\x0e \x01(\tR\x05basis\x12\x18\n" +
+	"\acaveats\x18\x0f \x03(\tR\acaveats\"\x1c\n" +
+	"\x1aSecuritySufficiencyRequest\"]\n" +
+	"\x1bSecuritySufficiencyResponse\x12>\n" +
+	"\blicences\x18\x01 \x03(\v2\".stillhouse.v1.SecuritySufficiencyR\blicences*_\n" +
 	"\tDutyPoint\x12\x1a\n" +
 	"\x16DUTY_POINT_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17DUTY_POINT_AT_PACKAGING\x10\x01\x12\x19\n" +
@@ -1522,8 +1802,9 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"$EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE\x10\x02\x12\x1d\n" +
 	"\x19EXCISE_LICENCE_KIND_USERS\x10\x03\x12\x1c\n" +
 	"\x18EXCISE_LICENCE_KIND_WINE\x10\x04\x12\x1d\n" +
-	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\xae\x06\n" +
-	"\rTenantService\x12x\n" +
+	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\x9c\a\n" +
+	"\rTenantService\x12l\n" +
+	"\x13SecuritySufficiency\x12).stillhouse.v1.SecuritySufficiencyRequest\x1a*.stillhouse.v1.SecuritySufficiencyResponse\x12x\n" +
 	"\x17SetBatchReleaseRequired\x12-.stillhouse.v1.SetBatchReleaseRequiredRequest\x1a..stillhouse.v1.SetBatchReleaseRequiredResponse\x12i\n" +
 	"\x12ListExciseLicences\x12(.stillhouse.v1.ListExciseLicencesRequest\x1a).stillhouse.v1.ListExciseLicencesResponse\x12f\n" +
 	"\x11SaveExciseLicence\x12'.stillhouse.v1.SaveExciseLicenceRequest\x1a(.stillhouse.v1.SaveExciseLicenceResponse\x12o\n" +
@@ -1547,7 +1828,7 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(DutyPoint)(0),                          // 0: stillhouse.v1.DutyPoint
 	(FilingFrequency)(0),                    // 1: stillhouse.v1.FilingFrequency
@@ -1571,11 +1852,14 @@ var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(*ListExciseLicencesResponse)(nil),      // 19: stillhouse.v1.ListExciseLicencesResponse
 	(*SaveExciseLicenceRequest)(nil),        // 20: stillhouse.v1.SaveExciseLicenceRequest
 	(*SaveExciseLicenceResponse)(nil),       // 21: stillhouse.v1.SaveExciseLicenceResponse
-	(*timestamppb.Timestamp)(nil),           // 22: google.protobuf.Timestamp
+	(*SecuritySufficiency)(nil),             // 22: stillhouse.v1.SecuritySufficiency
+	(*SecuritySufficiencyRequest)(nil),      // 23: stillhouse.v1.SecuritySufficiencyRequest
+	(*SecuritySufficiencyResponse)(nil),     // 24: stillhouse.v1.SecuritySufficiencyResponse
+	(*timestamppb.Timestamp)(nil),           // 25: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	22, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	22, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	25, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	25, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
 	1,  // 3: stillhouse.v1.Tenant.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 4: stillhouse.v1.Tenant.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
@@ -1589,27 +1873,30 @@ var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
 	17, // 12: stillhouse.v1.ListExciseLicencesResponse.licences:type_name -> stillhouse.v1.ExciseLicence
 	3,  // 13: stillhouse.v1.SaveExciseLicenceRequest.kind:type_name -> stillhouse.v1.ExciseLicenceKind
 	17, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
-	15, // 15: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
-	18, // 16: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
-	20, // 17: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
-	9,  // 18: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
-	5,  // 19: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	7,  // 20: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	11, // 21: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	13, // 22: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	16, // 23: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
-	19, // 24: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
-	21, // 25: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
-	10, // 26: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
-	6,  // 27: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	8,  // 28: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	12, // 29: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	14, // 30: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	23, // [23:31] is the sub-list for method output_type
-	15, // [15:23] is the sub-list for method input_type
-	15, // [15:15] is the sub-list for extension type_name
-	15, // [15:15] is the sub-list for extension extendee
-	0,  // [0:15] is the sub-list for field type_name
+	22, // 15: stillhouse.v1.SecuritySufficiencyResponse.licences:type_name -> stillhouse.v1.SecuritySufficiency
+	23, // 16: stillhouse.v1.TenantService.SecuritySufficiency:input_type -> stillhouse.v1.SecuritySufficiencyRequest
+	15, // 17: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
+	18, // 18: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
+	20, // 19: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
+	9,  // 20: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
+	5,  // 21: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	7,  // 22: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	11, // 23: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	13, // 24: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	24, // 25: stillhouse.v1.TenantService.SecuritySufficiency:output_type -> stillhouse.v1.SecuritySufficiencyResponse
+	16, // 26: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
+	19, // 27: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
+	21, // 28: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
+	10, // 29: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
+	6,  // 30: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	8,  // 31: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	12, // 32: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	14, // 33: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	25, // [25:34] is the sub-list for method output_type
+	16, // [16:25] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -1623,7 +1910,7 @@ func file_stillhouse_v1_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   18,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
