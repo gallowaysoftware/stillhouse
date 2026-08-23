@@ -31,6 +31,7 @@ const (
 	AlertKindInvoiceOverdue          AlertKind = "invoice_overdue"
 	AlertKindEquipmentServiceDue     AlertKind = "equipment_service_due"
 	AlertKindEquipmentDown           AlertKind = "equipment_down"
+	AlertKindMaterialLow             AlertKind = "material_low"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -2878,7 +2879,11 @@ type Material struct {
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 	// Grain species, for gelatinisation guidance. NULL = unknown; the mash bench reports unknown rather than assuming a range.
-	Cereal NullCereal `json:"cereal"`
+	Cereal              NullCereal    `json:"cereal"`
+	ReorderPoint        pgtype.Float8 `json:"reorder_point"`
+	ReorderQuantity     pgtype.Float8 `json:"reorder_quantity"`
+	LeadTimeDays        pgtype.Int4   `json:"lead_time_days"`
+	PreferredSupplierID uuid.NullUUID `json:"preferred_supplier_id"`
 }
 
 type MaterialLot struct {

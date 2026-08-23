@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/material.proto.
  */
 export const file_stillhouse_v1_material: GenFile = /*@__PURE__*/
-  fileDesc("ChxzdGlsbGhvdXNlL3YxL21hdGVyaWFsLnByb3RvEg1zdGlsbGhvdXNlLnYxIpsDCghNYXRlcmlhbBIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIpCgRraW5kGAQgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSCwoDdW9tGAUgASgJEhAKCHN1cHBsaWVyGAYgASgJEg0KBW5vdGVzGAcgASgJEhgKEGV4dHJhY3RfZnJhY3Rpb24YCCABKAESHAoUZXh0cmFjdF9mcmFjdGlvbl9zZXQYCSABKAgSGQoRbW9pc3R1cmVfZnJhY3Rpb24YCiABKAESHQoVbW9pc3R1cmVfZnJhY3Rpb25fc2V0GAsgASgIEhAKCGFyY2hpdmVkGAwgASgIEiUKBmNlcmVhbBgPIAEoDjIVLnN0aWxsaG91c2UudjEuQ2VyZWFsEi4KCmNyZWF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIt4CCgtNYXRlcmlhbExvdBIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEwoLbWF0ZXJpYWxfaWQYAyABKAkSFAoMc3VwcGxpZXJfbG90GAQgASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAUgASgBEhgKEHF1YW50aXR5X29uX2hhbmQYBiABKAESLwoLcmVjZWl2ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBW5vdGVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDXVuaXRfY29zdF9jYWQYCyABKAESGQoRdW5pdF9jb3N0X2NhZF9zZXQYDCABKAgilwIKFUNyZWF0ZU1hdGVyaWFsUmVxdWVzdBIMCgRuYW1lGAEgASgJEikKBGtpbmQYAiABKA4yGy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsS2luZBILCgN1b20YAyABKAkSEAoIc3VwcGxpZXIYBCABKAkSDQoFbm90ZXMYBSABKAkSGAoQZXh0cmFjdF9mcmFjdGlvbhgGIAEoARIcChRleHRyYWN0X2ZyYWN0aW9uX3NldBgHIAEoCBIZChFtb2lzdHVyZV9mcmFjdGlvbhgIIAEoARIdChVtb2lzdHVyZV9mcmFjdGlvbl9zZXQYCSABKAgSJQoGY2VyZWFsGAogASgOMhUuc3RpbGxob3VzZS52MS5DZXJlYWwiQwoWQ3JlYXRlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwi+AEKFVVwZGF0ZU1hdGVyaWFsUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEgsKA3VvbRgDIAEoCRIQCghzdXBwbGllchgEIAEoCRINCgVub3RlcxgFIAEoCRIYChBleHRyYWN0X2ZyYWN0aW9uGAYgASgBEhwKFGV4dHJhY3RfZnJhY3Rpb25fc2V0GAcgASgIEhkKEW1vaXN0dXJlX2ZyYWN0aW9uGAggASgBEh0KFW1vaXN0dXJlX2ZyYWN0aW9uX3NldBgJIAEoCBIlCgZjZXJlYWwYCiABKA4yFS5zdGlsbGhvdXNlLnYxLkNlcmVhbCJDChZVcGRhdGVNYXRlcmlhbFJlc3BvbnNlEikKCG1hdGVyaWFsGAEgASgLMhcuc3RpbGxob3VzZS52MS5NYXRlcmlhbCIgChJHZXRNYXRlcmlhbFJlcXVlc3QSCgoCaWQYASABKAkiQAoTR2V0TWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiWwoUTGlzdE1hdGVyaWFsc1JlcXVlc3QSKQoEa2luZBgBIAEoDjIbLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxLaW5kEhgKEGluY2x1ZGVfYXJjaGl2ZWQYAiABKAgiQwoVTGlzdE1hdGVyaWFsc1Jlc3BvbnNlEioKCW1hdGVyaWFscxgBIAMoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiNgoWQXJjaGl2ZU1hdGVyaWFsUmVxdWVzdBIKCgJpZBgBIAEoCRIQCghhcmNoaXZlZBgCIAEoCCJEChdBcmNoaXZlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwi1gEKHFJlY29yZE1hdGVyaWFsUmVjZWlwdFJlcXVlc3QSEwoLbWF0ZXJpYWxfaWQYASABKAkSFAoMc3VwcGxpZXJfbG90GAIgASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAMgASgBEi8KC3JlY2VpdmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgFIAEoCRIVCg11bml0X2Nvc3RfY2FkGAYgASgBEhkKEXVuaXRfY29zdF9jYWRfc2V0GAcgASgIIkgKHVJlY29yZE1hdGVyaWFsUmVjZWlwdFJlc3BvbnNlEicKA2xvdBgBIAEoCzIaLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxMb3QiRAoXTGlzdE1hdGVyaWFsTG90c1JlcXVlc3QSEwoLbWF0ZXJpYWxfaWQYASABKAkSFAoMb25faGFuZF9vbmx5GAIgASgIIkQKGExpc3RNYXRlcmlhbExvdHNSZXNwb25zZRIoCgRsb3RzGAEgAygLMhouc3RpbGxob3VzZS52MS5NYXRlcmlhbExvdCIvChlQcm9kdWN0Q29zdFN1bW1hcnlSZXF1ZXN0EhIKCnByb2R1Y3RfaWQYASABKAkiywEKGlByb2R1Y3RDb3N0U3VtbWFyeVJlc3BvbnNlEhIKCnByb2R1Y3RfaWQYASABKAkSEQoJcnVuX2NvdW50GAIgASgFEhUKDXRvdGFsX2JvdHRsZXMYAyABKAUSHwoXdG90YWxfbWF0ZXJpYWxfY29zdF9jYWQYBCABKAESLAokYXZlcmFnZV9tYXRlcmlhbF9jb3N0X3Blcl9ib3R0bGVfY2FkGAUgASgBEiAKGHJ1bnNfd2l0aF9taXNzaW5nX3ByaWNlcxgGIAEoBSIxChZCb3R0bGluZ1J1bkNvc3RSZXF1ZXN0EhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCSKUAQoTQm90dGxpbmdSdW5Db3N0TGluZRIVCg1tYXRlcmlhbF9uYW1lGAEgASgJEhQKDHN1cHBsaWVyX2xvdBgCIAEoCRIVCg1xdWFudGl0eV91c2VkGAMgASgBEgsKA3VvbRgEIAEoCRIVCg11bml0X2Nvc3RfY2FkGAUgASgBEhUKDWxpbmVfY29zdF9jYWQYBiABKAEiwgEKF0JvdHRsaW5nUnVuQ29zdFJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIUCgxib3R0bGVfY291bnQYAiABKAUSHwoXdG90YWxfbWF0ZXJpYWxfY29zdF9jYWQYAyABKAESJAocbWF0ZXJpYWxfY29zdF9wZXJfYm90dGxlX2NhZBgEIAEoARIxCgVsaW5lcxgFIAMoCzIiLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0TGluZSr6AQoMTWF0ZXJpYWxLaW5kEh0KGU1BVEVSSUFMX0tJTkRfVU5TUEVDSUZJRUQQABIXChNNQVRFUklBTF9LSU5EX0dSQUlOEAESFgoSTUFURVJJQUxfS0lORF9NQUxUEAISFwoTTUFURVJJQUxfS0lORF9ZRUFTVBADEhcKE01BVEVSSUFMX0tJTkRfV0FURVIQBBIVChFNQVRFUklBTF9LSU5EX05HUxAFEhsKF01BVEVSSUFMX0tJTkRfQk9UQU5JQ0FMEAYSGwoXTUFURVJJQUxfS0lORF9QQUNLQUdJTkcQBxIXChNNQVRFUklBTF9LSU5EX09USEVSEAgqmgEKBkNlcmVhbBIWChJDRVJFQUxfVU5TUEVDSUZJRUQQABIRCg1DRVJFQUxfQkFSTEVZEAESEAoMQ0VSRUFMX1dIRUFUEAISDgoKQ0VSRUFMX1JZRRADEhAKDENFUkVBTF9NQUlaRRAEEg8KC0NFUkVBTF9SSUNFEAUSDgoKQ0VSRUFMX09BVBAGEhAKDENFUkVBTF9PVEhFUhAHMokHCg9NYXRlcmlhbFNlcnZpY2USXQoOQ3JlYXRlTWF0ZXJpYWwSJC5zdGlsbGhvdXNlLnYxLkNyZWF0ZU1hdGVyaWFsUmVxdWVzdBolLnN0aWxsaG91c2UudjEuQ3JlYXRlTWF0ZXJpYWxSZXNwb25zZRJdCg5VcGRhdGVNYXRlcmlhbBIkLnN0aWxsaG91c2UudjEuVXBkYXRlTWF0ZXJpYWxSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5VcGRhdGVNYXRlcmlhbFJlc3BvbnNlElQKC0dldE1hdGVyaWFsEiEuc3RpbGxob3VzZS52MS5HZXRNYXRlcmlhbFJlcXVlc3QaIi5zdGlsbGhvdXNlLnYxLkdldE1hdGVyaWFsUmVzcG9uc2USWgoNTGlzdE1hdGVyaWFscxIjLnN0aWxsaG91c2UudjEuTGlzdE1hdGVyaWFsc1JlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLkxpc3RNYXRlcmlhbHNSZXNwb25zZRJgCg9BcmNoaXZlTWF0ZXJpYWwSJS5zdGlsbGhvdXNlLnYxLkFyY2hpdmVNYXRlcmlhbFJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkFyY2hpdmVNYXRlcmlhbFJlc3BvbnNlEnIKFVJlY29yZE1hdGVyaWFsUmVjZWlwdBIrLnN0aWxsaG91c2UudjEuUmVjb3JkTWF0ZXJpYWxSZWNlaXB0UmVxdWVzdBosLnN0aWxsaG91c2UudjEuUmVjb3JkTWF0ZXJpYWxSZWNlaXB0UmVzcG9uc2USYwoQTGlzdE1hdGVyaWFsTG90cxImLnN0aWxsaG91c2UudjEuTGlzdE1hdGVyaWFsTG90c1JlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLkxpc3RNYXRlcmlhbExvdHNSZXNwb25zZRJgCg9Cb3R0bGluZ1J1bkNvc3QSJS5zdGlsbGhvdXNlLnYxLkJvdHRsaW5nUnVuQ29zdFJlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkJvdHRsaW5nUnVuQ29zdFJlc3BvbnNlEmkKElByb2R1Y3RDb3N0U3VtbWFyeRIoLnN0aWxsaG91c2UudjEuUHJvZHVjdENvc3RTdW1tYXJ5UmVxdWVzdBopLnN0aWxsaG91c2UudjEuUHJvZHVjdENvc3RTdW1tYXJ5UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChxzdGlsbGhvdXNlL3YxL21hdGVyaWFsLnByb3RvEg1zdGlsbGhvdXNlLnYxIpsDCghNYXRlcmlhbBIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSDAoEbmFtZRgDIAEoCRIpCgRraW5kGAQgASgOMhsuc3RpbGxob3VzZS52MS5NYXRlcmlhbEtpbmQSCwoDdW9tGAUgASgJEhAKCHN1cHBsaWVyGAYgASgJEg0KBW5vdGVzGAcgASgJEhgKEGV4dHJhY3RfZnJhY3Rpb24YCCABKAESHAoUZXh0cmFjdF9mcmFjdGlvbl9zZXQYCSABKAgSGQoRbW9pc3R1cmVfZnJhY3Rpb24YCiABKAESHQoVbW9pc3R1cmVfZnJhY3Rpb25fc2V0GAsgASgIEhAKCGFyY2hpdmVkGAwgASgIEiUKBmNlcmVhbBgPIAEoDjIVLnN0aWxsaG91c2UudjEuQ2VyZWFsEi4KCmNyZWF0ZWRfYXQYDSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIt4CCgtNYXRlcmlhbExvdBIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSEwoLbWF0ZXJpYWxfaWQYAyABKAkSFAoMc3VwcGxpZXJfbG90GAQgASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAUgASgBEhgKEHF1YW50aXR5X29uX2hhbmQYBiABKAESLwoLcmVjZWl2ZWRfYXQYByABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBW5vdGVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhUKDXVuaXRfY29zdF9jYWQYCyABKAESGQoRdW5pdF9jb3N0X2NhZF9zZXQYDCABKAgilwIKFUNyZWF0ZU1hdGVyaWFsUmVxdWVzdBIMCgRuYW1lGAEgASgJEikKBGtpbmQYAiABKA4yGy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsS2luZBILCgN1b20YAyABKAkSEAoIc3VwcGxpZXIYBCABKAkSDQoFbm90ZXMYBSABKAkSGAoQZXh0cmFjdF9mcmFjdGlvbhgGIAEoARIcChRleHRyYWN0X2ZyYWN0aW9uX3NldBgHIAEoCBIZChFtb2lzdHVyZV9mcmFjdGlvbhgIIAEoARIdChVtb2lzdHVyZV9mcmFjdGlvbl9zZXQYCSABKAgSJQoGY2VyZWFsGAogASgOMhUuc3RpbGxob3VzZS52MS5DZXJlYWwiQwoWQ3JlYXRlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwi+AEKFVVwZGF0ZU1hdGVyaWFsUmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEgsKA3VvbRgDIAEoCRIQCghzdXBwbGllchgEIAEoCRINCgVub3RlcxgFIAEoCRIYChBleHRyYWN0X2ZyYWN0aW9uGAYgASgBEhwKFGV4dHJhY3RfZnJhY3Rpb25fc2V0GAcgASgIEhkKEW1vaXN0dXJlX2ZyYWN0aW9uGAggASgBEh0KFW1vaXN0dXJlX2ZyYWN0aW9uX3NldBgJIAEoCBIlCgZjZXJlYWwYCiABKA4yFS5zdGlsbGhvdXNlLnYxLkNlcmVhbCJDChZVcGRhdGVNYXRlcmlhbFJlc3BvbnNlEikKCG1hdGVyaWFsGAEgASgLMhcuc3RpbGxob3VzZS52MS5NYXRlcmlhbCIgChJHZXRNYXRlcmlhbFJlcXVlc3QSCgoCaWQYASABKAkiQAoTR2V0TWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiWwoUTGlzdE1hdGVyaWFsc1JlcXVlc3QSKQoEa2luZBgBIAEoDjIbLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxLaW5kEhgKEGluY2x1ZGVfYXJjaGl2ZWQYAiABKAgiQwoVTGlzdE1hdGVyaWFsc1Jlc3BvbnNlEioKCW1hdGVyaWFscxgBIAMoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwiNgoWQXJjaGl2ZU1hdGVyaWFsUmVxdWVzdBIKCgJpZBgBIAEoCRIQCghhcmNoaXZlZBgCIAEoCCJEChdBcmNoaXZlTWF0ZXJpYWxSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwi1gEKHFJlY29yZE1hdGVyaWFsUmVjZWlwdFJlcXVlc3QSEwoLbWF0ZXJpYWxfaWQYASABKAkSFAoMc3VwcGxpZXJfbG90GAIgASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAMgASgBEi8KC3JlY2VpdmVkX2F0GAQgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgFIAEoCRIVCg11bml0X2Nvc3RfY2FkGAYgASgBEhkKEXVuaXRfY29zdF9jYWRfc2V0GAcgASgIIkgKHVJlY29yZE1hdGVyaWFsUmVjZWlwdFJlc3BvbnNlEicKA2xvdBgBIAEoCzIaLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxMb3QiRAoXTGlzdE1hdGVyaWFsTG90c1JlcXVlc3QSEwoLbWF0ZXJpYWxfaWQYASABKAkSFAoMb25faGFuZF9vbmx5GAIgASgIIkQKGExpc3RNYXRlcmlhbExvdHNSZXNwb25zZRIoCgRsb3RzGAEgAygLMhouc3RpbGxob3VzZS52MS5NYXRlcmlhbExvdCIvChlQcm9kdWN0Q29zdFN1bW1hcnlSZXF1ZXN0EhIKCnByb2R1Y3RfaWQYASABKAkiywEKGlByb2R1Y3RDb3N0U3VtbWFyeVJlc3BvbnNlEhIKCnByb2R1Y3RfaWQYASABKAkSEQoJcnVuX2NvdW50GAIgASgFEhUKDXRvdGFsX2JvdHRsZXMYAyABKAUSHwoXdG90YWxfbWF0ZXJpYWxfY29zdF9jYWQYBCABKAESLAokYXZlcmFnZV9tYXRlcmlhbF9jb3N0X3Blcl9ib3R0bGVfY2FkGAUgASgBEiAKGHJ1bnNfd2l0aF9taXNzaW5nX3ByaWNlcxgGIAEoBSIxChZCb3R0bGluZ1J1bkNvc3RSZXF1ZXN0EhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCSKUAQoTQm90dGxpbmdSdW5Db3N0TGluZRIVCg1tYXRlcmlhbF9uYW1lGAEgASgJEhQKDHN1cHBsaWVyX2xvdBgCIAEoCRIVCg1xdWFudGl0eV91c2VkGAMgASgBEgsKA3VvbRgEIAEoCRIVCg11bml0X2Nvc3RfY2FkGAUgASgBEhUKDWxpbmVfY29zdF9jYWQYBiABKAEiwgEKF0JvdHRsaW5nUnVuQ29zdFJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIUCgxib3R0bGVfY291bnQYAiABKAUSHwoXdG90YWxfbWF0ZXJpYWxfY29zdF9jYWQYAyABKAESJAocbWF0ZXJpYWxfY29zdF9wZXJfYm90dGxlX2NhZBgEIAEoARIxCgVsaW5lcxgFIAMoCzIiLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0TGluZSL8AwoNTWF0ZXJpYWxDb3ZlchITCgttYXRlcmlhbF9pZBgBIAEoCRIVCg1tYXRlcmlhbF9uYW1lGAIgASgJEikKBGtpbmQYAyABKA4yGy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsS2luZBILCgN1b20YBCABKAkSDwoHb25faGFuZBgFIAEoARIQCghvbl9vcmRlchgGIAEoARIWCg51c2VkX2luX3dpbmRvdxgHIAEoARITCgt3aW5kb3dfZGF5cxgIIAEoBRISCgpkYWlseV9yYXRlGAkgASgBEhIKCmNvdmVyX2RheXMYCiABKAESEwoLY292ZXJfa25vd24YCyABKAgSFQoNcmVvcmRlcl9wb2ludBgMIAEoARIZChFyZW9yZGVyX3BvaW50X3NldBgNIAEoCBIYChByZW9yZGVyX3F1YW50aXR5GA4gASgBEhwKFHJlb3JkZXJfcXVhbnRpdHlfc2V0GA8gASgIEhYKDmxlYWRfdGltZV9kYXlzGBAgASgFEhoKEmxlYWRfdGltZV9kYXlzX3NldBgRIAEoCBIfChdwcmVmZXJyZWRfc3VwcGxpZXJfbmFtZRgSIAEoCRIbChNiZWxvd19yZW9yZGVyX3BvaW50GBMgASgIEh4KFnNob3J0ZXJfdGhhbl9sZWFkX3RpbWUYFCABKAgiKwoUTWF0ZXJpYWxDb3ZlclJlcXVlc3QSEwoLd2luZG93X2RheXMYASABKAUibAoVTWF0ZXJpYWxDb3ZlclJlc3BvbnNlEi8KCW1hdGVyaWFscxgBIAMoCzIcLnN0aWxsaG91c2UudjEuTWF0ZXJpYWxDb3ZlchITCgt3aW5kb3dfZGF5cxgCIAEoBRINCgViYXNpcxgDIAEoCSLkAQoZU2V0TWF0ZXJpYWxSZW9yZGVyUmVxdWVzdBIKCgJpZBgBIAEoCRIVCg1yZW9yZGVyX3BvaW50GAIgASgBEhkKEXJlb3JkZXJfcG9pbnRfc2V0GAMgASgIEhgKEHJlb3JkZXJfcXVhbnRpdHkYBCABKAESHAoUcmVvcmRlcl9xdWFudGl0eV9zZXQYBSABKAgSFgoObGVhZF90aW1lX2RheXMYBiABKAUSGgoSbGVhZF90aW1lX2RheXNfc2V0GAcgASgIEh0KFXByZWZlcnJlZF9zdXBwbGllcl9pZBgIIAEoCSJHChpTZXRNYXRlcmlhbFJlb3JkZXJSZXNwb25zZRIpCghtYXRlcmlhbBgBIAEoCzIXLnN0aWxsaG91c2UudjEuTWF0ZXJpYWwq+gEKDE1hdGVyaWFsS2luZBIdChlNQVRFUklBTF9LSU5EX1VOU1BFQ0lGSUVEEAASFwoTTUFURVJJQUxfS0lORF9HUkFJThABEhYKEk1BVEVSSUFMX0tJTkRfTUFMVBACEhcKE01BVEVSSUFMX0tJTkRfWUVBU1QQAxIXChNNQVRFUklBTF9LSU5EX1dBVEVSEAQSFQoRTUFURVJJQUxfS0lORF9OR1MQBRIbChdNQVRFUklBTF9LSU5EX0JPVEFOSUNBTBAGEhsKF01BVEVSSUFMX0tJTkRfUEFDS0FHSU5HEAcSFwoTTUFURVJJQUxfS0lORF9PVEhFUhAIKpoBCgZDZXJlYWwSFgoSQ0VSRUFMX1VOU1BFQ0lGSUVEEAASEQoNQ0VSRUFMX0JBUkxFWRABEhAKDENFUkVBTF9XSEVBVBACEg4KCkNFUkVBTF9SWUUQAxIQCgxDRVJFQUxfTUFJWkUQBBIPCgtDRVJFQUxfUklDRRAFEg4KCkNFUkVBTF9PQVQQBhIQCgxDRVJFQUxfT1RIRVIQBzLQCAoPTWF0ZXJpYWxTZXJ2aWNlEloKDU1hdGVyaWFsQ292ZXISIy5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsQ292ZXJSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5NYXRlcmlhbENvdmVyUmVzcG9uc2USaQoSU2V0TWF0ZXJpYWxSZW9yZGVyEiguc3RpbGxob3VzZS52MS5TZXRNYXRlcmlhbFJlb3JkZXJSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5TZXRNYXRlcmlhbFJlb3JkZXJSZXNwb25zZRJdCg5DcmVhdGVNYXRlcmlhbBIkLnN0aWxsaG91c2UudjEuQ3JlYXRlTWF0ZXJpYWxSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5DcmVhdGVNYXRlcmlhbFJlc3BvbnNlEl0KDlVwZGF0ZU1hdGVyaWFsEiQuc3RpbGxob3VzZS52MS5VcGRhdGVNYXRlcmlhbFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLlVwZGF0ZU1hdGVyaWFsUmVzcG9uc2USVAoLR2V0TWF0ZXJpYWwSIS5zdGlsbGhvdXNlLnYxLkdldE1hdGVyaWFsUmVxdWVzdBoiLnN0aWxsaG91c2UudjEuR2V0TWF0ZXJpYWxSZXNwb25zZRJaCg1MaXN0TWF0ZXJpYWxzEiMuc3RpbGxob3VzZS52MS5MaXN0TWF0ZXJpYWxzUmVxdWVzdBokLnN0aWxsaG91c2UudjEuTGlzdE1hdGVyaWFsc1Jlc3BvbnNlEmAKD0FyY2hpdmVNYXRlcmlhbBIlLnN0aWxsaG91c2UudjEuQXJjaGl2ZU1hdGVyaWFsUmVxdWVzdBomLnN0aWxsaG91c2UudjEuQXJjaGl2ZU1hdGVyaWFsUmVzcG9uc2UScgoVUmVjb3JkTWF0ZXJpYWxSZWNlaXB0Eisuc3RpbGxob3VzZS52MS5SZWNvcmRNYXRlcmlhbFJlY2VpcHRSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5SZWNvcmRNYXRlcmlhbFJlY2VpcHRSZXNwb25zZRJjChBMaXN0TWF0ZXJpYWxMb3RzEiYuc3RpbGxob3VzZS52MS5MaXN0TWF0ZXJpYWxMb3RzUmVxdWVzdBonLnN0aWxsaG91c2UudjEuTGlzdE1hdGVyaWFsTG90c1Jlc3BvbnNlEmAKD0JvdHRsaW5nUnVuQ29zdBIlLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0UmVxdWVzdBomLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5Db3N0UmVzcG9uc2USaQoSUHJvZHVjdENvc3RTdW1tYXJ5Eiguc3RpbGxob3VzZS52MS5Qcm9kdWN0Q29zdFN1bW1hcnlSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5Qcm9kdWN0Q29zdFN1bW1hcnlSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Material
@@ -730,6 +730,255 @@ export const BottlingRunCostResponseSchema: GenMessage<BottlingRunCostResponse> 
   messageDesc(file_stillhouse_v1_material, 20);
 
 /**
+ * What is on hand, what it is going out at, and how long that lasts.
+ *
+ * Generalises what the excise stamp panel already does: usage a day over
+ * a window, divided into what is left. A material with no reorder point
+ * recorded is never alerted on and its cover reads as unknown rather
+ * than fine — a threshold Stillhouse guessed would fire at a level
+ * nobody chose.
+ *
+ * @generated from message stillhouse.v1.MaterialCover
+ */
+export type MaterialCover = Message<"stillhouse.v1.MaterialCover"> & {
+  /**
+   * @generated from field: string material_id = 1;
+   */
+  materialId: string;
+
+  /**
+   * @generated from field: string material_name = 2;
+   */
+  materialName: string;
+
+  /**
+   * @generated from field: stillhouse.v1.MaterialKind kind = 3;
+   */
+  kind: MaterialKind;
+
+  /**
+   * @generated from field: string uom = 4;
+   */
+  uom: string;
+
+  /**
+   * @generated from field: double on_hand = 5;
+   */
+  onHand: number;
+
+  /**
+   * Already ordered and not yet received, so an alert does not fire on
+   * something that is on a truck.
+   *
+   * @generated from field: double on_order = 6;
+   */
+  onOrder: number;
+
+  /**
+   * @generated from field: double used_in_window = 7;
+   */
+  usedInWindow: number;
+
+  /**
+   * @generated from field: int32 window_days = 8;
+   */
+  windowDays: number;
+
+  /**
+   * Per day over the window. Zero when nothing has consumed it, which is
+   * why cover is then unknown rather than infinite.
+   *
+   * @generated from field: double daily_rate = 9;
+   */
+  dailyRate: number;
+
+  /**
+   * @generated from field: double cover_days = 10;
+   */
+  coverDays: number;
+
+  /**
+   * @generated from field: bool cover_known = 11;
+   */
+  coverKnown: boolean;
+
+  /**
+   * @generated from field: double reorder_point = 12;
+   */
+  reorderPoint: number;
+
+  /**
+   * @generated from field: bool reorder_point_set = 13;
+   */
+  reorderPointSet: boolean;
+
+  /**
+   * @generated from field: double reorder_quantity = 14;
+   */
+  reorderQuantity: number;
+
+  /**
+   * @generated from field: bool reorder_quantity_set = 15;
+   */
+  reorderQuantitySet: boolean;
+
+  /**
+   * @generated from field: int32 lead_time_days = 16;
+   */
+  leadTimeDays: number;
+
+  /**
+   * @generated from field: bool lead_time_days_set = 17;
+   */
+  leadTimeDaysSet: boolean;
+
+  /**
+   * @generated from field: string preferred_supplier_name = 18;
+   */
+  preferredSupplierName: string;
+
+  /**
+   * Below the recorded reorder point, counting what is on order.
+   *
+   * @generated from field: bool below_reorder_point = 19;
+   */
+  belowReorderPoint: boolean;
+
+  /**
+   * Cover is shorter than the lead time: ordering now is already late.
+   *
+   * @generated from field: bool shorter_than_lead_time = 20;
+   */
+  shorterThanLeadTime: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.MaterialCover.
+ * Use `create(MaterialCoverSchema)` to create a new message.
+ */
+export const MaterialCoverSchema: GenMessage<MaterialCover> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 21);
+
+/**
+ * @generated from message stillhouse.v1.MaterialCoverRequest
+ */
+export type MaterialCoverRequest = Message<"stillhouse.v1.MaterialCoverRequest"> & {
+  /**
+   * How far back to measure consumption. Empty is 90 days — long enough
+   * that a distillery mashing weekly has several data points.
+   *
+   * @generated from field: int32 window_days = 1;
+   */
+  windowDays: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.MaterialCoverRequest.
+ * Use `create(MaterialCoverRequestSchema)` to create a new message.
+ */
+export const MaterialCoverRequestSchema: GenMessage<MaterialCoverRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 22);
+
+/**
+ * @generated from message stillhouse.v1.MaterialCoverResponse
+ */
+export type MaterialCoverResponse = Message<"stillhouse.v1.MaterialCoverResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.MaterialCover materials = 1;
+   */
+  materials: MaterialCover[];
+
+  /**
+   * @generated from field: int32 window_days = 2;
+   */
+  windowDays: number;
+
+  /**
+   * @generated from field: string basis = 3;
+   */
+  basis: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.MaterialCoverResponse.
+ * Use `create(MaterialCoverResponseSchema)` to create a new message.
+ */
+export const MaterialCoverResponseSchema: GenMessage<MaterialCoverResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 23);
+
+/**
+ * @generated from message stillhouse.v1.SetMaterialReorderRequest
+ */
+export type SetMaterialReorderRequest = Message<"stillhouse.v1.SetMaterialReorderRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * Each is optional and each clears when unset. There are no defaults:
+   * a threshold nobody chose fires at a level nobody chose.
+   *
+   * @generated from field: double reorder_point = 2;
+   */
+  reorderPoint: number;
+
+  /**
+   * @generated from field: bool reorder_point_set = 3;
+   */
+  reorderPointSet: boolean;
+
+  /**
+   * @generated from field: double reorder_quantity = 4;
+   */
+  reorderQuantity: number;
+
+  /**
+   * @generated from field: bool reorder_quantity_set = 5;
+   */
+  reorderQuantitySet: boolean;
+
+  /**
+   * @generated from field: int32 lead_time_days = 6;
+   */
+  leadTimeDays: number;
+
+  /**
+   * @generated from field: bool lead_time_days_set = 7;
+   */
+  leadTimeDaysSet: boolean;
+
+  /**
+   * @generated from field: string preferred_supplier_id = 8;
+   */
+  preferredSupplierId: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetMaterialReorderRequest.
+ * Use `create(SetMaterialReorderRequestSchema)` to create a new message.
+ */
+export const SetMaterialReorderRequestSchema: GenMessage<SetMaterialReorderRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 24);
+
+/**
+ * @generated from message stillhouse.v1.SetMaterialReorderResponse
+ */
+export type SetMaterialReorderResponse = Message<"stillhouse.v1.SetMaterialReorderResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.Material material = 1;
+   */
+  material?: Material | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetMaterialReorderResponse.
+ * Use `create(SetMaterialReorderResponseSchema)` to create a new message.
+ */
+export const SetMaterialReorderResponseSchema: GenMessage<SetMaterialReorderResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_material, 25);
+
+/**
  * @generated from enum stillhouse.v1.MaterialKind
  */
 export enum MaterialKind {
@@ -848,6 +1097,22 @@ export const CerealSchema: GenEnum<Cereal> = /*@__PURE__*/
  * @generated from service stillhouse.v1.MaterialService
  */
 export const MaterialService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.MaterialService.MaterialCover
+   */
+  materialCover: {
+    methodKind: "unary";
+    input: typeof MaterialCoverRequestSchema;
+    output: typeof MaterialCoverResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.MaterialService.SetMaterialReorder
+   */
+  setMaterialReorder: {
+    methodKind: "unary";
+    input: typeof SetMaterialReorderRequestSchema;
+    output: typeof SetMaterialReorderResponseSchema;
+  },
   /**
    * @generated from rpc stillhouse.v1.MaterialService.CreateMaterial
    */

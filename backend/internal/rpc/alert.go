@@ -258,6 +258,8 @@ func alertKindToProto(k sqlcgen.AlertKind) stillhousev1.AlertKind {
 		return stillhousev1.AlertKind_ALERT_KIND_EQUIPMENT_SERVICE_DUE
 	case sqlcgen.AlertKindEquipmentDown:
 		return stillhousev1.AlertKind_ALERT_KIND_EQUIPMENT_DOWN
+	case sqlcgen.AlertKindMaterialLow:
+		return stillhousev1.AlertKind_ALERT_KIND_MATERIAL_LOW
 	}
 	return stillhousev1.AlertKind_ALERT_KIND_UNSPECIFIED
 }

@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -677,4 +678,145 @@ func cerealToMashing(c stillhousev1.Cereal) mashing.Cereal {
 	default:
 		return mashing.CerealUnspecified
 	}
+}
+
+// defaultCoverWindowDays is long enough that a distillery mashing weekly
+// has several data points in it, and short enough that a change in what
+// they are making shows up.
+const defaultCoverWindowDays = 90
+
+// MaterialCover answers "how long does what we have last".
+//
+// Generalises what the excise stamp panel already computed for stamps:
+// usage a day over a window, divided into what is left. Nothing here has
+// a default threshold — a reorder point Stillhouse guessed would fire at
+// a level nobody chose, and an alert people did not choose is one they
+// learn to dismiss.
+func (s *MaterialService) MaterialCover(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.MaterialCoverRequest],
+) (*connect.Response[stillhousev1.MaterialCoverResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	window := req.Msg.GetWindowDays()
+	if window <= 0 {
+		window = defaultCoverWindowDays
+	}
+	if window > 3650 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("a window longer than ten years is not a consumption rate"))
+	}
+
+	var rows []sqlcgen.MaterialCoverRow
+	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		rows, e = q.MaterialCover(ctx, window)
+		return e
+	}); err != nil {
+		s.logger.Error("MaterialCover", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+
+	out := &stillhousev1.MaterialCoverResponse{
+		WindowDays: window,
+		Basis: fmt.Sprintf("Consumption is what actually went into mashes over the "+
+			"last %d days, divided by %d. A material nothing has consumed has no "+
+			"rate, so its cover is unknown rather than infinite — it may be about "+
+			"to be used daily. On order counts toward the reorder point, so an "+
+			"alert does not fire on something already on a truck.", window, window),
+	}
+	for _, r := range rows {
+		c := &stillhousev1.MaterialCover{
+			MaterialId: r.ID.String(), MaterialName: r.Name,
+			Kind: materialKindToProto(r.Kind), Uom: r.Uom,
+			OnHand: r.OnHand, OnOrder: r.OnOrder,
+			UsedInWindow:          r.UsedInWindow,
+			WindowDays:            window,
+			PreferredSupplierName: r.PreferredSupplierName,
+		}
+		if r.UsedInWindow > 0 {
+			c.DailyRate = r.UsedInWindow / float64(window)
+			c.CoverKnown = true
+			if c.DailyRate > 0 {
+				c.CoverDays = r.OnHand / c.DailyRate
+			}
+		}
+		if r.ReorderPoint.Valid {
+			c.ReorderPoint, c.ReorderPointSet = r.ReorderPoint.Float64, true
+			c.BelowReorderPoint = r.OnHand+r.OnOrder <= r.ReorderPoint.Float64
+		}
+		if r.ReorderQuantity.Valid {
+			c.ReorderQuantity, c.ReorderQuantitySet = r.ReorderQuantity.Float64, true
+		}
+		if r.LeadTimeDays.Valid {
+			c.LeadTimeDays, c.LeadTimeDaysSet = r.LeadTimeDays.Int32, true
+			// Ordering now would already be late. Only meaningful where
+			// there is a rate to compute cover from.
+			c.ShorterThanLeadTime = c.GetCoverKnown() &&
+				c.GetCoverDays() < float64(r.LeadTimeDays.Int32)
+		}
+		out.Materials = append(out.Materials, c)
+	}
+	return connect.NewResponse(out), nil
+}
+
+func (s *MaterialService) SetMaterialReorder(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.SetMaterialReorderRequest],
+) (*connect.Response[stillhousev1.SetMaterialReorderResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	in := req.Msg
+	id, err := uuid.Parse(in.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	if in.GetReorderPointSet() && in.GetReorderPoint() < 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("a reorder point cannot be negative"))
+	}
+	if in.GetReorderQuantitySet() && in.GetReorderQuantity() <= 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("an order quantity of zero orders nothing — leave it unset "+
+				"if you do not have a usual amount"))
+	}
+	supplierID, err := parseOptionalUUID(in.GetPreferredSupplierId(), "preferred_supplier_id")
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+
+	var out sqlcgen.Material
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		out, e = q.SetMaterialReorder(ctx, sqlcgen.SetMaterialReorderParams{
+			ID:                  id,
+			ReorderPoint:        optFloat(in.GetReorderPoint(), in.GetReorderPointSet()),
+			ReorderQuantity:     optFloat(in.GetReorderQuantity(), in.GetReorderQuantitySet()),
+			LeadTimeDays:        optInt(in.GetLeadTimeDays(), in.GetLeadTimeDaysSet()),
+			PreferredSupplierID: supplierID,
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "material", id.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"material":       out.Name,
+				"reorder_point":  in.GetReorderPoint(),
+				"lead_time_days": in.GetLeadTimeDays(),
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("material not found"))
+		}
+		s.logger.Error("SetMaterialReorder", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.SetMaterialReorderResponse{
+		Material: materialToProto(out),
+	}), nil
 }

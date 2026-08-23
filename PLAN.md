@@ -163,12 +163,6 @@ no line, because valuing it means walking forward from the mashes to each gauge
 and apportioning a mash that fed several of them. That apportionment is a
 convention Stillhouse does not have; 000040's argument stands until it does.
 
-### E5 · Reorder points and low-stock alerts — P2
-
-Minimum levels per material, cover-days from consumption rate, and an alert
-before the glass runs out. The stamp panel already computes bottles-per-day
-cover — generalise it.
-
 ---
 
 ## Track F — planning and operations

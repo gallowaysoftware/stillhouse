@@ -33,6 +33,12 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// MaterialServiceMaterialCoverProcedure is the fully-qualified name of the MaterialService's
+	// MaterialCover RPC.
+	MaterialServiceMaterialCoverProcedure = "/stillhouse.v1.MaterialService/MaterialCover"
+	// MaterialServiceSetMaterialReorderProcedure is the fully-qualified name of the MaterialService's
+	// SetMaterialReorder RPC.
+	MaterialServiceSetMaterialReorderProcedure = "/stillhouse.v1.MaterialService/SetMaterialReorder"
 	// MaterialServiceCreateMaterialProcedure is the fully-qualified name of the MaterialService's
 	// CreateMaterial RPC.
 	MaterialServiceCreateMaterialProcedure = "/stillhouse.v1.MaterialService/CreateMaterial"
@@ -64,6 +70,8 @@ const (
 
 // MaterialServiceClient is a client for the stillhouse.v1.MaterialService service.
 type MaterialServiceClient interface {
+	MaterialCover(context.Context, *connect.Request[v1.MaterialCoverRequest]) (*connect.Response[v1.MaterialCoverResponse], error)
+	SetMaterialReorder(context.Context, *connect.Request[v1.SetMaterialReorderRequest]) (*connect.Response[v1.SetMaterialReorderResponse], error)
 	CreateMaterial(context.Context, *connect.Request[v1.CreateMaterialRequest]) (*connect.Response[v1.CreateMaterialResponse], error)
 	UpdateMaterial(context.Context, *connect.Request[v1.UpdateMaterialRequest]) (*connect.Response[v1.UpdateMaterialResponse], error)
 	GetMaterial(context.Context, *connect.Request[v1.GetMaterialRequest]) (*connect.Response[v1.GetMaterialResponse], error)
@@ -86,6 +94,18 @@ func NewMaterialServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 	baseURL = strings.TrimRight(baseURL, "/")
 	materialServiceMethods := v1.File_stillhouse_v1_material_proto.Services().ByName("MaterialService").Methods()
 	return &materialServiceClient{
+		materialCover: connect.NewClient[v1.MaterialCoverRequest, v1.MaterialCoverResponse](
+			httpClient,
+			baseURL+MaterialServiceMaterialCoverProcedure,
+			connect.WithSchema(materialServiceMethods.ByName("MaterialCover")),
+			connect.WithClientOptions(opts...),
+		),
+		setMaterialReorder: connect.NewClient[v1.SetMaterialReorderRequest, v1.SetMaterialReorderResponse](
+			httpClient,
+			baseURL+MaterialServiceSetMaterialReorderProcedure,
+			connect.WithSchema(materialServiceMethods.ByName("SetMaterialReorder")),
+			connect.WithClientOptions(opts...),
+		),
 		createMaterial: connect.NewClient[v1.CreateMaterialRequest, v1.CreateMaterialResponse](
 			httpClient,
 			baseURL+MaterialServiceCreateMaterialProcedure,
@@ -145,6 +165,8 @@ func NewMaterialServiceClient(httpClient connect.HTTPClient, baseURL string, opt
 
 // materialServiceClient implements MaterialServiceClient.
 type materialServiceClient struct {
+	materialCover         *connect.Client[v1.MaterialCoverRequest, v1.MaterialCoverResponse]
+	setMaterialReorder    *connect.Client[v1.SetMaterialReorderRequest, v1.SetMaterialReorderResponse]
 	createMaterial        *connect.Client[v1.CreateMaterialRequest, v1.CreateMaterialResponse]
 	updateMaterial        *connect.Client[v1.UpdateMaterialRequest, v1.UpdateMaterialResponse]
 	getMaterial           *connect.Client[v1.GetMaterialRequest, v1.GetMaterialResponse]
@@ -154,6 +176,16 @@ type materialServiceClient struct {
 	listMaterialLots      *connect.Client[v1.ListMaterialLotsRequest, v1.ListMaterialLotsResponse]
 	bottlingRunCost       *connect.Client[v1.BottlingRunCostRequest, v1.BottlingRunCostResponse]
 	productCostSummary    *connect.Client[v1.ProductCostSummaryRequest, v1.ProductCostSummaryResponse]
+}
+
+// MaterialCover calls stillhouse.v1.MaterialService.MaterialCover.
+func (c *materialServiceClient) MaterialCover(ctx context.Context, req *connect.Request[v1.MaterialCoverRequest]) (*connect.Response[v1.MaterialCoverResponse], error) {
+	return c.materialCover.CallUnary(ctx, req)
+}
+
+// SetMaterialReorder calls stillhouse.v1.MaterialService.SetMaterialReorder.
+func (c *materialServiceClient) SetMaterialReorder(ctx context.Context, req *connect.Request[v1.SetMaterialReorderRequest]) (*connect.Response[v1.SetMaterialReorderResponse], error) {
+	return c.setMaterialReorder.CallUnary(ctx, req)
 }
 
 // CreateMaterial calls stillhouse.v1.MaterialService.CreateMaterial.
@@ -203,6 +235,8 @@ func (c *materialServiceClient) ProductCostSummary(ctx context.Context, req *con
 
 // MaterialServiceHandler is an implementation of the stillhouse.v1.MaterialService service.
 type MaterialServiceHandler interface {
+	MaterialCover(context.Context, *connect.Request[v1.MaterialCoverRequest]) (*connect.Response[v1.MaterialCoverResponse], error)
+	SetMaterialReorder(context.Context, *connect.Request[v1.SetMaterialReorderRequest]) (*connect.Response[v1.SetMaterialReorderResponse], error)
 	CreateMaterial(context.Context, *connect.Request[v1.CreateMaterialRequest]) (*connect.Response[v1.CreateMaterialResponse], error)
 	UpdateMaterial(context.Context, *connect.Request[v1.UpdateMaterialRequest]) (*connect.Response[v1.UpdateMaterialResponse], error)
 	GetMaterial(context.Context, *connect.Request[v1.GetMaterialRequest]) (*connect.Response[v1.GetMaterialResponse], error)
@@ -221,6 +255,18 @@ type MaterialServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewMaterialServiceHandler(svc MaterialServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	materialServiceMethods := v1.File_stillhouse_v1_material_proto.Services().ByName("MaterialService").Methods()
+	materialServiceMaterialCoverHandler := connect.NewUnaryHandler(
+		MaterialServiceMaterialCoverProcedure,
+		svc.MaterialCover,
+		connect.WithSchema(materialServiceMethods.ByName("MaterialCover")),
+		connect.WithHandlerOptions(opts...),
+	)
+	materialServiceSetMaterialReorderHandler := connect.NewUnaryHandler(
+		MaterialServiceSetMaterialReorderProcedure,
+		svc.SetMaterialReorder,
+		connect.WithSchema(materialServiceMethods.ByName("SetMaterialReorder")),
+		connect.WithHandlerOptions(opts...),
+	)
 	materialServiceCreateMaterialHandler := connect.NewUnaryHandler(
 		MaterialServiceCreateMaterialProcedure,
 		svc.CreateMaterial,
@@ -277,6 +323,10 @@ func NewMaterialServiceHandler(svc MaterialServiceHandler, opts ...connect.Handl
 	)
 	return "/stillhouse.v1.MaterialService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case MaterialServiceMaterialCoverProcedure:
+			materialServiceMaterialCoverHandler.ServeHTTP(w, r)
+		case MaterialServiceSetMaterialReorderProcedure:
+			materialServiceSetMaterialReorderHandler.ServeHTTP(w, r)
 		case MaterialServiceCreateMaterialProcedure:
 			materialServiceCreateMaterialHandler.ServeHTTP(w, r)
 		case MaterialServiceUpdateMaterialProcedure:
@@ -303,6 +353,14 @@ func NewMaterialServiceHandler(svc MaterialServiceHandler, opts ...connect.Handl
 
 // UnimplementedMaterialServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedMaterialServiceHandler struct{}
+
+func (UnimplementedMaterialServiceHandler) MaterialCover(context.Context, *connect.Request[v1.MaterialCoverRequest]) (*connect.Response[v1.MaterialCoverResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MaterialService.MaterialCover is not implemented"))
+}
+
+func (UnimplementedMaterialServiceHandler) SetMaterialReorder(context.Context, *connect.Request[v1.SetMaterialReorderRequest]) (*connect.Response[v1.SetMaterialReorderResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MaterialService.SetMaterialReorder is not implemented"))
+}
 
 func (UnimplementedMaterialServiceHandler) CreateMaterial(context.Context, *connect.Request[v1.CreateMaterialRequest]) (*connect.Response[v1.CreateMaterialResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MaterialService.CreateMaterial is not implemented"))

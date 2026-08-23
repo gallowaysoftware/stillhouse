@@ -37,6 +37,9 @@ enum AlertKind {
   // Stillhouse invented is one nobody agreed to.
   ALERT_KIND_EQUIPMENT_SERVICE_DUE = 15;
   ALERT_KIND_EQUIPMENT_DOWN = 16;
+  // A material at or below the reorder point the licensee recorded.
+  // Never raised for one with no reorder point set.
+  ALERT_KIND_MATERIAL_LOW = 17;
 }
 
 enum AlertSeverity {

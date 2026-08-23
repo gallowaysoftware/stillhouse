@@ -636,6 +636,20 @@ type Querier interface {
 	MarkShipmentShipped(ctx context.Context, arg MarkShipmentShippedParams) (Shipment, error)
 	MarkStockCountLinePosted(ctx context.Context, arg MarkStockCountLinePostedParams) error
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
+	// On hand, what it is being used at, and how long that lasts.
+	//
+	// The consumption rate is what actually went into mashes over the window,
+	// divided by the window. Materials that nothing has consumed come back
+	// with a rate of zero, and cover is then unknown rather than infinite —
+	// a material nobody has used yet may be about to be used daily.
+	//
+	// Deliberately generalises what the stamp panel already does for excise
+	// stamps: bottles a day over the last thirty, divided into what is left.
+	MaterialCover(ctx context.Context, windowDays int32) ([]MaterialCoverRow, error)
+	// For the alert evaluator. Only materials with a reorder point recorded:
+	// one Stillhouse guessed would fire at a level nobody chose, and an alert
+	// people did not choose is an alert they learn to dismiss.
+	MaterialsBelowReorderPoint(ctx context.Context) ([]MaterialsBelowReorderPointRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)
@@ -785,6 +799,7 @@ type Querier interface {
 	// when we learned it.
 	SetMaterialLotLandedCharges(ctx context.Context, arg SetMaterialLotLandedChargesParams) (MaterialLot, error)
 	SetMaterialLotQuantity(ctx context.Context, arg SetMaterialLotQuantityParams) (MaterialLot, error)
+	SetMaterialReorder(ctx context.Context, arg SetMaterialReorderParams) (Material, error)
 	SetPackagedBottles(ctx context.Context, arg SetPackagedBottlesParams) (PackagedInventory, error)
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	// The status is cast explicitly at every use. Postgres cannot deduce one

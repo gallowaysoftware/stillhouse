@@ -13,7 +13,7 @@ import (
 )
 
 const archiveMaterial = `-- name: ArchiveMaterial :one
-UPDATE materials SET archived = TRUE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
+UPDATE materials SET archived = TRUE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id
 `
 
 func (q *Queries) ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -33,6 +33,10 @@ func (q *Queries) ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Cereal,
+		&i.ReorderPoint,
+		&i.ReorderQuantity,
+		&i.LeadTimeDays,
+		&i.PreferredSupplierID,
 	)
 	return i, err
 }
@@ -42,7 +46,7 @@ INSERT INTO materials (
     tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, cereal
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
+) RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id
 `
 
 type CreateMaterialParams struct {
@@ -84,6 +88,10 @@ func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Cereal,
+		&i.ReorderPoint,
+		&i.ReorderQuantity,
+		&i.LeadTimeDays,
+		&i.PreferredSupplierID,
 	)
 	return i, err
 }
@@ -142,7 +150,7 @@ func (q *Queries) CreateMaterialLot(ctx context.Context, arg CreateMaterialLotPa
 }
 
 const getMaterial = `-- name: GetMaterial :one
-SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal FROM materials WHERE id = $1
+SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id FROM materials WHERE id = $1
 `
 
 func (q *Queries) GetMaterial(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -162,6 +170,10 @@ func (q *Queries) GetMaterial(ctx context.Context, id uuid.UUID) (Material, erro
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Cereal,
+		&i.ReorderPoint,
+		&i.ReorderQuantity,
+		&i.LeadTimeDays,
+		&i.PreferredSupplierID,
 	)
 	return i, err
 }
@@ -250,7 +262,7 @@ func (q *Queries) ListMaterialLots(ctx context.Context, arg ListMaterialLotsPara
 }
 
 const listMaterials = `-- name: ListMaterials :many
-SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal FROM materials
+SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id FROM materials
 WHERE ($1::material_kind IS NULL OR kind = $1::material_kind)
   AND ($2::boolean OR NOT archived)
 ORDER BY kind, name
@@ -284,6 +296,10 @@ func (q *Queries) ListMaterials(ctx context.Context, arg ListMaterialsParams) ([
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Cereal,
+			&i.ReorderPoint,
+			&i.ReorderQuantity,
+			&i.LeadTimeDays,
+			&i.PreferredSupplierID,
 		); err != nil {
 			return nil, err
 		}
@@ -295,8 +311,212 @@ func (q *Queries) ListMaterials(ctx context.Context, arg ListMaterialsParams) ([
 	return items, nil
 }
 
+const materialCover = `-- name: MaterialCover :many
+SELECT m.id, m.name, m.kind, m.uom, m.archived,
+       m.reorder_point, m.reorder_quantity, m.lead_time_days,
+       COALESCE(s.name, '') AS preferred_supplier_name,
+       COALESCE(oh.qty, 0)::double precision AS on_hand,
+       COALESCE(used.qty, 0)::double precision AS used_in_window,
+       COALESCE(oo.qty, 0)::double precision AS on_order
+FROM materials m
+LEFT JOIN suppliers s ON s.id = m.preferred_supplier_id
+LEFT JOIN LATERAL (
+    SELECT SUM(ml.quantity_on_hand) AS qty
+    FROM material_lots ml WHERE ml.material_id = m.id
+) oh ON TRUE
+LEFT JOIN LATERAL (
+    SELECT SUM(u.quantity_used) AS qty
+    FROM mash_ingredient_usage u
+    JOIN mash_runs r ON r.id = u.mash_run_id
+    WHERE u.material_id = m.id
+      AND r.created_at >= NOW() - ($1::int || ' days')::interval
+) used ON TRUE
+LEFT JOIN LATERAL (
+    -- Already ordered and not yet received, so a reorder alert does not
+    -- fire on something that is already on a truck.
+    SELECT SUM(l.quantity_ordered - l.quantity_received) AS qty
+    FROM purchase_order_lines l
+    JOIN purchase_orders po ON po.id = l.purchase_order_id
+    WHERE l.material_id = m.id
+      AND po.status IN ('placed', 'partially_received')
+      AND l.quantity_received < l.quantity_ordered
+) oo ON TRUE
+WHERE NOT m.archived
+ORDER BY m.kind, m.name
+`
+
+type MaterialCoverRow struct {
+	ID                    uuid.UUID     `json:"id"`
+	Name                  string        `json:"name"`
+	Kind                  MaterialKind  `json:"kind"`
+	Uom                   string        `json:"uom"`
+	Archived              bool          `json:"archived"`
+	ReorderPoint          pgtype.Float8 `json:"reorder_point"`
+	ReorderQuantity       pgtype.Float8 `json:"reorder_quantity"`
+	LeadTimeDays          pgtype.Int4   `json:"lead_time_days"`
+	PreferredSupplierName string        `json:"preferred_supplier_name"`
+	OnHand                float64       `json:"on_hand"`
+	UsedInWindow          float64       `json:"used_in_window"`
+	OnOrder               float64       `json:"on_order"`
+}
+
+// On hand, what it is being used at, and how long that lasts.
+//
+// The consumption rate is what actually went into mashes over the window,
+// divided by the window. Materials that nothing has consumed come back
+// with a rate of zero, and cover is then unknown rather than infinite —
+// a material nobody has used yet may be about to be used daily.
+//
+// Deliberately generalises what the stamp panel already does for excise
+// stamps: bottles a day over the last thirty, divided into what is left.
+func (q *Queries) MaterialCover(ctx context.Context, windowDays int32) ([]MaterialCoverRow, error) {
+	rows, err := q.db.Query(ctx, materialCover, windowDays)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []MaterialCoverRow{}
+	for rows.Next() {
+		var i MaterialCoverRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Kind,
+			&i.Uom,
+			&i.Archived,
+			&i.ReorderPoint,
+			&i.ReorderQuantity,
+			&i.LeadTimeDays,
+			&i.PreferredSupplierName,
+			&i.OnHand,
+			&i.UsedInWindow,
+			&i.OnOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const materialsBelowReorderPoint = `-- name: MaterialsBelowReorderPoint :many
+SELECT m.id, m.name, m.uom, m.reorder_point, m.lead_time_days,
+       COALESCE(oh.qty, 0)::double precision AS on_hand,
+       COALESCE(oo.qty, 0)::double precision AS on_order
+FROM materials m
+LEFT JOIN LATERAL (
+    SELECT SUM(ml.quantity_on_hand) AS qty
+    FROM material_lots ml WHERE ml.material_id = m.id
+) oh ON TRUE
+LEFT JOIN LATERAL (
+    SELECT SUM(l.quantity_ordered - l.quantity_received) AS qty
+    FROM purchase_order_lines l
+    JOIN purchase_orders po ON po.id = l.purchase_order_id
+    WHERE l.material_id = m.id
+      AND po.status IN ('placed', 'partially_received')
+      AND l.quantity_received < l.quantity_ordered
+) oo ON TRUE
+WHERE NOT m.archived
+  AND m.reorder_point IS NOT NULL
+  AND COALESCE(oh.qty, 0) + COALESCE(oo.qty, 0) <= m.reorder_point
+ORDER BY m.name
+`
+
+type MaterialsBelowReorderPointRow struct {
+	ID           uuid.UUID     `json:"id"`
+	Name         string        `json:"name"`
+	Uom          string        `json:"uom"`
+	ReorderPoint pgtype.Float8 `json:"reorder_point"`
+	LeadTimeDays pgtype.Int4   `json:"lead_time_days"`
+	OnHand       float64       `json:"on_hand"`
+	OnOrder      float64       `json:"on_order"`
+}
+
+// For the alert evaluator. Only materials with a reorder point recorded:
+// one Stillhouse guessed would fire at a level nobody chose, and an alert
+// people did not choose is an alert they learn to dismiss.
+func (q *Queries) MaterialsBelowReorderPoint(ctx context.Context) ([]MaterialsBelowReorderPointRow, error) {
+	rows, err := q.db.Query(ctx, materialsBelowReorderPoint)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []MaterialsBelowReorderPointRow{}
+	for rows.Next() {
+		var i MaterialsBelowReorderPointRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Uom,
+			&i.ReorderPoint,
+			&i.LeadTimeDays,
+			&i.OnHand,
+			&i.OnOrder,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setMaterialReorder = `-- name: SetMaterialReorder :one
+UPDATE materials
+SET reorder_point         = $1::double precision,
+    reorder_quantity      = $2::double precision,
+    lead_time_days        = $3::int,
+    preferred_supplier_id = $4::uuid
+WHERE id = $5
+RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id
+`
+
+type SetMaterialReorderParams struct {
+	ReorderPoint        pgtype.Float8 `json:"reorder_point"`
+	ReorderQuantity     pgtype.Float8 `json:"reorder_quantity"`
+	LeadTimeDays        pgtype.Int4   `json:"lead_time_days"`
+	PreferredSupplierID uuid.NullUUID `json:"preferred_supplier_id"`
+	ID                  uuid.UUID     `json:"id"`
+}
+
+func (q *Queries) SetMaterialReorder(ctx context.Context, arg SetMaterialReorderParams) (Material, error) {
+	row := q.db.QueryRow(ctx, setMaterialReorder,
+		arg.ReorderPoint,
+		arg.ReorderQuantity,
+		arg.LeadTimeDays,
+		arg.PreferredSupplierID,
+		arg.ID,
+	)
+	var i Material
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.Kind,
+		&i.Uom,
+		&i.Supplier,
+		&i.Notes,
+		&i.ExtractFraction,
+		&i.MoistureFraction,
+		&i.Archived,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Cereal,
+		&i.ReorderPoint,
+		&i.ReorderQuantity,
+		&i.LeadTimeDays,
+		&i.PreferredSupplierID,
+	)
+	return i, err
+}
+
 const unarchiveMaterial = `-- name: UnarchiveMaterial :one
-UPDATE materials SET archived = FALSE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
+UPDATE materials SET archived = FALSE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id
 `
 
 func (q *Queries) UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -316,6 +536,10 @@ func (q *Queries) UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Cereal,
+		&i.ReorderPoint,
+		&i.ReorderQuantity,
+		&i.LeadTimeDays,
+		&i.PreferredSupplierID,
 	)
 	return i, err
 }
@@ -330,7 +554,7 @@ SET name         = $2,
     moisture_fraction = $7,
     cereal       = $8
 WHERE id = $1
-RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
+RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal, reorder_point, reorder_quantity, lead_time_days, preferred_supplier_id
 `
 
 type UpdateMaterialParams struct {
@@ -370,6 +594,10 @@ func (q *Queries) UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) 
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Cereal,
+		&i.ReorderPoint,
+		&i.ReorderQuantity,
+		&i.LeadTimeDays,
+		&i.PreferredSupplierID,
 	)
 	return i, err
 }

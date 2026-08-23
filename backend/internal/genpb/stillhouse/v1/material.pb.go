@@ -1624,6 +1624,467 @@ func (x *BottlingRunCostResponse) GetLines() []*BottlingRunCostLine {
 	return nil
 }
 
+// What is on hand, what it is going out at, and how long that lasts.
+//
+// Generalises what the excise stamp panel already does: usage a day over
+// a window, divided into what is left. A material with no reorder point
+// recorded is never alerted on and its cover reads as unknown rather
+// than fine — a threshold Stillhouse guessed would fire at a level
+// nobody chose.
+type MaterialCover struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	MaterialId   string                 `protobuf:"bytes,1,opt,name=material_id,json=materialId,proto3" json:"material_id,omitempty"`
+	MaterialName string                 `protobuf:"bytes,2,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"`
+	Kind         MaterialKind           `protobuf:"varint,3,opt,name=kind,proto3,enum=stillhouse.v1.MaterialKind" json:"kind,omitempty"`
+	Uom          string                 `protobuf:"bytes,4,opt,name=uom,proto3" json:"uom,omitempty"`
+	OnHand       float64                `protobuf:"fixed64,5,opt,name=on_hand,json=onHand,proto3" json:"on_hand,omitempty"`
+	// Already ordered and not yet received, so an alert does not fire on
+	// something that is on a truck.
+	OnOrder      float64 `protobuf:"fixed64,6,opt,name=on_order,json=onOrder,proto3" json:"on_order,omitempty"`
+	UsedInWindow float64 `protobuf:"fixed64,7,opt,name=used_in_window,json=usedInWindow,proto3" json:"used_in_window,omitempty"`
+	WindowDays   int32   `protobuf:"varint,8,opt,name=window_days,json=windowDays,proto3" json:"window_days,omitempty"`
+	// Per day over the window. Zero when nothing has consumed it, which is
+	// why cover is then unknown rather than infinite.
+	DailyRate             float64 `protobuf:"fixed64,9,opt,name=daily_rate,json=dailyRate,proto3" json:"daily_rate,omitempty"`
+	CoverDays             float64 `protobuf:"fixed64,10,opt,name=cover_days,json=coverDays,proto3" json:"cover_days,omitempty"`
+	CoverKnown            bool    `protobuf:"varint,11,opt,name=cover_known,json=coverKnown,proto3" json:"cover_known,omitempty"`
+	ReorderPoint          float64 `protobuf:"fixed64,12,opt,name=reorder_point,json=reorderPoint,proto3" json:"reorder_point,omitempty"`
+	ReorderPointSet       bool    `protobuf:"varint,13,opt,name=reorder_point_set,json=reorderPointSet,proto3" json:"reorder_point_set,omitempty"`
+	ReorderQuantity       float64 `protobuf:"fixed64,14,opt,name=reorder_quantity,json=reorderQuantity,proto3" json:"reorder_quantity,omitempty"`
+	ReorderQuantitySet    bool    `protobuf:"varint,15,opt,name=reorder_quantity_set,json=reorderQuantitySet,proto3" json:"reorder_quantity_set,omitempty"`
+	LeadTimeDays          int32   `protobuf:"varint,16,opt,name=lead_time_days,json=leadTimeDays,proto3" json:"lead_time_days,omitempty"`
+	LeadTimeDaysSet       bool    `protobuf:"varint,17,opt,name=lead_time_days_set,json=leadTimeDaysSet,proto3" json:"lead_time_days_set,omitempty"`
+	PreferredSupplierName string  `protobuf:"bytes,18,opt,name=preferred_supplier_name,json=preferredSupplierName,proto3" json:"preferred_supplier_name,omitempty"`
+	// Below the recorded reorder point, counting what is on order.
+	BelowReorderPoint bool `protobuf:"varint,19,opt,name=below_reorder_point,json=belowReorderPoint,proto3" json:"below_reorder_point,omitempty"`
+	// Cover is shorter than the lead time: ordering now is already late.
+	ShorterThanLeadTime bool `protobuf:"varint,20,opt,name=shorter_than_lead_time,json=shorterThanLeadTime,proto3" json:"shorter_than_lead_time,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *MaterialCover) Reset() {
+	*x = MaterialCover{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaterialCover) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaterialCover) ProtoMessage() {}
+
+func (x *MaterialCover) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaterialCover.ProtoReflect.Descriptor instead.
+func (*MaterialCover) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *MaterialCover) GetMaterialId() string {
+	if x != nil {
+		return x.MaterialId
+	}
+	return ""
+}
+
+func (x *MaterialCover) GetMaterialName() string {
+	if x != nil {
+		return x.MaterialName
+	}
+	return ""
+}
+
+func (x *MaterialCover) GetKind() MaterialKind {
+	if x != nil {
+		return x.Kind
+	}
+	return MaterialKind_MATERIAL_KIND_UNSPECIFIED
+}
+
+func (x *MaterialCover) GetUom() string {
+	if x != nil {
+		return x.Uom
+	}
+	return ""
+}
+
+func (x *MaterialCover) GetOnHand() float64 {
+	if x != nil {
+		return x.OnHand
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetOnOrder() float64 {
+	if x != nil {
+		return x.OnOrder
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetUsedInWindow() float64 {
+	if x != nil {
+		return x.UsedInWindow
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetWindowDays() int32 {
+	if x != nil {
+		return x.WindowDays
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetDailyRate() float64 {
+	if x != nil {
+		return x.DailyRate
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetCoverDays() float64 {
+	if x != nil {
+		return x.CoverDays
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetCoverKnown() bool {
+	if x != nil {
+		return x.CoverKnown
+	}
+	return false
+}
+
+func (x *MaterialCover) GetReorderPoint() float64 {
+	if x != nil {
+		return x.ReorderPoint
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetReorderPointSet() bool {
+	if x != nil {
+		return x.ReorderPointSet
+	}
+	return false
+}
+
+func (x *MaterialCover) GetReorderQuantity() float64 {
+	if x != nil {
+		return x.ReorderQuantity
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetReorderQuantitySet() bool {
+	if x != nil {
+		return x.ReorderQuantitySet
+	}
+	return false
+}
+
+func (x *MaterialCover) GetLeadTimeDays() int32 {
+	if x != nil {
+		return x.LeadTimeDays
+	}
+	return 0
+}
+
+func (x *MaterialCover) GetLeadTimeDaysSet() bool {
+	if x != nil {
+		return x.LeadTimeDaysSet
+	}
+	return false
+}
+
+func (x *MaterialCover) GetPreferredSupplierName() string {
+	if x != nil {
+		return x.PreferredSupplierName
+	}
+	return ""
+}
+
+func (x *MaterialCover) GetBelowReorderPoint() bool {
+	if x != nil {
+		return x.BelowReorderPoint
+	}
+	return false
+}
+
+func (x *MaterialCover) GetShorterThanLeadTime() bool {
+	if x != nil {
+		return x.ShorterThanLeadTime
+	}
+	return false
+}
+
+type MaterialCoverRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// How far back to measure consumption. Empty is 90 days — long enough
+	// that a distillery mashing weekly has several data points.
+	WindowDays    int32 `protobuf:"varint,1,opt,name=window_days,json=windowDays,proto3" json:"window_days,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MaterialCoverRequest) Reset() {
+	*x = MaterialCoverRequest{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaterialCoverRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaterialCoverRequest) ProtoMessage() {}
+
+func (x *MaterialCoverRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaterialCoverRequest.ProtoReflect.Descriptor instead.
+func (*MaterialCoverRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *MaterialCoverRequest) GetWindowDays() int32 {
+	if x != nil {
+		return x.WindowDays
+	}
+	return 0
+}
+
+type MaterialCoverResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Materials     []*MaterialCover       `protobuf:"bytes,1,rep,name=materials,proto3" json:"materials,omitempty"`
+	WindowDays    int32                  `protobuf:"varint,2,opt,name=window_days,json=windowDays,proto3" json:"window_days,omitempty"`
+	Basis         string                 `protobuf:"bytes,3,opt,name=basis,proto3" json:"basis,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MaterialCoverResponse) Reset() {
+	*x = MaterialCoverResponse{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaterialCoverResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaterialCoverResponse) ProtoMessage() {}
+
+func (x *MaterialCoverResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaterialCoverResponse.ProtoReflect.Descriptor instead.
+func (*MaterialCoverResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *MaterialCoverResponse) GetMaterials() []*MaterialCover {
+	if x != nil {
+		return x.Materials
+	}
+	return nil
+}
+
+func (x *MaterialCoverResponse) GetWindowDays() int32 {
+	if x != nil {
+		return x.WindowDays
+	}
+	return 0
+}
+
+func (x *MaterialCoverResponse) GetBasis() string {
+	if x != nil {
+		return x.Basis
+	}
+	return ""
+}
+
+type SetMaterialReorderRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Each is optional and each clears when unset. There are no defaults:
+	// a threshold nobody chose fires at a level nobody chose.
+	ReorderPoint        float64 `protobuf:"fixed64,2,opt,name=reorder_point,json=reorderPoint,proto3" json:"reorder_point,omitempty"`
+	ReorderPointSet     bool    `protobuf:"varint,3,opt,name=reorder_point_set,json=reorderPointSet,proto3" json:"reorder_point_set,omitempty"`
+	ReorderQuantity     float64 `protobuf:"fixed64,4,opt,name=reorder_quantity,json=reorderQuantity,proto3" json:"reorder_quantity,omitempty"`
+	ReorderQuantitySet  bool    `protobuf:"varint,5,opt,name=reorder_quantity_set,json=reorderQuantitySet,proto3" json:"reorder_quantity_set,omitempty"`
+	LeadTimeDays        int32   `protobuf:"varint,6,opt,name=lead_time_days,json=leadTimeDays,proto3" json:"lead_time_days,omitempty"`
+	LeadTimeDaysSet     bool    `protobuf:"varint,7,opt,name=lead_time_days_set,json=leadTimeDaysSet,proto3" json:"lead_time_days_set,omitempty"`
+	PreferredSupplierId string  `protobuf:"bytes,8,opt,name=preferred_supplier_id,json=preferredSupplierId,proto3" json:"preferred_supplier_id,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SetMaterialReorderRequest) Reset() {
+	*x = SetMaterialReorderRequest{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetMaterialReorderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMaterialReorderRequest) ProtoMessage() {}
+
+func (x *SetMaterialReorderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMaterialReorderRequest.ProtoReflect.Descriptor instead.
+func (*SetMaterialReorderRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *SetMaterialReorderRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SetMaterialReorderRequest) GetReorderPoint() float64 {
+	if x != nil {
+		return x.ReorderPoint
+	}
+	return 0
+}
+
+func (x *SetMaterialReorderRequest) GetReorderPointSet() bool {
+	if x != nil {
+		return x.ReorderPointSet
+	}
+	return false
+}
+
+func (x *SetMaterialReorderRequest) GetReorderQuantity() float64 {
+	if x != nil {
+		return x.ReorderQuantity
+	}
+	return 0
+}
+
+func (x *SetMaterialReorderRequest) GetReorderQuantitySet() bool {
+	if x != nil {
+		return x.ReorderQuantitySet
+	}
+	return false
+}
+
+func (x *SetMaterialReorderRequest) GetLeadTimeDays() int32 {
+	if x != nil {
+		return x.LeadTimeDays
+	}
+	return 0
+}
+
+func (x *SetMaterialReorderRequest) GetLeadTimeDaysSet() bool {
+	if x != nil {
+		return x.LeadTimeDaysSet
+	}
+	return false
+}
+
+func (x *SetMaterialReorderRequest) GetPreferredSupplierId() string {
+	if x != nil {
+		return x.PreferredSupplierId
+	}
+	return ""
+}
+
+type SetMaterialReorderResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Material      *Material              `protobuf:"bytes,1,opt,name=material,proto3" json:"material,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetMaterialReorderResponse) Reset() {
+	*x = SetMaterialReorderResponse{}
+	mi := &file_stillhouse_v1_material_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetMaterialReorderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetMaterialReorderResponse) ProtoMessage() {}
+
+func (x *SetMaterialReorderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_material_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetMaterialReorderResponse.ProtoReflect.Descriptor instead.
+func (*SetMaterialReorderResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_material_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *SetMaterialReorderResponse) GetMaterial() *Material {
+	if x != nil {
+		return x.Material
+	}
+	return nil
+}
+
 var File_stillhouse_v1_material_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_material_proto_rawDesc = "" +
@@ -1752,7 +2213,53 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\fbottle_count\x18\x02 \x01(\x05R\vbottleCount\x125\n" +
 	"\x17total_material_cost_cad\x18\x03 \x01(\x01R\x14totalMaterialCostCad\x12>\n" +
 	"\x1cmaterial_cost_per_bottle_cad\x18\x04 \x01(\x01R\x18materialCostPerBottleCad\x128\n" +
-	"\x05lines\x18\x05 \x03(\v2\".stillhouse.v1.BottlingRunCostLineR\x05lines*\xfa\x01\n" +
+	"\x05lines\x18\x05 \x03(\v2\".stillhouse.v1.BottlingRunCostLineR\x05lines\"\x90\x06\n" +
+	"\rMaterialCover\x12\x1f\n" +
+	"\vmaterial_id\x18\x01 \x01(\tR\n" +
+	"materialId\x12#\n" +
+	"\rmaterial_name\x18\x02 \x01(\tR\fmaterialName\x12/\n" +
+	"\x04kind\x18\x03 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\x04kind\x12\x10\n" +
+	"\x03uom\x18\x04 \x01(\tR\x03uom\x12\x17\n" +
+	"\aon_hand\x18\x05 \x01(\x01R\x06onHand\x12\x19\n" +
+	"\bon_order\x18\x06 \x01(\x01R\aonOrder\x12$\n" +
+	"\x0eused_in_window\x18\a \x01(\x01R\fusedInWindow\x12\x1f\n" +
+	"\vwindow_days\x18\b \x01(\x05R\n" +
+	"windowDays\x12\x1d\n" +
+	"\n" +
+	"daily_rate\x18\t \x01(\x01R\tdailyRate\x12\x1d\n" +
+	"\n" +
+	"cover_days\x18\n" +
+	" \x01(\x01R\tcoverDays\x12\x1f\n" +
+	"\vcover_known\x18\v \x01(\bR\n" +
+	"coverKnown\x12#\n" +
+	"\rreorder_point\x18\f \x01(\x01R\freorderPoint\x12*\n" +
+	"\x11reorder_point_set\x18\r \x01(\bR\x0freorderPointSet\x12)\n" +
+	"\x10reorder_quantity\x18\x0e \x01(\x01R\x0freorderQuantity\x120\n" +
+	"\x14reorder_quantity_set\x18\x0f \x01(\bR\x12reorderQuantitySet\x12$\n" +
+	"\x0elead_time_days\x18\x10 \x01(\x05R\fleadTimeDays\x12+\n" +
+	"\x12lead_time_days_set\x18\x11 \x01(\bR\x0fleadTimeDaysSet\x126\n" +
+	"\x17preferred_supplier_name\x18\x12 \x01(\tR\x15preferredSupplierName\x12.\n" +
+	"\x13below_reorder_point\x18\x13 \x01(\bR\x11belowReorderPoint\x123\n" +
+	"\x16shorter_than_lead_time\x18\x14 \x01(\bR\x13shorterThanLeadTime\"7\n" +
+	"\x14MaterialCoverRequest\x12\x1f\n" +
+	"\vwindow_days\x18\x01 \x01(\x05R\n" +
+	"windowDays\"\x8a\x01\n" +
+	"\x15MaterialCoverResponse\x12:\n" +
+	"\tmaterials\x18\x01 \x03(\v2\x1c.stillhouse.v1.MaterialCoverR\tmaterials\x12\x1f\n" +
+	"\vwindow_days\x18\x02 \x01(\x05R\n" +
+	"windowDays\x12\x14\n" +
+	"\x05basis\x18\x03 \x01(\tR\x05basis\"\xe0\x02\n" +
+	"\x19SetMaterialReorderRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12#\n" +
+	"\rreorder_point\x18\x02 \x01(\x01R\freorderPoint\x12*\n" +
+	"\x11reorder_point_set\x18\x03 \x01(\bR\x0freorderPointSet\x12)\n" +
+	"\x10reorder_quantity\x18\x04 \x01(\x01R\x0freorderQuantity\x120\n" +
+	"\x14reorder_quantity_set\x18\x05 \x01(\bR\x12reorderQuantitySet\x12$\n" +
+	"\x0elead_time_days\x18\x06 \x01(\x05R\fleadTimeDays\x12+\n" +
+	"\x12lead_time_days_set\x18\a \x01(\bR\x0fleadTimeDaysSet\x122\n" +
+	"\x15preferred_supplier_id\x18\b \x01(\tR\x13preferredSupplierId\"Q\n" +
+	"\x1aSetMaterialReorderResponse\x123\n" +
+	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial*\xfa\x01\n" +
 	"\fMaterialKind\x12\x1d\n" +
 	"\x19MATERIAL_KIND_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13MATERIAL_KIND_GRAIN\x10\x01\x12\x16\n" +
@@ -1773,8 +2280,10 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\vCEREAL_RICE\x10\x05\x12\x0e\n" +
 	"\n" +
 	"CEREAL_OAT\x10\x06\x12\x10\n" +
-	"\fCEREAL_OTHER\x10\a2\x89\a\n" +
-	"\x0fMaterialService\x12]\n" +
+	"\fCEREAL_OTHER\x10\a2\xd0\b\n" +
+	"\x0fMaterialService\x12Z\n" +
+	"\rMaterialCover\x12#.stillhouse.v1.MaterialCoverRequest\x1a$.stillhouse.v1.MaterialCoverResponse\x12i\n" +
+	"\x12SetMaterialReorder\x12(.stillhouse.v1.SetMaterialReorderRequest\x1a).stillhouse.v1.SetMaterialReorderResponse\x12]\n" +
 	"\x0eCreateMaterial\x12$.stillhouse.v1.CreateMaterialRequest\x1a%.stillhouse.v1.CreateMaterialResponse\x12]\n" +
 	"\x0eUpdateMaterial\x12$.stillhouse.v1.UpdateMaterialRequest\x1a%.stillhouse.v1.UpdateMaterialResponse\x12T\n" +
 	"\vGetMaterial\x12!.stillhouse.v1.GetMaterialRequest\x1a\".stillhouse.v1.GetMaterialResponse\x12Z\n" +
@@ -1799,7 +2308,7 @@ func file_stillhouse_v1_material_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_material_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_stillhouse_v1_material_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_stillhouse_v1_material_proto_goTypes = []any{
 	(MaterialKind)(0),                     // 0: stillhouse.v1.MaterialKind
 	(Cereal)(0),                           // 1: stillhouse.v1.Cereal
@@ -1824,16 +2333,21 @@ var file_stillhouse_v1_material_proto_goTypes = []any{
 	(*BottlingRunCostRequest)(nil),        // 20: stillhouse.v1.BottlingRunCostRequest
 	(*BottlingRunCostLine)(nil),           // 21: stillhouse.v1.BottlingRunCostLine
 	(*BottlingRunCostResponse)(nil),       // 22: stillhouse.v1.BottlingRunCostResponse
-	(*timestamppb.Timestamp)(nil),         // 23: google.protobuf.Timestamp
+	(*MaterialCover)(nil),                 // 23: stillhouse.v1.MaterialCover
+	(*MaterialCoverRequest)(nil),          // 24: stillhouse.v1.MaterialCoverRequest
+	(*MaterialCoverResponse)(nil),         // 25: stillhouse.v1.MaterialCoverResponse
+	(*SetMaterialReorderRequest)(nil),     // 26: stillhouse.v1.SetMaterialReorderRequest
+	(*SetMaterialReorderResponse)(nil),    // 27: stillhouse.v1.SetMaterialReorderResponse
+	(*timestamppb.Timestamp)(nil),         // 28: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.Material.kind:type_name -> stillhouse.v1.MaterialKind
 	1,  // 1: stillhouse.v1.Material.cereal:type_name -> stillhouse.v1.Cereal
-	23, // 2: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
-	23, // 3: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
-	23, // 4: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
-	23, // 5: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
-	23, // 6: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 2: stillhouse.v1.Material.created_at:type_name -> google.protobuf.Timestamp
+	28, // 3: stillhouse.v1.Material.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 4: stillhouse.v1.MaterialLot.received_at:type_name -> google.protobuf.Timestamp
+	28, // 5: stillhouse.v1.MaterialLot.created_at:type_name -> google.protobuf.Timestamp
+	28, // 6: stillhouse.v1.MaterialLot.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 7: stillhouse.v1.CreateMaterialRequest.kind:type_name -> stillhouse.v1.MaterialKind
 	1,  // 8: stillhouse.v1.CreateMaterialRequest.cereal:type_name -> stillhouse.v1.Cereal
 	2,  // 9: stillhouse.v1.CreateMaterialResponse.material:type_name -> stillhouse.v1.Material
@@ -1843,33 +2357,40 @@ var file_stillhouse_v1_material_proto_depIdxs = []int32{
 	0,  // 13: stillhouse.v1.ListMaterialsRequest.kind:type_name -> stillhouse.v1.MaterialKind
 	2,  // 14: stillhouse.v1.ListMaterialsResponse.materials:type_name -> stillhouse.v1.Material
 	2,  // 15: stillhouse.v1.ArchiveMaterialResponse.material:type_name -> stillhouse.v1.Material
-	23, // 16: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
+	28, // 16: stillhouse.v1.RecordMaterialReceiptRequest.received_at:type_name -> google.protobuf.Timestamp
 	3,  // 17: stillhouse.v1.RecordMaterialReceiptResponse.lot:type_name -> stillhouse.v1.MaterialLot
 	3,  // 18: stillhouse.v1.ListMaterialLotsResponse.lots:type_name -> stillhouse.v1.MaterialLot
 	21, // 19: stillhouse.v1.BottlingRunCostResponse.lines:type_name -> stillhouse.v1.BottlingRunCostLine
-	4,  // 20: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
-	6,  // 21: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
-	8,  // 22: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
-	10, // 23: stillhouse.v1.MaterialService.ListMaterials:input_type -> stillhouse.v1.ListMaterialsRequest
-	12, // 24: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
-	14, // 25: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
-	16, // 26: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
-	20, // 27: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
-	18, // 28: stillhouse.v1.MaterialService.ProductCostSummary:input_type -> stillhouse.v1.ProductCostSummaryRequest
-	5,  // 29: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
-	7,  // 30: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
-	9,  // 31: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
-	11, // 32: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
-	13, // 33: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
-	15, // 34: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
-	17, // 35: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
-	22, // 36: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
-	19, // 37: stillhouse.v1.MaterialService.ProductCostSummary:output_type -> stillhouse.v1.ProductCostSummaryResponse
-	29, // [29:38] is the sub-list for method output_type
-	20, // [20:29] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	0,  // 20: stillhouse.v1.MaterialCover.kind:type_name -> stillhouse.v1.MaterialKind
+	23, // 21: stillhouse.v1.MaterialCoverResponse.materials:type_name -> stillhouse.v1.MaterialCover
+	2,  // 22: stillhouse.v1.SetMaterialReorderResponse.material:type_name -> stillhouse.v1.Material
+	24, // 23: stillhouse.v1.MaterialService.MaterialCover:input_type -> stillhouse.v1.MaterialCoverRequest
+	26, // 24: stillhouse.v1.MaterialService.SetMaterialReorder:input_type -> stillhouse.v1.SetMaterialReorderRequest
+	4,  // 25: stillhouse.v1.MaterialService.CreateMaterial:input_type -> stillhouse.v1.CreateMaterialRequest
+	6,  // 26: stillhouse.v1.MaterialService.UpdateMaterial:input_type -> stillhouse.v1.UpdateMaterialRequest
+	8,  // 27: stillhouse.v1.MaterialService.GetMaterial:input_type -> stillhouse.v1.GetMaterialRequest
+	10, // 28: stillhouse.v1.MaterialService.ListMaterials:input_type -> stillhouse.v1.ListMaterialsRequest
+	12, // 29: stillhouse.v1.MaterialService.ArchiveMaterial:input_type -> stillhouse.v1.ArchiveMaterialRequest
+	14, // 30: stillhouse.v1.MaterialService.RecordMaterialReceipt:input_type -> stillhouse.v1.RecordMaterialReceiptRequest
+	16, // 31: stillhouse.v1.MaterialService.ListMaterialLots:input_type -> stillhouse.v1.ListMaterialLotsRequest
+	20, // 32: stillhouse.v1.MaterialService.BottlingRunCost:input_type -> stillhouse.v1.BottlingRunCostRequest
+	18, // 33: stillhouse.v1.MaterialService.ProductCostSummary:input_type -> stillhouse.v1.ProductCostSummaryRequest
+	25, // 34: stillhouse.v1.MaterialService.MaterialCover:output_type -> stillhouse.v1.MaterialCoverResponse
+	27, // 35: stillhouse.v1.MaterialService.SetMaterialReorder:output_type -> stillhouse.v1.SetMaterialReorderResponse
+	5,  // 36: stillhouse.v1.MaterialService.CreateMaterial:output_type -> stillhouse.v1.CreateMaterialResponse
+	7,  // 37: stillhouse.v1.MaterialService.UpdateMaterial:output_type -> stillhouse.v1.UpdateMaterialResponse
+	9,  // 38: stillhouse.v1.MaterialService.GetMaterial:output_type -> stillhouse.v1.GetMaterialResponse
+	11, // 39: stillhouse.v1.MaterialService.ListMaterials:output_type -> stillhouse.v1.ListMaterialsResponse
+	13, // 40: stillhouse.v1.MaterialService.ArchiveMaterial:output_type -> stillhouse.v1.ArchiveMaterialResponse
+	15, // 41: stillhouse.v1.MaterialService.RecordMaterialReceipt:output_type -> stillhouse.v1.RecordMaterialReceiptResponse
+	17, // 42: stillhouse.v1.MaterialService.ListMaterialLots:output_type -> stillhouse.v1.ListMaterialLotsResponse
+	22, // 43: stillhouse.v1.MaterialService.BottlingRunCost:output_type -> stillhouse.v1.BottlingRunCostResponse
+	19, // 44: stillhouse.v1.MaterialService.ProductCostSummary:output_type -> stillhouse.v1.ProductCostSummaryResponse
+	34, // [34:45] is the sub-list for method output_type
+	23, // [23:34] is the sub-list for method input_type
+	23, // [23:23] is the sub-list for extension type_name
+	23, // [23:23] is the sub-list for extension extendee
+	0,  // [0:23] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_material_proto_init() }
@@ -1883,7 +2404,7 @@ func file_stillhouse_v1_material_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_material_proto_rawDesc), len(file_stillhouse_v1_material_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   21,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

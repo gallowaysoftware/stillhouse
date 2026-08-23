@@ -167,7 +167,72 @@ message BottlingRunCostResponse {
   repeated BottlingRunCostLine lines = 5;
 }
 
+// What is on hand, what it is going out at, and how long that lasts.
+//
+// Generalises what the excise stamp panel already does: usage a day over
+// a window, divided into what is left. A material with no reorder point
+// recorded is never alerted on and its cover reads as unknown rather
+// than fine — a threshold Stillhouse guessed would fire at a level
+// nobody chose.
+message MaterialCover {
+  string material_id = 1;
+  string material_name = 2;
+  MaterialKind kind = 3;
+  string uom = 4;
+  double on_hand = 5;
+  // Already ordered and not yet received, so an alert does not fire on
+  // something that is on a truck.
+  double on_order = 6;
+  double used_in_window = 7;
+  int32  window_days = 8;
+  // Per day over the window. Zero when nothing has consumed it, which is
+  // why cover is then unknown rather than infinite.
+  double daily_rate = 9;
+  double cover_days = 10;
+  bool   cover_known = 11;
+
+  double reorder_point = 12;
+  bool   reorder_point_set = 13;
+  double reorder_quantity = 14;
+  bool   reorder_quantity_set = 15;
+  int32  lead_time_days = 16;
+  bool   lead_time_days_set = 17;
+  string preferred_supplier_name = 18;
+
+  // Below the recorded reorder point, counting what is on order.
+  bool   below_reorder_point = 19;
+  // Cover is shorter than the lead time: ordering now is already late.
+  bool   shorter_than_lead_time = 20;
+}
+
+message MaterialCoverRequest {
+  // How far back to measure consumption. Empty is 90 days — long enough
+  // that a distillery mashing weekly has several data points.
+  int32 window_days = 1;
+}
+message MaterialCoverResponse {
+  repeated MaterialCover materials = 1;
+  int32 window_days = 2;
+  string basis = 3;
+}
+
+message SetMaterialReorderRequest {
+  string id = 1;
+  // Each is optional and each clears when unset. There are no defaults:
+  // a threshold nobody chose fires at a level nobody chose.
+  double reorder_point = 2;
+  bool   reorder_point_set = 3;
+  double reorder_quantity = 4;
+  bool   reorder_quantity_set = 5;
+  int32  lead_time_days = 6;
+  bool   lead_time_days_set = 7;
+  string preferred_supplier_id = 8;
+}
+message SetMaterialReorderResponse { Material material = 1; }
+
 service MaterialService {
+  rpc MaterialCover(MaterialCoverRequest) returns (MaterialCoverResponse);
+  rpc SetMaterialReorder(SetMaterialReorderRequest) returns (SetMaterialReorderResponse);
   rpc CreateMaterial(CreateMaterialRequest) returns (CreateMaterialResponse);
   rpc UpdateMaterial(UpdateMaterialRequest) returns (UpdateMaterialResponse);
   rpc GetMaterial(GetMaterialRequest) returns (GetMaterialResponse);

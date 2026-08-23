@@ -430,6 +430,12 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.StockCountService/CancelStockCount": roleOperator,
 	"/stillhouse.v1.StockCountService/PostStockCount":   roleOwner,
 
+	// Reorder points are a purchasing policy — the level at which the
+	// licensee wants to be told — so setting one sits with the owner.
+	// Reading cover is what the person about to run out needs.
+	"/stillhouse.v1.MaterialService/MaterialCover":      roleViewer,
+	"/stillhouse.v1.MaterialService/SetMaterialReorder": roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

@@ -89,6 +89,7 @@ var Kinds = []string{
 	string(sqlcgen.AlertKindInvoiceOverdue),
 	string(sqlcgen.AlertKindEquipmentServiceDue),
 	string(sqlcgen.AlertKindEquipmentDown),
+	string(sqlcgen.AlertKindMaterialLow),
 }
 
 // Alert is one condition found true, before it is written.
@@ -146,6 +147,12 @@ func Evaluate(
 		return nil, fmt.Errorf("work orders: %w", err)
 	}
 	out = append(out, workAlerts...)
+
+	materialAlerts, err := evaluateMaterials(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("materials: %w", err)
+	}
+	out = append(out, materialAlerts...)
 
 	equipmentAlerts, err := evaluateEquipment(ctx, q)
 	if err != nil {
@@ -698,6 +705,46 @@ func evaluateEquipment(ctx context.Context, q *sqlcgen.Queries) ([]Alert, error)
 				"Record the repair against it so the register shows what happened.",
 			EntityType: "equipment",
 			EntityID:   uuid.NullUUID{UUID: e.ID, Valid: true},
+		})
+	}
+	return out, nil
+}
+
+// evaluateMaterials raises on materials at or below the reorder point the
+// licensee recorded, counting what is already on order.
+//
+// Only materials with a reorder point set. One Stillhouse guessed would
+// fire at a level nobody chose, and an alert people did not choose is an
+// alert they learn to dismiss — which costs more than having none.
+func evaluateMaterials(ctx context.Context, q *sqlcgen.Queries) ([]Alert, error) {
+	rows, err := q.MaterialsBelowReorderPoint(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Alert, 0, len(rows))
+	for _, m := range rows {
+		detail := fmt.Sprintf("%.2f %s on hand against a reorder point of %.2f.",
+			m.OnHand, m.Uom, m.ReorderPoint.Float64)
+		if m.OnOrder > 0 {
+			detail = fmt.Sprintf("%.2f %s on hand and %.2f on order, against a "+
+				"reorder point of %.2f.", m.OnHand, m.Uom, m.OnOrder,
+				m.ReorderPoint.Float64)
+		}
+		if m.LeadTimeDays.Valid {
+			detail += fmt.Sprintf(" Their lead time is %d days.", m.LeadTimeDays.Int32)
+		}
+		sev := sqlcgen.AlertSeverityWarning
+		if m.OnHand+m.OnOrder <= 0 {
+			sev = sqlcgen.AlertSeverityCritical
+		}
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindMaterialLow,
+			Severity:   sev,
+			SubjectKey: m.ID.String(),
+			Title:      m.Name + " is at its reorder point",
+			Detail:     detail,
+			EntityType: "material",
+			EntityID:   uuid.NullUUID{UUID: m.ID, Valid: true},
 		})
 	}
 	return out, nil

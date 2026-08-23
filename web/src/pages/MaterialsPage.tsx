@@ -6,6 +6,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
 import { materialClient } from "@/lib/clients";
+import { MaterialCoverPanel } from "@/components/MaterialCoverPanel";
 import {
   Cereal,
   CreateMaterialRequestSchema,
@@ -214,6 +215,8 @@ export function MaterialsPage() {
           </tbody>
         </table>
       </div>
+
+      <MaterialCoverPanel />
     </Shell>
   );
 }

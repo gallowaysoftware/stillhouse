@@ -58,6 +58,9 @@ const (
 	// Stillhouse invented is one nobody agreed to.
 	AlertKind_ALERT_KIND_EQUIPMENT_SERVICE_DUE AlertKind = 15
 	AlertKind_ALERT_KIND_EQUIPMENT_DOWN        AlertKind = 16
+	// A material at or below the reorder point the licensee recorded.
+	// Never raised for one with no reorder point set.
+	AlertKind_ALERT_KIND_MATERIAL_LOW AlertKind = 17
 )
 
 // Enum value maps for AlertKind.
@@ -80,6 +83,7 @@ var (
 		14: "ALERT_KIND_INVOICE_OVERDUE",
 		15: "ALERT_KIND_EQUIPMENT_SERVICE_DUE",
 		16: "ALERT_KIND_EQUIPMENT_DOWN",
+		17: "ALERT_KIND_MATERIAL_LOW",
 	}
 	AlertKind_value = map[string]int32{
 		"ALERT_KIND_UNSPECIFIED":               0,
@@ -99,6 +103,7 @@ var (
 		"ALERT_KIND_INVOICE_OVERDUE":           14,
 		"ALERT_KIND_EQUIPMENT_SERVICE_DUE":     15,
 		"ALERT_KIND_EQUIPMENT_DOWN":            16,
+		"ALERT_KIND_MATERIAL_LOW":              17,
 	}
 )
 
@@ -729,7 +734,7 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"\x14SetAlertEmailRequest\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\"1\n" +
 	"\x15SetAlertEmailResponse\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled*\xd0\x04\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled*\xed\x04\n" +
 	"\tAlertKind\x12\x1a\n" +
 	"\x16ALERT_KIND_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15ALERT_KIND_FILING_DUE\x10\x01\x12\x1d\n" +
@@ -748,7 +753,8 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"$ALERT_KIND_PROVINCIAL_FILING_OVERDUE\x10\r\x12\x1e\n" +
 	"\x1aALERT_KIND_INVOICE_OVERDUE\x10\x0e\x12$\n" +
 	" ALERT_KIND_EQUIPMENT_SERVICE_DUE\x10\x0f\x12\x1d\n" +
-	"\x19ALERT_KIND_EQUIPMENT_DOWN\x10\x10*\x81\x01\n" +
+	"\x19ALERT_KIND_EQUIPMENT_DOWN\x10\x10\x12\x1b\n" +
+	"\x17ALERT_KIND_MATERIAL_LOW\x10\x11*\x81\x01\n" +
 	"\rAlertSeverity\x12\x1e\n" +
 	"\x1aALERT_SEVERITY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13ALERT_SEVERITY_INFO\x10\x01\x12\x1a\n" +
