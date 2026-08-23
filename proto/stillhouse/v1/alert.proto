@@ -24,6 +24,11 @@ enum AlertKind {
   ALERT_KIND_WORK_ORDER_OVERDUE = 9;         // open work past its due date
   ALERT_KIND_WORK_ORDER_UNASSIGNED = 10;     // due soon and nobody owns it
   ALERT_KIND_REDISTILLATION_OPEN = 11;       // spirit into the still with no output recorded
+  // A provincial report, on the board's clock rather than CRA's. Missing
+  // one is a delisting rather than an assessment, so it is not treated
+  // more gently than the federal deadline.
+  ALERT_KIND_PROVINCIAL_FILING_DUE = 12;
+  ALERT_KIND_PROVINCIAL_FILING_OVERDUE = 13;
 }
 
 enum AlertSeverity {

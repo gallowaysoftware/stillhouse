@@ -110,6 +110,12 @@ var exportTables = []string{
 	// sales nobody can reproduce.
 	"cost_rates",
 	"labour_entries",
+	// The other filing calendar. A provincial deadline missed is a
+	// delisting, and an export offered for retention should carry the
+	// obligations as well as the figures.
+	"provincial_registrations",
+	"provincial_report_definitions",
+	"provincial_report_periods",
 	"alerts",
 	"audit_events",
 }

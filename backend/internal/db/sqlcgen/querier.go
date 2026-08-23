@@ -213,6 +213,7 @@ type Querier interface {
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
 	DeleteLabourEntry(ctx context.Context, id uuid.UUID) error
 	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
+	DeleteProvincialRegistration(ctx context.Context, id uuid.UUID) error
 	// Only reachable on a draft; the handler enforces that. A line that has
 	// been ordered against is history, not a typo.
 	DeletePurchaseOrderLine(ctx context.Context, id uuid.UUID) error
@@ -305,6 +306,8 @@ type Querier interface {
 	GetPriceListEntryForProduct(ctx context.Context, arg GetPriceListEntryForProductParams) (PriceListEntry, error)
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
+	GetProvincialRegistration(ctx context.Context, id uuid.UUID) (ProvincialRegistration, error)
+	GetProvincialReportDefinition(ctx context.Context, id uuid.UUID) (GetProvincialReportDefinitionRow, error)
 	GetPurchaseOrder(ctx context.Context, id uuid.UUID) (PurchaseOrder, error)
 	// Locked, because two receipts against one line both read the
 	// outstanding quantity, both decide there is room, and both increment —
@@ -480,6 +483,9 @@ type Querier interface {
 	// as_of empty means every list; otherwise only those in force that day.
 	ListPriceLists(ctx context.Context, asOf pgtype.Date) ([]PriceList, error)
 	ListProducts(ctx context.Context, includeArchived bool) ([]Product, error)
+	ListProvincialRegistrations(ctx context.Context) ([]ProvincialRegistration, error)
+	ListProvincialReportDefinitions(ctx context.Context, includeArchived bool) ([]ListProvincialReportDefinitionsRow, error)
+	ListProvincialReportPeriods(ctx context.Context, unfiledOnly bool) ([]ListProvincialReportPeriodsRow, error)
 	ListPurchaseOrderLines(ctx context.Context, purchaseOrderID uuid.UUID) ([]ListPurchaseOrderLinesRow, error)
 	ListPurchaseOrders(ctx context.Context, openOnly bool) ([]ListPurchaseOrdersRow, error)
 	ListRecentAlerts(ctx context.Context, limit int32) ([]ListRecentAlertsRow, error)
@@ -554,6 +560,7 @@ type Querier interface {
 	LockDocumentSequence(ctx context.Context, counter string) error
 	MarkAlertNotified(ctx context.Context, id uuid.UUID) error
 	MarkMaterialLotInvoiced(ctx context.Context, arg MarkMaterialLotInvoicedParams) (MaterialLot, error)
+	MarkProvincialReportFiled(ctx context.Context, arg MarkProvincialReportFiledParams) (ProvincialReportPeriod, error)
 	MarkRedistillationLossClassified(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	MarkShipmentShipped(ctx context.Context, arg MarkShipmentShippedParams) (Shipment, error)
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
@@ -567,6 +574,31 @@ type Querier interface {
 	NextShipmentNo(ctx context.Context) (int32, error)
 	NextWorkOrderNo(ctx context.Context) (int32, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
+	// Unfiled periods with a due date on or before a day, for the alert
+	// evaluator. A definition with no recorded due-days produces periods
+	// with a NULL due_on, which cannot be overdue and is not alerted on —
+	// an alert derived from a deadline nobody recorded would be inventing
+	// the deadline.
+	ProvincialPeriodsDueBefore(ctx context.Context, before pgtype.Date) ([]ProvincialPeriodsDueBeforeRow, error)
+	// What actually went into a jurisdiction: removals to a customer in it,
+	// by product.
+	//
+	// The jurisdiction is the customer's, not the lot's. A lot's jurisdiction
+	// is whose excise stamps are on the bottle, which is a federal fact about
+	// the stamp; where the sale happened is a fact about the buyer, and they
+	// diverge the first time a case stamped for one province is sold into
+	// another. Reporting Ontario sales by stamp would report a shipment to
+	// Alberta as Ontario's.
+	//
+	// Removals with no customer are excluded, and counted separately by
+	// ProvincialSalesUnattributed, because a removal with a free-text
+	// destination cannot be attributed to a board without guessing.
+	ProvincialSalesInPeriod(ctx context.Context, arg ProvincialSalesInPeriodParams) ([]ProvincialSalesInPeriodRow, error)
+	// Removals in the period that name no customer, so no board can be
+	// credited with them. Reported alongside every provincial figure: a
+	// report that silently omits them understates the province it is for,
+	// and the operator is the only one who knows where they went.
+	ProvincialSalesUnattributed(ctx context.Context, arg ProvincialSalesUnattributedParams) (ProvincialSalesUnattributedRow, error)
 	// Whether anything is still owed on this order, so the status can follow
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
@@ -629,6 +661,8 @@ type Querier interface {
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SalesOrderOutstanding(ctx context.Context, salesOrderID uuid.UUID) (SalesOrderOutstandingRow, error)
 	SaveCostRates(ctx context.Context, arg SaveCostRatesParams) (CostRate, error)
+	SaveProvincialRegistration(ctx context.Context, arg SaveProvincialRegistrationParams) (ProvincialRegistration, error)
+	SaveProvincialReportDefinition(ctx context.Context, arg SaveProvincialReportDefinitionParams) (ProvincialReportDefinition, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
@@ -881,6 +915,7 @@ type Querier interface {
 	UpsertJournalAccount(ctx context.Context, arg UpsertJournalAccountParams) (JournalAccount, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 	UpsertPriceListEntry(ctx context.Context, arg UpsertPriceListEntryParams) (PriceListEntry, error)
+	UpsertProvincialReportPeriod(ctx context.Context, arg UpsertProvincialReportPeriodParams) (ProvincialReportPeriod, error)
 	// One row per recipe_version. Partial-update: an axis that's NULL in
 	// the request preserves the existing DB value via COALESCE; an axis
 	// with a value overwrites. This lets an MCP / phone caller send

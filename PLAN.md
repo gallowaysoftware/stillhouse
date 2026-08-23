@@ -311,14 +311,14 @@ The layer Purtrak advertises and we don't have. Keep the refuse-to-guess
 discipline throughout: a jurisdiction whose board doesn't publish a rate
 produces no number.
 
-### I1 · Provincial reporting framework — P1
-
-The shape before the content: jurisdiction registry, rate provenance (already
-modelled in `pricing.proto`), report definitions, period alignment with the
-excise clock, and submission-format export. Depends on `D1` for customers and
-`F6` for product identifiers.
-
 ### I2 · Ontario, British Columbia, Alberta — P1
+
+The framework shipped in stage 179; this is the content that goes in it —
+each board's report definitions, deadlines and rates, from their own published
+material. **Blocked on primary sources.** Stillhouse will not ship a table of
+other people's deadlines from memory, and the framework is built so that a
+requirement with nothing behind it is marked `unknown` and never goes overdue.
+
 
 LCBO direct-delivery reporting and mark-up remittance, the Ontario Small
 Distillers Direct to Store Delivery programme (under 75,000 L, >50% raw

@@ -26,6 +26,8 @@ const (
 	AlertKindWorkOrderOverdue        AlertKind = "work_order_overdue"
 	AlertKindWorkOrderUnassigned     AlertKind = "work_order_unassigned"
 	AlertKindRedistillationOpen      AlertKind = "redistillation_open"
+	AlertKindProvincialFilingDue     AlertKind = "provincial_filing_due"
+	AlertKindProvincialFilingOverdue AlertKind = "provincial_filing_overdue"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -1420,6 +1422,95 @@ func (ns NullRemovalDestinationKind) Value() (driver.Value, error) {
 	return string(ns.RemovalDestinationKind), nil
 }
 
+type ReportingCadence string
+
+const (
+	ReportingCadenceMonthly     ReportingCadence = "monthly"
+	ReportingCadenceQuarterly   ReportingCadence = "quarterly"
+	ReportingCadenceSemiAnnual  ReportingCadence = "semi_annual"
+	ReportingCadenceAnnual      ReportingCadence = "annual"
+	ReportingCadencePerShipment ReportingCadence = "per_shipment"
+	ReportingCadenceOther       ReportingCadence = "other"
+)
+
+func (e *ReportingCadence) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReportingCadence(s)
+	case string:
+		*e = ReportingCadence(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReportingCadence: %T", src)
+	}
+	return nil
+}
+
+type NullReportingCadence struct {
+	ReportingCadence ReportingCadence `json:"reporting_cadence"`
+	Valid            bool             `json:"valid"` // Valid is true if ReportingCadence is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReportingCadence) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReportingCadence, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReportingCadence.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReportingCadence) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReportingCadence), nil
+}
+
+type RequirementProvenance string
+
+const (
+	RequirementProvenanceUnknown    RequirementProvenance = "unknown"
+	RequirementProvenanceIndicative RequirementProvenance = "indicative"
+	RequirementProvenanceSourced    RequirementProvenance = "sourced"
+)
+
+func (e *RequirementProvenance) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RequirementProvenance(s)
+	case string:
+		*e = RequirementProvenance(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RequirementProvenance: %T", src)
+	}
+	return nil
+}
+
+type NullRequirementProvenance struct {
+	RequirementProvenance RequirementProvenance `json:"requirement_provenance"`
+	Valid                 bool                  `json:"valid"` // Valid is true if RequirementProvenance is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRequirementProvenance) Scan(value interface{}) error {
+	if value == nil {
+		ns.RequirementProvenance, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RequirementProvenance.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRequirementProvenance) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RequirementProvenance), nil
+}
+
 type SalesOrderStatus string
 
 const (
@@ -2476,6 +2567,52 @@ type ProductionGauge struct {
 	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
 	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
 	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+}
+
+type ProvincialRegistration struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	Jurisdiction   string             `json:"jurisdiction"`
+	BoardName      string             `json:"board_name"`
+	RegistrationNo string             `json:"registration_no"`
+	PortalUrl      string             `json:"portal_url"`
+	Contact        string             `json:"contact"`
+	RegisteredOn   pgtype.Date        `json:"registered_on"`
+	EndedOn        pgtype.Date        `json:"ended_on"`
+	Notes          string             `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ProvincialReportDefinition struct {
+	ID                    uuid.UUID             `json:"id"`
+	TenantID              uuid.UUID             `json:"tenant_id"`
+	RegistrationID        uuid.UUID             `json:"registration_id"`
+	Name                  string                `json:"name"`
+	Cadence               ReportingCadence      `json:"cadence"`
+	DueDaysAfterPeriodEnd int32                 `json:"due_days_after_period_end"`
+	FollowsExciseClock    bool                  `json:"follows_excise_clock"`
+	Provenance            RequirementProvenance `json:"provenance"`
+	Authority             string                `json:"authority"`
+	ConfirmedOn           pgtype.Date           `json:"confirmed_on"`
+	Notes                 string                `json:"notes"`
+	Archived              bool                  `json:"archived"`
+	CreatedAt             pgtype.Timestamptz    `json:"created_at"`
+	UpdatedAt             pgtype.Timestamptz    `json:"updated_at"`
+}
+
+type ProvincialReportPeriod struct {
+	ID              uuid.UUID          `json:"id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	DefinitionID    uuid.UUID          `json:"definition_id"`
+	PeriodStart     pgtype.Date        `json:"period_start"`
+	PeriodEnd       pgtype.Date        `json:"period_end"`
+	DueOn           pgtype.Date        `json:"due_on"`
+	FiledAt         pgtype.Timestamptz `json:"filed_at"`
+	FiledBy         uuid.NullUUID      `json:"filed_by"`
+	Acknowledgement string             `json:"acknowledgement"`
+	Notes           string             `json:"notes"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 }
 
 type PurchaseOrder struct {

@@ -83,6 +83,8 @@ var Kinds = []string{
 	string(sqlcgen.AlertKindLicenceSecurityExpiring),
 	string(sqlcgen.AlertKindWorkOrderOverdue),
 	string(sqlcgen.AlertKindRedistillationOpen),
+	string(sqlcgen.AlertKindProvincialFilingDue),
+	string(sqlcgen.AlertKindProvincialFilingOverdue),
 }
 
 // Alert is one condition found true, before it is written.
@@ -140,6 +142,12 @@ func Evaluate(
 		return nil, fmt.Errorf("work orders: %w", err)
 	}
 	out = append(out, workAlerts...)
+
+	provincialAlerts, err := evaluateProvincialFilings(ctx, q, now)
+	if err != nil {
+		return nil, fmt.Errorf("provincial filings: %w", err)
+	}
+	out = append(out, provincialAlerts...)
 
 	redistAlerts, err := evaluateRedistillations(ctx, q, now)
 	if err != nil {
@@ -522,4 +530,68 @@ func plural(n int) string {
 		return ""
 	}
 	return "s"
+}
+
+// evaluateProvincialFilings raises on unfiled provincial reports whose due
+// date is near or past.
+//
+// A missed provincial deadline is a delisting rather than an assessment,
+// which is a worse outcome than a late B266, so this is not gentler than
+// the federal rule.
+//
+// Only periods with a recorded due date are considered. A definition
+// where the licensee never recorded how many days after period end the
+// report is owed produces periods with no due date, and one of those can
+// never be overdue — raising on it would mean inventing the deadline,
+// which is the thing this whole track refuses to do.
+func evaluateProvincialFilings(
+	ctx context.Context, q *sqlcgen.Queries, now time.Time,
+) ([]Alert, error) {
+	const noticeDays = 14
+	horizon := now.AddDate(0, 0, noticeDays)
+	rows, err := q.ProvincialPeriodsDueBefore(ctx, pgtype.Date{Valid: true, Time: horizon})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Alert, 0, len(rows))
+	for _, p := range rows {
+		today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+		days := int(p.DueOn.Time.Sub(today).Hours() / 24)
+		where := p.BoardName
+		if where == "" {
+			where = p.Jurisdiction
+		}
+		if days < 0 {
+			out = append(out, Alert{
+				Kind:       sqlcgen.AlertKindProvincialFilingOverdue,
+				Severity:   sqlcgen.AlertSeverityCritical,
+				SubjectKey: p.ID.String(),
+				Title: fmt.Sprintf("%s — %s was due %s",
+					where, p.DefinitionName, p.DueOn.Time.Format("2006-01-02")),
+				Detail: fmt.Sprintf(
+					"%d day%s late, covering %s to %s. A missed provincial deadline "+
+						"is a delisting, not an assessment.",
+					-days, plural(-days),
+					p.PeriodStart.Time.Format("2006-01-02"),
+					p.PeriodEnd.Time.Format("2006-01-02")),
+				EntityType: "provincial_report_period",
+				EntityID:   uuid.NullUUID{UUID: p.ID, Valid: true},
+			})
+			continue
+		}
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindProvincialFilingDue,
+			Severity:   sqlcgen.AlertSeverityWarning,
+			SubjectKey: p.ID.String(),
+			Title: fmt.Sprintf("%s — %s due %s",
+				where, p.DefinitionName, p.DueOn.Time.Format("2006-01-02")),
+			Detail: fmt.Sprintf("%d day%s away, covering %s to %s.",
+				days, plural(days),
+				p.PeriodStart.Time.Format("2006-01-02"),
+				p.PeriodEnd.Time.Format("2006-01-02")),
+			EntityType: "provincial_report_period",
+			EntityID:   uuid.NullUUID{UUID: p.ID, Valid: true},
+		})
+	}
+	return out, nil
 }

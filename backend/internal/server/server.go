@@ -106,6 +106,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	salesSvc := rpc.NewSalesService(tdb, logger)
 	labelSvc := rpc.NewLabelService(tdb, logger)
 	costingSvc := rpc.NewCostingService(tdb, logger)
+	provincialSvc := rpc.NewProvincialService(tdb, logger)
 	locationSvc := rpc.NewLocationService(tdb, logger)
 	workOrderSvc := rpc.NewWorkOrderService(tdb, logger)
 	redistillationSvc := rpc.NewRedistillationService(tdb, logger)
@@ -151,6 +152,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewSalesServiceHandler(salesSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewLabelServiceHandler(labelSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewCostingServiceHandler(costingSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewProvincialServiceHandler(provincialSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewLocationServiceHandler(locationSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewWorkOrderServiceHandler(workOrderSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewRedistillationServiceHandler(redistillationSvc, interceptors))
@@ -159,6 +161,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewAPITokenServiceHandler(apiTokenSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAlcoholometryServiceHandler(alcoholometrySvc, interceptors))
 	mux.Handle("/export/audit.csv", auditExportHandler(sm, tdb, logger))
+	// Every board wants a different form, so Stillhouse produces the
+	// figures rather than any of them.
+	mux.Handle("/export/provincial.csv", provincialExportHandler(sm, tdb, logger))
 	mux.Handle("/export/tenant.zip", tenantExportHandler(sm, pool, queries, logger))
 	// The monthly close: duty payable, material in and out, cost of
 	// sales, as one CSV with its own caveats attached.

@@ -356,6 +356,21 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.CostingService/DeleteCostRates":     roleOwner,
 	"/stillhouse.v1.CostingService/InventoryValue":      roleViewer,
 
+	// ProvincialService. Registering with a board, and recording what it
+	// expects and when, is the same class of act as the licence register
+	// — a fact about the licensee's obligations — so it sits with the
+	// owner and is on the accountant's surface. Reading the figures and
+	// marking a report filed are the engagement itself.
+	"/stillhouse.v1.ProvincialService/ListProvincialRegistrations":     roleViewer,
+	"/stillhouse.v1.ProvincialService/ListProvincialReportDefinitions": roleViewer,
+	"/stillhouse.v1.ProvincialService/ListProvincialReportPeriods":     roleViewer,
+	"/stillhouse.v1.ProvincialService/ProvincialSalesReport":           roleViewer,
+	"/stillhouse.v1.ProvincialService/GenerateProvincialPeriods":       roleOwner,
+	"/stillhouse.v1.ProvincialService/MarkProvincialReportFiled":       roleOwner,
+	"/stillhouse.v1.ProvincialService/SaveProvincialRegistration":      roleOwner,
+	"/stillhouse.v1.ProvincialService/DeleteProvincialRegistration":    roleOwner,
+	"/stillhouse.v1.ProvincialService/SaveProvincialReportDefinition":  roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,
@@ -467,6 +482,13 @@ var accountantAlso = map[string]bool{
 	// something to ask the owner to type on the bookkeeper's behalf.
 	"/stillhouse.v1.CostingService/SaveCostRates":   true,
 	"/stillhouse.v1.CostingService/DeleteCostRates": true,
+	// Provincial reporting is a filing engagement like the B266, and the
+	// consultant is usually the one who knows what each board wants.
+	"/stillhouse.v1.ProvincialService/SaveProvincialRegistration":     true,
+	"/stillhouse.v1.ProvincialService/DeleteProvincialRegistration":   true,
+	"/stillhouse.v1.ProvincialService/SaveProvincialReportDefinition": true,
+	"/stillhouse.v1.ProvincialService/GenerateProvincialPeriods":      true,
+	"/stillhouse.v1.ProvincialService/MarkProvincialReportFiled":      true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a

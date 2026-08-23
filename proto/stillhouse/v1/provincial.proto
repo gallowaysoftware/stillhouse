@@ -1,0 +1,225 @@
+// Provincial reporting: the shape, before the content.
+//
+// Every province a licensee sells into wants something reported, and no
+// two want the same thing on the same clock. What Stillhouse can build
+// without a source in front of it is the machinery — which jurisdictions
+// the licensee is registered in, what each expects, when it is due, and
+// what the figures are.
+//
+// What it must not do is ship a table of other people's filing deadlines
+// from memory. A definition is entered by the licensee or their
+// consultant and carries the citation it came from, the same discipline
+// the pricing rates follow. The distinction matters more here than
+// anywhere else: a wrong excise figure is caught by CRA, and a wrong
+// provincial deadline is caught by a delisting.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum ReportingCadence {
+  REPORTING_CADENCE_UNSPECIFIED = 0;
+  REPORTING_CADENCE_MONTHLY = 1;
+  REPORTING_CADENCE_QUARTERLY = 2;
+  REPORTING_CADENCE_SEMI_ANNUAL = 3;
+  REPORTING_CADENCE_ANNUAL = 4;
+  REPORTING_CADENCE_PER_SHIPMENT = 5;
+  REPORTING_CADENCE_OTHER = 6;
+}
+
+// Where a requirement came from. Mirrors RateProvenance in pricing.proto
+// because it is the same argument about the same kind of fact: a deadline
+// somebody half-remembers is worse than no deadline, because it looks
+// like one.
+enum RequirementProvenance {
+  REQUIREMENT_PROVENANCE_UNSPECIFIED = 0;
+  REQUIREMENT_PROVENANCE_UNKNOWN = 1;
+  REQUIREMENT_PROVENANCE_INDICATIVE = 2;
+  REQUIREMENT_PROVENANCE_SOURCED = 3;
+}
+
+message ProvincialRegistration {
+  string id = 1;
+  string jurisdiction = 2;       // ISO 3166-2, e.g. CA-ON
+  string board_name = 3;
+  string registration_no = 4;
+  string portal_url = 5;
+  string contact = 6;
+  string registered_on = 7;      // ISO date
+  string ended_on = 8;
+  string notes = 9;
+}
+
+message SaveProvincialRegistrationRequest {
+  string jurisdiction = 1;
+  string board_name = 2;
+  string registration_no = 3;
+  string portal_url = 4;
+  string contact = 5;
+  string registered_on = 6;
+  string ended_on = 7;
+  string notes = 8;
+}
+message SaveProvincialRegistrationResponse { ProvincialRegistration registration = 1; }
+
+message ListProvincialRegistrationsRequest {}
+message ListProvincialRegistrationsResponse {
+  repeated ProvincialRegistration registrations = 1;
+}
+
+message DeleteProvincialRegistrationRequest { string id = 1; }
+message DeleteProvincialRegistrationResponse {}
+
+message ProvincialReportDefinition {
+  string id = 1;
+  string registration_id = 2;
+  string jurisdiction = 3;
+  string board_name = 4;
+  string name = 5;
+  ReportingCadence cadence = 6;
+  // Days after the period ends. -1 means none recorded, which is
+  // different from due on the last day — a period with no recorded due
+  // date is never called overdue, because inventing the deadline would
+  // be worse than having none.
+  int32 due_days_after_period_end = 7;
+  // Whether the reporting period follows the calendar or the licensee's
+  // own fiscal month election — the clock the B266 runs on. A province
+  // wanting calendar months while the licensee files excise on a fiscal
+  // month is the ordinary case, and assuming they agree is how a period
+  // gets reported twice.
+  bool follows_excise_clock = 8;
+  RequirementProvenance provenance = 9;
+  // A URL, a policy number, a letter. Required when provenance is
+  // SOURCED, or the flag is a self-assessment nobody can check.
+  string authority = 10;
+  string confirmed_on = 11;   // ISO date
+  string notes = 12;
+  bool archived = 13;
+}
+
+message SaveProvincialReportDefinitionRequest {
+  string id = 1;              // empty creates
+  string registration_id = 2;
+  string name = 3;
+  ReportingCadence cadence = 4;
+  int32 due_days_after_period_end = 5;
+  bool follows_excise_clock = 6;
+  RequirementProvenance provenance = 7;
+  string authority = 8;
+  string confirmed_on = 9;
+  string notes = 10;
+  bool archived = 11;
+}
+message SaveProvincialReportDefinitionResponse { ProvincialReportDefinition definition = 1; }
+
+message ListProvincialReportDefinitionsRequest { bool include_archived = 1; }
+message ListProvincialReportDefinitionsResponse {
+  repeated ProvincialReportDefinition definitions = 1;
+}
+
+message ProvincialReportPeriod {
+  string id = 1;
+  string definition_id = 2;
+  string definition_name = 3;
+  string jurisdiction = 4;
+  string board_name = 5;
+  string period_start = 6;    // ISO date
+  string period_end = 7;
+  string due_on = 8;          // empty when the definition records no due-days
+  google.protobuf.Timestamp filed_at = 9;
+  string acknowledgement = 10;
+  string notes = 11;
+  // Days until due; negative when overdue. Zero when there is no due date.
+  int32 days_until_due = 12;
+  bool overdue = 13;
+}
+
+// Generate the period instances a definition implies between two dates.
+// Idempotent: re-running never duplicates a period, and never moves a due
+// date already set.
+message GenerateProvincialPeriodsRequest {
+  string definition_id = 1;
+  string from = 2;            // ISO date
+  string to = 3;              // ISO date
+}
+message GenerateProvincialPeriodsResponse {
+  repeated ProvincialReportPeriod periods = 1;
+}
+
+message ListProvincialReportPeriodsRequest { bool unfiled_only = 1; }
+message ListProvincialReportPeriodsResponse {
+  repeated ProvincialReportPeriod periods = 1;
+}
+
+message MarkProvincialReportFiledRequest {
+  string id = 1;
+  // What the board gave back. Required: a period marked filed with
+  // nothing to show for it is a claim, not a record.
+  string acknowledgement = 2;
+  string notes = 3;
+}
+message MarkProvincialReportFiledResponse { ProvincialReportPeriod period = 1; }
+
+// ----- the figures ----------------------------------------------------------
+
+message ProvincialSalesLine {
+  // Present because a report over every jurisdiction at once is a
+  // legitimate thing to ask for, and a row that does not say which
+  // province it is for is unreadable in that view.
+  string jurisdiction = 11;
+  string product_id = 1;
+  string product_name = 2;
+  string gtin = 3;
+  int32  bottle_size_ml = 4;
+  double bottle_abv_pct = 5;
+  int32  bottles = 6;
+  double litres = 7;
+  double laa = 8;
+  double duty_cad = 9;
+  int32  removals = 10;
+}
+
+message ProvincialSalesReportRequest {
+  // Empty reports every jurisdiction.
+  string jurisdiction = 1;
+  string period_start = 2;    // ISO date
+  string period_end = 3;
+}
+message ProvincialSalesReportResponse {
+  repeated ProvincialSalesLine lines = 1;
+  string jurisdiction = 2;
+  string period_start = 3;
+  string period_end = 4;
+  int32  total_bottles = 5;
+  double total_litres = 6;
+  double total_laa = 7;
+  double total_duty_cad = 8;
+
+  // Removals in the period that name no customer, so no board can be
+  // credited with them. Reported rather than dropped: a report that
+  // silently omits them understates the province it is for, and the
+  // operator is the only one who knows where they went.
+  int32  unattributed_bottles = 9;
+  double unattributed_laa = 10;
+  int32  unattributed_removals = 11;
+
+  // What the figures are and are not. Shown above the table, not in a
+  // help page.
+  string basis = 12;
+}
+
+service ProvincialService {
+  rpc SaveProvincialRegistration(SaveProvincialRegistrationRequest) returns (SaveProvincialRegistrationResponse);
+  rpc ListProvincialRegistrations(ListProvincialRegistrationsRequest) returns (ListProvincialRegistrationsResponse);
+  rpc DeleteProvincialRegistration(DeleteProvincialRegistrationRequest) returns (DeleteProvincialRegistrationResponse);
+
+  rpc SaveProvincialReportDefinition(SaveProvincialReportDefinitionRequest) returns (SaveProvincialReportDefinitionResponse);
+  rpc ListProvincialReportDefinitions(ListProvincialReportDefinitionsRequest) returns (ListProvincialReportDefinitionsResponse);
+
+  rpc GenerateProvincialPeriods(GenerateProvincialPeriodsRequest) returns (GenerateProvincialPeriodsResponse);
+  rpc ListProvincialReportPeriods(ListProvincialReportPeriodsRequest) returns (ListProvincialReportPeriodsResponse);
+  rpc MarkProvincialReportFiled(MarkProvincialReportFiledRequest) returns (MarkProvincialReportFiledResponse);
+
+  rpc ProvincialSalesReport(ProvincialSalesReportRequest) returns (ProvincialSalesReportResponse);
+}
