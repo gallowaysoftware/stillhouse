@@ -8,6 +8,7 @@ import { AlcoholometricTablesPanel } from "@/components/AlcoholometricTablesPane
 import { BuildPanel } from "@/components/BuildPanel";
 import { MFAPanel } from "@/components/MFAPanel";
 import { AlertEmailPanel } from "@/components/AlertEmailPanel";
+import { LicenceRegisterPanel } from "@/components/LicenceRegisterPanel";
 import { Shell } from "@/components/Shell";
 import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
 import {
@@ -260,6 +261,8 @@ export function SettingsPage() {
       />
 
       {isOwner && <InvitesPanel />}
+
+      <LicenceRegisterPanel />
 
       <AlertEmailPanel />
 

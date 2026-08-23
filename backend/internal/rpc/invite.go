@@ -218,6 +218,22 @@ func (s *InviteService) SignupWithInvite(
 		if e := tenantdb.SetTenantContext(ctx, q, tenant.ID); e != nil {
 			return e
 		}
+		// Seed the licence register with the spirits licence they just
+		// gave us. Without this a new tenant's register is empty while
+		// the tenant record carries a licence number — two places
+		// disagreeing about the same fact from the first minute. The
+		// expiry is deliberately left unset: we do not know it, and a
+		// guessed renewal date is worse than a missing one because it
+		// gets believed. The register screen says how many are missing.
+		if _, e := q.CreateExciseLicence(ctx, sqlcgen.CreateExciseLicenceParams{
+			TenantID:      tenant.ID,
+			Kind:          sqlcgen.ExciseLicenceKindSpirits,
+			LicenceNumber: tenant.CraSpiritsLicenceNumber,
+			EffectiveFrom: pgtype.Date{Valid: true, Time: time.Now().UTC()},
+			Notes:         "From signup. Set the expiry date to get renewal reminders.",
+		}); e != nil {
+			return e
+		}
 		// Audit on the new tenant so the trail says who created it via which code.
 		return audit.Write(ctx, q, tenant.ID, user.ID, "tenant", tenant.ID.String(),
 			sqlcgen.AuditActionCreate, map[string]any{

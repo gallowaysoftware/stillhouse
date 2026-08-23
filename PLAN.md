@@ -92,15 +92,6 @@ and only one may be used per application.
 Not applicable to a bulk-only, duty-at-packaging operation. Required the moment
 a tenant holds a second licence, which most hosted tenants will.
 
-### B1 · Licence register on the tenant — P1
-
-Today the tenant has two free-text licence-number fields. Replace with a
-register of held licences — spirits (L63A), excise warehouse (L63W), user's
-licence, wine — each with its number, effective and expiry dates (licences run
-two years and must be renewed 30 days out), and premises. This is the record
-that drives which returns exist, what the duty point is (`A1`), and what the
-renewal reminders are. Everything else in this track depends on it.
-
 ### B2 · B262 — excise warehouse return — P1
 
 A licensee with more than one licence files a separate return for each
@@ -132,14 +123,13 @@ spirits. Carries the special duty interaction with `A2`.
 B269 authorization for separate returns per branch or division. Depends on
 locations (`F1`).
 
-### B6 · Licence renewal and security tracking — P2
+### B6 · Licence renewal and security tracking — **shipped, stage 162**
 
-Two-year licence terms, renewal 30 days before expiry, and the spirits licence
-security requirement ($5,000–$2M, sufficient to cover amounts owing).
-
-The alerting machinery to carry these shipped in stage 160 — a rule here is a
-function returning `[]alerting.Alert` and a value on the `alert_kind` enum. What
-is missing is the subject: there is no licence register to expire, which is `B1`.
+Two-year terms, the 30-day renewal window and the s.23 security all became
+alerts once `B1` gave them a subject. What is left of this item is the parts
+that are not reminders: tracking whether the posted security is *sufficient*
+to cover amounts owing, which needs the duty liability at a point in time
+rather than a date.
 
 ---
 

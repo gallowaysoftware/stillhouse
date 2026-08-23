@@ -18,6 +18,9 @@ enum AlertKind {
   ALERT_KIND_STAMPS_LOW = 3;            // excise stamps below a week of cover
   ALERT_KIND_FERMENTATION_STALLED = 4;  // an active ferment with no recent reading
   ALERT_KIND_BARREL_UNMEASURED = 5;     // a cask with no gauge in over a year
+  ALERT_KIND_LICENCE_EXPIRING = 6;      // a held licence coming up for renewal
+  ALERT_KIND_LICENCE_EXPIRED = 7;       // one that already lapsed
+  ALERT_KIND_LICENCE_SECURITY_EXPIRING = 8;  // the s.23 security behind it
 }
 
 enum AlertSeverity {

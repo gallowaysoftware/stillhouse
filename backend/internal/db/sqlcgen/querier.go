@@ -76,6 +76,9 @@ type Querier interface {
 	ConsumeTOTPRecoveryCode(ctx context.Context, arg ConsumeTOTPRecoveryCodeParams) (UserTotpRecoveryCode, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
+	// How many live licences have no expiry recorded, so the register screen
+	// can say so rather than looking complete.
+	CountLicencesMissingExpiry(ctx context.Context) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
 	CountTenants(ctx context.Context) (int64, error)
 	CountUnusedTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) (int32, error)
@@ -93,6 +96,7 @@ type Querier interface {
 	CreateCalibration(ctx context.Context, arg CreateCalibrationParams) (InstrumentCalibration, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
+	CreateExciseLicence(ctx context.Context, arg CreateExciseLicenceParams) (ExciseLicence, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
 	CreateInstrument(ctx context.Context, arg CreateInstrumentParams) (Instrument, error)
 	CreateInventoryAdjustment(ctx context.Context, arg CreateInventoryAdjustmentParams) (InventoryAdjustment, error)
@@ -180,6 +184,7 @@ type Querier interface {
 	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
+	GetExciseLicence(ctx context.Context, id uuid.UUID) (ExciseLicence, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
 	GetInstrument(ctx context.Context, id uuid.UUID) (Instrument, error)
 	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
@@ -291,6 +296,10 @@ type Querier interface {
 	// always spans an indexation, so a period rate would charge half of them
 	// at the wrong one.
 	ListDutiableLossesInPeriod(ctx context.Context, arg ListDutiableLossesInPeriodParams) ([]ListDutiableLossesInPeriodRow, error)
+	// Ceased licences are included and flagged rather than hidden: a return
+	// filed under a licence that has since been surrendered still has to be
+	// explicable years later.
+	ListExciseLicences(ctx context.Context) ([]ExciseLicence, error)
 	ListFermentationLogs(ctx context.Context, fermentationRunID uuid.UUID) ([]FermentationLog, error)
 	ListFermentationRuns(ctx context.Context, status NullFermentationStatus) ([]ListFermentationRunsRow, error)
 	ListFermentationRunsByMash(ctx context.Context, mashRunID uuid.UUID) ([]FermentationRun, error)
@@ -303,6 +312,16 @@ type Querier interface {
 	ListInventoryAdjustments(ctx context.Context, arg ListInventoryAdjustmentsParams) ([]ListInventoryAdjustmentsRow, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
 	ListJournalAccounts(ctx context.Context) ([]JournalAccount, error)
+	// Live licences with a recorded expiry. The rule that reads this decides
+	// what counts as "soon"; the query's job is to exclude the ones that
+	// cannot expire on us — ceased, or with no expiry recorded at all.
+	//
+	// A licence with no expiry date is deliberately NOT alerted on. Every CRA
+	// licence expires, so a missing date means nobody has entered it, and
+	// inventing a two-year window from an effective date we may also be
+	// guessing at would produce a reminder for the wrong day — which is
+	// worse than none, because it would be believed.
+	ListLicencesForRenewalAlert(ctx context.Context) ([]ExciseLicence, error)
 	// Losses and their duty treatment.
 	//
 	// "A loss" is any movement whose reason takes alcohol out of the ledger
@@ -550,6 +569,7 @@ type Querier interface {
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) (Customer, error)
 	UpdateDistillationCut(ctx context.Context, arg UpdateDistillationCutParams) (DistillationCut, error)
 	UpdateDistillationStatus(ctx context.Context, arg UpdateDistillationStatusParams) (DistillationRun, error)
+	UpdateExciseLicence(ctx context.Context, arg UpdateExciseLicenceParams) (ExciseLicence, error)
 	UpdateFermentationStatus(ctx context.Context, arg UpdateFermentationStatusParams) (FermentationRun, error)
 	// The reporting calendar: how often the licensee files, and how their
 	// fiscal months are defined. Separate from UpdateTenant because these two

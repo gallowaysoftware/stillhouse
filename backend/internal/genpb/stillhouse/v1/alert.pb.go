@@ -33,12 +33,15 @@ const (
 type AlertKind int32
 
 const (
-	AlertKind_ALERT_KIND_UNSPECIFIED          AlertKind = 0
-	AlertKind_ALERT_KIND_FILING_DUE           AlertKind = 1 // a return is due soon, unsubmitted
-	AlertKind_ALERT_KIND_FILING_OVERDUE       AlertKind = 2 // its due date has passed
-	AlertKind_ALERT_KIND_STAMPS_LOW           AlertKind = 3 // excise stamps below a week of cover
-	AlertKind_ALERT_KIND_FERMENTATION_STALLED AlertKind = 4 // an active ferment with no recent reading
-	AlertKind_ALERT_KIND_BARREL_UNMEASURED    AlertKind = 5 // a cask with no gauge in over a year
+	AlertKind_ALERT_KIND_UNSPECIFIED               AlertKind = 0
+	AlertKind_ALERT_KIND_FILING_DUE                AlertKind = 1 // a return is due soon, unsubmitted
+	AlertKind_ALERT_KIND_FILING_OVERDUE            AlertKind = 2 // its due date has passed
+	AlertKind_ALERT_KIND_STAMPS_LOW                AlertKind = 3 // excise stamps below a week of cover
+	AlertKind_ALERT_KIND_FERMENTATION_STALLED      AlertKind = 4 // an active ferment with no recent reading
+	AlertKind_ALERT_KIND_BARREL_UNMEASURED         AlertKind = 5 // a cask with no gauge in over a year
+	AlertKind_ALERT_KIND_LICENCE_EXPIRING          AlertKind = 6 // a held licence coming up for renewal
+	AlertKind_ALERT_KIND_LICENCE_EXPIRED           AlertKind = 7 // one that already lapsed
+	AlertKind_ALERT_KIND_LICENCE_SECURITY_EXPIRING AlertKind = 8 // the s.23 security behind it
 )
 
 // Enum value maps for AlertKind.
@@ -50,14 +53,20 @@ var (
 		3: "ALERT_KIND_STAMPS_LOW",
 		4: "ALERT_KIND_FERMENTATION_STALLED",
 		5: "ALERT_KIND_BARREL_UNMEASURED",
+		6: "ALERT_KIND_LICENCE_EXPIRING",
+		7: "ALERT_KIND_LICENCE_EXPIRED",
+		8: "ALERT_KIND_LICENCE_SECURITY_EXPIRING",
 	}
 	AlertKind_value = map[string]int32{
-		"ALERT_KIND_UNSPECIFIED":          0,
-		"ALERT_KIND_FILING_DUE":           1,
-		"ALERT_KIND_FILING_OVERDUE":       2,
-		"ALERT_KIND_STAMPS_LOW":           3,
-		"ALERT_KIND_FERMENTATION_STALLED": 4,
-		"ALERT_KIND_BARREL_UNMEASURED":    5,
+		"ALERT_KIND_UNSPECIFIED":               0,
+		"ALERT_KIND_FILING_DUE":                1,
+		"ALERT_KIND_FILING_OVERDUE":            2,
+		"ALERT_KIND_STAMPS_LOW":                3,
+		"ALERT_KIND_FERMENTATION_STALLED":      4,
+		"ALERT_KIND_BARREL_UNMEASURED":         5,
+		"ALERT_KIND_LICENCE_EXPIRING":          6,
+		"ALERT_KIND_LICENCE_EXPIRED":           7,
+		"ALERT_KIND_LICENCE_SECURITY_EXPIRING": 8,
 	}
 )
 
@@ -688,14 +697,17 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"\x14SetAlertEmailRequest\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\"1\n" +
 	"\x15SetAlertEmailResponse\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled*\xc3\x01\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled*\xae\x02\n" +
 	"\tAlertKind\x12\x1a\n" +
 	"\x16ALERT_KIND_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15ALERT_KIND_FILING_DUE\x10\x01\x12\x1d\n" +
 	"\x19ALERT_KIND_FILING_OVERDUE\x10\x02\x12\x19\n" +
 	"\x15ALERT_KIND_STAMPS_LOW\x10\x03\x12#\n" +
 	"\x1fALERT_KIND_FERMENTATION_STALLED\x10\x04\x12 \n" +
-	"\x1cALERT_KIND_BARREL_UNMEASURED\x10\x05*\x81\x01\n" +
+	"\x1cALERT_KIND_BARREL_UNMEASURED\x10\x05\x12\x1f\n" +
+	"\x1bALERT_KIND_LICENCE_EXPIRING\x10\x06\x12\x1e\n" +
+	"\x1aALERT_KIND_LICENCE_EXPIRED\x10\a\x12(\n" +
+	"$ALERT_KIND_LICENCE_SECURITY_EXPIRING\x10\b*\x81\x01\n" +
 	"\rAlertSeverity\x12\x1e\n" +
 	"\x1aALERT_SEVERITY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13ALERT_SEVERITY_INFO\x10\x01\x12\x1a\n" +

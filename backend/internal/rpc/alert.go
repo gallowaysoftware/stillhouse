@@ -236,6 +236,12 @@ func alertKindToProto(k sqlcgen.AlertKind) stillhousev1.AlertKind {
 		return stillhousev1.AlertKind_ALERT_KIND_FERMENTATION_STALLED
 	case sqlcgen.AlertKindBarrelUnmeasured:
 		return stillhousev1.AlertKind_ALERT_KIND_BARREL_UNMEASURED
+	case sqlcgen.AlertKindLicenceExpiring:
+		return stillhousev1.AlertKind_ALERT_KIND_LICENCE_EXPIRING
+	case sqlcgen.AlertKindLicenceExpired:
+		return stillhousev1.AlertKind_ALERT_KIND_LICENCE_EXPIRED
+	case sqlcgen.AlertKindLicenceSecurityExpiring:
+		return stillhousev1.AlertKind_ALERT_KIND_LICENCE_SECURITY_EXPIRING
 	}
 	return stillhousev1.AlertKind_ALERT_KIND_UNSPECIFIED
 }

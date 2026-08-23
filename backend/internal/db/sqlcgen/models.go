@@ -15,11 +15,14 @@ import (
 type AlertKind string
 
 const (
-	AlertKindFilingDue           AlertKind = "filing_due"
-	AlertKindFilingOverdue       AlertKind = "filing_overdue"
-	AlertKindStampsLow           AlertKind = "stamps_low"
-	AlertKindFermentationStalled AlertKind = "fermentation_stalled"
-	AlertKindBarrelUnmeasured    AlertKind = "barrel_unmeasured"
+	AlertKindFilingDue               AlertKind = "filing_due"
+	AlertKindFilingOverdue           AlertKind = "filing_overdue"
+	AlertKindStampsLow               AlertKind = "stamps_low"
+	AlertKindFermentationStalled     AlertKind = "fermentation_stalled"
+	AlertKindBarrelUnmeasured        AlertKind = "barrel_unmeasured"
+	AlertKindLicenceExpiring         AlertKind = "licence_expiring"
+	AlertKindLicenceExpired          AlertKind = "licence_expired"
+	AlertKindLicenceSecurityExpiring AlertKind = "licence_security_expiring"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -569,6 +572,51 @@ func (ns NullDutyPoint) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.DutyPoint), nil
+}
+
+type ExciseLicenceKind string
+
+const (
+	ExciseLicenceKindSpirits         ExciseLicenceKind = "spirits"
+	ExciseLicenceKindExciseWarehouse ExciseLicenceKind = "excise_warehouse"
+	ExciseLicenceKindUsers           ExciseLicenceKind = "users"
+	ExciseLicenceKindWine            ExciseLicenceKind = "wine"
+	ExciseLicenceKindOther           ExciseLicenceKind = "other"
+)
+
+func (e *ExciseLicenceKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ExciseLicenceKind(s)
+	case string:
+		*e = ExciseLicenceKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ExciseLicenceKind: %T", src)
+	}
+	return nil
+}
+
+type NullExciseLicenceKind struct {
+	ExciseLicenceKind ExciseLicenceKind `json:"excise_licence_kind"`
+	Valid             bool              `json:"valid"` // Valid is true if ExciseLicenceKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullExciseLicenceKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.ExciseLicenceKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ExciseLicenceKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullExciseLicenceKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ExciseLicenceKind), nil
 }
 
 type ExciseStampOrderStatus string
@@ -1537,6 +1585,22 @@ type DistillationRun struct {
 	VoidedAt     pgtype.Timestamptz `json:"voided_at"`
 	VoidedBy     uuid.NullUUID      `json:"voided_by"`
 	VoidedReason string             `json:"voided_reason"`
+}
+
+type ExciseLicence struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	Kind              ExciseLicenceKind  `json:"kind"`
+	LicenceNumber     string             `json:"licence_number"`
+	EffectiveFrom     pgtype.Date        `json:"effective_from"`
+	ExpiresOn         pgtype.Date        `json:"expires_on"`
+	Premises          string             `json:"premises"`
+	SecurityAmountCad pgtype.Numeric     `json:"security_amount_cad"`
+	SecurityExpiresOn pgtype.Date        `json:"security_expires_on"`
+	Notes             string             `json:"notes"`
+	CeasedOn          pgtype.Date        `json:"ceased_on"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 }
 
 type ExciseStampOrder struct {

@@ -189,6 +189,67 @@ func (FiscalMonthBasis) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{2}
 }
 
+// What the licensee actually holds. Which returns exist is a function of
+// which licences are held; so is where the duty point falls, and so is
+// what renewal reminders are possible at all.
+type ExciseLicenceKind int32
+
+const (
+	ExciseLicenceKind_EXCISE_LICENCE_KIND_UNSPECIFIED      ExciseLicenceKind = 0
+	ExciseLicenceKind_EXCISE_LICENCE_KIND_SPIRITS          ExciseLicenceKind = 1 // L63A — produce or package spirits
+	ExciseLicenceKind_EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE ExciseLicenceKind = 2 // L63W — store non-duty-paid spirits
+	ExciseLicenceKind_EXCISE_LICENCE_KIND_USERS            ExciseLicenceKind = 3 // use spirits in manufacture
+	ExciseLicenceKind_EXCISE_LICENCE_KIND_WINE             ExciseLicenceKind = 4
+	ExciseLicenceKind_EXCISE_LICENCE_KIND_OTHER            ExciseLicenceKind = 5
+)
+
+// Enum value maps for ExciseLicenceKind.
+var (
+	ExciseLicenceKind_name = map[int32]string{
+		0: "EXCISE_LICENCE_KIND_UNSPECIFIED",
+		1: "EXCISE_LICENCE_KIND_SPIRITS",
+		2: "EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE",
+		3: "EXCISE_LICENCE_KIND_USERS",
+		4: "EXCISE_LICENCE_KIND_WINE",
+		5: "EXCISE_LICENCE_KIND_OTHER",
+	}
+	ExciseLicenceKind_value = map[string]int32{
+		"EXCISE_LICENCE_KIND_UNSPECIFIED":      0,
+		"EXCISE_LICENCE_KIND_SPIRITS":          1,
+		"EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE": 2,
+		"EXCISE_LICENCE_KIND_USERS":            3,
+		"EXCISE_LICENCE_KIND_WINE":             4,
+		"EXCISE_LICENCE_KIND_OTHER":            5,
+	}
+)
+
+func (x ExciseLicenceKind) Enum() *ExciseLicenceKind {
+	p := new(ExciseLicenceKind)
+	*p = x
+	return p
+}
+
+func (x ExciseLicenceKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ExciseLicenceKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_tenant_proto_enumTypes[3].Descriptor()
+}
+
+func (ExciseLicenceKind) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_tenant_proto_enumTypes[3]
+}
+
+func (x ExciseLicenceKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ExciseLicenceKind.Descriptor instead.
+func (ExciseLicenceKind) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{3}
+}
+
 type Tenant struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	Id                           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -873,6 +934,379 @@ func (*DeleteMyTenantResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{10}
 }
 
+type ExciseLicence struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Kind          ExciseLicenceKind      `protobuf:"varint,2,opt,name=kind,proto3,enum=stillhouse.v1.ExciseLicenceKind" json:"kind,omitempty"`
+	LicenceNumber string                 `protobuf:"bytes,3,opt,name=licence_number,json=licenceNumber,proto3" json:"licence_number,omitempty"`
+	EffectiveFrom string                 `protobuf:"bytes,4,opt,name=effective_from,json=effectiveFrom,proto3" json:"effective_from,omitempty"` // ISO date
+	// ISO date, or empty when nobody has recorded it. Empty raises no
+	// renewal reminder: every CRA licence expires, so a missing date means
+	// it is unknown, and a reminder for a guessed day gets believed.
+	ExpiresOn string `protobuf:"bytes,5,opt,name=expires_on,json=expiresOn,proto3" json:"expires_on,omitempty"`
+	Premises  string `protobuf:"bytes,6,opt,name=premises,proto3" json:"premises,omitempty"`
+	// Security posted under s.23. A decimal string, because it is money.
+	SecurityAmountCad string `protobuf:"bytes,7,opt,name=security_amount_cad,json=securityAmountCad,proto3" json:"security_amount_cad,omitempty"`
+	SecurityExpiresOn string `protobuf:"bytes,8,opt,name=security_expires_on,json=securityExpiresOn,proto3" json:"security_expires_on,omitempty"`
+	Notes             string `protobuf:"bytes,9,opt,name=notes,proto3" json:"notes,omitempty"`
+	// Surrendered or revoked. The row is kept, not deleted: a return filed
+	// under a licence that no longer exists still has to be explicable.
+	CeasedOn      string `protobuf:"bytes,10,opt,name=ceased_on,json=ceasedOn,proto3" json:"ceased_on,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExciseLicence) Reset() {
+	*x = ExciseLicence{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExciseLicence) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExciseLicence) ProtoMessage() {}
+
+func (x *ExciseLicence) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExciseLicence.ProtoReflect.Descriptor instead.
+func (*ExciseLicence) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ExciseLicence) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetKind() ExciseLicenceKind {
+	if x != nil {
+		return x.Kind
+	}
+	return ExciseLicenceKind_EXCISE_LICENCE_KIND_UNSPECIFIED
+}
+
+func (x *ExciseLicence) GetLicenceNumber() string {
+	if x != nil {
+		return x.LicenceNumber
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetEffectiveFrom() string {
+	if x != nil {
+		return x.EffectiveFrom
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetExpiresOn() string {
+	if x != nil {
+		return x.ExpiresOn
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetPremises() string {
+	if x != nil {
+		return x.Premises
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetSecurityAmountCad() string {
+	if x != nil {
+		return x.SecurityAmountCad
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetSecurityExpiresOn() string {
+	if x != nil {
+		return x.SecurityExpiresOn
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+func (x *ExciseLicence) GetCeasedOn() string {
+	if x != nil {
+		return x.CeasedOn
+	}
+	return ""
+}
+
+type ListExciseLicencesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListExciseLicencesRequest) Reset() {
+	*x = ListExciseLicencesRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListExciseLicencesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListExciseLicencesRequest) ProtoMessage() {}
+
+func (x *ListExciseLicencesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListExciseLicencesRequest.ProtoReflect.Descriptor instead.
+func (*ListExciseLicencesRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{12}
+}
+
+type ListExciseLicencesResponse struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Licences []*ExciseLicence       `protobuf:"bytes,1,rep,name=licences,proto3" json:"licences,omitempty"`
+	// Live licences with no expiry recorded, so the screen can say the
+	// register is incomplete rather than looking finished.
+	MissingExpiryCount int32 `protobuf:"varint,2,opt,name=missing_expiry_count,json=missingExpiryCount,proto3" json:"missing_expiry_count,omitempty"`
+	unknownFields      protoimpl.UnknownFields
+	sizeCache          protoimpl.SizeCache
+}
+
+func (x *ListExciseLicencesResponse) Reset() {
+	*x = ListExciseLicencesResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListExciseLicencesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListExciseLicencesResponse) ProtoMessage() {}
+
+func (x *ListExciseLicencesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListExciseLicencesResponse.ProtoReflect.Descriptor instead.
+func (*ListExciseLicencesResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListExciseLicencesResponse) GetLicences() []*ExciseLicence {
+	if x != nil {
+		return x.Licences
+	}
+	return nil
+}
+
+func (x *ListExciseLicencesResponse) GetMissingExpiryCount() int32 {
+	if x != nil {
+		return x.MissingExpiryCount
+	}
+	return 0
+}
+
+type SaveExciseLicenceRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Empty id creates; otherwise updates that licence.
+	Id                string            `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Kind              ExciseLicenceKind `protobuf:"varint,2,opt,name=kind,proto3,enum=stillhouse.v1.ExciseLicenceKind" json:"kind,omitempty"`
+	LicenceNumber     string            `protobuf:"bytes,3,opt,name=licence_number,json=licenceNumber,proto3" json:"licence_number,omitempty"`
+	EffectiveFrom     string            `protobuf:"bytes,4,opt,name=effective_from,json=effectiveFrom,proto3" json:"effective_from,omitempty"`
+	ExpiresOn         string            `protobuf:"bytes,5,opt,name=expires_on,json=expiresOn,proto3" json:"expires_on,omitempty"`
+	Premises          string            `protobuf:"bytes,6,opt,name=premises,proto3" json:"premises,omitempty"`
+	SecurityAmountCad string            `protobuf:"bytes,7,opt,name=security_amount_cad,json=securityAmountCad,proto3" json:"security_amount_cad,omitempty"`
+	SecurityExpiresOn string            `protobuf:"bytes,8,opt,name=security_expires_on,json=securityExpiresOn,proto3" json:"security_expires_on,omitempty"`
+	Notes             string            `protobuf:"bytes,9,opt,name=notes,proto3" json:"notes,omitempty"`
+	CeasedOn          string            `protobuf:"bytes,10,opt,name=ceased_on,json=ceasedOn,proto3" json:"ceased_on,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *SaveExciseLicenceRequest) Reset() {
+	*x = SaveExciseLicenceRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveExciseLicenceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveExciseLicenceRequest) ProtoMessage() {}
+
+func (x *SaveExciseLicenceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveExciseLicenceRequest.ProtoReflect.Descriptor instead.
+func (*SaveExciseLicenceRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *SaveExciseLicenceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetKind() ExciseLicenceKind {
+	if x != nil {
+		return x.Kind
+	}
+	return ExciseLicenceKind_EXCISE_LICENCE_KIND_UNSPECIFIED
+}
+
+func (x *SaveExciseLicenceRequest) GetLicenceNumber() string {
+	if x != nil {
+		return x.LicenceNumber
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetEffectiveFrom() string {
+	if x != nil {
+		return x.EffectiveFrom
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetExpiresOn() string {
+	if x != nil {
+		return x.ExpiresOn
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetPremises() string {
+	if x != nil {
+		return x.Premises
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetSecurityAmountCad() string {
+	if x != nil {
+		return x.SecurityAmountCad
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetSecurityExpiresOn() string {
+	if x != nil {
+		return x.SecurityExpiresOn
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+func (x *SaveExciseLicenceRequest) GetCeasedOn() string {
+	if x != nil {
+		return x.CeasedOn
+	}
+	return ""
+}
+
+type SaveExciseLicenceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Licence       *ExciseLicence         `protobuf:"bytes,1,opt,name=licence,proto3" json:"licence,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveExciseLicenceResponse) Reset() {
+	*x = SaveExciseLicenceResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveExciseLicenceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveExciseLicenceResponse) ProtoMessage() {}
+
+func (x *SaveExciseLicenceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveExciseLicenceResponse.ProtoReflect.Descriptor instead.
+func (*SaveExciseLicenceResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SaveExciseLicenceResponse) GetLicence() *ExciseLicence {
+	if x != nil {
+		return x.Licence
+	}
+	return nil
+}
+
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
@@ -927,7 +1361,39 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\":\n" +
 	"\x15DeleteMyTenantRequest\x12!\n" +
 	"\fconfirm_name\x18\x01 \x01(\tR\vconfirmName\"\x18\n" +
-	"\x16DeleteMyTenantResponse*_\n" +
+	"\x16DeleteMyTenantResponse\"\xf1\x02\n" +
+	"\rExciseLicence\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x124\n" +
+	"\x04kind\x18\x02 \x01(\x0e2 .stillhouse.v1.ExciseLicenceKindR\x04kind\x12%\n" +
+	"\x0elicence_number\x18\x03 \x01(\tR\rlicenceNumber\x12%\n" +
+	"\x0eeffective_from\x18\x04 \x01(\tR\reffectiveFrom\x12\x1d\n" +
+	"\n" +
+	"expires_on\x18\x05 \x01(\tR\texpiresOn\x12\x1a\n" +
+	"\bpremises\x18\x06 \x01(\tR\bpremises\x12.\n" +
+	"\x13security_amount_cad\x18\a \x01(\tR\x11securityAmountCad\x12.\n" +
+	"\x13security_expires_on\x18\b \x01(\tR\x11securityExpiresOn\x12\x14\n" +
+	"\x05notes\x18\t \x01(\tR\x05notes\x12\x1b\n" +
+	"\tceased_on\x18\n" +
+	" \x01(\tR\bceasedOn\"\x1b\n" +
+	"\x19ListExciseLicencesRequest\"\x88\x01\n" +
+	"\x1aListExciseLicencesResponse\x128\n" +
+	"\blicences\x18\x01 \x03(\v2\x1c.stillhouse.v1.ExciseLicenceR\blicences\x120\n" +
+	"\x14missing_expiry_count\x18\x02 \x01(\x05R\x12missingExpiryCount\"\xfc\x02\n" +
+	"\x18SaveExciseLicenceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x124\n" +
+	"\x04kind\x18\x02 \x01(\x0e2 .stillhouse.v1.ExciseLicenceKindR\x04kind\x12%\n" +
+	"\x0elicence_number\x18\x03 \x01(\tR\rlicenceNumber\x12%\n" +
+	"\x0eeffective_from\x18\x04 \x01(\tR\reffectiveFrom\x12\x1d\n" +
+	"\n" +
+	"expires_on\x18\x05 \x01(\tR\texpiresOn\x12\x1a\n" +
+	"\bpremises\x18\x06 \x01(\tR\bpremises\x12.\n" +
+	"\x13security_amount_cad\x18\a \x01(\tR\x11securityAmountCad\x12.\n" +
+	"\x13security_expires_on\x18\b \x01(\tR\x11securityExpiresOn\x12\x14\n" +
+	"\x05notes\x18\t \x01(\tR\x05notes\x12\x1b\n" +
+	"\tceased_on\x18\n" +
+	" \x01(\tR\bceasedOn\"S\n" +
+	"\x19SaveExciseLicenceResponse\x126\n" +
+	"\alicence\x18\x01 \x01(\v2\x1c.stillhouse.v1.ExciseLicenceR\alicence*_\n" +
 	"\tDutyPoint\x12\x1a\n" +
 	"\x16DUTY_POINT_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17DUTY_POINT_AT_PACKAGING\x10\x01\x12\x19\n" +
@@ -939,8 +1405,17 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x10FiscalMonthBasis\x12\"\n" +
 	"\x1eFISCAL_MONTH_BASIS_UNSPECIFIED\x10\x00\x12%\n" +
 	"!FISCAL_MONTH_BASIS_CALENDAR_MONTH\x10\x01\x12)\n" +
-	"%FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH\x10\x022\xe1\x03\n" +
-	"\rTenantService\x12o\n" +
+	"%FISCAL_MONTH_BASIS_FIXED_DAY_OF_MONTH\x10\x02*\xdf\x01\n" +
+	"\x11ExciseLicenceKind\x12#\n" +
+	"\x1fEXCISE_LICENCE_KIND_UNSPECIFIED\x10\x00\x12\x1f\n" +
+	"\x1bEXCISE_LICENCE_KIND_SPIRITS\x10\x01\x12(\n" +
+	"$EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE\x10\x02\x12\x1d\n" +
+	"\x19EXCISE_LICENCE_KIND_USERS\x10\x03\x12\x1c\n" +
+	"\x18EXCISE_LICENCE_KIND_WINE\x10\x04\x12\x1d\n" +
+	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\xb4\x05\n" +
+	"\rTenantService\x12i\n" +
+	"\x12ListExciseLicences\x12(.stillhouse.v1.ListExciseLicencesRequest\x1a).stillhouse.v1.ListExciseLicencesResponse\x12f\n" +
+	"\x11SaveExciseLicence\x12'.stillhouse.v1.SaveExciseLicenceRequest\x1a(.stillhouse.v1.SaveExciseLicenceResponse\x12o\n" +
 	"\x14UpdateFilingCalendar\x12*.stillhouse.v1.UpdateFilingCalendarRequest\x1a+.stillhouse.v1.UpdateFilingCalendarResponse\x12W\n" +
 	"\fCreateTenant\x12\".stillhouse.v1.CreateTenantRequest\x1a#.stillhouse.v1.CreateTenantResponse\x12N\n" +
 	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
@@ -960,52 +1435,66 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_tenant_proto_rawDescData
 }
 
-var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(DutyPoint)(0),                       // 0: stillhouse.v1.DutyPoint
 	(FilingFrequency)(0),                 // 1: stillhouse.v1.FilingFrequency
 	(FiscalMonthBasis)(0),                // 2: stillhouse.v1.FiscalMonthBasis
-	(*Tenant)(nil),                       // 3: stillhouse.v1.Tenant
-	(*CreateTenantRequest)(nil),          // 4: stillhouse.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),         // 5: stillhouse.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),             // 6: stillhouse.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),            // 7: stillhouse.v1.GetTenantResponse
-	(*UpdateFilingCalendarRequest)(nil),  // 8: stillhouse.v1.UpdateFilingCalendarRequest
-	(*UpdateFilingCalendarResponse)(nil), // 9: stillhouse.v1.UpdateFilingCalendarResponse
-	(*UpdateTenantRequest)(nil),          // 10: stillhouse.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),         // 11: stillhouse.v1.UpdateTenantResponse
-	(*DeleteMyTenantRequest)(nil),        // 12: stillhouse.v1.DeleteMyTenantRequest
-	(*DeleteMyTenantResponse)(nil),       // 13: stillhouse.v1.DeleteMyTenantResponse
-	(*timestamppb.Timestamp)(nil),        // 14: google.protobuf.Timestamp
+	(ExciseLicenceKind)(0),               // 3: stillhouse.v1.ExciseLicenceKind
+	(*Tenant)(nil),                       // 4: stillhouse.v1.Tenant
+	(*CreateTenantRequest)(nil),          // 5: stillhouse.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),         // 6: stillhouse.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),             // 7: stillhouse.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),            // 8: stillhouse.v1.GetTenantResponse
+	(*UpdateFilingCalendarRequest)(nil),  // 9: stillhouse.v1.UpdateFilingCalendarRequest
+	(*UpdateFilingCalendarResponse)(nil), // 10: stillhouse.v1.UpdateFilingCalendarResponse
+	(*UpdateTenantRequest)(nil),          // 11: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),         // 12: stillhouse.v1.UpdateTenantResponse
+	(*DeleteMyTenantRequest)(nil),        // 13: stillhouse.v1.DeleteMyTenantRequest
+	(*DeleteMyTenantResponse)(nil),       // 14: stillhouse.v1.DeleteMyTenantResponse
+	(*ExciseLicence)(nil),                // 15: stillhouse.v1.ExciseLicence
+	(*ListExciseLicencesRequest)(nil),    // 16: stillhouse.v1.ListExciseLicencesRequest
+	(*ListExciseLicencesResponse)(nil),   // 17: stillhouse.v1.ListExciseLicencesResponse
+	(*SaveExciseLicenceRequest)(nil),     // 18: stillhouse.v1.SaveExciseLicenceRequest
+	(*SaveExciseLicenceResponse)(nil),    // 19: stillhouse.v1.SaveExciseLicenceResponse
+	(*timestamppb.Timestamp)(nil),        // 20: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	14, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	14, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	20, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	20, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
 	1,  // 3: stillhouse.v1.Tenant.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 4: stillhouse.v1.Tenant.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
-	3,  // 5: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	3,  // 6: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	4,  // 5: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	4,  // 6: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	1,  // 7: stillhouse.v1.UpdateFilingCalendarRequest.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 8: stillhouse.v1.UpdateFilingCalendarRequest.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
-	3,  // 9: stillhouse.v1.UpdateFilingCalendarResponse.tenant:type_name -> stillhouse.v1.Tenant
-	3,  // 10: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	8,  // 11: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
-	4,  // 12: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	6,  // 13: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	10, // 14: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	12, // 15: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	9,  // 16: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
-	5,  // 17: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	7,  // 18: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	11, // 19: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	13, // 20: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	16, // [16:21] is the sub-list for method output_type
-	11, // [11:16] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	4,  // 9: stillhouse.v1.UpdateFilingCalendarResponse.tenant:type_name -> stillhouse.v1.Tenant
+	4,  // 10: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	3,  // 11: stillhouse.v1.ExciseLicence.kind:type_name -> stillhouse.v1.ExciseLicenceKind
+	15, // 12: stillhouse.v1.ListExciseLicencesResponse.licences:type_name -> stillhouse.v1.ExciseLicence
+	3,  // 13: stillhouse.v1.SaveExciseLicenceRequest.kind:type_name -> stillhouse.v1.ExciseLicenceKind
+	15, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
+	16, // 15: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
+	18, // 16: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
+	9,  // 17: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
+	5,  // 18: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	7,  // 19: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	11, // 20: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	13, // 21: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	17, // 22: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
+	19, // 23: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
+	10, // 24: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
+	6,  // 25: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	8,  // 26: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	12, // 27: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	14, // 28: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	22, // [22:29] is the sub-list for method output_type
+	15, // [15:22] is the sub-list for method input_type
+	15, // [15:15] is the sub-list for extension type_name
+	15, // [15:15] is the sub-list for extension extendee
+	0,  // [0:15] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -1018,8 +1507,8 @@ func file_stillhouse_v1_tenant_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
-			NumEnums:      3,
-			NumMessages:   11,
+			NumEnums:      4,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

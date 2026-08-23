@@ -53,6 +53,12 @@ const (
 	// weekly, it is asking that a balance on the books has been measured
 	// within living memory.
 	BarrelUnmeasuredAfter = 365 * 24 * time.Hour
+
+	// LicenceRenewalWindow is how far ahead a licence expiry becomes a
+	// warning. CRA requires renewal 30 days before expiry (EDM2-1-1), so
+	// the alert opens at 60 — a month before the deadline to act on the
+	// deadline, which is the only version of this that helps.
+	LicenceRenewalWindow = 60 * 24 * time.Hour
 )
 
 // Kinds is every alert kind this package evaluates. ResolveStaleAlerts
@@ -111,7 +117,115 @@ func Evaluate(
 	}
 	out = append(out, barrelAlerts...)
 
+	licenceAlerts, err := evaluateLicences(ctx, q, now)
+	if err != nil {
+		return nil, fmt.Errorf("licences: %w", err)
+	}
+	out = append(out, licenceAlerts...)
+
 	return out, nil
+}
+
+// evaluateLicences is the rule the licence register exists to make
+// possible. A licence lapses because nobody was told a date was coming,
+// and the consequence is not a warning letter — it is that the licensee
+// is no longer licensed, with every movement after that date to explain.
+//
+// A licence with no recorded expiry raises nothing. Every CRA licence
+// expires, so a missing date means nobody entered it; inventing a
+// two-year window from an effective date that may itself be a backfill
+// would produce a reminder for the wrong day, and a reminder for the
+// wrong day is worse than none because it gets believed. The register
+// screen says how many are missing a date instead.
+func evaluateLicences(ctx context.Context, q *sqlcgen.Queries, now time.Time) ([]Alert, error) {
+	rows, err := q.ListLicencesForRenewalAlert(ctx)
+	if err != nil {
+		return nil, err
+	}
+	today := now.Truncate(24 * time.Hour)
+	var out []Alert
+	for _, l := range rows {
+		label := licenceKindLabel(l.Kind) + " licence " + l.LicenceNumber
+
+		if l.ExpiresOn.Valid {
+			expiry := l.ExpiresOn.Time
+			switch {
+			case expiry.Before(today):
+				days := int(today.Sub(expiry).Hours() / 24)
+				out = append(out, Alert{
+					Kind:       sqlcgen.AlertKindLicenceExpired,
+					Severity:   sqlcgen.AlertSeverityCritical,
+					SubjectKey: l.ID.String(),
+					Title:      label + " has expired",
+					Detail: fmt.Sprintf(
+						"It expired on %s, %d day%s ago. Anything done under it since then "+
+							"is unlicensed activity.",
+						expiry.Format("2006-01-02"), days, plural(days)),
+					EntityType: "excise_licence",
+					EntityID:   uuid.NullUUID{UUID: l.ID, Valid: true},
+				})
+			case expiry.Sub(today) <= LicenceRenewalWindow:
+				days := int(expiry.Sub(today).Hours() / 24)
+				sev := sqlcgen.AlertSeverityWarning
+				if days <= 30 {
+					// Past the point where CRA asks for the renewal, so
+					// this is no longer a heads-up.
+					sev = sqlcgen.AlertSeverityCritical
+				}
+				out = append(out, Alert{
+					Kind:       sqlcgen.AlertKindLicenceExpiring,
+					Severity:   sev,
+					SubjectKey: l.ID.String(),
+					Title:      label + " expires " + expiry.Format("2006-01-02"),
+					Detail: fmt.Sprintf(
+						"%d day%s away. CRA wants the renewal 30 days before expiry.",
+						days, plural(days)),
+					EntityType: "excise_licence",
+					EntityID:   uuid.NullUUID{UUID: l.ID, Valid: true},
+				})
+			}
+		}
+
+		// Security lapsing has the same shape and a different remedy, so
+		// it is its own alert rather than a sentence inside the one above.
+		if l.SecurityExpiresOn.Valid {
+			expiry := l.SecurityExpiresOn.Time
+			if expiry.Sub(today) <= LicenceRenewalWindow {
+				days := int(expiry.Sub(today).Hours() / 24)
+				when := fmt.Sprintf("in %d day%s", days, plural(days))
+				sev := sqlcgen.AlertSeverityWarning
+				if expiry.Before(today) {
+					when = fmt.Sprintf("%d day%s ago", -days, plural(-days))
+					sev = sqlcgen.AlertSeverityCritical
+				}
+				out = append(out, Alert{
+					Kind:       sqlcgen.AlertKindLicenceSecurityExpiring,
+					Severity:   sev,
+					SubjectKey: l.ID.String(),
+					Title:      "Security for " + label + " expires " + expiry.Format("2006-01-02"),
+					Detail: "The security posted under s.23 lapses " + when +
+						". A spirits licence requires it to be in force.",
+					EntityType: "excise_licence",
+					EntityID:   uuid.NullUUID{UUID: l.ID, Valid: true},
+				})
+			}
+		}
+	}
+	return out, nil
+}
+
+func licenceKindLabel(k sqlcgen.ExciseLicenceKind) string {
+	switch k {
+	case sqlcgen.ExciseLicenceKindSpirits:
+		return "Spirits"
+	case sqlcgen.ExciseLicenceKindExciseWarehouse:
+		return "Excise warehouse"
+	case sqlcgen.ExciseLicenceKindUsers:
+		return "User's"
+	case sqlcgen.ExciseLicenceKindWine:
+		return "Wine"
+	}
+	return "Excise"
 }
 
 // evaluateFiling is the rule H5 was blocked on until stage 148 gave the

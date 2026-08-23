@@ -36,6 +36,12 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// TenantServiceListExciseLicencesProcedure is the fully-qualified name of the TenantService's
+	// ListExciseLicences RPC.
+	TenantServiceListExciseLicencesProcedure = "/stillhouse.v1.TenantService/ListExciseLicences"
+	// TenantServiceSaveExciseLicenceProcedure is the fully-qualified name of the TenantService's
+	// SaveExciseLicence RPC.
+	TenantServiceSaveExciseLicenceProcedure = "/stillhouse.v1.TenantService/SaveExciseLicence"
 	// TenantServiceUpdateFilingCalendarProcedure is the fully-qualified name of the TenantService's
 	// UpdateFilingCalendar RPC.
 	TenantServiceUpdateFilingCalendarProcedure = "/stillhouse.v1.TenantService/UpdateFilingCalendar"
@@ -54,6 +60,8 @@ const (
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
 type TenantServiceClient interface {
+	ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error)
+	SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error)
 	UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error)
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
@@ -72,6 +80,18 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 	baseURL = strings.TrimRight(baseURL, "/")
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
 	return &tenantServiceClient{
+		listExciseLicences: connect.NewClient[v1.ListExciseLicencesRequest, v1.ListExciseLicencesResponse](
+			httpClient,
+			baseURL+TenantServiceListExciseLicencesProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("ListExciseLicences")),
+			connect.WithClientOptions(opts...),
+		),
+		saveExciseLicence: connect.NewClient[v1.SaveExciseLicenceRequest, v1.SaveExciseLicenceResponse](
+			httpClient,
+			baseURL+TenantServiceSaveExciseLicenceProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("SaveExciseLicence")),
+			connect.WithClientOptions(opts...),
+		),
 		updateFilingCalendar: connect.NewClient[v1.UpdateFilingCalendarRequest, v1.UpdateFilingCalendarResponse](
 			httpClient,
 			baseURL+TenantServiceUpdateFilingCalendarProcedure,
@@ -107,11 +127,23 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // tenantServiceClient implements TenantServiceClient.
 type tenantServiceClient struct {
+	listExciseLicences   *connect.Client[v1.ListExciseLicencesRequest, v1.ListExciseLicencesResponse]
+	saveExciseLicence    *connect.Client[v1.SaveExciseLicenceRequest, v1.SaveExciseLicenceResponse]
 	updateFilingCalendar *connect.Client[v1.UpdateFilingCalendarRequest, v1.UpdateFilingCalendarResponse]
 	createTenant         *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
 	getTenant            *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
 	updateTenant         *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
 	deleteMyTenant       *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+}
+
+// ListExciseLicences calls stillhouse.v1.TenantService.ListExciseLicences.
+func (c *tenantServiceClient) ListExciseLicences(ctx context.Context, req *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error) {
+	return c.listExciseLicences.CallUnary(ctx, req)
+}
+
+// SaveExciseLicence calls stillhouse.v1.TenantService.SaveExciseLicence.
+func (c *tenantServiceClient) SaveExciseLicence(ctx context.Context, req *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error) {
+	return c.saveExciseLicence.CallUnary(ctx, req)
 }
 
 // UpdateFilingCalendar calls stillhouse.v1.TenantService.UpdateFilingCalendar.
@@ -141,6 +173,8 @@ func (c *tenantServiceClient) DeleteMyTenant(ctx context.Context, req *connect.R
 
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
+	ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error)
+	SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error)
 	UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error)
 	CreateTenant(context.Context, *connect.Request[v1.CreateTenantRequest]) (*connect.Response[v1.CreateTenantResponse], error)
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
@@ -155,6 +189,18 @@ type TenantServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
+	tenantServiceListExciseLicencesHandler := connect.NewUnaryHandler(
+		TenantServiceListExciseLicencesProcedure,
+		svc.ListExciseLicences,
+		connect.WithSchema(tenantServiceMethods.ByName("ListExciseLicences")),
+		connect.WithHandlerOptions(opts...),
+	)
+	tenantServiceSaveExciseLicenceHandler := connect.NewUnaryHandler(
+		TenantServiceSaveExciseLicenceProcedure,
+		svc.SaveExciseLicence,
+		connect.WithSchema(tenantServiceMethods.ByName("SaveExciseLicence")),
+		connect.WithHandlerOptions(opts...),
+	)
 	tenantServiceUpdateFilingCalendarHandler := connect.NewUnaryHandler(
 		TenantServiceUpdateFilingCalendarProcedure,
 		svc.UpdateFilingCalendar,
@@ -187,6 +233,10 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case TenantServiceListExciseLicencesProcedure:
+			tenantServiceListExciseLicencesHandler.ServeHTTP(w, r)
+		case TenantServiceSaveExciseLicenceProcedure:
+			tenantServiceSaveExciseLicenceHandler.ServeHTTP(w, r)
 		case TenantServiceUpdateFilingCalendarProcedure:
 			tenantServiceUpdateFilingCalendarHandler.ServeHTTP(w, r)
 		case TenantServiceCreateTenantProcedure:
@@ -205,6 +255,14 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 
 // UnimplementedTenantServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTenantServiceHandler struct{}
+
+func (UnimplementedTenantServiceHandler) ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.ListExciseLicences is not implemented"))
+}
+
+func (UnimplementedTenantServiceHandler) SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.SaveExciseLicence is not implemented"))
+}
 
 func (UnimplementedTenantServiceHandler) UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.UpdateFilingCalendar is not implemented"))

@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/tenant.proto.
  */
 export const file_stillhouse_v1_tenant: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSKmBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkirgEKE0NyZWF0ZVRlbmFudFJlcXVlc3QSDAoEbmFtZRgBIAEoCRIiChpjcmFfc3Bpcml0c19saWNlbmNlX251bWJlchgCIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgDIAEoCRITCgtvd25lcl9lbWFpbBgEIAEoCRIWCg5vd25lcl9wYXNzd29yZBgFIAEoCRIaChJvd25lcl9kaXNwbGF5X25hbWUYBiABKAkiPQoUQ3JlYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiEgoQR2V0VGVuYW50UmVxdWVzdCI6ChFHZXRUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKFAgobVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0EjgKEGZpbGluZ19mcmVxdWVuY3kYASABKA4yHi5zdGlsbGhvdXNlLnYxLkZpbGluZ0ZyZXF1ZW5jeRI7ChJmaXNjYWxfbW9udGhfYmFzaXMYAiABKA4yHy5zdGlsbGhvdXNlLnYxLkZpc2NhbE1vbnRoQmFzaXMSHAoUZmlzY2FsX21vbnRoX2VuZF9kYXkYAyABKAUSJQodZmlzY2FsX21vbnRoX25vdGlmaWNhdGlvbl9yZWYYBCABKAkSKgoiZmlsaW5nX2ZyZXF1ZW5jeV9hdXRob3JpemF0aW9uX3JlZhgFIAEoCSJFChxVcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCItChVEZWxldGVNeVRlbmFudFJlcXVlc3QSFAoMY29uZmlybV9uYW1lGAEgASgJIhgKFkRlbGV0ZU15VGVuYW50UmVzcG9uc2UqXwoJRHV0eVBvaW50EhoKFkRVVFlfUE9JTlRfVU5TUEVDSUZJRUQQABIbChdEVVRZX1BPSU5UX0FUX1BBQ0tBR0lORxABEhkKFURVVFlfUE9JTlRfQVRfUkVNT1ZBTBACKnMKD0ZpbGluZ0ZyZXF1ZW5jeRIgChxGSUxJTkdfRlJFUVVFTkNZX1VOU1BFQ0lGSUVEEAASHAoYRklMSU5HX0ZSRVFVRU5DWV9NT05USExZEAESIAocRklMSU5HX0ZSRVFVRU5DWV9TRU1JX0FOTlVBTBACKogBChBGaXNjYWxNb250aEJhc2lzEiIKHkZJU0NBTF9NT05USF9CQVNJU19VTlNQRUNJRklFRBAAEiUKIUZJU0NBTF9NT05USF9CQVNJU19DQUxFTkRBUl9NT05USBABEikKJUZJU0NBTF9NT05USF9CQVNJU19GSVhFRF9EQVlfT0ZfTU9OVEgQAjLhAwoNVGVuYW50U2VydmljZRJvChRVcGRhdGVGaWxpbmdDYWxlbmRhchIqLnN0aWxsaG91c2UudjEuVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5VcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZRJXCgxVcGRhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlc3BvbnNlEl0KDkRlbGV0ZU15VGVuYW50EiQuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSKmBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkirgEKE0NyZWF0ZVRlbmFudFJlcXVlc3QSDAoEbmFtZRgBIAEoCRIiChpjcmFfc3Bpcml0c19saWNlbmNlX251bWJlchgCIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgDIAEoCRITCgtvd25lcl9lbWFpbBgEIAEoCRIWCg5vd25lcl9wYXNzd29yZBgFIAEoCRIaChJvd25lcl9kaXNwbGF5X25hbWUYBiABKAkiPQoUQ3JlYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiEgoQR2V0VGVuYW50UmVxdWVzdCI6ChFHZXRUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKFAgobVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0EjgKEGZpbGluZ19mcmVxdWVuY3kYASABKA4yHi5zdGlsbGhvdXNlLnYxLkZpbGluZ0ZyZXF1ZW5jeRI7ChJmaXNjYWxfbW9udGhfYmFzaXMYAiABKA4yHy5zdGlsbGhvdXNlLnYxLkZpc2NhbE1vbnRoQmFzaXMSHAoUZmlzY2FsX21vbnRoX2VuZF9kYXkYAyABKAUSJQodZmlzY2FsX21vbnRoX25vdGlmaWNhdGlvbl9yZWYYBCABKAkSKgoiZmlsaW5nX2ZyZXF1ZW5jeV9hdXRob3JpemF0aW9uX3JlZhgFIAEoCSJFChxVcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50Io4BChNVcGRhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgDIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgEIAEoCSI9ChRVcGRhdGVUZW5hbnRSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCItChVEZWxldGVNeVRlbmFudFJlcXVlc3QSFAoMY29uZmlybV9uYW1lGAEgASgJIhgKFkRlbGV0ZU15VGVuYW50UmVzcG9uc2Ui/QEKDUV4Y2lzZUxpY2VuY2USCgoCaWQYASABKAkSLgoEa2luZBgCIAEoDjIgLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZUtpbmQSFgoObGljZW5jZV9udW1iZXIYAyABKAkSFgoOZWZmZWN0aXZlX2Zyb20YBCABKAkSEgoKZXhwaXJlc19vbhgFIAEoCRIQCghwcmVtaXNlcxgGIAEoCRIbChNzZWN1cml0eV9hbW91bnRfY2FkGAcgASgJEhsKE3NlY3VyaXR5X2V4cGlyZXNfb24YCCABKAkSDQoFbm90ZXMYCSABKAkSEQoJY2Vhc2VkX29uGAogASgJIhsKGUxpc3RFeGNpc2VMaWNlbmNlc1JlcXVlc3QiagoaTGlzdEV4Y2lzZUxpY2VuY2VzUmVzcG9uc2USLgoIbGljZW5jZXMYASADKAsyHC5zdGlsbGhvdXNlLnYxLkV4Y2lzZUxpY2VuY2USHAoUbWlzc2luZ19leHBpcnlfY291bnQYAiABKAUiiAIKGFNhdmVFeGNpc2VMaWNlbmNlUmVxdWVzdBIKCgJpZBgBIAEoCRIuCgRraW5kGAIgASgOMiAuc3RpbGxob3VzZS52MS5FeGNpc2VMaWNlbmNlS2luZBIWCg5saWNlbmNlX251bWJlchgDIAEoCRIWCg5lZmZlY3RpdmVfZnJvbRgEIAEoCRISCgpleHBpcmVzX29uGAUgASgJEhAKCHByZW1pc2VzGAYgASgJEhsKE3NlY3VyaXR5X2Ftb3VudF9jYWQYByABKAkSGwoTc2VjdXJpdHlfZXhwaXJlc19vbhgIIAEoCRINCgVub3RlcxgJIAEoCRIRCgljZWFzZWRfb24YCiABKAkiSgoZU2F2ZUV4Y2lzZUxpY2VuY2VSZXNwb25zZRItCgdsaWNlbmNlGAEgASgLMhwuc3RpbGxob3VzZS52MS5FeGNpc2VMaWNlbmNlKl8KCUR1dHlQb2ludBIaChZEVVRZX1BPSU5UX1VOU1BFQ0lGSUVEEAASGwoXRFVUWV9QT0lOVF9BVF9QQUNLQUdJTkcQARIZChVEVVRZX1BPSU5UX0FUX1JFTU9WQUwQAipzCg9GaWxpbmdGcmVxdWVuY3kSIAocRklMSU5HX0ZSRVFVRU5DWV9VTlNQRUNJRklFRBAAEhwKGEZJTElOR19GUkVRVUVOQ1lfTU9OVEhMWRABEiAKHEZJTElOR19GUkVRVUVOQ1lfU0VNSV9BTk5VQUwQAiqIAQoQRmlzY2FsTW9udGhCYXNpcxIiCh5GSVNDQUxfTU9OVEhfQkFTSVNfVU5TUEVDSUZJRUQQABIlCiFGSVNDQUxfTU9OVEhfQkFTSVNfQ0FMRU5EQVJfTU9OVEgQARIpCiVGSVNDQUxfTU9OVEhfQkFTSVNfRklYRURfREFZX09GX01PTlRIEAIq3wEKEUV4Y2lzZUxpY2VuY2VLaW5kEiMKH0VYQ0lTRV9MSUNFTkNFX0tJTkRfVU5TUEVDSUZJRUQQABIfChtFWENJU0VfTElDRU5DRV9LSU5EX1NQSVJJVFMQARIoCiRFWENJU0VfTElDRU5DRV9LSU5EX0VYQ0lTRV9XQVJFSE9VU0UQAhIdChlFWENJU0VfTElDRU5DRV9LSU5EX1VTRVJTEAMSHAoYRVhDSVNFX0xJQ0VOQ0VfS0lORF9XSU5FEAQSHQoZRVhDSVNFX0xJQ0VOQ0VfS0lORF9PVEhFUhAFMrQFCg1UZW5hbnRTZXJ2aWNlEmkKEkxpc3RFeGNpc2VMaWNlbmNlcxIoLnN0aWxsaG91c2UudjEuTGlzdEV4Y2lzZUxpY2VuY2VzUmVxdWVzdBopLnN0aWxsaG91c2UudjEuTGlzdEV4Y2lzZUxpY2VuY2VzUmVzcG9uc2USZgoRU2F2ZUV4Y2lzZUxpY2VuY2USJy5zdGlsbGhvdXNlLnYxLlNhdmVFeGNpc2VMaWNlbmNlUmVxdWVzdBooLnN0aWxsaG91c2UudjEuU2F2ZUV4Y2lzZUxpY2VuY2VSZXNwb25zZRJvChRVcGRhdGVGaWxpbmdDYWxlbmRhchIqLnN0aWxsaG91c2UudjEuVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5VcGRhdGVGaWxpbmdDYWxlbmRhclJlc3BvbnNlElcKDENyZWF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuQ3JlYXRlVGVuYW50UmVzcG9uc2USTgoJR2V0VGVuYW50Eh8uc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5HZXRUZW5hbnRSZXNwb25zZRJXCgxVcGRhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVRlbmFudFJlc3BvbnNlEl0KDkRlbGV0ZU15VGVuYW50EiQuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Tenant
@@ -353,6 +353,198 @@ export const DeleteMyTenantResponseSchema: GenMessage<DeleteMyTenantResponse> = 
   messageDesc(file_stillhouse_v1_tenant, 10);
 
 /**
+ * @generated from message stillhouse.v1.ExciseLicence
+ */
+export type ExciseLicence = Message<"stillhouse.v1.ExciseLicence"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: stillhouse.v1.ExciseLicenceKind kind = 2;
+   */
+  kind: ExciseLicenceKind;
+
+  /**
+   * @generated from field: string licence_number = 3;
+   */
+  licenceNumber: string;
+
+  /**
+   * ISO date
+   *
+   * @generated from field: string effective_from = 4;
+   */
+  effectiveFrom: string;
+
+  /**
+   * ISO date, or empty when nobody has recorded it. Empty raises no
+   * renewal reminder: every CRA licence expires, so a missing date means
+   * it is unknown, and a reminder for a guessed day gets believed.
+   *
+   * @generated from field: string expires_on = 5;
+   */
+  expiresOn: string;
+
+  /**
+   * @generated from field: string premises = 6;
+   */
+  premises: string;
+
+  /**
+   * Security posted under s.23. A decimal string, because it is money.
+   *
+   * @generated from field: string security_amount_cad = 7;
+   */
+  securityAmountCad: string;
+
+  /**
+   * @generated from field: string security_expires_on = 8;
+   */
+  securityExpiresOn: string;
+
+  /**
+   * @generated from field: string notes = 9;
+   */
+  notes: string;
+
+  /**
+   * Surrendered or revoked. The row is kept, not deleted: a return filed
+   * under a licence that no longer exists still has to be explicable.
+   *
+   * @generated from field: string ceased_on = 10;
+   */
+  ceasedOn: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.ExciseLicence.
+ * Use `create(ExciseLicenceSchema)` to create a new message.
+ */
+export const ExciseLicenceSchema: GenMessage<ExciseLicence> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 11);
+
+/**
+ * @generated from message stillhouse.v1.ListExciseLicencesRequest
+ */
+export type ListExciseLicencesRequest = Message<"stillhouse.v1.ListExciseLicencesRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.ListExciseLicencesRequest.
+ * Use `create(ListExciseLicencesRequestSchema)` to create a new message.
+ */
+export const ListExciseLicencesRequestSchema: GenMessage<ListExciseLicencesRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 12);
+
+/**
+ * @generated from message stillhouse.v1.ListExciseLicencesResponse
+ */
+export type ListExciseLicencesResponse = Message<"stillhouse.v1.ListExciseLicencesResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.ExciseLicence licences = 1;
+   */
+  licences: ExciseLicence[];
+
+  /**
+   * Live licences with no expiry recorded, so the screen can say the
+   * register is incomplete rather than looking finished.
+   *
+   * @generated from field: int32 missing_expiry_count = 2;
+   */
+  missingExpiryCount: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListExciseLicencesResponse.
+ * Use `create(ListExciseLicencesResponseSchema)` to create a new message.
+ */
+export const ListExciseLicencesResponseSchema: GenMessage<ListExciseLicencesResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 13);
+
+/**
+ * @generated from message stillhouse.v1.SaveExciseLicenceRequest
+ */
+export type SaveExciseLicenceRequest = Message<"stillhouse.v1.SaveExciseLicenceRequest"> & {
+  /**
+   * Empty id creates; otherwise updates that licence.
+   *
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: stillhouse.v1.ExciseLicenceKind kind = 2;
+   */
+  kind: ExciseLicenceKind;
+
+  /**
+   * @generated from field: string licence_number = 3;
+   */
+  licenceNumber: string;
+
+  /**
+   * @generated from field: string effective_from = 4;
+   */
+  effectiveFrom: string;
+
+  /**
+   * @generated from field: string expires_on = 5;
+   */
+  expiresOn: string;
+
+  /**
+   * @generated from field: string premises = 6;
+   */
+  premises: string;
+
+  /**
+   * @generated from field: string security_amount_cad = 7;
+   */
+  securityAmountCad: string;
+
+  /**
+   * @generated from field: string security_expires_on = 8;
+   */
+  securityExpiresOn: string;
+
+  /**
+   * @generated from field: string notes = 9;
+   */
+  notes: string;
+
+  /**
+   * @generated from field: string ceased_on = 10;
+   */
+  ceasedOn: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SaveExciseLicenceRequest.
+ * Use `create(SaveExciseLicenceRequestSchema)` to create a new message.
+ */
+export const SaveExciseLicenceRequestSchema: GenMessage<SaveExciseLicenceRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 14);
+
+/**
+ * @generated from message stillhouse.v1.SaveExciseLicenceResponse
+ */
+export type SaveExciseLicenceResponse = Message<"stillhouse.v1.SaveExciseLicenceResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.ExciseLicence licence = 1;
+   */
+  licence?: ExciseLicence | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.SaveExciseLicenceResponse.
+ * Use `create(SaveExciseLicenceResponseSchema)` to create a new message.
+ */
+export const SaveExciseLicenceResponseSchema: GenMessage<SaveExciseLicenceResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 15);
+
+/**
  * DutyPoint is the event at which excise duty becomes payable.
  *
  * It is derived from whether the tenant holds an excise warehouse licence,
@@ -454,12 +646,76 @@ export const FiscalMonthBasisSchema: GenEnum<FiscalMonthBasis> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_tenant, 2);
 
 /**
- * TenantService manages tenant metadata.
- * CreateTenant is the bootstrap operation for a fresh self-hosted install.
+ * What the licensee actually holds. Which returns exist is a function of
+ * which licences are held; so is where the duty point falls, and so is
+ * what renewal reminders are possible at all.
  *
+ * @generated from enum stillhouse.v1.ExciseLicenceKind
+ */
+export enum ExciseLicenceKind {
+  /**
+   * @generated from enum value: EXCISE_LICENCE_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * L63A — produce or package spirits
+   *
+   * @generated from enum value: EXCISE_LICENCE_KIND_SPIRITS = 1;
+   */
+  SPIRITS = 1,
+
+  /**
+   * L63W — store non-duty-paid spirits
+   *
+   * @generated from enum value: EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE = 2;
+   */
+  EXCISE_WAREHOUSE = 2,
+
+  /**
+   * use spirits in manufacture
+   *
+   * @generated from enum value: EXCISE_LICENCE_KIND_USERS = 3;
+   */
+  USERS = 3,
+
+  /**
+   * @generated from enum value: EXCISE_LICENCE_KIND_WINE = 4;
+   */
+  WINE = 4,
+
+  /**
+   * @generated from enum value: EXCISE_LICENCE_KIND_OTHER = 5;
+   */
+  OTHER = 5,
+}
+
+/**
+ * Describes the enum stillhouse.v1.ExciseLicenceKind.
+ */
+export const ExciseLicenceKindSchema: GenEnum<ExciseLicenceKind> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_tenant, 3);
+
+/**
  * @generated from service stillhouse.v1.TenantService
  */
 export const TenantService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.TenantService.ListExciseLicences
+   */
+  listExciseLicences: {
+    methodKind: "unary";
+    input: typeof ListExciseLicencesRequestSchema;
+    output: typeof ListExciseLicencesResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.TenantService.SaveExciseLicence
+   */
+  saveExciseLicence: {
+    methodKind: "unary";
+    input: typeof SaveExciseLicenceRequestSchema;
+    output: typeof SaveExciseLicenceResponseSchema;
+  },
   /**
    * @generated from rpc stillhouse.v1.TenantService.UpdateFilingCalendar
    */

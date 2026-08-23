@@ -119,7 +119,65 @@ message DeleteMyTenantResponse {}
 
 // TenantService manages tenant metadata.
 // CreateTenant is the bootstrap operation for a fresh self-hosted install.
+// ----- licence register ----------------------------------------------------
+
+// What the licensee actually holds. Which returns exist is a function of
+// which licences are held; so is where the duty point falls, and so is
+// what renewal reminders are possible at all.
+enum ExciseLicenceKind {
+  EXCISE_LICENCE_KIND_UNSPECIFIED = 0;
+  EXCISE_LICENCE_KIND_SPIRITS = 1;           // L63A — produce or package spirits
+  EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE = 2;  // L63W — store non-duty-paid spirits
+  EXCISE_LICENCE_KIND_USERS = 3;             // use spirits in manufacture
+  EXCISE_LICENCE_KIND_WINE = 4;
+  EXCISE_LICENCE_KIND_OTHER = 5;
+}
+
+message ExciseLicence {
+  string id = 1;
+  ExciseLicenceKind kind = 2;
+  string licence_number = 3;
+  string effective_from = 4;  // ISO date
+  // ISO date, or empty when nobody has recorded it. Empty raises no
+  // renewal reminder: every CRA licence expires, so a missing date means
+  // it is unknown, and a reminder for a guessed day gets believed.
+  string expires_on = 5;
+  string premises = 6;
+  // Security posted under s.23. A decimal string, because it is money.
+  string security_amount_cad = 7;
+  string security_expires_on = 8;
+  string notes = 9;
+  // Surrendered or revoked. The row is kept, not deleted: a return filed
+  // under a licence that no longer exists still has to be explicable.
+  string ceased_on = 10;
+}
+
+message ListExciseLicencesRequest {}
+message ListExciseLicencesResponse {
+  repeated ExciseLicence licences = 1;
+  // Live licences with no expiry recorded, so the screen can say the
+  // register is incomplete rather than looking finished.
+  int32 missing_expiry_count = 2;
+}
+
+message SaveExciseLicenceRequest {
+  // Empty id creates; otherwise updates that licence.
+  string id = 1;
+  ExciseLicenceKind kind = 2;
+  string licence_number = 3;
+  string effective_from = 4;
+  string expires_on = 5;
+  string premises = 6;
+  string security_amount_cad = 7;
+  string security_expires_on = 8;
+  string notes = 9;
+  string ceased_on = 10;
+}
+message SaveExciseLicenceResponse { ExciseLicence licence = 1; }
+
 service TenantService {
+  rpc ListExciseLicences(ListExciseLicencesRequest) returns (ListExciseLicencesResponse);
+  rpc SaveExciseLicence(SaveExciseLicenceRequest) returns (SaveExciseLicenceResponse);
   rpc UpdateFilingCalendar(UpdateFilingCalendarRequest) returns (UpdateFilingCalendarResponse);
   rpc CreateTenant(CreateTenantRequest) returns (CreateTenantResponse);
   rpc GetTenant(GetTenantRequest) returns (GetTenantResponse);

@@ -231,9 +231,16 @@ var procedureMinRole = map[string]minRole{
 
 	// TenantService — UpdateTenant changes the CRA licence on file, owner only.
 	// DeleteMyTenant is destructive and owner-only.
-	"/stillhouse.v1.TenantService/GetTenant":      roleViewer,
-	"/stillhouse.v1.TenantService/UpdateTenant":   roleOwner,
-	"/stillhouse.v1.TenantService/DeleteMyTenant": roleOwner,
+	"/stillhouse.v1.TenantService/GetTenant": roleViewer,
+	// The licence register. Reading it is a viewer action — it is the
+	// answer to "are we licensed for this?". Changing it is not: which
+	// licences are held decides which returns exist and where the duty
+	// point falls, so an edit changes what the system believes it is
+	// filing.
+	"/stillhouse.v1.TenantService/ListExciseLicences": roleViewer,
+	"/stillhouse.v1.TenantService/SaveExciseLicence":  roleOwner,
+	"/stillhouse.v1.TenantService/UpdateTenant":       roleOwner,
+	"/stillhouse.v1.TenantService/DeleteMyTenant":     roleOwner,
 
 	// TraceabilityService
 	"/stillhouse.v1.TraceabilityService/TraceBottlingRun": roleViewer,
@@ -317,6 +324,10 @@ var accountantAlso = map[string]bool{
 	// has to ask the owner to do it for them, which is nobody's idea of
 	// a division of labour.
 	"/stillhouse.v1.JournalService/SetJournalAccount": true,
+	// Which licences are held is the first thing an excise consultant
+	// establishes, and keeping the register current is part of the
+	// engagement rather than something to ask the owner for.
+	"/stillhouse.v1.TenantService/SaveExciseLicence": true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a
