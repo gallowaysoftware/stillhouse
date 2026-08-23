@@ -106,6 +106,10 @@ var exportTables = []string{
 	"customers",
 	"price_lists",
 	"price_list_entries",
+	// Hand-entered demand forecasts, with the reason each was entered.
+	// A production decision made on one is only defensible if the number
+	// and its reason are both still there.
+	"demand_forecasts",
 	// The till, and what each SKU was taken to mean. A removal made from
 	// a POS line points back at these; exporting the removals without
 	// them leaves a reference nobody can resolve.

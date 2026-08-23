@@ -386,6 +386,12 @@ var procedureMinRole = map[string]minRole{
 	// hand. Posting is the same act. The SKU map decides which product a
 	// sale becomes a removal against — wrong duty and wrong stock on a
 	// filed return if it is wrong — so that is the back office's.
+	// The forecast is a read. The method behind it is a planning policy
+	// and the hand-entered numbers override a computed figure, so both
+	// sit with the back office.
+	"/stillhouse.v1.SchedulingService/DemandForecast":         roleViewer,
+	"/stillhouse.v1.SchedulingService/SetForecastMethod":      roleOwner,
+	"/stillhouse.v1.SchedulingService/SaveDemandForecast":     roleOwner,
 	"/stillhouse.v1.POSService/ListPOSSales":                  roleViewer,
 	"/stillhouse.v1.POSService/ListPOSProductMappings":        roleViewer,
 	"/stillhouse.v1.POSService/IngestPOSSales":                roleOperator,

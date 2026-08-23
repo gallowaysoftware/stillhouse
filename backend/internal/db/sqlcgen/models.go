@@ -935,6 +935,49 @@ func (ns NullFiscalMonthBasis) Value() (driver.Value, error) {
 	return string(ns.FiscalMonthBasis), nil
 }
 
+type ForecastMethod string
+
+const (
+	ForecastMethodTrailingAverage    ForecastMethod = "trailing_average"
+	ForecastMethodSamePeriodLastYear ForecastMethod = "same_period_last_year"
+	ForecastMethodManual             ForecastMethod = "manual"
+)
+
+func (e *ForecastMethod) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ForecastMethod(s)
+	case string:
+		*e = ForecastMethod(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ForecastMethod: %T", src)
+	}
+	return nil
+}
+
+type NullForecastMethod struct {
+	ForecastMethod ForecastMethod `json:"forecast_method"`
+	Valid          bool           `json:"valid"` // Valid is true if ForecastMethod is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullForecastMethod) Scan(value interface{}) error {
+	if value == nil {
+		ns.ForecastMethod, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ForecastMethod.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullForecastMethod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ForecastMethod), nil
+}
+
 type InstrumentKind string
 
 const (
@@ -2735,6 +2778,19 @@ type Customer struct {
 	PriceListID            uuid.NullUUID      `json:"price_list_id"`
 }
 
+type DemandForecast struct {
+	ID          uuid.UUID          `json:"id"`
+	TenantID    uuid.UUID          `json:"tenant_id"`
+	ProductID   uuid.UUID          `json:"product_id"`
+	PeriodStart pgtype.Date        `json:"period_start"`
+	PeriodEnd   pgtype.Date        `json:"period_end"`
+	Bottles     int32              `json:"bottles"`
+	Reason      string             `json:"reason"`
+	CreatedBy   uuid.NullUUID      `json:"created_by"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+}
+
 type DistillationCharge struct {
 	ID                uuid.UUID          `json:"id"`
 	TenantID          uuid.UUID          `json:"tenant_id"`
@@ -3816,6 +3872,9 @@ type Tenant struct {
 	RequireBatchRelease             bool             `json:"require_batch_release"`
 	// How a fermentation's cost is apportioned across the distillation runs it was charged to. NULL means the licensee has not stated one, and WIP production value is refused rather than guessed.
 	WipChargeBasis NullWipChargeBasis `json:"wip_charge_basis"`
+	// How demand is projected. NULL means the licensee has not chosen one and forecasts are refused rather than guessed.
+	ForecastMethod         NullForecastMethod `json:"forecast_method"`
+	ForecastTrailingMonths int32              `json:"forecast_trailing_months"`
 }
 
 type User struct {

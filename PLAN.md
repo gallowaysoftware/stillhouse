@@ -156,14 +156,19 @@ been removed.
 
 ### F7 · Forecasting — P2
 
-Stage 185 built the production plan from *actual* demand — confirmed, unshipped
-order lines — and says so on the page every time, because a plan built on an
-invented forecast looks exactly as authoritative as one built on orders. A
-forecast would go here, alongside that rather than instead of it.
+Finished-goods demand forecasting shipped in stage 201, alongside the
+actual-demand plan rather than instead of it, with the method stated and
+unset refusing.
 
+The other two the item named remain, and both are derived from this one
+rather than separate problems:
 
-Raw material, WIP and finished-goods forecasting. Ekos ships it; it is what
-makes `F3` more than a calendar.
+- **Raw material.** Forecast bottles → recipe → grain, through
+  `internal/mashing`'s yield model. Wants the recipe's own efficiency
+  figures rather than a nominal one, so it inherits their refusals.
+- **WIP.** Forecast bottles → LAA needed → what is already maturing,
+  which is a subtraction against the barrel register once the first is
+  done.
 
 ---
 

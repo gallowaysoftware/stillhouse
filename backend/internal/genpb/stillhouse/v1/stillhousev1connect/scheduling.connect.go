@@ -50,11 +50,25 @@ const (
 	// SchedulingServiceProductionPlanProcedure is the fully-qualified name of the SchedulingService's
 	// ProductionPlan RPC.
 	SchedulingServiceProductionPlanProcedure = "/stillhouse.v1.SchedulingService/ProductionPlan"
+	// SchedulingServiceDemandForecastProcedure is the fully-qualified name of the SchedulingService's
+	// DemandForecast RPC.
+	SchedulingServiceDemandForecastProcedure = "/stillhouse.v1.SchedulingService/DemandForecast"
+	// SchedulingServiceSetForecastMethodProcedure is the fully-qualified name of the
+	// SchedulingService's SetForecastMethod RPC.
+	SchedulingServiceSetForecastMethodProcedure = "/stillhouse.v1.SchedulingService/SetForecastMethod"
+	// SchedulingServiceSaveDemandForecastProcedure is the fully-qualified name of the
+	// SchedulingService's SaveDemandForecast RPC.
+	SchedulingServiceSaveDemandForecastProcedure = "/stillhouse.v1.SchedulingService/SaveDemandForecast"
 )
 
 // SchedulingServiceClient is a client for the stillhouse.v1.SchedulingService service.
 type SchedulingServiceClient interface {
 	ProductionPlan(context.Context, *connect.Request[v1.ProductionPlanRequest]) (*connect.Response[v1.ProductionPlanResponse], error)
+	// Projected demand, reported beside the committed orders above and
+	// never added to them. See ForecastMethod.
+	DemandForecast(context.Context, *connect.Request[v1.DemandForecastRequest]) (*connect.Response[v1.DemandForecastResponse], error)
+	SetForecastMethod(context.Context, *connect.Request[v1.SetForecastMethodRequest]) (*connect.Response[v1.SetForecastMethodResponse], error)
+	SaveDemandForecast(context.Context, *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error)
 }
 
 // NewSchedulingServiceClient constructs a client for the stillhouse.v1.SchedulingService service.
@@ -74,12 +88,33 @@ func NewSchedulingServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(schedulingServiceMethods.ByName("ProductionPlan")),
 			connect.WithClientOptions(opts...),
 		),
+		demandForecast: connect.NewClient[v1.DemandForecastRequest, v1.DemandForecastResponse](
+			httpClient,
+			baseURL+SchedulingServiceDemandForecastProcedure,
+			connect.WithSchema(schedulingServiceMethods.ByName("DemandForecast")),
+			connect.WithClientOptions(opts...),
+		),
+		setForecastMethod: connect.NewClient[v1.SetForecastMethodRequest, v1.SetForecastMethodResponse](
+			httpClient,
+			baseURL+SchedulingServiceSetForecastMethodProcedure,
+			connect.WithSchema(schedulingServiceMethods.ByName("SetForecastMethod")),
+			connect.WithClientOptions(opts...),
+		),
+		saveDemandForecast: connect.NewClient[v1.SaveDemandForecastRequest, v1.SaveDemandForecastResponse](
+			httpClient,
+			baseURL+SchedulingServiceSaveDemandForecastProcedure,
+			connect.WithSchema(schedulingServiceMethods.ByName("SaveDemandForecast")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // schedulingServiceClient implements SchedulingServiceClient.
 type schedulingServiceClient struct {
-	productionPlan *connect.Client[v1.ProductionPlanRequest, v1.ProductionPlanResponse]
+	productionPlan     *connect.Client[v1.ProductionPlanRequest, v1.ProductionPlanResponse]
+	demandForecast     *connect.Client[v1.DemandForecastRequest, v1.DemandForecastResponse]
+	setForecastMethod  *connect.Client[v1.SetForecastMethodRequest, v1.SetForecastMethodResponse]
+	saveDemandForecast *connect.Client[v1.SaveDemandForecastRequest, v1.SaveDemandForecastResponse]
 }
 
 // ProductionPlan calls stillhouse.v1.SchedulingService.ProductionPlan.
@@ -87,9 +122,29 @@ func (c *schedulingServiceClient) ProductionPlan(ctx context.Context, req *conne
 	return c.productionPlan.CallUnary(ctx, req)
 }
 
+// DemandForecast calls stillhouse.v1.SchedulingService.DemandForecast.
+func (c *schedulingServiceClient) DemandForecast(ctx context.Context, req *connect.Request[v1.DemandForecastRequest]) (*connect.Response[v1.DemandForecastResponse], error) {
+	return c.demandForecast.CallUnary(ctx, req)
+}
+
+// SetForecastMethod calls stillhouse.v1.SchedulingService.SetForecastMethod.
+func (c *schedulingServiceClient) SetForecastMethod(ctx context.Context, req *connect.Request[v1.SetForecastMethodRequest]) (*connect.Response[v1.SetForecastMethodResponse], error) {
+	return c.setForecastMethod.CallUnary(ctx, req)
+}
+
+// SaveDemandForecast calls stillhouse.v1.SchedulingService.SaveDemandForecast.
+func (c *schedulingServiceClient) SaveDemandForecast(ctx context.Context, req *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error) {
+	return c.saveDemandForecast.CallUnary(ctx, req)
+}
+
 // SchedulingServiceHandler is an implementation of the stillhouse.v1.SchedulingService service.
 type SchedulingServiceHandler interface {
 	ProductionPlan(context.Context, *connect.Request[v1.ProductionPlanRequest]) (*connect.Response[v1.ProductionPlanResponse], error)
+	// Projected demand, reported beside the committed orders above and
+	// never added to them. See ForecastMethod.
+	DemandForecast(context.Context, *connect.Request[v1.DemandForecastRequest]) (*connect.Response[v1.DemandForecastResponse], error)
+	SetForecastMethod(context.Context, *connect.Request[v1.SetForecastMethodRequest]) (*connect.Response[v1.SetForecastMethodResponse], error)
+	SaveDemandForecast(context.Context, *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error)
 }
 
 // NewSchedulingServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -105,10 +160,34 @@ func NewSchedulingServiceHandler(svc SchedulingServiceHandler, opts ...connect.H
 		connect.WithSchema(schedulingServiceMethods.ByName("ProductionPlan")),
 		connect.WithHandlerOptions(opts...),
 	)
+	schedulingServiceDemandForecastHandler := connect.NewUnaryHandler(
+		SchedulingServiceDemandForecastProcedure,
+		svc.DemandForecast,
+		connect.WithSchema(schedulingServiceMethods.ByName("DemandForecast")),
+		connect.WithHandlerOptions(opts...),
+	)
+	schedulingServiceSetForecastMethodHandler := connect.NewUnaryHandler(
+		SchedulingServiceSetForecastMethodProcedure,
+		svc.SetForecastMethod,
+		connect.WithSchema(schedulingServiceMethods.ByName("SetForecastMethod")),
+		connect.WithHandlerOptions(opts...),
+	)
+	schedulingServiceSaveDemandForecastHandler := connect.NewUnaryHandler(
+		SchedulingServiceSaveDemandForecastProcedure,
+		svc.SaveDemandForecast,
+		connect.WithSchema(schedulingServiceMethods.ByName("SaveDemandForecast")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.SchedulingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SchedulingServiceProductionPlanProcedure:
 			schedulingServiceProductionPlanHandler.ServeHTTP(w, r)
+		case SchedulingServiceDemandForecastProcedure:
+			schedulingServiceDemandForecastHandler.ServeHTTP(w, r)
+		case SchedulingServiceSetForecastMethodProcedure:
+			schedulingServiceSetForecastMethodHandler.ServeHTTP(w, r)
+		case SchedulingServiceSaveDemandForecastProcedure:
+			schedulingServiceSaveDemandForecastHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -120,4 +199,16 @@ type UnimplementedSchedulingServiceHandler struct{}
 
 func (UnimplementedSchedulingServiceHandler) ProductionPlan(context.Context, *connect.Request[v1.ProductionPlanRequest]) (*connect.Response[v1.ProductionPlanResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.ProductionPlan is not implemented"))
+}
+
+func (UnimplementedSchedulingServiceHandler) DemandForecast(context.Context, *connect.Request[v1.DemandForecastRequest]) (*connect.Response[v1.DemandForecastResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.DemandForecast is not implemented"))
+}
+
+func (UnimplementedSchedulingServiceHandler) SetForecastMethod(context.Context, *connect.Request[v1.SetForecastMethodRequest]) (*connect.Response[v1.SetForecastMethodResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.SetForecastMethod is not implemented"))
+}
+
+func (UnimplementedSchedulingServiceHandler) SaveDemandForecast(context.Context, *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.SaveDemandForecast is not implemented"))
 }

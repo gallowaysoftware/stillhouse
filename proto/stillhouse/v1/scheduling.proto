@@ -99,4 +99,90 @@ message ProductionPlanResponse {
 
 service SchedulingService {
   rpc ProductionPlan(ProductionPlanRequest) returns (ProductionPlanResponse);
+
+  // Projected demand, reported beside the committed orders above and
+  // never added to them. See ForecastMethod.
+  rpc DemandForecast(DemandForecastRequest) returns (DemandForecastResponse);
+  rpc SetForecastMethod(SetForecastMethodRequest) returns (SetForecastMethodResponse);
+  rpc SaveDemandForecast(SaveDemandForecastRequest) returns (SaveDemandForecastResponse);
 }
+
+// Demand forecasting. PLAN F7.
+//
+// Stage 185 built the production plan from ACTUAL demand — confirmed,
+// unshipped order lines — and says so on the page every time, because a
+// plan built on an invented forecast looks exactly as authoritative as
+// one built on orders. That is the constraint on everything below.
+//
+// A forecast is therefore reported BESIDE the orders and never added to
+// them. A single number combining twelve bottles somebody has paid for
+// with forty somebody might buy is worse than no forecast at all, because
+// nobody can take it apart again.
+enum ForecastMethod {
+  FORECAST_METHOD_UNSPECIFIED = 0;
+  // Mean of the last N complete months of duty-paid removals. Good where
+  // sales are steady, wrong where they are seasonal.
+  FORECAST_METHOD_TRAILING_AVERAGE = 1;
+  // The same month last year. Good where sales are seasonal, wrong in a
+  // first year and wrong after a step change.
+  FORECAST_METHOD_SAME_PERIOD_LAST_YEAR = 2;
+  // The operator's own numbers — the only method that can be right when
+  // there is a listing decision or a festival in the diary.
+  FORECAST_METHOD_MANUAL = 3;
+}
+
+message ForecastLine {
+  string product_id = 1;
+  string product_name = 2;
+  // Committed: confirmed and unshipped order lines. The same figure the
+  // production plan uses, repeated here so the two can be compared
+  // without being combined.
+  int32  bottles_committed = 3;
+  // Projected. Zero and unavailable are different: see available.
+  int32  bottles_forecast = 4;
+  bool   available = 5;
+  // Why there is no figure, when there is none. A product nobody has
+  // sold and a product forecast to sell nothing are different claims.
+  string missing = 6;
+  // The working, so the number can be argued with rather than believed.
+  string basis = 7;
+  int32  months_used = 8;
+  // True when an operator replaced the computed figure by hand.
+  bool   overridden = 9;
+  string override_reason = 10;
+  int32  bottles_on_hand = 11;
+}
+
+message DemandForecastRequest {
+  // The month to project, ISO date; any day in it. Empty means next
+  // month.
+  string month = 1;
+}
+message DemandForecastResponse {
+  repeated ForecastLine lines = 1;
+  ForecastMethod method = 2;
+  int32 trailing_months = 3;
+  string period_start = 4;
+  string period_end = 5;
+  // Set when no method has been chosen. Everything above is empty then.
+  string refused = 6;
+  // Said on the response, not in the documentation.
+  string caution = 7;
+}
+
+message SetForecastMethodRequest {
+  ForecastMethod method = 1;
+  int32 trailing_months = 2;
+}
+message SetForecastMethodResponse {
+  ForecastMethod method = 1;
+  int32 trailing_months = 2;
+}
+
+message SaveDemandForecastRequest {
+  string product_id = 1;
+  string month = 2;
+  int32  bottles = 3;
+  string reason = 4;
+}
+message SaveDemandForecastResponse {}

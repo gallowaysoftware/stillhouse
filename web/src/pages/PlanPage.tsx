@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ForecastPanel } from "@/components/ForecastPanel";
 import { useQuery } from "@tanstack/react-query";
 
 import { EmptyRow } from "@/components/EmptyState";
@@ -173,6 +174,7 @@ export function PlanPage() {
           </section>
         </>
       )}
+      <ForecastPanel />
     </Shell>
   );
 }

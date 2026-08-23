@@ -35,6 +35,75 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Demand forecasting. PLAN F7.
+//
+// Stage 185 built the production plan from ACTUAL demand — confirmed,
+// unshipped order lines — and says so on the page every time, because a
+// plan built on an invented forecast looks exactly as authoritative as
+// one built on orders. That is the constraint on everything below.
+//
+// A forecast is therefore reported BESIDE the orders and never added to
+// them. A single number combining twelve bottles somebody has paid for
+// with forty somebody might buy is worse than no forecast at all, because
+// nobody can take it apart again.
+type ForecastMethod int32
+
+const (
+	ForecastMethod_FORECAST_METHOD_UNSPECIFIED ForecastMethod = 0
+	// Mean of the last N complete months of duty-paid removals. Good where
+	// sales are steady, wrong where they are seasonal.
+	ForecastMethod_FORECAST_METHOD_TRAILING_AVERAGE ForecastMethod = 1
+	// The same month last year. Good where sales are seasonal, wrong in a
+	// first year and wrong after a step change.
+	ForecastMethod_FORECAST_METHOD_SAME_PERIOD_LAST_YEAR ForecastMethod = 2
+	// The operator's own numbers — the only method that can be right when
+	// there is a listing decision or a festival in the diary.
+	ForecastMethod_FORECAST_METHOD_MANUAL ForecastMethod = 3
+)
+
+// Enum value maps for ForecastMethod.
+var (
+	ForecastMethod_name = map[int32]string{
+		0: "FORECAST_METHOD_UNSPECIFIED",
+		1: "FORECAST_METHOD_TRAILING_AVERAGE",
+		2: "FORECAST_METHOD_SAME_PERIOD_LAST_YEAR",
+		3: "FORECAST_METHOD_MANUAL",
+	}
+	ForecastMethod_value = map[string]int32{
+		"FORECAST_METHOD_UNSPECIFIED":           0,
+		"FORECAST_METHOD_TRAILING_AVERAGE":      1,
+		"FORECAST_METHOD_SAME_PERIOD_LAST_YEAR": 2,
+		"FORECAST_METHOD_MANUAL":                3,
+	}
+)
+
+func (x ForecastMethod) Enum() *ForecastMethod {
+	p := new(ForecastMethod)
+	*p = x
+	return p
+}
+
+func (x ForecastMethod) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ForecastMethod) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_scheduling_proto_enumTypes[0].Descriptor()
+}
+
+func (ForecastMethod) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_scheduling_proto_enumTypes[0]
+}
+
+func (x ForecastMethod) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ForecastMethod.Descriptor instead.
+func (ForecastMethod) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{0}
+}
+
 type DemandLine struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	ProductId    string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
@@ -580,6 +649,486 @@ func (x *ProductionPlanResponse) GetBlindSpots() []string {
 	return nil
 }
 
+type ForecastLine struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	ProductId   string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	ProductName string                 `protobuf:"bytes,2,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	// Committed: confirmed and unshipped order lines. The same figure the
+	// production plan uses, repeated here so the two can be compared
+	// without being combined.
+	BottlesCommitted int32 `protobuf:"varint,3,opt,name=bottles_committed,json=bottlesCommitted,proto3" json:"bottles_committed,omitempty"`
+	// Projected. Zero and unavailable are different: see available.
+	BottlesForecast int32 `protobuf:"varint,4,opt,name=bottles_forecast,json=bottlesForecast,proto3" json:"bottles_forecast,omitempty"`
+	Available       bool  `protobuf:"varint,5,opt,name=available,proto3" json:"available,omitempty"`
+	// Why there is no figure, when there is none. A product nobody has
+	// sold and a product forecast to sell nothing are different claims.
+	Missing string `protobuf:"bytes,6,opt,name=missing,proto3" json:"missing,omitempty"`
+	// The working, so the number can be argued with rather than believed.
+	Basis      string `protobuf:"bytes,7,opt,name=basis,proto3" json:"basis,omitempty"`
+	MonthsUsed int32  `protobuf:"varint,8,opt,name=months_used,json=monthsUsed,proto3" json:"months_used,omitempty"`
+	// True when an operator replaced the computed figure by hand.
+	Overridden     bool   `protobuf:"varint,9,opt,name=overridden,proto3" json:"overridden,omitempty"`
+	OverrideReason string `protobuf:"bytes,10,opt,name=override_reason,json=overrideReason,proto3" json:"override_reason,omitempty"`
+	BottlesOnHand  int32  `protobuf:"varint,11,opt,name=bottles_on_hand,json=bottlesOnHand,proto3" json:"bottles_on_hand,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ForecastLine) Reset() {
+	*x = ForecastLine{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ForecastLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ForecastLine) ProtoMessage() {}
+
+func (x *ForecastLine) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ForecastLine.ProtoReflect.Descriptor instead.
+func (*ForecastLine) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ForecastLine) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetBottlesCommitted() int32 {
+	if x != nil {
+		return x.BottlesCommitted
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetBottlesForecast() int32 {
+	if x != nil {
+		return x.BottlesForecast
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
+func (x *ForecastLine) GetMissing() string {
+	if x != nil {
+		return x.Missing
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetBasis() string {
+	if x != nil {
+		return x.Basis
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetMonthsUsed() int32 {
+	if x != nil {
+		return x.MonthsUsed
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetOverridden() bool {
+	if x != nil {
+		return x.Overridden
+	}
+	return false
+}
+
+func (x *ForecastLine) GetOverrideReason() string {
+	if x != nil {
+		return x.OverrideReason
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetBottlesOnHand() int32 {
+	if x != nil {
+		return x.BottlesOnHand
+	}
+	return 0
+}
+
+type DemandForecastRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The month to project, ISO date; any day in it. Empty means next
+	// month.
+	Month         string `protobuf:"bytes,1,opt,name=month,proto3" json:"month,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DemandForecastRequest) Reset() {
+	*x = DemandForecastRequest{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DemandForecastRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DemandForecastRequest) ProtoMessage() {}
+
+func (x *DemandForecastRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DemandForecastRequest.ProtoReflect.Descriptor instead.
+func (*DemandForecastRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *DemandForecastRequest) GetMonth() string {
+	if x != nil {
+		return x.Month
+	}
+	return ""
+}
+
+type DemandForecastResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Lines          []*ForecastLine        `protobuf:"bytes,1,rep,name=lines,proto3" json:"lines,omitempty"`
+	Method         ForecastMethod         `protobuf:"varint,2,opt,name=method,proto3,enum=stillhouse.v1.ForecastMethod" json:"method,omitempty"`
+	TrailingMonths int32                  `protobuf:"varint,3,opt,name=trailing_months,json=trailingMonths,proto3" json:"trailing_months,omitempty"`
+	PeriodStart    string                 `protobuf:"bytes,4,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd      string                 `protobuf:"bytes,5,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	// Set when no method has been chosen. Everything above is empty then.
+	Refused string `protobuf:"bytes,6,opt,name=refused,proto3" json:"refused,omitempty"`
+	// Said on the response, not in the documentation.
+	Caution       string `protobuf:"bytes,7,opt,name=caution,proto3" json:"caution,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DemandForecastResponse) Reset() {
+	*x = DemandForecastResponse{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DemandForecastResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DemandForecastResponse) ProtoMessage() {}
+
+func (x *DemandForecastResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DemandForecastResponse.ProtoReflect.Descriptor instead.
+func (*DemandForecastResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *DemandForecastResponse) GetLines() []*ForecastLine {
+	if x != nil {
+		return x.Lines
+	}
+	return nil
+}
+
+func (x *DemandForecastResponse) GetMethod() ForecastMethod {
+	if x != nil {
+		return x.Method
+	}
+	return ForecastMethod_FORECAST_METHOD_UNSPECIFIED
+}
+
+func (x *DemandForecastResponse) GetTrailingMonths() int32 {
+	if x != nil {
+		return x.TrailingMonths
+	}
+	return 0
+}
+
+func (x *DemandForecastResponse) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *DemandForecastResponse) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
+func (x *DemandForecastResponse) GetRefused() string {
+	if x != nil {
+		return x.Refused
+	}
+	return ""
+}
+
+func (x *DemandForecastResponse) GetCaution() string {
+	if x != nil {
+		return x.Caution
+	}
+	return ""
+}
+
+type SetForecastMethodRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Method         ForecastMethod         `protobuf:"varint,1,opt,name=method,proto3,enum=stillhouse.v1.ForecastMethod" json:"method,omitempty"`
+	TrailingMonths int32                  `protobuf:"varint,2,opt,name=trailing_months,json=trailingMonths,proto3" json:"trailing_months,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SetForecastMethodRequest) Reset() {
+	*x = SetForecastMethodRequest{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetForecastMethodRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetForecastMethodRequest) ProtoMessage() {}
+
+func (x *SetForecastMethodRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetForecastMethodRequest.ProtoReflect.Descriptor instead.
+func (*SetForecastMethodRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SetForecastMethodRequest) GetMethod() ForecastMethod {
+	if x != nil {
+		return x.Method
+	}
+	return ForecastMethod_FORECAST_METHOD_UNSPECIFIED
+}
+
+func (x *SetForecastMethodRequest) GetTrailingMonths() int32 {
+	if x != nil {
+		return x.TrailingMonths
+	}
+	return 0
+}
+
+type SetForecastMethodResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Method         ForecastMethod         `protobuf:"varint,1,opt,name=method,proto3,enum=stillhouse.v1.ForecastMethod" json:"method,omitempty"`
+	TrailingMonths int32                  `protobuf:"varint,2,opt,name=trailing_months,json=trailingMonths,proto3" json:"trailing_months,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SetForecastMethodResponse) Reset() {
+	*x = SetForecastMethodResponse{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetForecastMethodResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetForecastMethodResponse) ProtoMessage() {}
+
+func (x *SetForecastMethodResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetForecastMethodResponse.ProtoReflect.Descriptor instead.
+func (*SetForecastMethodResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SetForecastMethodResponse) GetMethod() ForecastMethod {
+	if x != nil {
+		return x.Method
+	}
+	return ForecastMethod_FORECAST_METHOD_UNSPECIFIED
+}
+
+func (x *SetForecastMethodResponse) GetTrailingMonths() int32 {
+	if x != nil {
+		return x.TrailingMonths
+	}
+	return 0
+}
+
+type SaveDemandForecastRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ProductId     string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	Month         string                 `protobuf:"bytes,2,opt,name=month,proto3" json:"month,omitempty"`
+	Bottles       int32                  `protobuf:"varint,3,opt,name=bottles,proto3" json:"bottles,omitempty"`
+	Reason        string                 `protobuf:"bytes,4,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveDemandForecastRequest) Reset() {
+	*x = SaveDemandForecastRequest{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveDemandForecastRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveDemandForecastRequest) ProtoMessage() {}
+
+func (x *SaveDemandForecastRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveDemandForecastRequest.ProtoReflect.Descriptor instead.
+func (*SaveDemandForecastRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *SaveDemandForecastRequest) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *SaveDemandForecastRequest) GetMonth() string {
+	if x != nil {
+		return x.Month
+	}
+	return ""
+}
+
+func (x *SaveDemandForecastRequest) GetBottles() int32 {
+	if x != nil {
+		return x.Bottles
+	}
+	return 0
+}
+
+func (x *SaveDemandForecastRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type SaveDemandForecastResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SaveDemandForecastResponse) Reset() {
+	*x = SaveDemandForecastResponse{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SaveDemandForecastResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SaveDemandForecastResponse) ProtoMessage() {}
+
+func (x *SaveDemandForecastResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SaveDemandForecastResponse.ProtoReflect.Descriptor instead.
+func (*SaveDemandForecastResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{11}
+}
+
 var File_stillhouse_v1_scheduling_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
@@ -638,9 +1187,58 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\x10short_of_alcohol\x18\a \x01(\bR\x0eshortOfAlcohol\x12\x14\n" +
 	"\x05basis\x18\b \x01(\tR\x05basis\x12\x1f\n" +
 	"\vblind_spots\x18\t \x03(\tR\n" +
-	"blindSpots2r\n" +
+	"blindSpots\"\x88\x03\n" +
+	"\fForecastLine\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12!\n" +
+	"\fproduct_name\x18\x02 \x01(\tR\vproductName\x12+\n" +
+	"\x11bottles_committed\x18\x03 \x01(\x05R\x10bottlesCommitted\x12)\n" +
+	"\x10bottles_forecast\x18\x04 \x01(\x05R\x0fbottlesForecast\x12\x1c\n" +
+	"\tavailable\x18\x05 \x01(\bR\tavailable\x12\x18\n" +
+	"\amissing\x18\x06 \x01(\tR\amissing\x12\x14\n" +
+	"\x05basis\x18\a \x01(\tR\x05basis\x12\x1f\n" +
+	"\vmonths_used\x18\b \x01(\x05R\n" +
+	"monthsUsed\x12\x1e\n" +
+	"\n" +
+	"overridden\x18\t \x01(\bR\n" +
+	"overridden\x12'\n" +
+	"\x0foverride_reason\x18\n" +
+	" \x01(\tR\x0eoverrideReason\x12&\n" +
+	"\x0fbottles_on_hand\x18\v \x01(\x05R\rbottlesOnHand\"-\n" +
+	"\x15DemandForecastRequest\x12\x14\n" +
+	"\x05month\x18\x01 \x01(\tR\x05month\"\xa1\x02\n" +
+	"\x16DemandForecastResponse\x121\n" +
+	"\x05lines\x18\x01 \x03(\v2\x1b.stillhouse.v1.ForecastLineR\x05lines\x125\n" +
+	"\x06method\x18\x02 \x01(\x0e2\x1d.stillhouse.v1.ForecastMethodR\x06method\x12'\n" +
+	"\x0ftrailing_months\x18\x03 \x01(\x05R\x0etrailingMonths\x12!\n" +
+	"\fperiod_start\x18\x04 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x05 \x01(\tR\tperiodEnd\x12\x18\n" +
+	"\arefused\x18\x06 \x01(\tR\arefused\x12\x18\n" +
+	"\acaution\x18\a \x01(\tR\acaution\"z\n" +
+	"\x18SetForecastMethodRequest\x125\n" +
+	"\x06method\x18\x01 \x01(\x0e2\x1d.stillhouse.v1.ForecastMethodR\x06method\x12'\n" +
+	"\x0ftrailing_months\x18\x02 \x01(\x05R\x0etrailingMonths\"{\n" +
+	"\x19SetForecastMethodResponse\x125\n" +
+	"\x06method\x18\x01 \x01(\x0e2\x1d.stillhouse.v1.ForecastMethodR\x06method\x12'\n" +
+	"\x0ftrailing_months\x18\x02 \x01(\x05R\x0etrailingMonths\"\x82\x01\n" +
+	"\x19SaveDemandForecastRequest\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12\x14\n" +
+	"\x05month\x18\x02 \x01(\tR\x05month\x12\x18\n" +
+	"\abottles\x18\x03 \x01(\x05R\abottles\x12\x16\n" +
+	"\x06reason\x18\x04 \x01(\tR\x06reason\"\x1c\n" +
+	"\x1aSaveDemandForecastResponse*\x9e\x01\n" +
+	"\x0eForecastMethod\x12\x1f\n" +
+	"\x1bFORECAST_METHOD_UNSPECIFIED\x10\x00\x12$\n" +
+	" FORECAST_METHOD_TRAILING_AVERAGE\x10\x01\x12)\n" +
+	"%FORECAST_METHOD_SAME_PERIOD_LAST_YEAR\x10\x02\x12\x1a\n" +
+	"\x16FORECAST_METHOD_MANUAL\x10\x032\xa4\x03\n" +
 	"\x11SchedulingService\x12]\n" +
-	"\x0eProductionPlan\x12$.stillhouse.v1.ProductionPlanRequest\x1a%.stillhouse.v1.ProductionPlanResponseB\xd3\x01\n" +
+	"\x0eProductionPlan\x12$.stillhouse.v1.ProductionPlanRequest\x1a%.stillhouse.v1.ProductionPlanResponse\x12]\n" +
+	"\x0eDemandForecast\x12$.stillhouse.v1.DemandForecastRequest\x1a%.stillhouse.v1.DemandForecastResponse\x12f\n" +
+	"\x11SetForecastMethod\x12'.stillhouse.v1.SetForecastMethodRequest\x1a(.stillhouse.v1.SetForecastMethodResponse\x12i\n" +
+	"\x12SaveDemandForecast\x12(.stillhouse.v1.SaveDemandForecastRequest\x1a).stillhouse.v1.SaveDemandForecastResponseB\xd3\x01\n" +
 	"\x11com.stillhouse.v1B\x0fSchedulingProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -655,29 +1253,48 @@ func file_stillhouse_v1_scheduling_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_scheduling_proto_rawDescData
 }
 
-var file_stillhouse_v1_scheduling_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stillhouse_v1_scheduling_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_stillhouse_v1_scheduling_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_stillhouse_v1_scheduling_proto_goTypes = []any{
-	(*DemandLine)(nil),             // 0: stillhouse.v1.DemandLine
-	(*PlannableEquipment)(nil),     // 1: stillhouse.v1.PlannableEquipment
-	(*ScheduledWork)(nil),          // 2: stillhouse.v1.ScheduledWork
-	(*ProductionPlanRequest)(nil),  // 3: stillhouse.v1.ProductionPlanRequest
-	(*ProductionPlanResponse)(nil), // 4: stillhouse.v1.ProductionPlanResponse
-	(EquipmentKind)(0),             // 5: stillhouse.v1.EquipmentKind
-	(EquipmentStatus)(0),           // 6: stillhouse.v1.EquipmentStatus
+	(ForecastMethod)(0),                // 0: stillhouse.v1.ForecastMethod
+	(*DemandLine)(nil),                 // 1: stillhouse.v1.DemandLine
+	(*PlannableEquipment)(nil),         // 2: stillhouse.v1.PlannableEquipment
+	(*ScheduledWork)(nil),              // 3: stillhouse.v1.ScheduledWork
+	(*ProductionPlanRequest)(nil),      // 4: stillhouse.v1.ProductionPlanRequest
+	(*ProductionPlanResponse)(nil),     // 5: stillhouse.v1.ProductionPlanResponse
+	(*ForecastLine)(nil),               // 6: stillhouse.v1.ForecastLine
+	(*DemandForecastRequest)(nil),      // 7: stillhouse.v1.DemandForecastRequest
+	(*DemandForecastResponse)(nil),     // 8: stillhouse.v1.DemandForecastResponse
+	(*SetForecastMethodRequest)(nil),   // 9: stillhouse.v1.SetForecastMethodRequest
+	(*SetForecastMethodResponse)(nil),  // 10: stillhouse.v1.SetForecastMethodResponse
+	(*SaveDemandForecastRequest)(nil),  // 11: stillhouse.v1.SaveDemandForecastRequest
+	(*SaveDemandForecastResponse)(nil), // 12: stillhouse.v1.SaveDemandForecastResponse
+	(EquipmentKind)(0),                 // 13: stillhouse.v1.EquipmentKind
+	(EquipmentStatus)(0),               // 14: stillhouse.v1.EquipmentStatus
 }
 var file_stillhouse_v1_scheduling_proto_depIdxs = []int32{
-	5, // 0: stillhouse.v1.PlannableEquipment.kind:type_name -> stillhouse.v1.EquipmentKind
-	6, // 1: stillhouse.v1.PlannableEquipment.status:type_name -> stillhouse.v1.EquipmentStatus
-	2, // 2: stillhouse.v1.PlannableEquipment.scheduled:type_name -> stillhouse.v1.ScheduledWork
-	0, // 3: stillhouse.v1.ProductionPlanResponse.demand:type_name -> stillhouse.v1.DemandLine
-	1, // 4: stillhouse.v1.ProductionPlanResponse.equipment:type_name -> stillhouse.v1.PlannableEquipment
-	3, // 5: stillhouse.v1.SchedulingService.ProductionPlan:input_type -> stillhouse.v1.ProductionPlanRequest
-	4, // 6: stillhouse.v1.SchedulingService.ProductionPlan:output_type -> stillhouse.v1.ProductionPlanResponse
-	6, // [6:7] is the sub-list for method output_type
-	5, // [5:6] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	13, // 0: stillhouse.v1.PlannableEquipment.kind:type_name -> stillhouse.v1.EquipmentKind
+	14, // 1: stillhouse.v1.PlannableEquipment.status:type_name -> stillhouse.v1.EquipmentStatus
+	3,  // 2: stillhouse.v1.PlannableEquipment.scheduled:type_name -> stillhouse.v1.ScheduledWork
+	1,  // 3: stillhouse.v1.ProductionPlanResponse.demand:type_name -> stillhouse.v1.DemandLine
+	2,  // 4: stillhouse.v1.ProductionPlanResponse.equipment:type_name -> stillhouse.v1.PlannableEquipment
+	6,  // 5: stillhouse.v1.DemandForecastResponse.lines:type_name -> stillhouse.v1.ForecastLine
+	0,  // 6: stillhouse.v1.DemandForecastResponse.method:type_name -> stillhouse.v1.ForecastMethod
+	0,  // 7: stillhouse.v1.SetForecastMethodRequest.method:type_name -> stillhouse.v1.ForecastMethod
+	0,  // 8: stillhouse.v1.SetForecastMethodResponse.method:type_name -> stillhouse.v1.ForecastMethod
+	4,  // 9: stillhouse.v1.SchedulingService.ProductionPlan:input_type -> stillhouse.v1.ProductionPlanRequest
+	7,  // 10: stillhouse.v1.SchedulingService.DemandForecast:input_type -> stillhouse.v1.DemandForecastRequest
+	9,  // 11: stillhouse.v1.SchedulingService.SetForecastMethod:input_type -> stillhouse.v1.SetForecastMethodRequest
+	11, // 12: stillhouse.v1.SchedulingService.SaveDemandForecast:input_type -> stillhouse.v1.SaveDemandForecastRequest
+	5,  // 13: stillhouse.v1.SchedulingService.ProductionPlan:output_type -> stillhouse.v1.ProductionPlanResponse
+	8,  // 14: stillhouse.v1.SchedulingService.DemandForecast:output_type -> stillhouse.v1.DemandForecastResponse
+	10, // 15: stillhouse.v1.SchedulingService.SetForecastMethod:output_type -> stillhouse.v1.SetForecastMethodResponse
+	12, // 16: stillhouse.v1.SchedulingService.SaveDemandForecast:output_type -> stillhouse.v1.SaveDemandForecastResponse
+	13, // [13:17] is the sub-list for method output_type
+	9,  // [9:13] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_scheduling_proto_init() }
@@ -691,13 +1308,14 @@ func file_stillhouse_v1_scheduling_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_scheduling_proto_rawDesc), len(file_stillhouse_v1_scheduling_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   5,
+			NumEnums:      1,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_stillhouse_v1_scheduling_proto_goTypes,
 		DependencyIndexes: file_stillhouse_v1_scheduling_proto_depIdxs,
+		EnumInfos:         file_stillhouse_v1_scheduling_proto_enumTypes,
 		MessageInfos:      file_stillhouse_v1_scheduling_proto_msgTypes,
 	}.Build()
 	File_stillhouse_v1_scheduling_proto = out.File

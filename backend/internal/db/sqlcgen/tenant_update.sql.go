@@ -13,7 +13,7 @@ import (
 )
 
 const setDutyPointEffectiveFrom = `-- name: SetDutyPointEffectiveFrom :one
-UPDATE tenants SET duty_point_effective_from = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis
+UPDATE tenants SET duty_point_effective_from = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months
 `
 
 type SetDutyPointEffectiveFromParams struct {
@@ -45,12 +45,14 @@ func (q *Queries) SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPoin
 		&i.FilingFrequencyAuthorizationRef,
 		&i.RequireBatchRelease,
 		&i.WipChargeBasis,
+		&i.ForecastMethod,
+		&i.ForecastTrailingMonths,
 	)
 	return i, err
 }
 
 const setTenantBatchReleaseRequired = `-- name: SetTenantBatchReleaseRequired :one
-UPDATE tenants SET require_batch_release = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis
+UPDATE tenants SET require_batch_release = $2 WHERE id = $1 RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months
 `
 
 type SetTenantBatchReleaseRequiredParams struct {
@@ -78,6 +80,8 @@ func (q *Queries) SetTenantBatchReleaseRequired(ctx context.Context, arg SetTena
 		&i.FilingFrequencyAuthorizationRef,
 		&i.RequireBatchRelease,
 		&i.WipChargeBasis,
+		&i.ForecastMethod,
+		&i.ForecastTrailingMonths,
 	)
 	return i, err
 }
@@ -90,7 +94,7 @@ SET filing_frequency                   = $2,
     fiscal_month_notification_ref      = $5,
     filing_frequency_authorization_ref = $6
 WHERE id = $1
-RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis
+RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months
 `
 
 type UpdateFilingCalendarParams struct {
@@ -133,6 +137,8 @@ func (q *Queries) UpdateFilingCalendar(ctx context.Context, arg UpdateFilingCale
 		&i.FilingFrequencyAuthorizationRef,
 		&i.RequireBatchRelease,
 		&i.WipChargeBasis,
+		&i.ForecastMethod,
+		&i.ForecastTrailingMonths,
 	)
 	return i, err
 }
@@ -144,7 +150,7 @@ SET name                            = $2,
     excise_warehouse_licence_number = $4,
     default_jurisdiction            = $5
 WHERE id = $1
-RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis
+RETURNING id, name, cra_spirits_licence_number, excise_warehouse_licence_number, default_jurisdiction, created_at, updated_at, duty_point, duty_point_effective_from, filing_frequency, fiscal_month_basis, fiscal_month_end_day, fiscal_month_notification_ref, filing_frequency_authorization_ref, require_batch_release, wip_charge_basis, forecast_method, forecast_trailing_months
 `
 
 type UpdateTenantParams struct {
@@ -181,6 +187,8 @@ func (q *Queries) UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Ten
 		&i.FilingFrequencyAuthorizationRef,
 		&i.RequireBatchRelease,
 		&i.WipChargeBasis,
+		&i.ForecastMethod,
+		&i.ForecastTrailingMonths,
 	)
 	return i, err
 }

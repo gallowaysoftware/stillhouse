@@ -16,8 +16,8 @@
 // @generated from file stillhouse/v1/scheduling.proto (package stillhouse.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { EquipmentKind, EquipmentStatus } from "./equipment_pb.js";
 import { file_stillhouse_v1_equipment } from "./equipment_pb.js";
 import type { Message } from "@bufbuild/protobuf";
@@ -26,7 +26,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/scheduling.proto.
  */
 export const file_stillhouse_v1_scheduling: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdGlsbGhvdXNlL3YxL3NjaGVkdWxpbmcucHJvdG8SDXN0aWxsaG91c2UudjEimwIKCkRlbWFuZExpbmUSEgoKcHJvZHVjdF9pZBgBIAEoCRIUCgxwcm9kdWN0X25hbWUYAiABKAkSFgoOYm90dGxlX3NpemVfbWwYAyABKAUSFgoOYm90dGxlX2Fidl9wY3QYBCABKAESFAoMYm90dGxlc19vd2VkGAUgASgFEhkKEWVhcmxpZXN0X3JlcXVpcmVkGAYgASgJEhcKD2JvdHRsZXNfb25faGFuZBgHIAEoBRIWCg5ib3R0bGVzX3BpY2tlZBgIIAEoBRIZChFib3R0bGVzX2F2YWlsYWJsZRgJIAEoBRIRCglzaG9ydGZhbGwYCiABKAUSFQoNc2hvcnRmYWxsX2xhYRgLIAEoARIMCgRsYXRlGAwgASgIIpQDChJQbGFubmFibGVFcXVpcG1lbnQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIqCgRraW5kGAMgASgOMhwuc3RpbGxob3VzZS52MS5FcXVpcG1lbnRLaW5kEi4KBnN0YXR1cxgEIAEoDjIeLnN0aWxsaG91c2UudjEuRXF1aXBtZW50U3RhdHVzEhIKCmNhcGFjaXR5X2wYBSABKAESFgoOY2FwYWNpdHlfbF9zZXQYBiABKAgSHQoVb2JzZXJ2ZWRfbWVkaWFuX2hvdXJzGAcgASgBEhUKDW9ic2VydmVkX3J1bnMYCCABKAUSGQoRdHlwaWNhbF9ydW5faG91cnMYCSABKAESHQoVdHlwaWNhbF9ydW5faG91cnNfc2V0GAogASgIEhEKCXBsYW5uYWJsZRgLIAEoCBIPCgd3aHlfbm90GAwgASgJEi8KCXNjaGVkdWxlZBgNIAMoCzIcLnN0aWxsaG91c2UudjEuU2NoZWR1bGVkV29yaxIXCg9zY2hlZHVsZWRfaG91cnMYDiABKAEigwEKDVNjaGVkdWxlZFdvcmsSFQoNd29ya19vcmRlcl9pZBgBIAEoCRIVCg13b3JrX29yZGVyX25vGAIgASgFEg0KBXRpdGxlGAMgASgJEhUKDXNjaGVkdWxlZF9mb3IYBCABKAkSDgoGZHVlX29uGAUgASgJEg4KBnN0YXR1cxgGIAEoCSIxChVQcm9kdWN0aW9uUGxhblJlcXVlc3QSDAoEZnJvbRgBIAEoCRIKCgJ0bxgCIAEoCSL/AQoWUHJvZHVjdGlvblBsYW5SZXNwb25zZRIpCgZkZW1hbmQYASADKAsyGS5zdGlsbGhvdXNlLnYxLkRlbWFuZExpbmUSNAoJZXF1aXBtZW50GAIgAygLMiEuc3RpbGxob3VzZS52MS5QbGFubmFibGVFcXVpcG1lbnQSDAoEZnJvbRgDIAEoCRIKCgJ0bxgEIAEoCRIVCg1zaG9ydGZhbGxfbGFhGAUgASgBEhUKDWF2YWlsYWJsZV9sYWEYBiABKAESGAoQc2hvcnRfb2ZfYWxjb2hvbBgHIAEoCBINCgViYXNpcxgIIAEoCRITCgtibGluZF9zcG90cxgJIAMoCTJyChFTY2hlZHVsaW5nU2VydmljZRJdCg5Qcm9kdWN0aW9uUGxhbhIkLnN0aWxsaG91c2UudjEuUHJvZHVjdGlvblBsYW5SZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5Qcm9kdWN0aW9uUGxhblJlc3BvbnNlYgZwcm90bzM", [file_stillhouse_v1_equipment]);
+  fileDesc("Ch5zdGlsbGhvdXNlL3YxL3NjaGVkdWxpbmcucHJvdG8SDXN0aWxsaG91c2UudjEimwIKCkRlbWFuZExpbmUSEgoKcHJvZHVjdF9pZBgBIAEoCRIUCgxwcm9kdWN0X25hbWUYAiABKAkSFgoOYm90dGxlX3NpemVfbWwYAyABKAUSFgoOYm90dGxlX2Fidl9wY3QYBCABKAESFAoMYm90dGxlc19vd2VkGAUgASgFEhkKEWVhcmxpZXN0X3JlcXVpcmVkGAYgASgJEhcKD2JvdHRsZXNfb25faGFuZBgHIAEoBRIWCg5ib3R0bGVzX3BpY2tlZBgIIAEoBRIZChFib3R0bGVzX2F2YWlsYWJsZRgJIAEoBRIRCglzaG9ydGZhbGwYCiABKAUSFQoNc2hvcnRmYWxsX2xhYRgLIAEoARIMCgRsYXRlGAwgASgIIpQDChJQbGFubmFibGVFcXVpcG1lbnQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIqCgRraW5kGAMgASgOMhwuc3RpbGxob3VzZS52MS5FcXVpcG1lbnRLaW5kEi4KBnN0YXR1cxgEIAEoDjIeLnN0aWxsaG91c2UudjEuRXF1aXBtZW50U3RhdHVzEhIKCmNhcGFjaXR5X2wYBSABKAESFgoOY2FwYWNpdHlfbF9zZXQYBiABKAgSHQoVb2JzZXJ2ZWRfbWVkaWFuX2hvdXJzGAcgASgBEhUKDW9ic2VydmVkX3J1bnMYCCABKAUSGQoRdHlwaWNhbF9ydW5faG91cnMYCSABKAESHQoVdHlwaWNhbF9ydW5faG91cnNfc2V0GAogASgIEhEKCXBsYW5uYWJsZRgLIAEoCBIPCgd3aHlfbm90GAwgASgJEi8KCXNjaGVkdWxlZBgNIAMoCzIcLnN0aWxsaG91c2UudjEuU2NoZWR1bGVkV29yaxIXCg9zY2hlZHVsZWRfaG91cnMYDiABKAEigwEKDVNjaGVkdWxlZFdvcmsSFQoNd29ya19vcmRlcl9pZBgBIAEoCRIVCg13b3JrX29yZGVyX25vGAIgASgFEg0KBXRpdGxlGAMgASgJEhUKDXNjaGVkdWxlZF9mb3IYBCABKAkSDgoGZHVlX29uGAUgASgJEg4KBnN0YXR1cxgGIAEoCSIxChVQcm9kdWN0aW9uUGxhblJlcXVlc3QSDAoEZnJvbRgBIAEoCRIKCgJ0bxgCIAEoCSL/AQoWUHJvZHVjdGlvblBsYW5SZXNwb25zZRIpCgZkZW1hbmQYASADKAsyGS5zdGlsbGhvdXNlLnYxLkRlbWFuZExpbmUSNAoJZXF1aXBtZW50GAIgAygLMiEuc3RpbGxob3VzZS52MS5QbGFubmFibGVFcXVpcG1lbnQSDAoEZnJvbRgDIAEoCRIKCgJ0bxgEIAEoCRIVCg1zaG9ydGZhbGxfbGFhGAUgASgBEhUKDWF2YWlsYWJsZV9sYWEYBiABKAESGAoQc2hvcnRfb2ZfYWxjb2hvbBgHIAEoCBINCgViYXNpcxgIIAEoCRITCgtibGluZF9zcG90cxgJIAMoCSL7AQoMRm9yZWNhc3RMaW5lEhIKCnByb2R1Y3RfaWQYASABKAkSFAoMcHJvZHVjdF9uYW1lGAIgASgJEhkKEWJvdHRsZXNfY29tbWl0dGVkGAMgASgFEhgKEGJvdHRsZXNfZm9yZWNhc3QYBCABKAUSEQoJYXZhaWxhYmxlGAUgASgIEg8KB21pc3NpbmcYBiABKAkSDQoFYmFzaXMYByABKAkSEwoLbW9udGhzX3VzZWQYCCABKAUSEgoKb3ZlcnJpZGRlbhgJIAEoCBIXCg9vdmVycmlkZV9yZWFzb24YCiABKAkSFwoPYm90dGxlc19vbl9oYW5kGAsgASgFIiYKFURlbWFuZEZvcmVjYXN0UmVxdWVzdBINCgVtb250aBgBIAEoCSLYAQoWRGVtYW5kRm9yZWNhc3RSZXNwb25zZRIqCgVsaW5lcxgBIAMoCzIbLnN0aWxsaG91c2UudjEuRm9yZWNhc3RMaW5lEi0KBm1ldGhvZBgCIAEoDjIdLnN0aWxsaG91c2UudjEuRm9yZWNhc3RNZXRob2QSFwoPdHJhaWxpbmdfbW9udGhzGAMgASgFEhQKDHBlcmlvZF9zdGFydBgEIAEoCRISCgpwZXJpb2RfZW5kGAUgASgJEg8KB3JlZnVzZWQYBiABKAkSDwoHY2F1dGlvbhgHIAEoCSJiChhTZXRGb3JlY2FzdE1ldGhvZFJlcXVlc3QSLQoGbWV0aG9kGAEgASgOMh0uc3RpbGxob3VzZS52MS5Gb3JlY2FzdE1ldGhvZBIXCg90cmFpbGluZ19tb250aHMYAiABKAUiYwoZU2V0Rm9yZWNhc3RNZXRob2RSZXNwb25zZRItCgZtZXRob2QYASABKA4yHS5zdGlsbGhvdXNlLnYxLkZvcmVjYXN0TWV0aG9kEhcKD3RyYWlsaW5nX21vbnRocxgCIAEoBSJfChlTYXZlRGVtYW5kRm9yZWNhc3RSZXF1ZXN0EhIKCnByb2R1Y3RfaWQYASABKAkSDQoFbW9udGgYAiABKAkSDwoHYm90dGxlcxgDIAEoBRIOCgZyZWFzb24YBCABKAkiHAoaU2F2ZURlbWFuZEZvcmVjYXN0UmVzcG9uc2UqngEKDkZvcmVjYXN0TWV0aG9kEh8KG0ZPUkVDQVNUX01FVEhPRF9VTlNQRUNJRklFRBAAEiQKIEZPUkVDQVNUX01FVEhPRF9UUkFJTElOR19BVkVSQUdFEAESKQolRk9SRUNBU1RfTUVUSE9EX1NBTUVfUEVSSU9EX0xBU1RfWUVBUhACEhoKFkZPUkVDQVNUX01FVEhPRF9NQU5VQUwQAzKkAwoRU2NoZWR1bGluZ1NlcnZpY2USXQoOUHJvZHVjdGlvblBsYW4SJC5zdGlsbGhvdXNlLnYxLlByb2R1Y3Rpb25QbGFuUmVxdWVzdBolLnN0aWxsaG91c2UudjEuUHJvZHVjdGlvblBsYW5SZXNwb25zZRJdCg5EZW1hbmRGb3JlY2FzdBIkLnN0aWxsaG91c2UudjEuRGVtYW5kRm9yZWNhc3RSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5EZW1hbmRGb3JlY2FzdFJlc3BvbnNlEmYKEVNldEZvcmVjYXN0TWV0aG9kEicuc3RpbGxob3VzZS52MS5TZXRGb3JlY2FzdE1ldGhvZFJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNldEZvcmVjYXN0TWV0aG9kUmVzcG9uc2USaQoSU2F2ZURlbWFuZEZvcmVjYXN0Eiguc3RpbGxob3VzZS52MS5TYXZlRGVtYW5kRm9yZWNhc3RSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5TYXZlRGVtYW5kRm9yZWNhc3RSZXNwb25zZWIGcHJvdG8z", [file_stillhouse_v1_equipment]);
 
 /**
  * @generated from message stillhouse.v1.DemandLine
@@ -347,6 +347,298 @@ export const ProductionPlanResponseSchema: GenMessage<ProductionPlanResponse> = 
   messageDesc(file_stillhouse_v1_scheduling, 4);
 
 /**
+ * @generated from message stillhouse.v1.ForecastLine
+ */
+export type ForecastLine = Message<"stillhouse.v1.ForecastLine"> & {
+  /**
+   * @generated from field: string product_id = 1;
+   */
+  productId: string;
+
+  /**
+   * @generated from field: string product_name = 2;
+   */
+  productName: string;
+
+  /**
+   * Committed: confirmed and unshipped order lines. The same figure the
+   * production plan uses, repeated here so the two can be compared
+   * without being combined.
+   *
+   * @generated from field: int32 bottles_committed = 3;
+   */
+  bottlesCommitted: number;
+
+  /**
+   * Projected. Zero and unavailable are different: see available.
+   *
+   * @generated from field: int32 bottles_forecast = 4;
+   */
+  bottlesForecast: number;
+
+  /**
+   * @generated from field: bool available = 5;
+   */
+  available: boolean;
+
+  /**
+   * Why there is no figure, when there is none. A product nobody has
+   * sold and a product forecast to sell nothing are different claims.
+   *
+   * @generated from field: string missing = 6;
+   */
+  missing: string;
+
+  /**
+   * The working, so the number can be argued with rather than believed.
+   *
+   * @generated from field: string basis = 7;
+   */
+  basis: string;
+
+  /**
+   * @generated from field: int32 months_used = 8;
+   */
+  monthsUsed: number;
+
+  /**
+   * True when an operator replaced the computed figure by hand.
+   *
+   * @generated from field: bool overridden = 9;
+   */
+  overridden: boolean;
+
+  /**
+   * @generated from field: string override_reason = 10;
+   */
+  overrideReason: string;
+
+  /**
+   * @generated from field: int32 bottles_on_hand = 11;
+   */
+  bottlesOnHand: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.ForecastLine.
+ * Use `create(ForecastLineSchema)` to create a new message.
+ */
+export const ForecastLineSchema: GenMessage<ForecastLine> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 5);
+
+/**
+ * @generated from message stillhouse.v1.DemandForecastRequest
+ */
+export type DemandForecastRequest = Message<"stillhouse.v1.DemandForecastRequest"> & {
+  /**
+   * The month to project, ISO date; any day in it. Empty means next
+   * month.
+   *
+   * @generated from field: string month = 1;
+   */
+  month: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.DemandForecastRequest.
+ * Use `create(DemandForecastRequestSchema)` to create a new message.
+ */
+export const DemandForecastRequestSchema: GenMessage<DemandForecastRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 6);
+
+/**
+ * @generated from message stillhouse.v1.DemandForecastResponse
+ */
+export type DemandForecastResponse = Message<"stillhouse.v1.DemandForecastResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.ForecastLine lines = 1;
+   */
+  lines: ForecastLine[];
+
+  /**
+   * @generated from field: stillhouse.v1.ForecastMethod method = 2;
+   */
+  method: ForecastMethod;
+
+  /**
+   * @generated from field: int32 trailing_months = 3;
+   */
+  trailingMonths: number;
+
+  /**
+   * @generated from field: string period_start = 4;
+   */
+  periodStart: string;
+
+  /**
+   * @generated from field: string period_end = 5;
+   */
+  periodEnd: string;
+
+  /**
+   * Set when no method has been chosen. Everything above is empty then.
+   *
+   * @generated from field: string refused = 6;
+   */
+  refused: string;
+
+  /**
+   * Said on the response, not in the documentation.
+   *
+   * @generated from field: string caution = 7;
+   */
+  caution: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.DemandForecastResponse.
+ * Use `create(DemandForecastResponseSchema)` to create a new message.
+ */
+export const DemandForecastResponseSchema: GenMessage<DemandForecastResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 7);
+
+/**
+ * @generated from message stillhouse.v1.SetForecastMethodRequest
+ */
+export type SetForecastMethodRequest = Message<"stillhouse.v1.SetForecastMethodRequest"> & {
+  /**
+   * @generated from field: stillhouse.v1.ForecastMethod method = 1;
+   */
+  method: ForecastMethod;
+
+  /**
+   * @generated from field: int32 trailing_months = 2;
+   */
+  trailingMonths: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetForecastMethodRequest.
+ * Use `create(SetForecastMethodRequestSchema)` to create a new message.
+ */
+export const SetForecastMethodRequestSchema: GenMessage<SetForecastMethodRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 8);
+
+/**
+ * @generated from message stillhouse.v1.SetForecastMethodResponse
+ */
+export type SetForecastMethodResponse = Message<"stillhouse.v1.SetForecastMethodResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.ForecastMethod method = 1;
+   */
+  method: ForecastMethod;
+
+  /**
+   * @generated from field: int32 trailing_months = 2;
+   */
+  trailingMonths: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetForecastMethodResponse.
+ * Use `create(SetForecastMethodResponseSchema)` to create a new message.
+ */
+export const SetForecastMethodResponseSchema: GenMessage<SetForecastMethodResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 9);
+
+/**
+ * @generated from message stillhouse.v1.SaveDemandForecastRequest
+ */
+export type SaveDemandForecastRequest = Message<"stillhouse.v1.SaveDemandForecastRequest"> & {
+  /**
+   * @generated from field: string product_id = 1;
+   */
+  productId: string;
+
+  /**
+   * @generated from field: string month = 2;
+   */
+  month: string;
+
+  /**
+   * @generated from field: int32 bottles = 3;
+   */
+  bottles: number;
+
+  /**
+   * @generated from field: string reason = 4;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SaveDemandForecastRequest.
+ * Use `create(SaveDemandForecastRequestSchema)` to create a new message.
+ */
+export const SaveDemandForecastRequestSchema: GenMessage<SaveDemandForecastRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 10);
+
+/**
+ * @generated from message stillhouse.v1.SaveDemandForecastResponse
+ */
+export type SaveDemandForecastResponse = Message<"stillhouse.v1.SaveDemandForecastResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.SaveDemandForecastResponse.
+ * Use `create(SaveDemandForecastResponseSchema)` to create a new message.
+ */
+export const SaveDemandForecastResponseSchema: GenMessage<SaveDemandForecastResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 11);
+
+/**
+ * Demand forecasting. PLAN F7.
+ *
+ * Stage 185 built the production plan from ACTUAL demand — confirmed,
+ * unshipped order lines — and says so on the page every time, because a
+ * plan built on an invented forecast looks exactly as authoritative as
+ * one built on orders. That is the constraint on everything below.
+ *
+ * A forecast is therefore reported BESIDE the orders and never added to
+ * them. A single number combining twelve bottles somebody has paid for
+ * with forty somebody might buy is worse than no forecast at all, because
+ * nobody can take it apart again.
+ *
+ * @generated from enum stillhouse.v1.ForecastMethod
+ */
+export enum ForecastMethod {
+  /**
+   * @generated from enum value: FORECAST_METHOD_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Mean of the last N complete months of duty-paid removals. Good where
+   * sales are steady, wrong where they are seasonal.
+   *
+   * @generated from enum value: FORECAST_METHOD_TRAILING_AVERAGE = 1;
+   */
+  TRAILING_AVERAGE = 1,
+
+  /**
+   * The same month last year. Good where sales are seasonal, wrong in a
+   * first year and wrong after a step change.
+   *
+   * @generated from enum value: FORECAST_METHOD_SAME_PERIOD_LAST_YEAR = 2;
+   */
+  SAME_PERIOD_LAST_YEAR = 2,
+
+  /**
+   * The operator's own numbers — the only method that can be right when
+   * there is a listing decision or a festival in the diary.
+   *
+   * @generated from enum value: FORECAST_METHOD_MANUAL = 3;
+   */
+  MANUAL = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.ForecastMethod.
+ */
+export const ForecastMethodSchema: GenEnum<ForecastMethod> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_scheduling, 0);
+
+/**
  * @generated from service stillhouse.v1.SchedulingService
  */
 export const SchedulingService: GenService<{
@@ -357,6 +649,33 @@ export const SchedulingService: GenService<{
     methodKind: "unary";
     input: typeof ProductionPlanRequestSchema;
     output: typeof ProductionPlanResponseSchema;
+  },
+  /**
+   * Projected demand, reported beside the committed orders above and
+   * never added to them. See ForecastMethod.
+   *
+   * @generated from rpc stillhouse.v1.SchedulingService.DemandForecast
+   */
+  demandForecast: {
+    methodKind: "unary";
+    input: typeof DemandForecastRequestSchema;
+    output: typeof DemandForecastResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.SchedulingService.SetForecastMethod
+   */
+  setForecastMethod: {
+    methodKind: "unary";
+    input: typeof SetForecastMethodRequestSchema;
+    output: typeof SetForecastMethodResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.SchedulingService.SaveDemandForecast
+   */
+  saveDemandForecast: {
+    methodKind: "unary";
+    input: typeof SaveDemandForecastRequestSchema;
+    output: typeof SaveDemandForecastResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_scheduling, 0);

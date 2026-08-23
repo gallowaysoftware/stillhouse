@@ -256,6 +256,7 @@ type Querier interface {
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteCostRates(ctx context.Context, id uuid.UUID) error
+	DeleteDemandForecast(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
 	DeleteEquipment(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLine(ctx context.Context, id uuid.UUID) error
@@ -386,6 +387,7 @@ type Querier interface {
 	GetEquipment(ctx context.Context, id uuid.UUID) (GetEquipmentRow, error)
 	GetExciseLicence(ctx context.Context, id uuid.UUID) (ExciseLicence, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
+	GetForecastSettings(ctx context.Context, id uuid.UUID) (GetForecastSettingsRow, error)
 	GetInstrument(ctx context.Context, id uuid.UUID) (Instrument, error)
 	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
 	// expires_at to decide if the code is actually usable.
@@ -564,6 +566,7 @@ type Querier interface {
 	// points at one, and the trail behind a filed return has to stay
 	// resolvable years later.
 	ListCustomers(ctx context.Context, arg ListCustomersParams) ([]ListCustomersRow, error)
+	ListDemandForecastsForPeriod(ctx context.Context, arg ListDemandForecastsForPeriodParams) ([]ListDemandForecastsForPeriodRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
 	ListDistillationCuts(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationCut, error)
 	ListDistillationRuns(ctx context.Context, status NullDistillationStatus) ([]DistillationRun, error)
@@ -760,6 +763,13 @@ type Querier interface {
 	// one Stillhouse guessed would fire at a level nobody chose, and an alert
 	// people did not choose is an alert they learn to dismiss.
 	MaterialsBelowReorderPoint(ctx context.Context) ([]MaterialsBelowReorderPointRow, error)
+	// Actual demand, by product by month: what left duty-paid. This is the
+	// only history a forecast is allowed to be built from — a sales order is
+	// a promise and a removal is what happened.
+	//
+	// Voided removals are excluded: the stock did not leave, so it was not
+	// demand.
+	MonthlyRemovalsByProduct(ctx context.Context, since pgtype.Date) ([]MonthlyRemovalsByProductRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)
@@ -999,6 +1009,7 @@ type Querier interface {
 	// duty across events that may already have been filed. Here so a support
 	// path exists that is deliberate rather than improvised.
 	SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error)
+	SetForecastSettings(ctx context.Context, arg SetForecastSettingsParams) (SetForecastSettingsRow, error)
 	SetInstrumentStatus(ctx context.Context, arg SetInstrumentStatusParams) (Instrument, error)
 	SetInvoicePaymentStatus(ctx context.Context, arg SetInvoicePaymentStatusParams) (Invoice, error)
 	// One statement for every transition, so the status, the location, the
@@ -1297,6 +1308,7 @@ type Querier interface {
 	// fiscal-month election must not silently restate when a past return was
 	// due. COALESCE keeps whatever the row already had.
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
+	UpsertDemandForecast(ctx context.Context, arg UpsertDemandForecastParams) (DemandForecast, error)
 	UpsertJournalAccount(ctx context.Context, arg UpsertJournalAccountParams) (JournalAccount, error)
 	UpsertPOSProductMap(ctx context.Context, arg UpsertPOSProductMapParams) (PosProductMap, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
