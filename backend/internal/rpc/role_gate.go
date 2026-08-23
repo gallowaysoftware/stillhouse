@@ -323,6 +323,16 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.SalesService/RemoveSalesOrderLine": roleOwner,
 	"/stillhouse.v1.SalesService/SetSalesOrderStatus":  roleOwner,
 
+	// Ownership and possession of bulk spirits. Recording where the
+	// spirits physically are is an operator act — the person who loaded
+	// the truck is who knows — and it writes an in-bond transfer onto the
+	// return, which is the same class of thing as any other movement.
+	// Saying who *owns* them is a commercial fact about a contract, so it
+	// sits with the owner.
+	"/stillhouse.v1.BulkService/ListThirdPartySpirits":      roleViewer,
+	"/stillhouse.v1.BulkService/SetBulkContainerPossession": roleOperator,
+	"/stillhouse.v1.BulkService/SetBulkContainerOwner":      roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

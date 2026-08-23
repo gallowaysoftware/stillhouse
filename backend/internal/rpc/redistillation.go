@@ -85,7 +85,7 @@ func (s *RedistillationService) StartRedistillation(
 		// Locked before the balance is read: two withdrawals against one
 		// container otherwise both see enough and both subtract, the lost
 		// update fixed for bulk containers in stage 131.
-		vessel, e := q.GetBulkContainerForUpdate(ctx, containerID)
+		vessel, e := lockContainerForWrite(ctx, q, containerID)
 		if e != nil {
 			return e
 		}

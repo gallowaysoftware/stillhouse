@@ -183,9 +183,21 @@ type Barrel struct {
 	// Angel's share assessment against the fill this cask is living off.
 	// Populated on list and detail reads alike, so a dashboard can flag a
 	// leaking cask without opening every barrel page.
-	Maturation    *MaturationAssessment `protobuf:"bytes,53,opt,name=maturation,proto3" json:"maturation,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Maturation *MaturationAssessment `protobuf:"bytes,53,opt,name=maturation,proto3" json:"maturation,omitempty"`
+	// Whose cask it is, and whether we still hold it. Casks are where
+	// third-party ownership actually turns up — contract maturation and
+	// cask-ownership programmes are barrels, not tanks — so a rackhouse
+	// list that cannot tell a customer's cask from the distillery's own is
+	// the list most likely to be read wrong.
+	//
+	// Empty owner_customer_id means the licensee owns it.
+	OwnerCustomerId string         `protobuf:"bytes,54,opt,name=owner_customer_id,json=ownerCustomerId,proto3" json:"owner_customer_id,omitempty"`
+	OwnerName       string         `protobuf:"bytes,55,opt,name=owner_name,json=ownerName,proto3" json:"owner_name,omitempty"`
+	Possession      BulkPossession `protobuf:"varint,56,opt,name=possession,proto3,enum=stillhouse.v1.BulkPossession" json:"possession,omitempty"`
+	HeldByName      string         `protobuf:"bytes,57,opt,name=held_by_name,json=heldByName,proto3" json:"held_by_name,omitempty"`
+	HeldByLicenceNo string         `protobuf:"bytes,58,opt,name=held_by_licence_no,json=heldByLicenceNo,proto3" json:"held_by_licence_no,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *Barrel) Reset() {
@@ -433,6 +445,41 @@ func (x *Barrel) GetMaturation() *MaturationAssessment {
 		return x.Maturation
 	}
 	return nil
+}
+
+func (x *Barrel) GetOwnerCustomerId() string {
+	if x != nil {
+		return x.OwnerCustomerId
+	}
+	return ""
+}
+
+func (x *Barrel) GetOwnerName() string {
+	if x != nil {
+		return x.OwnerName
+	}
+	return ""
+}
+
+func (x *Barrel) GetPossession() BulkPossession {
+	if x != nil {
+		return x.Possession
+	}
+	return BulkPossession_BULK_POSSESSION_UNSPECIFIED
+}
+
+func (x *Barrel) GetHeldByName() string {
+	if x != nil {
+		return x.HeldByName
+	}
+	return ""
+}
+
+func (x *Barrel) GetHeldByLicenceNo() string {
+	if x != nil {
+		return x.HeldByLicenceNo
+	}
+	return ""
 }
 
 type MaturationFinding struct {
@@ -1120,9 +1167,18 @@ type ListBarrelsResponse struct {
 	TotalCount    int32                  `protobuf:"varint,2,opt,name=total_count,json=totalCount,proto3" json:"total_count,omitempty"`
 	AgingCount    int32                  `protobuf:"varint,3,opt,name=aging_count,json=agingCount,proto3" json:"aging_count,omitempty"`
 	EligibleCount int32                  `protobuf:"varint,4,opt,name=eligible_count,json=eligibleCount,proto3" json:"eligible_count,omitempty"`
-	TotalLaa      float64                `protobuf:"fixed64,5,opt,name=total_laa,json=totalLaa,proto3" json:"total_laa,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Every cask in the list, as before.
+	TotalLaa float64 `protobuf:"fixed64,5,opt,name=total_laa,json=totalLaa,proto3" json:"total_laa,omitempty"`
+	// What that total is made of, once ownership and possession stop
+	// agreeing. Ours wherever it is; here whoever owns it; and the two
+	// portions that explain the difference.
+	OwnedLaa         float64 `protobuf:"fixed64,6,opt,name=owned_laa,json=ownedLaa,proto3" json:"owned_laa,omitempty"`
+	HeldLaa          float64 `protobuf:"fixed64,7,opt,name=held_laa,json=heldLaa,proto3" json:"held_laa,omitempty"`
+	HeldForOthersLaa float64 `protobuf:"fixed64,8,opt,name=held_for_others_laa,json=heldForOthersLaa,proto3" json:"held_for_others_laa,omitempty"`
+	HeldElsewhereLaa float64 `protobuf:"fixed64,9,opt,name=held_elsewhere_laa,json=heldElsewhereLaa,proto3" json:"held_elsewhere_laa,omitempty"`
+	ThirdPartyCount  int32   `protobuf:"varint,10,opt,name=third_party_count,json=thirdPartyCount,proto3" json:"third_party_count,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *ListBarrelsResponse) Reset() {
@@ -1186,6 +1242,41 @@ func (x *ListBarrelsResponse) GetEligibleCount() int32 {
 func (x *ListBarrelsResponse) GetTotalLaa() float64 {
 	if x != nil {
 		return x.TotalLaa
+	}
+	return 0
+}
+
+func (x *ListBarrelsResponse) GetOwnedLaa() float64 {
+	if x != nil {
+		return x.OwnedLaa
+	}
+	return 0
+}
+
+func (x *ListBarrelsResponse) GetHeldLaa() float64 {
+	if x != nil {
+		return x.HeldLaa
+	}
+	return 0
+}
+
+func (x *ListBarrelsResponse) GetHeldForOthersLaa() float64 {
+	if x != nil {
+		return x.HeldForOthersLaa
+	}
+	return 0
+}
+
+func (x *ListBarrelsResponse) GetHeldElsewhereLaa() float64 {
+	if x != nil {
+		return x.HeldElsewhereLaa
+	}
+	return 0
+}
+
+func (x *ListBarrelsResponse) GetThirdPartyCount() int32 {
+	if x != nil {
+		return x.ThirdPartyCount
 	}
 	return 0
 }
@@ -1960,7 +2051,7 @@ var File_stillhouse_v1_barrel_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\n" +
-	"\x1astillhouse/v1/barrel.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1estillhouse/v1/instrument.proto\x1a!stillhouse/v1/alcoholometry.proto\"\xbe\t\n" +
+	"\x1astillhouse/v1/barrel.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x18stillhouse/v1/bulk.proto\x1a\x1estillhouse/v1/instrument.proto\x1a!stillhouse/v1/alcoholometry.proto\"\x97\v\n" +
 	"\x06Barrel\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
@@ -2001,7 +2092,16 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	" days_to_canadian_whisky_eligible\x184 \x01(\x05R\x1cdaysToCanadianWhiskyEligible\x12C\n" +
 	"\n" +
 	"maturation\x185 \x01(\v2#.stillhouse.v1.MaturationAssessmentR\n" +
-	"maturation\"\x9b\x01\n" +
+	"maturation\x12*\n" +
+	"\x11owner_customer_id\x186 \x01(\tR\x0fownerCustomerId\x12\x1d\n" +
+	"\n" +
+	"owner_name\x187 \x01(\tR\townerName\x12=\n" +
+	"\n" +
+	"possession\x188 \x01(\x0e2\x1d.stillhouse.v1.BulkPossessionR\n" +
+	"possession\x12 \n" +
+	"\fheld_by_name\x189 \x01(\tR\n" +
+	"heldByName\x12+\n" +
+	"\x12held_by_licence_no\x18: \x01(\tR\x0fheldByLicenceNo\"\x9b\x01\n" +
 	"\x11MaturationFinding\x12D\n" +
 	"\bseverity\x18\x01 \x01(\x0e2(.stillhouse.v1.MaturationFindingSeverityR\bseverity\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
@@ -2072,7 +2172,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x14CreateBarrelResponse\x12-\n" +
 	"\x06barrel\x18\x01 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\"?\n" +
 	"\x12ListBarrelsRequest\x12)\n" +
-	"\x10include_archived\x18\x01 \x01(\bR\x0fincludeArchived\"\xcc\x01\n" +
+	"\x10include_archived\x18\x01 \x01(\bR\x0fincludeArchived\"\x8d\x03\n" +
 	"\x13ListBarrelsResponse\x12/\n" +
 	"\abarrels\x18\x01 \x03(\v2\x15.stillhouse.v1.BarrelR\abarrels\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
@@ -2080,7 +2180,13 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\vaging_count\x18\x03 \x01(\x05R\n" +
 	"agingCount\x12%\n" +
 	"\x0eeligible_count\x18\x04 \x01(\x05R\religibleCount\x12\x1b\n" +
-	"\ttotal_laa\x18\x05 \x01(\x01R\btotalLaa\"\"\n" +
+	"\ttotal_laa\x18\x05 \x01(\x01R\btotalLaa\x12\x1b\n" +
+	"\towned_laa\x18\x06 \x01(\x01R\bownedLaa\x12\x19\n" +
+	"\bheld_laa\x18\a \x01(\x01R\aheldLaa\x12-\n" +
+	"\x13held_for_others_laa\x18\b \x01(\x01R\x10heldForOthersLaa\x12,\n" +
+	"\x12held_elsewhere_laa\x18\t \x01(\x01R\x10heldElsewhereLaa\x12*\n" +
+	"\x11third_party_count\x18\n" +
+	" \x01(\x05R\x0fthirdPartyCount\"\"\n" +
 	"\x10GetBarrelRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\"\xbb\x01\n" +
 	"\x11GetBarrelResponse\x12-\n" +
@@ -2209,57 +2315,59 @@ var file_stillhouse_v1_barrel_proto_goTypes = []any{
 	(*VoidBarrelEventRequest)(nil),   // 18: stillhouse.v1.VoidBarrelEventRequest
 	(*VoidBarrelEventResponse)(nil),  // 19: stillhouse.v1.VoidBarrelEventResponse
 	(*timestamppb.Timestamp)(nil),    // 20: google.protobuf.Timestamp
-	(StrengthSource)(0),              // 21: stillhouse.v1.StrengthSource
-	(*DeterminationInstruments)(nil), // 22: stillhouse.v1.DeterminationInstruments
-	(*InstrumentRefs)(nil),           // 23: stillhouse.v1.InstrumentRefs
+	(BulkPossession)(0),              // 21: stillhouse.v1.BulkPossession
+	(StrengthSource)(0),              // 22: stillhouse.v1.StrengthSource
+	(*DeterminationInstruments)(nil), // 23: stillhouse.v1.DeterminationInstruments
+	(*InstrumentRefs)(nil),           // 24: stillhouse.v1.InstrumentRefs
 }
 var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
 	20, // 0: stillhouse.v1.Barrel.created_at:type_name -> google.protobuf.Timestamp
 	20, // 1: stillhouse.v1.Barrel.updated_at:type_name -> google.protobuf.Timestamp
 	4,  // 2: stillhouse.v1.Barrel.maturation:type_name -> stillhouse.v1.MaturationAssessment
-	1,  // 3: stillhouse.v1.MaturationFinding.severity:type_name -> stillhouse.v1.MaturationFindingSeverity
-	3,  // 4: stillhouse.v1.MaturationAssessment.findings:type_name -> stillhouse.v1.MaturationFinding
-	0,  // 5: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
-	20, // 6: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
-	20, // 7: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
-	21, // 8: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
-	22, // 9: stillhouse.v1.BarrelEvent.instruments:type_name -> stillhouse.v1.DeterminationInstruments
-	2,  // 10: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	2,  // 11: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
-	2,  // 12: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	5,  // 13: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
-	4,  // 14: stillhouse.v1.GetBarrelResponse.maturation:type_name -> stillhouse.v1.MaturationAssessment
-	20, // 15: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	23, // 16: stillhouse.v1.FillBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	5,  // 17: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	2,  // 18: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	20, // 19: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	23, // 20: stillhouse.v1.DumpBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	5,  // 21: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	2,  // 22: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	20, // 23: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	23, // 24: stillhouse.v1.RegaugeBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	5,  // 25: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	2,  // 26: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	6,  // 27: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
-	8,  // 28: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
-	10, // 29: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
-	12, // 30: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
-	14, // 31: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
-	16, // 32: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
-	18, // 33: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
-	7,  // 34: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
-	9,  // 35: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
-	11, // 36: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
-	13, // 37: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
-	15, // 38: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
-	17, // 39: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
-	19, // 40: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
-	34, // [34:41] is the sub-list for method output_type
-	27, // [27:34] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	21, // 3: stillhouse.v1.Barrel.possession:type_name -> stillhouse.v1.BulkPossession
+	1,  // 4: stillhouse.v1.MaturationFinding.severity:type_name -> stillhouse.v1.MaturationFindingSeverity
+	3,  // 5: stillhouse.v1.MaturationAssessment.findings:type_name -> stillhouse.v1.MaturationFinding
+	0,  // 6: stillhouse.v1.BarrelEvent.kind:type_name -> stillhouse.v1.BarrelEventKind
+	20, // 7: stillhouse.v1.BarrelEvent.event_date:type_name -> google.protobuf.Timestamp
+	20, // 8: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
+	22, // 9: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
+	23, // 10: stillhouse.v1.BarrelEvent.instruments:type_name -> stillhouse.v1.DeterminationInstruments
+	2,  // 11: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	2,  // 12: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
+	2,  // 13: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	5,  // 14: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
+	4,  // 15: stillhouse.v1.GetBarrelResponse.maturation:type_name -> stillhouse.v1.MaturationAssessment
+	20, // 16: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	24, // 17: stillhouse.v1.FillBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	5,  // 18: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 19: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	20, // 20: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	24, // 21: stillhouse.v1.DumpBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	5,  // 22: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 23: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	20, // 24: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	24, // 25: stillhouse.v1.RegaugeBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	5,  // 26: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 27: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	6,  // 28: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
+	8,  // 29: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
+	10, // 30: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
+	12, // 31: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
+	14, // 32: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
+	16, // 33: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
+	18, // 34: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
+	7,  // 35: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
+	9,  // 36: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
+	11, // 37: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
+	13, // 38: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
+	15, // 39: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
+	17, // 40: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
+	19, // 41: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
+	35, // [35:42] is the sub-list for method output_type
+	28, // [28:35] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_barrel_proto_init() }
@@ -2267,6 +2375,7 @@ func file_stillhouse_v1_barrel_proto_init() {
 	if File_stillhouse_v1_barrel_proto != nil {
 		return
 	}
+	file_stillhouse_v1_bulk_proto_init()
 	file_stillhouse_v1_instrument_proto_init()
 	file_stillhouse_v1_alcoholometry_proto_init()
 	type x struct{}

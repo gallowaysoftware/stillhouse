@@ -401,6 +401,24 @@ function ReportView({
             </>
           )}
           <Row k="Closing on hand"        v={formatLAA(report.bulkClosingLaa)} bold />
+          {/* Not lines on the form. CRA asks for everything in your
+              possession and nothing else, so neither figure changes what
+              is filed — but a licensee signing a return that includes a
+              customer's casks should be able to see that it does, and one
+              whose own casks are at a partner's warehouse should be able
+              to see why they are absent.
+
+              Read as at today rather than walked back to the period end:
+              ownership and possession have no ledger behind them, so a
+              walked figure would be a fiction. The label says so. */}
+          {report.bulkClosingHeldForOthersLaa > 0 && (
+            <Row k="  of which held for customers (today)"
+                 v={formatLAA(report.bulkClosingHeldForOthersLaa)} dim />
+          )}
+          {report.bulkHeldElsewhereLaa > 0 && (
+            <Row k="  yours, held by another licensee — not above (today)"
+                 v={formatLAA(report.bulkHeldElsewhereLaa)} dim />
+          )}
         </Card>
         <Card title="Packaged spirits (LAA)">
           <Row k="Opening on hand"        v={formatLAA(report.packagedOpeningLaa)} />

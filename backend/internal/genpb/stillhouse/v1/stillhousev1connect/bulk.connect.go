@@ -74,6 +74,15 @@ const (
 	// BulkServiceAdoptOpeningInventoryProcedure is the fully-qualified name of the BulkService's
 	// AdoptOpeningInventory RPC.
 	BulkServiceAdoptOpeningInventoryProcedure = "/stillhouse.v1.BulkService/AdoptOpeningInventory"
+	// BulkServiceSetBulkContainerOwnerProcedure is the fully-qualified name of the BulkService's
+	// SetBulkContainerOwner RPC.
+	BulkServiceSetBulkContainerOwnerProcedure = "/stillhouse.v1.BulkService/SetBulkContainerOwner"
+	// BulkServiceSetBulkContainerPossessionProcedure is the fully-qualified name of the BulkService's
+	// SetBulkContainerPossession RPC.
+	BulkServiceSetBulkContainerPossessionProcedure = "/stillhouse.v1.BulkService/SetBulkContainerPossession"
+	// BulkServiceListThirdPartySpiritsProcedure is the fully-qualified name of the BulkService's
+	// ListThirdPartySpirits RPC.
+	BulkServiceListThirdPartySpiritsProcedure = "/stillhouse.v1.BulkService/ListThirdPartySpirits"
 )
 
 // BulkServiceClient is a client for the stillhouse.v1.BulkService service.
@@ -95,6 +104,10 @@ type BulkServiceClient interface {
 	ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error)
 	CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error)
 	AdoptOpeningInventory(context.Context, *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error)
+	// Who owns what is in a container, and whether we still hold it.
+	SetBulkContainerOwner(context.Context, *connect.Request[v1.SetBulkContainerOwnerRequest]) (*connect.Response[v1.SetBulkContainerOwnerResponse], error)
+	SetBulkContainerPossession(context.Context, *connect.Request[v1.SetBulkContainerPossessionRequest]) (*connect.Response[v1.SetBulkContainerPossessionResponse], error)
+	ListThirdPartySpirits(context.Context, *connect.Request[v1.ListThirdPartySpiritsRequest]) (*connect.Response[v1.ListThirdPartySpiritsResponse], error)
 }
 
 // NewBulkServiceClient constructs a client for the stillhouse.v1.BulkService service. By default,
@@ -186,6 +199,24 @@ func NewBulkServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(bulkServiceMethods.ByName("AdoptOpeningInventory")),
 			connect.WithClientOptions(opts...),
 		),
+		setBulkContainerOwner: connect.NewClient[v1.SetBulkContainerOwnerRequest, v1.SetBulkContainerOwnerResponse](
+			httpClient,
+			baseURL+BulkServiceSetBulkContainerOwnerProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("SetBulkContainerOwner")),
+			connect.WithClientOptions(opts...),
+		),
+		setBulkContainerPossession: connect.NewClient[v1.SetBulkContainerPossessionRequest, v1.SetBulkContainerPossessionResponse](
+			httpClient,
+			baseURL+BulkServiceSetBulkContainerPossessionProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("SetBulkContainerPossession")),
+			connect.WithClientOptions(opts...),
+		),
+		listThirdPartySpirits: connect.NewClient[v1.ListThirdPartySpiritsRequest, v1.ListThirdPartySpiritsResponse](
+			httpClient,
+			baseURL+BulkServiceListThirdPartySpiritsProcedure,
+			connect.WithSchema(bulkServiceMethods.ByName("ListThirdPartySpirits")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -204,6 +235,9 @@ type bulkServiceClient struct {
 	listRecentBulkMovements    *connect.Client[v1.ListRecentBulkMovementsRequest, v1.ListRecentBulkMovementsResponse]
 	createBlend                *connect.Client[v1.CreateBlendRequest, v1.CreateBlendResponse]
 	adoptOpeningInventory      *connect.Client[v1.AdoptOpeningInventoryRequest, v1.AdoptOpeningInventoryResponse]
+	setBulkContainerOwner      *connect.Client[v1.SetBulkContainerOwnerRequest, v1.SetBulkContainerOwnerResponse]
+	setBulkContainerPossession *connect.Client[v1.SetBulkContainerPossessionRequest, v1.SetBulkContainerPossessionResponse]
+	listThirdPartySpirits      *connect.Client[v1.ListThirdPartySpiritsRequest, v1.ListThirdPartySpiritsResponse]
 }
 
 // ListLosses calls stillhouse.v1.BulkService.ListLosses.
@@ -271,6 +305,21 @@ func (c *bulkServiceClient) AdoptOpeningInventory(ctx context.Context, req *conn
 	return c.adoptOpeningInventory.CallUnary(ctx, req)
 }
 
+// SetBulkContainerOwner calls stillhouse.v1.BulkService.SetBulkContainerOwner.
+func (c *bulkServiceClient) SetBulkContainerOwner(ctx context.Context, req *connect.Request[v1.SetBulkContainerOwnerRequest]) (*connect.Response[v1.SetBulkContainerOwnerResponse], error) {
+	return c.setBulkContainerOwner.CallUnary(ctx, req)
+}
+
+// SetBulkContainerPossession calls stillhouse.v1.BulkService.SetBulkContainerPossession.
+func (c *bulkServiceClient) SetBulkContainerPossession(ctx context.Context, req *connect.Request[v1.SetBulkContainerPossessionRequest]) (*connect.Response[v1.SetBulkContainerPossessionResponse], error) {
+	return c.setBulkContainerPossession.CallUnary(ctx, req)
+}
+
+// ListThirdPartySpirits calls stillhouse.v1.BulkService.ListThirdPartySpirits.
+func (c *bulkServiceClient) ListThirdPartySpirits(ctx context.Context, req *connect.Request[v1.ListThirdPartySpiritsRequest]) (*connect.Response[v1.ListThirdPartySpiritsResponse], error) {
+	return c.listThirdPartySpirits.CallUnary(ctx, req)
+}
+
 // BulkServiceHandler is an implementation of the stillhouse.v1.BulkService service.
 type BulkServiceHandler interface {
 	// Losses, and what duty treatment each carries.
@@ -290,6 +339,10 @@ type BulkServiceHandler interface {
 	ListRecentBulkMovements(context.Context, *connect.Request[v1.ListRecentBulkMovementsRequest]) (*connect.Response[v1.ListRecentBulkMovementsResponse], error)
 	CreateBlend(context.Context, *connect.Request[v1.CreateBlendRequest]) (*connect.Response[v1.CreateBlendResponse], error)
 	AdoptOpeningInventory(context.Context, *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error)
+	// Who owns what is in a container, and whether we still hold it.
+	SetBulkContainerOwner(context.Context, *connect.Request[v1.SetBulkContainerOwnerRequest]) (*connect.Response[v1.SetBulkContainerOwnerResponse], error)
+	SetBulkContainerPossession(context.Context, *connect.Request[v1.SetBulkContainerPossessionRequest]) (*connect.Response[v1.SetBulkContainerPossessionResponse], error)
+	ListThirdPartySpirits(context.Context, *connect.Request[v1.ListThirdPartySpiritsRequest]) (*connect.Response[v1.ListThirdPartySpiritsResponse], error)
 }
 
 // NewBulkServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -377,6 +430,24 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(bulkServiceMethods.ByName("AdoptOpeningInventory")),
 		connect.WithHandlerOptions(opts...),
 	)
+	bulkServiceSetBulkContainerOwnerHandler := connect.NewUnaryHandler(
+		BulkServiceSetBulkContainerOwnerProcedure,
+		svc.SetBulkContainerOwner,
+		connect.WithSchema(bulkServiceMethods.ByName("SetBulkContainerOwner")),
+		connect.WithHandlerOptions(opts...),
+	)
+	bulkServiceSetBulkContainerPossessionHandler := connect.NewUnaryHandler(
+		BulkServiceSetBulkContainerPossessionProcedure,
+		svc.SetBulkContainerPossession,
+		connect.WithSchema(bulkServiceMethods.ByName("SetBulkContainerPossession")),
+		connect.WithHandlerOptions(opts...),
+	)
+	bulkServiceListThirdPartySpiritsHandler := connect.NewUnaryHandler(
+		BulkServiceListThirdPartySpiritsProcedure,
+		svc.ListThirdPartySpirits,
+		connect.WithSchema(bulkServiceMethods.ByName("ListThirdPartySpirits")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.BulkService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case BulkServiceListLossesProcedure:
@@ -405,6 +476,12 @@ func NewBulkServiceHandler(svc BulkServiceHandler, opts ...connect.HandlerOption
 			bulkServiceCreateBlendHandler.ServeHTTP(w, r)
 		case BulkServiceAdoptOpeningInventoryProcedure:
 			bulkServiceAdoptOpeningInventoryHandler.ServeHTTP(w, r)
+		case BulkServiceSetBulkContainerOwnerProcedure:
+			bulkServiceSetBulkContainerOwnerHandler.ServeHTTP(w, r)
+		case BulkServiceSetBulkContainerPossessionProcedure:
+			bulkServiceSetBulkContainerPossessionHandler.ServeHTTP(w, r)
+		case BulkServiceListThirdPartySpiritsProcedure:
+			bulkServiceListThirdPartySpiritsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -464,4 +541,16 @@ func (UnimplementedBulkServiceHandler) CreateBlend(context.Context, *connect.Req
 
 func (UnimplementedBulkServiceHandler) AdoptOpeningInventory(context.Context, *connect.Request[v1.AdoptOpeningInventoryRequest]) (*connect.Response[v1.AdoptOpeningInventoryResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.AdoptOpeningInventory is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) SetBulkContainerOwner(context.Context, *connect.Request[v1.SetBulkContainerOwnerRequest]) (*connect.Response[v1.SetBulkContainerOwnerResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.SetBulkContainerOwner is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) SetBulkContainerPossession(context.Context, *connect.Request[v1.SetBulkContainerPossessionRequest]) (*connect.Response[v1.SetBulkContainerPossessionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.SetBulkContainerPossession is not implemented"))
+}
+
+func (UnimplementedBulkServiceHandler) ListThirdPartySpirits(context.Context, *connect.Request[v1.ListThirdPartySpiritsRequest]) (*connect.Response[v1.ListThirdPartySpiritsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.BulkService.ListThirdPartySpirits is not implemented"))
 }

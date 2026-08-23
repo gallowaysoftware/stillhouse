@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
+import { OwnershipBadge, OwnershipSplit } from "@/components/OwnershipBadge";
 import { barrelClient } from "@/lib/clients";
 import { CreateBarrelRequestSchema } from "@/gen/stillhouse/v1/barrel_pb";
 import { formatLAA, formatQty } from "@/lib/format";
@@ -84,6 +85,12 @@ export function BarrelsPage() {
           <Stat label="CW eligible" value={String(summary.eligibleCount)} highlight />
           <Stat label="Total LAA" value={`${formatLAA(summary.totalLaa)} L`} />
         </section>
+      )}
+
+      {summary && (summary.heldForOthersLaa > 0 || summary.heldElsewhereLaa > 0) && (
+        <p className="mb-6 text-sm">
+          <OwnershipSplit s={summary} noun="whisky" />
+        </p>
       )}
 
       {summary && summary.barrels.length > 0 && (
@@ -167,6 +174,7 @@ export function BarrelsPage() {
               <tr key={b.id}>
                 <td className="px-4 py-3">
                   <Link to={`/barrels/${b.id}`} className="font-medium text-fg hover:underline">{b.name}</Link>
+                  <OwnershipBadge c={b} />
                   {b.serialBurnin && <span className="ml-2 text-xs text-fg-muted">#{b.serialBurnin}</span>}
                 </td>
                 <td className="px-4 py-3 text-fg-muted">

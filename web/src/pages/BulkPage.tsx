@@ -7,6 +7,7 @@ import { create } from "@bufbuild/protobuf";
 import { BlendPlanner } from "@/components/BlendPlanner";
 import { Button } from "@/components/Button";
 import { Shell } from "@/components/Shell";
+import { OwnershipBadge, OwnershipSplit } from "@/components/OwnershipBadge";
 import { RedistillationPanel } from "@/components/RedistillationPanel";
 import { bulkClient } from "@/lib/clients";
 import { WriteOnly } from "@/lib/role";
@@ -84,6 +85,7 @@ export function BulkPage() {
                 {" "}Total: <span className="font-medium text-fg">
                   {formatLAA(list.data.summary.totalLaa)} L LAA
                 </span>{" "}across {list.data.summary.containerCount} container(s).
+                <OwnershipSplit s={list.data.summary} noun="spirit" />
               </>
             )}
           </p>
@@ -194,6 +196,7 @@ export function BulkPage() {
               <tr key={c.id}>
                 <td className="px-4 py-3">
                   <Link to={`/bulk/${c.id}`} className="text-fg hover:underline">{c.name}</Link>
+                  <OwnershipBadge c={c} />
                 </td>
                 <td className="px-4 py-3 text-fg-muted">{bulkContainerKindLabel(c.kind)}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">{formatQty(c.currentVolumeL)}</td>

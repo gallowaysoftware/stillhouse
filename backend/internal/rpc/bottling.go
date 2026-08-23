@@ -89,7 +89,7 @@ func (s *BottlingService) CreateBottlingRun(
 		if product.Archived {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("product is archived"))
 		}
-		source, e := q.GetBulkContainerForUpdate(ctx, sourceID)
+		source, e := lockContainerForWrite(ctx, q, sourceID)
 		if e != nil {
 			return e
 		}
@@ -560,7 +560,7 @@ func (s *BottlingService) VoidBottlingRun(
 		// 3) Refund the source bulk container. Reverses tank_gauge_volume/abv/laa
 		// via the same applyDeposit math used at filling time, and writes a
 		// regauge_correction movement so the journal records the inverse.
-		container, e := q.GetBulkContainerForUpdate(ctx, existing.SourceContainerID)
+		container, e := lockContainerForWrite(ctx, q, existing.SourceContainerID)
 		if e != nil {
 			return e
 		}

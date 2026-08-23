@@ -423,6 +423,15 @@ func gatherB266Totals(
 		pgtype.Timestamptz{Valid: true, Time: queryEnd}); err != nil {
 		return t, err
 	}
+	// What that balance is made of. Current facts, deliberately not walked
+	// back: ownership and possession have no ledger behind them yet, so a
+	// walk would be a fiction, and the screens label these as current.
+	if split, se := q.BulkOwnershipSplitAsOf(ctx); se == nil {
+		t.heldForOthersLAA = split.HeldForOthersLaa
+		t.heldElsewhereLAA = split.HeldElsewhereLaa
+	} else {
+		return t, se
+	}
 	packaged, err := q.SumPackagedOnHandAsOf(ctx, pgtype.Date{Valid: true, Time: queryEnd})
 	if err != nil {
 		return t, err

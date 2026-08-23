@@ -307,6 +307,34 @@ func (j *Journal) addCOGS(
 	}
 	m := mapping[sqlcgen.JournalEventKindCogsOnRemoval]
 
+	// Cost of sales presumes the goods were ours to sell. Spirits owned by
+	// a customer and merely matured, packaged and shipped by the licensee
+	// were never on the licensee's balance sheet — the revenue is a
+	// service fee and there is no cost of sales at all.
+	//
+	// The chain from a removal back to whoever owned the bulk it came from
+	// exists (removal → lot → bottling run → source container), but the
+	// container carries only its *current* owner, and a cask sold in place
+	// last quarter would restate a period already closed. Stillhouse
+	// therefore does not guess. It says so instead, once, when the tenant
+	// has any third-party spirits at all — because an accountant importing
+	// this needs to know the figure may include somebody else's goods, and
+	// a silently overstated cost of sales is exactly the kind of error
+	// that survives an audit by looking reasonable. See PLAN D8.
+	if n, ce := q.CountThirdPartyBulkContainers(ctx); ce == nil && n > 0 {
+		j.Warnings = append(j.Warnings, Warning{
+			Kind: string(sqlcgen.JournalEventKindCogsOnRemoval),
+			Detail: fmt.Sprintf(
+				"%d bulk container%s %s owned by a customer. Cost of sales below values "+
+					"every removal as if the goods were yours; ownership of packaged "+
+					"stock is not modelled yet, so any contract-packaged removal in "+
+					"this period is overstated here and its revenue is a service fee, "+
+					"not a sale.", n, plural(int(n)), wasWere(int(n))),
+		})
+	} else if ce != nil {
+		return fmt.Errorf("third-party containers: %w", ce)
+	}
+
 	// Cost per run is looked up once and reused, because several removals
 	// commonly come off one run.
 	costPerBottle := map[uuid.UUID]float64{}
@@ -360,6 +388,13 @@ func (j *Journal) addCOGS(
 // round2 keeps amounts at cents. Journal lines are money and a
 // fifteen-decimal amount in a CSV is a support ticket.
 func round2(v float64) float64 { return math.Round(v*100) / 100 }
+
+func wasWere(n int) string {
+	if n == 1 {
+		return "is"
+	}
+	return "are"
+}
 
 func plural(n int) string {
 	if n == 1 {

@@ -41,10 +41,12 @@ SELECT * FROM bulk_containers WHERE id = $1 FOR UPDATE;
 -- would double-count vessels in the dashboard rollup and surface them
 -- with no kind label (the proto enum has no BARREL case in the bulk
 -- list response).
-SELECT * FROM bulk_containers
-WHERE (sqlc.arg('include_archived')::boolean OR NOT archived)
-  AND kind != 'barrel'
-ORDER BY archived, name;
+SELECT bc.*, COALESCE(own.name, '') AS owner_name
+FROM bulk_containers bc
+LEFT JOIN customers own ON own.id = bc.owner_customer_id
+WHERE (sqlc.arg('include_archived')::boolean OR NOT bc.archived)
+  AND bc.kind != 'barrel'
+ORDER BY bc.archived, bc.name;
 
 -- name: UpdateBulkContainerBalance :one
 UPDATE bulk_containers
@@ -129,3 +131,87 @@ SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
 FROM bulk_containers
 WHERE NOT archived
   AND kind != 'barrel';
+
+-- name: SumBulkLAAByOwnership :one
+-- The two figures a "how much alcohol is here" question actually has,
+-- once they stop being the same number.
+--
+-- SumBulkLAA above answers neither on its own: it sums every non-archived
+-- container, so it counts a customer's tote as our asset and counts a
+-- parcel we cannot touch as stock we could bottle tomorrow. Barrels are
+-- excluded here for the same reason they are there — they are reported
+-- separately and summing both double-counts.
+SELECT
+    -- Ours, wherever it is. What the balance sheet means.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL), 0)::double precision AS owned_laa,
+    -- Here, whoever owns it. What the B266 means.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE possession = 'held'), 0)::double precision AS held_laa,
+    -- Ours and here: what we could actually blend, reduce or bottle.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held'), 0)::double precision
+        AS available_laa,
+    -- Somebody else's, on our floor.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held'), 0)::double precision
+        AS held_for_others_laa,
+    -- Ours, somewhere else.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS held_elsewhere_laa,
+    COUNT(*) FILTER (WHERE possession = 'held')::INTEGER AS held_count,
+    COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
+FROM bulk_containers
+WHERE NOT archived
+  AND kind != 'barrel';
+
+-- name: SumBarrelLAAByOwnership :one
+-- The same split for casks, which is where third-party ownership actually
+-- turns up: contract maturation and cask-ownership programmes are barrels.
+SELECT
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL), 0)::double precision AS owned_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE possession = 'held'), 0)::double precision AS held_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held'), 0)::double precision
+        AS held_for_others_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS held_elsewhere_laa,
+    COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
+FROM bulk_containers
+WHERE NOT archived
+  AND kind = 'barrel';
+
+-- name: SetBulkContainerOwner :one
+UPDATE bulk_containers SET owner_customer_id = $2 WHERE id = $1 RETURNING *;
+
+-- name: SetBulkContainerPossession :one
+UPDATE bulk_containers
+SET possession            = sqlc.arg(possession)::bulk_possession,
+    held_by_name          = sqlc.arg(held_by_name)::TEXT,
+    held_by_licence_no    = sqlc.arg(held_by_licence_no)::TEXT,
+    possession_changed_at = NOW()
+WHERE id = sqlc.arg(id)
+RETURNING *;
+
+-- name: ListThirdPartyBulkContainers :many
+-- Everything that is not simply ours-and-here, which is the list an
+-- operator needs before they sign a return or value their inventory.
+SELECT bc.*, COALESCE(c.name, '') AS owner_name
+FROM bulk_containers bc
+LEFT JOIN customers c ON c.id = bc.owner_customer_id
+WHERE NOT bc.archived
+  AND (bc.owner_customer_id IS NOT NULL OR bc.possession <> 'held')
+ORDER BY bc.possession, c.name NULLS FIRST, bc.name;
+
+-- name: CountThirdPartyBulkContainers :one
+-- Whether anything on the premises belongs to somebody else. Cheap enough
+-- to ask on every journal build, and the answer decides whether the cost
+-- of sales figure needs a caveat attached — see journal.addCOGS.
+SELECT COUNT(*)::INTEGER AS n
+FROM bulk_containers
+WHERE NOT archived
+  AND owner_customer_id IS NOT NULL;

@@ -62,14 +62,6 @@ else first:
   `A2`.
 - **Page 1 line 8** — refunds, with an attached B256. Waits on `A9`.
 
-### A7 · Spirits held for others aren't modelled — P1
-
-EDM10-1-7 page 3: report all bulk spirits *in your possession regardless of who
-owns them*, and do not report spirits you own but don't hold. Ownership is not
-a property of a bulk container today, so a contract distiller's B266 is wrong
-in both directions. Inert until the first contract fill or private cask sale,
-then immediately P0 — build it before that day, not during it.
-
 ### A9 · No refunds, drawback, or duty-paid returns — P1
 
 No B256 application, and no way to book spirits coming back from the duty-paid
@@ -167,6 +159,16 @@ French Language) — depends on `H6`.
 Picking, packing slips, carrier and tracking shipped with the sales chain
 (stage 173); the BOL is recorded by reference, not produced. Most carriers
 supply their own form, so this is only worth doing for the ones that don't.
+
+### D8 · Ownership of packaged stock — P1
+
+Stage 173 gave bulk containers an owner; packaged inventory has none, so the
+chain from a removal back to whoever owned the spirits stops at the bottling
+run. Two consequences, both currently disclosed rather than fixed: cost of
+sales values every removal as if the goods were the licensee's (the journal
+attaches a warning saying so), and a contract-packaged removal's revenue is a
+service fee rather than a sale. Needs ownership to be effective-dated rather
+than a current column, or a cask sold in place restates a closed period.
 
 ### D5 · Keg and returnable container tracking — P2
 

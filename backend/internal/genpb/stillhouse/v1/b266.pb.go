@@ -382,6 +382,16 @@ type B266Report struct {
 	// it is reported separately so an adopted balance is never invisible on
 	// the return it affects.
 	BulkOpeningInventoryAdoptedLaa float64 `protobuf:"fixed64,19,opt,name=bulk_opening_inventory_adopted_laa,json=bulkOpeningInventoryAdoptedLaa,proto3" json:"bulk_opening_inventory_adopted_laa,omitempty"`
+	// What the closing balance is made of, once ownership and possession
+	// stop agreeing. Neither is a line on the form — EDM10-1-7 page 3 asks
+	// for everything in your possession and nothing else — but a licensee
+	// signing a return that includes a customer's casks should be able to
+	// see that it does, and one whose own casks are at a partner's
+	// warehouse should be able to see why they are absent.
+	//
+	// held_for_others is inside bulk_closing_laa. held_elsewhere is not.
+	BulkClosingHeldForOthersLaa float64 `protobuf:"fixed64,75,opt,name=bulk_closing_held_for_others_laa,json=bulkClosingHeldForOthersLaa,proto3" json:"bulk_closing_held_for_others_laa,omitempty"`
+	BulkHeldElsewhereLaa        float64 `protobuf:"fixed64,76,opt,name=bulk_held_elsewhere_laa,json=bulkHeldElsewhereLaa,proto3" json:"bulk_held_elsewhere_laa,omitempty"`
 	// Line D — reason-coded adjustments reconciling book inventory to
 	// physical. Signed net, with each direction also reported: a period that
 	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
@@ -590,6 +600,20 @@ func (x *B266Report) GetBulkClosingLaa() float64 {
 func (x *B266Report) GetBulkOpeningInventoryAdoptedLaa() float64 {
 	if x != nil {
 		return x.BulkOpeningInventoryAdoptedLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkClosingHeldForOthersLaa() float64 {
+	if x != nil {
+		return x.BulkClosingHeldForOthersLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkHeldElsewhereLaa() float64 {
+	if x != nil {
+		return x.BulkHeldElsewhereLaa
 	}
 	return 0
 }
@@ -1557,7 +1581,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
 	"\x06due_on\x18\n" +
-	" \x01(\tR\x05dueOn\"\xcc\x1b\n" +
+	" \x01(\tR\x05dueOn\"\xca\x1c\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1573,7 +1597,9 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x0fbulk_losses_laa\x18\x10 \x01(\x01R\rbulkLossesLaa\x12,\n" +
 	"\x12bulk_destroyed_laa\x18\x11 \x01(\x01R\x10bulkDestroyedLaa\x12(\n" +
 	"\x10bulk_closing_laa\x18\x12 \x01(\x01R\x0ebulkClosingLaa\x12J\n" +
-	"\"bulk_opening_inventory_adopted_laa\x18\x13 \x01(\x01R\x1ebulkOpeningInventoryAdoptedLaa\x120\n" +
+	"\"bulk_opening_inventory_adopted_laa\x18\x13 \x01(\x01R\x1ebulkOpeningInventoryAdoptedLaa\x12E\n" +
+	" bulk_closing_held_for_others_laa\x18K \x01(\x01R\x1bbulkClosingHeldForOthersLaa\x125\n" +
+	"\x17bulk_held_elsewhere_laa\x18L \x01(\x01R\x14bulkHeldElsewhereLaa\x120\n" +
 	"\x14bulk_adjustments_laa\x18\x14 \x01(\x01R\x12bulkAdjustmentsLaa\x12A\n" +
 	"\x1dbulk_adjustments_increase_laa\x18\x15 \x01(\x01R\x1abulkAdjustmentsIncreaseLaa\x12A\n" +
 	"\x1dbulk_adjustments_decrease_laa\x18\x16 \x01(\x01R\x1abulkAdjustmentsDecreaseLaa\x124\n" +

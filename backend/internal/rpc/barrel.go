@@ -124,9 +124,33 @@ func (s *BarrelService) ListBarrels(
 	}
 	for _, r := range rows {
 		b := barrelRowToProto(r)
+		b.OwnerCustomerId = nullUUIDString(r.OwnerCustomerID)
+		b.OwnerName = r.OwnerName
+		b.Possession = bulkPossessionToProto(r.Possession)
+		b.HeldByName = r.HeldByName
+		b.HeldByLicenceNo = r.HeldByLicenceNo
 		out.Barrels = append(out.Barrels, b)
 		out.TotalCount++
 		out.TotalLaa += b.CurrentLaa
+		// The same alcohol counted four ways, because "how much whisky is
+		// in the rackhouse" and "how much whisky do we own" stop being the
+		// same question the first time a customer's cask arrives.
+		here := r.Possession != sqlcgen.BulkPossessionHeldElsewhere
+		mine := !r.OwnerCustomerID.Valid
+		if mine {
+			out.OwnedLaa += b.CurrentLaa
+		} else {
+			out.ThirdPartyCount++
+		}
+		if here {
+			out.HeldLaa += b.CurrentLaa
+		}
+		switch {
+		case here && !mine:
+			out.HeldForOthersLaa += b.CurrentLaa
+		case !here && mine:
+			out.HeldElsewhereLaa += b.CurrentLaa
+		}
 		if b.DaysAged > 0 {
 			out.AgingCount++
 		}
@@ -894,7 +918,7 @@ func (s *BarrelService) VoidBarrelEvent(
 			}
 			// Destination loses (we're undoing a deposit there)…
 			if mv.DestinationContainerID.Valid {
-				dst, ge := q.GetBulkContainerForUpdate(ctx, mv.DestinationContainerID.UUID)
+				dst, ge := lockContainerForWrite(ctx, q, mv.DestinationContainerID.UUID)
 				if ge != nil {
 					return ge
 				}
@@ -919,7 +943,7 @@ func (s *BarrelService) VoidBarrelEvent(
 			}
 			// …and source regains (we're undoing a withdrawal there).
 			if mv.SourceContainerID.Valid {
-				src, ge := q.GetBulkContainerForUpdate(ctx, mv.SourceContainerID.UUID)
+				src, ge := lockContainerForWrite(ctx, q, mv.SourceContainerID.UUID)
 				if ge != nil {
 					return ge
 				}

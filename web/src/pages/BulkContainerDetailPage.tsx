@@ -6,6 +6,8 @@ import { ExternalMovementCard } from "@/components/ExternalMovementCard";
 import { InventoryAdjustmentCard } from "@/components/InventoryAdjustmentCard";
 import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
+import { OwnershipBadge } from "@/components/OwnershipBadge";
+import { OwnershipPanel } from "@/components/OwnershipPanel";
 import { bulkClient } from "@/lib/clients";
 import {
   bulkContainerKindLabel,
@@ -36,6 +38,7 @@ export function BulkContainerDetailPage() {
           {bulkContainerKindLabel(c.kind)}
           {c.capacityLSet && <> · capacity {formatQty(c.capacityL)} L</>}
           {c.location && <> · {c.location}</>}
+          <OwnershipBadge c={c} />
         </p>
       </header>
 
@@ -44,6 +47,10 @@ export function BulkContainerDetailPage() {
         <Stat label="Current ABV" value={c.currentAbvPctSet ? `${c.currentAbvPct.toFixed(2)}%` : "—"} />
         <Stat label="Current LAA" value={`${formatLAA(c.currentLaa)} L`} highlight />
         <Stat label="Movements" value={String(detail.data.movements.length)} />
+      </section>
+
+      <section className="mb-8 max-w-3xl">
+        <OwnershipPanel c={c} />
       </section>
 
       {c.currentVolumeL === 0 && (

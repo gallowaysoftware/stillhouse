@@ -351,6 +351,48 @@ func (ns NullBulkMovementReason) Value() (driver.Value, error) {
 	return string(ns.BulkMovementReason), nil
 }
 
+type BulkPossession string
+
+const (
+	BulkPossessionHeld          BulkPossession = "held"
+	BulkPossessionHeldElsewhere BulkPossession = "held_elsewhere"
+)
+
+func (e *BulkPossession) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = BulkPossession(s)
+	case string:
+		*e = BulkPossession(s)
+	default:
+		return fmt.Errorf("unsupported scan type for BulkPossession: %T", src)
+	}
+	return nil
+}
+
+type NullBulkPossession struct {
+	BulkPossession BulkPossession `json:"bulk_possession"`
+	Valid          bool           `json:"valid"` // Valid is true if BulkPossession is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullBulkPossession) Scan(value interface{}) error {
+	if value == nil {
+		ns.BulkPossession, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.BulkPossession.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullBulkPossession) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.BulkPossession), nil
+}
+
 type Cereal string
 
 const (
@@ -1842,20 +1884,25 @@ type BottlingRunStampUsage struct {
 }
 
 type BulkContainer struct {
-	ID             uuid.UUID          `json:"id"`
-	TenantID       uuid.UUID          `json:"tenant_id"`
-	Name           string             `json:"name"`
-	Kind           BulkContainerKind  `json:"kind"`
-	CapacityL      pgtype.Float8      `json:"capacity_l"`
-	Location       string             `json:"location"`
-	Notes          string             `json:"notes"`
-	Archived       bool               `json:"archived"`
-	CurrentVolumeL float64            `json:"current_volume_l"`
-	CurrentAbvPct  pgtype.Float8      `json:"current_abv_pct"`
-	CurrentLaa     float64            `json:"current_laa"`
-	CreatedAt      pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
-	LocationID     uuid.NullUUID      `json:"location_id"`
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	Name                string             `json:"name"`
+	Kind                BulkContainerKind  `json:"kind"`
+	CapacityL           pgtype.Float8      `json:"capacity_l"`
+	Location            string             `json:"location"`
+	Notes               string             `json:"notes"`
+	Archived            bool               `json:"archived"`
+	CurrentVolumeL      float64            `json:"current_volume_l"`
+	CurrentAbvPct       pgtype.Float8      `json:"current_abv_pct"`
+	CurrentLaa          float64            `json:"current_laa"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	LocationID          uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID     uuid.NullUUID      `json:"owner_customer_id"`
+	Possession          BulkPossession     `json:"possession"`
+	HeldByName          string             `json:"held_by_name"`
+	HeldByLicenceNo     string             `json:"held_by_licence_no"`
+	PossessionChangedAt pgtype.Timestamptz `json:"possession_changed_at"`
 }
 
 type BulkMovement struct {

@@ -104,6 +104,42 @@ func (q *Queries) B266PeriodsOverlapping(ctx context.Context, arg B266PeriodsOve
 	return items, nil
 }
 
+const bulkOwnershipSplitAsOf = `-- name: BulkOwnershipSplitAsOf :one
+SELECT
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held'), 0)::double precision
+        AS held_for_others_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS held_elsewhere_laa
+FROM bulk_containers
+WHERE NOT archived
+`
+
+type BulkOwnershipSplitAsOfRow struct {
+	HeldForOthersLaa float64 `json:"held_for_others_laa"`
+	HeldElsewhereLaa float64 `json:"held_elsewhere_laa"`
+}
+
+// What the closing balance is made of. Not a line on the form: EDM10-1-7
+// page 3 asks for everything in our possession and nothing else. It is
+// here because a licensee signing a return that includes a customer's
+// casks should be able to see that it does, and one whose own casks are
+// at a partner's warehouse should be able to see why they are absent.
+//
+// Deliberately read as at now rather than walked back to the period end.
+// Ownership and possession are current facts with no ledger behind them
+// yet, so a walk would be a fiction; the figures are labelled as current
+// wherever they are shown. Getting this wrong in the other direction —
+// presenting a walked figure that was never computed — is how a return
+// becomes internally consistent and factually wrong.
+func (q *Queries) BulkOwnershipSplitAsOf(ctx context.Context) (BulkOwnershipSplitAsOfRow, error) {
+	row := q.db.QueryRow(ctx, bulkOwnershipSplitAsOf)
+	var i BulkOwnershipSplitAsOfRow
+	err := row.Scan(&i.HeldForOthersLaa, &i.HeldElsewhereLaa)
+	return i, err
+}
+
 const getB266Period = `-- name: GetB266Period :one
 SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods WHERE id = $1
 `
@@ -530,6 +566,7 @@ WITH running AS (
     SELECT COALESCE(SUM(current_laa), 0)::double precision AS total_laa
     FROM bulk_containers
     WHERE NOT archived
+      AND possession = 'held'
 ), moved_after AS (
     SELECT COALESCE(SUM(
         CASE WHEN destination_container_id IS NOT NULL THEN laa ELSE 0 END
@@ -568,6 +605,28 @@ FROM running, moved_after
 // Known edge: a container archived after as_of is excluded from the running
 // total but held alcohol at as_of. Archiving requires an empty container,
 // so the LAA involved is zero.
+//
+// Possession, not ownership. EDM10-1-7 page 3 asks for all bulk spirits in
+// our possession whatever anyone owns, so a customer's cask maturing in
+// our rackhouse is here and a parcel of our own whisky at a partner's
+// bonded warehouse is not.
+//
+// The filter is on the running total only, and the movement side is left
+// alone deliberately. Filtering both would be the obvious thing and would
+// be wrong: the walk needs the movements a departing container made while
+// it was still ours to report. It works out because a possession change
+// writes a movement for the whole balance (rpc.SetBulkPossession), and
+// nothing else may be recorded against a container held elsewhere:
+//
+//	left after as_of     excluded from running; its exit movement is
+//	                     subtracted, adding the balance back — which is
+//	                     what was on hand at as_of.
+//	returned after as_of included in running; its return movement is
+//	                     subtracted, taking it back out.
+//	never here          cannot happen: a container is created and adopted
+//	                     in our possession and reaches held_elsewhere only
+//	                     through the transition above, so there is always
+//	                     a movement to reconcile against.
 func (q *Queries) SumBulkOnHandAsOf(ctx context.Context, asOf pgtype.Timestamptz) (float64, error) {
 	row := q.db.QueryRow(ctx, sumBulkOnHandAsOf, asOf)
 	var total_laa float64

@@ -75,6 +75,28 @@ message BulkContainer {
   // Unset if the container has never moved alcohol — caller should fall back
   // to created_at to compute "days since activity".
   google.protobuf.Timestamp last_movement_at = 16;
+
+  // Who owns the spirits, and whether we hold them. Two separate facts:
+  // ownership decides whether the alcohol is an asset, possession decides
+  // whether it goes on our B266, and a contract distillery has containers
+  // in every combination.
+  //
+  // Empty owner_customer_id means the licensee owns it.
+  string owner_customer_id = 17;
+  string owner_name = 18;
+  BulkPossession possession = 19;
+  string held_by_name = 20;
+  string held_by_licence_no = 21;
+  google.protobuf.Timestamp possession_changed_at = 22;
+}
+
+// Whether the spirits are on our premises. EDM10-1-7 page 3: report all
+// bulk spirits in your possession regardless of who owns them, and do not
+// report spirits you own but do not hold.
+enum BulkPossession {
+  BULK_POSSESSION_UNSPECIFIED = 0;
+  BULK_POSSESSION_HELD = 1;
+  BULK_POSSESSION_HELD_ELSEWHERE = 2;
 }
 
 message BulkMovement {
@@ -121,8 +143,23 @@ message BulkMovement {
 }
 
 message BulkSummary {
+  // Kept as it was: every non-archived non-barrel container, whoever owns
+  // it and wherever it is. The figures below say what it is made of, and
+  // are what a screen should use once the two stop being the same number.
   double total_laa = 1;
   int32  container_count = 2;
+
+  // Ours, wherever it is — what the balance sheet means.
+  double owned_laa = 3;
+  // Here, whoever owns it — what the B266 means.
+  double held_laa = 4;
+  // Ours and here: what could actually be blended, reduced or bottled.
+  double available_laa = 5;
+  // Somebody else's, on our floor. On our return, not on our books.
+  double held_for_others_laa = 6;
+  // Ours, somewhere else. On our books, not on our return.
+  double held_elsewhere_laa = 7;
+  int32  third_party_count = 8;
 }
 
 // --- requests ---
@@ -482,4 +519,45 @@ service BulkService {
   rpc ListRecentBulkMovements(ListRecentBulkMovementsRequest) returns (ListRecentBulkMovementsResponse);
   rpc CreateBlend(CreateBlendRequest) returns (CreateBlendResponse);
   rpc AdoptOpeningInventory(AdoptOpeningInventoryRequest) returns (AdoptOpeningInventoryResponse);
+
+  // Who owns what is in a container, and whether we still hold it.
+  rpc SetBulkContainerOwner(SetBulkContainerOwnerRequest) returns (SetBulkContainerOwnerResponse);
+  rpc SetBulkContainerPossession(SetBulkContainerPossessionRequest) returns (SetBulkContainerPossessionResponse);
+  rpc ListThirdPartySpirits(ListThirdPartySpiritsRequest) returns (ListThirdPartySpiritsResponse);
+}
+
+message SetBulkContainerOwnerRequest {
+  string id = 1;
+  // Empty means the licensee owns it.
+  string owner_customer_id = 2;
+}
+message SetBulkContainerOwnerResponse { BulkContainer container = 1; }
+
+message SetBulkContainerPossessionRequest {
+  string id = 1;
+  BulkPossession possession = 2;
+  // Required when the spirits are leaving: a return that omits stock has
+  // to be able to say where it went.
+  string held_by_name = 3;
+  string held_by_licence_no = 4;
+  // ISO date the spirits changed hands; empty = today. This is the date
+  // the in-bond transfer movement carries, so it decides which return it
+  // lands on.
+  string occurred_on = 5;
+  string document_reference = 6;
+  string notes = 7;
+}
+message SetBulkContainerPossessionResponse {
+  BulkContainer container = 1;
+  // The in-bond transfer this wrote. A change of possession is a
+  // reportable movement, not a flag — see the migration.
+  BulkMovement movement = 2;
+}
+
+message ListThirdPartySpiritsRequest {}
+message ListThirdPartySpiritsResponse {
+  // Everything that is not simply ours-and-here.
+  repeated BulkContainer containers = 1;
+  double held_for_others_laa = 2;
+  double held_elsewhere_laa = 3;
 }

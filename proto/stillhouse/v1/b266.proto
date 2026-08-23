@@ -74,6 +74,16 @@ message B266Report {
   // it is reported separately so an adopted balance is never invisible on
   // the return it affects.
   double bulk_opening_inventory_adopted_laa = 19;
+  // What the closing balance is made of, once ownership and possession
+  // stop agreeing. Neither is a line on the form — EDM10-1-7 page 3 asks
+  // for everything in your possession and nothing else — but a licensee
+  // signing a return that includes a customer's casks should be able to
+  // see that it does, and one whose own casks are at a partner's
+  // warehouse should be able to see why they are absent.
+  //
+  // held_for_others is inside bulk_closing_laa. held_elsewhere is not.
+  double bulk_closing_held_for_others_laa = 75;
+  double bulk_held_elsewhere_laa = 76;
   // Line D — reason-coded adjustments reconciling book inventory to
   // physical. Signed net, with each direction also reported: a period that
   // found 3 LAA in one tank and lost 3 in another nets to zero, and a line

@@ -317,6 +317,12 @@ SELECT
     bc.id, bc.name, bc.kind, bc.capacity_l, bc.location, bc.notes, bc.archived,
     bc.current_volume_l, bc.current_abv_pct, bc.current_laa,
     bc.created_at, bc.updated_at,
+    -- Casks are where third-party ownership actually turns up: contract
+    -- maturation and cask-ownership programmes are barrels, not tanks.
+    -- Without these three columns the rackhouse list shows a customer's
+    -- cask and the distillery's own identically.
+    bc.owner_customer_id, bc.possession, bc.held_by_name, bc.held_by_licence_no,
+    COALESCE(own.name, '') AS owner_name,
     ba.cooperage_supplier, ba.char_level, ba.wood_species, ba.prior_use,
     ba.serial_burnin, ba.rickhouse, ba.row_position, ba.level_position, ba.column_position,
     ba.fill_date, ba.days_aged_at_dump,
@@ -325,6 +331,7 @@ SELECT
     fill.laa      AS fill_laa
 FROM bulk_containers bc
 JOIN barrel_attributes ba ON ba.container_id = bc.id
+LEFT JOIN customers own ON own.id = bc.owner_customer_id
 LEFT JOIN LATERAL (
     SELECT be.volume_l, be.abv_pct, be.laa
     FROM barrel_events be
@@ -352,6 +359,11 @@ type ListBarrelsRow struct {
 	CurrentLaa        float64            `json:"current_laa"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	OwnerCustomerID   uuid.NullUUID      `json:"owner_customer_id"`
+	Possession        BulkPossession     `json:"possession"`
+	HeldByName        string             `json:"held_by_name"`
+	HeldByLicenceNo   string             `json:"held_by_licence_no"`
+	OwnerName         string             `json:"owner_name"`
 	CooperageSupplier string             `json:"cooperage_supplier"`
 	CharLevel         pgtype.Int4        `json:"char_level"`
 	WoodSpecies       string             `json:"wood_species"`
@@ -392,6 +404,11 @@ func (q *Queries) ListBarrels(ctx context.Context, includeArchived bool) ([]List
 			&i.CurrentLaa,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.OwnerCustomerID,
+			&i.Possession,
+			&i.HeldByName,
+			&i.HeldByLicenceNo,
+			&i.OwnerName,
 			&i.CooperageSupplier,
 			&i.CharLevel,
 			&i.WoodSpecies,

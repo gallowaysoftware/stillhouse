@@ -10,6 +10,8 @@ import { Callout } from "@/components/Callout";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { MaturationPanel } from "@/components/MaturationPanel";
 import { Shell } from "@/components/Shell";
+import { OwnershipBadge } from "@/components/OwnershipBadge";
+import { OwnershipPanel } from "@/components/OwnershipPanel";
 import {
   emptyReading,
   readingToRequest,
@@ -124,6 +126,7 @@ export function BarrelDetailPage() {
             {b.capacityLSet && <> · {formatQty(b.capacityL)} L</>}
             {b.priorUse && <> · {b.priorUse}</>}
             {b.serialBurnin && <> · {b.serialBurnin}</>}
+            <OwnershipBadge c={b} />
           </p>
           {(b.rickhouse || b.rowPosition || b.levelPosition || b.columnPosition) && (
             <p className="mt-1 text-xs text-fg-muted">
@@ -170,6 +173,10 @@ export function BarrelDetailPage() {
           <MaturationPanel m={detail.data.maturation} />
         </section>
       )}
+
+      <section className="mb-8 max-w-3xl">
+        <OwnershipPanel c={b} />
+      </section>
 
       <section className="mb-8 grid grid-cols-1 gap-4 lg:grid-cols-3">
         {b.currentVolumeL === 0 ? (

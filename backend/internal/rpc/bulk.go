@@ -174,8 +174,9 @@ func (s *BulkService) ListBulkContainers(
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
 	var (
-		rows     []sqlcgen.BulkContainer
+		rows     []sqlcgen.ListBulkContainersRow
 		totalLAA float64
+		split    sqlcgen.SumBulkLAAByOwnershipRow
 		activity []sqlcgen.BulkContainerLastActivityRow
 	)
 	err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
@@ -185,6 +186,10 @@ func (s *BulkService) ListBulkContainers(
 			return e
 		}
 		totalLAA, e = q.SumBulkLAA(ctx)
+		if e != nil {
+			return e
+		}
+		split, e = q.SumBulkLAAByOwnership(ctx)
 		if e != nil {
 			return e
 		}
@@ -204,7 +209,18 @@ func (s *BulkService) ListBulkContainers(
 	out := make([]*stillhousev1.BulkContainer, 0, len(rows))
 	activeCount := int32(0)
 	for _, c := range rows {
-		proto := bulkContainerToProto(c)
+		proto := bulkContainerToProto(sqlcgen.BulkContainer{
+			ID: c.ID, TenantID: c.TenantID, Name: c.Name, Kind: c.Kind,
+			CapacityL: c.CapacityL, Location: c.Location, Notes: c.Notes,
+			Archived: c.Archived, CurrentVolumeL: c.CurrentVolumeL,
+			CurrentAbvPct: c.CurrentAbvPct, CurrentLaa: c.CurrentLaa,
+			CreatedAt: c.CreatedAt, UpdatedAt: c.UpdatedAt,
+			LocationID: c.LocationID, OwnerCustomerID: c.OwnerCustomerID,
+			Possession: c.Possession, HeldByName: c.HeldByName,
+			HeldByLicenceNo:     c.HeldByLicenceNo,
+			PossessionChangedAt: c.PossessionChangedAt,
+		})
+		proto.OwnerName = c.OwnerName
 		if last, ok := lastByID[c.ID]; ok {
 			proto.LastMovementAt = timestamppb.New(last.Time)
 		}
@@ -215,7 +231,16 @@ func (s *BulkService) ListBulkContainers(
 	}
 	return connect.NewResponse(&stillhousev1.ListBulkContainersResponse{
 		Containers: out,
-		Summary:    &stillhousev1.BulkSummary{TotalLaa: round4(totalLAA), ContainerCount: activeCount},
+		Summary: &stillhousev1.BulkSummary{
+			TotalLaa:         round4(totalLAA),
+			ContainerCount:   activeCount,
+			OwnedLaa:         round4(split.OwnedLaa),
+			HeldLaa:          round4(split.HeldLaa),
+			AvailableLaa:     round4(split.AvailableLaa),
+			HeldForOthersLaa: round4(split.HeldForOthersLaa),
+			HeldElsewhereLaa: round4(split.HeldElsewhereLaa),
+			ThirdPartyCount:  split.ThirdPartyCount,
+		},
 	}), nil
 }
 
@@ -504,7 +529,36 @@ func bulkContainerToProto(c sqlcgen.BulkContainer) *stillhousev1.BulkContainer {
 		out.CurrentAbvPct = round2(c.CurrentAbvPct.Float64)
 		out.CurrentAbvPctSet = true
 	}
+	out.OwnerCustomerId = nullUUIDString(c.OwnerCustomerID)
+	out.Possession = bulkPossessionToProto(c.Possession)
+	out.HeldByName = c.HeldByName
+	out.HeldByLicenceNo = c.HeldByLicenceNo
+	if c.PossessionChangedAt.Valid {
+		out.PossessionChangedAt = timestamppb.New(c.PossessionChangedAt.Time)
+	}
 	return out
+}
+
+func bulkPossessionToProto(p sqlcgen.BulkPossession) stillhousev1.BulkPossession {
+	switch p {
+	case sqlcgen.BulkPossessionHeld:
+		return stillhousev1.BulkPossession_BULK_POSSESSION_HELD
+	case sqlcgen.BulkPossessionHeldElsewhere:
+		return stillhousev1.BulkPossession_BULK_POSSESSION_HELD_ELSEWHERE
+	default:
+		return stillhousev1.BulkPossession_BULK_POSSESSION_UNSPECIFIED
+	}
+}
+
+func bulkPossessionToDB(p stillhousev1.BulkPossession) (sqlcgen.BulkPossession, error) {
+	switch p {
+	case stillhousev1.BulkPossession_BULK_POSSESSION_HELD:
+		return sqlcgen.BulkPossessionHeld, nil
+	case stillhousev1.BulkPossession_BULK_POSSESSION_HELD_ELSEWHERE:
+		return sqlcgen.BulkPossessionHeldElsewhere, nil
+	default:
+		return "", errors.New("say whether the spirits are here or elsewhere")
+	}
 }
 
 func bulkMovementRowToProto(r sqlcgen.ListBulkMovementsByContainerRow) *stillhousev1.BulkMovement {

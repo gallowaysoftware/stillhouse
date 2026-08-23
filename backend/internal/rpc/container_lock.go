@@ -2,8 +2,10 @@ package rpc
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
+	"connectrpc.com/connect"
 	"github.com/google/uuid"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
@@ -48,7 +50,50 @@ func lockContainers(
 		if err != nil {
 			return nil, err
 		}
+		if err := assertHeld(c); err != nil {
+			return nil, err
+		}
 		out[id] = c
 	}
 	return out, nil
+}
+
+// lockContainerForWrite is lockContainers for the callers that only ever
+// touch one container, so the possession check below is not something a
+// path can be written without.
+func lockContainerForWrite(
+	ctx context.Context,
+	q *sqlcgen.Queries,
+	id uuid.UUID,
+) (sqlcgen.BulkContainer, error) {
+	c, err := q.GetBulkContainerForUpdate(ctx, id)
+	if err != nil {
+		return c, err
+	}
+	return c, assertHeld(c)
+}
+
+// assertHeld refuses to change the balance of spirits we do not hold.
+//
+// This is the second half of what makes the B266 bulk walk correct across
+// a change of possession — see rpc.SetBulkContainerPossession and the
+// comment on SumBulkOnHandAsOf. It is also just true: you cannot gauge a
+// cask in somebody else's warehouse, and a fill, a draw or a loss
+// recorded against one is a figure nobody measured. Whatever happened to
+// the spirits while they were away is the holder's record, reconciled by
+// a regauge when they come back.
+//
+// SetBulkContainerPossession deliberately does not go through here — it is
+// the one write an off-premises container must accept.
+func assertHeld(c sqlcgen.BulkContainer) error {
+	if c.Possession != sqlcgen.BulkPossessionHeldElsewhere {
+		return nil
+	}
+	holder := c.HeldByName
+	if holder == "" {
+		holder = "another licensee"
+	}
+	return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+		"%s is held by %s — record it back into your possession before "+
+			"recording anything against it", c.Name, holder))
 }

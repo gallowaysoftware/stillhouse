@@ -78,6 +78,19 @@ type Querier interface {
 	// have only existed never accept a row here. Caller falls back to
 	// container.created_at for those.
 	BulkContainerLastActivity(ctx context.Context) ([]BulkContainerLastActivityRow, error)
+	// What the closing balance is made of. Not a line on the form: EDM10-1-7
+	// page 3 asks for everything in our possession and nothing else. It is
+	// here because a licensee signing a return that includes a customer's
+	// casks should be able to see that it does, and one whose own casks are
+	// at a partner's warehouse should be able to see why they are absent.
+	//
+	// Deliberately read as at now rather than walked back to the period end.
+	// Ownership and possession are current facts with no ledger behind them
+	// yet, so a walk would be a fiction; the figures are labelled as current
+	// wherever they are shown. Getting this wrong in the other direction —
+	// presenting a walked figure that was never computed — is how a return
+	// becomes internally consistent and factually wrong.
+	BulkOwnershipSplitAsOf(ctx context.Context) (BulkOwnershipSplitAsOfRow, error)
 	CancelShipment(ctx context.Context, arg CancelShipmentParams) (Shipment, error)
 	// Only a loss can be classified. The reason guard is here rather than only
 	// in Go so that a caller cannot quietly attach a duty treatment to a
@@ -106,6 +119,10 @@ type Querier interface {
 	CountLicencesMissingExpiry(ctx context.Context) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
 	CountTenants(ctx context.Context) (int64, error)
+	// Whether anything on the premises belongs to somebody else. Cheap enough
+	// to ask on every journal build, and the answer decides whether the cost
+	// of sales figure needs a caveat attached — see journal.addCOGS.
+	CountThirdPartyBulkContainers(ctx context.Context) (int32, error)
 	CountUnusedTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) (int32, error)
 	// expires_at NULL means the token never expires. That is a deliberate
 	// choice at the RPC layer, not a default — see IssueAPIToken.
@@ -365,7 +382,7 @@ type Querier interface {
 	// would double-count vessels in the dashboard rollup and surface them
 	// with no kind label (the proto enum has no BARREL case in the bulk
 	// list response).
-	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
+	ListBulkContainers(ctx context.Context, includeArchived bool) ([]ListBulkContainersRow, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListCalibrations(ctx context.Context, instrumentID uuid.UUID) ([]InstrumentCalibration, error)
 	// Archived customers are hidden by default but never deleted: a removal
@@ -466,6 +483,9 @@ type Querier interface {
 	// bottles, and voiding the run does not un-apply them.
 	ListStampUsageForOrder(ctx context.Context, stampOrderID uuid.UUID) ([]ListStampUsageForOrderRow, error)
 	ListSuppliers(ctx context.Context, includeArchived bool) ([]Supplier, error)
+	// Everything that is not simply ours-and-here, which is the list an
+	// operator needs before they sign a return or value their inventory.
+	ListThirdPartyBulkContainers(ctx context.Context) ([]ListThirdPartyBulkContainersRow, error)
 	// An email address no longer identifies one account: it is unique per
 	// tenant, so the outside bookkeeper can hold one at each distillery they
 	// work for. Every caller that starts from an address alone — login,
@@ -583,6 +603,8 @@ type Querier interface {
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
 	SetBulkContainerLocation(ctx context.Context, arg SetBulkContainerLocationParams) (BulkContainer, error)
+	SetBulkContainerOwner(ctx context.Context, arg SetBulkContainerOwnerParams) (BulkContainer, error)
+	SetBulkContainerPossession(ctx context.Context, arg SetBulkContainerPossessionParams) (BulkContainer, error)
 	SetCustomerArchived(ctx context.Context, arg SetCustomerArchivedParams) (Customer, error)
 	SetDefaultLocation(ctx context.Context, id uuid.UUID) (Location, error)
 	// Moves the cutover. Not exposed in the UI: the date is set once, when the
@@ -633,6 +655,9 @@ type Querier interface {
 	// CHECK holds the other half of that guarantee for any path that is not
 	// this one.
 	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
+	// The same split for casks, which is where third-party ownership actually
+	// turns up: contract maturation and cask-ownership programmes are barrels.
+	SumBarrelLAAByOwnership(ctx context.Context) (SumBarrelLAAByOwnershipRow, error)
 	// Duty that crystallised at packaging during the period, split by the two
 	// rate bands, because they are not charged in the same unit: above 7% ABV
 	// per litre of absolute alcohol, at or below 7% per litre of product. The
@@ -661,6 +686,15 @@ type Querier interface {
 	// does — barrel LAA is reported separately so summing both would
 	// double-count the alcohol on hand.
 	SumBulkLAA(ctx context.Context) (float64, error)
+	// The two figures a "how much alcohol is here" question actually has,
+	// once they stop being the same number.
+	//
+	// SumBulkLAA above answers neither on its own: it sums every non-archived
+	// container, so it counts a customer's tote as our asset and counts a
+	// parcel we cannot touch as stock we could bottle tomorrow. Barrels are
+	// excluded here for the same reason they are there — they are reported
+	// separately and summing both double-counts.
+	SumBulkLAAByOwnership(ctx context.Context) (SumBulkLAAByOwnershipRow, error)
 	// Aggregation queries for generating B266 sections.
 	// Excludes production_gauge movements whose underlying distillation_run is
 	// voided (so voiding a run removes its production LAA from B266). Also
@@ -693,6 +727,28 @@ type Querier interface {
 	// Known edge: a container archived after as_of is excluded from the running
 	// total but held alcohol at as_of. Archiving requires an empty container,
 	// so the LAA involved is zero.
+	//
+	// Possession, not ownership. EDM10-1-7 page 3 asks for all bulk spirits in
+	// our possession whatever anyone owns, so a customer's cask maturing in
+	// our rackhouse is here and a parcel of our own whisky at a partner's
+	// bonded warehouse is not.
+	//
+	// The filter is on the running total only, and the movement side is left
+	// alone deliberately. Filtering both would be the obvious thing and would
+	// be wrong: the walk needs the movements a departing container made while
+	// it was still ours to report. It works out because a possession change
+	// writes a movement for the whole balance (rpc.SetBulkPossession), and
+	// nothing else may be recorded against a container held elsewhere:
+	//
+	//   left after as_of     excluded from running; its exit movement is
+	//                        subtracted, adding the balance back — which is
+	//                        what was on hand at as_of.
+	//   returned after as_of included in running; its return movement is
+	//                        subtracted, taking it back out.
+	//   never here          cannot happen: a container is created and adopted
+	//                        in our possession and reaches held_elsewhere only
+	//                        through the transition above, so there is always
+	//                        a movement to reconcile against.
 	SumBulkOnHandAsOf(ctx context.Context, asOf pgtype.Timestamptz) (float64, error)
 	// Destructions carry a treatment too — an unapproved destruction is not
 	// relieved — but they are reported on their own line, so they are summed

@@ -275,7 +275,7 @@ func (q *Queries) RetailSupplyByLocation(ctx context.Context, arg RetailSupplyBy
 }
 
 const setBulkContainerLocation = `-- name: SetBulkContainerLocation :one
-UPDATE bulk_containers SET location_id = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
+UPDATE bulk_containers SET location_id = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
 `
 
 type SetBulkContainerLocationParams struct {
@@ -301,6 +301,11 @@ func (q *Queries) SetBulkContainerLocation(ctx context.Context, arg SetBulkConta
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
 	)
 	return i, err
 }

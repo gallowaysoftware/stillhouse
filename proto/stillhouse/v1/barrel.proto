@@ -6,6 +6,7 @@ syntax = "proto3";
 package stillhouse.v1;
 
 import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/bulk.proto";
 import "stillhouse/v1/instrument.proto";
 import "stillhouse/v1/alcoholometry.proto";
 
@@ -66,6 +67,19 @@ message Barrel {
   // Populated on list and detail reads alike, so a dashboard can flag a
   // leaking cask without opening every barrel page.
   MaturationAssessment maturation = 53;
+
+  // Whose cask it is, and whether we still hold it. Casks are where
+  // third-party ownership actually turns up — contract maturation and
+  // cask-ownership programmes are barrels, not tanks — so a rackhouse
+  // list that cannot tell a customer's cask from the distillery's own is
+  // the list most likely to be read wrong.
+  //
+  // Empty owner_customer_id means the licensee owns it.
+  string owner_customer_id = 54;
+  string owner_name = 55;
+  BulkPossession possession = 56;
+  string held_by_name = 57;
+  string held_by_licence_no = 58;
 }
 
 // How serious a maturation finding is. Advisory — nothing here blocks a
@@ -179,7 +193,17 @@ message ListBarrelsResponse {
   int32 total_count = 2;
   int32 aging_count = 3;
   int32 eligible_count = 4;
+  // Every cask in the list, as before.
   double total_laa = 5;
+
+  // What that total is made of, once ownership and possession stop
+  // agreeing. Ours wherever it is; here whoever owns it; and the two
+  // portions that explain the difference.
+  double owned_laa = 6;
+  double held_laa = 7;
+  double held_for_others_laa = 8;
+  double held_elsewhere_laa = 9;
+  int32  third_party_count = 10;
 }
 
 message GetBarrelRequest { string id = 1; }

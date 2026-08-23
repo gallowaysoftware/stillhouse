@@ -14,6 +14,12 @@ SELECT
     bc.id, bc.name, bc.kind, bc.capacity_l, bc.location, bc.notes, bc.archived,
     bc.current_volume_l, bc.current_abv_pct, bc.current_laa,
     bc.created_at, bc.updated_at,
+    -- Casks are where third-party ownership actually turns up: contract
+    -- maturation and cask-ownership programmes are barrels, not tanks.
+    -- Without these three columns the rackhouse list shows a customer's
+    -- cask and the distillery's own identically.
+    bc.owner_customer_id, bc.possession, bc.held_by_name, bc.held_by_licence_no,
+    COALESCE(own.name, '') AS owner_name,
     ba.cooperage_supplier, ba.char_level, ba.wood_species, ba.prior_use,
     ba.serial_burnin, ba.rickhouse, ba.row_position, ba.level_position, ba.column_position,
     ba.fill_date, ba.days_aged_at_dump,
@@ -22,6 +28,7 @@ SELECT
     fill.laa      AS fill_laa
 FROM bulk_containers bc
 JOIN barrel_attributes ba ON ba.container_id = bc.id
+LEFT JOIN customers own ON own.id = bc.owner_customer_id
 -- The fill this cask is currently living off, so the angel's share can be
 -- measured against it without a round trip per barrel.
 LEFT JOIN LATERAL (

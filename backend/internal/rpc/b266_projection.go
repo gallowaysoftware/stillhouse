@@ -32,7 +32,12 @@ type b266Totals struct {
 	// the report is generated. The gather step walks the running totals
 	// back over everything that moved after the period closed, so
 	// generating May's return in August reports May's balance (stage 141).
-	bulkClosingLAA        float64
+	bulkClosingLAA float64
+	// Current facts about ownership and possession, not walked back to the
+	// period end — see BulkOwnershipSplitAsOf. Shown so the operator can
+	// see what the closing balance is made of.
+	heldForOthersLAA      float64
+	heldElsewhereLAA      float64
 	packagedClosingLAA    float64
 	packagedClosingBottle int32
 
@@ -139,6 +144,8 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		BulkLossesLaa:                 t.laa("loss_evaporation") + t.laa("loss_unaccounted"),
 		BulkDestroyedLaa:              t.laa("destruction"),
 		BulkClosingLaa:                round4(t.bulkClosingLAA),
+		BulkClosingHeldForOthersLaa:   round4(t.heldForOthersLAA),
+		BulkHeldElsewhereLaa:          round4(t.heldElsewhereLAA),
 		// Adopted stock is reported but deliberately NOT counted among the
 		// receipts below, so the reverse-walk puts it in the opening
 		// balance. It was in the warehouse before the period; only the

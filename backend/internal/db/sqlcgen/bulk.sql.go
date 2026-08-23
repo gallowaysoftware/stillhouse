@@ -54,12 +54,29 @@ func (q *Queries) BulkContainerLastActivity(ctx context.Context) ([]BulkContaine
 	return items, nil
 }
 
+const countThirdPartyBulkContainers = `-- name: CountThirdPartyBulkContainers :one
+SELECT COUNT(*)::INTEGER AS n
+FROM bulk_containers
+WHERE NOT archived
+  AND owner_customer_id IS NOT NULL
+`
+
+// Whether anything on the premises belongs to somebody else. Cheap enough
+// to ask on every journal build, and the answer decides whether the cost
+// of sales figure needs a caveat attached — see journal.addCOGS.
+func (q *Queries) CountThirdPartyBulkContainers(ctx context.Context) (int32, error) {
+	row := q.db.QueryRow(ctx, countThirdPartyBulkContainers)
+	var n int32
+	err := row.Scan(&n)
+	return n, err
+}
+
 const createBulkContainer = `-- name: CreateBulkContainer :one
 INSERT INTO bulk_containers (
     tenant_id, name, kind, capacity_l, location, notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
+) RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
 `
 
 type CreateBulkContainerParams struct {
@@ -96,12 +113,17 @@ func (q *Queries) CreateBulkContainer(ctx context.Context, arg CreateBulkContain
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
 	)
 	return i, err
 }
 
 const getBulkContainer = `-- name: GetBulkContainer :one
-SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id FROM bulk_containers WHERE id = $1
+SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at FROM bulk_containers WHERE id = $1
 `
 
 func (q *Queries) GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkContainer, error) {
@@ -122,12 +144,17 @@ func (q *Queries) GetBulkContainer(ctx context.Context, id uuid.UUID) (BulkConta
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
 	)
 	return i, err
 }
 
 const getBulkContainerForUpdate = `-- name: GetBulkContainerForUpdate :one
-SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id FROM bulk_containers WHERE id = $1 FOR UPDATE
+SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at FROM bulk_containers WHERE id = $1 FOR UPDATE
 `
 
 // Read a container's balance with the intent to change it. FOR UPDATE is
@@ -159,6 +186,11 @@ func (q *Queries) GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
 	)
 	return i, err
 }
@@ -355,26 +387,51 @@ func (q *Queries) InsertExternalBulkMovement(ctx context.Context, arg InsertExte
 }
 
 const listBulkContainers = `-- name: ListBulkContainers :many
-SELECT id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id FROM bulk_containers
-WHERE ($1::boolean OR NOT archived)
-  AND kind != 'barrel'
-ORDER BY archived, name
+SELECT bc.id, bc.tenant_id, bc.name, bc.kind, bc.capacity_l, bc.location, bc.notes, bc.archived, bc.current_volume_l, bc.current_abv_pct, bc.current_laa, bc.created_at, bc.updated_at, bc.location_id, bc.owner_customer_id, bc.possession, bc.held_by_name, bc.held_by_licence_no, bc.possession_changed_at, COALESCE(own.name, '') AS owner_name
+FROM bulk_containers bc
+LEFT JOIN customers own ON own.id = bc.owner_customer_id
+WHERE ($1::boolean OR NOT bc.archived)
+  AND bc.kind != 'barrel'
+ORDER BY bc.archived, bc.name
 `
+
+type ListBulkContainersRow struct {
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	Name                string             `json:"name"`
+	Kind                BulkContainerKind  `json:"kind"`
+	CapacityL           pgtype.Float8      `json:"capacity_l"`
+	Location            string             `json:"location"`
+	Notes               string             `json:"notes"`
+	Archived            bool               `json:"archived"`
+	CurrentVolumeL      float64            `json:"current_volume_l"`
+	CurrentAbvPct       pgtype.Float8      `json:"current_abv_pct"`
+	CurrentLaa          float64            `json:"current_laa"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	LocationID          uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID     uuid.NullUUID      `json:"owner_customer_id"`
+	Possession          BulkPossession     `json:"possession"`
+	HeldByName          string             `json:"held_by_name"`
+	HeldByLicenceNo     string             `json:"held_by_licence_no"`
+	PossessionChangedAt pgtype.Timestamptz `json:"possession_changed_at"`
+	OwnerName           string             `json:"owner_name"`
+}
 
 // Excludes barrels — they have their own dedicated list/get RPCs that
 // expose the maturation clock + barrel attributes. Including them here
 // would double-count vessels in the dashboard rollup and surface them
 // with no kind label (the proto enum has no BARREL case in the bulk
 // list response).
-func (q *Queries) ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error) {
+func (q *Queries) ListBulkContainers(ctx context.Context, includeArchived bool) ([]ListBulkContainersRow, error) {
 	rows, err := q.db.Query(ctx, listBulkContainers, includeArchived)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []BulkContainer{}
+	items := []ListBulkContainersRow{}
 	for rows.Next() {
-		var i BulkContainer
+		var i ListBulkContainersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.TenantID,
@@ -390,6 +447,12 @@ func (q *Queries) ListBulkContainers(ctx context.Context, includeArchived bool) 
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.LocationID,
+			&i.OwnerCustomerID,
+			&i.Possession,
+			&i.HeldByName,
+			&i.HeldByLicenceNo,
+			&i.PossessionChangedAt,
+			&i.OwnerName,
 		); err != nil {
 			return nil, err
 		}
@@ -605,8 +668,83 @@ func (q *Queries) ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulk
 	return items, nil
 }
 
+const listThirdPartyBulkContainers = `-- name: ListThirdPartyBulkContainers :many
+SELECT bc.id, bc.tenant_id, bc.name, bc.kind, bc.capacity_l, bc.location, bc.notes, bc.archived, bc.current_volume_l, bc.current_abv_pct, bc.current_laa, bc.created_at, bc.updated_at, bc.location_id, bc.owner_customer_id, bc.possession, bc.held_by_name, bc.held_by_licence_no, bc.possession_changed_at, COALESCE(c.name, '') AS owner_name
+FROM bulk_containers bc
+LEFT JOIN customers c ON c.id = bc.owner_customer_id
+WHERE NOT bc.archived
+  AND (bc.owner_customer_id IS NOT NULL OR bc.possession <> 'held')
+ORDER BY bc.possession, c.name NULLS FIRST, bc.name
+`
+
+type ListThirdPartyBulkContainersRow struct {
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	Name                string             `json:"name"`
+	Kind                BulkContainerKind  `json:"kind"`
+	CapacityL           pgtype.Float8      `json:"capacity_l"`
+	Location            string             `json:"location"`
+	Notes               string             `json:"notes"`
+	Archived            bool               `json:"archived"`
+	CurrentVolumeL      float64            `json:"current_volume_l"`
+	CurrentAbvPct       pgtype.Float8      `json:"current_abv_pct"`
+	CurrentLaa          float64            `json:"current_laa"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	LocationID          uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID     uuid.NullUUID      `json:"owner_customer_id"`
+	Possession          BulkPossession     `json:"possession"`
+	HeldByName          string             `json:"held_by_name"`
+	HeldByLicenceNo     string             `json:"held_by_licence_no"`
+	PossessionChangedAt pgtype.Timestamptz `json:"possession_changed_at"`
+	OwnerName           string             `json:"owner_name"`
+}
+
+// Everything that is not simply ours-and-here, which is the list an
+// operator needs before they sign a return or value their inventory.
+func (q *Queries) ListThirdPartyBulkContainers(ctx context.Context) ([]ListThirdPartyBulkContainersRow, error) {
+	rows, err := q.db.Query(ctx, listThirdPartyBulkContainers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListThirdPartyBulkContainersRow{}
+	for rows.Next() {
+		var i ListThirdPartyBulkContainersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.TenantID,
+			&i.Name,
+			&i.Kind,
+			&i.CapacityL,
+			&i.Location,
+			&i.Notes,
+			&i.Archived,
+			&i.CurrentVolumeL,
+			&i.CurrentAbvPct,
+			&i.CurrentLaa,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.LocationID,
+			&i.OwnerCustomerID,
+			&i.Possession,
+			&i.HeldByName,
+			&i.HeldByLicenceNo,
+			&i.PossessionChangedAt,
+			&i.OwnerName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setBulkContainerArchived = `-- name: SetBulkContainerArchived :one
-UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
+UPDATE bulk_containers SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
 `
 
 type SetBulkContainerArchivedParams struct {
@@ -632,6 +770,137 @@ func (q *Queries) SetBulkContainerArchived(ctx context.Context, arg SetBulkConta
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
+	)
+	return i, err
+}
+
+const setBulkContainerOwner = `-- name: SetBulkContainerOwner :one
+UPDATE bulk_containers SET owner_customer_id = $2 WHERE id = $1 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
+`
+
+type SetBulkContainerOwnerParams struct {
+	ID              uuid.UUID     `json:"id"`
+	OwnerCustomerID uuid.NullUUID `json:"owner_customer_id"`
+}
+
+func (q *Queries) SetBulkContainerOwner(ctx context.Context, arg SetBulkContainerOwnerParams) (BulkContainer, error) {
+	row := q.db.QueryRow(ctx, setBulkContainerOwner, arg.ID, arg.OwnerCustomerID)
+	var i BulkContainer
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.Kind,
+		&i.CapacityL,
+		&i.Location,
+		&i.Notes,
+		&i.Archived,
+		&i.CurrentVolumeL,
+		&i.CurrentAbvPct,
+		&i.CurrentLaa,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
+	)
+	return i, err
+}
+
+const setBulkContainerPossession = `-- name: SetBulkContainerPossession :one
+UPDATE bulk_containers
+SET possession            = $1::bulk_possession,
+    held_by_name          = $2::TEXT,
+    held_by_licence_no    = $3::TEXT,
+    possession_changed_at = NOW()
+WHERE id = $4
+RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
+`
+
+type SetBulkContainerPossessionParams struct {
+	Possession      BulkPossession `json:"possession"`
+	HeldByName      string         `json:"held_by_name"`
+	HeldByLicenceNo string         `json:"held_by_licence_no"`
+	ID              uuid.UUID      `json:"id"`
+}
+
+func (q *Queries) SetBulkContainerPossession(ctx context.Context, arg SetBulkContainerPossessionParams) (BulkContainer, error) {
+	row := q.db.QueryRow(ctx, setBulkContainerPossession,
+		arg.Possession,
+		arg.HeldByName,
+		arg.HeldByLicenceNo,
+		arg.ID,
+	)
+	var i BulkContainer
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.Kind,
+		&i.CapacityL,
+		&i.Location,
+		&i.Notes,
+		&i.Archived,
+		&i.CurrentVolumeL,
+		&i.CurrentAbvPct,
+		&i.CurrentLaa,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
+	)
+	return i, err
+}
+
+const sumBarrelLAAByOwnership = `-- name: SumBarrelLAAByOwnership :one
+SELECT
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL), 0)::double precision AS owned_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE possession = 'held'), 0)::double precision AS held_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held'), 0)::double precision
+        AS held_for_others_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS held_elsewhere_laa,
+    COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
+FROM bulk_containers
+WHERE NOT archived
+  AND kind = 'barrel'
+`
+
+type SumBarrelLAAByOwnershipRow struct {
+	OwnedLaa         float64 `json:"owned_laa"`
+	HeldLaa          float64 `json:"held_laa"`
+	HeldForOthersLaa float64 `json:"held_for_others_laa"`
+	HeldElsewhereLaa float64 `json:"held_elsewhere_laa"`
+	ThirdPartyCount  int32   `json:"third_party_count"`
+}
+
+// The same split for casks, which is where third-party ownership actually
+// turns up: contract maturation and cask-ownership programmes are barrels.
+func (q *Queries) SumBarrelLAAByOwnership(ctx context.Context) (SumBarrelLAAByOwnershipRow, error) {
+	row := q.db.QueryRow(ctx, sumBarrelLAAByOwnership)
+	var i SumBarrelLAAByOwnershipRow
+	err := row.Scan(
+		&i.OwnedLaa,
+		&i.HeldLaa,
+		&i.HeldForOthersLaa,
+		&i.HeldElsewhereLaa,
+		&i.ThirdPartyCount,
 	)
 	return i, err
 }
@@ -653,6 +922,66 @@ func (q *Queries) SumBulkLAA(ctx context.Context) (float64, error) {
 	return total_laa, err
 }
 
+const sumBulkLAAByOwnership = `-- name: SumBulkLAAByOwnership :one
+SELECT
+    -- Ours, wherever it is. What the balance sheet means.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL), 0)::double precision AS owned_laa,
+    -- Here, whoever owns it. What the B266 means.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE possession = 'held'), 0)::double precision AS held_laa,
+    -- Ours and here: what we could actually blend, reduce or bottle.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held'), 0)::double precision
+        AS available_laa,
+    -- Somebody else's, on our floor.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held'), 0)::double precision
+        AS held_for_others_laa,
+    -- Ours, somewhere else.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS held_elsewhere_laa,
+    COUNT(*) FILTER (WHERE possession = 'held')::INTEGER AS held_count,
+    COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
+FROM bulk_containers
+WHERE NOT archived
+  AND kind != 'barrel'
+`
+
+type SumBulkLAAByOwnershipRow struct {
+	OwnedLaa         float64 `json:"owned_laa"`
+	HeldLaa          float64 `json:"held_laa"`
+	AvailableLaa     float64 `json:"available_laa"`
+	HeldForOthersLaa float64 `json:"held_for_others_laa"`
+	HeldElsewhereLaa float64 `json:"held_elsewhere_laa"`
+	HeldCount        int32   `json:"held_count"`
+	ThirdPartyCount  int32   `json:"third_party_count"`
+}
+
+// The two figures a "how much alcohol is here" question actually has,
+// once they stop being the same number.
+//
+// SumBulkLAA above answers neither on its own: it sums every non-archived
+// container, so it counts a customer's tote as our asset and counts a
+// parcel we cannot touch as stock we could bottle tomorrow. Barrels are
+// excluded here for the same reason they are there — they are reported
+// separately and summing both double-counts.
+func (q *Queries) SumBulkLAAByOwnership(ctx context.Context) (SumBulkLAAByOwnershipRow, error) {
+	row := q.db.QueryRow(ctx, sumBulkLAAByOwnership)
+	var i SumBulkLAAByOwnershipRow
+	err := row.Scan(
+		&i.OwnedLaa,
+		&i.HeldLaa,
+		&i.AvailableLaa,
+		&i.HeldForOthersLaa,
+		&i.HeldElsewhereLaa,
+		&i.HeldCount,
+		&i.ThirdPartyCount,
+	)
+	return i, err
+}
+
 const updateBulkContainer = `-- name: UpdateBulkContainer :one
 UPDATE bulk_containers
 SET name       = $2,
@@ -661,7 +990,7 @@ SET name       = $2,
     location   = $5,
     notes      = $6
 WHERE id = $1
-RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
+RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
 `
 
 type UpdateBulkContainerParams struct {
@@ -698,6 +1027,11 @@ func (q *Queries) UpdateBulkContainer(ctx context.Context, arg UpdateBulkContain
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
 	)
 	return i, err
 }
@@ -708,7 +1042,7 @@ SET current_volume_l = $2,
     current_abv_pct  = $3,
     current_laa      = $4
 WHERE id = $1
-RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id
+RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
 `
 
 type UpdateBulkContainerBalanceParams struct {
@@ -741,6 +1075,11 @@ func (q *Queries) UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulk
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.LocationID,
+		&i.OwnerCustomerID,
+		&i.Possession,
+		&i.HeldByName,
+		&i.HeldByLicenceNo,
+		&i.PossessionChangedAt,
 	)
 	return i, err
 }
