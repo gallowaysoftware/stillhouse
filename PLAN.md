@@ -264,12 +264,6 @@ Stills, tanks, pumps and the filler as first-class assets. Runs attributed to
 equipment, capacity known, maintenance scheduled and logged. Prerequisite for
 `F3` doing anything honest about capacity.
 
-### F5 · Lab, QC and batch release — P1
-
-Methanol and congener results, water chemistry, allergen statements, attached
-to a gauge or a run. A release sign-off that gates removal. Nothing in the
-category does this well, and it pairs naturally with `C1`.
-
 ### F7 · Forecasting — P2
 
 Raw material, WIP and finished-goods forecasting. Ekos ships it; it is what
@@ -394,9 +388,11 @@ has `container_deposit_cad` as a line — nothing reports it.
 
 ### I5 · Food safety and traceability — P2
 
-`TraceBottlingRun` is a good base. SFCR one-up-one-down traceability, a
-preventive control plan where required, and a recall simulation that runs the
-trace backwards from a lot code.
+`TraceBottlingRun` is a good base, and stage 167 added the other half a recall
+needs: a lot can be held by a named person with a reason, and lab results
+attach to the gauge, run or cask they were measured on. What is left is SFCR
+one-up-one-down traceability, a preventive control plan where required, and a
+recall simulation that runs the trace backwards from a lot code.
 
 ---
 

@@ -666,9 +666,22 @@ func (s *BottlingService) ListPackagedInventory(
 			BottlesPackaged: r.BottlesPackaged,
 			BottlesRemoved:  r.BottlesRemoved,
 			UpdatedAt:       timestamppb.New(r.UpdatedAt.Time),
+			ReleaseNotes:    r.ReleaseNotes,
+			ReleasedByName:  r.ReleasedByName,
+			HoldReason:      r.HoldReason,
+			HeldByName:      r.HeldByName,
 		}
 		if r.FirstBottledDate.Valid {
 			row.FirstBottledDate = formatDate(r.FirstBottledDate)
+		}
+		if r.BottlingRunID.Valid {
+			row.BottlingRunId = r.BottlingRunID.UUID.String()
+		}
+		if r.ReleasedAt.Valid {
+			row.ReleasedAt = timestamppb.New(r.ReleasedAt.Time)
+		}
+		if r.HeldAt.Valid {
+			row.HeldAt = timestamppb.New(r.HeldAt.Time)
 		}
 		out = append(out, row)
 	}

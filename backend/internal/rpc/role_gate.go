@@ -49,6 +49,19 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// LabService. Recording a result and holding a lot are operator
+	// actions — the person who has the certificate in their hand, or who
+	// found the problem, is who should be able to act. Releasing is not:
+	// it is a named sign-off that stock may leave, and the point of the
+	// gate is that it takes somebody with the authority to open it.
+	"/stillhouse.v1.LabService/RecordLabResult": roleOperator,
+	"/stillhouse.v1.LabService/ListLabResults":  roleViewer,
+	"/stillhouse.v1.LabService/HoldLot":         roleOperator,
+	"/stillhouse.v1.LabService/ReleaseLot":      roleOwner,
+	// Whether release is required at all is a decision about how the
+	// distillery works.
+	"/stillhouse.v1.TenantService/SetBatchReleaseRequired": roleOwner,
+
 	// ImportService. A bulk import creates casks, stock and customers in
 	// one action with no upstream production behind any of it — the same
 	// power as AdoptOpeningInventory, at scale — so it sits with the back

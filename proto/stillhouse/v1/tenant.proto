@@ -66,6 +66,9 @@ message Tenant {
   int32 fiscal_month_end_day = 12;
   string fiscal_month_notification_ref = 13;
   string filing_frequency_authorization_ref = 14;
+  // Whether a packaged lot must be released for sale before it can be
+  // removed. See SetBatchReleaseRequired.
+  bool require_batch_release = 15;
 }
 
 message CreateTenantRequest {
@@ -133,6 +136,16 @@ enum ExciseLicenceKind {
   EXCISE_LICENCE_KIND_OTHER = 5;
 }
 
+// Whether a packaged lot must be released before it can be removed.
+// Off by default: turning it on is a decision about how a distillery
+// works, and defaulting it on would block every existing tenant's next
+// removal on a workflow nobody asked for. A *hold* is honoured either
+// way — holding a lot is an explicit act by a named person, and
+// respecting it only when a flag happens to be on would make the act
+// meaningless.
+message SetBatchReleaseRequiredRequest { bool required = 1; }
+message SetBatchReleaseRequiredResponse { bool required = 1; }
+
 message ExciseLicence {
   string id = 1;
   ExciseLicenceKind kind = 2;
@@ -176,6 +189,7 @@ message SaveExciseLicenceRequest {
 message SaveExciseLicenceResponse { ExciseLicence licence = 1; }
 
 service TenantService {
+  rpc SetBatchReleaseRequired(SetBatchReleaseRequiredRequest) returns (SetBatchReleaseRequiredResponse);
   rpc ListExciseLicences(ListExciseLicencesRequest) returns (ListExciseLicencesResponse);
   rpc SaveExciseLicence(SaveExciseLicenceRequest) returns (SaveExciseLicenceResponse);
   rpc UpdateFilingCalendar(UpdateFilingCalendarRequest) returns (UpdateFilingCalendarResponse);

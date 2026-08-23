@@ -969,6 +969,49 @@ func (ns NullJournalEventKind) Value() (driver.Value, error) {
 	return string(ns.JournalEventKind), nil
 }
 
+type LabResultStatus string
+
+const (
+	LabResultStatusPass          LabResultStatus = "pass"
+	LabResultStatusFail          LabResultStatus = "fail"
+	LabResultStatusInformational LabResultStatus = "informational"
+)
+
+func (e *LabResultStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = LabResultStatus(s)
+	case string:
+		*e = LabResultStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for LabResultStatus: %T", src)
+	}
+	return nil
+}
+
+type NullLabResultStatus struct {
+	LabResultStatus LabResultStatus `json:"lab_result_status"`
+	Valid           bool            `json:"valid"` // Valid is true if LabResultStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullLabResultStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.LabResultStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.LabResultStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullLabResultStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.LabResultStatus), nil
+}
+
 type LossDutyTreatment string
 
 const (
@@ -1796,6 +1839,30 @@ type JournalAccount struct {
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }
 
+type LabResult struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	ContainerID       uuid.NullUUID      `json:"container_id"`
+	ProductionGaugeID uuid.NullUUID      `json:"production_gauge_id"`
+	BottlingRunID     uuid.NullUUID      `json:"bottling_run_id"`
+	MashRunID         uuid.NullUUID      `json:"mash_run_id"`
+	Analyte           string             `json:"analyte"`
+	Value             pgtype.Float8      `json:"value"`
+	Uom               string             `json:"uom"`
+	SpecMin           pgtype.Float8      `json:"spec_min"`
+	SpecMax           pgtype.Float8      `json:"spec_max"`
+	Status            LabResultStatus    `json:"status"`
+	Method            string             `json:"method"`
+	Laboratory        string             `json:"laboratory"`
+	Reference         string             `json:"reference"`
+	SampledOn         pgtype.Date        `json:"sampled_on"`
+	ReportedOn        pgtype.Date        `json:"reported_on"`
+	Notes             string             `json:"notes"`
+	RecordedBy        uuid.UUID          `json:"recorded_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
 type MashIngredientUsage struct {
 	ID            uuid.UUID          `json:"id"`
 	TenantID      uuid.UUID          `json:"tenant_id"`
@@ -1874,6 +1941,12 @@ type PackagedInventory struct {
 	BottlesRemoved  int32              `json:"bottles_removed"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	ReleasedAt      pgtype.Timestamptz `json:"released_at"`
+	ReleasedBy      uuid.NullUUID      `json:"released_by"`
+	ReleaseNotes    string             `json:"release_notes"`
+	HeldAt          pgtype.Timestamptz `json:"held_at"`
+	HeldBy          uuid.NullUUID      `json:"held_by"`
+	HoldReason      string             `json:"hold_reason"`
 }
 
 type PackagingRemoval struct {
@@ -2081,6 +2154,7 @@ type Tenant struct {
 	FiscalMonthEndDay               pgtype.Int4      `json:"fiscal_month_end_day"`
 	FiscalMonthNotificationRef      string           `json:"fiscal_month_notification_ref"`
 	FilingFrequencyAuthorizationRef string           `json:"filing_frequency_authorization_ref"`
+	RequireBatchRelease             bool             `json:"require_batch_release"`
 }
 
 type User struct {

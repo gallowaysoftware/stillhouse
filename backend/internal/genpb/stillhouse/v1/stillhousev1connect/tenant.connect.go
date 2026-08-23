@@ -36,6 +36,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// TenantServiceSetBatchReleaseRequiredProcedure is the fully-qualified name of the TenantService's
+	// SetBatchReleaseRequired RPC.
+	TenantServiceSetBatchReleaseRequiredProcedure = "/stillhouse.v1.TenantService/SetBatchReleaseRequired"
 	// TenantServiceListExciseLicencesProcedure is the fully-qualified name of the TenantService's
 	// ListExciseLicences RPC.
 	TenantServiceListExciseLicencesProcedure = "/stillhouse.v1.TenantService/ListExciseLicences"
@@ -60,6 +63,7 @@ const (
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
 type TenantServiceClient interface {
+	SetBatchReleaseRequired(context.Context, *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error)
 	ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error)
 	SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error)
 	UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error)
@@ -80,6 +84,12 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 	baseURL = strings.TrimRight(baseURL, "/")
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
 	return &tenantServiceClient{
+		setBatchReleaseRequired: connect.NewClient[v1.SetBatchReleaseRequiredRequest, v1.SetBatchReleaseRequiredResponse](
+			httpClient,
+			baseURL+TenantServiceSetBatchReleaseRequiredProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("SetBatchReleaseRequired")),
+			connect.WithClientOptions(opts...),
+		),
 		listExciseLicences: connect.NewClient[v1.ListExciseLicencesRequest, v1.ListExciseLicencesResponse](
 			httpClient,
 			baseURL+TenantServiceListExciseLicencesProcedure,
@@ -127,13 +137,19 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // tenantServiceClient implements TenantServiceClient.
 type tenantServiceClient struct {
-	listExciseLicences   *connect.Client[v1.ListExciseLicencesRequest, v1.ListExciseLicencesResponse]
-	saveExciseLicence    *connect.Client[v1.SaveExciseLicenceRequest, v1.SaveExciseLicenceResponse]
-	updateFilingCalendar *connect.Client[v1.UpdateFilingCalendarRequest, v1.UpdateFilingCalendarResponse]
-	createTenant         *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
-	getTenant            *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
-	updateTenant         *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
-	deleteMyTenant       *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+	setBatchReleaseRequired *connect.Client[v1.SetBatchReleaseRequiredRequest, v1.SetBatchReleaseRequiredResponse]
+	listExciseLicences      *connect.Client[v1.ListExciseLicencesRequest, v1.ListExciseLicencesResponse]
+	saveExciseLicence       *connect.Client[v1.SaveExciseLicenceRequest, v1.SaveExciseLicenceResponse]
+	updateFilingCalendar    *connect.Client[v1.UpdateFilingCalendarRequest, v1.UpdateFilingCalendarResponse]
+	createTenant            *connect.Client[v1.CreateTenantRequest, v1.CreateTenantResponse]
+	getTenant               *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
+	updateTenant            *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
+	deleteMyTenant          *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+}
+
+// SetBatchReleaseRequired calls stillhouse.v1.TenantService.SetBatchReleaseRequired.
+func (c *tenantServiceClient) SetBatchReleaseRequired(ctx context.Context, req *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error) {
+	return c.setBatchReleaseRequired.CallUnary(ctx, req)
 }
 
 // ListExciseLicences calls stillhouse.v1.TenantService.ListExciseLicences.
@@ -173,6 +189,7 @@ func (c *tenantServiceClient) DeleteMyTenant(ctx context.Context, req *connect.R
 
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
+	SetBatchReleaseRequired(context.Context, *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error)
 	ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error)
 	SaveExciseLicence(context.Context, *connect.Request[v1.SaveExciseLicenceRequest]) (*connect.Response[v1.SaveExciseLicenceResponse], error)
 	UpdateFilingCalendar(context.Context, *connect.Request[v1.UpdateFilingCalendarRequest]) (*connect.Response[v1.UpdateFilingCalendarResponse], error)
@@ -189,6 +206,12 @@ type TenantServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	tenantServiceMethods := v1.File_stillhouse_v1_tenant_proto.Services().ByName("TenantService").Methods()
+	tenantServiceSetBatchReleaseRequiredHandler := connect.NewUnaryHandler(
+		TenantServiceSetBatchReleaseRequiredProcedure,
+		svc.SetBatchReleaseRequired,
+		connect.WithSchema(tenantServiceMethods.ByName("SetBatchReleaseRequired")),
+		connect.WithHandlerOptions(opts...),
+	)
 	tenantServiceListExciseLicencesHandler := connect.NewUnaryHandler(
 		TenantServiceListExciseLicencesProcedure,
 		svc.ListExciseLicences,
@@ -233,6 +256,8 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case TenantServiceSetBatchReleaseRequiredProcedure:
+			tenantServiceSetBatchReleaseRequiredHandler.ServeHTTP(w, r)
 		case TenantServiceListExciseLicencesProcedure:
 			tenantServiceListExciseLicencesHandler.ServeHTTP(w, r)
 		case TenantServiceSaveExciseLicenceProcedure:
@@ -255,6 +280,10 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 
 // UnimplementedTenantServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTenantServiceHandler struct{}
+
+func (UnimplementedTenantServiceHandler) SetBatchReleaseRequired(context.Context, *connect.Request[v1.SetBatchReleaseRequiredRequest]) (*connect.Response[v1.SetBatchReleaseRequiredResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.SetBatchReleaseRequired is not implemented"))
+}
 
 func (UnimplementedTenantServiceHandler) ListExciseLicences(context.Context, *connect.Request[v1.ListExciseLicencesRequest]) (*connect.Response[v1.ListExciseLicencesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.ListExciseLicences is not implemented"))

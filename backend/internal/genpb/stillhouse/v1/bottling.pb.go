@@ -413,8 +413,20 @@ type PackagedInventoryRow struct {
 	BottlesRemoved   int32                  `protobuf:"varint,10,opt,name=bottles_removed,json=bottlesRemoved,proto3" json:"bottles_removed,omitempty"`
 	UpdatedAt        *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
 	FirstBottledDate string                 `protobuf:"bytes,12,opt,name=first_bottled_date,json=firstBottledDate,proto3" json:"first_bottled_date,omitempty"` // ISO; empty if pre-bottling-run linkage
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Batch release. Both can be set at once: a lot held after release is
+	// a recall in its early form, and erasing the release would remove the
+	// most important part of that record.
+	ReleasedAt     *timestamppb.Timestamp `protobuf:"bytes,13,opt,name=released_at,json=releasedAt,proto3" json:"released_at,omitempty"`
+	ReleasedByName string                 `protobuf:"bytes,14,opt,name=released_by_name,json=releasedByName,proto3" json:"released_by_name,omitempty"`
+	ReleaseNotes   string                 `protobuf:"bytes,15,opt,name=release_notes,json=releaseNotes,proto3" json:"release_notes,omitempty"`
+	HeldAt         *timestamppb.Timestamp `protobuf:"bytes,16,opt,name=held_at,json=heldAt,proto3" json:"held_at,omitempty"`
+	HeldByName     string                 `protobuf:"bytes,17,opt,name=held_by_name,json=heldByName,proto3" json:"held_by_name,omitempty"`
+	HoldReason     string                 `protobuf:"bytes,18,opt,name=hold_reason,json=holdReason,proto3" json:"hold_reason,omitempty"`
+	// The run behind the lot, so a release decision can see its lab
+	// results. Empty for adopted stock, which has no run.
+	BottlingRunId string `protobuf:"bytes,19,opt,name=bottling_run_id,json=bottlingRunId,proto3" json:"bottling_run_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *PackagedInventoryRow) Reset() {
@@ -527,6 +539,55 @@ func (x *PackagedInventoryRow) GetUpdatedAt() *timestamppb.Timestamp {
 func (x *PackagedInventoryRow) GetFirstBottledDate() string {
 	if x != nil {
 		return x.FirstBottledDate
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetReleasedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ReleasedAt
+	}
+	return nil
+}
+
+func (x *PackagedInventoryRow) GetReleasedByName() string {
+	if x != nil {
+		return x.ReleasedByName
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetReleaseNotes() string {
+	if x != nil {
+		return x.ReleaseNotes
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetHeldAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.HeldAt
+	}
+	return nil
+}
+
+func (x *PackagedInventoryRow) GetHeldByName() string {
+	if x != nil {
+		return x.HeldByName
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetHoldReason() string {
+	if x != nil {
+		return x.HoldReason
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetBottlingRunId() string {
+	if x != nil {
+		return x.BottlingRunId
 	}
 	return ""
 }
@@ -1125,7 +1186,7 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"serial_end\x18\a \x01(\tR\tserialEnd\x12\x14\n" +
 	"\x05voids\x18\b \x01(\x05R\x05voids\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xd8\x03\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x84\x06\n" +
 	"\x14PackagedInventoryRow\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1141,7 +1202,17 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	" \x01(\x05R\x0ebottlesRemoved\x129\n" +
 	"\n" +
 	"updated_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12,\n" +
-	"\x12first_bottled_date\x18\f \x01(\tR\x10firstBottledDate\"\xc5\x02\n" +
+	"\x12first_bottled_date\x18\f \x01(\tR\x10firstBottledDate\x12;\n" +
+	"\vreleased_at\x18\r \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"releasedAt\x12(\n" +
+	"\x10released_by_name\x18\x0e \x01(\tR\x0ereleasedByName\x12#\n" +
+	"\rrelease_notes\x18\x0f \x01(\tR\freleaseNotes\x123\n" +
+	"\aheld_at\x18\x10 \x01(\v2\x1a.google.protobuf.TimestampR\x06heldAt\x12 \n" +
+	"\fheld_by_name\x18\x11 \x01(\tR\n" +
+	"heldByName\x12\x1f\n" +
+	"\vhold_reason\x18\x12 \x01(\tR\n" +
+	"holdReason\x12&\n" +
+	"\x0fbottling_run_id\x18\x13 \x01(\tR\rbottlingRunId\"\xc5\x02\n" +
 	"\x18CreateBottlingRunRequest\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12.\n" +
@@ -1222,27 +1293,29 @@ var file_stillhouse_v1_bottling_proto_depIdxs = []int32{
 	1,  // 3: stillhouse.v1.BottlingRun.stamp_usage:type_name -> stillhouse.v1.BottlingRunStampUsage
 	13, // 4: stillhouse.v1.BottlingRunStampUsage.created_at:type_name -> google.protobuf.Timestamp
 	13, // 5: stillhouse.v1.PackagedInventoryRow.updated_at:type_name -> google.protobuf.Timestamp
-	0,  // 6: stillhouse.v1.CreateBottlingRunResponse.run:type_name -> stillhouse.v1.BottlingRun
-	2,  // 7: stillhouse.v1.CreateBottlingRunResponse.packaged:type_name -> stillhouse.v1.PackagedInventoryRow
-	0,  // 8: stillhouse.v1.GetBottlingRunResponse.run:type_name -> stillhouse.v1.BottlingRun
-	0,  // 9: stillhouse.v1.ListBottlingRunsResponse.runs:type_name -> stillhouse.v1.BottlingRun
-	2,  // 10: stillhouse.v1.ListPackagedInventoryResponse.rows:type_name -> stillhouse.v1.PackagedInventoryRow
-	0,  // 11: stillhouse.v1.VoidBottlingRunResponse.run:type_name -> stillhouse.v1.BottlingRun
-	3,  // 12: stillhouse.v1.BottlingService.CreateBottlingRun:input_type -> stillhouse.v1.CreateBottlingRunRequest
-	5,  // 13: stillhouse.v1.BottlingService.GetBottlingRun:input_type -> stillhouse.v1.GetBottlingRunRequest
-	7,  // 14: stillhouse.v1.BottlingService.ListBottlingRuns:input_type -> stillhouse.v1.ListBottlingRunsRequest
-	9,  // 15: stillhouse.v1.BottlingService.ListPackagedInventory:input_type -> stillhouse.v1.ListPackagedInventoryRequest
-	11, // 16: stillhouse.v1.BottlingService.VoidBottlingRun:input_type -> stillhouse.v1.VoidBottlingRunRequest
-	4,  // 17: stillhouse.v1.BottlingService.CreateBottlingRun:output_type -> stillhouse.v1.CreateBottlingRunResponse
-	6,  // 18: stillhouse.v1.BottlingService.GetBottlingRun:output_type -> stillhouse.v1.GetBottlingRunResponse
-	8,  // 19: stillhouse.v1.BottlingService.ListBottlingRuns:output_type -> stillhouse.v1.ListBottlingRunsResponse
-	10, // 20: stillhouse.v1.BottlingService.ListPackagedInventory:output_type -> stillhouse.v1.ListPackagedInventoryResponse
-	12, // 21: stillhouse.v1.BottlingService.VoidBottlingRun:output_type -> stillhouse.v1.VoidBottlingRunResponse
-	17, // [17:22] is the sub-list for method output_type
-	12, // [12:17] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	13, // 6: stillhouse.v1.PackagedInventoryRow.released_at:type_name -> google.protobuf.Timestamp
+	13, // 7: stillhouse.v1.PackagedInventoryRow.held_at:type_name -> google.protobuf.Timestamp
+	0,  // 8: stillhouse.v1.CreateBottlingRunResponse.run:type_name -> stillhouse.v1.BottlingRun
+	2,  // 9: stillhouse.v1.CreateBottlingRunResponse.packaged:type_name -> stillhouse.v1.PackagedInventoryRow
+	0,  // 10: stillhouse.v1.GetBottlingRunResponse.run:type_name -> stillhouse.v1.BottlingRun
+	0,  // 11: stillhouse.v1.ListBottlingRunsResponse.runs:type_name -> stillhouse.v1.BottlingRun
+	2,  // 12: stillhouse.v1.ListPackagedInventoryResponse.rows:type_name -> stillhouse.v1.PackagedInventoryRow
+	0,  // 13: stillhouse.v1.VoidBottlingRunResponse.run:type_name -> stillhouse.v1.BottlingRun
+	3,  // 14: stillhouse.v1.BottlingService.CreateBottlingRun:input_type -> stillhouse.v1.CreateBottlingRunRequest
+	5,  // 15: stillhouse.v1.BottlingService.GetBottlingRun:input_type -> stillhouse.v1.GetBottlingRunRequest
+	7,  // 16: stillhouse.v1.BottlingService.ListBottlingRuns:input_type -> stillhouse.v1.ListBottlingRunsRequest
+	9,  // 17: stillhouse.v1.BottlingService.ListPackagedInventory:input_type -> stillhouse.v1.ListPackagedInventoryRequest
+	11, // 18: stillhouse.v1.BottlingService.VoidBottlingRun:input_type -> stillhouse.v1.VoidBottlingRunRequest
+	4,  // 19: stillhouse.v1.BottlingService.CreateBottlingRun:output_type -> stillhouse.v1.CreateBottlingRunResponse
+	6,  // 20: stillhouse.v1.BottlingService.GetBottlingRun:output_type -> stillhouse.v1.GetBottlingRunResponse
+	8,  // 21: stillhouse.v1.BottlingService.ListBottlingRuns:output_type -> stillhouse.v1.ListBottlingRunsResponse
+	10, // 22: stillhouse.v1.BottlingService.ListPackagedInventory:output_type -> stillhouse.v1.ListPackagedInventoryResponse
+	12, // 23: stillhouse.v1.BottlingService.VoidBottlingRun:output_type -> stillhouse.v1.VoidBottlingRunResponse
+	19, // [19:24] is the sub-list for method output_type
+	14, // [14:19] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_bottling_proto_init() }

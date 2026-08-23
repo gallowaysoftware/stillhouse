@@ -112,7 +112,7 @@ UPDATE packaged_inventory
 SET bottles_on_hand = bottles_on_hand - $2,
     bottles_removed = bottles_removed + $2
 WHERE id = $1 AND bottles_on_hand >= $2
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
 `
 
 type DecrementPackagedOnHandParams struct {
@@ -139,12 +139,18 @@ func (q *Queries) DecrementPackagedOnHand(ctx context.Context, arg DecrementPack
 		&i.BottlesRemoved,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReleasedAt,
+		&i.ReleasedBy,
+		&i.ReleaseNotes,
+		&i.HeldAt,
+		&i.HeldBy,
+		&i.HoldReason,
 	)
 	return i, err
 }
 
 const getPackagedInventoryForUpdate = `-- name: GetPackagedInventoryForUpdate :one
-SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at FROM packaged_inventory WHERE id = $1 FOR UPDATE
+SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason FROM packaged_inventory WHERE id = $1 FOR UPDATE
 `
 
 // Read a lot's bottle count with the intent to change it. Without the
@@ -169,6 +175,12 @@ func (q *Queries) GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUI
 		&i.BottlesRemoved,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReleasedAt,
+		&i.ReleasedBy,
+		&i.ReleaseNotes,
+		&i.HeldAt,
+		&i.HeldBy,
+		&i.HoldReason,
 	)
 	return i, err
 }
@@ -211,7 +223,7 @@ UPDATE packaged_inventory
 SET bottles_on_hand = bottles_on_hand + $2,
     bottles_removed = bottles_removed - $2
 WHERE id = $1
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason
 `
 
 type IncrementPackagedOnHandParams struct {
@@ -234,6 +246,12 @@ func (q *Queries) IncrementPackagedOnHand(ctx context.Context, arg IncrementPack
 		&i.BottlesRemoved,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ReleasedAt,
+		&i.ReleasedBy,
+		&i.ReleaseNotes,
+		&i.HeldAt,
+		&i.HeldBy,
+		&i.HoldReason,
 	)
 	return i, err
 }

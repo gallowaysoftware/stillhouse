@@ -27,3 +27,6 @@ SET name                            = $2,
     default_jurisdiction            = $5
 WHERE id = $1
 RETURNING *;
+
+-- name: SetTenantBatchReleaseRequired :one
+UPDATE tenants SET require_batch_release = $2 WHERE id = $1 RETURNING *;

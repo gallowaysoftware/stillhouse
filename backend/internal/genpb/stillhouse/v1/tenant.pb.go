@@ -274,8 +274,11 @@ type Tenant struct {
 	FiscalMonthEndDay               int32            `protobuf:"varint,12,opt,name=fiscal_month_end_day,json=fiscalMonthEndDay,proto3" json:"fiscal_month_end_day,omitempty"`
 	FiscalMonthNotificationRef      string           `protobuf:"bytes,13,opt,name=fiscal_month_notification_ref,json=fiscalMonthNotificationRef,proto3" json:"fiscal_month_notification_ref,omitempty"`
 	FilingFrequencyAuthorizationRef string           `protobuf:"bytes,14,opt,name=filing_frequency_authorization_ref,json=filingFrequencyAuthorizationRef,proto3" json:"filing_frequency_authorization_ref,omitempty"`
-	unknownFields                   protoimpl.UnknownFields
-	sizeCache                       protoimpl.SizeCache
+	// Whether a packaged lot must be released for sale before it can be
+	// removed. See SetBatchReleaseRequired.
+	RequireBatchRelease bool `protobuf:"varint,15,opt,name=require_batch_release,json=requireBatchRelease,proto3" json:"require_batch_release,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *Tenant) Reset() {
@@ -404,6 +407,13 @@ func (x *Tenant) GetFilingFrequencyAuthorizationRef() string {
 		return x.FilingFrequencyAuthorizationRef
 	}
 	return ""
+}
+
+func (x *Tenant) GetRequireBatchRelease() bool {
+	if x != nil {
+		return x.RequireBatchRelease
+	}
+	return false
 }
 
 type CreateTenantRequest struct {
@@ -934,6 +944,101 @@ func (*DeleteMyTenantResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{10}
 }
 
+// Whether a packaged lot must be released before it can be removed.
+// Off by default: turning it on is a decision about how a distillery
+// works, and defaulting it on would block every existing tenant's next
+// removal on a workflow nobody asked for. A *hold* is honoured either
+// way — holding a lot is an explicit act by a named person, and
+// respecting it only when a flag happens to be on would make the act
+// meaningless.
+type SetBatchReleaseRequiredRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Required      bool                   `protobuf:"varint,1,opt,name=required,proto3" json:"required,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetBatchReleaseRequiredRequest) Reset() {
+	*x = SetBatchReleaseRequiredRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetBatchReleaseRequiredRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetBatchReleaseRequiredRequest) ProtoMessage() {}
+
+func (x *SetBatchReleaseRequiredRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetBatchReleaseRequiredRequest.ProtoReflect.Descriptor instead.
+func (*SetBatchReleaseRequiredRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *SetBatchReleaseRequiredRequest) GetRequired() bool {
+	if x != nil {
+		return x.Required
+	}
+	return false
+}
+
+type SetBatchReleaseRequiredResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Required      bool                   `protobuf:"varint,1,opt,name=required,proto3" json:"required,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetBatchReleaseRequiredResponse) Reset() {
+	*x = SetBatchReleaseRequiredResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetBatchReleaseRequiredResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetBatchReleaseRequiredResponse) ProtoMessage() {}
+
+func (x *SetBatchReleaseRequiredResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetBatchReleaseRequiredResponse.ProtoReflect.Descriptor instead.
+func (*SetBatchReleaseRequiredResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *SetBatchReleaseRequiredResponse) GetRequired() bool {
+	if x != nil {
+		return x.Required
+	}
+	return false
+}
+
 type ExciseLicence struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -958,7 +1063,7 @@ type ExciseLicence struct {
 
 func (x *ExciseLicence) Reset() {
 	*x = ExciseLicence{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -970,7 +1075,7 @@ func (x *ExciseLicence) String() string {
 func (*ExciseLicence) ProtoMessage() {}
 
 func (x *ExciseLicence) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -983,7 +1088,7 @@ func (x *ExciseLicence) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExciseLicence.ProtoReflect.Descriptor instead.
 func (*ExciseLicence) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ExciseLicence) GetId() string {
@@ -1064,7 +1169,7 @@ type ListExciseLicencesRequest struct {
 
 func (x *ListExciseLicencesRequest) Reset() {
 	*x = ListExciseLicencesRequest{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1076,7 +1181,7 @@ func (x *ListExciseLicencesRequest) String() string {
 func (*ListExciseLicencesRequest) ProtoMessage() {}
 
 func (x *ListExciseLicencesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1089,7 +1194,7 @@ func (x *ListExciseLicencesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListExciseLicencesRequest.ProtoReflect.Descriptor instead.
 func (*ListExciseLicencesRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{12}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{14}
 }
 
 type ListExciseLicencesResponse struct {
@@ -1104,7 +1209,7 @@ type ListExciseLicencesResponse struct {
 
 func (x *ListExciseLicencesResponse) Reset() {
 	*x = ListExciseLicencesResponse{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1116,7 +1221,7 @@ func (x *ListExciseLicencesResponse) String() string {
 func (*ListExciseLicencesResponse) ProtoMessage() {}
 
 func (x *ListExciseLicencesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1129,7 +1234,7 @@ func (x *ListExciseLicencesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListExciseLicencesResponse.ProtoReflect.Descriptor instead.
 func (*ListExciseLicencesResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{13}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ListExciseLicencesResponse) GetLicences() []*ExciseLicence {
@@ -1165,7 +1270,7 @@ type SaveExciseLicenceRequest struct {
 
 func (x *SaveExciseLicenceRequest) Reset() {
 	*x = SaveExciseLicenceRequest{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1177,7 +1282,7 @@ func (x *SaveExciseLicenceRequest) String() string {
 func (*SaveExciseLicenceRequest) ProtoMessage() {}
 
 func (x *SaveExciseLicenceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1190,7 +1295,7 @@ func (x *SaveExciseLicenceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveExciseLicenceRequest.ProtoReflect.Descriptor instead.
 func (*SaveExciseLicenceRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{14}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *SaveExciseLicenceRequest) GetId() string {
@@ -1272,7 +1377,7 @@ type SaveExciseLicenceResponse struct {
 
 func (x *SaveExciseLicenceResponse) Reset() {
 	*x = SaveExciseLicenceResponse{}
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1284,7 +1389,7 @@ func (x *SaveExciseLicenceResponse) String() string {
 func (*SaveExciseLicenceResponse) ProtoMessage() {}
 
 func (x *SaveExciseLicenceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_tenant_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1297,7 +1402,7 @@ func (x *SaveExciseLicenceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveExciseLicenceResponse.ProtoReflect.Descriptor instead.
 func (*SaveExciseLicenceResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{15}
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *SaveExciseLicenceResponse) GetLicence() *ExciseLicence {
@@ -1311,7 +1416,7 @@ var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\n" +
-	"\x1astillhouse/v1/tenant.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa8\x06\n" +
+	"\x1astillhouse/v1/tenant.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdc\x06\n" +
 	"\x06Tenant\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12;\n" +
@@ -1330,7 +1435,8 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x12fiscal_month_basis\x18\v \x01(\x0e2\x1f.stillhouse.v1.FiscalMonthBasisR\x10fiscalMonthBasis\x12/\n" +
 	"\x14fiscal_month_end_day\x18\f \x01(\x05R\x11fiscalMonthEndDay\x12A\n" +
 	"\x1dfiscal_month_notification_ref\x18\r \x01(\tR\x1afiscalMonthNotificationRef\x12K\n" +
-	"\"filing_frequency_authorization_ref\x18\x0e \x01(\tR\x1ffilingFrequencyAuthorizationRef\"\x8f\x02\n" +
+	"\"filing_frequency_authorization_ref\x18\x0e \x01(\tR\x1ffilingFrequencyAuthorizationRef\x122\n" +
+	"\x15require_batch_release\x18\x0f \x01(\bR\x13requireBatchRelease\"\x8f\x02\n" +
 	"\x13CreateTenantRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12;\n" +
 	"\x1acra_spirits_licence_number\x18\x02 \x01(\tR\x17craSpiritsLicenceNumber\x121\n" +
@@ -1361,7 +1467,11 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x06tenant\x18\x01 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\":\n" +
 	"\x15DeleteMyTenantRequest\x12!\n" +
 	"\fconfirm_name\x18\x01 \x01(\tR\vconfirmName\"\x18\n" +
-	"\x16DeleteMyTenantResponse\"\xf1\x02\n" +
+	"\x16DeleteMyTenantResponse\"<\n" +
+	"\x1eSetBatchReleaseRequiredRequest\x12\x1a\n" +
+	"\brequired\x18\x01 \x01(\bR\brequired\"=\n" +
+	"\x1fSetBatchReleaseRequiredResponse\x12\x1a\n" +
+	"\brequired\x18\x01 \x01(\bR\brequired\"\xf1\x02\n" +
 	"\rExciseLicence\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x124\n" +
 	"\x04kind\x18\x02 \x01(\x0e2 .stillhouse.v1.ExciseLicenceKindR\x04kind\x12%\n" +
@@ -1412,8 +1522,9 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"$EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE\x10\x02\x12\x1d\n" +
 	"\x19EXCISE_LICENCE_KIND_USERS\x10\x03\x12\x1c\n" +
 	"\x18EXCISE_LICENCE_KIND_WINE\x10\x04\x12\x1d\n" +
-	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\xb4\x05\n" +
-	"\rTenantService\x12i\n" +
+	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\xae\x06\n" +
+	"\rTenantService\x12x\n" +
+	"\x17SetBatchReleaseRequired\x12-.stillhouse.v1.SetBatchReleaseRequiredRequest\x1a..stillhouse.v1.SetBatchReleaseRequiredResponse\x12i\n" +
 	"\x12ListExciseLicences\x12(.stillhouse.v1.ListExciseLicencesRequest\x1a).stillhouse.v1.ListExciseLicencesResponse\x12f\n" +
 	"\x11SaveExciseLicence\x12'.stillhouse.v1.SaveExciseLicenceRequest\x1a(.stillhouse.v1.SaveExciseLicenceResponse\x12o\n" +
 	"\x14UpdateFilingCalendar\x12*.stillhouse.v1.UpdateFilingCalendarRequest\x1a+.stillhouse.v1.UpdateFilingCalendarResponse\x12W\n" +
@@ -1436,33 +1547,35 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
-	(DutyPoint)(0),                       // 0: stillhouse.v1.DutyPoint
-	(FilingFrequency)(0),                 // 1: stillhouse.v1.FilingFrequency
-	(FiscalMonthBasis)(0),                // 2: stillhouse.v1.FiscalMonthBasis
-	(ExciseLicenceKind)(0),               // 3: stillhouse.v1.ExciseLicenceKind
-	(*Tenant)(nil),                       // 4: stillhouse.v1.Tenant
-	(*CreateTenantRequest)(nil),          // 5: stillhouse.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),         // 6: stillhouse.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),             // 7: stillhouse.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),            // 8: stillhouse.v1.GetTenantResponse
-	(*UpdateFilingCalendarRequest)(nil),  // 9: stillhouse.v1.UpdateFilingCalendarRequest
-	(*UpdateFilingCalendarResponse)(nil), // 10: stillhouse.v1.UpdateFilingCalendarResponse
-	(*UpdateTenantRequest)(nil),          // 11: stillhouse.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),         // 12: stillhouse.v1.UpdateTenantResponse
-	(*DeleteMyTenantRequest)(nil),        // 13: stillhouse.v1.DeleteMyTenantRequest
-	(*DeleteMyTenantResponse)(nil),       // 14: stillhouse.v1.DeleteMyTenantResponse
-	(*ExciseLicence)(nil),                // 15: stillhouse.v1.ExciseLicence
-	(*ListExciseLicencesRequest)(nil),    // 16: stillhouse.v1.ListExciseLicencesRequest
-	(*ListExciseLicencesResponse)(nil),   // 17: stillhouse.v1.ListExciseLicencesResponse
-	(*SaveExciseLicenceRequest)(nil),     // 18: stillhouse.v1.SaveExciseLicenceRequest
-	(*SaveExciseLicenceResponse)(nil),    // 19: stillhouse.v1.SaveExciseLicenceResponse
-	(*timestamppb.Timestamp)(nil),        // 20: google.protobuf.Timestamp
+	(DutyPoint)(0),                          // 0: stillhouse.v1.DutyPoint
+	(FilingFrequency)(0),                    // 1: stillhouse.v1.FilingFrequency
+	(FiscalMonthBasis)(0),                   // 2: stillhouse.v1.FiscalMonthBasis
+	(ExciseLicenceKind)(0),                  // 3: stillhouse.v1.ExciseLicenceKind
+	(*Tenant)(nil),                          // 4: stillhouse.v1.Tenant
+	(*CreateTenantRequest)(nil),             // 5: stillhouse.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),            // 6: stillhouse.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),                // 7: stillhouse.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),               // 8: stillhouse.v1.GetTenantResponse
+	(*UpdateFilingCalendarRequest)(nil),     // 9: stillhouse.v1.UpdateFilingCalendarRequest
+	(*UpdateFilingCalendarResponse)(nil),    // 10: stillhouse.v1.UpdateFilingCalendarResponse
+	(*UpdateTenantRequest)(nil),             // 11: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),            // 12: stillhouse.v1.UpdateTenantResponse
+	(*DeleteMyTenantRequest)(nil),           // 13: stillhouse.v1.DeleteMyTenantRequest
+	(*DeleteMyTenantResponse)(nil),          // 14: stillhouse.v1.DeleteMyTenantResponse
+	(*SetBatchReleaseRequiredRequest)(nil),  // 15: stillhouse.v1.SetBatchReleaseRequiredRequest
+	(*SetBatchReleaseRequiredResponse)(nil), // 16: stillhouse.v1.SetBatchReleaseRequiredResponse
+	(*ExciseLicence)(nil),                   // 17: stillhouse.v1.ExciseLicence
+	(*ListExciseLicencesRequest)(nil),       // 18: stillhouse.v1.ListExciseLicencesRequest
+	(*ListExciseLicencesResponse)(nil),      // 19: stillhouse.v1.ListExciseLicencesResponse
+	(*SaveExciseLicenceRequest)(nil),        // 20: stillhouse.v1.SaveExciseLicenceRequest
+	(*SaveExciseLicenceResponse)(nil),       // 21: stillhouse.v1.SaveExciseLicenceResponse
+	(*timestamppb.Timestamp)(nil),           // 22: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	20, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	20, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	22, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	22, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
 	1,  // 3: stillhouse.v1.Tenant.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 4: stillhouse.v1.Tenant.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
@@ -1473,25 +1586,27 @@ var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
 	4,  // 9: stillhouse.v1.UpdateFilingCalendarResponse.tenant:type_name -> stillhouse.v1.Tenant
 	4,  // 10: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	3,  // 11: stillhouse.v1.ExciseLicence.kind:type_name -> stillhouse.v1.ExciseLicenceKind
-	15, // 12: stillhouse.v1.ListExciseLicencesResponse.licences:type_name -> stillhouse.v1.ExciseLicence
+	17, // 12: stillhouse.v1.ListExciseLicencesResponse.licences:type_name -> stillhouse.v1.ExciseLicence
 	3,  // 13: stillhouse.v1.SaveExciseLicenceRequest.kind:type_name -> stillhouse.v1.ExciseLicenceKind
-	15, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
-	16, // 15: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
-	18, // 16: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
-	9,  // 17: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
-	5,  // 18: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	7,  // 19: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	11, // 20: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	13, // 21: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	17, // 22: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
-	19, // 23: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
-	10, // 24: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
-	6,  // 25: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	8,  // 26: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	12, // 27: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	14, // 28: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	22, // [22:29] is the sub-list for method output_type
-	15, // [15:22] is the sub-list for method input_type
+	17, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
+	15, // 15: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
+	18, // 16: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
+	20, // 17: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
+	9,  // 18: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
+	5,  // 19: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	7,  // 20: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	11, // 21: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	13, // 22: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	16, // 23: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
+	19, // 24: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
+	21, // 25: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
+	10, // 26: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
+	6,  // 27: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	8,  // 28: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	12, // 29: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	14, // 30: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	23, // [23:31] is the sub-list for method output_type
+	15, // [15:23] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
 	15, // [15:15] is the sub-list for extension extendee
 	0,  // [0:15] is the sub-list for field type_name
@@ -1508,7 +1623,7 @@ func file_stillhouse_v1_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   16,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

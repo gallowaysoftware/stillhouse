@@ -71,6 +71,19 @@ message PackagedInventoryRow {
   int32  bottles_removed = 10;
   google.protobuf.Timestamp updated_at = 11;
   string first_bottled_date = 12;       // ISO; empty if pre-bottling-run linkage
+
+  // Batch release. Both can be set at once: a lot held after release is
+  // a recall in its early form, and erasing the release would remove the
+  // most important part of that record.
+  google.protobuf.Timestamp released_at = 13;
+  string released_by_name = 14;
+  string release_notes = 15;
+  google.protobuf.Timestamp held_at = 16;
+  string held_by_name = 17;
+  string hold_reason = 18;
+  // The run behind the lot, so a release decision can see its lab
+  // results. Empty for adopted stock, which has no run.
+  string bottling_run_id = 19;
 }
 
 // --- requests ---

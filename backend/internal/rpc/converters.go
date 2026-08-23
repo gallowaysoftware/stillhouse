@@ -31,6 +31,7 @@ func tenantToProto(t sqlcgen.Tenant) *stillhousev1.Tenant {
 		// Derived from the warehouse licence in the database, so it can
 		// never disagree with it. Read-only over the wire for the same
 		// reason.
+		RequireBatchRelease:    t.RequireBatchRelease,
 		DutyPoint:              dutyPointToProto(t.DutyPoint),
 		DutyPointEffectiveFrom: t.DutyPointEffectiveFrom.Time.Format("2006-01-02"),
 

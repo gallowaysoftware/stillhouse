@@ -7,6 +7,7 @@ import { create } from "@bufbuild/protobuf";
 import { Button } from "@/components/Button";
 import { ReductionCalculator } from "@/components/ReductionCalculator";
 import { Shell } from "@/components/Shell";
+import { BatchReleasePanel } from "@/components/BatchReleasePanel";
 import {
   bottlingClient,
   bulkClient,
@@ -50,6 +51,8 @@ export function BottlingPage() {
   });
 
   const [showForm, setShowForm] = useState(false);
+  // Which lot has its release panel open.
+  const [releasing, setReleasing] = useState<string | null>(null);
   const [showReduce, setShowReduce] = useState(false);
   const [productId, setProductId] = useState("");
   const [sourceId, setSourceId] = useState("");
@@ -337,11 +340,13 @@ export function BottlingPage() {
               <th className="px-4 py-3 text-right">Packaged</th>
               <th className="px-4 py-3 text-right">Removed</th>
               <th className="px-4 py-3 text-right">Age</th>
+              <th className="px-4 py-3">Release</th>
+              <th className="px-4 py-3 text-right"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {packaged.data?.rows.length === 0 && (
-              <tr><td colSpan={7} className="px-4 py-3 text-fg-muted">Nothing packaged yet.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">Nothing packaged yet.</td></tr>
             )}
             {packaged.data?.rows.map((r) => (
               <tr key={r.id}>
@@ -354,8 +359,42 @@ export function BottlingPage() {
                 <td className="px-4 py-3 text-right text-fg-muted">
                   <PackagedAge bottledOn={r.firstBottledDate} />
                 </td>
+                <td className="px-4 py-3">
+                  {r.heldAt ? (
+                    <span className="text-danger-fg" title={r.holdReason}>on hold</span>
+                  ) : r.releasedAt ? (
+                    <span className="text-success-fg" title={r.releaseNotes}>released</span>
+                  ) : (
+                    <span className="text-fg-subtle">not released</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => setReleasing(releasing === r.id ? null : r.id)}
+                    className="text-xs text-fg-muted hover:text-fg"
+                  >
+                    {releasing === r.id ? "Close" : "Release / hold"}
+                  </button>
+                </td>
               </tr>
             ))}
+            {releasing && (() => {
+              const r = packaged.data?.rows.find((x) => x.id === releasing);
+              if (!r) return null;
+              return (
+                <tr>
+                  <td colSpan={9} className="px-4 py-3">
+                    <BatchReleasePanel
+                      lotId={r.id}
+                      bottlingRunId={r.bottlingRunId}
+                      released={!!r.releasedAt}
+                      held={!!r.heldAt}
+                      holdReason={r.holdReason}
+                    />
+                  </td>
+                </tr>
+              );
+            })()}
           </tbody>
         </table>
       </div>

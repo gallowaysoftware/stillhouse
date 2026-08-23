@@ -113,6 +113,33 @@ func (s *RemovalService) CreateRemoval(
 		if e != nil {
 			return e
 		}
+		// The release gate. Opt-in per tenant, because a one-person
+		// distillery that signs off by looking at the bottle should not
+		// be blocked by a workflow built for a QA department — and a
+		// system that forces the ceremony gets the ceremony performed
+		// rather than meant.
+		//
+		// A hold blocks regardless of the setting. Holding a lot is an
+		// explicit act by a named person saying this stock must not
+		// leave, and honouring it only when a tenant flag happens to be
+		// on would make the act meaningless.
+		tenant, e := q.GetTenantByID(ctx, u.TenantID)
+		if e != nil {
+			return e
+		}
+		if matched.HeldAt.Valid {
+			reason := matched.HoldReason
+			if reason == "" {
+				reason = "no reason recorded"
+			}
+			return connect.NewError(connect.CodeFailedPrecondition,
+				fmt.Errorf("this lot is on hold: %s", reason))
+		}
+		if tenant.RequireBatchRelease && !matched.ReleasedAt.Valid {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("this lot has not been released for sale — release it from the "+
+					"bottling run, or turn off the release requirement in settings"))
+		}
 		if matched.BottlesOnHand < in.GetBottlesRemoved() {
 			return connect.NewError(connect.CodeFailedPrecondition,
 				fmt.Errorf("only %d bottles on hand", matched.BottlesOnHand))

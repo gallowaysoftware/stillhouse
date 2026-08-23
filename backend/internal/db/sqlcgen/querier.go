@@ -76,6 +76,10 @@ type Querier interface {
 	ConsumeTOTPRecoveryCode(ctx context.Context, arg ConsumeTOTPRecoveryCodeParams) (UserTotpRecoveryCode, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
+	// Failing results attached to a bottling run, or to the container it
+	// drew from. A release decision should not have to be told about a
+	// failure recorded against the tank the lot came out of.
+	CountFailedLabResultsForRun(ctx context.Context, arg CountFailedLabResultsForRunParams) (int32, error)
 	// How many live licences have no expiry recorded, so the register screen
 	// can say so rather than looking complete.
 	CountLicencesMissingExpiry(ctx context.Context) (int32, error)
@@ -101,6 +105,7 @@ type Querier interface {
 	CreateInstrument(ctx context.Context, arg CreateInstrumentParams) (Instrument, error)
 	CreateInventoryAdjustment(ctx context.Context, arg CreateInventoryAdjustmentParams) (InventoryAdjustment, error)
 	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
+	CreateLabResult(ctx context.Context, arg CreateLabResultParams) (LabResult, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
@@ -209,6 +214,7 @@ type Querier interface {
 	// loser got an opaque error instead of a wrong number; the lock is what
 	// makes the check in front of it mean something.
 	GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUID) (PackagedInventory, error)
+	GetPackagedLotReleaseState(ctx context.Context, id uuid.UUID) (GetPackagedLotReleaseStateRow, error)
 	GetPriceList(ctx context.Context, id uuid.UUID) (PriceList, error)
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
@@ -221,6 +227,10 @@ type Querier interface {
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserTOTP(ctx context.Context, userID uuid.UUID) (UserTotp, error)
+	// Holding does NOT clear the release. A lot held after release is a
+	// recall in its early form, and erasing the fact that somebody released
+	// it would remove the most important part of that record.
+	HoldPackagedLot(ctx context.Context, arg HoldPackagedLotParams) (PackagedInventory, error)
 	IncrementPackagedOnHand(ctx context.Context, arg IncrementPackagedOnHandParams) (PackagedInventory, error)
 	IncrementStampOrderApplied(ctx context.Context, arg IncrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	IncrementStampOrderVoided(ctx context.Context, arg IncrementStampOrderVoidedParams) (ExciseStampOrder, error)
@@ -320,6 +330,9 @@ type Querier interface {
 	ListInventoryAdjustments(ctx context.Context, arg ListInventoryAdjustmentsParams) ([]ListInventoryAdjustmentsRow, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
 	ListJournalAccounts(ctx context.Context) ([]JournalAccount, error)
+	// Filtered by whichever subject the caller names; all of them NULL
+	// returns the tenant's whole lab history, newest first.
+	ListLabResults(ctx context.Context, arg ListLabResultsParams) ([]ListLabResultsRow, error)
 	// Live licences with a recorded expiry. The rule that reads this decides
 	// what counts as "soon"; the query's job is to exclude the ones that
 	// cannot expire on us — ceased, or with no expiry recorded at all.
@@ -425,6 +438,9 @@ type Querier interface {
 	// is what stops a code being used twice inside its window.
 	RecordTOTPStep(ctx context.Context, arg RecordTOTPStepParams) error
 	RedeemInviteCode(ctx context.Context, arg RedeemInviteCodeParams) (InviteCode, error)
+	// Releasing clears any hold: a lot that has been looked at again and
+	// passed is released, not simultaneously held.
+	ReleasePackagedLot(ctx context.Context, arg ReleasePackagedLotParams) (PackagedInventory, error)
 	// Flips a submitted period back to draft. Snapshot stays in place for
 	// audit (auditors can compare frozen vs. live after the reopen). The
 	// WHERE status = 'submitted' guard makes this a no-op on already-draft
@@ -463,6 +479,7 @@ type Querier interface {
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
+	SetTenantBatchReleaseRequired(ctx context.Context, arg SetTenantBatchReleaseRequiredParams) (Tenant, error)
 	// Sets the RLS GUC inside an already-open transaction. Used by signup,
 	// where the tenant does not exist when the transaction begins but must be
 	// in scope before the audit row is written. Transaction-local (the `true`

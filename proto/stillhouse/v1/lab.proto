@@ -1,0 +1,122 @@
+// What the lab found, and who signed it off.
+//
+// A distillery measures things that never touch the B266 — methanol,
+// congeners, water chemistry — and keeps them in a notebook beside a
+// system that already knows which gauge, which run and which cask they
+// belong to.
+//
+// Batch release is the other half. Nothing stopped a lot leaving before
+// anybody said it could. That is not a CRA requirement — the Excise Act
+// does not care whether your methanol came back — but it is the control
+// every food safety programme assumes exists, and it is the difference
+// between a recall you can bound and one you cannot.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum LabResultStatus {
+  LAB_RESULT_STATUS_UNSPECIFIED = 0;
+  LAB_RESULT_STATUS_PASS = 1;
+  LAB_RESULT_STATUS_FAIL = 2;
+  // Measured, not judged. Most results are this: a congener profile is
+  // worth recording and is not a pass or a fail.
+  LAB_RESULT_STATUS_INFORMATIONAL = 3;
+}
+
+message LabResult {
+  string id = 1;
+  // Exactly one subject is set.
+  string container_id = 2;
+  string production_gauge_id = 3;
+  string bottling_run_id = 4;
+  string mash_run_id = 5;
+
+  // What was measured, in the lab's own words. Deliberately free text:
+  // the set of things a distillery measures is open, and constraining it
+  // would mean the interesting ones end up in the notes.
+  string analyte = 6;
+  double value = 7;
+  bool   value_set = 8;
+  string uom = 9;
+  // The limit it was judged against, where there is one, so a reader a
+  // year later doesn't have to know what "good" was.
+  double spec_min = 10;
+  bool   spec_min_set = 11;
+  double spec_max = 12;
+  bool   spec_max_set = 13;
+  LabResultStatus status = 14;
+
+  string method = 15;
+  string laboratory = 16;
+  string reference = 17;
+  string sampled_on = 18;   // ISO date
+  string reported_on = 19;  // ISO date
+  string notes = 20;
+  string recorded_by_name = 21;
+  google.protobuf.Timestamp created_at = 22;
+}
+
+message RecordLabResultRequest {
+  string container_id = 1;
+  string production_gauge_id = 2;
+  string bottling_run_id = 3;
+  string mash_run_id = 4;
+  string analyte = 5;
+  double value = 6;
+  bool   value_set = 7;
+  string uom = 8;
+  double spec_min = 9;
+  bool   spec_min_set = 10;
+  double spec_max = 11;
+  bool   spec_max_set = 12;
+  LabResultStatus status = 13;
+  string method = 14;
+  string laboratory = 15;
+  string reference = 16;
+  string sampled_on = 17;
+  string reported_on = 18;
+  string notes = 19;
+}
+message RecordLabResultResponse { LabResult result = 1; }
+
+message ListLabResultsRequest {
+  string container_id = 1;
+  string production_gauge_id = 2;
+  string bottling_run_id = 3;
+  string mash_run_id = 4;
+  int32  limit = 5;  // 0 = 100
+}
+message ListLabResultsResponse { repeated LabResult results = 1; }
+
+// ----- batch release -------------------------------------------------------
+
+message ReleaseLotRequest {
+  string packaged_inventory_id = 1;
+  // Required. "Approved" is not a record of anything; what was checked
+  // is.
+  string notes = 2;
+}
+message ReleaseLotResponse {
+  string packaged_inventory_id = 1;
+  google.protobuf.Timestamp released_at = 2;
+  string released_by_name = 3;
+}
+
+message HoldLotRequest {
+  string packaged_inventory_id = 1;
+  string reason = 2;
+}
+message HoldLotResponse {
+  string packaged_inventory_id = 1;
+  google.protobuf.Timestamp held_at = 2;
+  string held_by_name = 3;
+}
+
+service LabService {
+  rpc RecordLabResult(RecordLabResultRequest) returns (RecordLabResultResponse);
+  rpc ListLabResults(ListLabResultsRequest) returns (ListLabResultsResponse);
+  rpc ReleaseLot(ReleaseLotRequest) returns (ReleaseLotResponse);
+  rpc HoldLot(HoldLotRequest) returns (HoldLotResponse);
+}

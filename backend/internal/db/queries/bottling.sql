@@ -75,10 +75,14 @@ SELECT pi.*,
        p.name           AS product_name,
        p.bottle_size_ml AS bottle_size_ml,
        p.target_abv_pct AS target_abv_pct,
-       br.bottling_date AS first_bottled_date
+       br.bottling_date AS first_bottled_date,
+       COALESCE(rel.display_name, '') AS released_by_name,
+       COALESCE(hld.display_name, '') AS held_by_name
 FROM packaged_inventory pi
 JOIN products p             ON p.id = pi.product_id
 LEFT JOIN bottling_runs br  ON br.id = pi.bottling_run_id
+LEFT JOIN users rel         ON rel.id = pi.released_by
+LEFT JOIN users hld         ON hld.id = pi.held_by
 WHERE pi.bottles_on_hand > 0
    OR sqlc.arg('include_empty')::boolean
 ORDER BY p.name, pi.jurisdiction, pi.lot_code;
