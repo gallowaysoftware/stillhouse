@@ -78,6 +78,71 @@ func (ExciseStampOrderStatus) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{0}
 }
 
+// What happened to stamps that never reached a bottle. The old model had
+// one counter for all of this; a stamp that jammed in the applicator, a
+// roll that went missing off a bench, and a batch returned to CRA are the
+// same arithmetic and completely different events.
+type StampDispositionKind int32
+
+const (
+	StampDispositionKind_STAMP_DISPOSITION_KIND_UNSPECIFIED StampDispositionKind = 0
+	StampDispositionKind_STAMP_DISPOSITION_KIND_SPOILED     StampDispositionKind = 1 // damaged in application; the ordinary case
+	StampDispositionKind_STAMP_DISPOSITION_KIND_DAMAGED     StampDispositionKind = 2 // damaged before application
+	StampDispositionKind_STAMP_DISPOSITION_KIND_LOST        StampDispositionKind = 3 // cannot be located
+	StampDispositionKind_STAMP_DISPOSITION_KIND_STOLEN      StampDispositionKind = 4 // known to have been taken
+	StampDispositionKind_STAMP_DISPOSITION_KIND_DESTROYED   StampDispositionKind = 5 // deliberately destroyed
+	StampDispositionKind_STAMP_DISPOSITION_KIND_RETURNED    StampDispositionKind = 6 // returned to CRA
+)
+
+// Enum value maps for StampDispositionKind.
+var (
+	StampDispositionKind_name = map[int32]string{
+		0: "STAMP_DISPOSITION_KIND_UNSPECIFIED",
+		1: "STAMP_DISPOSITION_KIND_SPOILED",
+		2: "STAMP_DISPOSITION_KIND_DAMAGED",
+		3: "STAMP_DISPOSITION_KIND_LOST",
+		4: "STAMP_DISPOSITION_KIND_STOLEN",
+		5: "STAMP_DISPOSITION_KIND_DESTROYED",
+		6: "STAMP_DISPOSITION_KIND_RETURNED",
+	}
+	StampDispositionKind_value = map[string]int32{
+		"STAMP_DISPOSITION_KIND_UNSPECIFIED": 0,
+		"STAMP_DISPOSITION_KIND_SPOILED":     1,
+		"STAMP_DISPOSITION_KIND_DAMAGED":     2,
+		"STAMP_DISPOSITION_KIND_LOST":        3,
+		"STAMP_DISPOSITION_KIND_STOLEN":      4,
+		"STAMP_DISPOSITION_KIND_DESTROYED":   5,
+		"STAMP_DISPOSITION_KIND_RETURNED":    6,
+	}
+)
+
+func (x StampDispositionKind) Enum() *StampDispositionKind {
+	p := new(StampDispositionKind)
+	*p = x
+	return p
+}
+
+func (x StampDispositionKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (StampDispositionKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_excise_stamp_proto_enumTypes[1].Descriptor()
+}
+
+func (StampDispositionKind) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_excise_stamp_proto_enumTypes[1]
+}
+
+func (x StampDispositionKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use StampDispositionKind.Descriptor instead.
+func (StampDispositionKind) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{1}
+}
+
 type ExciseStampOrder struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	Id               string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -750,6 +815,611 @@ func (x *VoidStampsResponse) GetOrder() *ExciseStampOrder {
 	return nil
 }
 
+type StampDisposition struct {
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Id           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	StampOrderId string                 `protobuf:"bytes,2,opt,name=stamp_order_id,json=stampOrderId,proto3" json:"stamp_order_id,omitempty"`
+	Jurisdiction string                 `protobuf:"bytes,3,opt,name=jurisdiction,proto3" json:"jurisdiction,omitempty"`
+	Kind         StampDispositionKind   `protobuf:"varint,4,opt,name=kind,proto3,enum=stillhouse.v1.StampDispositionKind" json:"kind,omitempty"`
+	Quantity     int32                  `protobuf:"varint,5,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	// Where known. A vanished roll may have a range; a stamp that jammed
+	// in the filler usually does not, and demanding one would get a
+	// made-up range typed in.
+	SerialStart string `protobuf:"bytes,6,opt,name=serial_start,json=serialStart,proto3" json:"serial_start,omitempty"`
+	SerialEnd   string `protobuf:"bytes,7,opt,name=serial_end,json=serialEnd,proto3" json:"serial_end,omitempty"`
+	OccurredOn  string `protobuf:"bytes,8,opt,name=occurred_on,json=occurredOn,proto3" json:"occurred_on,omitempty"` // ISO date
+	Explanation string `protobuf:"bytes,9,opt,name=explanation,proto3" json:"explanation,omitempty"`
+	// Losses and thefts get reported to CRA; this is where that closes.
+	ReportedRef    string `protobuf:"bytes,10,opt,name=reported_ref,json=reportedRef,proto3" json:"reported_ref,omitempty"`
+	RecordedByName string `protobuf:"bytes,11,opt,name=recorded_by_name,json=recordedByName,proto3" json:"recorded_by_name,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *StampDisposition) Reset() {
+	*x = StampDisposition{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StampDisposition) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StampDisposition) ProtoMessage() {}
+
+func (x *StampDisposition) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StampDisposition.ProtoReflect.Descriptor instead.
+func (*StampDisposition) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *StampDisposition) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetStampOrderId() string {
+	if x != nil {
+		return x.StampOrderId
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetJurisdiction() string {
+	if x != nil {
+		return x.Jurisdiction
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetKind() StampDispositionKind {
+	if x != nil {
+		return x.Kind
+	}
+	return StampDispositionKind_STAMP_DISPOSITION_KIND_UNSPECIFIED
+}
+
+func (x *StampDisposition) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *StampDisposition) GetSerialStart() string {
+	if x != nil {
+		return x.SerialStart
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetSerialEnd() string {
+	if x != nil {
+		return x.SerialEnd
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetOccurredOn() string {
+	if x != nil {
+		return x.OccurredOn
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetExplanation() string {
+	if x != nil {
+		return x.Explanation
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetReportedRef() string {
+	if x != nil {
+		return x.ReportedRef
+	}
+	return ""
+}
+
+func (x *StampDisposition) GetRecordedByName() string {
+	if x != nil {
+		return x.RecordedByName
+	}
+	return ""
+}
+
+type RecordStampDispositionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StampOrderId  string                 `protobuf:"bytes,1,opt,name=stamp_order_id,json=stampOrderId,proto3" json:"stamp_order_id,omitempty"`
+	Kind          StampDispositionKind   `protobuf:"varint,2,opt,name=kind,proto3,enum=stillhouse.v1.StampDispositionKind" json:"kind,omitempty"`
+	Quantity      int32                  `protobuf:"varint,3,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	SerialStart   string                 `protobuf:"bytes,4,opt,name=serial_start,json=serialStart,proto3" json:"serial_start,omitempty"`
+	SerialEnd     string                 `protobuf:"bytes,5,opt,name=serial_end,json=serialEnd,proto3" json:"serial_end,omitempty"`
+	OccurredOn    string                 `protobuf:"bytes,6,opt,name=occurred_on,json=occurredOn,proto3" json:"occurred_on,omitempty"`
+	Explanation   string                 `protobuf:"bytes,7,opt,name=explanation,proto3" json:"explanation,omitempty"`
+	ReportedRef   string                 `protobuf:"bytes,8,opt,name=reported_ref,json=reportedRef,proto3" json:"reported_ref,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordStampDispositionRequest) Reset() {
+	*x = RecordStampDispositionRequest{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordStampDispositionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordStampDispositionRequest) ProtoMessage() {}
+
+func (x *RecordStampDispositionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordStampDispositionRequest.ProtoReflect.Descriptor instead.
+func (*RecordStampDispositionRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *RecordStampDispositionRequest) GetStampOrderId() string {
+	if x != nil {
+		return x.StampOrderId
+	}
+	return ""
+}
+
+func (x *RecordStampDispositionRequest) GetKind() StampDispositionKind {
+	if x != nil {
+		return x.Kind
+	}
+	return StampDispositionKind_STAMP_DISPOSITION_KIND_UNSPECIFIED
+}
+
+func (x *RecordStampDispositionRequest) GetQuantity() int32 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *RecordStampDispositionRequest) GetSerialStart() string {
+	if x != nil {
+		return x.SerialStart
+	}
+	return ""
+}
+
+func (x *RecordStampDispositionRequest) GetSerialEnd() string {
+	if x != nil {
+		return x.SerialEnd
+	}
+	return ""
+}
+
+func (x *RecordStampDispositionRequest) GetOccurredOn() string {
+	if x != nil {
+		return x.OccurredOn
+	}
+	return ""
+}
+
+func (x *RecordStampDispositionRequest) GetExplanation() string {
+	if x != nil {
+		return x.Explanation
+	}
+	return ""
+}
+
+func (x *RecordStampDispositionRequest) GetReportedRef() string {
+	if x != nil {
+		return x.ReportedRef
+	}
+	return ""
+}
+
+type RecordStampDispositionResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Disposition   *StampDisposition      `protobuf:"bytes,1,opt,name=disposition,proto3" json:"disposition,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordStampDispositionResponse) Reset() {
+	*x = RecordStampDispositionResponse{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordStampDispositionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordStampDispositionResponse) ProtoMessage() {}
+
+func (x *RecordStampDispositionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordStampDispositionResponse.ProtoReflect.Descriptor instead.
+func (*RecordStampDispositionResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *RecordStampDispositionResponse) GetDisposition() *StampDisposition {
+	if x != nil {
+		return x.Disposition
+	}
+	return nil
+}
+
+type ListStampDispositionsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Kind          StampDispositionKind   `protobuf:"varint,1,opt,name=kind,proto3,enum=stillhouse.v1.StampDispositionKind" json:"kind,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStampDispositionsRequest) Reset() {
+	*x = ListStampDispositionsRequest{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStampDispositionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStampDispositionsRequest) ProtoMessage() {}
+
+func (x *ListStampDispositionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStampDispositionsRequest.ProtoReflect.Descriptor instead.
+func (*ListStampDispositionsRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *ListStampDispositionsRequest) GetKind() StampDispositionKind {
+	if x != nil {
+		return x.Kind
+	}
+	return StampDispositionKind_STAMP_DISPOSITION_KIND_UNSPECIFIED
+}
+
+type ListStampDispositionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Dispositions  []*StampDisposition    `protobuf:"bytes,1,rep,name=dispositions,proto3" json:"dispositions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListStampDispositionsResponse) Reset() {
+	*x = ListStampDispositionsResponse{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListStampDispositionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListStampDispositionsResponse) ProtoMessage() {}
+
+func (x *ListStampDispositionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListStampDispositionsResponse.ProtoReflect.Descriptor instead.
+func (*ListStampDispositionsResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *ListStampDispositionsResponse) GetDispositions() []*StampDisposition {
+	if x != nil {
+		return x.Dispositions
+	}
+	return nil
+}
+
+// One contiguous run of serials and what claims it.
+type StampAllocation struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	SerialStart string                 `protobuf:"bytes,1,opt,name=serial_start,json=serialStart,proto3" json:"serial_start,omitempty"`
+	SerialEnd   string                 `protobuf:"bytes,2,opt,name=serial_end,json=serialEnd,proto3" json:"serial_end,omitempty"`
+	Count       int64                  `protobuf:"varint,3,opt,name=count,proto3" json:"count,omitempty"`
+	// "applied", "disposed", "on_hand".
+	Kind string `protobuf:"bytes,4,opt,name=kind,proto3" json:"kind,omitempty"`
+	// In words: "run 14 — Wolfhead Rye", "lost".
+	Purpose string `protobuf:"bytes,5,opt,name=purpose,proto3" json:"purpose,omitempty"`
+	// True when the claim carried no usable serials. The count still
+	// counts; it just cannot be placed on the number line.
+	Unplaced      bool `protobuf:"varint,6,opt,name=unplaced,proto3" json:"unplaced,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StampAllocation) Reset() {
+	*x = StampAllocation{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StampAllocation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StampAllocation) ProtoMessage() {}
+
+func (x *StampAllocation) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StampAllocation.ProtoReflect.Descriptor instead.
+func (*StampAllocation) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *StampAllocation) GetSerialStart() string {
+	if x != nil {
+		return x.SerialStart
+	}
+	return ""
+}
+
+func (x *StampAllocation) GetSerialEnd() string {
+	if x != nil {
+		return x.SerialEnd
+	}
+	return ""
+}
+
+func (x *StampAllocation) GetCount() int64 {
+	if x != nil {
+		return x.Count
+	}
+	return 0
+}
+
+func (x *StampAllocation) GetKind() string {
+	if x != nil {
+		return x.Kind
+	}
+	return ""
+}
+
+func (x *StampAllocation) GetPurpose() string {
+	if x != nil {
+		return x.Purpose
+	}
+	return ""
+}
+
+func (x *StampAllocation) GetUnplaced() bool {
+	if x != nil {
+		return x.Unplaced
+	}
+	return false
+}
+
+type ReconcileStampOrderRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StampOrderId  string                 `protobuf:"bytes,1,opt,name=stamp_order_id,json=stampOrderId,proto3" json:"stamp_order_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReconcileStampOrderRequest) Reset() {
+	*x = ReconcileStampOrderRequest{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReconcileStampOrderRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReconcileStampOrderRequest) ProtoMessage() {}
+
+func (x *ReconcileStampOrderRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReconcileStampOrderRequest.ProtoReflect.Descriptor instead.
+func (*ReconcileStampOrderRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ReconcileStampOrderRequest) GetStampOrderId() string {
+	if x != nil {
+		return x.StampOrderId
+	}
+	return ""
+}
+
+type ReconcileStampOrderResponse struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	SerialStart string                 `protobuf:"bytes,1,opt,name=serial_start,json=serialStart,proto3" json:"serial_start,omitempty"`
+	SerialEnd   string                 `protobuf:"bytes,2,opt,name=serial_end,json=serialEnd,proto3" json:"serial_end,omitempty"`
+	// False when no serial range was recorded, in which case only the
+	// counts reconcile and every allocation is unplaced.
+	SerialRangeKnown bool               `protobuf:"varint,3,opt,name=serial_range_known,json=serialRangeKnown,proto3" json:"serial_range_known,omitempty"`
+	Allocations      []*StampAllocation `protobuf:"bytes,4,rep,name=allocations,proto3" json:"allocations,omitempty"`
+	ReceivedCount    int64              `protobuf:"varint,5,opt,name=received_count,json=receivedCount,proto3" json:"received_count,omitempty"`
+	AppliedCount     int64              `protobuf:"varint,6,opt,name=applied_count,json=appliedCount,proto3" json:"applied_count,omitempty"`
+	DisposedCount    int64              `protobuf:"varint,7,opt,name=disposed_count,json=disposedCount,proto3" json:"disposed_count,omitempty"`
+	UnaccountedCount int64              `protobuf:"varint,8,opt,name=unaccounted_count,json=unaccountedCount,proto3" json:"unaccounted_count,omitempty"`
+	// The ways the account fails to close, each as a sentence — a number
+	// without one is not actionable.
+	Discrepancies []string `protobuf:"bytes,9,rep,name=discrepancies,proto3" json:"discrepancies,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReconcileStampOrderResponse) Reset() {
+	*x = ReconcileStampOrderResponse{}
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReconcileStampOrderResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReconcileStampOrderResponse) ProtoMessage() {}
+
+func (x *ReconcileStampOrderResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_excise_stamp_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReconcileStampOrderResponse.ProtoReflect.Descriptor instead.
+func (*ReconcileStampOrderResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_excise_stamp_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ReconcileStampOrderResponse) GetSerialStart() string {
+	if x != nil {
+		return x.SerialStart
+	}
+	return ""
+}
+
+func (x *ReconcileStampOrderResponse) GetSerialEnd() string {
+	if x != nil {
+		return x.SerialEnd
+	}
+	return ""
+}
+
+func (x *ReconcileStampOrderResponse) GetSerialRangeKnown() bool {
+	if x != nil {
+		return x.SerialRangeKnown
+	}
+	return false
+}
+
+func (x *ReconcileStampOrderResponse) GetAllocations() []*StampAllocation {
+	if x != nil {
+		return x.Allocations
+	}
+	return nil
+}
+
+func (x *ReconcileStampOrderResponse) GetReceivedCount() int64 {
+	if x != nil {
+		return x.ReceivedCount
+	}
+	return 0
+}
+
+func (x *ReconcileStampOrderResponse) GetAppliedCount() int64 {
+	if x != nil {
+		return x.AppliedCount
+	}
+	return 0
+}
+
+func (x *ReconcileStampOrderResponse) GetDisposedCount() int64 {
+	if x != nil {
+		return x.DisposedCount
+	}
+	return 0
+}
+
+func (x *ReconcileStampOrderResponse) GetUnaccountedCount() int64 {
+	if x != nil {
+		return x.UnaccountedCount
+	}
+	return 0
+}
+
+func (x *ReconcileStampOrderResponse) GetDiscrepancies() []string {
+	if x != nil {
+		return x.Discrepancies
+	}
+	return nil
+}
+
 var File_stillhouse_v1_excise_stamp_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_excise_stamp_proto_rawDesc = "" +
@@ -811,13 +1481,77 @@ const file_stillhouse_v1_excise_stamp_proto_rawDesc = "" +
 	"\bquantity\x18\x02 \x01(\x05R\bquantity\x12\x16\n" +
 	"\x06reason\x18\x03 \x01(\tR\x06reason\"K\n" +
 	"\x12VoidStampsResponse\x125\n" +
-	"\x05order\x18\x01 \x01(\v2\x1f.stillhouse.v1.ExciseStampOrderR\x05order*\xb8\x01\n" +
+	"\x05order\x18\x01 \x01(\v2\x1f.stillhouse.v1.ExciseStampOrderR\x05order\"\x93\x03\n" +
+	"\x10StampDisposition\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12$\n" +
+	"\x0estamp_order_id\x18\x02 \x01(\tR\fstampOrderId\x12\"\n" +
+	"\fjurisdiction\x18\x03 \x01(\tR\fjurisdiction\x127\n" +
+	"\x04kind\x18\x04 \x01(\x0e2#.stillhouse.v1.StampDispositionKindR\x04kind\x12\x1a\n" +
+	"\bquantity\x18\x05 \x01(\x05R\bquantity\x12!\n" +
+	"\fserial_start\x18\x06 \x01(\tR\vserialStart\x12\x1d\n" +
+	"\n" +
+	"serial_end\x18\a \x01(\tR\tserialEnd\x12\x1f\n" +
+	"\voccurred_on\x18\b \x01(\tR\n" +
+	"occurredOn\x12 \n" +
+	"\vexplanation\x18\t \x01(\tR\vexplanation\x12!\n" +
+	"\freported_ref\x18\n" +
+	" \x01(\tR\vreportedRef\x12(\n" +
+	"\x10recorded_by_name\x18\v \x01(\tR\x0erecordedByName\"\xc2\x02\n" +
+	"\x1dRecordStampDispositionRequest\x12$\n" +
+	"\x0estamp_order_id\x18\x01 \x01(\tR\fstampOrderId\x127\n" +
+	"\x04kind\x18\x02 \x01(\x0e2#.stillhouse.v1.StampDispositionKindR\x04kind\x12\x1a\n" +
+	"\bquantity\x18\x03 \x01(\x05R\bquantity\x12!\n" +
+	"\fserial_start\x18\x04 \x01(\tR\vserialStart\x12\x1d\n" +
+	"\n" +
+	"serial_end\x18\x05 \x01(\tR\tserialEnd\x12\x1f\n" +
+	"\voccurred_on\x18\x06 \x01(\tR\n" +
+	"occurredOn\x12 \n" +
+	"\vexplanation\x18\a \x01(\tR\vexplanation\x12!\n" +
+	"\freported_ref\x18\b \x01(\tR\vreportedRef\"c\n" +
+	"\x1eRecordStampDispositionResponse\x12A\n" +
+	"\vdisposition\x18\x01 \x01(\v2\x1f.stillhouse.v1.StampDispositionR\vdisposition\"W\n" +
+	"\x1cListStampDispositionsRequest\x127\n" +
+	"\x04kind\x18\x01 \x01(\x0e2#.stillhouse.v1.StampDispositionKindR\x04kind\"d\n" +
+	"\x1dListStampDispositionsResponse\x12C\n" +
+	"\fdispositions\x18\x01 \x03(\v2\x1f.stillhouse.v1.StampDispositionR\fdispositions\"\xb3\x01\n" +
+	"\x0fStampAllocation\x12!\n" +
+	"\fserial_start\x18\x01 \x01(\tR\vserialStart\x12\x1d\n" +
+	"\n" +
+	"serial_end\x18\x02 \x01(\tR\tserialEnd\x12\x14\n" +
+	"\x05count\x18\x03 \x01(\x03R\x05count\x12\x12\n" +
+	"\x04kind\x18\x04 \x01(\tR\x04kind\x12\x18\n" +
+	"\apurpose\x18\x05 \x01(\tR\apurpose\x12\x1a\n" +
+	"\bunplaced\x18\x06 \x01(\bR\bunplaced\"B\n" +
+	"\x1aReconcileStampOrderRequest\x12$\n" +
+	"\x0estamp_order_id\x18\x01 \x01(\tR\fstampOrderId\"\x95\x03\n" +
+	"\x1bReconcileStampOrderResponse\x12!\n" +
+	"\fserial_start\x18\x01 \x01(\tR\vserialStart\x12\x1d\n" +
+	"\n" +
+	"serial_end\x18\x02 \x01(\tR\tserialEnd\x12,\n" +
+	"\x12serial_range_known\x18\x03 \x01(\bR\x10serialRangeKnown\x12@\n" +
+	"\vallocations\x18\x04 \x03(\v2\x1e.stillhouse.v1.StampAllocationR\vallocations\x12%\n" +
+	"\x0ereceived_count\x18\x05 \x01(\x03R\rreceivedCount\x12#\n" +
+	"\rapplied_count\x18\x06 \x01(\x03R\fappliedCount\x12%\n" +
+	"\x0edisposed_count\x18\a \x01(\x03R\rdisposedCount\x12+\n" +
+	"\x11unaccounted_count\x18\b \x01(\x03R\x10unaccountedCount\x12$\n" +
+	"\rdiscrepancies\x18\t \x03(\tR\rdiscrepancies*\xb8\x01\n" +
 	"\x16ExciseStampOrderStatus\x12)\n" +
 	"%EXCISE_STAMP_ORDER_STATUS_UNSPECIFIED\x10\x00\x12%\n" +
 	"!EXCISE_STAMP_ORDER_STATUS_ORDERED\x10\x01\x12&\n" +
 	"\"EXCISE_STAMP_ORDER_STATUS_RECEIVED\x10\x02\x12$\n" +
-	" EXCISE_STAMP_ORDER_STATUS_CLOSED\x10\x032\x96\x03\n" +
-	"\x12ExciseStampService\x12c\n" +
+	" EXCISE_STAMP_ORDER_STATUS_CLOSED\x10\x03*\x95\x02\n" +
+	"\x14StampDispositionKind\x12&\n" +
+	"\"STAMP_DISPOSITION_KIND_UNSPECIFIED\x10\x00\x12\"\n" +
+	"\x1eSTAMP_DISPOSITION_KIND_SPOILED\x10\x01\x12\"\n" +
+	"\x1eSTAMP_DISPOSITION_KIND_DAMAGED\x10\x02\x12\x1f\n" +
+	"\x1bSTAMP_DISPOSITION_KIND_LOST\x10\x03\x12!\n" +
+	"\x1dSTAMP_DISPOSITION_KIND_STOLEN\x10\x04\x12$\n" +
+	" STAMP_DISPOSITION_KIND_DESTROYED\x10\x05\x12#\n" +
+	"\x1fSTAMP_DISPOSITION_KIND_RETURNED\x10\x062\xef\x05\n" +
+	"\x12ExciseStampService\x12u\n" +
+	"\x16RecordStampDisposition\x12,.stillhouse.v1.RecordStampDispositionRequest\x1a-.stillhouse.v1.RecordStampDispositionResponse\x12r\n" +
+	"\x15ListStampDispositions\x12+.stillhouse.v1.ListStampDispositionsRequest\x1a,.stillhouse.v1.ListStampDispositionsResponse\x12l\n" +
+	"\x13ReconcileStampOrder\x12).stillhouse.v1.ReconcileStampOrderRequest\x1a*.stillhouse.v1.ReconcileStampOrderResponse\x12c\n" +
 	"\x10CreateStampOrder\x12&.stillhouse.v1.CreateStampOrderRequest\x1a'.stillhouse.v1.CreateStampOrderResponse\x12f\n" +
 	"\x11ReceiveStampOrder\x12'.stillhouse.v1.ReceiveStampOrderRequest\x1a(.stillhouse.v1.ReceiveStampOrderResponse\x12`\n" +
 	"\x0fListStampOrders\x12%.stillhouse.v1.ListStampOrdersRequest\x1a&.stillhouse.v1.ListStampOrdersResponse\x12Q\n" +
@@ -837,47 +1571,68 @@ func file_stillhouse_v1_excise_stamp_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_excise_stamp_proto_rawDescData
 }
 
-var file_stillhouse_v1_excise_stamp_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_excise_stamp_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_stillhouse_v1_excise_stamp_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_stillhouse_v1_excise_stamp_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_stillhouse_v1_excise_stamp_proto_goTypes = []any{
 	(ExciseStampOrderStatus)(0),            // 0: stillhouse.v1.ExciseStampOrderStatus
-	(*ExciseStampOrder)(nil),               // 1: stillhouse.v1.ExciseStampOrder
-	(*ExciseStampJurisdictionSummary)(nil), // 2: stillhouse.v1.ExciseStampJurisdictionSummary
-	(*CreateStampOrderRequest)(nil),        // 3: stillhouse.v1.CreateStampOrderRequest
-	(*CreateStampOrderResponse)(nil),       // 4: stillhouse.v1.CreateStampOrderResponse
-	(*ReceiveStampOrderRequest)(nil),       // 5: stillhouse.v1.ReceiveStampOrderRequest
-	(*ReceiveStampOrderResponse)(nil),      // 6: stillhouse.v1.ReceiveStampOrderResponse
-	(*ListStampOrdersRequest)(nil),         // 7: stillhouse.v1.ListStampOrdersRequest
-	(*ListStampOrdersResponse)(nil),        // 8: stillhouse.v1.ListStampOrdersResponse
-	(*VoidStampsRequest)(nil),              // 9: stillhouse.v1.VoidStampsRequest
-	(*VoidStampsResponse)(nil),             // 10: stillhouse.v1.VoidStampsResponse
-	(*timestamppb.Timestamp)(nil),          // 11: google.protobuf.Timestamp
+	(StampDispositionKind)(0),              // 1: stillhouse.v1.StampDispositionKind
+	(*ExciseStampOrder)(nil),               // 2: stillhouse.v1.ExciseStampOrder
+	(*ExciseStampJurisdictionSummary)(nil), // 3: stillhouse.v1.ExciseStampJurisdictionSummary
+	(*CreateStampOrderRequest)(nil),        // 4: stillhouse.v1.CreateStampOrderRequest
+	(*CreateStampOrderResponse)(nil),       // 5: stillhouse.v1.CreateStampOrderResponse
+	(*ReceiveStampOrderRequest)(nil),       // 6: stillhouse.v1.ReceiveStampOrderRequest
+	(*ReceiveStampOrderResponse)(nil),      // 7: stillhouse.v1.ReceiveStampOrderResponse
+	(*ListStampOrdersRequest)(nil),         // 8: stillhouse.v1.ListStampOrdersRequest
+	(*ListStampOrdersResponse)(nil),        // 9: stillhouse.v1.ListStampOrdersResponse
+	(*VoidStampsRequest)(nil),              // 10: stillhouse.v1.VoidStampsRequest
+	(*VoidStampsResponse)(nil),             // 11: stillhouse.v1.VoidStampsResponse
+	(*StampDisposition)(nil),               // 12: stillhouse.v1.StampDisposition
+	(*RecordStampDispositionRequest)(nil),  // 13: stillhouse.v1.RecordStampDispositionRequest
+	(*RecordStampDispositionResponse)(nil), // 14: stillhouse.v1.RecordStampDispositionResponse
+	(*ListStampDispositionsRequest)(nil),   // 15: stillhouse.v1.ListStampDispositionsRequest
+	(*ListStampDispositionsResponse)(nil),  // 16: stillhouse.v1.ListStampDispositionsResponse
+	(*StampAllocation)(nil),                // 17: stillhouse.v1.StampAllocation
+	(*ReconcileStampOrderRequest)(nil),     // 18: stillhouse.v1.ReconcileStampOrderRequest
+	(*ReconcileStampOrderResponse)(nil),    // 19: stillhouse.v1.ReconcileStampOrderResponse
+	(*timestamppb.Timestamp)(nil),          // 20: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_excise_stamp_proto_depIdxs = []int32{
-	11, // 0: stillhouse.v1.ExciseStampOrder.ordered_at:type_name -> google.protobuf.Timestamp
-	11, // 1: stillhouse.v1.ExciseStampOrder.received_at:type_name -> google.protobuf.Timestamp
+	20, // 0: stillhouse.v1.ExciseStampOrder.ordered_at:type_name -> google.protobuf.Timestamp
+	20, // 1: stillhouse.v1.ExciseStampOrder.received_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.ExciseStampOrder.status:type_name -> stillhouse.v1.ExciseStampOrderStatus
-	11, // 3: stillhouse.v1.ExciseStampOrder.created_at:type_name -> google.protobuf.Timestamp
-	11, // 4: stillhouse.v1.ExciseStampOrder.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 5: stillhouse.v1.CreateStampOrderResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
-	11, // 6: stillhouse.v1.ReceiveStampOrderRequest.received_at:type_name -> google.protobuf.Timestamp
-	1,  // 7: stillhouse.v1.ReceiveStampOrderResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
-	1,  // 8: stillhouse.v1.ListStampOrdersResponse.orders:type_name -> stillhouse.v1.ExciseStampOrder
-	2,  // 9: stillhouse.v1.ListStampOrdersResponse.summaries:type_name -> stillhouse.v1.ExciseStampJurisdictionSummary
-	1,  // 10: stillhouse.v1.VoidStampsResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
-	3,  // 11: stillhouse.v1.ExciseStampService.CreateStampOrder:input_type -> stillhouse.v1.CreateStampOrderRequest
-	5,  // 12: stillhouse.v1.ExciseStampService.ReceiveStampOrder:input_type -> stillhouse.v1.ReceiveStampOrderRequest
-	7,  // 13: stillhouse.v1.ExciseStampService.ListStampOrders:input_type -> stillhouse.v1.ListStampOrdersRequest
-	9,  // 14: stillhouse.v1.ExciseStampService.VoidStamps:input_type -> stillhouse.v1.VoidStampsRequest
-	4,  // 15: stillhouse.v1.ExciseStampService.CreateStampOrder:output_type -> stillhouse.v1.CreateStampOrderResponse
-	6,  // 16: stillhouse.v1.ExciseStampService.ReceiveStampOrder:output_type -> stillhouse.v1.ReceiveStampOrderResponse
-	8,  // 17: stillhouse.v1.ExciseStampService.ListStampOrders:output_type -> stillhouse.v1.ListStampOrdersResponse
-	10, // 18: stillhouse.v1.ExciseStampService.VoidStamps:output_type -> stillhouse.v1.VoidStampsResponse
-	15, // [15:19] is the sub-list for method output_type
-	11, // [11:15] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	20, // 3: stillhouse.v1.ExciseStampOrder.created_at:type_name -> google.protobuf.Timestamp
+	20, // 4: stillhouse.v1.ExciseStampOrder.updated_at:type_name -> google.protobuf.Timestamp
+	2,  // 5: stillhouse.v1.CreateStampOrderResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
+	20, // 6: stillhouse.v1.ReceiveStampOrderRequest.received_at:type_name -> google.protobuf.Timestamp
+	2,  // 7: stillhouse.v1.ReceiveStampOrderResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
+	2,  // 8: stillhouse.v1.ListStampOrdersResponse.orders:type_name -> stillhouse.v1.ExciseStampOrder
+	3,  // 9: stillhouse.v1.ListStampOrdersResponse.summaries:type_name -> stillhouse.v1.ExciseStampJurisdictionSummary
+	2,  // 10: stillhouse.v1.VoidStampsResponse.order:type_name -> stillhouse.v1.ExciseStampOrder
+	1,  // 11: stillhouse.v1.StampDisposition.kind:type_name -> stillhouse.v1.StampDispositionKind
+	1,  // 12: stillhouse.v1.RecordStampDispositionRequest.kind:type_name -> stillhouse.v1.StampDispositionKind
+	12, // 13: stillhouse.v1.RecordStampDispositionResponse.disposition:type_name -> stillhouse.v1.StampDisposition
+	1,  // 14: stillhouse.v1.ListStampDispositionsRequest.kind:type_name -> stillhouse.v1.StampDispositionKind
+	12, // 15: stillhouse.v1.ListStampDispositionsResponse.dispositions:type_name -> stillhouse.v1.StampDisposition
+	17, // 16: stillhouse.v1.ReconcileStampOrderResponse.allocations:type_name -> stillhouse.v1.StampAllocation
+	13, // 17: stillhouse.v1.ExciseStampService.RecordStampDisposition:input_type -> stillhouse.v1.RecordStampDispositionRequest
+	15, // 18: stillhouse.v1.ExciseStampService.ListStampDispositions:input_type -> stillhouse.v1.ListStampDispositionsRequest
+	18, // 19: stillhouse.v1.ExciseStampService.ReconcileStampOrder:input_type -> stillhouse.v1.ReconcileStampOrderRequest
+	4,  // 20: stillhouse.v1.ExciseStampService.CreateStampOrder:input_type -> stillhouse.v1.CreateStampOrderRequest
+	6,  // 21: stillhouse.v1.ExciseStampService.ReceiveStampOrder:input_type -> stillhouse.v1.ReceiveStampOrderRequest
+	8,  // 22: stillhouse.v1.ExciseStampService.ListStampOrders:input_type -> stillhouse.v1.ListStampOrdersRequest
+	10, // 23: stillhouse.v1.ExciseStampService.VoidStamps:input_type -> stillhouse.v1.VoidStampsRequest
+	14, // 24: stillhouse.v1.ExciseStampService.RecordStampDisposition:output_type -> stillhouse.v1.RecordStampDispositionResponse
+	16, // 25: stillhouse.v1.ExciseStampService.ListStampDispositions:output_type -> stillhouse.v1.ListStampDispositionsResponse
+	19, // 26: stillhouse.v1.ExciseStampService.ReconcileStampOrder:output_type -> stillhouse.v1.ReconcileStampOrderResponse
+	5,  // 27: stillhouse.v1.ExciseStampService.CreateStampOrder:output_type -> stillhouse.v1.CreateStampOrderResponse
+	7,  // 28: stillhouse.v1.ExciseStampService.ReceiveStampOrder:output_type -> stillhouse.v1.ReceiveStampOrderResponse
+	9,  // 29: stillhouse.v1.ExciseStampService.ListStampOrders:output_type -> stillhouse.v1.ListStampOrdersResponse
+	11, // 30: stillhouse.v1.ExciseStampService.VoidStamps:output_type -> stillhouse.v1.VoidStampsResponse
+	24, // [24:31] is the sub-list for method output_type
+	17, // [17:24] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_excise_stamp_proto_init() }
@@ -890,8 +1645,8 @@ func file_stillhouse_v1_excise_stamp_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_excise_stamp_proto_rawDesc), len(file_stillhouse_v1_excise_stamp_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   10,
+			NumEnums:      2,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

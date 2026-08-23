@@ -138,13 +138,6 @@ rather than a date.
 The one area where Stillhouse is already ahead of everything commercial. These
 finish the job.
 
-### C3 · Stamp serial reconciliation — P1
-
-Stamps are Crown-controlled and must be accounted for. Orders, received,
-applied and voided are tracked per jurisdiction, but there is no serial-range
-reconciliation down to individual bottling runs and no lost / stolen / damaged
-reporting path. Stamps going missing is a thing CRA asks about.
-
 ### C4 · Certificates of age and origin — P2
 
 Several trading partners require a certificate signed by a Canadian official

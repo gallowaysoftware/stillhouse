@@ -1247,6 +1247,52 @@ func (ns NullSpiritKind) Value() (driver.Value, error) {
 	return string(ns.SpiritKind), nil
 }
 
+type StampDispositionKind string
+
+const (
+	StampDispositionKindSpoiled   StampDispositionKind = "spoiled"
+	StampDispositionKindDamaged   StampDispositionKind = "damaged"
+	StampDispositionKindLost      StampDispositionKind = "lost"
+	StampDispositionKindStolen    StampDispositionKind = "stolen"
+	StampDispositionKindDestroyed StampDispositionKind = "destroyed"
+	StampDispositionKindReturned  StampDispositionKind = "returned"
+)
+
+func (e *StampDispositionKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = StampDispositionKind(s)
+	case string:
+		*e = StampDispositionKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for StampDispositionKind: %T", src)
+	}
+	return nil
+}
+
+type NullStampDispositionKind struct {
+	StampDispositionKind StampDispositionKind `json:"stamp_disposition_kind"`
+	Valid                bool                 `json:"valid"` // Valid is true if StampDispositionKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStampDispositionKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.StampDispositionKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.StampDispositionKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStampDispositionKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.StampDispositionKind), nil
+}
+
 type StrengthSource string
 
 const (
@@ -1601,6 +1647,21 @@ type ExciseLicence struct {
 	CeasedOn          pgtype.Date        `json:"ceased_on"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ExciseStampDisposition struct {
+	ID           uuid.UUID            `json:"id"`
+	TenantID     uuid.UUID            `json:"tenant_id"`
+	StampOrderID uuid.UUID            `json:"stamp_order_id"`
+	Kind         StampDispositionKind `json:"kind"`
+	Quantity     int32                `json:"quantity"`
+	SerialStart  string               `json:"serial_start"`
+	SerialEnd    string               `json:"serial_end"`
+	OccurredOn   pgtype.Date          `json:"occurred_on"`
+	Explanation  string               `json:"explanation"`
+	ReportedRef  string               `json:"reported_ref"`
+	RecordedBy   uuid.UUID            `json:"recorded_by"`
+	CreatedAt    pgtype.Timestamptz   `json:"created_at"`
 }
 
 type ExciseStampOrder struct {

@@ -16,7 +16,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/excise_stamp.proto.
  */
 export const file_stillhouse_v1_excise_stamp: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdGlsbGhvdXNlL3YxL2V4Y2lzZV9zdGFtcC5wcm90bxINc3RpbGxob3VzZS52MSL5AwoQRXhjaXNlU3RhbXBPcmRlchIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSFAoManVyaXNkaWN0aW9uGAMgASgJEi4KCm9yZGVyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhgKEHF1YW50aXR5X29yZGVyZWQYBSABKAUSLwoLcmVjZWl2ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhQKDHNlcmlhbF9zdGFydBgHIAEoCRISCgpzZXJpYWxfZW5kGAggASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAkgASgFEhgKEHF1YW50aXR5X2FwcGxpZWQYCiABKAUSFwoPcXVhbnRpdHlfdm9pZGVkGAsgASgFEhcKD2F2YWlsYWJsZV9jb3VudBgMIAEoBRI1CgZzdGF0dXMYDSABKA4yJS5zdGlsbGhvdXNlLnYxLkV4Y2lzZVN0YW1wT3JkZXJTdGF0dXMSDQoFbm90ZXMYDiABKAkSLgoKY3JlYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAirwEKHkV4Y2lzZVN0YW1wSnVyaXNkaWN0aW9uU3VtbWFyeRIUCgxqdXJpc2RpY3Rpb24YASABKAkSFgoOdG90YWxfcmVjZWl2ZWQYAiABKAUSFQoNdG90YWxfYXBwbGllZBgDIAEoBRIUCgx0b3RhbF92b2lkZWQYBCABKAUSFQoNdG90YWxfb25faGFuZBgFIAEoBRIbChNib3R0bGVzX3Blcl9kYXlfMzBkGAYgASgBIlgKF0NyZWF0ZVN0YW1wT3JkZXJSZXF1ZXN0EhQKDGp1cmlzZGljdGlvbhgBIAEoCRIYChBxdWFudGl0eV9vcmRlcmVkGAIgASgFEg0KBW5vdGVzGAMgASgJIkoKGENyZWF0ZVN0YW1wT3JkZXJSZXNwb25zZRIuCgVvcmRlchgBIAEoCzIfLnN0aWxsaG91c2UudjEuRXhjaXNlU3RhbXBPcmRlciKcAQoYUmVjZWl2ZVN0YW1wT3JkZXJSZXF1ZXN0EgoKAmlkGAEgASgJEi8KC3JlY2VpdmVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIZChFxdWFudGl0eV9yZWNlaXZlZBgDIAEoBRIUCgxzZXJpYWxfc3RhcnQYBCABKAkSEgoKc2VyaWFsX2VuZBgFIAEoCSJLChlSZWNlaXZlU3RhbXBPcmRlclJlc3BvbnNlEi4KBW9yZGVyGAEgASgLMh8uc3RpbGxob3VzZS52MS5FeGNpc2VTdGFtcE9yZGVyIi4KFkxpc3RTdGFtcE9yZGVyc1JlcXVlc3QSFAoManVyaXNkaWN0aW9uGAEgASgJIowBChdMaXN0U3RhbXBPcmRlcnNSZXNwb25zZRIvCgZvcmRlcnMYASADKAsyHy5zdGlsbGhvdXNlLnYxLkV4Y2lzZVN0YW1wT3JkZXISQAoJc3VtbWFyaWVzGAIgAygLMi0uc3RpbGxob3VzZS52MS5FeGNpc2VTdGFtcEp1cmlzZGljdGlvblN1bW1hcnkiQQoRVm9pZFN0YW1wc1JlcXVlc3QSCgoCaWQYASABKAkSEAoIcXVhbnRpdHkYAiABKAUSDgoGcmVhc29uGAMgASgJIkQKElZvaWRTdGFtcHNSZXNwb25zZRIuCgVvcmRlchgBIAEoCzIfLnN0aWxsaG91c2UudjEuRXhjaXNlU3RhbXBPcmRlciq4AQoWRXhjaXNlU3RhbXBPcmRlclN0YXR1cxIpCiVFWENJU0VfU1RBTVBfT1JERVJfU1RBVFVTX1VOU1BFQ0lGSUVEEAASJQohRVhDSVNFX1NUQU1QX09SREVSX1NUQVRVU19PUkRFUkVEEAESJgoiRVhDSVNFX1NUQU1QX09SREVSX1NUQVRVU19SRUNFSVZFRBACEiQKIEVYQ0lTRV9TVEFNUF9PUkRFUl9TVEFUVVNfQ0xPU0VEEAMylgMKEkV4Y2lzZVN0YW1wU2VydmljZRJjChBDcmVhdGVTdGFtcE9yZGVyEiYuc3RpbGxob3VzZS52MS5DcmVhdGVTdGFtcE9yZGVyUmVxdWVzdBonLnN0aWxsaG91c2UudjEuQ3JlYXRlU3RhbXBPcmRlclJlc3BvbnNlEmYKEVJlY2VpdmVTdGFtcE9yZGVyEicuc3RpbGxob3VzZS52MS5SZWNlaXZlU3RhbXBPcmRlclJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlJlY2VpdmVTdGFtcE9yZGVyUmVzcG9uc2USYAoPTGlzdFN0YW1wT3JkZXJzEiUuc3RpbGxob3VzZS52MS5MaXN0U3RhbXBPcmRlcnNSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5MaXN0U3RhbXBPcmRlcnNSZXNwb25zZRJRCgpWb2lkU3RhbXBzEiAuc3RpbGxob3VzZS52MS5Wb2lkU3RhbXBzUmVxdWVzdBohLnN0aWxsaG91c2UudjEuVm9pZFN0YW1wc1Jlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("CiBzdGlsbGhvdXNlL3YxL2V4Y2lzZV9zdGFtcC5wcm90bxINc3RpbGxob3VzZS52MSL5AwoQRXhjaXNlU3RhbXBPcmRlchIKCgJpZBgBIAEoCRIRCgl0ZW5hbnRfaWQYAiABKAkSFAoManVyaXNkaWN0aW9uGAMgASgJEi4KCm9yZGVyZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhgKEHF1YW50aXR5X29yZGVyZWQYBSABKAUSLwoLcmVjZWl2ZWRfYXQYBiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhQKDHNlcmlhbF9zdGFydBgHIAEoCRISCgpzZXJpYWxfZW5kGAggASgJEhkKEXF1YW50aXR5X3JlY2VpdmVkGAkgASgFEhgKEHF1YW50aXR5X2FwcGxpZWQYCiABKAUSFwoPcXVhbnRpdHlfdm9pZGVkGAsgASgFEhcKD2F2YWlsYWJsZV9jb3VudBgMIAEoBRI1CgZzdGF0dXMYDSABKA4yJS5zdGlsbGhvdXNlLnYxLkV4Y2lzZVN0YW1wT3JkZXJTdGF0dXMSDQoFbm90ZXMYDiABKAkSLgoKY3JlYXRlZF9hdBgPIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgQIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAirwEKHkV4Y2lzZVN0YW1wSnVyaXNkaWN0aW9uU3VtbWFyeRIUCgxqdXJpc2RpY3Rpb24YASABKAkSFgoOdG90YWxfcmVjZWl2ZWQYAiABKAUSFQoNdG90YWxfYXBwbGllZBgDIAEoBRIUCgx0b3RhbF92b2lkZWQYBCABKAUSFQoNdG90YWxfb25faGFuZBgFIAEoBRIbChNib3R0bGVzX3Blcl9kYXlfMzBkGAYgASgBIlgKF0NyZWF0ZVN0YW1wT3JkZXJSZXF1ZXN0EhQKDGp1cmlzZGljdGlvbhgBIAEoCRIYChBxdWFudGl0eV9vcmRlcmVkGAIgASgFEg0KBW5vdGVzGAMgASgJIkoKGENyZWF0ZVN0YW1wT3JkZXJSZXNwb25zZRIuCgVvcmRlchgBIAEoCzIfLnN0aWxsaG91c2UudjEuRXhjaXNlU3RhbXBPcmRlciKcAQoYUmVjZWl2ZVN0YW1wT3JkZXJSZXF1ZXN0EgoKAmlkGAEgASgJEi8KC3JlY2VpdmVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIZChFxdWFudGl0eV9yZWNlaXZlZBgDIAEoBRIUCgxzZXJpYWxfc3RhcnQYBCABKAkSEgoKc2VyaWFsX2VuZBgFIAEoCSJLChlSZWNlaXZlU3RhbXBPcmRlclJlc3BvbnNlEi4KBW9yZGVyGAEgASgLMh8uc3RpbGxob3VzZS52MS5FeGNpc2VTdGFtcE9yZGVyIi4KFkxpc3RTdGFtcE9yZGVyc1JlcXVlc3QSFAoManVyaXNkaWN0aW9uGAEgASgJIowBChdMaXN0U3RhbXBPcmRlcnNSZXNwb25zZRIvCgZvcmRlcnMYASADKAsyHy5zdGlsbGhvdXNlLnYxLkV4Y2lzZVN0YW1wT3JkZXISQAoJc3VtbWFyaWVzGAIgAygLMi0uc3RpbGxob3VzZS52MS5FeGNpc2VTdGFtcEp1cmlzZGljdGlvblN1bW1hcnkiQQoRVm9pZFN0YW1wc1JlcXVlc3QSCgoCaWQYASABKAkSEAoIcXVhbnRpdHkYAiABKAUSDgoGcmVhc29uGAMgASgJIkQKElZvaWRTdGFtcHNSZXNwb25zZRIuCgVvcmRlchgBIAEoCzIfLnN0aWxsaG91c2UudjEuRXhjaXNlU3RhbXBPcmRlciKVAgoQU3RhbXBEaXNwb3NpdGlvbhIKCgJpZBgBIAEoCRIWCg5zdGFtcF9vcmRlcl9pZBgCIAEoCRIUCgxqdXJpc2RpY3Rpb24YAyABKAkSMQoEa2luZBgEIAEoDjIjLnN0aWxsaG91c2UudjEuU3RhbXBEaXNwb3NpdGlvbktpbmQSEAoIcXVhbnRpdHkYBSABKAUSFAoMc2VyaWFsX3N0YXJ0GAYgASgJEhIKCnNlcmlhbF9lbmQYByABKAkSEwoLb2NjdXJyZWRfb24YCCABKAkSEwoLZXhwbGFuYXRpb24YCSABKAkSFAoMcmVwb3J0ZWRfcmVmGAogASgJEhgKEHJlY29yZGVkX2J5X25hbWUYCyABKAki5gEKHVJlY29yZFN0YW1wRGlzcG9zaXRpb25SZXF1ZXN0EhYKDnN0YW1wX29yZGVyX2lkGAEgASgJEjEKBGtpbmQYAiABKA4yIy5zdGlsbGhvdXNlLnYxLlN0YW1wRGlzcG9zaXRpb25LaW5kEhAKCHF1YW50aXR5GAMgASgFEhQKDHNlcmlhbF9zdGFydBgEIAEoCRISCgpzZXJpYWxfZW5kGAUgASgJEhMKC29jY3VycmVkX29uGAYgASgJEhMKC2V4cGxhbmF0aW9uGAcgASgJEhQKDHJlcG9ydGVkX3JlZhgIIAEoCSJWCh5SZWNvcmRTdGFtcERpc3Bvc2l0aW9uUmVzcG9uc2USNAoLZGlzcG9zaXRpb24YASABKAsyHy5zdGlsbGhvdXNlLnYxLlN0YW1wRGlzcG9zaXRpb24iUQocTGlzdFN0YW1wRGlzcG9zaXRpb25zUmVxdWVzdBIxCgRraW5kGAEgASgOMiMuc3RpbGxob3VzZS52MS5TdGFtcERpc3Bvc2l0aW9uS2luZCJWCh1MaXN0U3RhbXBEaXNwb3NpdGlvbnNSZXNwb25zZRI1CgxkaXNwb3NpdGlvbnMYASADKAsyHy5zdGlsbGhvdXNlLnYxLlN0YW1wRGlzcG9zaXRpb24iewoPU3RhbXBBbGxvY2F0aW9uEhQKDHNlcmlhbF9zdGFydBgBIAEoCRISCgpzZXJpYWxfZW5kGAIgASgJEg0KBWNvdW50GAMgASgDEgwKBGtpbmQYBCABKAkSDwoHcHVycG9zZRgFIAEoCRIQCgh1bnBsYWNlZBgGIAEoCCI0ChpSZWNvbmNpbGVTdGFtcE9yZGVyUmVxdWVzdBIWCg5zdGFtcF9vcmRlcl9pZBgBIAEoCSKRAgobUmVjb25jaWxlU3RhbXBPcmRlclJlc3BvbnNlEhQKDHNlcmlhbF9zdGFydBgBIAEoCRISCgpzZXJpYWxfZW5kGAIgASgJEhoKEnNlcmlhbF9yYW5nZV9rbm93bhgDIAEoCBIzCgthbGxvY2F0aW9ucxgEIAMoCzIeLnN0aWxsaG91c2UudjEuU3RhbXBBbGxvY2F0aW9uEhYKDnJlY2VpdmVkX2NvdW50GAUgASgDEhUKDWFwcGxpZWRfY291bnQYBiABKAMSFgoOZGlzcG9zZWRfY291bnQYByABKAMSGQoRdW5hY2NvdW50ZWRfY291bnQYCCABKAMSFQoNZGlzY3JlcGFuY2llcxgJIAMoCSq4AQoWRXhjaXNlU3RhbXBPcmRlclN0YXR1cxIpCiVFWENJU0VfU1RBTVBfT1JERVJfU1RBVFVTX1VOU1BFQ0lGSUVEEAASJQohRVhDSVNFX1NUQU1QX09SREVSX1NUQVRVU19PUkRFUkVEEAESJgoiRVhDSVNFX1NUQU1QX09SREVSX1NUQVRVU19SRUNFSVZFRBACEiQKIEVYQ0lTRV9TVEFNUF9PUkRFUl9TVEFUVVNfQ0xPU0VEEAMqlQIKFFN0YW1wRGlzcG9zaXRpb25LaW5kEiYKIlNUQU1QX0RJU1BPU0lUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIiCh5TVEFNUF9ESVNQT1NJVElPTl9LSU5EX1NQT0lMRUQQARIiCh5TVEFNUF9ESVNQT1NJVElPTl9LSU5EX0RBTUFHRUQQAhIfChtTVEFNUF9ESVNQT1NJVElPTl9LSU5EX0xPU1QQAxIhCh1TVEFNUF9ESVNQT1NJVElPTl9LSU5EX1NUT0xFThAEEiQKIFNUQU1QX0RJU1BPU0lUSU9OX0tJTkRfREVTVFJPWUVEEAUSIwofU1RBTVBfRElTUE9TSVRJT05fS0lORF9SRVRVUk5FRBAGMu8FChJFeGNpc2VTdGFtcFNlcnZpY2USdQoWUmVjb3JkU3RhbXBEaXNwb3NpdGlvbhIsLnN0aWxsaG91c2UudjEuUmVjb3JkU3RhbXBEaXNwb3NpdGlvblJlcXVlc3QaLS5zdGlsbGhvdXNlLnYxLlJlY29yZFN0YW1wRGlzcG9zaXRpb25SZXNwb25zZRJyChVMaXN0U3RhbXBEaXNwb3NpdGlvbnMSKy5zdGlsbGhvdXNlLnYxLkxpc3RTdGFtcERpc3Bvc2l0aW9uc1JlcXVlc3QaLC5zdGlsbGhvdXNlLnYxLkxpc3RTdGFtcERpc3Bvc2l0aW9uc1Jlc3BvbnNlEmwKE1JlY29uY2lsZVN0YW1wT3JkZXISKS5zdGlsbGhvdXNlLnYxLlJlY29uY2lsZVN0YW1wT3JkZXJSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5SZWNvbmNpbGVTdGFtcE9yZGVyUmVzcG9uc2USYwoQQ3JlYXRlU3RhbXBPcmRlchImLnN0aWxsaG91c2UudjEuQ3JlYXRlU3RhbXBPcmRlclJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVN0YW1wT3JkZXJSZXNwb25zZRJmChFSZWNlaXZlU3RhbXBPcmRlchInLnN0aWxsaG91c2UudjEuUmVjZWl2ZVN0YW1wT3JkZXJSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5SZWNlaXZlU3RhbXBPcmRlclJlc3BvbnNlEmAKD0xpc3RTdGFtcE9yZGVycxIlLnN0aWxsaG91c2UudjEuTGlzdFN0YW1wT3JkZXJzUmVxdWVzdBomLnN0aWxsaG91c2UudjEuTGlzdFN0YW1wT3JkZXJzUmVzcG9uc2USUQoKVm9pZFN0YW1wcxIgLnN0aWxsaG91c2UudjEuVm9pZFN0YW1wc1JlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLlZvaWRTdGFtcHNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.ExciseStampOrder
@@ -338,6 +338,315 @@ export const VoidStampsResponseSchema: GenMessage<VoidStampsResponse> = /*@__PUR
   messageDesc(file_stillhouse_v1_excise_stamp, 9);
 
 /**
+ * @generated from message stillhouse.v1.StampDisposition
+ */
+export type StampDisposition = Message<"stillhouse.v1.StampDisposition"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string stamp_order_id = 2;
+   */
+  stampOrderId: string;
+
+  /**
+   * @generated from field: string jurisdiction = 3;
+   */
+  jurisdiction: string;
+
+  /**
+   * @generated from field: stillhouse.v1.StampDispositionKind kind = 4;
+   */
+  kind: StampDispositionKind;
+
+  /**
+   * @generated from field: int32 quantity = 5;
+   */
+  quantity: number;
+
+  /**
+   * Where known. A vanished roll may have a range; a stamp that jammed
+   * in the filler usually does not, and demanding one would get a
+   * made-up range typed in.
+   *
+   * @generated from field: string serial_start = 6;
+   */
+  serialStart: string;
+
+  /**
+   * @generated from field: string serial_end = 7;
+   */
+  serialEnd: string;
+
+  /**
+   * ISO date
+   *
+   * @generated from field: string occurred_on = 8;
+   */
+  occurredOn: string;
+
+  /**
+   * @generated from field: string explanation = 9;
+   */
+  explanation: string;
+
+  /**
+   * Losses and thefts get reported to CRA; this is where that closes.
+   *
+   * @generated from field: string reported_ref = 10;
+   */
+  reportedRef: string;
+
+  /**
+   * @generated from field: string recorded_by_name = 11;
+   */
+  recordedByName: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.StampDisposition.
+ * Use `create(StampDispositionSchema)` to create a new message.
+ */
+export const StampDispositionSchema: GenMessage<StampDisposition> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 10);
+
+/**
+ * @generated from message stillhouse.v1.RecordStampDispositionRequest
+ */
+export type RecordStampDispositionRequest = Message<"stillhouse.v1.RecordStampDispositionRequest"> & {
+  /**
+   * @generated from field: string stamp_order_id = 1;
+   */
+  stampOrderId: string;
+
+  /**
+   * @generated from field: stillhouse.v1.StampDispositionKind kind = 2;
+   */
+  kind: StampDispositionKind;
+
+  /**
+   * @generated from field: int32 quantity = 3;
+   */
+  quantity: number;
+
+  /**
+   * @generated from field: string serial_start = 4;
+   */
+  serialStart: string;
+
+  /**
+   * @generated from field: string serial_end = 5;
+   */
+  serialEnd: string;
+
+  /**
+   * @generated from field: string occurred_on = 6;
+   */
+  occurredOn: string;
+
+  /**
+   * @generated from field: string explanation = 7;
+   */
+  explanation: string;
+
+  /**
+   * @generated from field: string reported_ref = 8;
+   */
+  reportedRef: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecordStampDispositionRequest.
+ * Use `create(RecordStampDispositionRequestSchema)` to create a new message.
+ */
+export const RecordStampDispositionRequestSchema: GenMessage<RecordStampDispositionRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 11);
+
+/**
+ * @generated from message stillhouse.v1.RecordStampDispositionResponse
+ */
+export type RecordStampDispositionResponse = Message<"stillhouse.v1.RecordStampDispositionResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.StampDisposition disposition = 1;
+   */
+  disposition?: StampDisposition | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecordStampDispositionResponse.
+ * Use `create(RecordStampDispositionResponseSchema)` to create a new message.
+ */
+export const RecordStampDispositionResponseSchema: GenMessage<RecordStampDispositionResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 12);
+
+/**
+ * @generated from message stillhouse.v1.ListStampDispositionsRequest
+ */
+export type ListStampDispositionsRequest = Message<"stillhouse.v1.ListStampDispositionsRequest"> & {
+  /**
+   * @generated from field: stillhouse.v1.StampDispositionKind kind = 1;
+   */
+  kind: StampDispositionKind;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListStampDispositionsRequest.
+ * Use `create(ListStampDispositionsRequestSchema)` to create a new message.
+ */
+export const ListStampDispositionsRequestSchema: GenMessage<ListStampDispositionsRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 13);
+
+/**
+ * @generated from message stillhouse.v1.ListStampDispositionsResponse
+ */
+export type ListStampDispositionsResponse = Message<"stillhouse.v1.ListStampDispositionsResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.StampDisposition dispositions = 1;
+   */
+  dispositions: StampDisposition[];
+};
+
+/**
+ * Describes the message stillhouse.v1.ListStampDispositionsResponse.
+ * Use `create(ListStampDispositionsResponseSchema)` to create a new message.
+ */
+export const ListStampDispositionsResponseSchema: GenMessage<ListStampDispositionsResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 14);
+
+/**
+ * One contiguous run of serials and what claims it.
+ *
+ * @generated from message stillhouse.v1.StampAllocation
+ */
+export type StampAllocation = Message<"stillhouse.v1.StampAllocation"> & {
+  /**
+   * @generated from field: string serial_start = 1;
+   */
+  serialStart: string;
+
+  /**
+   * @generated from field: string serial_end = 2;
+   */
+  serialEnd: string;
+
+  /**
+   * @generated from field: int64 count = 3;
+   */
+  count: bigint;
+
+  /**
+   * "applied", "disposed", "on_hand".
+   *
+   * @generated from field: string kind = 4;
+   */
+  kind: string;
+
+  /**
+   * In words: "run 14 — Wolfhead Rye", "lost".
+   *
+   * @generated from field: string purpose = 5;
+   */
+  purpose: string;
+
+  /**
+   * True when the claim carried no usable serials. The count still
+   * counts; it just cannot be placed on the number line.
+   *
+   * @generated from field: bool unplaced = 6;
+   */
+  unplaced: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.StampAllocation.
+ * Use `create(StampAllocationSchema)` to create a new message.
+ */
+export const StampAllocationSchema: GenMessage<StampAllocation> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 15);
+
+/**
+ * @generated from message stillhouse.v1.ReconcileStampOrderRequest
+ */
+export type ReconcileStampOrderRequest = Message<"stillhouse.v1.ReconcileStampOrderRequest"> & {
+  /**
+   * @generated from field: string stamp_order_id = 1;
+   */
+  stampOrderId: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.ReconcileStampOrderRequest.
+ * Use `create(ReconcileStampOrderRequestSchema)` to create a new message.
+ */
+export const ReconcileStampOrderRequestSchema: GenMessage<ReconcileStampOrderRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 16);
+
+/**
+ * @generated from message stillhouse.v1.ReconcileStampOrderResponse
+ */
+export type ReconcileStampOrderResponse = Message<"stillhouse.v1.ReconcileStampOrderResponse"> & {
+  /**
+   * @generated from field: string serial_start = 1;
+   */
+  serialStart: string;
+
+  /**
+   * @generated from field: string serial_end = 2;
+   */
+  serialEnd: string;
+
+  /**
+   * False when no serial range was recorded, in which case only the
+   * counts reconcile and every allocation is unplaced.
+   *
+   * @generated from field: bool serial_range_known = 3;
+   */
+  serialRangeKnown: boolean;
+
+  /**
+   * @generated from field: repeated stillhouse.v1.StampAllocation allocations = 4;
+   */
+  allocations: StampAllocation[];
+
+  /**
+   * @generated from field: int64 received_count = 5;
+   */
+  receivedCount: bigint;
+
+  /**
+   * @generated from field: int64 applied_count = 6;
+   */
+  appliedCount: bigint;
+
+  /**
+   * @generated from field: int64 disposed_count = 7;
+   */
+  disposedCount: bigint;
+
+  /**
+   * @generated from field: int64 unaccounted_count = 8;
+   */
+  unaccountedCount: bigint;
+
+  /**
+   * The ways the account fails to close, each as a sentence — a number
+   * without one is not actionable.
+   *
+   * @generated from field: repeated string discrepancies = 9;
+   */
+  discrepancies: string[];
+};
+
+/**
+ * Describes the message stillhouse.v1.ReconcileStampOrderResponse.
+ * Use `create(ReconcileStampOrderResponseSchema)` to create a new message.
+ */
+export const ReconcileStampOrderResponseSchema: GenMessage<ReconcileStampOrderResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_excise_stamp, 17);
+
+/**
  * @generated from enum stillhouse.v1.ExciseStampOrderStatus
  */
 export enum ExciseStampOrderStatus {
@@ -369,9 +678,96 @@ export const ExciseStampOrderStatusSchema: GenEnum<ExciseStampOrderStatus> = /*@
   enumDesc(file_stillhouse_v1_excise_stamp, 0);
 
 /**
+ * What happened to stamps that never reached a bottle. The old model had
+ * one counter for all of this; a stamp that jammed in the applicator, a
+ * roll that went missing off a bench, and a batch returned to CRA are the
+ * same arithmetic and completely different events.
+ *
+ * @generated from enum stillhouse.v1.StampDispositionKind
+ */
+export enum StampDispositionKind {
+  /**
+   * @generated from enum value: STAMP_DISPOSITION_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * damaged in application; the ordinary case
+   *
+   * @generated from enum value: STAMP_DISPOSITION_KIND_SPOILED = 1;
+   */
+  SPOILED = 1,
+
+  /**
+   * damaged before application
+   *
+   * @generated from enum value: STAMP_DISPOSITION_KIND_DAMAGED = 2;
+   */
+  DAMAGED = 2,
+
+  /**
+   * cannot be located
+   *
+   * @generated from enum value: STAMP_DISPOSITION_KIND_LOST = 3;
+   */
+  LOST = 3,
+
+  /**
+   * known to have been taken
+   *
+   * @generated from enum value: STAMP_DISPOSITION_KIND_STOLEN = 4;
+   */
+  STOLEN = 4,
+
+  /**
+   * deliberately destroyed
+   *
+   * @generated from enum value: STAMP_DISPOSITION_KIND_DESTROYED = 5;
+   */
+  DESTROYED = 5,
+
+  /**
+   * returned to CRA
+   *
+   * @generated from enum value: STAMP_DISPOSITION_KIND_RETURNED = 6;
+   */
+  RETURNED = 6,
+}
+
+/**
+ * Describes the enum stillhouse.v1.StampDispositionKind.
+ */
+export const StampDispositionKindSchema: GenEnum<StampDispositionKind> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_excise_stamp, 1);
+
+/**
  * @generated from service stillhouse.v1.ExciseStampService
  */
 export const ExciseStampService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.ExciseStampService.RecordStampDisposition
+   */
+  recordStampDisposition: {
+    methodKind: "unary";
+    input: typeof RecordStampDispositionRequestSchema;
+    output: typeof RecordStampDispositionResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.ExciseStampService.ListStampDispositions
+   */
+  listStampDispositions: {
+    methodKind: "unary";
+    input: typeof ListStampDispositionsRequestSchema;
+    output: typeof ListStampDispositionsResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.ExciseStampService.ReconcileStampOrder
+   */
+  reconcileStampOrder: {
+    methodKind: "unary";
+    input: typeof ReconcileStampOrderRequestSchema;
+    output: typeof ReconcileStampOrderResponseSchema;
+  },
   /**
    * @generated from rpc stillhouse.v1.ExciseStampService.CreateStampOrder
    */

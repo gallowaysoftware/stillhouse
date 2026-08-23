@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
+import { StampReconciliation } from "@/components/StampReconciliation";
 import { exciseStampClient } from "@/lib/clients";
 import { WriteOnly, canWrite, useCurrentRole } from "@/lib/role";
 import {
@@ -32,6 +33,8 @@ export function StampsPage() {
     queryFn: () => exciseStampClient.listStampOrders({}),
   });
   const [showOrderForm, setShowOrderForm] = useState(false);
+  // Which order's serial-by-serial account is open.
+  const [reconcilingId, setReconcilingId] = useState<string | null>(null);
   const [receivingId, setReceivingId] = useState<string | null>(null);
 
   const createOrder = useMutation({
@@ -236,12 +239,22 @@ export function StampsPage() {
                       Void
                     </button>
                   )}
+                  {o.quantityReceived > 0 && (
+                    <button
+                      onClick={() => setReconcilingId(reconcilingId === o.id ? null : o.id)}
+                      className="text-xs text-fg-muted hover:text-fg"
+                    >
+                      {reconcilingId === o.id ? "Hide account" : "Account"}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {reconcilingId && <StampReconciliation orderId={reconcilingId} />}
 
       {receivingId && (() => {
         const order = list.data?.orders.find((o) => o.id === receivingId);

@@ -73,7 +73,91 @@ message VoidStampsRequest {
 }
 message VoidStampsResponse { ExciseStampOrder order = 1; }
 
+
+// ----- disposition and reconciliation --------------------------------------
+
+// What happened to stamps that never reached a bottle. The old model had
+// one counter for all of this; a stamp that jammed in the applicator, a
+// roll that went missing off a bench, and a batch returned to CRA are the
+// same arithmetic and completely different events.
+enum StampDispositionKind {
+  STAMP_DISPOSITION_KIND_UNSPECIFIED = 0;
+  STAMP_DISPOSITION_KIND_SPOILED = 1;    // damaged in application; the ordinary case
+  STAMP_DISPOSITION_KIND_DAMAGED = 2;    // damaged before application
+  STAMP_DISPOSITION_KIND_LOST = 3;       // cannot be located
+  STAMP_DISPOSITION_KIND_STOLEN = 4;     // known to have been taken
+  STAMP_DISPOSITION_KIND_DESTROYED = 5;  // deliberately destroyed
+  STAMP_DISPOSITION_KIND_RETURNED = 6;   // returned to CRA
+}
+
+message StampDisposition {
+  string id = 1;
+  string stamp_order_id = 2;
+  string jurisdiction = 3;
+  StampDispositionKind kind = 4;
+  int32 quantity = 5;
+  // Where known. A vanished roll may have a range; a stamp that jammed
+  // in the filler usually does not, and demanding one would get a
+  // made-up range typed in.
+  string serial_start = 6;
+  string serial_end = 7;
+  string occurred_on = 8;   // ISO date
+  string explanation = 9;
+  // Losses and thefts get reported to CRA; this is where that closes.
+  string reported_ref = 10;
+  string recorded_by_name = 11;
+}
+
+message RecordStampDispositionRequest {
+  string stamp_order_id = 1;
+  StampDispositionKind kind = 2;
+  int32 quantity = 3;
+  string serial_start = 4;
+  string serial_end = 5;
+  string occurred_on = 6;
+  string explanation = 7;
+  string reported_ref = 8;
+}
+message RecordStampDispositionResponse { StampDisposition disposition = 1; }
+
+message ListStampDispositionsRequest { StampDispositionKind kind = 1; }
+message ListStampDispositionsResponse { repeated StampDisposition dispositions = 1; }
+
+// One contiguous run of serials and what claims it.
+message StampAllocation {
+  string serial_start = 1;
+  string serial_end = 2;
+  int64 count = 3;
+  // "applied", "disposed", "on_hand".
+  string kind = 4;
+  // In words: "run 14 — Wolfhead Rye", "lost".
+  string purpose = 5;
+  // True when the claim carried no usable serials. The count still
+  // counts; it just cannot be placed on the number line.
+  bool unplaced = 6;
+}
+
+message ReconcileStampOrderRequest { string stamp_order_id = 1; }
+message ReconcileStampOrderResponse {
+  string serial_start = 1;
+  string serial_end = 2;
+  // False when no serial range was recorded, in which case only the
+  // counts reconcile and every allocation is unplaced.
+  bool serial_range_known = 3;
+  repeated StampAllocation allocations = 4;
+  int64 received_count = 5;
+  int64 applied_count = 6;
+  int64 disposed_count = 7;
+  int64 unaccounted_count = 8;
+  // The ways the account fails to close, each as a sentence — a number
+  // without one is not actionable.
+  repeated string discrepancies = 9;
+}
+
 service ExciseStampService {
+  rpc RecordStampDisposition(RecordStampDispositionRequest) returns (RecordStampDispositionResponse);
+  rpc ListStampDispositions(ListStampDispositionsRequest) returns (ListStampDispositionsResponse);
+  rpc ReconcileStampOrder(ReconcileStampOrderRequest) returns (ReconcileStampOrderResponse);
   rpc CreateStampOrder(CreateStampOrderRequest) returns (CreateStampOrderResponse);
   rpc ReceiveStampOrder(ReceiveStampOrderRequest) returns (ReceiveStampOrderResponse);
   rpc ListStampOrders(ListStampOrdersRequest) returns (ListStampOrdersResponse);

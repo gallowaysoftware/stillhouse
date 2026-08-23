@@ -8,6 +8,8 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"time"
+
 	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
@@ -159,6 +161,21 @@ func (s *ExciseStampService) VoidStamps(
 			QuantityVoided: in.GetQuantity(),
 		})
 		if e != nil {
+			return e
+		}
+		// Every void is also a disposition, so the reconciliation can
+		// account for it and so the reason lands on the stamp record
+		// rather than only in the audit log. Spoiled is what this path
+		// was always for — its own comment says "damaged in application",
+		// "misprint" — and anything else (a loss, a theft, a return to
+		// CRA) belongs on RecordStampDisposition, which asks which.
+		if _, e := q.CreateStampDisposition(ctx, sqlcgen.CreateStampDispositionParams{
+			TenantID: u.TenantID, StampOrderID: id,
+			Kind: sqlcgen.StampDispositionKindSpoiled, Quantity: in.GetQuantity(),
+			OccurredOn:  pgtype.Date{Valid: true, Time: time.Now().UTC()},
+			Explanation: in.GetReason(),
+			RecordedBy:  u.ID,
+		}); e != nil {
 			return e
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "excise_stamp_order", o.ID.String(),

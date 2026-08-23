@@ -162,6 +162,14 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.ExciseStampService/ReceiveStampOrder": roleOperator,
 	"/stillhouse.v1.ExciseStampService/ListStampOrders":   roleViewer,
 	"/stillhouse.v1.ExciseStampService/VoidStamps":        roleOperator,
+	// Stamps are Crown-controlled and the licensee is accountable for
+	// each one. Recording where a stamp went — including that it was
+	// lost or stolen — is an operator action, because the operator is
+	// who knows. Reading the reconciliation is a viewer one: it is the
+	// answer to "can we account for all of them?".
+	"/stillhouse.v1.ExciseStampService/RecordStampDisposition": roleOperator,
+	"/stillhouse.v1.ExciseStampService/ListStampDispositions":  roleViewer,
+	"/stillhouse.v1.ExciseStampService/ReconcileStampOrder":    roleViewer,
 
 	// The instrument register. Reading it is a viewer action — an operator
 	// at the bench has to be able to see which hydrometer is approved.

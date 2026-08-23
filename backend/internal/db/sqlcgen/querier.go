@@ -114,6 +114,7 @@ type Querier interface {
 	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
 	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
 	CreateRemoval(ctx context.Context, arg CreateRemovalParams) (PackagingRemoval, error)
+	CreateStampDisposition(ctx context.Context, arg CreateStampDispositionParams) (ExciseStampDisposition, error)
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
 	CreateTOTPRecoveryCode(ctx context.Context, arg CreateTOTPRecoveryCodeParams) error
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
@@ -356,8 +357,17 @@ type Querier interface {
 	ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]ListRecipeVersionsRow, error)
 	ListRecipes(ctx context.Context, includeArchived bool) ([]Recipe, error)
 	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
+	// Everything not applied to a bottle, most recent first. The losses and
+	// thefts are what CRA asks about; the spoilage is what makes the
+	// arithmetic add up.
+	ListStampDispositions(ctx context.Context, kind string) ([]ListStampDispositionsRow, error)
+	ListStampDispositionsForOrder(ctx context.Context, stampOrderID uuid.UUID) ([]ListStampDispositionsForOrderRow, error)
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
 	ListStampOrdersWithAvailable(ctx context.Context, jurisdiction string) ([]ListStampOrdersWithAvailableRow, error)
+	// Every bottling run that drew on this order, with the range it took.
+	// Voided runs are included and flagged: the stamps were applied to
+	// bottles, and voiding the run does not un-apply them.
+	ListStampUsageForOrder(ctx context.Context, stampOrderID uuid.UUID) ([]ListStampUsageForOrderRow, error)
 	// An email address no longer identifies one account: it is unique per
 	// tenant, so the outside bookkeeper can hold one at each distillery they
 	// work for. Every caller that starts from an address alone — login,

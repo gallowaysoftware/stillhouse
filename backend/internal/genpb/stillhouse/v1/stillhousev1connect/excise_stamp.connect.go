@@ -37,6 +37,15 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// ExciseStampServiceRecordStampDispositionProcedure is the fully-qualified name of the
+	// ExciseStampService's RecordStampDisposition RPC.
+	ExciseStampServiceRecordStampDispositionProcedure = "/stillhouse.v1.ExciseStampService/RecordStampDisposition"
+	// ExciseStampServiceListStampDispositionsProcedure is the fully-qualified name of the
+	// ExciseStampService's ListStampDispositions RPC.
+	ExciseStampServiceListStampDispositionsProcedure = "/stillhouse.v1.ExciseStampService/ListStampDispositions"
+	// ExciseStampServiceReconcileStampOrderProcedure is the fully-qualified name of the
+	// ExciseStampService's ReconcileStampOrder RPC.
+	ExciseStampServiceReconcileStampOrderProcedure = "/stillhouse.v1.ExciseStampService/ReconcileStampOrder"
 	// ExciseStampServiceCreateStampOrderProcedure is the fully-qualified name of the
 	// ExciseStampService's CreateStampOrder RPC.
 	ExciseStampServiceCreateStampOrderProcedure = "/stillhouse.v1.ExciseStampService/CreateStampOrder"
@@ -53,6 +62,9 @@ const (
 
 // ExciseStampServiceClient is a client for the stillhouse.v1.ExciseStampService service.
 type ExciseStampServiceClient interface {
+	RecordStampDisposition(context.Context, *connect.Request[v1.RecordStampDispositionRequest]) (*connect.Response[v1.RecordStampDispositionResponse], error)
+	ListStampDispositions(context.Context, *connect.Request[v1.ListStampDispositionsRequest]) (*connect.Response[v1.ListStampDispositionsResponse], error)
+	ReconcileStampOrder(context.Context, *connect.Request[v1.ReconcileStampOrderRequest]) (*connect.Response[v1.ReconcileStampOrderResponse], error)
 	CreateStampOrder(context.Context, *connect.Request[v1.CreateStampOrderRequest]) (*connect.Response[v1.CreateStampOrderResponse], error)
 	ReceiveStampOrder(context.Context, *connect.Request[v1.ReceiveStampOrderRequest]) (*connect.Response[v1.ReceiveStampOrderResponse], error)
 	ListStampOrders(context.Context, *connect.Request[v1.ListStampOrdersRequest]) (*connect.Response[v1.ListStampOrdersResponse], error)
@@ -70,6 +82,24 @@ func NewExciseStampServiceClient(httpClient connect.HTTPClient, baseURL string, 
 	baseURL = strings.TrimRight(baseURL, "/")
 	exciseStampServiceMethods := v1.File_stillhouse_v1_excise_stamp_proto.Services().ByName("ExciseStampService").Methods()
 	return &exciseStampServiceClient{
+		recordStampDisposition: connect.NewClient[v1.RecordStampDispositionRequest, v1.RecordStampDispositionResponse](
+			httpClient,
+			baseURL+ExciseStampServiceRecordStampDispositionProcedure,
+			connect.WithSchema(exciseStampServiceMethods.ByName("RecordStampDisposition")),
+			connect.WithClientOptions(opts...),
+		),
+		listStampDispositions: connect.NewClient[v1.ListStampDispositionsRequest, v1.ListStampDispositionsResponse](
+			httpClient,
+			baseURL+ExciseStampServiceListStampDispositionsProcedure,
+			connect.WithSchema(exciseStampServiceMethods.ByName("ListStampDispositions")),
+			connect.WithClientOptions(opts...),
+		),
+		reconcileStampOrder: connect.NewClient[v1.ReconcileStampOrderRequest, v1.ReconcileStampOrderResponse](
+			httpClient,
+			baseURL+ExciseStampServiceReconcileStampOrderProcedure,
+			connect.WithSchema(exciseStampServiceMethods.ByName("ReconcileStampOrder")),
+			connect.WithClientOptions(opts...),
+		),
 		createStampOrder: connect.NewClient[v1.CreateStampOrderRequest, v1.CreateStampOrderResponse](
 			httpClient,
 			baseURL+ExciseStampServiceCreateStampOrderProcedure,
@@ -99,10 +129,28 @@ func NewExciseStampServiceClient(httpClient connect.HTTPClient, baseURL string, 
 
 // exciseStampServiceClient implements ExciseStampServiceClient.
 type exciseStampServiceClient struct {
-	createStampOrder  *connect.Client[v1.CreateStampOrderRequest, v1.CreateStampOrderResponse]
-	receiveStampOrder *connect.Client[v1.ReceiveStampOrderRequest, v1.ReceiveStampOrderResponse]
-	listStampOrders   *connect.Client[v1.ListStampOrdersRequest, v1.ListStampOrdersResponse]
-	voidStamps        *connect.Client[v1.VoidStampsRequest, v1.VoidStampsResponse]
+	recordStampDisposition *connect.Client[v1.RecordStampDispositionRequest, v1.RecordStampDispositionResponse]
+	listStampDispositions  *connect.Client[v1.ListStampDispositionsRequest, v1.ListStampDispositionsResponse]
+	reconcileStampOrder    *connect.Client[v1.ReconcileStampOrderRequest, v1.ReconcileStampOrderResponse]
+	createStampOrder       *connect.Client[v1.CreateStampOrderRequest, v1.CreateStampOrderResponse]
+	receiveStampOrder      *connect.Client[v1.ReceiveStampOrderRequest, v1.ReceiveStampOrderResponse]
+	listStampOrders        *connect.Client[v1.ListStampOrdersRequest, v1.ListStampOrdersResponse]
+	voidStamps             *connect.Client[v1.VoidStampsRequest, v1.VoidStampsResponse]
+}
+
+// RecordStampDisposition calls stillhouse.v1.ExciseStampService.RecordStampDisposition.
+func (c *exciseStampServiceClient) RecordStampDisposition(ctx context.Context, req *connect.Request[v1.RecordStampDispositionRequest]) (*connect.Response[v1.RecordStampDispositionResponse], error) {
+	return c.recordStampDisposition.CallUnary(ctx, req)
+}
+
+// ListStampDispositions calls stillhouse.v1.ExciseStampService.ListStampDispositions.
+func (c *exciseStampServiceClient) ListStampDispositions(ctx context.Context, req *connect.Request[v1.ListStampDispositionsRequest]) (*connect.Response[v1.ListStampDispositionsResponse], error) {
+	return c.listStampDispositions.CallUnary(ctx, req)
+}
+
+// ReconcileStampOrder calls stillhouse.v1.ExciseStampService.ReconcileStampOrder.
+func (c *exciseStampServiceClient) ReconcileStampOrder(ctx context.Context, req *connect.Request[v1.ReconcileStampOrderRequest]) (*connect.Response[v1.ReconcileStampOrderResponse], error) {
+	return c.reconcileStampOrder.CallUnary(ctx, req)
 }
 
 // CreateStampOrder calls stillhouse.v1.ExciseStampService.CreateStampOrder.
@@ -127,6 +175,9 @@ func (c *exciseStampServiceClient) VoidStamps(ctx context.Context, req *connect.
 
 // ExciseStampServiceHandler is an implementation of the stillhouse.v1.ExciseStampService service.
 type ExciseStampServiceHandler interface {
+	RecordStampDisposition(context.Context, *connect.Request[v1.RecordStampDispositionRequest]) (*connect.Response[v1.RecordStampDispositionResponse], error)
+	ListStampDispositions(context.Context, *connect.Request[v1.ListStampDispositionsRequest]) (*connect.Response[v1.ListStampDispositionsResponse], error)
+	ReconcileStampOrder(context.Context, *connect.Request[v1.ReconcileStampOrderRequest]) (*connect.Response[v1.ReconcileStampOrderResponse], error)
 	CreateStampOrder(context.Context, *connect.Request[v1.CreateStampOrderRequest]) (*connect.Response[v1.CreateStampOrderResponse], error)
 	ReceiveStampOrder(context.Context, *connect.Request[v1.ReceiveStampOrderRequest]) (*connect.Response[v1.ReceiveStampOrderResponse], error)
 	ListStampOrders(context.Context, *connect.Request[v1.ListStampOrdersRequest]) (*connect.Response[v1.ListStampOrdersResponse], error)
@@ -140,6 +191,24 @@ type ExciseStampServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewExciseStampServiceHandler(svc ExciseStampServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	exciseStampServiceMethods := v1.File_stillhouse_v1_excise_stamp_proto.Services().ByName("ExciseStampService").Methods()
+	exciseStampServiceRecordStampDispositionHandler := connect.NewUnaryHandler(
+		ExciseStampServiceRecordStampDispositionProcedure,
+		svc.RecordStampDisposition,
+		connect.WithSchema(exciseStampServiceMethods.ByName("RecordStampDisposition")),
+		connect.WithHandlerOptions(opts...),
+	)
+	exciseStampServiceListStampDispositionsHandler := connect.NewUnaryHandler(
+		ExciseStampServiceListStampDispositionsProcedure,
+		svc.ListStampDispositions,
+		connect.WithSchema(exciseStampServiceMethods.ByName("ListStampDispositions")),
+		connect.WithHandlerOptions(opts...),
+	)
+	exciseStampServiceReconcileStampOrderHandler := connect.NewUnaryHandler(
+		ExciseStampServiceReconcileStampOrderProcedure,
+		svc.ReconcileStampOrder,
+		connect.WithSchema(exciseStampServiceMethods.ByName("ReconcileStampOrder")),
+		connect.WithHandlerOptions(opts...),
+	)
 	exciseStampServiceCreateStampOrderHandler := connect.NewUnaryHandler(
 		ExciseStampServiceCreateStampOrderProcedure,
 		svc.CreateStampOrder,
@@ -166,6 +235,12 @@ func NewExciseStampServiceHandler(svc ExciseStampServiceHandler, opts ...connect
 	)
 	return "/stillhouse.v1.ExciseStampService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case ExciseStampServiceRecordStampDispositionProcedure:
+			exciseStampServiceRecordStampDispositionHandler.ServeHTTP(w, r)
+		case ExciseStampServiceListStampDispositionsProcedure:
+			exciseStampServiceListStampDispositionsHandler.ServeHTTP(w, r)
+		case ExciseStampServiceReconcileStampOrderProcedure:
+			exciseStampServiceReconcileStampOrderHandler.ServeHTTP(w, r)
 		case ExciseStampServiceCreateStampOrderProcedure:
 			exciseStampServiceCreateStampOrderHandler.ServeHTTP(w, r)
 		case ExciseStampServiceReceiveStampOrderProcedure:
@@ -182,6 +257,18 @@ func NewExciseStampServiceHandler(svc ExciseStampServiceHandler, opts ...connect
 
 // UnimplementedExciseStampServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedExciseStampServiceHandler struct{}
+
+func (UnimplementedExciseStampServiceHandler) RecordStampDisposition(context.Context, *connect.Request[v1.RecordStampDispositionRequest]) (*connect.Response[v1.RecordStampDispositionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ExciseStampService.RecordStampDisposition is not implemented"))
+}
+
+func (UnimplementedExciseStampServiceHandler) ListStampDispositions(context.Context, *connect.Request[v1.ListStampDispositionsRequest]) (*connect.Response[v1.ListStampDispositionsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ExciseStampService.ListStampDispositions is not implemented"))
+}
+
+func (UnimplementedExciseStampServiceHandler) ReconcileStampOrder(context.Context, *connect.Request[v1.ReconcileStampOrderRequest]) (*connect.Response[v1.ReconcileStampOrderResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ExciseStampService.ReconcileStampOrder is not implemented"))
+}
 
 func (UnimplementedExciseStampServiceHandler) CreateStampOrder(context.Context, *connect.Request[v1.CreateStampOrderRequest]) (*connect.Response[v1.CreateStampOrderResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ExciseStampService.CreateStampOrder is not implemented"))
