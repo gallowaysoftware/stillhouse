@@ -38,9 +38,15 @@ type Component struct {
 type FullResult struct {
 	BottleCount int32
 	Materials   Result
-	Labour      Component
-	Overhead    Component
-	TotalCAD    float64
+	// MaterialsComponent is the Materials figure as a Component, so every
+	// consumer applies the same judgement about whether it is available.
+	// It lives here rather than being assembled at each call site because
+	// the journal, the inventory valuation and the cost screen were three
+	// call sites and only one of them was going to get it right.
+	MaterialsComponent Component
+	Labour             Component
+	Overhead           Component
+	TotalCAD           float64
 	// Complete is true only when every component was available. A cost
 	// that is missing its overhead is still worth showing; calling it a
 	// full cost is not.
@@ -90,6 +96,44 @@ func BottlingRunFullCost(
 	out.Materials = materials
 	out.BottleCount = materials.BottleCount
 	out.TotalCAD = materials.TotalCAD
+
+	// Zero priced lines is not zero materials — it is no record of any.
+	//
+	// Found by QA: a run bottled from adopted opening stock has no mash
+	// chain behind it, so the walk returns nothing, and UnpricedLines == 0
+	// was trivially true. The cost came back "complete" at labour plus
+	// overhead, describing itself as "direct materials, labour and
+	// absorbed overhead" while containing no materials at all — the exact
+	// failure this package was written to prevent, arrived at from the
+	// other direction. Same distinction as no hours recorded.
+	priced := len(materials.Lines) - materials.UnpricedLines
+	switch {
+	case priced == 0 && len(materials.Lines) == 0:
+		out.MaterialsComponent = Component{
+			Name: "Direct materials",
+			Missing: "nothing priceable was found behind this run — it was " +
+				"bottled from stock with no mash chain, or the chain is broken",
+		}
+	case priced == 0:
+		out.MaterialsComponent = Component{
+			Name: "Direct materials",
+			Missing: fmt.Sprintf("none of the %d ingredient line%s behind this run "+
+				"has a recorded cost", len(materials.Lines), plural(len(materials.Lines))),
+		}
+	default:
+		out.MaterialsComponent = Component{
+			Name:      "Direct materials",
+			AmountCAD: materials.TotalCAD,
+			Available: true,
+			Basis: fmt.Sprintf("%d priced ingredient line%s at the landed cost of the "+
+				"lot each came from", priced, plural(priced)),
+		}
+		if materials.UnpricedLines > 0 {
+			out.MaterialsComponent.Missing = fmt.Sprintf(
+				"%d further line%s could not be priced",
+				materials.UnpricedLines, plural(materials.UnpricedLines))
+		}
+	}
 
 	run, err := q.GetBottlingRun(ctx, runID)
 	if err != nil {
@@ -166,9 +210,20 @@ func BottlingRunFullCost(
 	}
 
 	out.TotalCAD = round2(out.TotalCAD)
-	out.Complete = materials.UnpricedLines == 0 &&
+	out.Complete = out.MaterialsComponent.Available &&
+		out.MaterialsComponent.Missing == "" &&
 		out.Labour.Available && out.Overhead.Available
 	return out, nil
+}
+
+// plural is "s", for the words this package pluralises. Deliberately not
+// shared with the one in internal/rpc, which returns "es" for "loss" and
+// produced "linees" here until QA caught it.
+func plural(n int) string {
+	if n == 1 {
+		return ""
+	}
+	return "s"
 }
 
 func numeric(n pgtype.Numeric) float64 {

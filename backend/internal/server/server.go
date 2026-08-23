@@ -117,6 +117,17 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	// Pure computation against the embedded CRA tables — no DB, no tenant.
 	alcoholometrySvc := rpc.NewAlcoholometryService(logger)
 
+	// Reject unknown JSON fields rather than silently discarding them.
+	//
+	// Found by QA: {"gtin": "..."} posted to CreateProduct, which has no
+	// gtin field, returned 200 with the value dropped. The API is a
+	// supported surface — the MCP tools and any script a licensee writes
+	// go through it — and a misspelt field that succeeds while doing
+	// nothing is the worst possible answer for a system whose figures end
+	// up on a filed return. Forward compatibility is not worth much for a
+	// self-hosted single-version deployment, and is worth less than this.
+	strictJSON := connect.WithCodec(strictJSONCodec{})
+
 	interceptors := connect.WithInterceptors(
 		rpc.NewAuthInterceptor(sm, queries),
 		rpc.NewRoleGateInterceptor(),
@@ -124,6 +135,10 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		// response whatever produced it.
 		rpc.NewFloatRoundingInterceptor(),
 	)
+
+	// Every handler is mounted with both, so the options travel together
+	// and a new service cannot pick up one without the other.
+	interceptors = connect.WithOptions(interceptors, strictJSON)
 
 	mux := http.NewServeMux()
 	mux.Handle(stillhousev1connect.NewAuthServiceHandler(authSvc, interceptors))

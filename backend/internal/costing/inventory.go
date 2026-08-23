@@ -3,6 +3,7 @@ package costing
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -47,6 +48,22 @@ type ValueLine struct {
 	Why      string
 }
 
+// incompleteWhy names the components a cost is missing, so a valuation
+// derived from it carries the caveat rather than the caller having to
+// know to look.
+func incompleteWhy(c FullResult) string {
+	var missing []string
+	for _, comp := range []Component{c.MaterialsComponent, c.Labour, c.Overhead} {
+		if !comp.Available && comp.Missing != "" {
+			missing = append(missing, comp.Missing)
+		}
+	}
+	if len(missing) == 0 {
+		return ""
+	}
+	return "valued at an incomplete cost — " + strings.Join(missing, "; ")
+}
+
 // ValueInventory prices what is on hand.
 //
 // Work in progress is bulk alcohol, casks included — a maturing cask is
@@ -71,6 +88,7 @@ func ValueInventory(
 	// Finished goods first: the run costs it computes are what WIP is
 	// then valued against, so the walk is done once.
 	perLAAByContainer := map[uuid.UUID]float64{}
+	partialByContainer := map[uuid.UUID]string{}
 	runCost := map[uuid.UUID]FullResult{}
 
 	lots, err := q.ValuePackagedForFinishedGoods(ctx)
@@ -115,6 +133,11 @@ func ValueInventory(
 		line.Valued = true
 		line.UnitCAD = per
 		line.ValueCAD = round2(per * float64(l.BottlesOnHand))
+		// Valued, but at a cost that is missing a component. Better than
+		// no value at all, and worse than it looks unless it says so.
+		if !cost.Complete {
+			line.Why = incompleteWhy(cost)
+		}
 		out.FinishedGoods.ValueCAD += line.ValueCAD
 		out.FinishedGoods.ValuedLAA += laa
 		out.FinishedGoods.Lines = append(out.FinishedGoods.Lines, line)
@@ -125,6 +148,9 @@ func ValueInventory(
 		run, rerr := q.GetBottlingRun(ctx, l.BottlingRunID.UUID)
 		if rerr == nil && run.TankGaugeLaa > 0 && cost.TotalCAD > 0 {
 			perLAA := cost.TotalCAD / run.TankGaugeLaa
+			if !cost.Complete {
+				partialByContainer[run.SourceContainerID] = incompleteWhy(cost)
+			}
 			if prev, seen := perLAAByContainer[run.SourceContainerID]; !seen || perLAA > prev {
 				// The most recent-and-costly figure rather than an
 				// average: a cheap average across a vessel that has been
@@ -163,6 +189,9 @@ func ValueInventory(
 		line.Valued = true
 		line.UnitCAD = per
 		line.ValueCAD = round2(per * v.CurrentLaa)
+		if why, partial := partialByContainer[v.ID]; partial {
+			line.Why = why
+		}
 		out.WIP.ValueCAD += line.ValueCAD
 		out.WIP.ValuedLAA += v.CurrentLaa
 		out.WIP.Lines = append(out.WIP.Lines, line)

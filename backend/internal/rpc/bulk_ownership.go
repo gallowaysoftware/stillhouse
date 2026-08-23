@@ -286,10 +286,17 @@ func (s *BulkService) ListThirdPartySpirits(
 		})
 		c.OwnerName = r.OwnerName
 		out.Containers = append(out.Containers, c)
+		// Three figures, so that between them they account for every row
+		// on this list. Two of them left a customer's cask that had also
+		// gone elsewhere in neither, and the totals read zero above it.
+		elsewhere := r.Possession == sqlcgen.BulkPossessionHeldElsewhere
+		theirs := r.OwnerCustomerID.Valid
 		switch {
-		case r.Possession == sqlcgen.BulkPossessionHeldElsewhere && !r.OwnerCustomerID.Valid:
+		case elsewhere && theirs:
+			out.ThirdPartyElsewhereLaa += r.CurrentLaa
+		case elsewhere:
 			out.HeldElsewhereLaa += r.CurrentLaa
-		case r.Possession == sqlcgen.BulkPossessionHeld && r.OwnerCustomerID.Valid:
+		case theirs:
 			out.HeldForOthersLaa += r.CurrentLaa
 		}
 	}

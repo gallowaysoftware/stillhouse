@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -448,14 +449,32 @@ func (j *Journal) addWIPTransfer(
 			}
 			continue
 		}
-		basis := "direct materials only"
-		switch {
-		case cost.Labour.Available && cost.Overhead.Available:
-			basis = "direct materials, labour and absorbed overhead"
-		case cost.Labour.Available:
-			basis = "direct materials and labour; no overhead rate is set"
-		case cost.Overhead.Available:
-			basis = "direct materials and absorbed overhead; no hours were recorded"
+		// Name only what is actually in the figure. QA found this claiming
+		// "direct materials, labour and absorbed overhead" for a run
+		// bottled from adopted stock, which has no materials at all.
+		var parts []string
+		var absent []string
+		for _, c := range []struct {
+			available bool
+			present   string
+			missing   string
+		}{
+			{cost.MaterialsComponent.Available, "direct materials", "no materials could be traced"},
+			{cost.Labour.Available, "labour", "no hours were recorded"},
+			{cost.Overhead.Available, "absorbed overhead", "no overhead rate is set"},
+		} {
+			if c.available {
+				parts = append(parts, c.present)
+			} else {
+				absent = append(absent, c.missing)
+			}
+		}
+		basis := strings.Join(parts, ", ")
+		if basis == "" {
+			basis = "nothing that could be priced"
+		}
+		if len(absent) > 0 {
+			basis += "; " + strings.Join(absent, ", ")
 		}
 		j.add(Line{
 			Date:        r.BottlingDate.Time,

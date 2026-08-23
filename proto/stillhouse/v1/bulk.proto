@@ -159,6 +159,11 @@ message BulkSummary {
   double held_for_others_laa = 6;
   // Ours, somewhere else. On our books, not on our return.
   double held_elsewhere_laa = 7;
+  // Somebody else's, somewhere else. On neither — and it existed with no
+  // figure at all until QA found a cask sold in place and then sent away,
+  // which made both figures above read zero above a row that plainly was
+  // not. Three figures partition everything that is not simply ours-and-here.
+  double third_party_elsewhere_laa = 9;
   int32  third_party_count = 8;
 }
 
@@ -556,8 +561,13 @@ message SetBulkContainerPossessionResponse {
 
 message ListThirdPartySpiritsRequest {}
 message ListThirdPartySpiritsResponse {
-  // Everything that is not simply ours-and-here.
+  // Everything that is not simply ours-and-here, and three figures that
+  // between them account for all of it.
   repeated BulkContainer containers = 1;
+  // Theirs, here: on your return, not your books.
   double held_for_others_laa = 2;
+  // Yours, elsewhere: on your books, not your return.
   double held_elsewhere_laa = 3;
+  // Theirs, elsewhere: on neither.
+  double third_party_elsewhere_laa = 4;
 }

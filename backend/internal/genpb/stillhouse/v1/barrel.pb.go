@@ -1176,9 +1176,11 @@ type ListBarrelsResponse struct {
 	HeldLaa          float64 `protobuf:"fixed64,7,opt,name=held_laa,json=heldLaa,proto3" json:"held_laa,omitempty"`
 	HeldForOthersLaa float64 `protobuf:"fixed64,8,opt,name=held_for_others_laa,json=heldForOthersLaa,proto3" json:"held_for_others_laa,omitempty"`
 	HeldElsewhereLaa float64 `protobuf:"fixed64,9,opt,name=held_elsewhere_laa,json=heldElsewhereLaa,proto3" json:"held_elsewhere_laa,omitempty"`
-	ThirdPartyCount  int32   `protobuf:"varint,10,opt,name=third_party_count,json=thirdPartyCount,proto3" json:"third_party_count,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Theirs, elsewhere: on neither.
+	ThirdPartyElsewhereLaa float64 `protobuf:"fixed64,11,opt,name=third_party_elsewhere_laa,json=thirdPartyElsewhereLaa,proto3" json:"third_party_elsewhere_laa,omitempty"`
+	ThirdPartyCount        int32   `protobuf:"varint,10,opt,name=third_party_count,json=thirdPartyCount,proto3" json:"third_party_count,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *ListBarrelsResponse) Reset() {
@@ -1270,6 +1272,13 @@ func (x *ListBarrelsResponse) GetHeldForOthersLaa() float64 {
 func (x *ListBarrelsResponse) GetHeldElsewhereLaa() float64 {
 	if x != nil {
 		return x.HeldElsewhereLaa
+	}
+	return 0
+}
+
+func (x *ListBarrelsResponse) GetThirdPartyElsewhereLaa() float64 {
+	if x != nil {
+		return x.ThirdPartyElsewhereLaa
 	}
 	return 0
 }
@@ -2172,7 +2181,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x14CreateBarrelResponse\x12-\n" +
 	"\x06barrel\x18\x01 \x01(\v2\x15.stillhouse.v1.BarrelR\x06barrel\"?\n" +
 	"\x12ListBarrelsRequest\x12)\n" +
-	"\x10include_archived\x18\x01 \x01(\bR\x0fincludeArchived\"\x8d\x03\n" +
+	"\x10include_archived\x18\x01 \x01(\bR\x0fincludeArchived\"\xc8\x03\n" +
 	"\x13ListBarrelsResponse\x12/\n" +
 	"\abarrels\x18\x01 \x03(\v2\x15.stillhouse.v1.BarrelR\abarrels\x12\x1f\n" +
 	"\vtotal_count\x18\x02 \x01(\x05R\n" +
@@ -2184,7 +2193,8 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\towned_laa\x18\x06 \x01(\x01R\bownedLaa\x12\x19\n" +
 	"\bheld_laa\x18\a \x01(\x01R\aheldLaa\x12-\n" +
 	"\x13held_for_others_laa\x18\b \x01(\x01R\x10heldForOthersLaa\x12,\n" +
-	"\x12held_elsewhere_laa\x18\t \x01(\x01R\x10heldElsewhereLaa\x12*\n" +
+	"\x12held_elsewhere_laa\x18\t \x01(\x01R\x10heldElsewhereLaa\x129\n" +
+	"\x19third_party_elsewhere_laa\x18\v \x01(\x01R\x16thirdPartyElsewhereLaa\x12*\n" +
 	"\x11third_party_count\x18\n" +
 	" \x01(\x05R\x0fthirdPartyCount\"\"\n" +
 	"\x10GetBarrelRequest\x12\x0e\n" +

@@ -392,6 +392,11 @@ type B266Report struct {
 	// held_for_others is inside bulk_closing_laa. held_elsewhere is not.
 	BulkClosingHeldForOthersLaa float64 `protobuf:"fixed64,75,opt,name=bulk_closing_held_for_others_laa,json=bulkClosingHeldForOthersLaa,proto3" json:"bulk_closing_held_for_others_laa,omitempty"`
 	BulkHeldElsewhereLaa        float64 `protobuf:"fixed64,76,opt,name=bulk_held_elsewhere_laa,json=bulkHeldElsewhereLaa,proto3" json:"bulk_held_elsewhere_laa,omitempty"`
+	// Somebody else's, somewhere else — on neither this return nor your
+	// books. Small, and reported because the other two figures cannot
+	// account for it and a licensee reconciling them should not have to
+	// wonder where the difference went.
+	BulkThirdPartyElsewhereLaa float64 `protobuf:"fixed64,77,opt,name=bulk_third_party_elsewhere_laa,json=bulkThirdPartyElsewhereLaa,proto3" json:"bulk_third_party_elsewhere_laa,omitempty"`
 	// Line D — reason-coded adjustments reconciling book inventory to
 	// physical. Signed net, with each direction also reported: a period that
 	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
@@ -614,6 +619,13 @@ func (x *B266Report) GetBulkClosingHeldForOthersLaa() float64 {
 func (x *B266Report) GetBulkHeldElsewhereLaa() float64 {
 	if x != nil {
 		return x.BulkHeldElsewhereLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetBulkThirdPartyElsewhereLaa() float64 {
+	if x != nil {
+		return x.BulkThirdPartyElsewhereLaa
 	}
 	return 0
 }
@@ -1581,7 +1593,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
 	"\x06due_on\x18\n" +
-	" \x01(\tR\x05dueOn\"\xca\x1c\n" +
+	" \x01(\tR\x05dueOn\"\x8e\x1d\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1599,7 +1611,8 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x10bulk_closing_laa\x18\x12 \x01(\x01R\x0ebulkClosingLaa\x12J\n" +
 	"\"bulk_opening_inventory_adopted_laa\x18\x13 \x01(\x01R\x1ebulkOpeningInventoryAdoptedLaa\x12E\n" +
 	" bulk_closing_held_for_others_laa\x18K \x01(\x01R\x1bbulkClosingHeldForOthersLaa\x125\n" +
-	"\x17bulk_held_elsewhere_laa\x18L \x01(\x01R\x14bulkHeldElsewhereLaa\x120\n" +
+	"\x17bulk_held_elsewhere_laa\x18L \x01(\x01R\x14bulkHeldElsewhereLaa\x12B\n" +
+	"\x1ebulk_third_party_elsewhere_laa\x18M \x01(\x01R\x1abulkThirdPartyElsewhereLaa\x120\n" +
 	"\x14bulk_adjustments_laa\x18\x14 \x01(\x01R\x12bulkAdjustmentsLaa\x12A\n" +
 	"\x1dbulk_adjustments_increase_laa\x18\x15 \x01(\x01R\x1abulkAdjustmentsIncreaseLaa\x12A\n" +
 	"\x1dbulk_adjustments_decrease_laa\x18\x16 \x01(\x01R\x1abulkAdjustmentsDecreaseLaa\x124\n" +

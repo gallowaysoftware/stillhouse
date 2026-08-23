@@ -1003,9 +1003,14 @@ type BulkSummary struct {
 	HeldForOthersLaa float64 `protobuf:"fixed64,6,opt,name=held_for_others_laa,json=heldForOthersLaa,proto3" json:"held_for_others_laa,omitempty"`
 	// Ours, somewhere else. On our books, not on our return.
 	HeldElsewhereLaa float64 `protobuf:"fixed64,7,opt,name=held_elsewhere_laa,json=heldElsewhereLaa,proto3" json:"held_elsewhere_laa,omitempty"`
-	ThirdPartyCount  int32   `protobuf:"varint,8,opt,name=third_party_count,json=thirdPartyCount,proto3" json:"third_party_count,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Somebody else's, somewhere else. On neither — and it existed with no
+	// figure at all until QA found a cask sold in place and then sent away,
+	// which made both figures above read zero above a row that plainly was
+	// not. Three figures partition everything that is not simply ours-and-here.
+	ThirdPartyElsewhereLaa float64 `protobuf:"fixed64,9,opt,name=third_party_elsewhere_laa,json=thirdPartyElsewhereLaa,proto3" json:"third_party_elsewhere_laa,omitempty"`
+	ThirdPartyCount        int32   `protobuf:"varint,8,opt,name=third_party_count,json=thirdPartyCount,proto3" json:"third_party_count,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *BulkSummary) Reset() {
@@ -1083,6 +1088,13 @@ func (x *BulkSummary) GetHeldForOthersLaa() float64 {
 func (x *BulkSummary) GetHeldElsewhereLaa() float64 {
 	if x != nil {
 		return x.HeldElsewhereLaa
+	}
+	return 0
+}
+
+func (x *BulkSummary) GetThirdPartyElsewhereLaa() float64 {
+	if x != nil {
+		return x.ThirdPartyElsewhereLaa
 	}
 	return 0
 }
@@ -3623,12 +3635,17 @@ func (*ListThirdPartySpiritsRequest) Descriptor() ([]byte, []int) {
 
 type ListThirdPartySpiritsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// Everything that is not simply ours-and-here.
-	Containers       []*BulkContainer `protobuf:"bytes,1,rep,name=containers,proto3" json:"containers,omitempty"`
-	HeldForOthersLaa float64          `protobuf:"fixed64,2,opt,name=held_for_others_laa,json=heldForOthersLaa,proto3" json:"held_for_others_laa,omitempty"`
-	HeldElsewhereLaa float64          `protobuf:"fixed64,3,opt,name=held_elsewhere_laa,json=heldElsewhereLaa,proto3" json:"held_elsewhere_laa,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Everything that is not simply ours-and-here, and three figures that
+	// between them account for all of it.
+	Containers []*BulkContainer `protobuf:"bytes,1,rep,name=containers,proto3" json:"containers,omitempty"`
+	// Theirs, here: on your return, not your books.
+	HeldForOthersLaa float64 `protobuf:"fixed64,2,opt,name=held_for_others_laa,json=heldForOthersLaa,proto3" json:"held_for_others_laa,omitempty"`
+	// Yours, elsewhere: on your books, not your return.
+	HeldElsewhereLaa float64 `protobuf:"fixed64,3,opt,name=held_elsewhere_laa,json=heldElsewhereLaa,proto3" json:"held_elsewhere_laa,omitempty"`
+	// Theirs, elsewhere: on neither.
+	ThirdPartyElsewhereLaa float64 `protobuf:"fixed64,4,opt,name=third_party_elsewhere_laa,json=thirdPartyElsewhereLaa,proto3" json:"third_party_elsewhere_laa,omitempty"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
 }
 
 func (x *ListThirdPartySpiritsResponse) Reset() {
@@ -3678,6 +3695,13 @@ func (x *ListThirdPartySpiritsResponse) GetHeldForOthersLaa() float64 {
 func (x *ListThirdPartySpiritsResponse) GetHeldElsewhereLaa() float64 {
 	if x != nil {
 		return x.HeldElsewhereLaa
+	}
+	return 0
+}
+
+func (x *ListThirdPartySpiritsResponse) GetThirdPartyElsewhereLaa() float64 {
+	if x != nil {
+		return x.ThirdPartyElsewhereLaa
 	}
 	return 0
 }
@@ -3753,7 +3777,7 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\x15packaged_inventory_id\x18\x1e \x01(\tR\x13packagedInventoryId\x12-\n" +
 	"\x12bottles_unpackaged\x18\x1f \x01(\x05R\x11bottlesUnpackaged\x12P\n" +
 	"\x13loss_duty_treatment\x18  \x01(\x0e2 .stillhouse.v1.LossDutyTreatmentR\x11lossDutyTreatment\x128\n" +
-	"\x18loss_treatment_authority\x18! \x01(\tR\x16lossTreatmentAuthority\"\xb9\x02\n" +
+	"\x18loss_treatment_authority\x18! \x01(\tR\x16lossTreatmentAuthority\"\xf4\x02\n" +
 	"\vBulkSummary\x12\x1b\n" +
 	"\ttotal_laa\x18\x01 \x01(\x01R\btotalLaa\x12'\n" +
 	"\x0fcontainer_count\x18\x02 \x01(\x05R\x0econtainerCount\x12\x1b\n" +
@@ -3761,7 +3785,8 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\bheld_laa\x18\x04 \x01(\x01R\aheldLaa\x12#\n" +
 	"\ravailable_laa\x18\x05 \x01(\x01R\favailableLaa\x12-\n" +
 	"\x13held_for_others_laa\x18\x06 \x01(\x01R\x10heldForOthersLaa\x12,\n" +
-	"\x12held_elsewhere_laa\x18\a \x01(\x01R\x10heldElsewhereLaa\x12*\n" +
+	"\x12held_elsewhere_laa\x18\a \x01(\x01R\x10heldElsewhereLaa\x129\n" +
+	"\x19third_party_elsewhere_laa\x18\t \x01(\x01R\x16thirdPartyElsewhereLaa\x12*\n" +
 	"\x11third_party_count\x18\b \x01(\x05R\x0fthirdPartyCount\"\xdd\x01\n" +
 	"\x1aCreateBulkContainerRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x124\n" +
@@ -3980,13 +4005,14 @@ const file_stillhouse_v1_bulk_proto_rawDesc = "" +
 	"\"SetBulkContainerPossessionResponse\x12:\n" +
 	"\tcontainer\x18\x01 \x01(\v2\x1c.stillhouse.v1.BulkContainerR\tcontainer\x127\n" +
 	"\bmovement\x18\x02 \x01(\v2\x1b.stillhouse.v1.BulkMovementR\bmovement\"\x1e\n" +
-	"\x1cListThirdPartySpiritsRequest\"\xba\x01\n" +
+	"\x1cListThirdPartySpiritsRequest\"\xf5\x01\n" +
 	"\x1dListThirdPartySpiritsResponse\x12<\n" +
 	"\n" +
 	"containers\x18\x01 \x03(\v2\x1c.stillhouse.v1.BulkContainerR\n" +
 	"containers\x12-\n" +
 	"\x13held_for_others_laa\x18\x02 \x01(\x01R\x10heldForOthersLaa\x12,\n" +
-	"\x12held_elsewhere_laa\x18\x03 \x01(\x01R\x10heldElsewhereLaa*\xa4\x02\n" +
+	"\x12held_elsewhere_laa\x18\x03 \x01(\x01R\x10heldElsewhereLaa\x129\n" +
+	"\x19third_party_elsewhere_laa\x18\x04 \x01(\x01R\x16thirdPartyElsewhereLaa*\xa4\x02\n" +
 	"\x11BulkContainerKind\x12#\n" +
 	"\x1fBULK_CONTAINER_KIND_UNSPECIFIED\x10\x00\x12'\n" +
 	"#BULK_CONTAINER_KIND_SPIRIT_RECEIVER\x10\x01\x12\x1c\n" +

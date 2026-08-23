@@ -150,6 +150,8 @@ func (s *BarrelService) ListBarrels(
 			out.HeldForOthersLaa += b.CurrentLaa
 		case !here && mine:
 			out.HeldElsewhereLaa += b.CurrentLaa
+		case !here && !mine:
+			out.ThirdPartyElsewhereLaa += b.CurrentLaa
 		}
 		if b.DaysAged > 0 {
 			out.AgingCount++

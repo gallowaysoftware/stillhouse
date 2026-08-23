@@ -115,9 +115,11 @@ function Bucket({ title, sub, b }: { title: string; sub: string; b?: BucketT }) 
                 <td className="px-4 py-2">
                   <span className="text-fg">{l.name}</span>
                   <span className="ml-2 text-xs text-fg-muted">{l.detail}</span>
-                  {!l.valued && (
-                    <div className="text-xs text-warning-fg">{l.why}</div>
-                  )}
+                  {/* `why` now covers both "could not be valued" and
+                      "valued at an incomplete cost" — a figure short by
+                      its materials is worth more than nothing and less
+                      than it looks. */}
+                  {l.why && <div className="text-xs text-warning-fg">{l.why}</div>}
                 </td>
                 <td className="px-4 py-2 text-right text-fg-muted">{formatLAA(l.laa)}</td>
                 <td className="px-4 py-2 text-right text-fg-muted">{l.bottles || "—"}</td>

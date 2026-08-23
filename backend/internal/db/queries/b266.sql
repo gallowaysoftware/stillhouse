@@ -313,6 +313,9 @@ SELECT
         AS held_for_others_laa,
     COALESCE(SUM(current_laa) FILTER (
         WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
-        AS held_elsewhere_laa
+        AS held_elsewhere_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS third_party_elsewhere_laa
 FROM bulk_containers
 WHERE NOT archived;

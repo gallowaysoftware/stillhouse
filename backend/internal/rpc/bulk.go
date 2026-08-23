@@ -73,6 +73,9 @@ func (s *BulkService) CreateBulkContainer(
 			})
 	})
 	if err != nil {
+		if dup := uniqueViolation(err, "container"); dup != nil {
+			return nil, dup
+		}
 		s.logger.Error("CreateBulkContainer", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -123,6 +126,9 @@ func (s *BulkService) UpdateBulkContainer(
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("container not found"))
+		}
+		if dup := uniqueViolation(err, "container"); dup != nil {
+			return nil, dup
 		}
 		s.logger.Error("UpdateBulkContainer", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
@@ -232,14 +238,15 @@ func (s *BulkService) ListBulkContainers(
 	return connect.NewResponse(&stillhousev1.ListBulkContainersResponse{
 		Containers: out,
 		Summary: &stillhousev1.BulkSummary{
-			TotalLaa:         round4(totalLAA),
-			ContainerCount:   activeCount,
-			OwnedLaa:         round4(split.OwnedLaa),
-			HeldLaa:          round4(split.HeldLaa),
-			AvailableLaa:     round4(split.AvailableLaa),
-			HeldForOthersLaa: round4(split.HeldForOthersLaa),
-			HeldElsewhereLaa: round4(split.HeldElsewhereLaa),
-			ThirdPartyCount:  split.ThirdPartyCount,
+			TotalLaa:               round4(totalLAA),
+			ContainerCount:         activeCount,
+			OwnedLaa:               round4(split.OwnedLaa),
+			HeldLaa:                round4(split.HeldLaa),
+			AvailableLaa:           round4(split.AvailableLaa),
+			HeldForOthersLaa:       round4(split.HeldForOthersLaa),
+			HeldElsewhereLaa:       round4(split.HeldElsewhereLaa),
+			ThirdPartyElsewhereLaa: round4(split.ThirdPartyElsewhereLaa),
+			ThirdPartyCount:        split.ThirdPartyCount,
 		},
 	}), nil
 }

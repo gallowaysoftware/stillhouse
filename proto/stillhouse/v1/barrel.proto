@@ -203,6 +203,8 @@ message ListBarrelsResponse {
   double held_laa = 7;
   double held_for_others_laa = 8;
   double held_elsewhere_laa = 9;
+  // Theirs, elsewhere: on neither.
+  double third_party_elsewhere_laa = 11;
   int32  third_party_count = 10;
 }
 

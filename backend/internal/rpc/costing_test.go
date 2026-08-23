@@ -31,19 +31,7 @@ func TestFullCostSaysWhatItIsMissing(t *testing.T) {
 	}
 	// Bottling consumes stamps, and a run with none is refused before it
 	// gets anywhere near a cost.
-	stampOrder, err := f.q.CreateStampOrder(f.ctx, sqlcgen.CreateStampOrderParams{
-		TenantID: f.tenant.ID, Jurisdiction: "CA-ON", QuantityOrdered: 1000,
-	})
-	if err != nil {
-		t.Fatalf("create stamp order: %v", err)
-	}
-	if _, err := f.q.ReceiveStampOrder(f.ctx, sqlcgen.ReceiveStampOrderParams{
-		ID:               stampOrder.ID,
-		ReceivedAt:       pgtype.Timestamptz{Valid: true, Time: time.Now()},
-		QuantityReceived: 1000,
-	}); err != nil {
-		t.Fatalf("receive stamp order: %v", err)
-	}
+	f.seedStamps(t, "CA-ON", 1000)
 
 	bottling := NewBottlingService(f.db, testLogger())
 	run, err := bottling.CreateBottlingRun(f.ctx, connect.NewRequest(
@@ -221,4 +209,22 @@ func TestFullCostSaysWhatItIsMissing(t *testing.T) {
 			t.Error("400 bottles of 40 % vodka is not zero LAA of finished goods")
 		}
 	})
+}
+
+// seedStamps receives an excise stamp order, which bottling consumes.
+func (f *ledgerFixture) seedStamps(t *testing.T, jurisdiction string, count int32) {
+	t.Helper()
+	order, err := f.q.CreateStampOrder(f.ctx, sqlcgen.CreateStampOrderParams{
+		TenantID: f.tenant.ID, Jurisdiction: jurisdiction, QuantityOrdered: count,
+	})
+	if err != nil {
+		t.Fatalf("create stamp order: %v", err)
+	}
+	if _, err := f.q.ReceiveStampOrder(f.ctx, sqlcgen.ReceiveStampOrderParams{
+		ID:               order.ID,
+		ReceivedAt:       pgtype.Timestamptz{Valid: true, Time: time.Now()},
+		QuantityReceived: count,
+	}); err != nil {
+		t.Fatalf("receive stamp order: %v", err)
+	}
 }

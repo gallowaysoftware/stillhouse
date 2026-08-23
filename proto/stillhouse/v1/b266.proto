@@ -84,6 +84,11 @@ message B266Report {
   // held_for_others is inside bulk_closing_laa. held_elsewhere is not.
   double bulk_closing_held_for_others_laa = 75;
   double bulk_held_elsewhere_laa = 76;
+  // Somebody else's, somewhere else — on neither this return nor your
+  // books. Small, and reported because the other two figures cannot
+  // account for it and a licensee reconciling them should not have to
+  // wonder where the difference went.
+  double bulk_third_party_elsewhere_laa = 77;
   // Line D — reason-coded adjustments reconciling book inventory to
   // physical. Signed net, with each direction also reported: a period that
   // found 3 LAA in one tank and lost 3 in another nets to zero, and a line

@@ -111,14 +111,18 @@ SELECT
         AS held_for_others_laa,
     COALESCE(SUM(current_laa) FILTER (
         WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
-        AS held_elsewhere_laa
+        AS held_elsewhere_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS third_party_elsewhere_laa
 FROM bulk_containers
 WHERE NOT archived
 `
 
 type BulkOwnershipSplitAsOfRow struct {
-	HeldForOthersLaa float64 `json:"held_for_others_laa"`
-	HeldElsewhereLaa float64 `json:"held_elsewhere_laa"`
+	HeldForOthersLaa       float64 `json:"held_for_others_laa"`
+	HeldElsewhereLaa       float64 `json:"held_elsewhere_laa"`
+	ThirdPartyElsewhereLaa float64 `json:"third_party_elsewhere_laa"`
 }
 
 // What the closing balance is made of. Not a line on the form: EDM10-1-7
@@ -136,7 +140,7 @@ type BulkOwnershipSplitAsOfRow struct {
 func (q *Queries) BulkOwnershipSplitAsOf(ctx context.Context) (BulkOwnershipSplitAsOfRow, error) {
 	row := q.db.QueryRow(ctx, bulkOwnershipSplitAsOf)
 	var i BulkOwnershipSplitAsOfRow
-	err := row.Scan(&i.HeldForOthersLaa, &i.HeldElsewhereLaa)
+	err := row.Scan(&i.HeldForOthersLaa, &i.HeldElsewhereLaa, &i.ThirdPartyElsewhereLaa)
 	return i, err
 }
 

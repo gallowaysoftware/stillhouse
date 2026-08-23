@@ -419,6 +419,10 @@ function ReportView({
             <Row k="  yours, held by another licensee — not above (today)"
                  v={formatLAA(report.bulkHeldElsewhereLaa)} dim />
           )}
+          {report.bulkThirdPartyElsewhereLaa > 0 && (
+            <Row k="  a customer's and also elsewhere — not above (today)"
+                 v={formatLAA(report.bulkThirdPartyElsewhereLaa)} dim />
+          )}
         </Card>
         <Card title="Packaged spirits (LAA)">
           <Row k="Opening on hand"        v={formatLAA(report.packagedOpeningLaa)} />

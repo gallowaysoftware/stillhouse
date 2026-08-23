@@ -429,6 +429,7 @@ func gatherB266Totals(
 	if split, se := q.BulkOwnershipSplitAsOf(ctx); se == nil {
 		t.heldForOthersLAA = split.HeldForOthersLaa
 		t.heldElsewhereLAA = split.HeldElsewhereLaa
+		t.thirdPartyElsewhereLAA = split.ThirdPartyElsewhereLaa
 	} else {
 		return t, se
 	}

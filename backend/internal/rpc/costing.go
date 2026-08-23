@@ -308,22 +308,10 @@ func (s *CostingService) BottlingRunFullCost(
 	}); err != nil {
 		return nil, s.fail("BottlingRunFullCost", err)
 	}
-	materials := &stillhousev1.CostComponent{
-		Name:      "Direct materials",
-		AmountCad: res.Materials.TotalCAD,
-		Available: true,
-		Basis: fmt.Sprintf("%d priced ingredient line%s at the landed cost of the lot each came from",
-			len(res.Materials.Lines)-res.Materials.UnpricedLines,
-			plural(int32(len(res.Materials.Lines)-res.Materials.UnpricedLines))),
-	}
-	if res.Materials.UnpricedLines > 0 {
-		materials.Missing = fmt.Sprintf("%d ingredient line%s could not be priced",
-			res.Materials.UnpricedLines, plural(int32(res.Materials.UnpricedLines)))
-	}
 	return connect.NewResponse(&stillhousev1.BottlingRunFullCostResponse{
 		BottlingRunId:         runID.String(),
 		BottleCount:           res.BottleCount,
-		Materials:             materials,
+		Materials:             componentToProto(res.MaterialsComponent),
 		Labour:                componentToProto(res.Labour),
 		Overhead:              componentToProto(res.Overhead),
 		TotalCad:              res.TotalCAD,

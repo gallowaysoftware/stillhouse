@@ -45,6 +45,7 @@ type Split = {
   availableLaa?: number;
   heldForOthersLaa: number;
   heldElsewhereLaa: number;
+  thirdPartyElsewhereLaa: number;
   thirdPartyCount: number;
 };
 
@@ -52,13 +53,26 @@ type Split = {
 // Silent until ownership and possession actually diverge, so an ordinary
 // distillery never sees a distinction it does not have.
 export function OwnershipSplit({ s, noun }: { s: Split; noun: string }) {
-  if (s.heldForOthersLaa === 0 && s.heldElsewhereLaa === 0) return null;
-  return (
-    <span className="text-fg-muted">
-      {" "}Of that, <span className="font-medium text-fg">{formatLAA(s.heldForOthersLaa)} L</span>{" "}
-      is held for customers — on your B266, not your books — and{" "}
-      <span className="font-medium text-fg">{formatLAA(s.heldElsewhereLaa)} L</span> of your own{" "}
-      {noun} sits with another licensee, on your books but on their return.
-    </span>
-  );
+  // Three clauses, so between them they account for everything that is
+  // not simply yours and here. Two of them left a customer's cask that
+  // had also gone elsewhere unmentioned, and the sentence read as though
+  // nothing were unaccounted for.
+  const parts: string[] = [];
+  if (s.heldForOthersLaa > 0) {
+    parts.push(
+      `${formatLAA(s.heldForOthersLaa)} L is held for customers — on your B266, not your books`,
+    );
+  }
+  if (s.heldElsewhereLaa > 0) {
+    parts.push(
+      `${formatLAA(s.heldElsewhereLaa)} L of your own ${noun} sits with another licensee — on your books, not your return`,
+    );
+  }
+  if (s.thirdPartyElsewhereLaa > 0) {
+    parts.push(
+      `${formatLAA(s.thirdPartyElsewhereLaa)} L is a customer's and also elsewhere — on neither`,
+    );
+  }
+  if (parts.length === 0) return null;
+  return <span className="text-fg-muted"> Of that, {parts.join("; ")}.</span>;
 }

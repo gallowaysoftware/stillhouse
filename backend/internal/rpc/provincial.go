@@ -475,7 +475,8 @@ func (s *ProvincialService) ProvincialSalesReport(
 	}
 	for _, r := range rows {
 		out.Lines = append(out.Lines, &stillhousev1.ProvincialSalesLine{
-			ProductId: r.ProductID.String(), ProductName: r.ProductName,
+			Jurisdiction: r.Jurisdiction,
+			ProductId:    r.ProductID.String(), ProductName: r.ProductName,
 			Gtin: r.Gtin, BottleSizeMl: r.BottleSizeMl, BottleAbvPct: r.TargetAbvPct,
 			Bottles: r.Bottles, Litres: r.Litres, Laa: r.Laa,
 			DutyCad: r.DutyCad, Removals: r.Removals,

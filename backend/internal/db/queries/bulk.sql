@@ -160,6 +160,13 @@ SELECT
     COALESCE(SUM(current_laa) FILTER (
         WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
         AS held_elsewhere_laa,
+    -- Somebody else's, somewhere else. On neither the return nor the
+    -- books, and without this figure the two above read zero above a row
+    -- that plainly was not — found by QA on a cask sold in place and then
+    -- sent away.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS third_party_elsewhere_laa,
     COUNT(*) FILTER (WHERE possession = 'held')::INTEGER AS held_count,
     COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
 FROM bulk_containers
@@ -180,6 +187,9 @@ SELECT
     COALESCE(SUM(current_laa) FILTER (
         WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
         AS held_elsewhere_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS third_party_elsewhere_laa,
     COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
 FROM bulk_containers
 WHERE NOT archived

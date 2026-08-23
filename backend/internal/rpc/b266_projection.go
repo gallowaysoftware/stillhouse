@@ -36,10 +36,11 @@ type b266Totals struct {
 	// Current facts about ownership and possession, not walked back to the
 	// period end — see BulkOwnershipSplitAsOf. Shown so the operator can
 	// see what the closing balance is made of.
-	heldForOthersLAA      float64
-	heldElsewhereLAA      float64
-	packagedClosingLAA    float64
-	packagedClosingBottle int32
+	heldForOthersLAA       float64
+	heldElsewhereLAA       float64
+	thirdPartyElsewhereLAA float64
+	packagedClosingLAA     float64
+	packagedClosingBottle  int32
 
 	// Bottling runs in the period, voided runs excluded.
 	//
@@ -146,6 +147,7 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		BulkClosingLaa:                round4(t.bulkClosingLAA),
 		BulkClosingHeldForOthersLaa:   round4(t.heldForOthersLAA),
 		BulkHeldElsewhereLaa:          round4(t.heldElsewhereLAA),
+		BulkThirdPartyElsewhereLaa:    round4(t.thirdPartyElsewhereLAA),
 		// Adopted stock is reported but deliberately NOT counted among the
 		// receipts below, so the reverse-walk puts it in the opening
 		// balance. It was in the warehouse before the period; only the
@@ -308,16 +310,28 @@ func filingBlockers(t b266Totals) []string {
 	if t.destroyedUnclassifiedN > 0 {
 		out = append(out, fmt.Sprintf(
 			"%d destruction%s totalling %.4f LAA have no duty treatment. A destruction is relieved only where CRA approved it, and the approval reference has to be on file.",
-			t.destroyedUnclassifiedN, plural(t.destroyedUnclassifiedN), t.destroyedUnclassifiedLAA))
+			t.destroyedUnclassifiedN, pluralS(t.destroyedUnclassifiedN), t.destroyedUnclassifiedLAA))
 	}
 	return out
 }
 
+// plural is the "es" ending, for words like loss. QA found it appended to
+// "destruction" and to "line", producing "destructiones" and "linees" —
+// one of them on a B266 filing blocker, which is the last place to look
+// careless. A helper that only knows one ending has to be named for it.
 func plural(n int32) string {
 	if n == 1 {
 		return ""
 	}
 	return "es"
+}
+
+// pluralS is the ordinary "s" ending.
+func pluralS(n int32) string {
+	if n == 1 {
+		return ""
+	}
+	return "s"
 }
 
 // dayStart drops the time of day, so "days until due" counts whole days

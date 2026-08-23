@@ -876,6 +876,9 @@ SELECT
     COALESCE(SUM(current_laa) FILTER (
         WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
         AS held_elsewhere_laa,
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS third_party_elsewhere_laa,
     COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
 FROM bulk_containers
 WHERE NOT archived
@@ -883,11 +886,12 @@ WHERE NOT archived
 `
 
 type SumBarrelLAAByOwnershipRow struct {
-	OwnedLaa         float64 `json:"owned_laa"`
-	HeldLaa          float64 `json:"held_laa"`
-	HeldForOthersLaa float64 `json:"held_for_others_laa"`
-	HeldElsewhereLaa float64 `json:"held_elsewhere_laa"`
-	ThirdPartyCount  int32   `json:"third_party_count"`
+	OwnedLaa               float64 `json:"owned_laa"`
+	HeldLaa                float64 `json:"held_laa"`
+	HeldForOthersLaa       float64 `json:"held_for_others_laa"`
+	HeldElsewhereLaa       float64 `json:"held_elsewhere_laa"`
+	ThirdPartyElsewhereLaa float64 `json:"third_party_elsewhere_laa"`
+	ThirdPartyCount        int32   `json:"third_party_count"`
 }
 
 // The same split for casks, which is where third-party ownership actually
@@ -900,6 +904,7 @@ func (q *Queries) SumBarrelLAAByOwnership(ctx context.Context) (SumBarrelLAAByOw
 		&i.HeldLaa,
 		&i.HeldForOthersLaa,
 		&i.HeldElsewhereLaa,
+		&i.ThirdPartyElsewhereLaa,
 		&i.ThirdPartyCount,
 	)
 	return i, err
@@ -942,6 +947,13 @@ SELECT
     COALESCE(SUM(current_laa) FILTER (
         WHERE owner_customer_id IS NULL AND possession = 'held_elsewhere'), 0)::double precision
         AS held_elsewhere_laa,
+    -- Somebody else's, somewhere else. On neither the return nor the
+    -- books, and without this figure the two above read zero above a row
+    -- that plainly was not — found by QA on a cask sold in place and then
+    -- sent away.
+    COALESCE(SUM(current_laa) FILTER (
+        WHERE owner_customer_id IS NOT NULL AND possession = 'held_elsewhere'), 0)::double precision
+        AS third_party_elsewhere_laa,
     COUNT(*) FILTER (WHERE possession = 'held')::INTEGER AS held_count,
     COUNT(*) FILTER (WHERE owner_customer_id IS NOT NULL)::INTEGER AS third_party_count
 FROM bulk_containers
@@ -950,13 +962,14 @@ WHERE NOT archived
 `
 
 type SumBulkLAAByOwnershipRow struct {
-	OwnedLaa         float64 `json:"owned_laa"`
-	HeldLaa          float64 `json:"held_laa"`
-	AvailableLaa     float64 `json:"available_laa"`
-	HeldForOthersLaa float64 `json:"held_for_others_laa"`
-	HeldElsewhereLaa float64 `json:"held_elsewhere_laa"`
-	HeldCount        int32   `json:"held_count"`
-	ThirdPartyCount  int32   `json:"third_party_count"`
+	OwnedLaa               float64 `json:"owned_laa"`
+	HeldLaa                float64 `json:"held_laa"`
+	AvailableLaa           float64 `json:"available_laa"`
+	HeldForOthersLaa       float64 `json:"held_for_others_laa"`
+	HeldElsewhereLaa       float64 `json:"held_elsewhere_laa"`
+	ThirdPartyElsewhereLaa float64 `json:"third_party_elsewhere_laa"`
+	HeldCount              int32   `json:"held_count"`
+	ThirdPartyCount        int32   `json:"third_party_count"`
 }
 
 // The two figures a "how much alcohol is here" question actually has,
@@ -976,6 +989,7 @@ func (q *Queries) SumBulkLAAByOwnership(ctx context.Context) (SumBulkLAAByOwners
 		&i.AvailableLaa,
 		&i.HeldForOthersLaa,
 		&i.HeldElsewhereLaa,
+		&i.ThirdPartyElsewhereLaa,
 		&i.HeldCount,
 		&i.ThirdPartyCount,
 	)

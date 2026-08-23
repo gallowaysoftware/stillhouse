@@ -1,6 +1,7 @@
 package rpc
 
 import (
+	"context"
 	"log/slog"
 	"os"
 	"strings"
@@ -210,10 +211,24 @@ func TestB266AsOfNowMatchesRunningTotals(t *testing.T) {
 	}
 	rep := resp.Msg.GetReport()
 
-	runningBulk, err := f.q.SumBulkOnHandAsOf(f.ctx, pgtype.Timestamptz{
-		Valid: true, Time: today.AddDate(0, 0, 30),
-	})
-	if err != nil {
+	// Through the tenant-scoped pool, not f.q.
+	//
+	// f.q is the admin pool and bypasses RLS, so this summed every
+	// tenant's containers while the handler summed one. It passed only
+	// because the test database happened to hold nothing else; a QA
+	// session with 744.25 LAA in another tenant made it fail, which is
+	// the assertion doing its job about the wrong thing. Stage 153 moved
+	// the suite off the admin pool for exactly this reason and this
+	// expectation was left behind.
+	var runningBulk float64
+	if err := f.db.WithTenantTx(f.ctx, f.tenant.ID,
+		func(ctx context.Context, q *sqlcgen.Queries) error {
+			var e error
+			runningBulk, e = q.SumBulkOnHandAsOf(ctx, pgtype.Timestamptz{
+				Valid: true, Time: today.AddDate(0, 0, 30),
+			})
+			return e
+		}); err != nil {
 		t.Fatalf("running bulk: %v", err)
 	}
 	if got, want := rep.GetBulkClosingLaa(), round4(runningBulk); !near(got, want, 1e-6) {
