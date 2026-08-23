@@ -444,6 +444,15 @@ var procedureMinRole = map[string]minRole{
 	// the person assembling an export packet needs it.
 	"/stillhouse.v1.CertificateService/AgeCertificate": roleViewer,
 
+	// RetentionService. What the licensee keeps and for how long is a
+	// policy about the business, and a legal hold is an instruction from
+	// outside it — both owner-level, and both squarely what an outside
+	// bookkeeper or an auditor is there for.
+	"/stillhouse.v1.RetentionService/RetentionStatus":     roleViewer,
+	"/stillhouse.v1.RetentionService/SaveRetentionPolicy": roleOwner,
+	"/stillhouse.v1.RetentionService/PlaceLegalHold":      roleOwner,
+	"/stillhouse.v1.RetentionService/ReleaseLegalHold":    roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,
@@ -568,6 +577,11 @@ var accountantAlso = map[string]bool{
 	"/stillhouse.v1.InvoicingService/DeleteTaxRate":    true,
 	"/stillhouse.v1.InvoicingService/CreateCreditNote": true,
 	"/stillhouse.v1.InvoicingService/RecordPayment":    true,
+	// A legal hold usually arrives through the accountant or counsel, and
+	// the retention policy is the other half of the s.206 conversation.
+	"/stillhouse.v1.RetentionService/SaveRetentionPolicy": true,
+	"/stillhouse.v1.RetentionService/PlaceLegalHold":      true,
+	"/stillhouse.v1.RetentionService/ReleaseLegalHold":    true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a

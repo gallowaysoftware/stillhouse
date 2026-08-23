@@ -2763,6 +2763,20 @@ type LabourEntry struct {
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 }
 
+type LegalHold struct {
+	ID            uuid.UUID          `json:"id"`
+	TenantID      uuid.UUID          `json:"tenant_id"`
+	Reason        string             `json:"reason"`
+	InstructedBy  string             `json:"instructed_by"`
+	Reference     string             `json:"reference"`
+	PlacedOn      pgtype.Date        `json:"placed_on"`
+	PlacedBy      uuid.UUID          `json:"placed_by"`
+	ReleasedOn    pgtype.Date        `json:"released_on"`
+	ReleasedBy    uuid.NullUUID      `json:"released_by"`
+	ReleaseReason string             `json:"release_reason"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
 type Location struct {
 	ID              uuid.UUID          `json:"id"`
 	TenantID        uuid.UUID          `json:"tenant_id"`
@@ -3230,6 +3244,17 @@ type Redistillation struct {
 	RecordedBy        uuid.UUID            `json:"recorded_by"`
 	CreatedAt         pgtype.Timestamptz   `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz   `json:"updated_at"`
+}
+
+type RetentionPolicy struct {
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	RetentionYears pgtype.Int4        `json:"retention_years"`
+	BackupCadence  string             `json:"backup_cadence"`
+	RestoreNotes   string             `json:"restore_notes"`
+	ReviewedOn     pgtype.Date        `json:"reviewed_on"`
+	ReviewedBy     uuid.NullUUID      `json:"reviewed_by"`
+	Notes          string             `json:"notes"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
 }
 
 type SalesOrder struct {

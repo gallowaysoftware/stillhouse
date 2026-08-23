@@ -1,0 +1,105 @@
+// Records retention, as a commitment rather than an intention.
+//
+// Subsection 206(1) requires records sufficient to determine compliance,
+// and six years is the working window. Stillhouse deletes almost nothing
+// already — movements, gauges, runs and removals are append-only or
+// void-and-keep — but "almost nothing" is not a policy, and a licensee
+// asked what their retention is cannot answer from the code.
+//
+// Nothing here is a promise Stillhouse makes on the licensee's behalf.
+// It records what they stated, shows what it actually still holds, and
+// refuses the handful of real deletions while a legal hold is open.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+message RetentionPolicy {
+  // Years. Absent when the licensee has not stated one — which the
+  // screens say rather than assuming six, because a stated policy nobody
+  // stated is not one.
+  int32  retention_years = 1;
+  bool   retention_years_set = 2;
+  // Their own words. Stillhouse cannot know how backups are taken, where
+  // they go, or how often a restore is exercised.
+  string backup_cadence = 3;
+  string restore_notes = 4;
+  string reviewed_on = 5;        // ISO date
+  string reviewed_by_name = 6;
+  string notes = 7;
+  // Days since the policy was last reviewed. One nobody has looked at in
+  // four years is a document, not a control.
+  int32  days_since_review = 8;
+  bool   reviewed = 9;
+}
+
+message RecordClassCoverage {
+  string record_class = 1;
+  // The oldest record still held. Empty when the class has no rows —
+  // "we have nothing" and "our oldest is from this morning" are
+  // different answers.
+  string oldest = 2;
+  int32  rows = 3;
+  // Years of history actually held. Zero when there are no rows.
+  double years_held = 4;
+  // True when the class holds less history than the stated window. Not
+  // a fault on its own — a distillery three years old cannot hold six
+  // years of anything — which is why it is reported rather than flagged.
+  bool   shorter_than_policy = 5;
+}
+
+message LegalHold {
+  string id = 1;
+  string reason = 2;
+  string instructed_by = 3;
+  string reference = 4;
+  string placed_on = 5;          // ISO date
+  string placed_by_name = 6;
+  string released_on = 7;
+  string released_by_name = 8;
+  string release_reason = 9;
+  bool   open = 10;
+}
+
+message RetentionStatusRequest {}
+message RetentionStatusResponse {
+  RetentionPolicy policy = 1;
+  repeated RecordClassCoverage coverage = 2;
+  repeated LegalHold holds = 3;
+  int32  open_holds = 4;
+  // What Stillhouse does and does not guarantee. Never empty.
+  string basis = 5;
+}
+
+message SaveRetentionPolicyRequest {
+  int32  retention_years = 1;
+  bool   retention_years_set = 2;
+  string backup_cadence = 3;
+  string restore_notes = 4;
+  // Mark it reviewed as of this date. Empty leaves the previous review
+  // date alone rather than silently re-dating it.
+  string reviewed_on = 5;
+  string notes = 6;
+}
+message SaveRetentionPolicyResponse { RetentionPolicy policy = 1; }
+
+message PlaceLegalHoldRequest {
+  string reason = 1;             // required
+  string instructed_by = 2;
+  string reference = 3;
+  string placed_on = 4;          // ISO date; empty = today
+}
+message PlaceLegalHoldResponse { LegalHold hold = 1; }
+
+message ReleaseLegalHoldRequest {
+  string id = 1;
+  string reason = 2;             // required
+  string released_on = 3;
+}
+message ReleaseLegalHoldResponse { LegalHold hold = 1; }
+
+service RetentionService {
+  rpc RetentionStatus(RetentionStatusRequest) returns (RetentionStatusResponse);
+  rpc SaveRetentionPolicy(SaveRetentionPolicyRequest) returns (SaveRetentionPolicyResponse);
+  rpc PlaceLegalHold(PlaceLegalHoldRequest) returns (PlaceLegalHoldResponse);
+  rpc ReleaseLegalHold(ReleaseLegalHoldRequest) returns (ReleaseLegalHoldResponse);
+}

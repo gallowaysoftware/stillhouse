@@ -402,6 +402,7 @@ type Querier interface {
 	GetRecipeVersionWhiskySensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionWhiskySensory, error)
 	GetRedistillation(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
+	GetRetentionPolicy(ctx context.Context, tenantID uuid.UUID) (RetentionPolicy, error)
 	GetSalesOrder(ctx context.Context, id uuid.UUID) (SalesOrder, error)
 	GetSalesOrderLineForUpdate(ctx context.Context, id uuid.UUID) (SalesOrderLine, error)
 	GetShipment(ctx context.Context, id uuid.UUID) (Shipment, error)
@@ -545,6 +546,7 @@ type Querier interface {
 	// returns the tenant's whole lab history, newest first.
 	ListLabResults(ctx context.Context, arg ListLabResultsParams) ([]ListLabResultsRow, error)
 	ListLabourForSubject(ctx context.Context, arg ListLabourForSubjectParams) ([]ListLabourForSubjectRow, error)
+	ListLegalHolds(ctx context.Context) ([]ListLegalHoldsRow, error)
 	// Live licences with a recorded expiry. The rule that reads this decides
 	// what counts as "soon"; the query's job is to exclude the ones that
 	// cannot expire on us — ceased, or with no expiry recorded at all.
@@ -693,10 +695,14 @@ type Querier interface {
 	NextShipmentNo(ctx context.Context) (int32, error)
 	NextStockCountNo(ctx context.Context) (int32, error)
 	NextWorkOrderNo(ctx context.Context) (int32, error)
+	// Checked before any path that really removes a row. One query, in one
+	// place, so a delete added later cannot quietly escape a hold.
+	OpenLegalHoldCount(ctx context.Context) (int32, error)
 	// Issued invoices past their due date with money still on them, for the
 	// alert evaluator.
 	OverdueInvoices(ctx context.Context) ([]OverdueInvoicesRow, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
+	PlaceLegalHold(ctx context.Context, arg PlaceLegalHoldParams) (LegalHold, error)
 	// Plant that can actually be planned against: in service, with a
 	// capacity and a typical run time recorded. Everything else is returned
 	// too, with the reason it cannot, because an empty schedule and a
@@ -749,6 +755,7 @@ type Querier interface {
 	// Anything put back through the still from this vessel. Age resets on
 	// redistillation, so a certificate has to say whether one happened.
 	RedistillationsTouchingContainer(ctx context.Context, sourceContainerID uuid.UUID) ([]RedistillationsTouchingContainerRow, error)
+	ReleaseLegalHold(ctx context.Context, arg ReleaseLegalHoldParams) (LegalHold, error)
 	// Releasing clears any hold: a lot that has been looked at again and
 	// passed is released, not simultaneously held.
 	ReleasePackagedLot(ctx context.Context, arg ReleasePackagedLotParams) (PackagedInventory, error)
@@ -787,6 +794,15 @@ type Querier interface {
 	// Reporting a ratio it cannot see the denominator of would be inventing
 	// the number the rule turns on.
 	RetailSupplyByLocation(ctx context.Context, arg RetailSupplyByLocationParams) ([]RetailSupplyByLocationRow, error)
+	// The oldest record Stillhouse still holds in each class it would be
+	// asked for, and how many there are.
+	//
+	// Deliberately a fixed list rather than a walk over every table: what
+	// s.206(1) asks for is records sufficient to determine compliance, and
+	// that is the production and duty chain, not the session store. A class
+	// with no rows reports a NULL date rather than today, because "we have
+	// nothing" and "our oldest is from this morning" are different answers.
+	RetentionCoverage(ctx context.Context) ([]RetentionCoverageRow, error)
 	RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToken, error)
 	// The "revoke everything" half of a credential reset. Returns the rows it
 	// revoked so the caller can report a count and audit it; already-revoked
@@ -798,6 +814,7 @@ type Querier interface {
 	SaveEquipment(ctx context.Context, arg SaveEquipmentParams) (Equipment, error)
 	SaveProvincialRegistration(ctx context.Context, arg SaveProvincialRegistrationParams) (ProvincialRegistration, error)
 	SaveProvincialReportDefinition(ctx context.Context, arg SaveProvincialReportDefinitionParams) (ProvincialReportDefinition, error)
+	SaveRetentionPolicy(ctx context.Context, arg SaveRetentionPolicyParams) (RetentionPolicy, error)
 	SaveTaxRate(ctx context.Context, arg SaveTaxRateParams) (TaxRate, error)
 	// What is already on the board, per piece of plant, in a window.
 	//

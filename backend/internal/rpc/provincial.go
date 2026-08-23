@@ -129,6 +129,9 @@ func (s *ProvincialService) DeleteProvincialRegistration(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
 	}
 	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := assertNoLegalHold(ctx, q, "a provincial registration"); e != nil {
+			return e
+		}
 		if e := q.DeleteProvincialRegistration(ctx, id); e != nil {
 			return e
 		}

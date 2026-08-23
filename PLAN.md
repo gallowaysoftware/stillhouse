@@ -102,13 +102,6 @@ authorization itself and a return scoped to one location.
 The one area where Stillhouse is already ahead of everything commercial. These
 finish the job.
 
-### C5 · Records retention as a stated policy — P2
-
-Subsection 206(1) requires records sufficient to determine compliance;
-six years is the working retention window. For a hosted install that becomes
-our commitment to describe: cadence, immutability, legal hold, and what a
-restore actually returns.
-
 ---
 
 ## Track D — sales and revenue

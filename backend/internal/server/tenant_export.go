@@ -136,6 +136,11 @@ var exportTables = []string{
 	"invoice_payments",
 	"alerts",
 	"audit_events",
+	// What the licensee said they keep, and any instruction not to
+	// delete. An export offered for s.206 retention should carry the
+	// retention policy itself.
+	"retention_policies",
+	"legal_holds",
 }
 
 // tenantExportHandler streams a zip containing one CSV per significant
