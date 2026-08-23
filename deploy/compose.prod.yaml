@@ -57,6 +57,9 @@ services:
       # Rotates stillhouse_app's password from the migration default before
       # the server switches over to DATABASE_URL.
       STILLHOUSE_APP_PASSWORD: ${PG_APP_PASSWORD}
+      # Encrypts TOTP secrets at rest. Unset means two-factor
+      # authentication refuses rather than storing a secret in the clear.
+      STILLHOUSE_SECRET_KEY: ${STILLHOUSE_SECRET_KEY:-}
       STILLHOUSE_ADDR: ":8080"
       STILLHOUSE_STATIC_DIR: /app/static
       # Where the Canadian Alcoholometric Tables are mounted. Optional —

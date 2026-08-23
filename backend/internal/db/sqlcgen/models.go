@@ -1794,3 +1794,19 @@ type User struct {
 	EmailVerifiedAt   pgtype.Timestamptz `json:"email_verified_at"`
 	SessionsRevokedAt pgtype.Timestamptz `json:"sessions_revoked_at"`
 }
+
+type UserTotp struct {
+	UserID       uuid.UUID          `json:"user_id"`
+	SecretSealed []byte             `json:"secret_sealed"`
+	ConfirmedAt  pgtype.Timestamptz `json:"confirmed_at"`
+	LastUsedStep pgtype.Int8        `json:"last_used_step"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type UserTotpRecoveryCode struct {
+	CodeHash  []byte             `json:"code_hash"`
+	UserID    uuid.UUID          `json:"user_id"`
+	UsedAt    pgtype.Timestamptz `json:"used_at"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}

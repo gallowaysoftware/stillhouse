@@ -43,6 +43,16 @@ const (
 	// AuthServiceResetPasswordProcedure is the fully-qualified name of the AuthService's ResetPassword
 	// RPC.
 	AuthServiceResetPasswordProcedure = "/stillhouse.v1.AuthService/ResetPassword"
+	// AuthServiceMFAStatusProcedure is the fully-qualified name of the AuthService's MFAStatus RPC.
+	AuthServiceMFAStatusProcedure = "/stillhouse.v1.AuthService/MFAStatus"
+	// AuthServiceBeginMFAEnrolmentProcedure is the fully-qualified name of the AuthService's
+	// BeginMFAEnrolment RPC.
+	AuthServiceBeginMFAEnrolmentProcedure = "/stillhouse.v1.AuthService/BeginMFAEnrolment"
+	// AuthServiceConfirmMFAEnrolmentProcedure is the fully-qualified name of the AuthService's
+	// ConfirmMFAEnrolment RPC.
+	AuthServiceConfirmMFAEnrolmentProcedure = "/stillhouse.v1.AuthService/ConfirmMFAEnrolment"
+	// AuthServiceDisableMFAProcedure is the fully-qualified name of the AuthService's DisableMFA RPC.
+	AuthServiceDisableMFAProcedure = "/stillhouse.v1.AuthService/DisableMFA"
 )
 
 // AuthServiceClient is a client for the stillhouse.v1.AuthService service.
@@ -51,6 +61,10 @@ type AuthServiceClient interface {
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	RequestPasswordReset(context.Context, *connect.Request[v1.RequestPasswordResetRequest]) (*connect.Response[v1.RequestPasswordResetResponse], error)
 	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
+	MFAStatus(context.Context, *connect.Request[v1.MFAStatusRequest]) (*connect.Response[v1.MFAStatusResponse], error)
+	BeginMFAEnrolment(context.Context, *connect.Request[v1.BeginMFAEnrolmentRequest]) (*connect.Response[v1.BeginMFAEnrolmentResponse], error)
+	ConfirmMFAEnrolment(context.Context, *connect.Request[v1.ConfirmMFAEnrolmentRequest]) (*connect.Response[v1.ConfirmMFAEnrolmentResponse], error)
+	DisableMFA(context.Context, *connect.Request[v1.DisableMFARequest]) (*connect.Response[v1.DisableMFAResponse], error)
 }
 
 // NewAuthServiceClient constructs a client for the stillhouse.v1.AuthService service. By default,
@@ -88,6 +102,30 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(authServiceMethods.ByName("ResetPassword")),
 			connect.WithClientOptions(opts...),
 		),
+		mFAStatus: connect.NewClient[v1.MFAStatusRequest, v1.MFAStatusResponse](
+			httpClient,
+			baseURL+AuthServiceMFAStatusProcedure,
+			connect.WithSchema(authServiceMethods.ByName("MFAStatus")),
+			connect.WithClientOptions(opts...),
+		),
+		beginMFAEnrolment: connect.NewClient[v1.BeginMFAEnrolmentRequest, v1.BeginMFAEnrolmentResponse](
+			httpClient,
+			baseURL+AuthServiceBeginMFAEnrolmentProcedure,
+			connect.WithSchema(authServiceMethods.ByName("BeginMFAEnrolment")),
+			connect.WithClientOptions(opts...),
+		),
+		confirmMFAEnrolment: connect.NewClient[v1.ConfirmMFAEnrolmentRequest, v1.ConfirmMFAEnrolmentResponse](
+			httpClient,
+			baseURL+AuthServiceConfirmMFAEnrolmentProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ConfirmMFAEnrolment")),
+			connect.WithClientOptions(opts...),
+		),
+		disableMFA: connect.NewClient[v1.DisableMFARequest, v1.DisableMFAResponse](
+			httpClient,
+			baseURL+AuthServiceDisableMFAProcedure,
+			connect.WithSchema(authServiceMethods.ByName("DisableMFA")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -97,6 +135,10 @@ type authServiceClient struct {
 	logout               *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
 	requestPasswordReset *connect.Client[v1.RequestPasswordResetRequest, v1.RequestPasswordResetResponse]
 	resetPassword        *connect.Client[v1.ResetPasswordRequest, v1.ResetPasswordResponse]
+	mFAStatus            *connect.Client[v1.MFAStatusRequest, v1.MFAStatusResponse]
+	beginMFAEnrolment    *connect.Client[v1.BeginMFAEnrolmentRequest, v1.BeginMFAEnrolmentResponse]
+	confirmMFAEnrolment  *connect.Client[v1.ConfirmMFAEnrolmentRequest, v1.ConfirmMFAEnrolmentResponse]
+	disableMFA           *connect.Client[v1.DisableMFARequest, v1.DisableMFAResponse]
 }
 
 // Login calls stillhouse.v1.AuthService.Login.
@@ -119,12 +161,36 @@ func (c *authServiceClient) ResetPassword(ctx context.Context, req *connect.Requ
 	return c.resetPassword.CallUnary(ctx, req)
 }
 
+// MFAStatus calls stillhouse.v1.AuthService.MFAStatus.
+func (c *authServiceClient) MFAStatus(ctx context.Context, req *connect.Request[v1.MFAStatusRequest]) (*connect.Response[v1.MFAStatusResponse], error) {
+	return c.mFAStatus.CallUnary(ctx, req)
+}
+
+// BeginMFAEnrolment calls stillhouse.v1.AuthService.BeginMFAEnrolment.
+func (c *authServiceClient) BeginMFAEnrolment(ctx context.Context, req *connect.Request[v1.BeginMFAEnrolmentRequest]) (*connect.Response[v1.BeginMFAEnrolmentResponse], error) {
+	return c.beginMFAEnrolment.CallUnary(ctx, req)
+}
+
+// ConfirmMFAEnrolment calls stillhouse.v1.AuthService.ConfirmMFAEnrolment.
+func (c *authServiceClient) ConfirmMFAEnrolment(ctx context.Context, req *connect.Request[v1.ConfirmMFAEnrolmentRequest]) (*connect.Response[v1.ConfirmMFAEnrolmentResponse], error) {
+	return c.confirmMFAEnrolment.CallUnary(ctx, req)
+}
+
+// DisableMFA calls stillhouse.v1.AuthService.DisableMFA.
+func (c *authServiceClient) DisableMFA(ctx context.Context, req *connect.Request[v1.DisableMFARequest]) (*connect.Response[v1.DisableMFAResponse], error) {
+	return c.disableMFA.CallUnary(ctx, req)
+}
+
 // AuthServiceHandler is an implementation of the stillhouse.v1.AuthService service.
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
 	RequestPasswordReset(context.Context, *connect.Request[v1.RequestPasswordResetRequest]) (*connect.Response[v1.RequestPasswordResetResponse], error)
 	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
+	MFAStatus(context.Context, *connect.Request[v1.MFAStatusRequest]) (*connect.Response[v1.MFAStatusResponse], error)
+	BeginMFAEnrolment(context.Context, *connect.Request[v1.BeginMFAEnrolmentRequest]) (*connect.Response[v1.BeginMFAEnrolmentResponse], error)
+	ConfirmMFAEnrolment(context.Context, *connect.Request[v1.ConfirmMFAEnrolmentRequest]) (*connect.Response[v1.ConfirmMFAEnrolmentResponse], error)
+	DisableMFA(context.Context, *connect.Request[v1.DisableMFARequest]) (*connect.Response[v1.DisableMFAResponse], error)
 }
 
 // NewAuthServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -158,6 +224,30 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(authServiceMethods.ByName("ResetPassword")),
 		connect.WithHandlerOptions(opts...),
 	)
+	authServiceMFAStatusHandler := connect.NewUnaryHandler(
+		AuthServiceMFAStatusProcedure,
+		svc.MFAStatus,
+		connect.WithSchema(authServiceMethods.ByName("MFAStatus")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceBeginMFAEnrolmentHandler := connect.NewUnaryHandler(
+		AuthServiceBeginMFAEnrolmentProcedure,
+		svc.BeginMFAEnrolment,
+		connect.WithSchema(authServiceMethods.ByName("BeginMFAEnrolment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceConfirmMFAEnrolmentHandler := connect.NewUnaryHandler(
+		AuthServiceConfirmMFAEnrolmentProcedure,
+		svc.ConfirmMFAEnrolment,
+		connect.WithSchema(authServiceMethods.ByName("ConfirmMFAEnrolment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceDisableMFAHandler := connect.NewUnaryHandler(
+		AuthServiceDisableMFAProcedure,
+		svc.DisableMFA,
+		connect.WithSchema(authServiceMethods.ByName("DisableMFA")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.AuthService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AuthServiceLoginProcedure:
@@ -168,6 +258,14 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceRequestPasswordResetHandler.ServeHTTP(w, r)
 		case AuthServiceResetPasswordProcedure:
 			authServiceResetPasswordHandler.ServeHTTP(w, r)
+		case AuthServiceMFAStatusProcedure:
+			authServiceMFAStatusHandler.ServeHTTP(w, r)
+		case AuthServiceBeginMFAEnrolmentProcedure:
+			authServiceBeginMFAEnrolmentHandler.ServeHTTP(w, r)
+		case AuthServiceConfirmMFAEnrolmentProcedure:
+			authServiceConfirmMFAEnrolmentHandler.ServeHTTP(w, r)
+		case AuthServiceDisableMFAProcedure:
+			authServiceDisableMFAHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -191,4 +289,20 @@ func (UnimplementedAuthServiceHandler) RequestPasswordReset(context.Context, *co
 
 func (UnimplementedAuthServiceHandler) ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.ResetPassword is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) MFAStatus(context.Context, *connect.Request[v1.MFAStatusRequest]) (*connect.Response[v1.MFAStatusResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.MFAStatus is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) BeginMFAEnrolment(context.Context, *connect.Request[v1.BeginMFAEnrolmentRequest]) (*connect.Response[v1.BeginMFAEnrolmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.BeginMFAEnrolment is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ConfirmMFAEnrolment(context.Context, *connect.Request[v1.ConfirmMFAEnrolmentRequest]) (*connect.Response[v1.ConfirmMFAEnrolmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.ConfirmMFAEnrolment is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) DisableMFA(context.Context, *connect.Request[v1.DisableMFARequest]) (*connect.Response[v1.DisableMFAResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.DisableMFA is not implemented"))
 }

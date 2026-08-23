@@ -8,6 +8,13 @@ import "stillhouse/v1/user.proto";
 message LoginRequest {
   string email = 1;
   string password = 2;
+  // Six-digit code from the authenticator app, when the account has a
+  // second factor. Empty on the first attempt; the server answers with
+  // mfa_required and the client comes back with one.
+  string totp_code = 4;
+  // A recovery code, used instead of totp_code when the phone is gone.
+  // Single use.
+  string recovery_code = 5;
   // Which distillery to sign in to, when one email address holds an
   // account at more than one. Empty on the first attempt; the server
   // answers with `choices` and the client comes back with one of them.
@@ -25,6 +32,9 @@ message TenantChoice {
 message LoginResponse {
   User user = 1;
   Tenant tenant = 2;
+  // True when the password was right and a second factor is still
+  // needed. `user` and `tenant` are unset and no session is created.
+  bool mfa_required = 4;
   // Populated only when the credentials match accounts at more than one
   // distillery and the request named none. `user` and `tenant` are unset
   // in that case and no session is created — the caller picks one and
@@ -46,9 +56,53 @@ message ResetPasswordRequest {
 }
 message ResetPasswordResponse {}
 
+// ----- second factor -------------------------------------------------------
+
+// Enrolment is two steps on purpose. BeginMFAEnrolment hands back a
+// secret; nothing is enforced until ConfirmMFAEnrolment proves the app
+// actually produces matching codes. Enrolling in one step means a
+// mistyped secret locks the account at the next sign-in.
+message BeginMFAEnrolmentRequest {}
+message BeginMFAEnrolmentResponse {
+  // The otpauth:// URI. On a phone, tapping it opens the authenticator
+  // app directly.
+  string enrolment_uri = 1;
+  // The same secret in base32, grouped in fours, for typing in by hand.
+  string secret = 2;
+}
+
+message ConfirmMFAEnrolmentRequest { string code = 1; }
+message ConfirmMFAEnrolmentResponse {
+  // Shown once. The phone is the single point of failure in any TOTP
+  // setup and these are the way back from a lost one.
+  repeated string recovery_codes = 1;
+}
+
+// Disabling requires the current password: a second factor that an
+// already-hijacked session can switch off has not added a factor.
+message DisableMFARequest { string current_password = 1; }
+message DisableMFAResponse {}
+
+message MFAStatusRequest {}
+message MFAStatusResponse {
+  bool enabled = 1;
+  // Enrolment started and never confirmed. Not enforced at login.
+  bool pending = 2;
+  int32 recovery_codes_remaining = 3;
+  // False when the install has no STILLHOUSE_SECRET_KEY, so secrets
+  // cannot be encrypted at rest and enrolment refuses rather than
+  // storing one in the clear.
+  bool available = 4;
+  string unavailable_reason = 5;
+}
+
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
   rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc MFAStatus(MFAStatusRequest) returns (MFAStatusResponse);
+  rpc BeginMFAEnrolment(BeginMFAEnrolmentRequest) returns (BeginMFAEnrolmentResponse);
+  rpc ConfirmMFAEnrolment(ConfirmMFAEnrolmentRequest) returns (ConfirmMFAEnrolmentResponse);
+  rpc DisableMFA(DisableMFARequest) returns (DisableMFAResponse);
 }

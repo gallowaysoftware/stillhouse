@@ -18,15 +18,35 @@ export function LoginPage() {
   // password against each, returns the ones that matched, and creates no
   // session until we come back naming one.
   const [choices, setChoices] = useState<{ tenantId: string; tenantName: string }[]>([]);
+  // The second factor. The server never asks for one until the password
+  // has already been verified, so reaching this step is itself only ever
+  // reached by someone who supplied the right password.
+  const [needsCode, setNeedsCode] = useState(false);
+  const [code, setCode] = useState("");
+  const [useRecovery, setUseRecovery] = useState(false);
+  const [pickedTenant, setPickedTenant] = useState("");
 
   const login = useMutation({
-    mutationFn: (tenantId: string) => authClient.login({ email, password, tenantId }),
-    onSuccess: async (resp) => {
+    mutationFn: (tenantId: string) =>
+      authClient.login({
+        email,
+        password,
+        tenantId,
+        totpCode: useRecovery ? "" : code,
+        recoveryCode: useRecovery ? code : "",
+      }),
+    onSuccess: async (resp, tenantId) => {
       if (resp.choices.length > 0) {
         setChoices(resp.choices.map((c) => ({ tenantId: c.tenantId, tenantName: c.tenantName })));
         return;
       }
+      if (resp.mfaRequired) {
+        setPickedTenant(tenantId);
+        setNeedsCode(true);
+        return;
+      }
       setChoices([]);
+      setNeedsCode(false);
       await queryClient.invalidateQueries({ queryKey: ["getMe"] });
       navigate("/", { replace: true });
     },
@@ -34,7 +54,7 @@ export function LoginPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    login.mutate("");
+    login.mutate(needsCode ? pickedTenant : "");
   }
 
   return (
@@ -71,7 +91,55 @@ export function LoginPage() {
           </div>
         </div>
 
-        {choices.length > 0 ? (
+        {needsCode ? (
+          <div className="space-y-3">
+            <p className="text-sm text-fg-muted">
+              {useRecovery
+                ? t(
+                    "Enter one of the recovery codes you saved when you set this up. Each works once.",
+                    "Entrez un des codes de récupération enregistrés lors de la configuration. Chacun ne sert qu'une fois.",
+                  )
+                : t(
+                    "Enter the six-digit code from your authenticator app.",
+                    "Entrez le code à six chiffres de votre application d'authentification.",
+                  )}
+            </p>
+            <input
+              autoFocus
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              inputMode={useRecovery ? "text" : "numeric"}
+              autoComplete="one-time-code"
+              placeholder={useRecovery ? "XXXX-XXXX-XXXX-XXXX" : "123456"}
+              className="w-full rounded border border-border-strong px-3 py-2 text-center font-mono text-lg tracking-widest focus:border-accent focus:outline-none"
+            />
+            <button
+              type="submit"
+              disabled={login.isPending || code.trim() === ""}
+              className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
+            >
+              {login.isPending ? t("Checking…", "Vérification…") : t("Verify", "Vérifier")}
+            </button>
+            <div className="flex justify-between text-xs text-fg-subtle">
+              <button
+                type="button"
+                onClick={() => { setUseRecovery((r) => !r); setCode(""); }}
+                className="hover:text-fg"
+              >
+                {useRecovery
+                  ? t("Use my authenticator app", "Utiliser mon application")
+                  : t("I've lost my phone", "J'ai perdu mon téléphone")}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setNeedsCode(false); setCode(""); setPassword(""); }}
+                className="hover:text-fg"
+              >
+                {t("Start over", "Recommencer")}
+              </button>
+            </div>
+          </div>
+        ) : choices.length > 0 ? (
           <div className="space-y-3">
             <p className="text-sm text-fg-muted">
               {t(

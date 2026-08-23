@@ -201,6 +201,29 @@ func (s *AuthService) Login(
 	}
 
 	u := matched[0]
+
+	// Second factor, after the password and only after it. Checking it
+	// first — or reporting "MFA required" before the password is right —
+	// would turn the login form into an oracle for which accounts have
+	// one.
+	mfaRequired, err := s.verifySecondFactor(ctx, u, in.GetTotpCode(), in.GetRecoveryCode())
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		s.logger.Error("login: second factor", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	if mfaRequired {
+		// No session, no user, no tenant. The client shows a code field
+		// and comes back; nothing about the account is disclosed beyond
+		// the fact that the password was right, which the caller
+		// supplied.
+		s.limiter.Forget(rlKey)
+		return connect.NewResponse(&stillhousev1.LoginResponse{MfaRequired: true}), nil
+	}
+
 	t, err := s.q.GetTenantByID(ctx, u.TenantID)
 	if err != nil {
 		s.logger.Error("login: tenant lookup", "err", err)

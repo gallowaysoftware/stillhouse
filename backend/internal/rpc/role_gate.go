@@ -49,6 +49,14 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// Managing your own second factor is never a role question. The
+	// viewer who reads the ledger from a phone in a rackhouse needs it
+	// as much as the owner does.
+	"/stillhouse.v1.AuthService/MFAStatus":           roleViewer,
+	"/stillhouse.v1.AuthService/BeginMFAEnrolment":   roleViewer,
+	"/stillhouse.v1.AuthService/ConfirmMFAEnrolment": roleViewer,
+	"/stillhouse.v1.AuthService/DisableMFA":          roleViewer,
+
 	// CustomerService. Reading the customer list is a viewer action —
 	// an operator recording a removal has to pick from it. Creating and
 	// editing a customer is not: the customer's kind decides whether a

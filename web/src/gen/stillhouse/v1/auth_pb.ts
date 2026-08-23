@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/auth.proto.
  */
 export const file_stillhouse_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEiQgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEhEKCXRlbmFudF9pZBgDIAEoCSI2CgxUZW5hbnRDaG9pY2USEQoJdGVuYW50X2lkGAEgASgJEhMKC3RlbmFudF9uYW1lGAIgASgJIocBCg1Mb2dpblJlc3BvbnNlEiEKBHVzZXIYASABKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXISJQoGdGVuYW50GAIgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQSLAoHY2hvaWNlcxgDIAMoCzIbLnN0aWxsaG91c2UudjEuVGVuYW50Q2hvaWNlIg8KDUxvZ291dFJlcXVlc3QiEAoOTG9nb3V0UmVzcG9uc2UiLAobUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIh4KHFJlcXVlc3RQYXNzd29yZFJlc2V0UmVzcG9uc2UiOwoUUmVzZXRQYXNzd29yZFJlcXVlc3QSDQoFdG9rZW4YASABKAkSFAoMbmV3X3Bhc3N3b3JkGAIgASgJIhcKFVJlc2V0UGFzc3dvcmRSZXNwb25zZTLlAgoLQXV0aFNlcnZpY2USQgoFTG9naW4SGy5zdGlsbGhvdXNlLnYxLkxvZ2luUmVxdWVzdBocLnN0aWxsaG91c2UudjEuTG9naW5SZXNwb25zZRJFCgZMb2dvdXQSHC5zdGlsbGhvdXNlLnYxLkxvZ291dFJlcXVlc3QaHS5zdGlsbGhvdXNlLnYxLkxvZ291dFJlc3BvbnNlEm8KFFJlcXVlc3RQYXNzd29yZFJlc2V0Eiouc3RpbGxob3VzZS52MS5SZXF1ZXN0UGFzc3dvcmRSZXNldFJlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLlJlcXVlc3RQYXNzd29yZFJlc2V0UmVzcG9uc2USWgoNUmVzZXRQYXNzd29yZBIjLnN0aWxsaG91c2UudjEuUmVzZXRQYXNzd29yZFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlJlc2V0UGFzc3dvcmRSZXNwb25zZWIGcHJvdG8z", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEibAoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEhEKCXRvdHBfY29kZRgEIAEoCRIVCg1yZWNvdmVyeV9jb2RlGAUgASgJEhEKCXRlbmFudF9pZBgDIAEoCSI2CgxUZW5hbnRDaG9pY2USEQoJdGVuYW50X2lkGAEgASgJEhMKC3RlbmFudF9uYW1lGAIgASgJIp0BCg1Mb2dpblJlc3BvbnNlEiEKBHVzZXIYASABKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXISJQoGdGVuYW50GAIgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQSFAoMbWZhX3JlcXVpcmVkGAQgASgIEiwKB2Nob2ljZXMYAyADKAsyGy5zdGlsbGhvdXNlLnYxLlRlbmFudENob2ljZSIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlIiwKG1JlcXVlc3RQYXNzd29yZFJlc2V0UmVxdWVzdBINCgVlbWFpbBgBIAEoCSIeChxSZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlIjsKFFJlc2V0UGFzc3dvcmRSZXF1ZXN0Eg0KBXRva2VuGAEgASgJEhQKDG5ld19wYXNzd29yZBgCIAEoCSIXChVSZXNldFBhc3N3b3JkUmVzcG9uc2UiGgoYQmVnaW5NRkFFbnJvbG1lbnRSZXF1ZXN0IkIKGUJlZ2luTUZBRW5yb2xtZW50UmVzcG9uc2USFQoNZW5yb2xtZW50X3VyaRgBIAEoCRIOCgZzZWNyZXQYAiABKAkiKgoaQ29uZmlybU1GQUVucm9sbWVudFJlcXVlc3QSDAoEY29kZRgBIAEoCSI1ChtDb25maXJtTUZBRW5yb2xtZW50UmVzcG9uc2USFgoOcmVjb3ZlcnlfY29kZXMYASADKAkiLQoRRGlzYWJsZU1GQVJlcXVlc3QSGAoQY3VycmVudF9wYXNzd29yZBgBIAEoCSIUChJEaXNhYmxlTUZBUmVzcG9uc2UiEgoQTUZBU3RhdHVzUmVxdWVzdCKGAQoRTUZBU3RhdHVzUmVzcG9uc2USDwoHZW5hYmxlZBgBIAEoCBIPCgdwZW5kaW5nGAIgASgIEiAKGHJlY292ZXJ5X2NvZGVzX3JlbWFpbmluZxgDIAEoBRIRCglhdmFpbGFibGUYBCABKAgSGgoSdW5hdmFpbGFibGVfcmVhc29uGAUgASgJMt4FCgtBdXRoU2VydmljZRJCCgVMb2dpbhIbLnN0aWxsaG91c2UudjEuTG9naW5SZXF1ZXN0Ghwuc3RpbGxob3VzZS52MS5Mb2dpblJlc3BvbnNlEkUKBkxvZ291dBIcLnN0aWxsaG91c2UudjEuTG9nb3V0UmVxdWVzdBodLnN0aWxsaG91c2UudjEuTG9nb3V0UmVzcG9uc2USbwoUUmVxdWVzdFBhc3N3b3JkUmVzZXQSKi5zdGlsbGhvdXNlLnYxLlJlcXVlc3RQYXNzd29yZFJlc2V0UmVxdWVzdBorLnN0aWxsaG91c2UudjEuUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXNwb25zZRJaCg1SZXNldFBhc3N3b3JkEiMuc3RpbGxob3VzZS52MS5SZXNldFBhc3N3b3JkUmVxdWVzdBokLnN0aWxsaG91c2UudjEuUmVzZXRQYXNzd29yZFJlc3BvbnNlEk4KCU1GQVN0YXR1cxIfLnN0aWxsaG91c2UudjEuTUZBU3RhdHVzUmVxdWVzdBogLnN0aWxsaG91c2UudjEuTUZBU3RhdHVzUmVzcG9uc2USZgoRQmVnaW5NRkFFbnJvbG1lbnQSJy5zdGlsbGhvdXNlLnYxLkJlZ2luTUZBRW5yb2xtZW50UmVxdWVzdBooLnN0aWxsaG91c2UudjEuQmVnaW5NRkFFbnJvbG1lbnRSZXNwb25zZRJsChNDb25maXJtTUZBRW5yb2xtZW50Eikuc3RpbGxob3VzZS52MS5Db25maXJtTUZBRW5yb2xtZW50UmVxdWVzdBoqLnN0aWxsaG91c2UudjEuQ29uZmlybU1GQUVucm9sbWVudFJlc3BvbnNlElEKCkRpc2FibGVNRkESIC5zdGlsbGhvdXNlLnYxLkRpc2FibGVNRkFSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5EaXNhYmxlTUZBUmVzcG9uc2ViBnByb3RvMw", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
 
 /**
  * @generated from message stillhouse.v1.LoginRequest
@@ -29,6 +29,23 @@ export type LoginRequest = Message<"stillhouse.v1.LoginRequest"> & {
    * @generated from field: string password = 2;
    */
   password: string;
+
+  /**
+   * Six-digit code from the authenticator app, when the account has a
+   * second factor. Empty on the first attempt; the server answers with
+   * mfa_required and the client comes back with one.
+   *
+   * @generated from field: string totp_code = 4;
+   */
+  totpCode: string;
+
+  /**
+   * A recovery code, used instead of totp_code when the phone is gone.
+   * Single use.
+   *
+   * @generated from field: string recovery_code = 5;
+   */
+  recoveryCode: string;
 
   /**
    * Which distillery to sign in to, when one email address holds an
@@ -86,6 +103,14 @@ export type LoginResponse = Message<"stillhouse.v1.LoginResponse"> & {
    * @generated from field: stillhouse.v1.Tenant tenant = 2;
    */
   tenant?: Tenant | undefined;
+
+  /**
+   * True when the password was right and a second factor is still
+   * needed. `user` and `tenant` are unset and no session is created.
+   *
+   * @generated from field: bool mfa_required = 4;
+   */
+  mfaRequired: boolean;
 
   /**
    * Populated only when the credentials match accounts at more than one
@@ -200,6 +225,177 @@ export const ResetPasswordResponseSchema: GenMessage<ResetPasswordResponse> = /*
   messageDesc(file_stillhouse_v1_auth, 8);
 
 /**
+ * Enrolment is two steps on purpose. BeginMFAEnrolment hands back a
+ * secret; nothing is enforced until ConfirmMFAEnrolment proves the app
+ * actually produces matching codes. Enrolling in one step means a
+ * mistyped secret locks the account at the next sign-in.
+ *
+ * @generated from message stillhouse.v1.BeginMFAEnrolmentRequest
+ */
+export type BeginMFAEnrolmentRequest = Message<"stillhouse.v1.BeginMFAEnrolmentRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.BeginMFAEnrolmentRequest.
+ * Use `create(BeginMFAEnrolmentRequestSchema)` to create a new message.
+ */
+export const BeginMFAEnrolmentRequestSchema: GenMessage<BeginMFAEnrolmentRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 9);
+
+/**
+ * @generated from message stillhouse.v1.BeginMFAEnrolmentResponse
+ */
+export type BeginMFAEnrolmentResponse = Message<"stillhouse.v1.BeginMFAEnrolmentResponse"> & {
+  /**
+   * The otpauth:// URI. On a phone, tapping it opens the authenticator
+   * app directly.
+   *
+   * @generated from field: string enrolment_uri = 1;
+   */
+  enrolmentUri: string;
+
+  /**
+   * The same secret in base32, grouped in fours, for typing in by hand.
+   *
+   * @generated from field: string secret = 2;
+   */
+  secret: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.BeginMFAEnrolmentResponse.
+ * Use `create(BeginMFAEnrolmentResponseSchema)` to create a new message.
+ */
+export const BeginMFAEnrolmentResponseSchema: GenMessage<BeginMFAEnrolmentResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 10);
+
+/**
+ * @generated from message stillhouse.v1.ConfirmMFAEnrolmentRequest
+ */
+export type ConfirmMFAEnrolmentRequest = Message<"stillhouse.v1.ConfirmMFAEnrolmentRequest"> & {
+  /**
+   * @generated from field: string code = 1;
+   */
+  code: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.ConfirmMFAEnrolmentRequest.
+ * Use `create(ConfirmMFAEnrolmentRequestSchema)` to create a new message.
+ */
+export const ConfirmMFAEnrolmentRequestSchema: GenMessage<ConfirmMFAEnrolmentRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 11);
+
+/**
+ * @generated from message stillhouse.v1.ConfirmMFAEnrolmentResponse
+ */
+export type ConfirmMFAEnrolmentResponse = Message<"stillhouse.v1.ConfirmMFAEnrolmentResponse"> & {
+  /**
+   * Shown once. The phone is the single point of failure in any TOTP
+   * setup and these are the way back from a lost one.
+   *
+   * @generated from field: repeated string recovery_codes = 1;
+   */
+  recoveryCodes: string[];
+};
+
+/**
+ * Describes the message stillhouse.v1.ConfirmMFAEnrolmentResponse.
+ * Use `create(ConfirmMFAEnrolmentResponseSchema)` to create a new message.
+ */
+export const ConfirmMFAEnrolmentResponseSchema: GenMessage<ConfirmMFAEnrolmentResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 12);
+
+/**
+ * Disabling requires the current password: a second factor that an
+ * already-hijacked session can switch off has not added a factor.
+ *
+ * @generated from message stillhouse.v1.DisableMFARequest
+ */
+export type DisableMFARequest = Message<"stillhouse.v1.DisableMFARequest"> & {
+  /**
+   * @generated from field: string current_password = 1;
+   */
+  currentPassword: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.DisableMFARequest.
+ * Use `create(DisableMFARequestSchema)` to create a new message.
+ */
+export const DisableMFARequestSchema: GenMessage<DisableMFARequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 13);
+
+/**
+ * @generated from message stillhouse.v1.DisableMFAResponse
+ */
+export type DisableMFAResponse = Message<"stillhouse.v1.DisableMFAResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.DisableMFAResponse.
+ * Use `create(DisableMFAResponseSchema)` to create a new message.
+ */
+export const DisableMFAResponseSchema: GenMessage<DisableMFAResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 14);
+
+/**
+ * @generated from message stillhouse.v1.MFAStatusRequest
+ */
+export type MFAStatusRequest = Message<"stillhouse.v1.MFAStatusRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.MFAStatusRequest.
+ * Use `create(MFAStatusRequestSchema)` to create a new message.
+ */
+export const MFAStatusRequestSchema: GenMessage<MFAStatusRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 15);
+
+/**
+ * @generated from message stillhouse.v1.MFAStatusResponse
+ */
+export type MFAStatusResponse = Message<"stillhouse.v1.MFAStatusResponse"> & {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled: boolean;
+
+  /**
+   * Enrolment started and never confirmed. Not enforced at login.
+   *
+   * @generated from field: bool pending = 2;
+   */
+  pending: boolean;
+
+  /**
+   * @generated from field: int32 recovery_codes_remaining = 3;
+   */
+  recoveryCodesRemaining: number;
+
+  /**
+   * False when the install has no STILLHOUSE_SECRET_KEY, so secrets
+   * cannot be encrypted at rest and enrolment refuses rather than
+   * storing one in the clear.
+   *
+   * @generated from field: bool available = 4;
+   */
+  available: boolean;
+
+  /**
+   * @generated from field: string unavailable_reason = 5;
+   */
+  unavailableReason: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.MFAStatusResponse.
+ * Use `create(MFAStatusResponseSchema)` to create a new message.
+ */
+export const MFAStatusResponseSchema: GenMessage<MFAStatusResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 16);
+
+/**
  * @generated from service stillhouse.v1.AuthService
  */
 export const AuthService: GenService<{
@@ -234,6 +430,38 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof ResetPasswordRequestSchema;
     output: typeof ResetPasswordResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AuthService.MFAStatus
+   */
+  mFAStatus: {
+    methodKind: "unary";
+    input: typeof MFAStatusRequestSchema;
+    output: typeof MFAStatusResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AuthService.BeginMFAEnrolment
+   */
+  beginMFAEnrolment: {
+    methodKind: "unary";
+    input: typeof BeginMFAEnrolmentRequestSchema;
+    output: typeof BeginMFAEnrolmentResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AuthService.ConfirmMFAEnrolment
+   */
+  confirmMFAEnrolment: {
+    methodKind: "unary";
+    input: typeof ConfirmMFAEnrolmentRequestSchema;
+    output: typeof ConfirmMFAEnrolmentResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.AuthService.DisableMFA
+   */
+  disableMFA: {
+    methodKind: "unary";
+    input: typeof DisableMFARequestSchema;
+    output: typeof DisableMFAResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_auth, 0);

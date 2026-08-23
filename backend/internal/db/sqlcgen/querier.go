@@ -52,14 +52,19 @@ type Querier interface {
 	// in Go so that a caller cannot quietly attach a duty treatment to a
 	// production gauge and have it counted.
 	ClassifyLoss(ctx context.Context, arg ClassifyLossParams) (BulkMovement, error)
+	ConfirmUserTOTP(ctx context.Context, arg ConfirmUserTOTPParams) (UserTotp, error)
 	// Single-use semantics: WHERE used_at IS NULL guarantees the same token
 	// can't be redeemed twice. Expiry check inline so we don't accidentally
 	// accept stale tokens.
 	ConsumePasswordResetToken(ctx context.Context, tokenHash []byte) (PasswordResetToken, error)
+	// Single use, enforced in the UPDATE rather than in Go: two tabs
+	// submitting the same code must not both succeed.
+	ConsumeTOTPRecoveryCode(ctx context.Context, arg ConsumeTOTPRecoveryCodeParams) (UserTotpRecoveryCode, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
 	CountRemovals(ctx context.Context, arg CountRemovalsParams) (int32, error)
 	CountTenants(ctx context.Context) (int64, error)
+	CountUnusedTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) (int32, error)
 	// expires_at NULL means the token never expires. That is a deliberate
 	// choice at the RPC layer, not a default — see IssueAPIToken.
 	CreateAPIToken(ctx context.Context, arg CreateAPITokenParams) (ApiToken, error)
@@ -92,6 +97,7 @@ type Querier interface {
 	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
 	CreateRemoval(ctx context.Context, arg CreateRemovalParams) (PackagingRemoval, error)
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
+	CreateTOTPRecoveryCode(ctx context.Context, arg CreateTOTPRecoveryCodeParams) error
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// What this buyer has actually taken. Voided removals are excluded —
@@ -112,11 +118,13 @@ type Querier interface {
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
 	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
+	DeleteTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) error
 	// Hard delete — every FK to tenants is ON DELETE CASCADE so this wipes
 	// the entire tenant footprint (users, recipes, mashes, ferments,
 	// distillations, barrels, bulk, bottling, removals, B266 history,
 	// audit_events, etc) in one go.
 	DeleteTenant(ctx context.Context, id uuid.UUID) error
+	DeleteUserTOTP(ctx context.Context, userID uuid.UUID) error
 	// Pull the distillation run + every charge → ferment → mash → recipe
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
@@ -185,6 +193,7 @@ type Querier interface {
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	GetUserTOTP(ctx context.Context, userID uuid.UUID) (UserTotp, error)
 	IncrementPackagedOnHand(ctx context.Context, arg IncrementPackagedOnHandParams) (PackagedInventory, error)
 	IncrementStampOrderApplied(ctx context.Context, arg IncrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	IncrementStampOrderVoided(ctx context.Context, arg IncrementStampOrderVoidedParams) (ExciseStampOrder, error)
@@ -328,6 +337,9 @@ type Querier interface {
 	NextRemovalNo(ctx context.Context) (int32, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	// The replay guard. Refusing anything at or below the last accepted step
+	// is what stops a code being used twice inside its window.
+	RecordTOTPStep(ctx context.Context, arg RecordTOTPStepParams) error
 	RedeemInviteCode(ctx context.Context, arg RedeemInviteCodeParams) (InviteCode, error)
 	// Flips a submitted period back to draft. Snapshot stays in place for
 	// audit (auditors can compare frozen vs. live after the reopen). The
@@ -515,6 +527,11 @@ type Querier interface {
 	// Same partial-update pattern via COALESCE so an MCP / phone caller
 	// can tweak a single axis without re-sending the other 10.
 	UpsertRecipeVersionWhiskySensory(ctx context.Context, arg UpsertRecipeVersionWhiskySensoryParams) (RecipeVersionWhiskySensory, error)
+	// Starting enrolment replaces any unfinished attempt. It must NOT
+	// replace a confirmed one: overwriting a working second factor from an
+	// unauthenticated position is a lockout, and from an authenticated one
+	// it should be a deliberate disable-then-enrol.
+	UpsertUserTOTP(ctx context.Context, arg UpsertUserTOTPParams) (UserTotp, error)
 	VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)

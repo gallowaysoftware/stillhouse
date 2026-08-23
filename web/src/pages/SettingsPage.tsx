@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { AlcoholometricTablesPanel } from "@/components/AlcoholometricTablesPanel";
 import { BuildPanel } from "@/components/BuildPanel";
+import { MFAPanel } from "@/components/MFAPanel";
 import { Shell } from "@/components/Shell";
 import { apiTokenClient, inviteClient, tenantClient, userClient } from "@/lib/clients";
 import {
@@ -257,6 +258,8 @@ export function SettingsPage() {
       />
 
       {isOwner && <InvitesPanel />}
+
+      <MFAPanel />
 
       <APITokensPanel />
 

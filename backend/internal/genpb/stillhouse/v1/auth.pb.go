@@ -25,6 +25,13 @@ type LoginRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Email    string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
 	Password string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// Six-digit code from the authenticator app, when the account has a
+	// second factor. Empty on the first attempt; the server answers with
+	// mfa_required and the client comes back with one.
+	TotpCode string `protobuf:"bytes,4,opt,name=totp_code,json=totpCode,proto3" json:"totp_code,omitempty"`
+	// A recovery code, used instead of totp_code when the phone is gone.
+	// Single use.
+	RecoveryCode string `protobuf:"bytes,5,opt,name=recovery_code,json=recoveryCode,proto3" json:"recovery_code,omitempty"`
 	// Which distillery to sign in to, when one email address holds an
 	// account at more than one. Empty on the first attempt; the server
 	// answers with `choices` and the client comes back with one of them.
@@ -73,6 +80,20 @@ func (x *LoginRequest) GetEmail() string {
 func (x *LoginRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetTotpCode() string {
+	if x != nil {
+		return x.TotpCode
+	}
+	return ""
+}
+
+func (x *LoginRequest) GetRecoveryCode() string {
+	if x != nil {
+		return x.RecoveryCode
 	}
 	return ""
 }
@@ -143,6 +164,9 @@ type LoginResponse struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	User   *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
 	Tenant *Tenant                `protobuf:"bytes,2,opt,name=tenant,proto3" json:"tenant,omitempty"`
+	// True when the password was right and a second factor is still
+	// needed. `user` and `tenant` are unset and no session is created.
+	MfaRequired bool `protobuf:"varint,4,opt,name=mfa_required,json=mfaRequired,proto3" json:"mfa_required,omitempty"`
 	// Populated only when the credentials match accounts at more than one
 	// distillery and the request named none. `user` and `tenant` are unset
 	// in that case and no session is created — the caller picks one and
@@ -194,6 +218,13 @@ func (x *LoginResponse) GetTenant() *Tenant {
 		return x.Tenant
 	}
 	return nil
+}
+
+func (x *LoginResponse) GetMfaRequired() bool {
+	if x != nil {
+		return x.MfaRequired
+	}
+	return false
 }
 
 func (x *LoginResponse) GetChoices() []*TenantChoice {
@@ -445,22 +476,408 @@ func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
+// Enrolment is two steps on purpose. BeginMFAEnrolment hands back a
+// secret; nothing is enforced until ConfirmMFAEnrolment proves the app
+// actually produces matching codes. Enrolling in one step means a
+// mistyped secret locks the account at the next sign-in.
+type BeginMFAEnrolmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BeginMFAEnrolmentRequest) Reset() {
+	*x = BeginMFAEnrolmentRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BeginMFAEnrolmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BeginMFAEnrolmentRequest) ProtoMessage() {}
+
+func (x *BeginMFAEnrolmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BeginMFAEnrolmentRequest.ProtoReflect.Descriptor instead.
+func (*BeginMFAEnrolmentRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{9}
+}
+
+type BeginMFAEnrolmentResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The otpauth:// URI. On a phone, tapping it opens the authenticator
+	// app directly.
+	EnrolmentUri string `protobuf:"bytes,1,opt,name=enrolment_uri,json=enrolmentUri,proto3" json:"enrolment_uri,omitempty"`
+	// The same secret in base32, grouped in fours, for typing in by hand.
+	Secret        string `protobuf:"bytes,2,opt,name=secret,proto3" json:"secret,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BeginMFAEnrolmentResponse) Reset() {
+	*x = BeginMFAEnrolmentResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BeginMFAEnrolmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BeginMFAEnrolmentResponse) ProtoMessage() {}
+
+func (x *BeginMFAEnrolmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BeginMFAEnrolmentResponse.ProtoReflect.Descriptor instead.
+func (*BeginMFAEnrolmentResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *BeginMFAEnrolmentResponse) GetEnrolmentUri() string {
+	if x != nil {
+		return x.EnrolmentUri
+	}
+	return ""
+}
+
+func (x *BeginMFAEnrolmentResponse) GetSecret() string {
+	if x != nil {
+		return x.Secret
+	}
+	return ""
+}
+
+type ConfirmMFAEnrolmentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmMFAEnrolmentRequest) Reset() {
+	*x = ConfirmMFAEnrolmentRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmMFAEnrolmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmMFAEnrolmentRequest) ProtoMessage() {}
+
+func (x *ConfirmMFAEnrolmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmMFAEnrolmentRequest.ProtoReflect.Descriptor instead.
+func (*ConfirmMFAEnrolmentRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ConfirmMFAEnrolmentRequest) GetCode() string {
+	if x != nil {
+		return x.Code
+	}
+	return ""
+}
+
+type ConfirmMFAEnrolmentResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Shown once. The phone is the single point of failure in any TOTP
+	// setup and these are the way back from a lost one.
+	RecoveryCodes []string `protobuf:"bytes,1,rep,name=recovery_codes,json=recoveryCodes,proto3" json:"recovery_codes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConfirmMFAEnrolmentResponse) Reset() {
+	*x = ConfirmMFAEnrolmentResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConfirmMFAEnrolmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConfirmMFAEnrolmentResponse) ProtoMessage() {}
+
+func (x *ConfirmMFAEnrolmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConfirmMFAEnrolmentResponse.ProtoReflect.Descriptor instead.
+func (*ConfirmMFAEnrolmentResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ConfirmMFAEnrolmentResponse) GetRecoveryCodes() []string {
+	if x != nil {
+		return x.RecoveryCodes
+	}
+	return nil
+}
+
+// Disabling requires the current password: a second factor that an
+// already-hijacked session can switch off has not added a factor.
+type DisableMFARequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	CurrentPassword string                 `protobuf:"bytes,1,opt,name=current_password,json=currentPassword,proto3" json:"current_password,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *DisableMFARequest) Reset() {
+	*x = DisableMFARequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DisableMFARequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DisableMFARequest) ProtoMessage() {}
+
+func (x *DisableMFARequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DisableMFARequest.ProtoReflect.Descriptor instead.
+func (*DisableMFARequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *DisableMFARequest) GetCurrentPassword() string {
+	if x != nil {
+		return x.CurrentPassword
+	}
+	return ""
+}
+
+type DisableMFAResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DisableMFAResponse) Reset() {
+	*x = DisableMFAResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DisableMFAResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DisableMFAResponse) ProtoMessage() {}
+
+func (x *DisableMFAResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DisableMFAResponse.ProtoReflect.Descriptor instead.
+func (*DisableMFAResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{14}
+}
+
+type MFAStatusRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MFAStatusRequest) Reset() {
+	*x = MFAStatusRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MFAStatusRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MFAStatusRequest) ProtoMessage() {}
+
+func (x *MFAStatusRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MFAStatusRequest.ProtoReflect.Descriptor instead.
+func (*MFAStatusRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{15}
+}
+
+type MFAStatusResponse struct {
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Enabled bool                   `protobuf:"varint,1,opt,name=enabled,proto3" json:"enabled,omitempty"`
+	// Enrolment started and never confirmed. Not enforced at login.
+	Pending                bool  `protobuf:"varint,2,opt,name=pending,proto3" json:"pending,omitempty"`
+	RecoveryCodesRemaining int32 `protobuf:"varint,3,opt,name=recovery_codes_remaining,json=recoveryCodesRemaining,proto3" json:"recovery_codes_remaining,omitempty"`
+	// False when the install has no STILLHOUSE_SECRET_KEY, so secrets
+	// cannot be encrypted at rest and enrolment refuses rather than
+	// storing one in the clear.
+	Available         bool   `protobuf:"varint,4,opt,name=available,proto3" json:"available,omitempty"`
+	UnavailableReason string `protobuf:"bytes,5,opt,name=unavailable_reason,json=unavailableReason,proto3" json:"unavailable_reason,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *MFAStatusResponse) Reset() {
+	*x = MFAStatusResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MFAStatusResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MFAStatusResponse) ProtoMessage() {}
+
+func (x *MFAStatusResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MFAStatusResponse.ProtoReflect.Descriptor instead.
+func (*MFAStatusResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *MFAStatusResponse) GetEnabled() bool {
+	if x != nil {
+		return x.Enabled
+	}
+	return false
+}
+
+func (x *MFAStatusResponse) GetPending() bool {
+	if x != nil {
+		return x.Pending
+	}
+	return false
+}
+
+func (x *MFAStatusResponse) GetRecoveryCodesRemaining() int32 {
+	if x != nil {
+		return x.RecoveryCodesRemaining
+	}
+	return 0
+}
+
+func (x *MFAStatusResponse) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
+func (x *MFAStatusResponse) GetUnavailableReason() string {
+	if x != nil {
+		return x.UnavailableReason
+	}
+	return ""
+}
+
 var File_stillhouse_v1_auth_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/auth.proto\x12\rstillhouse.v1\x1a\x1astillhouse/v1/tenant.proto\x1a\x18stillhouse/v1/user.proto\"]\n" +
+	"\x18stillhouse/v1/auth.proto\x12\rstillhouse.v1\x1a\x1astillhouse/v1/tenant.proto\x1a\x18stillhouse/v1/user.proto\"\x9f\x01\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1b\n" +
+	"\ttotp_code\x18\x04 \x01(\tR\btotpCode\x12#\n" +
+	"\rrecovery_code\x18\x05 \x01(\tR\frecoveryCode\x12\x1b\n" +
 	"\ttenant_id\x18\x03 \x01(\tR\btenantId\"L\n" +
 	"\fTenantChoice\x12\x1b\n" +
 	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1f\n" +
 	"\vtenant_name\x18\x02 \x01(\tR\n" +
-	"tenantName\"\x9e\x01\n" +
+	"tenantName\"\xc1\x01\n" +
 	"\rLoginResponse\x12'\n" +
 	"\x04user\x18\x01 \x01(\v2\x13.stillhouse.v1.UserR\x04user\x12-\n" +
-	"\x06tenant\x18\x02 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\x125\n" +
+	"\x06tenant\x18\x02 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\x12!\n" +
+	"\fmfa_required\x18\x04 \x01(\bR\vmfaRequired\x125\n" +
 	"\achoices\x18\x03 \x03(\v2\x1b.stillhouse.v1.TenantChoiceR\achoices\"\x0f\n" +
 	"\rLogoutRequest\"\x10\n" +
 	"\x0eLogoutResponse\"3\n" +
@@ -470,12 +887,35 @@ const file_stillhouse_v1_auth_proto_rawDesc = "" +
 	"\x14ResetPasswordRequest\x12\x14\n" +
 	"\x05token\x18\x01 \x01(\tR\x05token\x12!\n" +
 	"\fnew_password\x18\x02 \x01(\tR\vnewPassword\"\x17\n" +
-	"\x15ResetPasswordResponse2\xe5\x02\n" +
+	"\x15ResetPasswordResponse\"\x1a\n" +
+	"\x18BeginMFAEnrolmentRequest\"X\n" +
+	"\x19BeginMFAEnrolmentResponse\x12#\n" +
+	"\renrolment_uri\x18\x01 \x01(\tR\fenrolmentUri\x12\x16\n" +
+	"\x06secret\x18\x02 \x01(\tR\x06secret\"0\n" +
+	"\x1aConfirmMFAEnrolmentRequest\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\tR\x04code\"D\n" +
+	"\x1bConfirmMFAEnrolmentResponse\x12%\n" +
+	"\x0erecovery_codes\x18\x01 \x03(\tR\rrecoveryCodes\">\n" +
+	"\x11DisableMFARequest\x12)\n" +
+	"\x10current_password\x18\x01 \x01(\tR\x0fcurrentPassword\"\x14\n" +
+	"\x12DisableMFAResponse\"\x12\n" +
+	"\x10MFAStatusRequest\"\xce\x01\n" +
+	"\x11MFAStatusResponse\x12\x18\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled\x12\x18\n" +
+	"\apending\x18\x02 \x01(\bR\apending\x128\n" +
+	"\x18recovery_codes_remaining\x18\x03 \x01(\x05R\x16recoveryCodesRemaining\x12\x1c\n" +
+	"\tavailable\x18\x04 \x01(\bR\tavailable\x12-\n" +
+	"\x12unavailable_reason\x18\x05 \x01(\tR\x11unavailableReason2\xde\x05\n" +
 	"\vAuthService\x12B\n" +
 	"\x05Login\x12\x1b.stillhouse.v1.LoginRequest\x1a\x1c.stillhouse.v1.LoginResponse\x12E\n" +
 	"\x06Logout\x12\x1c.stillhouse.v1.LogoutRequest\x1a\x1d.stillhouse.v1.LogoutResponse\x12o\n" +
 	"\x14RequestPasswordReset\x12*.stillhouse.v1.RequestPasswordResetRequest\x1a+.stillhouse.v1.RequestPasswordResetResponse\x12Z\n" +
-	"\rResetPassword\x12#.stillhouse.v1.ResetPasswordRequest\x1a$.stillhouse.v1.ResetPasswordResponseB\xcd\x01\n" +
+	"\rResetPassword\x12#.stillhouse.v1.ResetPasswordRequest\x1a$.stillhouse.v1.ResetPasswordResponse\x12N\n" +
+	"\tMFAStatus\x12\x1f.stillhouse.v1.MFAStatusRequest\x1a .stillhouse.v1.MFAStatusResponse\x12f\n" +
+	"\x11BeginMFAEnrolment\x12'.stillhouse.v1.BeginMFAEnrolmentRequest\x1a(.stillhouse.v1.BeginMFAEnrolmentResponse\x12l\n" +
+	"\x13ConfirmMFAEnrolment\x12).stillhouse.v1.ConfirmMFAEnrolmentRequest\x1a*.stillhouse.v1.ConfirmMFAEnrolmentResponse\x12Q\n" +
+	"\n" +
+	"DisableMFA\x12 .stillhouse.v1.DisableMFARequest\x1a!.stillhouse.v1.DisableMFAResponseB\xcd\x01\n" +
 	"\x11com.stillhouse.v1B\tAuthProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -490,7 +930,7 @@ func file_stillhouse_v1_auth_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_auth_proto_rawDescData
 }
 
-var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_stillhouse_v1_auth_proto_goTypes = []any{
 	(*LoginRequest)(nil),                 // 0: stillhouse.v1.LoginRequest
 	(*TenantChoice)(nil),                 // 1: stillhouse.v1.TenantChoice
@@ -501,23 +941,39 @@ var file_stillhouse_v1_auth_proto_goTypes = []any{
 	(*RequestPasswordResetResponse)(nil), // 6: stillhouse.v1.RequestPasswordResetResponse
 	(*ResetPasswordRequest)(nil),         // 7: stillhouse.v1.ResetPasswordRequest
 	(*ResetPasswordResponse)(nil),        // 8: stillhouse.v1.ResetPasswordResponse
-	(*User)(nil),                         // 9: stillhouse.v1.User
-	(*Tenant)(nil),                       // 10: stillhouse.v1.Tenant
+	(*BeginMFAEnrolmentRequest)(nil),     // 9: stillhouse.v1.BeginMFAEnrolmentRequest
+	(*BeginMFAEnrolmentResponse)(nil),    // 10: stillhouse.v1.BeginMFAEnrolmentResponse
+	(*ConfirmMFAEnrolmentRequest)(nil),   // 11: stillhouse.v1.ConfirmMFAEnrolmentRequest
+	(*ConfirmMFAEnrolmentResponse)(nil),  // 12: stillhouse.v1.ConfirmMFAEnrolmentResponse
+	(*DisableMFARequest)(nil),            // 13: stillhouse.v1.DisableMFARequest
+	(*DisableMFAResponse)(nil),           // 14: stillhouse.v1.DisableMFAResponse
+	(*MFAStatusRequest)(nil),             // 15: stillhouse.v1.MFAStatusRequest
+	(*MFAStatusResponse)(nil),            // 16: stillhouse.v1.MFAStatusResponse
+	(*User)(nil),                         // 17: stillhouse.v1.User
+	(*Tenant)(nil),                       // 18: stillhouse.v1.Tenant
 }
 var file_stillhouse_v1_auth_proto_depIdxs = []int32{
-	9,  // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
-	10, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
+	17, // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
+	18, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
 	1,  // 2: stillhouse.v1.LoginResponse.choices:type_name -> stillhouse.v1.TenantChoice
 	0,  // 3: stillhouse.v1.AuthService.Login:input_type -> stillhouse.v1.LoginRequest
 	3,  // 4: stillhouse.v1.AuthService.Logout:input_type -> stillhouse.v1.LogoutRequest
 	5,  // 5: stillhouse.v1.AuthService.RequestPasswordReset:input_type -> stillhouse.v1.RequestPasswordResetRequest
 	7,  // 6: stillhouse.v1.AuthService.ResetPassword:input_type -> stillhouse.v1.ResetPasswordRequest
-	2,  // 7: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
-	4,  // 8: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
-	6,  // 9: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
-	8,  // 10: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
-	7,  // [7:11] is the sub-list for method output_type
-	3,  // [3:7] is the sub-list for method input_type
+	15, // 7: stillhouse.v1.AuthService.MFAStatus:input_type -> stillhouse.v1.MFAStatusRequest
+	9,  // 8: stillhouse.v1.AuthService.BeginMFAEnrolment:input_type -> stillhouse.v1.BeginMFAEnrolmentRequest
+	11, // 9: stillhouse.v1.AuthService.ConfirmMFAEnrolment:input_type -> stillhouse.v1.ConfirmMFAEnrolmentRequest
+	13, // 10: stillhouse.v1.AuthService.DisableMFA:input_type -> stillhouse.v1.DisableMFARequest
+	2,  // 11: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
+	4,  // 12: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
+	6,  // 13: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
+	8,  // 14: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
+	16, // 15: stillhouse.v1.AuthService.MFAStatus:output_type -> stillhouse.v1.MFAStatusResponse
+	10, // 16: stillhouse.v1.AuthService.BeginMFAEnrolment:output_type -> stillhouse.v1.BeginMFAEnrolmentResponse
+	12, // 17: stillhouse.v1.AuthService.ConfirmMFAEnrolment:output_type -> stillhouse.v1.ConfirmMFAEnrolmentResponse
+	14, // 18: stillhouse.v1.AuthService.DisableMFA:output_type -> stillhouse.v1.DisableMFAResponse
+	11, // [11:19] is the sub-list for method output_type
+	3,  // [3:11] is the sub-list for method input_type
 	3,  // [3:3] is the sub-list for extension type_name
 	3,  // [3:3] is the sub-list for extension extendee
 	0,  // [0:3] is the sub-list for field type_name
@@ -536,7 +992,7 @@ func file_stillhouse_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_auth_proto_rawDesc), len(file_stillhouse_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
