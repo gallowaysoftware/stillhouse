@@ -8,11 +8,28 @@ import "stillhouse/v1/user.proto";
 message LoginRequest {
   string email = 1;
   string password = 2;
+  // Which distillery to sign in to, when one email address holds an
+  // account at more than one. Empty on the first attempt; the server
+  // answers with `choices` and the client comes back with one of them.
+  string tenant_id = 3;
+}
+
+// A distillery the credentials just presented are good for. Only ever
+// returned after the password has been verified against that account, so
+// listing it tells the caller nothing they did not already prove.
+message TenantChoice {
+  string tenant_id = 1;
+  string tenant_name = 2;
 }
 
 message LoginResponse {
   User user = 1;
   Tenant tenant = 2;
+  // Populated only when the credentials match accounts at more than one
+  // distillery and the request named none. `user` and `tenant` are unset
+  // in that case and no session is created — the caller picks one and
+  // logs in again with tenant_id set.
+  repeated TenantChoice choices = 3;
 }
 
 message LogoutRequest {}

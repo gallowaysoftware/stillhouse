@@ -87,6 +87,9 @@ func (s *UserService) CreateUser(
 		Role:         role,
 	})
 	if err != nil {
+		if ce := classifyWriteErr(err, "the tenant no longer exists"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("CreateUser", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}

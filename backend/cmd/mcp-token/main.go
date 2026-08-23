@@ -19,13 +19,11 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/base64"
-	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
@@ -36,6 +34,7 @@ import (
 func main() {
 	email := flag.String("email", "", "email of the user to issue the token for")
 	name := flag.String("name", "mcp", "human label for the token (shown when listing)")
+	tenant := flag.String("tenant", "", "tenant id, when the email holds an account at more than one distillery")
 	flag.Parse()
 	if *email == "" {
 		log.Fatal("--email is required")
@@ -57,13 +56,39 @@ func main() {
 	defer pool.Close()
 
 	q := sqlcgen.New(pool)
-	u, err := q.GetUserByEmail(ctx, *email)
+	// An email address is unique per tenant, not per install, so it can
+	// name accounts at more than one distillery. A recovery CLI must not
+	// guess which — it names them and stops.
+	users, err := q.ListUsersByEmail(ctx, *email)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			log.Fatalf("no user with email %q", *email)
-		}
 		log.Fatalf("get user: %v", err)
 	}
+	if *tenant != "" {
+		filtered := users[:0]
+		for _, u := range users {
+			if u.TenantID.String() == *tenant {
+				filtered = append(filtered, u)
+			}
+		}
+		users = filtered
+	}
+	switch {
+	case len(users) == 0 && *tenant != "":
+		log.Fatalf("no user with email %q at tenant %s", *email, *tenant)
+	case len(users) == 0:
+		log.Fatalf("no user with email %q", *email)
+	case len(users) > 1:
+		fmt.Fprintf(os.Stderr, "%q has an account at %d distilleries:\n", *email, len(users))
+		for _, u := range users {
+			label := u.TenantID.String()
+			if t, err := q.GetTenantByID(ctx, u.TenantID); err == nil {
+				label = fmt.Sprintf("%s  %s", u.TenantID, t.Name)
+			}
+			fmt.Fprintf(os.Stderr, "  --tenant %s\n", label)
+		}
+		log.Fatal("pass --tenant to say which")
+	}
+	u := users[0]
 
 	// api_tokens is under row-level security as of migration 000033, so
 	// the insert needs a tenant context even here. Going through

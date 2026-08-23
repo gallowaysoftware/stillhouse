@@ -176,7 +176,6 @@ type Querier interface {
 	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
-	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	IncrementPackagedOnHand(ctx context.Context, arg IncrementPackagedOnHandParams) (PackagedInventory, error)
 	IncrementStampOrderApplied(ctx context.Context, arg IncrementStampOrderAppliedParams) (ExciseStampOrder, error)
@@ -269,6 +268,17 @@ type Querier interface {
 	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
 	ListStampOrders(ctx context.Context, jurisdiction pgtype.Text) ([]ExciseStampOrder, error)
 	ListStampOrdersWithAvailable(ctx context.Context, jurisdiction string) ([]ListStampOrdersWithAvailableRow, error)
+	// An email address no longer identifies one account: it is unique per
+	// tenant, so the outside bookkeeper can hold one at each distillery they
+	// work for. Every caller that starts from an address alone — login,
+	// password reset — has to reckon with a set.
+	//
+	// Ordered by created_at so the answer is stable, and capped: the cost of
+	// a login attempt is one password verification per row returned, and
+	// that must not be something an attacker can inflate by registering
+	// accounts. Nobody legitimately holds accounts at more than a handful of
+	// distilleries under one address.
+	ListUsersByEmail(ctx context.Context, email string) ([]User, error)
 	ListUsersForTenant(ctx context.Context, tenantID uuid.UUID) ([]User, error)
 	// Document-number allocation.
 	//

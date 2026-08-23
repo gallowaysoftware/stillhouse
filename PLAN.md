@@ -379,6 +379,10 @@ Either commit or scope Quebec out explicitly.
 A group running a brewery and a distillery, or two licences, currently needs
 two tenants and two logins. Needs an entity switcher above the tenant.
 
+Half the prerequisite is done: stage 155 made email unique per tenant, so one
+person can hold an account at each, and login already asks which one they
+mean. What is missing is switching between them without signing out.
+
 ### H8 · Release discipline for hosted tenants — P1
 
 Today a breaking migration costs one evening. With tenants it costs a
@@ -410,15 +414,6 @@ a human looking at the screen, not a green build.
 It also raises the floor to Safari 16.4 / Chrome 111. For a tool used on
 shop-floor phones that is a product decision, and it is the reason this sits
 here rather than in a chore commit.
-
-### H14 · Email uniqueness is platform-wide — P2
-
-`users.email` is `UNIQUE` across the whole install, as is
-`tenants.cra_spirits_licence_number`. One person cannot hold accounts at two
-distilleries, which the outside bookkeeper in `H4` will want on day one, and a
-collision surfaces as an opaque `internal` error from `CreateUser`. Wants to
-become `UNIQUE (tenant_id, email)` before the first shared consultant, not
-after. Prerequisite for `H7`.
 
 ---
 

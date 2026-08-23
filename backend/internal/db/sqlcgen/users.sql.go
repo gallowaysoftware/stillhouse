@@ -51,28 +51,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
-const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE email = $1
-`
-
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, email)
-	var i User
-	err := row.Scan(
-		&i.ID,
-		&i.TenantID,
-		&i.Email,
-		&i.PasswordHash,
-		&i.DisplayName,
-		&i.Role,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.EmailVerifiedAt,
-		&i.SessionsRevokedAt,
-	)
-	return i, err
-}
-
 const getUserByID = `-- name: GetUserByID :one
 SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE id = $1
 `
@@ -93,4 +71,49 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 		&i.SessionsRevokedAt,
 	)
 	return i, err
+}
+
+const listUsersByEmail = `-- name: ListUsersByEmail :many
+SELECT id, tenant_id, email, password_hash, display_name, role, created_at, updated_at, email_verified_at, sessions_revoked_at FROM users WHERE email = $1 ORDER BY created_at LIMIT 8
+`
+
+// An email address no longer identifies one account: it is unique per
+// tenant, so the outside bookkeeper can hold one at each distillery they
+// work for. Every caller that starts from an address alone — login,
+// password reset — has to reckon with a set.
+//
+// Ordered by created_at so the answer is stable, and capped: the cost of
+// a login attempt is one password verification per row returned, and
+// that must not be something an attacker can inflate by registering
+// accounts. Nobody legitimately holds accounts at more than a handful of
+// distilleries under one address.
+func (q *Queries) ListUsersByEmail(ctx context.Context, email string) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUsersByEmail, email)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.TenantID,
+			&i.Email,
+			&i.PasswordHash,
+			&i.DisplayName,
+			&i.Role,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.EmailVerifiedAt,
+			&i.SessionsRevokedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

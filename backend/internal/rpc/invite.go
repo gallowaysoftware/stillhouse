@@ -232,6 +232,12 @@ func (s *InviteService) SignupWithInvite(
 		if errors.As(err, &ce) {
 			return nil, ce
 		}
+		// A licence number already on the install, or a duplicate email
+		// inside the tenant being created, is something the person
+		// signing up can act on — it used to come back as `internal`.
+		if ce := classifyWriteErr(err, "the invite code refers to a tenant that no longer exists"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("SignupWithInvite", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}

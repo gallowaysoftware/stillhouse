@@ -13,10 +13,20 @@ export function LoginPage() {
   const t = useT();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  // One email address can hold an account at more than one distillery —
+  // the outside bookkeeper case. When it does, the server verifies the
+  // password against each, returns the ones that matched, and creates no
+  // session until we come back naming one.
+  const [choices, setChoices] = useState<{ tenantId: string; tenantName: string }[]>([]);
 
   const login = useMutation({
-    mutationFn: () => authClient.login({ email, password }),
-    onSuccess: async () => {
+    mutationFn: (tenantId: string) => authClient.login({ email, password, tenantId }),
+    onSuccess: async (resp) => {
+      if (resp.choices.length > 0) {
+        setChoices(resp.choices.map((c) => ({ tenantId: c.tenantId, tenantName: c.tenantName })));
+        return;
+      }
+      setChoices([]);
       await queryClient.invalidateQueries({ queryKey: ["getMe"] });
       navigate("/", { replace: true });
     },
@@ -24,7 +34,7 @@ export function LoginPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    login.mutate();
+    login.mutate("");
   }
 
   return (
@@ -61,6 +71,37 @@ export function LoginPage() {
           </div>
         </div>
 
+        {choices.length > 0 ? (
+          <div className="space-y-3">
+            <p className="text-sm text-fg-muted">
+              {t(
+                "That email has an account at more than one distillery. Which one?",
+                "Ce courriel a un compte dans plus d'une distillerie. Laquelle ?",
+              )}
+            </p>
+            <div className="space-y-2">
+              {choices.map((c) => (
+                <button
+                  key={c.tenantId}
+                  type="button"
+                  disabled={login.isPending}
+                  onClick={() => login.mutate(c.tenantId)}
+                  className="w-full rounded border border-border-strong px-3 py-2 text-left text-sm text-fg hover:border-accent disabled:opacity-50"
+                >
+                  {c.tenantName}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => { setChoices([]); setPassword(""); }}
+              className="text-xs text-fg-subtle hover:text-fg"
+            >
+              {t("Use a different account", "Utiliser un autre compte")}
+            </button>
+          </div>
+        ) : (
+        <>
         <div className="space-y-1">
           <label htmlFor="email" className="block text-sm font-medium text-fg">
             {t("Email", "Courriel")}
@@ -91,6 +132,16 @@ export function LoginPage() {
           />
         </div>
 
+        <button
+          type="submit"
+          disabled={login.isPending}
+          className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
+        >
+          {login.isPending ? t("Signing in…", "Connexion…") : t("Sign in", "Se connecter")}
+        </button>
+        </>
+        )}
+
         {login.error && (
           <p className="text-sm text-danger-fg">
             {login.error instanceof ConnectError
@@ -99,13 +150,6 @@ export function LoginPage() {
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={login.isPending}
-          className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50"
-        >
-          {login.isPending ? t("Signing in…", "Connexion…") : t("Sign in", "Se connecter")}
-        </button>
 
         <div className="flex justify-between text-xs text-fg-subtle">
           <Link to="/forgot-password" className="hover:text-fg">

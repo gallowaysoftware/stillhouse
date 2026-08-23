@@ -40,6 +40,15 @@ var uniqueViolationMessages = map[string]string{
 	"distillation_runs_tenant_id_run_no_key":                          "a distillation run with that number already exists",
 	"materials_tenant_id_name_key":                                    "a material with that name already exists",
 	"bulk_containers_tenant_id_name_key":                              "a container with that name already exists",
+	// Email is unique per distillery, not per install (000035), so this
+	// only fires on a genuine duplicate within one tenant. Before that
+	// migration the same message would have been a lie: the collision was
+	// usually with an account at a different distillery entirely.
+	"users_tenant_email_key": "someone at this distillery already has an account with that email address",
+	// This one stays install-wide on purpose. A CRA spirits licence
+	// number is globally unique in the world, so a collision means one of
+	// the two is wrong — worth saying rather than swallowing.
+	"tenants_cra_spirits_licence_number_key": "that CRA spirits licence number is already registered on this Stillhouse install",
 }
 
 // classifyWriteErr maps low-level pg errors that happen during writes

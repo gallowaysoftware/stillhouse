@@ -22,9 +22,13 @@ const (
 )
 
 type LoginRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Email    string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Password string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	// Which distillery to sign in to, when one email address holds an
+	// account at more than one. Empty on the first attempt; the server
+	// answers with `choices` and the client comes back with one of them.
+	TenantId      string `protobuf:"bytes,3,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -73,17 +77,84 @@ func (x *LoginRequest) GetPassword() string {
 	return ""
 }
 
-type LoginResponse struct {
+func (x *LoginRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+// A distillery the credentials just presented are good for. Only ever
+// returned after the password has been verified against that account, so
+// listing it tells the caller nothing they did not already prove.
+type TenantChoice struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	User          *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
-	Tenant        *Tenant                `protobuf:"bytes,2,opt,name=tenant,proto3" json:"tenant,omitempty"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	TenantName    string                 `protobuf:"bytes,2,opt,name=tenant_name,json=tenantName,proto3" json:"tenant_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TenantChoice) Reset() {
+	*x = TenantChoice{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TenantChoice) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TenantChoice) ProtoMessage() {}
+
+func (x *TenantChoice) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TenantChoice.ProtoReflect.Descriptor instead.
+func (*TenantChoice) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *TenantChoice) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *TenantChoice) GetTenantName() string {
+	if x != nil {
+		return x.TenantName
+	}
+	return ""
+}
+
+type LoginResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	User   *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	Tenant *Tenant                `protobuf:"bytes,2,opt,name=tenant,proto3" json:"tenant,omitempty"`
+	// Populated only when the credentials match accounts at more than one
+	// distillery and the request named none. `user` and `tenant` are unset
+	// in that case and no session is created — the caller picks one and
+	// logs in again with tenant_id set.
+	Choices       []*TenantChoice `protobuf:"bytes,3,rep,name=choices,proto3" json:"choices,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *LoginResponse) Reset() {
 	*x = LoginResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -95,7 +166,7 @@ func (x *LoginResponse) String() string {
 func (*LoginResponse) ProtoMessage() {}
 
 func (x *LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -108,7 +179,7 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *LoginResponse) GetUser() *User {
@@ -125,6 +196,13 @@ func (x *LoginResponse) GetTenant() *Tenant {
 	return nil
 }
 
+func (x *LoginResponse) GetChoices() []*TenantChoice {
+	if x != nil {
+		return x.Choices
+	}
+	return nil
+}
+
 type LogoutRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
@@ -133,7 +211,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -145,7 +223,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -158,7 +236,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{3}
 }
 
 type LogoutResponse struct {
@@ -169,7 +247,7 @@ type LogoutResponse struct {
 
 func (x *LogoutResponse) Reset() {
 	*x = LogoutResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -181,7 +259,7 @@ func (x *LogoutResponse) String() string {
 func (*LogoutResponse) ProtoMessage() {}
 
 func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -194,7 +272,7 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{4}
 }
 
 // Public — always returns success. Backend silently skips if the email
@@ -208,7 +286,7 @@ type RequestPasswordResetRequest struct {
 
 func (x *RequestPasswordResetRequest) Reset() {
 	*x = RequestPasswordResetRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -220,7 +298,7 @@ func (x *RequestPasswordResetRequest) String() string {
 func (*RequestPasswordResetRequest) ProtoMessage() {}
 
 func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -233,7 +311,7 @@ func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
 func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RequestPasswordResetRequest) GetEmail() string {
@@ -251,7 +329,7 @@ type RequestPasswordResetResponse struct {
 
 func (x *RequestPasswordResetResponse) Reset() {
 	*x = RequestPasswordResetResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -263,7 +341,7 @@ func (x *RequestPasswordResetResponse) String() string {
 func (*RequestPasswordResetResponse) ProtoMessage() {}
 
 func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -276,7 +354,7 @@ func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
 func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{6}
 }
 
 type ResetPasswordRequest struct {
@@ -289,7 +367,7 @@ type ResetPasswordRequest struct {
 
 func (x *ResetPasswordRequest) Reset() {
 	*x = ResetPasswordRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -301,7 +379,7 @@ func (x *ResetPasswordRequest) String() string {
 func (*ResetPasswordRequest) ProtoMessage() {}
 
 func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -314,7 +392,7 @@ func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
 func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *ResetPasswordRequest) GetToken() string {
@@ -339,7 +417,7 @@ type ResetPasswordResponse struct {
 
 func (x *ResetPasswordResponse) Reset() {
 	*x = ResetPasswordResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -351,7 +429,7 @@ func (x *ResetPasswordResponse) String() string {
 func (*ResetPasswordResponse) ProtoMessage() {}
 
 func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,20 +442,26 @@ func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
 func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
 var File_stillhouse_v1_auth_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/auth.proto\x12\rstillhouse.v1\x1a\x1astillhouse/v1/tenant.proto\x1a\x18stillhouse/v1/user.proto\"@\n" +
+	"\x18stillhouse/v1/auth.proto\x12\rstillhouse.v1\x1a\x1astillhouse/v1/tenant.proto\x1a\x18stillhouse/v1/user.proto\"]\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"g\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1b\n" +
+	"\ttenant_id\x18\x03 \x01(\tR\btenantId\"L\n" +
+	"\fTenantChoice\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1f\n" +
+	"\vtenant_name\x18\x02 \x01(\tR\n" +
+	"tenantName\"\x9e\x01\n" +
 	"\rLoginResponse\x12'\n" +
 	"\x04user\x18\x01 \x01(\v2\x13.stillhouse.v1.UserR\x04user\x12-\n" +
-	"\x06tenant\x18\x02 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\"\x0f\n" +
+	"\x06tenant\x18\x02 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\x125\n" +
+	"\achoices\x18\x03 \x03(\v2\x1b.stillhouse.v1.TenantChoiceR\achoices\"\x0f\n" +
 	"\rLogoutRequest\"\x10\n" +
 	"\x0eLogoutResponse\"3\n" +
 	"\x1bRequestPasswordResetRequest\x12\x14\n" +
@@ -406,35 +490,37 @@ func file_stillhouse_v1_auth_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_auth_proto_rawDescData
 }
 
-var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_stillhouse_v1_auth_proto_goTypes = []any{
 	(*LoginRequest)(nil),                 // 0: stillhouse.v1.LoginRequest
-	(*LoginResponse)(nil),                // 1: stillhouse.v1.LoginResponse
-	(*LogoutRequest)(nil),                // 2: stillhouse.v1.LogoutRequest
-	(*LogoutResponse)(nil),               // 3: stillhouse.v1.LogoutResponse
-	(*RequestPasswordResetRequest)(nil),  // 4: stillhouse.v1.RequestPasswordResetRequest
-	(*RequestPasswordResetResponse)(nil), // 5: stillhouse.v1.RequestPasswordResetResponse
-	(*ResetPasswordRequest)(nil),         // 6: stillhouse.v1.ResetPasswordRequest
-	(*ResetPasswordResponse)(nil),        // 7: stillhouse.v1.ResetPasswordResponse
-	(*User)(nil),                         // 8: stillhouse.v1.User
-	(*Tenant)(nil),                       // 9: stillhouse.v1.Tenant
+	(*TenantChoice)(nil),                 // 1: stillhouse.v1.TenantChoice
+	(*LoginResponse)(nil),                // 2: stillhouse.v1.LoginResponse
+	(*LogoutRequest)(nil),                // 3: stillhouse.v1.LogoutRequest
+	(*LogoutResponse)(nil),               // 4: stillhouse.v1.LogoutResponse
+	(*RequestPasswordResetRequest)(nil),  // 5: stillhouse.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil), // 6: stillhouse.v1.RequestPasswordResetResponse
+	(*ResetPasswordRequest)(nil),         // 7: stillhouse.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),        // 8: stillhouse.v1.ResetPasswordResponse
+	(*User)(nil),                         // 9: stillhouse.v1.User
+	(*Tenant)(nil),                       // 10: stillhouse.v1.Tenant
 }
 var file_stillhouse_v1_auth_proto_depIdxs = []int32{
-	8, // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
-	9, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
-	0, // 2: stillhouse.v1.AuthService.Login:input_type -> stillhouse.v1.LoginRequest
-	2, // 3: stillhouse.v1.AuthService.Logout:input_type -> stillhouse.v1.LogoutRequest
-	4, // 4: stillhouse.v1.AuthService.RequestPasswordReset:input_type -> stillhouse.v1.RequestPasswordResetRequest
-	6, // 5: stillhouse.v1.AuthService.ResetPassword:input_type -> stillhouse.v1.ResetPasswordRequest
-	1, // 6: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
-	3, // 7: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
-	5, // 8: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
-	7, // 9: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	9,  // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
+	10, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
+	1,  // 2: stillhouse.v1.LoginResponse.choices:type_name -> stillhouse.v1.TenantChoice
+	0,  // 3: stillhouse.v1.AuthService.Login:input_type -> stillhouse.v1.LoginRequest
+	3,  // 4: stillhouse.v1.AuthService.Logout:input_type -> stillhouse.v1.LogoutRequest
+	5,  // 5: stillhouse.v1.AuthService.RequestPasswordReset:input_type -> stillhouse.v1.RequestPasswordResetRequest
+	7,  // 6: stillhouse.v1.AuthService.ResetPassword:input_type -> stillhouse.v1.ResetPasswordRequest
+	2,  // 7: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
+	4,  // 8: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
+	6,  // 9: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
+	8,  // 10: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
+	7,  // [7:11] is the sub-list for method output_type
+	3,  // [3:7] is the sub-list for method input_type
+	3,  // [3:3] is the sub-list for extension type_name
+	3,  // [3:3] is the sub-list for extension extendee
+	0,  // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_auth_proto_init() }
@@ -450,7 +536,7 @@ func file_stillhouse_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_auth_proto_rawDesc), len(file_stillhouse_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

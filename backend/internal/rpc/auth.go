@@ -13,6 +13,7 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/alexedwards/scs/v2"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
@@ -138,18 +139,68 @@ func (s *AuthService) Login(
 			errors.New("too many login attempts for this account; try again later"))
 	}
 
-	u, err := s.q.GetUserByEmail(ctx, in.GetEmail())
+	// An email address can hold an account at more than one distillery
+	// (migration 000035), so this is a set, not a row.
+	candidates, err := s.q.ListUsersByEmail(ctx, in.GetEmail())
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid credentials"))
-		}
 		s.logger.Error("login: user lookup", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	if err := auth.VerifyPassword(in.GetPassword(), u.PasswordHash); err != nil {
+
+	// If the request named a distillery, only that account is in play.
+	// Filtering before verification rather than after keeps the work
+	// bounded and means a wrong tenant_id reads as bad credentials rather
+	// than as a probe that returns something different.
+	if want := in.GetTenantId(); want != "" {
+		tenantID, err := uuid.Parse(want)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid tenant_id"))
+		}
+		filtered := candidates[:0]
+		for _, c := range candidates {
+			if c.TenantID == tenantID {
+				filtered = append(filtered, c)
+			}
+		}
+		candidates = filtered
+	}
+
+	// Verify against every candidate. One password may be right at one
+	// distillery and wrong at another; the matches are the accounts this
+	// caller has actually proven they hold.
+	var matched []sqlcgen.User
+	for _, c := range candidates {
+		if err := auth.VerifyPassword(in.GetPassword(), c.PasswordHash); err == nil {
+			matched = append(matched, c)
+		}
+	}
+	if len(matched) == 0 {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("invalid credentials"))
 	}
 
+	if len(matched) > 1 {
+		// Ambiguous, and only reachable by someone who just proved they
+		// hold every account listed — so naming the distilleries tells
+		// them nothing they did not already know. No session is created;
+		// they pick one and log in again with tenant_id set.
+		choices := make([]*stillhousev1.TenantChoice, 0, len(matched))
+		for _, m := range matched {
+			t, err := s.q.GetTenantByID(ctx, m.TenantID)
+			if err != nil {
+				s.logger.Error("login: tenant lookup", "err", err, "tenant_id", m.TenantID)
+				return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+			}
+			choices = append(choices, &stillhousev1.TenantChoice{
+				TenantId:   t.ID.String(),
+				TenantName: t.Name,
+			})
+		}
+		s.limiter.Forget(rlKey)
+		s.emailLimiter.Forget(strings.ToLower(in.GetEmail()))
+		return connect.NewResponse(&stillhousev1.LoginResponse{Choices: choices}), nil
+	}
+
+	u := matched[0]
 	t, err := s.q.GetTenantByID(ctx, u.TenantID)
 	if err != nil {
 		s.logger.Error("login: tenant lookup", "err", err)
@@ -200,32 +251,44 @@ func (s *AuthService) RequestPasswordReset(
 	if email == "" {
 		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
 	}
-	u, err := s.q.GetUserByEmail(ctx, email)
+	// One address can hold an account at several distilleries, and the
+	// person asking has no way to say which one they mean — they are
+	// locked out of it. So every account under the address gets its own
+	// token and its own email, each naming the distillery it is for.
+	users, err := s.q.ListUsersByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
-		}
 		s.logger.Error("password reset: user lookup", "err", err)
 		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
 	}
-	tokenBytes := make([]byte, 32)
-	if _, err := rand.Read(tokenBytes); err != nil {
-		s.logger.Error("password reset: rand", "err", err)
-		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
-	}
-	token := base64.RawURLEncoding.EncodeToString(tokenBytes)
-	hash := sha256.Sum256([]byte(token))
-	if _, err := s.q.CreatePasswordResetToken(ctx, sqlcgen.CreatePasswordResetTokenParams{
-		TokenHash: hash[:],
-		UserID:    u.ID,
-		ExpiresAt: pgtype.Timestamptz{Valid: true, Time: time.Now().Add(1 * time.Hour)},
-	}); err != nil {
-		s.logger.Error("password reset: token insert", "err", err)
-		return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
-	}
-	if s.mailer != nil {
-		url := s.resetURLPrefix + token
-		if err := s.mailer.SendPasswordReset(ctx, u.Email, u.DisplayName, url); err != nil {
+	for _, u := range users {
+		tokenBytes := make([]byte, 32)
+		if _, err := rand.Read(tokenBytes); err != nil {
+			s.logger.Error("password reset: rand", "err", err)
+			return connect.NewResponse(&stillhousev1.RequestPasswordResetResponse{}), nil
+		}
+		token := base64.RawURLEncoding.EncodeToString(tokenBytes)
+		hash := sha256.Sum256([]byte(token))
+		if _, err := s.q.CreatePasswordResetToken(ctx, sqlcgen.CreatePasswordResetTokenParams{
+			TokenHash: hash[:],
+			UserID:    u.ID,
+			ExpiresAt: pgtype.Timestamptz{Valid: true, Time: time.Now().Add(1 * time.Hour)},
+		}); err != nil {
+			s.logger.Error("password reset: token insert", "err", err, "user_id", u.ID)
+			continue
+		}
+		if s.mailer == nil {
+			continue
+		}
+		// The display name in the email is qualified by distillery when
+		// there is more than one, so two otherwise identical emails are
+		// tellable apart by the person holding both accounts.
+		name := u.DisplayName
+		if len(users) > 1 {
+			if t, err := s.q.GetTenantByID(ctx, u.TenantID); err == nil {
+				name = u.DisplayName + " (" + t.Name + ")"
+			}
+		}
+		if err := s.mailer.SendPasswordReset(ctx, u.Email, name, s.resetURLPrefix+token); err != nil {
 			s.logger.Warn("password reset email failed", "err", err, "to", u.Email)
 		}
 	}

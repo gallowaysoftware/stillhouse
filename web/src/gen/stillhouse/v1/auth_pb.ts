@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/auth.proto.
  */
 export const file_stillhouse_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEiLwoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJIlkKDUxvZ2luUmVzcG9uc2USIQoEdXNlchgBIAEoCzITLnN0aWxsaG91c2UudjEuVXNlchIlCgZ0ZW5hbnQYAiABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlIiwKG1JlcXVlc3RQYXNzd29yZFJlc2V0UmVxdWVzdBINCgVlbWFpbBgBIAEoCSIeChxSZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlIjsKFFJlc2V0UGFzc3dvcmRSZXF1ZXN0Eg0KBXRva2VuGAEgASgJEhQKDG5ld19wYXNzd29yZBgCIAEoCSIXChVSZXNldFBhc3N3b3JkUmVzcG9uc2Uy5QIKC0F1dGhTZXJ2aWNlEkIKBUxvZ2luEhsuc3RpbGxob3VzZS52MS5Mb2dpblJlcXVlc3QaHC5zdGlsbGhvdXNlLnYxLkxvZ2luUmVzcG9uc2USRQoGTG9nb3V0Ehwuc3RpbGxob3VzZS52MS5Mb2dvdXRSZXF1ZXN0Gh0uc3RpbGxob3VzZS52MS5Mb2dvdXRSZXNwb25zZRJvChRSZXF1ZXN0UGFzc3dvcmRSZXNldBIqLnN0aWxsaG91c2UudjEuUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5SZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlEloKDVJlc2V0UGFzc3dvcmQSIy5zdGlsbGhvdXNlLnYxLlJlc2V0UGFzc3dvcmRSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5SZXNldFBhc3N3b3JkUmVzcG9uc2ViBnByb3RvMw", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEiQgoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEhEKCXRlbmFudF9pZBgDIAEoCSI2CgxUZW5hbnRDaG9pY2USEQoJdGVuYW50X2lkGAEgASgJEhMKC3RlbmFudF9uYW1lGAIgASgJIocBCg1Mb2dpblJlc3BvbnNlEiEKBHVzZXIYASABKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXISJQoGdGVuYW50GAIgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQSLAoHY2hvaWNlcxgDIAMoCzIbLnN0aWxsaG91c2UudjEuVGVuYW50Q2hvaWNlIg8KDUxvZ291dFJlcXVlc3QiEAoOTG9nb3V0UmVzcG9uc2UiLAobUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXF1ZXN0Eg0KBWVtYWlsGAEgASgJIh4KHFJlcXVlc3RQYXNzd29yZFJlc2V0UmVzcG9uc2UiOwoUUmVzZXRQYXNzd29yZFJlcXVlc3QSDQoFdG9rZW4YASABKAkSFAoMbmV3X3Bhc3N3b3JkGAIgASgJIhcKFVJlc2V0UGFzc3dvcmRSZXNwb25zZTLlAgoLQXV0aFNlcnZpY2USQgoFTG9naW4SGy5zdGlsbGhvdXNlLnYxLkxvZ2luUmVxdWVzdBocLnN0aWxsaG91c2UudjEuTG9naW5SZXNwb25zZRJFCgZMb2dvdXQSHC5zdGlsbGhvdXNlLnYxLkxvZ291dFJlcXVlc3QaHS5zdGlsbGhvdXNlLnYxLkxvZ291dFJlc3BvbnNlEm8KFFJlcXVlc3RQYXNzd29yZFJlc2V0Eiouc3RpbGxob3VzZS52MS5SZXF1ZXN0UGFzc3dvcmRSZXNldFJlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLlJlcXVlc3RQYXNzd29yZFJlc2V0UmVzcG9uc2USWgoNUmVzZXRQYXNzd29yZBIjLnN0aWxsaG91c2UudjEuUmVzZXRQYXNzd29yZFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlJlc2V0UGFzc3dvcmRSZXNwb25zZWIGcHJvdG8z", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
 
 /**
  * @generated from message stillhouse.v1.LoginRequest
@@ -29,6 +29,15 @@ export type LoginRequest = Message<"stillhouse.v1.LoginRequest"> & {
    * @generated from field: string password = 2;
    */
   password: string;
+
+  /**
+   * Which distillery to sign in to, when one email address holds an
+   * account at more than one. Empty on the first attempt; the server
+   * answers with `choices` and the client comes back with one of them.
+   *
+   * @generated from field: string tenant_id = 3;
+   */
+  tenantId: string;
 };
 
 /**
@@ -37,6 +46,32 @@ export type LoginRequest = Message<"stillhouse.v1.LoginRequest"> & {
  */
 export const LoginRequestSchema: GenMessage<LoginRequest> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_auth, 0);
+
+/**
+ * A distillery the credentials just presented are good for. Only ever
+ * returned after the password has been verified against that account, so
+ * listing it tells the caller nothing they did not already prove.
+ *
+ * @generated from message stillhouse.v1.TenantChoice
+ */
+export type TenantChoice = Message<"stillhouse.v1.TenantChoice"> & {
+  /**
+   * @generated from field: string tenant_id = 1;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string tenant_name = 2;
+   */
+  tenantName: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.TenantChoice.
+ * Use `create(TenantChoiceSchema)` to create a new message.
+ */
+export const TenantChoiceSchema: GenMessage<TenantChoice> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 1);
 
 /**
  * @generated from message stillhouse.v1.LoginResponse
@@ -51,6 +86,16 @@ export type LoginResponse = Message<"stillhouse.v1.LoginResponse"> & {
    * @generated from field: stillhouse.v1.Tenant tenant = 2;
    */
   tenant?: Tenant | undefined;
+
+  /**
+   * Populated only when the credentials match accounts at more than one
+   * distillery and the request named none. `user` and `tenant` are unset
+   * in that case and no session is created — the caller picks one and
+   * logs in again with tenant_id set.
+   *
+   * @generated from field: repeated stillhouse.v1.TenantChoice choices = 3;
+   */
+  choices: TenantChoice[];
 };
 
 /**
@@ -58,7 +103,7 @@ export type LoginResponse = Message<"stillhouse.v1.LoginResponse"> & {
  * Use `create(LoginResponseSchema)` to create a new message.
  */
 export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 1);
+  messageDesc(file_stillhouse_v1_auth, 2);
 
 /**
  * @generated from message stillhouse.v1.LogoutRequest
@@ -71,7 +116,7 @@ export type LogoutRequest = Message<"stillhouse.v1.LogoutRequest"> & {
  * Use `create(LogoutRequestSchema)` to create a new message.
  */
 export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 2);
+  messageDesc(file_stillhouse_v1_auth, 3);
 
 /**
  * @generated from message stillhouse.v1.LogoutResponse
@@ -84,7 +129,7 @@ export type LogoutResponse = Message<"stillhouse.v1.LogoutResponse"> & {
  * Use `create(LogoutResponseSchema)` to create a new message.
  */
 export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 3);
+  messageDesc(file_stillhouse_v1_auth, 4);
 
 /**
  * Public — always returns success. Backend silently skips if the email
@@ -104,7 +149,7 @@ export type RequestPasswordResetRequest = Message<"stillhouse.v1.RequestPassword
  * Use `create(RequestPasswordResetRequestSchema)` to create a new message.
  */
 export const RequestPasswordResetRequestSchema: GenMessage<RequestPasswordResetRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 4);
+  messageDesc(file_stillhouse_v1_auth, 5);
 
 /**
  * @generated from message stillhouse.v1.RequestPasswordResetResponse
@@ -117,7 +162,7 @@ export type RequestPasswordResetResponse = Message<"stillhouse.v1.RequestPasswor
  * Use `create(RequestPasswordResetResponseSchema)` to create a new message.
  */
 export const RequestPasswordResetResponseSchema: GenMessage<RequestPasswordResetResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 5);
+  messageDesc(file_stillhouse_v1_auth, 6);
 
 /**
  * @generated from message stillhouse.v1.ResetPasswordRequest
@@ -139,7 +184,7 @@ export type ResetPasswordRequest = Message<"stillhouse.v1.ResetPasswordRequest">
  * Use `create(ResetPasswordRequestSchema)` to create a new message.
  */
 export const ResetPasswordRequestSchema: GenMessage<ResetPasswordRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 6);
+  messageDesc(file_stillhouse_v1_auth, 7);
 
 /**
  * @generated from message stillhouse.v1.ResetPasswordResponse
@@ -152,7 +197,7 @@ export type ResetPasswordResponse = Message<"stillhouse.v1.ResetPasswordResponse
  * Use `create(ResetPasswordResponseSchema)` to create a new message.
  */
 export const ResetPasswordResponseSchema: GenMessage<ResetPasswordResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 7);
+  messageDesc(file_stillhouse_v1_auth, 8);
 
 /**
  * @generated from service stillhouse.v1.AuthService
