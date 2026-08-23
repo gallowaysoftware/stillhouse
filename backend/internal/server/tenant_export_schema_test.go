@@ -16,6 +16,13 @@ var notExported = map[string]string{
 		"argument that keeps password_hash out of users.csv",
 	"users": "exported through exportOwnTenantIdentity instead, scoped by " +
 		"an explicit WHERE and without the credential column",
+	"webhook_endpoints": "holds secret_sealed, which signs deliveries as " +
+		"this distillery — same argument as api_tokens. The configuration " +
+		"is small, visible in Settings, and re-enterable; a signing key in " +
+		"a zip that gets emailed around is not worth saving the typing",
+	"webhook_deliveries": "an operational log of what was sent, and every " +
+		"payload in it is derived from a table that IS exported. Retention " +
+		"under s.206 wants the records, not the notifications about them",
 }
 
 // TestExportCoversEveryTenantTable derives the expected export from the

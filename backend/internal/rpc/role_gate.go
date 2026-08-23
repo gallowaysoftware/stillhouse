@@ -366,10 +366,19 @@ var procedureMinRole = map[string]minRole{
 	// Both are about the caller's own accounts, so every signed-in role
 	// reaches them. Switching still re-verifies the target's password and
 	// second factor, so viewer-level here grants nothing.
-	"/stillhouse.v1.AuthService/ListMyDistilleries":   roleViewer,
-	"/stillhouse.v1.AuthService/SwitchDistillery":     roleViewer,
-	"/stillhouse.v1.CostingService/GetWIPChargeBasis": roleViewer,
-	"/stillhouse.v1.CostingService/SetWIPChargeBasis": roleOwner,
+	"/stillhouse.v1.AuthService/ListMyDistilleries": roleViewer,
+	// A webhook endpoint is an outbound integration carrying this
+	// distillery's production and duty data to a third party, and its
+	// secret signs deliveries as us. Registering one is an owner's
+	// decision; reading the delivery log is not.
+	"/stillhouse.v1.WebhookService/ListWebhookEndpoints":      roleViewer,
+	"/stillhouse.v1.WebhookService/ListWebhookDeliveries":     roleViewer,
+	"/stillhouse.v1.WebhookService/CreateWebhookEndpoint":     roleOwner,
+	"/stillhouse.v1.WebhookService/SetWebhookEndpointEnabled": roleOwner,
+	"/stillhouse.v1.WebhookService/DeleteWebhookEndpoint":     roleOwner,
+	"/stillhouse.v1.AuthService/SwitchDistillery":             roleViewer,
+	"/stillhouse.v1.CostingService/GetWIPChargeBasis":         roleViewer,
+	"/stillhouse.v1.CostingService/SetWIPChargeBasis":         roleOwner,
 
 	// ProvincialService. Registering with a board, and recording what it
 	// expects and when, is the same class of act as the licence register

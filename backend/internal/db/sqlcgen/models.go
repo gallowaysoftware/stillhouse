@@ -2099,6 +2099,94 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type WebhookDeliveryStatus string
+
+const (
+	WebhookDeliveryStatusPending   WebhookDeliveryStatus = "pending"
+	WebhookDeliveryStatusDelivered WebhookDeliveryStatus = "delivered"
+	WebhookDeliveryStatusFailed    WebhookDeliveryStatus = "failed"
+)
+
+func (e *WebhookDeliveryStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WebhookDeliveryStatus(s)
+	case string:
+		*e = WebhookDeliveryStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WebhookDeliveryStatus: %T", src)
+	}
+	return nil
+}
+
+type NullWebhookDeliveryStatus struct {
+	WebhookDeliveryStatus WebhookDeliveryStatus `json:"webhook_delivery_status"`
+	Valid                 bool                  `json:"valid"` // Valid is true if WebhookDeliveryStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWebhookDeliveryStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.WebhookDeliveryStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WebhookDeliveryStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWebhookDeliveryStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WebhookDeliveryStatus), nil
+}
+
+type WebhookEventKind string
+
+const (
+	WebhookEventKindB266PeriodSubmitted     WebhookEventKind = "b266_period_submitted"
+	WebhookEventKindBottlingRunRecorded     WebhookEventKind = "bottling_run_recorded"
+	WebhookEventKindRemovalRecorded         WebhookEventKind = "removal_recorded"
+	WebhookEventKindProductionGaugeRecorded WebhookEventKind = "production_gauge_recorded"
+	WebhookEventKindLossRecorded            WebhookEventKind = "loss_recorded"
+)
+
+func (e *WebhookEventKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WebhookEventKind(s)
+	case string:
+		*e = WebhookEventKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WebhookEventKind: %T", src)
+	}
+	return nil
+}
+
+type NullWebhookEventKind struct {
+	WebhookEventKind WebhookEventKind `json:"webhook_event_kind"`
+	Valid            bool             `json:"valid"` // Valid is true if WebhookEventKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWebhookEventKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.WebhookEventKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WebhookEventKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWebhookEventKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WebhookEventKind), nil
+}
+
 type WipChargeBasis string
 
 const (
@@ -3494,6 +3582,33 @@ type UserTotpRecoveryCode struct {
 	UserID    uuid.UUID          `json:"user_id"`
 	UsedAt    pgtype.Timestamptz `json:"used_at"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type WebhookDelivery struct {
+	ID             uuid.UUID             `json:"id"`
+	TenantID       uuid.UUID             `json:"tenant_id"`
+	EndpointID     uuid.UUID             `json:"endpoint_id"`
+	Kind           WebhookEventKind      `json:"kind"`
+	Payload        []byte                `json:"payload"`
+	Status         WebhookDeliveryStatus `json:"status"`
+	Attempts       int32                 `json:"attempts"`
+	NextAttemptAt  pgtype.Timestamptz    `json:"next_attempt_at"`
+	LastStatusCode pgtype.Int4           `json:"last_status_code"`
+	LastError      string                `json:"last_error"`
+	DeliveredAt    pgtype.Timestamptz    `json:"delivered_at"`
+	CreatedAt      pgtype.Timestamptz    `json:"created_at"`
+}
+
+type WebhookEndpoint struct {
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	Url          string             `json:"url"`
+	SecretSealed []byte             `json:"secret_sealed"`
+	Kinds        []WebhookEventKind `json:"kinds"`
+	Enabled      bool               `json:"enabled"`
+	Description  string             `json:"description"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type WorkOrder struct {

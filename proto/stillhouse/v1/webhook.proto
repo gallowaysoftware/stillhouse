@@ -1,0 +1,84 @@
+// Outbound webhooks — so another system can react to what happens here.
+// PLAN G6.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+// The events a receiver can subscribe to. Deliberately a small set, and
+// all of them things that already have a defensible meaning elsewhere in
+// the schema: an event kind that exists only to be webhooked is one
+// nobody can explain later.
+enum WebhookEventKind {
+  WEBHOOK_EVENT_KIND_UNSPECIFIED = 0;
+  WEBHOOK_EVENT_KIND_B266_PERIOD_SUBMITTED = 1;
+  WEBHOOK_EVENT_KIND_BOTTLING_RUN_RECORDED = 2;
+  WEBHOOK_EVENT_KIND_REMOVAL_RECORDED = 3;
+  WEBHOOK_EVENT_KIND_PRODUCTION_GAUGE_RECORDED = 4;
+  WEBHOOK_EVENT_KIND_LOSS_RECORDED = 5;
+}
+
+message WebhookEndpoint {
+  string id = 1;
+  string url = 2;
+  repeated WebhookEventKind kinds = 3;
+  bool   enabled = 4;
+  string description = 5;
+  string created_at = 6;
+  // The signing secret is NEVER returned. It is shown once, on creation,
+  // and is sealed at rest thereafter — a secret an API will read back is
+  // one that leaks through every log, screenshot and support ticket that
+  // ever touches it.
+}
+
+message ListWebhookEndpointsRequest {}
+message ListWebhookEndpointsResponse { repeated WebhookEndpoint endpoints = 1; }
+
+message CreateWebhookEndpointRequest {
+  // Must be https and must not resolve to a private, loopback or
+  // link-local address. Checked here and again at every delivery, because
+  // DNS can change in between.
+  string url = 1;
+  repeated WebhookEventKind kinds = 2;
+  string description = 3;
+}
+message CreateWebhookEndpointResponse {
+  WebhookEndpoint endpoint = 1;
+  // The signing secret, shown exactly once. Deliveries carry
+  // X-Stillhouse-Signature: t=<unix>,v1=<hex>, which is
+  // HMAC-SHA256(secret, "<unix>." + body). The timestamp is inside the
+  // MAC so a captured delivery cannot be replayed with a fresh one.
+  string secret = 2;
+}
+
+message SetWebhookEndpointEnabledRequest {
+  string id = 1;
+  bool enabled = 2;
+}
+message SetWebhookEndpointEnabledResponse { WebhookEndpoint endpoint = 1; }
+
+message DeleteWebhookEndpointRequest { string id = 1; }
+message DeleteWebhookEndpointResponse {}
+
+message WebhookDelivery {
+  string id = 1;
+  string url = 2;
+  WebhookEventKind kind = 3;
+  string status = 4;
+  int32  attempts = 5;
+  int32  last_status_code = 6;
+  string last_error = 7;
+  string created_at = 8;
+  string delivered_at = 9;
+  string next_attempt_at = 10;
+}
+message ListWebhookDeliveriesRequest { int32 limit = 1; }
+message ListWebhookDeliveriesResponse { repeated WebhookDelivery deliveries = 1; }
+
+service WebhookService {
+  rpc ListWebhookEndpoints(ListWebhookEndpointsRequest) returns (ListWebhookEndpointsResponse);
+  rpc CreateWebhookEndpoint(CreateWebhookEndpointRequest) returns (CreateWebhookEndpointResponse);
+  rpc SetWebhookEndpointEnabled(SetWebhookEndpointEnabledRequest) returns (SetWebhookEndpointEnabledResponse);
+  rpc DeleteWebhookEndpoint(DeleteWebhookEndpointRequest) returns (DeleteWebhookEndpointResponse);
+  // What the operator looks at when something did not arrive.
+  rpc ListWebhookDeliveries(ListWebhookDeliveriesRequest) returns (ListWebhookDeliveriesResponse);
+}

@@ -173,8 +173,16 @@ already models `SALES_CHANNEL_ON_SITE_RETAIL`; nothing feeds it.
 
 ### G6 · Public API and webhooks — P2
 
-The ConnectRPC surface is already the API — this is documenting it, versioning
-it, and adding outbound webhooks so other systems can react.
+Webhooks shipped in stage 196: five event kinds, signed deliveries, a
+transactional outbox and a delivery log. What is left is the API half of
+this item, which is documentation rather than code — the ConnectRPC
+surface already IS the API, and the protos are commented. What it lacks is
+a stated compatibility promise: which parts a third party may build on,
+and what a breaking change would look like. Worth writing before somebody
+builds on it, not after.
+
+More event kinds are cheap to add and deliberately were not: an event kind
+that exists only to be webhooked is one nobody can explain later.
 
 ### G7 · Distribution and logistics integrations — P2
 

@@ -170,14 +170,27 @@ func (s *B266Service) SubmitB266(
 		if e != nil {
 			return e
 		}
-		return audit.Write(ctx, q, u.TenantID, u.ID, "b266_period", id.String(),
+		if e := audit.Write(ctx, q, u.TenantID, u.ID, "b266_period", id.String(),
 			sqlcgen.AuditActionSign, map[string]any{
 				"period_start":     existing.PeriodStart.Time.Format("2006-01-02"),
 				"period_end":       existing.PeriodEnd.Time.Format("2006-01-02"),
 				"duty_payable_cad": report.DutyPayableCad,
 				// The wording, not a flag: this row is read years later.
 				"acknowledgement": req.Msg.GetAcknowledgement(),
-			})
+			}); e != nil {
+			return e
+		}
+
+		// Outbound webhook, enqueued in THIS transaction. If the submit
+		// rolls back, so does the notification — a webhook saying a return
+		// was filed when it was not is worse than no webhook, because the
+		// receiver has no way to find out otherwise. See 000062.
+		return enqueueWebhook(ctx, q, string(sqlcgen.WebhookEventKindB266PeriodSubmitted), map[string]any{
+			"period_id":        id.String(),
+			"period_start":     existing.PeriodStart.Time.Format("2006-01-02"),
+			"period_end":       existing.PeriodEnd.Time.Format("2006-01-02"),
+			"duty_payable_cad": report.DutyPayableCad,
+		})
 	})
 	if err != nil {
 		var connectErr *connect.Error

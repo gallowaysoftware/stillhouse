@@ -124,6 +124,13 @@ type Querier interface {
 	// becomes internally consistent and factually wrong.
 	BulkOwnershipSplitAsOf(ctx context.Context) (BulkOwnershipSplitAsOfRow, error)
 	CancelShipment(ctx context.Context, arg CancelShipmentParams) (Shipment, error)
+	// Through the keyhole; see 000062. The worker has no tenant context
+	// because it is not acting for a tenant.
+	//
+	// Columns are cast rather than star-selected: sqlc cannot infer the shape
+	// of a set-returning function and produces []interface{} for one, which
+	// moves every type error from compile time to run time.
+	ClaimDueWebhookDeliveries(ctx context.Context, rowLimit int32) ([]ClaimDueWebhookDeliveriesRow, error)
 	// Only a loss can be classified. The reason guard is here rather than only
 	// in Go so that a caller cannot quietly attach a duty treatment to a
 	// production gauge and have it counted.
@@ -225,6 +232,10 @@ type Querier interface {
 	CreateTOTPRecoveryCode(ctx context.Context, arg CreateTOTPRecoveryCodeParams) error
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// The double cast is what validates: text[] is what pgx can send,
+	// webhook_event_kind[] is what the column accepts, and an unknown string
+	// is refused by the cast rather than stored.
+	CreateWebhookEndpoint(ctx context.Context, arg CreateWebhookEndpointParams) (CreateWebhookEndpointRow, error)
 	CreateWorkOrder(ctx context.Context, arg CreateWorkOrderParams) (WorkOrder, error)
 	// What this buyer has actually taken. Voided removals are excluded —
 	// they were withdrawn, and counting them would overstate what left.
@@ -263,6 +274,7 @@ type Querier interface {
 	// audit_events, etc) in one go.
 	DeleteTenant(ctx context.Context, id uuid.UUID) error
 	DeleteUserTOTP(ctx context.Context, userID uuid.UUID) error
+	DeleteWebhookEndpoint(ctx context.Context, id uuid.UUID) error
 	// What is actually owed, against what is actually here.
 	//
 	// Demand is confirmed, unshipped order lines — real commitments to real
@@ -295,6 +307,14 @@ type Querier interface {
 	// determination under s.23 and depends on things outside this system. It
 	// computes the exposure and shows it beside what is posted.
 	DutyExposureAsOf(ctx context.Context, since pgtype.Date) (DutyExposureAsOfRow, error)
+	// Written in the same transaction as the event it describes. See 000062:
+	// an outbox row that only appears after commit has a window where the
+	// process dies and the event is silently never delivered.
+	//
+	// One row per subscribed endpoint, selected here rather than by the
+	// caller so a new endpoint cannot be missed by a write path that forgot
+	// to check.
+	EnqueueWebhookDelivery(ctx context.Context, arg EnqueueWebhookDeliveryParams) error
 	EquipmentDown(ctx context.Context) ([]EquipmentDownRow, error)
 	// What runs on this actually took, from the work orders that recorded a
 	// start and a finish. The estimate F3 will need comes from here rather
@@ -419,6 +439,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserTOTP(ctx context.Context, userID uuid.UUID) (UserTotp, error)
 	GetWIPChargeBasis(ctx context.Context, id uuid.UUID) (NullWipChargeBasis, error)
+	GetWebhookEndpoint(ctx context.Context, id uuid.UUID) (GetWebhookEndpointRow, error)
 	GetWorkOrder(ctx context.Context, id uuid.UUID) (WorkOrder, error)
 	// Holding does NOT clear the release. A lot held after release is a
 	// recall in its early form, and erasing the fact that somebody released
@@ -650,6 +671,14 @@ type Querier interface {
 	// distilleries under one address.
 	ListUsersByEmail(ctx context.Context, email string) ([]User, error)
 	ListUsersForTenant(ctx context.Context, tenantID uuid.UUID) ([]User, error)
+	// What the operator looks at when something did not arrive.
+	ListWebhookDeliveries(ctx context.Context, rowLimit int32) ([]ListWebhookDeliveriesRow, error)
+	// kinds comes back as text[] rather than the enum array: pgx has no
+	// encode plan for a custom enum array without registering the type on
+	// every pool, and a driver-level registration that one code path forgets
+	// fails at run time rather than at compile time. The cast keeps the enum
+	// doing its job in the column while the wire stays ordinary strings.
+	ListWebhookEndpoints(ctx context.Context) ([]ListWebhookEndpointsRow, error)
 	ListWorkOrders(ctx context.Context, arg ListWorkOrdersParams) ([]ListWorkOrdersRow, error)
 	// Document-number allocation.
 	//
@@ -831,6 +860,7 @@ type Querier interface {
 	// The replay guard. Refusing anything at or below the last accepted step
 	// is what stops a code being used twice inside its window.
 	RecordTOTPStep(ctx context.Context, arg RecordTOTPStepParams) error
+	RecordWebhookResult(ctx context.Context, arg RecordWebhookResultParams) error
 	RedeemInviteCode(ctx context.Context, arg RedeemInviteCodeParams) (InviteCode, error)
 	// What went back through the still in a period, and what it cost. The
 	// figures EDM3-1-1 para 41 asks to be kept.
@@ -956,6 +986,7 @@ type Querier interface {
 	SetUserAlertEmail(ctx context.Context, arg SetUserAlertEmailParams) (User, error)
 	// Stated by the licensee, never defaulted. See 000061.
 	SetWIPChargeBasis(ctx context.Context, arg SetWIPChargeBasisParams) (NullWipChargeBasis, error)
+	SetWebhookEndpointEnabled(ctx context.Context, arg SetWebhookEndpointEnabledParams) (SetWebhookEndpointEnabledRow, error)
 	// started_at and completed_at are stamped by the transition rather than
 	// supplied, so "when did this actually start" is a fact rather than
 	// something somebody typed afterwards.

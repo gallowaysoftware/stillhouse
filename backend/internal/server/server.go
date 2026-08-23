@@ -23,6 +23,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/version"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/webhook"
 )
 
 type Server struct {
@@ -36,6 +37,12 @@ type Server struct {
 	// long as the server does.
 	alertRunner *alerting.Runner
 	stopAlerts  context.CancelFunc
+	// webhookWorker drains the delivery outbox. Same lifetime rule as
+	// alertRunner: started by ListenAndServe, stopped by Shutdown, so a
+	// server that is constructed and never served does not start
+	// delivering.
+	webhookWorker *webhook.Worker
+	stopWebhooks  context.CancelFunc
 }
 
 func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
@@ -118,6 +125,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	workOrderSvc := rpc.NewWorkOrderService(tdb, logger)
 	redistillationSvc := rpc.NewRedistillationService(tdb, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
+	webhookSvc := rpc.NewWebhookService(tdb, logger)
+	webhookWorker := webhook.NewWorker(sqlcgen.New(pool), logger)
 	inviteSvc := rpc.NewInviteService(queries, tdb, sm, mailerImpl, logger)
 	apiTokenSvc := rpc.NewAPITokenService(tdb, logger)
 	// Pure computation against the embedded CRA tables — no DB, no tenant.
@@ -186,6 +195,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewWorkOrderServiceHandler(workOrderSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewRedistillationServiceHandler(redistillationSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewTraceabilityServiceHandler(traceabilitySvc, interceptors))
+	mux.Handle(stillhousev1connect.NewWebhookServiceHandler(webhookSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewInviteServiceHandler(inviteSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAPITokenServiceHandler(apiTokenSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewAlcoholometryServiceHandler(alcoholometrySvc, interceptors))
@@ -251,12 +261,13 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	}
 
 	return &Server{
-		cfg:         cfg,
-		logger:      logger,
-		pool:        pool,
-		session:     sm,
-		http:        httpSrv,
-		alertRunner: alertRunner,
+		cfg:           cfg,
+		logger:        logger,
+		pool:          pool,
+		session:       sm,
+		http:          httpSrv,
+		alertRunner:   alertRunner,
+		webhookWorker: webhookWorker,
 	}, nil
 }
 
@@ -267,12 +278,20 @@ func (s *Server) ListenAndServe() error {
 	alertCtx, cancel := context.WithCancel(context.Background())
 	s.stopAlerts = cancel
 	go s.alertRunner.Start(alertCtx)
+
+	hookCtx, stopHooks := context.WithCancel(context.Background())
+	s.stopWebhooks = stopHooks
+	go s.webhookWorker.Run(hookCtx)
+
 	return s.http.ListenAndServe()
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	if s.stopAlerts != nil {
 		s.stopAlerts()
+	}
+	if s.stopWebhooks != nil {
+		s.stopWebhooks()
 	}
 	if err := s.http.Shutdown(ctx); err != nil {
 		return err
