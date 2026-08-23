@@ -1934,16 +1934,28 @@ type PriceListEntry struct {
 }
 
 type Product struct {
-	ID           uuid.UUID          `json:"id"`
-	TenantID     uuid.UUID          `json:"tenant_id"`
-	Name         string             `json:"name"`
-	SpiritKind   SpiritKind         `json:"spirit_kind"`
-	BottleSizeMl int32              `json:"bottle_size_ml"`
-	TargetAbvPct float64            `json:"target_abv_pct"`
-	LabelNotes   string             `json:"label_notes"`
-	Archived     bool               `json:"archived"`
-	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID                   uuid.UUID          `json:"id"`
+	TenantID             uuid.UUID          `json:"tenant_id"`
+	Name                 string             `json:"name"`
+	SpiritKind           SpiritKind         `json:"spirit_kind"`
+	BottleSizeMl         int32              `json:"bottle_size_ml"`
+	TargetAbvPct         float64            `json:"target_abv_pct"`
+	LabelNotes           string             `json:"label_notes"`
+	Archived             bool               `json:"archived"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+	Gtin                 string             `json:"gtin"`
+	CspcCode             string             `json:"cspc_code"`
+	BottlesPerCase       pgtype.Int4        `json:"bottles_per_case"`
+	CasesPerLayer        pgtype.Int4        `json:"cases_per_layer"`
+	LayersPerPallet      pgtype.Int4        `json:"layers_per_pallet"`
+	CaseGrossWeightKg    pgtype.Float8      `json:"case_gross_weight_kg"`
+	CommonName           string             `json:"common_name"`
+	AgeStatement         string             `json:"age_statement"`
+	ContainerMarking     string             `json:"container_marking"`
+	AllergenStatement    string             `json:"allergen_statement"`
+	CountryOfOrigin      string             `json:"country_of_origin"`
+	MarketingDescription string             `json:"marketing_description"`
 }
 
 type ProductionGauge struct {

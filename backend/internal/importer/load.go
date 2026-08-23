@@ -208,12 +208,57 @@ func loadProducts(
 				Detail: "must be a percentage between 0 and 100 — write 40, not 0.40"})
 			continue
 		}
-		if _, err := q.CreateProduct(ctx, sqlcgen.CreateProductParams{
+		gtin := r.Get("gtin")
+		if gtin != "" {
+			if err := ValidateGTIN(gtin); err != nil {
+				res.Problems = append(res.Problems, Problem{Row: r.Line, Column: "gtin", Detail: err.Error()})
+				continue
+			}
+		}
+		perCase, _, err := r.Int("bottles per case")
+		if err != nil {
+			res.Problems = append(res.Problems, Problem{Row: r.Line, Column: "bottles per case", Detail: err.Error()})
+			continue
+		}
+		perLayer, _, err := r.Int("cases per layer")
+		if err != nil {
+			res.Problems = append(res.Problems, Problem{Row: r.Line, Column: "cases per layer", Detail: err.Error()})
+			continue
+		}
+		layers, _, err := r.Int("layers per pallet")
+		if err != nil {
+			res.Problems = append(res.Problems, Problem{Row: r.Line, Column: "layers per pallet", Detail: err.Error()})
+			continue
+		}
+		caseWeight, _, err := r.Float("case weight kg")
+		if err != nil {
+			res.Problems = append(res.Problems, Problem{Row: r.Line, Column: "case weight kg", Detail: err.Error()})
+			continue
+		}
+
+		created, err := q.CreateProduct(ctx, sqlcgen.CreateProductParams{
 			TenantID: tenantID, Name: r.Get("name"), SpiritKind: kind,
 			BottleSizeMl: int32(size), TargetAbvPct: abv, LabelNotes: r.Get("label notes"),
-		}); err != nil {
+		})
+		if err != nil {
 			res.Problems = append(res.Problems, Problem{Row: r.Line,
 				Detail: friendlyWriteErr(err, "product")})
+			continue
+		}
+		if _, err := q.UpdateProductSKU(ctx, sqlcgen.UpdateProductSKUParams{
+			ID: created.ID, Gtin: gtin, CspcCode: r.Get("cspc code"),
+			BottlesPerCase:    positiveInt4(perCase),
+			CasesPerLayer:     positiveInt4(perLayer),
+			LayersPerPallet:   positiveInt4(layers),
+			CaseGrossWeightKg: positiveFloat8(caseWeight),
+			CommonName:        r.Get("common name"),
+			AgeStatement:      r.Get("age statement"),
+			ContainerMarking:  r.Get("container marking"),
+			AllergenStatement: r.Get("allergen statement"),
+			CountryOfOrigin:   r.Get("country of origin"),
+		}); err != nil {
+			res.Problems = append(res.Problems, Problem{Row: r.Line,
+				Detail: friendlyWriteErr(err, "product's trade details")})
 			continue
 		}
 		res.RowsAccepted++
@@ -492,6 +537,20 @@ func friendlyWriteErr(err error, what string) string {
 			"or rename it", what)
 	}
 	return fmt.Sprintf("could not create the %s: %s", what, msg)
+}
+
+func positiveInt4(v int64) pgtype.Int4 {
+	if v <= 0 {
+		return pgtype.Int4{}
+	}
+	return pgtype.Int4{Int32: int32(v), Valid: true}
+}
+
+func positiveFloat8(v float64) pgtype.Float8 {
+	if v <= 0 {
+		return pgtype.Float8{}
+	}
+	return pgtype.Float8{Float64: v, Valid: true}
 }
 
 func plural(n int) string {

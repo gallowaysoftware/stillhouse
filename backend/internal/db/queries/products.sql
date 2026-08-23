@@ -15,6 +15,27 @@ SET name           = $2,
 WHERE id = $1
 RETURNING *;
 
+-- name: UpdateProductSKU :one
+-- The trade and label fields, set separately from the production ones.
+-- Bottle size and strength change what is in the bottle; a GTIN or a
+-- case configuration changes how it is sold, and the two are edited by
+-- different people on different days.
+UPDATE products
+SET gtin                  = $2,
+    cspc_code             = $3,
+    bottles_per_case      = $4,
+    cases_per_layer       = $5,
+    layers_per_pallet     = $6,
+    case_gross_weight_kg  = $7,
+    common_name           = $8,
+    age_statement         = $9,
+    container_marking     = $10,
+    allergen_statement    = $11,
+    country_of_origin     = $12,
+    marketing_description = $13
+WHERE id = $1
+RETURNING *;
+
 -- name: SetProductArchived :one
 UPDATE products SET archived = $2 WHERE id = $1 RETURNING *;
 

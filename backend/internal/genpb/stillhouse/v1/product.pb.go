@@ -23,19 +23,49 @@ const (
 )
 
 type Product struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	TenantId      string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
-	Name          string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
-	SpiritKind    SpiritKind             `protobuf:"varint,4,opt,name=spirit_kind,json=spiritKind,proto3,enum=stillhouse.v1.SpiritKind" json:"spirit_kind,omitempty"`
-	BottleSizeMl  int32                  `protobuf:"varint,5,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
-	TargetAbvPct  float64                `protobuf:"fixed64,6,opt,name=target_abv_pct,json=targetAbvPct,proto3" json:"target_abv_pct,omitempty"`
-	LabelNotes    string                 `protobuf:"bytes,7,opt,name=label_notes,json=labelNotes,proto3" json:"label_notes,omitempty"`
-	Archived      bool                   `protobuf:"varint,8,opt,name=archived,proto3" json:"archived,omitempty"`
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	Id           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId     string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Name         string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
+	SpiritKind   SpiritKind             `protobuf:"varint,4,opt,name=spirit_kind,json=spiritKind,proto3,enum=stillhouse.v1.SpiritKind" json:"spirit_kind,omitempty"`
+	BottleSizeMl int32                  `protobuf:"varint,5,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
+	TargetAbvPct float64                `protobuf:"fixed64,6,opt,name=target_abv_pct,json=targetAbvPct,proto3" json:"target_abv_pct,omitempty"`
+	LabelNotes   string                 `protobuf:"bytes,7,opt,name=label_notes,json=labelNotes,proto3" json:"label_notes,omitempty"`
+	Archived     bool                   `protobuf:"varint,8,opt,name=archived,proto3" json:"archived,omitempty"`
+	// ----- trade identifiers -------------------------------------------
+	// GTIN-12/13/14. Text, because a leading zero is significant.
+	Gtin string `protobuf:"bytes,11,opt,name=gtin,proto3" json:"gtin,omitempty"`
+	// The board's own number for this SKU. CSPC nationally; provincial
+	// boards issue their own.
+	CspcCode string `protobuf:"bytes,12,opt,name=cspc_code,json=cspcCode,proto3" json:"cspc_code,omitempty"`
+	// ----- case configuration ------------------------------------------
+	// Bottles per case is what a purchase order is written in; the rest is
+	// what a pallet is planned from. Zero means not recorded.
+	BottlesPerCase    int32   `protobuf:"varint,13,opt,name=bottles_per_case,json=bottlesPerCase,proto3" json:"bottles_per_case,omitempty"`
+	CasesPerLayer     int32   `protobuf:"varint,14,opt,name=cases_per_layer,json=casesPerLayer,proto3" json:"cases_per_layer,omitempty"`
+	LayersPerPallet   int32   `protobuf:"varint,15,opt,name=layers_per_pallet,json=layersPerPallet,proto3" json:"layers_per_pallet,omitempty"`
+	CaseGrossWeightKg float64 `protobuf:"fixed64,16,opt,name=case_gross_weight_kg,json=caseGrossWeightKg,proto3" json:"case_gross_weight_kg,omitempty"`
+	// ----- label content -----------------------------------------------
+	// The standard-of-identity name under Division 2 of the Food and Drug
+	// Regulations — "Canadian Whisky", "Gin". Deliberately separate from
+	// the SKU's marketing name and deliberately NOT derived from
+	// spirit_kind: whether a spirit qualifies is the licensee's
+	// declaration, and Stillhouse asserting it on their behalf would be
+	// putting words in their mouth on a label.
+	CommonName string `protobuf:"bytes,17,opt,name=common_name,json=commonName,proto3" json:"common_name,omitempty"`
+	// The age statement, where one is made. Also the licensee's: the
+	// maturation clock knows how long a cask sat, and what a blend may
+	// claim is a different question.
+	AgeStatement string `protobuf:"bytes,18,opt,name=age_statement,json=ageStatement,proto3" json:"age_statement,omitempty"`
+	// What the container carries under Excise Act s.87 (EDM3-2-3).
+	ContainerMarking     string                 `protobuf:"bytes,19,opt,name=container_marking,json=containerMarking,proto3" json:"container_marking,omitempty"`
+	AllergenStatement    string                 `protobuf:"bytes,20,opt,name=allergen_statement,json=allergenStatement,proto3" json:"allergen_statement,omitempty"`
+	CountryOfOrigin      string                 `protobuf:"bytes,21,opt,name=country_of_origin,json=countryOfOrigin,proto3" json:"country_of_origin,omitempty"`
+	MarketingDescription string                 `protobuf:"bytes,22,opt,name=marketing_description,json=marketingDescription,proto3" json:"marketing_description,omitempty"`
+	CreatedAt            *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	UpdatedAt            *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *Product) Reset() {
@@ -122,6 +152,90 @@ func (x *Product) GetArchived() bool {
 		return x.Archived
 	}
 	return false
+}
+
+func (x *Product) GetGtin() string {
+	if x != nil {
+		return x.Gtin
+	}
+	return ""
+}
+
+func (x *Product) GetCspcCode() string {
+	if x != nil {
+		return x.CspcCode
+	}
+	return ""
+}
+
+func (x *Product) GetBottlesPerCase() int32 {
+	if x != nil {
+		return x.BottlesPerCase
+	}
+	return 0
+}
+
+func (x *Product) GetCasesPerLayer() int32 {
+	if x != nil {
+		return x.CasesPerLayer
+	}
+	return 0
+}
+
+func (x *Product) GetLayersPerPallet() int32 {
+	if x != nil {
+		return x.LayersPerPallet
+	}
+	return 0
+}
+
+func (x *Product) GetCaseGrossWeightKg() float64 {
+	if x != nil {
+		return x.CaseGrossWeightKg
+	}
+	return 0
+}
+
+func (x *Product) GetCommonName() string {
+	if x != nil {
+		return x.CommonName
+	}
+	return ""
+}
+
+func (x *Product) GetAgeStatement() string {
+	if x != nil {
+		return x.AgeStatement
+	}
+	return ""
+}
+
+func (x *Product) GetContainerMarking() string {
+	if x != nil {
+		return x.ContainerMarking
+	}
+	return ""
+}
+
+func (x *Product) GetAllergenStatement() string {
+	if x != nil {
+		return x.AllergenStatement
+	}
+	return ""
+}
+
+func (x *Product) GetCountryOfOrigin() string {
+	if x != nil {
+		return x.CountryOfOrigin
+	}
+	return ""
+}
+
+func (x *Product) GetMarketingDescription() string {
+	if x != nil {
+		return x.MarketingDescription
+	}
+	return ""
 }
 
 func (x *Product) GetCreatedAt() *timestamppb.Timestamp {
@@ -658,11 +772,195 @@ func (x *SetProductArchivedResponse) GetProduct() *Product {
 	return nil
 }
 
+type UpdateProductSKURequest struct {
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	Id                   string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Gtin                 string                 `protobuf:"bytes,2,opt,name=gtin,proto3" json:"gtin,omitempty"`
+	CspcCode             string                 `protobuf:"bytes,3,opt,name=cspc_code,json=cspcCode,proto3" json:"cspc_code,omitempty"`
+	BottlesPerCase       int32                  `protobuf:"varint,4,opt,name=bottles_per_case,json=bottlesPerCase,proto3" json:"bottles_per_case,omitempty"`
+	CasesPerLayer        int32                  `protobuf:"varint,5,opt,name=cases_per_layer,json=casesPerLayer,proto3" json:"cases_per_layer,omitempty"`
+	LayersPerPallet      int32                  `protobuf:"varint,6,opt,name=layers_per_pallet,json=layersPerPallet,proto3" json:"layers_per_pallet,omitempty"`
+	CaseGrossWeightKg    float64                `protobuf:"fixed64,7,opt,name=case_gross_weight_kg,json=caseGrossWeightKg,proto3" json:"case_gross_weight_kg,omitempty"`
+	CommonName           string                 `protobuf:"bytes,8,opt,name=common_name,json=commonName,proto3" json:"common_name,omitempty"`
+	AgeStatement         string                 `protobuf:"bytes,9,opt,name=age_statement,json=ageStatement,proto3" json:"age_statement,omitempty"`
+	ContainerMarking     string                 `protobuf:"bytes,10,opt,name=container_marking,json=containerMarking,proto3" json:"container_marking,omitempty"`
+	AllergenStatement    string                 `protobuf:"bytes,11,opt,name=allergen_statement,json=allergenStatement,proto3" json:"allergen_statement,omitempty"`
+	CountryOfOrigin      string                 `protobuf:"bytes,12,opt,name=country_of_origin,json=countryOfOrigin,proto3" json:"country_of_origin,omitempty"`
+	MarketingDescription string                 `protobuf:"bytes,13,opt,name=marketing_description,json=marketingDescription,proto3" json:"marketing_description,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
+}
+
+func (x *UpdateProductSKURequest) Reset() {
+	*x = UpdateProductSKURequest{}
+	mi := &file_stillhouse_v1_product_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateProductSKURequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProductSKURequest) ProtoMessage() {}
+
+func (x *UpdateProductSKURequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_product_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProductSKURequest.ProtoReflect.Descriptor instead.
+func (*UpdateProductSKURequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_product_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *UpdateProductSKURequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetGtin() string {
+	if x != nil {
+		return x.Gtin
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetCspcCode() string {
+	if x != nil {
+		return x.CspcCode
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetBottlesPerCase() int32 {
+	if x != nil {
+		return x.BottlesPerCase
+	}
+	return 0
+}
+
+func (x *UpdateProductSKURequest) GetCasesPerLayer() int32 {
+	if x != nil {
+		return x.CasesPerLayer
+	}
+	return 0
+}
+
+func (x *UpdateProductSKURequest) GetLayersPerPallet() int32 {
+	if x != nil {
+		return x.LayersPerPallet
+	}
+	return 0
+}
+
+func (x *UpdateProductSKURequest) GetCaseGrossWeightKg() float64 {
+	if x != nil {
+		return x.CaseGrossWeightKg
+	}
+	return 0
+}
+
+func (x *UpdateProductSKURequest) GetCommonName() string {
+	if x != nil {
+		return x.CommonName
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetAgeStatement() string {
+	if x != nil {
+		return x.AgeStatement
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetContainerMarking() string {
+	if x != nil {
+		return x.ContainerMarking
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetAllergenStatement() string {
+	if x != nil {
+		return x.AllergenStatement
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetCountryOfOrigin() string {
+	if x != nil {
+		return x.CountryOfOrigin
+	}
+	return ""
+}
+
+func (x *UpdateProductSKURequest) GetMarketingDescription() string {
+	if x != nil {
+		return x.MarketingDescription
+	}
+	return ""
+}
+
+type UpdateProductSKUResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Product       *Product               `protobuf:"bytes,1,opt,name=product,proto3" json:"product,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateProductSKUResponse) Reset() {
+	*x = UpdateProductSKUResponse{}
+	mi := &file_stillhouse_v1_product_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateProductSKUResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateProductSKUResponse) ProtoMessage() {}
+
+func (x *UpdateProductSKUResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_product_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateProductSKUResponse.ProtoReflect.Descriptor instead.
+func (*UpdateProductSKUResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_product_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *UpdateProductSKUResponse) GetProduct() *Product {
+	if x != nil {
+		return x.Product
+	}
+	return nil
+}
+
 var File_stillhouse_v1_product_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_product_proto_rawDesc = "" +
 	"\n" +
-	"\x1bstillhouse/v1/product.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/recipe.proto\"\x85\x03\n" +
+	"\x1bstillhouse/v1/product.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1astillhouse/v1/recipe.proto\"\xe8\x06\n" +
 	"\aProduct\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x12\n" +
@@ -673,7 +971,20 @@ const file_stillhouse_v1_product_proto_rawDesc = "" +
 	"\x0etarget_abv_pct\x18\x06 \x01(\x01R\ftargetAbvPct\x12\x1f\n" +
 	"\vlabel_notes\x18\a \x01(\tR\n" +
 	"labelNotes\x12\x1a\n" +
-	"\barchived\x18\b \x01(\bR\barchived\x129\n" +
+	"\barchived\x18\b \x01(\bR\barchived\x12\x12\n" +
+	"\x04gtin\x18\v \x01(\tR\x04gtin\x12\x1b\n" +
+	"\tcspc_code\x18\f \x01(\tR\bcspcCode\x12(\n" +
+	"\x10bottles_per_case\x18\r \x01(\x05R\x0ebottlesPerCase\x12&\n" +
+	"\x0fcases_per_layer\x18\x0e \x01(\x05R\rcasesPerLayer\x12*\n" +
+	"\x11layers_per_pallet\x18\x0f \x01(\x05R\x0flayersPerPallet\x12/\n" +
+	"\x14case_gross_weight_kg\x18\x10 \x01(\x01R\x11caseGrossWeightKg\x12\x1f\n" +
+	"\vcommon_name\x18\x11 \x01(\tR\n" +
+	"commonName\x12#\n" +
+	"\rage_statement\x18\x12 \x01(\tR\fageStatement\x12+\n" +
+	"\x11container_marking\x18\x13 \x01(\tR\x10containerMarking\x12-\n" +
+	"\x12allergen_statement\x18\x14 \x01(\tR\x11allergenStatement\x12*\n" +
+	"\x11country_of_origin\x18\x15 \x01(\tR\x0fcountryOfOrigin\x123\n" +
+	"\x15marketing_description\x18\x16 \x01(\tR\x14marketingDescription\x129\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
@@ -712,8 +1023,27 @@ const file_stillhouse_v1_product_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1a\n" +
 	"\barchived\x18\x02 \x01(\bR\barchived\"N\n" +
 	"\x1aSetProductArchivedResponse\x120\n" +
-	"\aproduct\x18\x01 \x01(\v2\x16.stillhouse.v1.ProductR\aproduct2\xdf\x03\n" +
-	"\x0eProductService\x12Z\n" +
+	"\aproduct\x18\x01 \x01(\v2\x16.stillhouse.v1.ProductR\aproduct\"\x8c\x04\n" +
+	"\x17UpdateProductSKURequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04gtin\x18\x02 \x01(\tR\x04gtin\x12\x1b\n" +
+	"\tcspc_code\x18\x03 \x01(\tR\bcspcCode\x12(\n" +
+	"\x10bottles_per_case\x18\x04 \x01(\x05R\x0ebottlesPerCase\x12&\n" +
+	"\x0fcases_per_layer\x18\x05 \x01(\x05R\rcasesPerLayer\x12*\n" +
+	"\x11layers_per_pallet\x18\x06 \x01(\x05R\x0flayersPerPallet\x12/\n" +
+	"\x14case_gross_weight_kg\x18\a \x01(\x01R\x11caseGrossWeightKg\x12\x1f\n" +
+	"\vcommon_name\x18\b \x01(\tR\n" +
+	"commonName\x12#\n" +
+	"\rage_statement\x18\t \x01(\tR\fageStatement\x12+\n" +
+	"\x11container_marking\x18\n" +
+	" \x01(\tR\x10containerMarking\x12-\n" +
+	"\x12allergen_statement\x18\v \x01(\tR\x11allergenStatement\x12*\n" +
+	"\x11country_of_origin\x18\f \x01(\tR\x0fcountryOfOrigin\x123\n" +
+	"\x15marketing_description\x18\r \x01(\tR\x14marketingDescription\"L\n" +
+	"\x18UpdateProductSKUResponse\x120\n" +
+	"\aproduct\x18\x01 \x01(\v2\x16.stillhouse.v1.ProductR\aproduct2\xc4\x04\n" +
+	"\x0eProductService\x12c\n" +
+	"\x10UpdateProductSKU\x12&.stillhouse.v1.UpdateProductSKURequest\x1a'.stillhouse.v1.UpdateProductSKUResponse\x12Z\n" +
 	"\rCreateProduct\x12#.stillhouse.v1.CreateProductRequest\x1a$.stillhouse.v1.CreateProductResponse\x12Z\n" +
 	"\rUpdateProduct\x12#.stillhouse.v1.UpdateProductRequest\x1a$.stillhouse.v1.UpdateProductResponse\x12W\n" +
 	"\fListProducts\x12\".stillhouse.v1.ListProductsRequest\x1a#.stillhouse.v1.ListProductsResponse\x12Q\n" +
@@ -734,7 +1064,7 @@ func file_stillhouse_v1_product_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_product_proto_rawDescData
 }
 
-var file_stillhouse_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_stillhouse_v1_product_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_stillhouse_v1_product_proto_goTypes = []any{
 	(*Product)(nil),                    // 0: stillhouse.v1.Product
 	(*CreateProductRequest)(nil),       // 1: stillhouse.v1.CreateProductRequest
@@ -747,35 +1077,40 @@ var file_stillhouse_v1_product_proto_goTypes = []any{
 	(*GetProductResponse)(nil),         // 8: stillhouse.v1.GetProductResponse
 	(*SetProductArchivedRequest)(nil),  // 9: stillhouse.v1.SetProductArchivedRequest
 	(*SetProductArchivedResponse)(nil), // 10: stillhouse.v1.SetProductArchivedResponse
-	(SpiritKind)(0),                    // 11: stillhouse.v1.SpiritKind
-	(*timestamppb.Timestamp)(nil),      // 12: google.protobuf.Timestamp
+	(*UpdateProductSKURequest)(nil),    // 11: stillhouse.v1.UpdateProductSKURequest
+	(*UpdateProductSKUResponse)(nil),   // 12: stillhouse.v1.UpdateProductSKUResponse
+	(SpiritKind)(0),                    // 13: stillhouse.v1.SpiritKind
+	(*timestamppb.Timestamp)(nil),      // 14: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_product_proto_depIdxs = []int32{
-	11, // 0: stillhouse.v1.Product.spirit_kind:type_name -> stillhouse.v1.SpiritKind
-	12, // 1: stillhouse.v1.Product.created_at:type_name -> google.protobuf.Timestamp
-	12, // 2: stillhouse.v1.Product.updated_at:type_name -> google.protobuf.Timestamp
-	11, // 3: stillhouse.v1.CreateProductRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
+	13, // 0: stillhouse.v1.Product.spirit_kind:type_name -> stillhouse.v1.SpiritKind
+	14, // 1: stillhouse.v1.Product.created_at:type_name -> google.protobuf.Timestamp
+	14, // 2: stillhouse.v1.Product.updated_at:type_name -> google.protobuf.Timestamp
+	13, // 3: stillhouse.v1.CreateProductRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
 	0,  // 4: stillhouse.v1.CreateProductResponse.product:type_name -> stillhouse.v1.Product
-	11, // 5: stillhouse.v1.UpdateProductRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
+	13, // 5: stillhouse.v1.UpdateProductRequest.spirit_kind:type_name -> stillhouse.v1.SpiritKind
 	0,  // 6: stillhouse.v1.UpdateProductResponse.product:type_name -> stillhouse.v1.Product
 	0,  // 7: stillhouse.v1.ListProductsResponse.products:type_name -> stillhouse.v1.Product
 	0,  // 8: stillhouse.v1.GetProductResponse.product:type_name -> stillhouse.v1.Product
 	0,  // 9: stillhouse.v1.SetProductArchivedResponse.product:type_name -> stillhouse.v1.Product
-	1,  // 10: stillhouse.v1.ProductService.CreateProduct:input_type -> stillhouse.v1.CreateProductRequest
-	3,  // 11: stillhouse.v1.ProductService.UpdateProduct:input_type -> stillhouse.v1.UpdateProductRequest
-	5,  // 12: stillhouse.v1.ProductService.ListProducts:input_type -> stillhouse.v1.ListProductsRequest
-	7,  // 13: stillhouse.v1.ProductService.GetProduct:input_type -> stillhouse.v1.GetProductRequest
-	9,  // 14: stillhouse.v1.ProductService.SetProductArchived:input_type -> stillhouse.v1.SetProductArchivedRequest
-	2,  // 15: stillhouse.v1.ProductService.CreateProduct:output_type -> stillhouse.v1.CreateProductResponse
-	4,  // 16: stillhouse.v1.ProductService.UpdateProduct:output_type -> stillhouse.v1.UpdateProductResponse
-	6,  // 17: stillhouse.v1.ProductService.ListProducts:output_type -> stillhouse.v1.ListProductsResponse
-	8,  // 18: stillhouse.v1.ProductService.GetProduct:output_type -> stillhouse.v1.GetProductResponse
-	10, // 19: stillhouse.v1.ProductService.SetProductArchived:output_type -> stillhouse.v1.SetProductArchivedResponse
-	15, // [15:20] is the sub-list for method output_type
-	10, // [10:15] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	0,  // 10: stillhouse.v1.UpdateProductSKUResponse.product:type_name -> stillhouse.v1.Product
+	11, // 11: stillhouse.v1.ProductService.UpdateProductSKU:input_type -> stillhouse.v1.UpdateProductSKURequest
+	1,  // 12: stillhouse.v1.ProductService.CreateProduct:input_type -> stillhouse.v1.CreateProductRequest
+	3,  // 13: stillhouse.v1.ProductService.UpdateProduct:input_type -> stillhouse.v1.UpdateProductRequest
+	5,  // 14: stillhouse.v1.ProductService.ListProducts:input_type -> stillhouse.v1.ListProductsRequest
+	7,  // 15: stillhouse.v1.ProductService.GetProduct:input_type -> stillhouse.v1.GetProductRequest
+	9,  // 16: stillhouse.v1.ProductService.SetProductArchived:input_type -> stillhouse.v1.SetProductArchivedRequest
+	12, // 17: stillhouse.v1.ProductService.UpdateProductSKU:output_type -> stillhouse.v1.UpdateProductSKUResponse
+	2,  // 18: stillhouse.v1.ProductService.CreateProduct:output_type -> stillhouse.v1.CreateProductResponse
+	4,  // 19: stillhouse.v1.ProductService.UpdateProduct:output_type -> stillhouse.v1.UpdateProductResponse
+	6,  // 20: stillhouse.v1.ProductService.ListProducts:output_type -> stillhouse.v1.ListProductsResponse
+	8,  // 21: stillhouse.v1.ProductService.GetProduct:output_type -> stillhouse.v1.GetProductResponse
+	10, // 22: stillhouse.v1.ProductService.SetProductArchived:output_type -> stillhouse.v1.SetProductArchivedResponse
+	17, // [17:23] is the sub-list for method output_type
+	11, // [11:17] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_product_proto_init() }
@@ -790,7 +1125,7 @@ func file_stillhouse_v1_product_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_product_proto_rawDesc), len(file_stillhouse_v1_product_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   13,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

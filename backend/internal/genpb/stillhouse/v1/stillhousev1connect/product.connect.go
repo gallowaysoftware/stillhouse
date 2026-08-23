@@ -33,6 +33,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// ProductServiceUpdateProductSKUProcedure is the fully-qualified name of the ProductService's
+	// UpdateProductSKU RPC.
+	ProductServiceUpdateProductSKUProcedure = "/stillhouse.v1.ProductService/UpdateProductSKU"
 	// ProductServiceCreateProductProcedure is the fully-qualified name of the ProductService's
 	// CreateProduct RPC.
 	ProductServiceCreateProductProcedure = "/stillhouse.v1.ProductService/CreateProduct"
@@ -52,6 +55,7 @@ const (
 
 // ProductServiceClient is a client for the stillhouse.v1.ProductService service.
 type ProductServiceClient interface {
+	UpdateProductSKU(context.Context, *connect.Request[v1.UpdateProductSKURequest]) (*connect.Response[v1.UpdateProductSKUResponse], error)
 	CreateProduct(context.Context, *connect.Request[v1.CreateProductRequest]) (*connect.Response[v1.CreateProductResponse], error)
 	UpdateProduct(context.Context, *connect.Request[v1.UpdateProductRequest]) (*connect.Response[v1.UpdateProductResponse], error)
 	ListProducts(context.Context, *connect.Request[v1.ListProductsRequest]) (*connect.Response[v1.ListProductsResponse], error)
@@ -70,6 +74,12 @@ func NewProductServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 	baseURL = strings.TrimRight(baseURL, "/")
 	productServiceMethods := v1.File_stillhouse_v1_product_proto.Services().ByName("ProductService").Methods()
 	return &productServiceClient{
+		updateProductSKU: connect.NewClient[v1.UpdateProductSKURequest, v1.UpdateProductSKUResponse](
+			httpClient,
+			baseURL+ProductServiceUpdateProductSKUProcedure,
+			connect.WithSchema(productServiceMethods.ByName("UpdateProductSKU")),
+			connect.WithClientOptions(opts...),
+		),
 		createProduct: connect.NewClient[v1.CreateProductRequest, v1.CreateProductResponse](
 			httpClient,
 			baseURL+ProductServiceCreateProductProcedure,
@@ -105,11 +115,17 @@ func NewProductServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 
 // productServiceClient implements ProductServiceClient.
 type productServiceClient struct {
+	updateProductSKU   *connect.Client[v1.UpdateProductSKURequest, v1.UpdateProductSKUResponse]
 	createProduct      *connect.Client[v1.CreateProductRequest, v1.CreateProductResponse]
 	updateProduct      *connect.Client[v1.UpdateProductRequest, v1.UpdateProductResponse]
 	listProducts       *connect.Client[v1.ListProductsRequest, v1.ListProductsResponse]
 	getProduct         *connect.Client[v1.GetProductRequest, v1.GetProductResponse]
 	setProductArchived *connect.Client[v1.SetProductArchivedRequest, v1.SetProductArchivedResponse]
+}
+
+// UpdateProductSKU calls stillhouse.v1.ProductService.UpdateProductSKU.
+func (c *productServiceClient) UpdateProductSKU(ctx context.Context, req *connect.Request[v1.UpdateProductSKURequest]) (*connect.Response[v1.UpdateProductSKUResponse], error) {
+	return c.updateProductSKU.CallUnary(ctx, req)
 }
 
 // CreateProduct calls stillhouse.v1.ProductService.CreateProduct.
@@ -139,6 +155,7 @@ func (c *productServiceClient) SetProductArchived(ctx context.Context, req *conn
 
 // ProductServiceHandler is an implementation of the stillhouse.v1.ProductService service.
 type ProductServiceHandler interface {
+	UpdateProductSKU(context.Context, *connect.Request[v1.UpdateProductSKURequest]) (*connect.Response[v1.UpdateProductSKUResponse], error)
 	CreateProduct(context.Context, *connect.Request[v1.CreateProductRequest]) (*connect.Response[v1.CreateProductResponse], error)
 	UpdateProduct(context.Context, *connect.Request[v1.UpdateProductRequest]) (*connect.Response[v1.UpdateProductResponse], error)
 	ListProducts(context.Context, *connect.Request[v1.ListProductsRequest]) (*connect.Response[v1.ListProductsResponse], error)
@@ -153,6 +170,12 @@ type ProductServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewProductServiceHandler(svc ProductServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	productServiceMethods := v1.File_stillhouse_v1_product_proto.Services().ByName("ProductService").Methods()
+	productServiceUpdateProductSKUHandler := connect.NewUnaryHandler(
+		ProductServiceUpdateProductSKUProcedure,
+		svc.UpdateProductSKU,
+		connect.WithSchema(productServiceMethods.ByName("UpdateProductSKU")),
+		connect.WithHandlerOptions(opts...),
+	)
 	productServiceCreateProductHandler := connect.NewUnaryHandler(
 		ProductServiceCreateProductProcedure,
 		svc.CreateProduct,
@@ -185,6 +208,8 @@ func NewProductServiceHandler(svc ProductServiceHandler, opts ...connect.Handler
 	)
 	return "/stillhouse.v1.ProductService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case ProductServiceUpdateProductSKUProcedure:
+			productServiceUpdateProductSKUHandler.ServeHTTP(w, r)
 		case ProductServiceCreateProductProcedure:
 			productServiceCreateProductHandler.ServeHTTP(w, r)
 		case ProductServiceUpdateProductProcedure:
@@ -203,6 +228,10 @@ func NewProductServiceHandler(svc ProductServiceHandler, opts ...connect.Handler
 
 // UnimplementedProductServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedProductServiceHandler struct{}
+
+func (UnimplementedProductServiceHandler) UpdateProductSKU(context.Context, *connect.Request[v1.UpdateProductSKURequest]) (*connect.Response[v1.UpdateProductSKUResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ProductService.UpdateProductSKU is not implemented"))
+}
 
 func (UnimplementedProductServiceHandler) CreateProduct(context.Context, *connect.Request[v1.CreateProductRequest]) (*connect.Response[v1.CreateProductResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ProductService.CreateProduct is not implemented"))

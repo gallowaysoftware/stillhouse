@@ -14,6 +14,39 @@ message Product {
   double target_abv_pct = 6;
   string label_notes = 7;
   bool   archived = 8;
+
+  // ----- trade identifiers -------------------------------------------
+  // GTIN-12/13/14. Text, because a leading zero is significant.
+  string gtin = 11;
+  // The board's own number for this SKU. CSPC nationally; provincial
+  // boards issue their own.
+  string cspc_code = 12;
+
+  // ----- case configuration ------------------------------------------
+  // Bottles per case is what a purchase order is written in; the rest is
+  // what a pallet is planned from. Zero means not recorded.
+  int32  bottles_per_case = 13;
+  int32  cases_per_layer = 14;
+  int32  layers_per_pallet = 15;
+  double case_gross_weight_kg = 16;
+
+  // ----- label content -----------------------------------------------
+  // The standard-of-identity name under Division 2 of the Food and Drug
+  // Regulations — "Canadian Whisky", "Gin". Deliberately separate from
+  // the SKU's marketing name and deliberately NOT derived from
+  // spirit_kind: whether a spirit qualifies is the licensee's
+  // declaration, and Stillhouse asserting it on their behalf would be
+  // putting words in their mouth on a label.
+  string common_name = 17;
+  // The age statement, where one is made. Also the licensee's: the
+  // maturation clock knows how long a cask sat, and what a blend may
+  // claim is a different question.
+  string age_statement = 18;
+  // What the container carries under Excise Act s.87 (EDM3-2-3).
+  string container_marking = 19;
+  string allergen_statement = 20;
+  string country_of_origin = 21;
+  string marketing_description = 22;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
 }
@@ -46,7 +79,25 @@ message GetProductResponse { Product product = 1; }
 message SetProductArchivedRequest { string id = 1; bool archived = 2; }
 message SetProductArchivedResponse { Product product = 1; }
 
+message UpdateProductSKURequest {
+  string id = 1;
+  string gtin = 2;
+  string cspc_code = 3;
+  int32  bottles_per_case = 4;
+  int32  cases_per_layer = 5;
+  int32  layers_per_pallet = 6;
+  double case_gross_weight_kg = 7;
+  string common_name = 8;
+  string age_statement = 9;
+  string container_marking = 10;
+  string allergen_statement = 11;
+  string country_of_origin = 12;
+  string marketing_description = 13;
+}
+message UpdateProductSKUResponse { Product product = 1; }
+
 service ProductService {
+  rpc UpdateProductSKU(UpdateProductSKURequest) returns (UpdateProductSKUResponse);
   rpc CreateProduct(CreateProductRequest) returns (CreateProductResponse);
   rpc UpdateProduct(UpdateProductRequest) returns (UpdateProductResponse);
   rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);

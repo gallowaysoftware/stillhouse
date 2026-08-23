@@ -32,6 +32,19 @@ var columnsByKind = map[Kind][]Column{
 		{Name: "bottle size ml", Required: true, Help: "750, 375, 1750…"},
 		{Name: "abv", Required: true, Help: "Label strength as a percentage — 40, not 0.40."},
 		{Name: "label notes", Help: ""},
+		// Trade and label details, so a SKU list imports complete rather
+		// than needing a second pass through the UI.
+		{Name: "gtin", Help: "GTIN-8/12/13/14. Checked — a bad check digit is a transposed pair of digits."},
+		{Name: "cspc code", Help: "The board's own product number."},
+		{Name: "bottles per case", Help: ""},
+		{Name: "cases per layer", Help: ""},
+		{Name: "layers per pallet", Help: ""},
+		{Name: "case weight kg", Help: "Gross weight of a full case."},
+		{Name: "common name", Help: "The standard-of-identity name — \"Canadian Whisky\", \"Gin\". Yours to declare; Stillhouse won't infer it from the spirit kind."},
+		{Name: "age statement", Help: "Where you make one. Also yours to declare."},
+		{Name: "container marking", Help: "What the container carries under Excise Act s.87."},
+		{Name: "allergen statement", Help: ""},
+		{Name: "country of origin", Help: ""},
 	},
 	KindCustomers: {
 		{Name: "name", Required: true, Help: "Must be unique."},

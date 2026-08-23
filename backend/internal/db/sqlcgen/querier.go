@@ -601,6 +601,11 @@ type Querier interface {
 	UpdateMashStatus(ctx context.Context, arg UpdateMashStatusParams) (MashRun, error)
 	UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
+	// The trade and label fields, set separately from the production ones.
+	// Bottle size and strength change what is in the bottle; a GTIN or a
+	// case configuration changes how it is sold, and the two are edited by
+	// different people on different days.
+	UpdateProductSKU(ctx context.Context, arg UpdateProductSKUParams) (Product, error)
 	UpdateTenant(ctx context.Context, arg UpdateTenantParams) (Tenant, error)
 	// Writing a new password revokes every session that authenticated before
 	// this moment. It happens in the same statement as the hash update so no

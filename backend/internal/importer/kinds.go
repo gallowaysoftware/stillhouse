@@ -93,3 +93,39 @@ func customerKind(s string) (sqlcgen.CustomerKind, string, error) {
 	return "", "", fmt.Errorf("%q is not a customer kind — use provincial board, licensee, "+
 		"private retail, spirits licensee, export, on-site retail or other", s)
 }
+
+// ValidateGTIN checks length and the GS1 mod-10 check digit.
+//
+// Worth doing rather than storing whatever was typed: a GTIN with a bad
+// check digit is a transposed pair of digits, and the place that
+// discovers it otherwise is a distributor's receiving dock. Lives here
+// rather than in the RPC layer because the importer needs the same
+// answer, and a second copy would eventually disagree.
+func ValidateGTIN(s string) error {
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return fmt.Errorf("a GTIN is digits only; %q is not", s)
+		}
+	}
+	switch len(s) {
+	case 8, 12, 13, 14:
+	default:
+		return fmt.Errorf("a GTIN is 8, 12, 13 or 14 digits; %q is %d", s, len(s))
+	}
+	// Weights alternate 3 and 1 from the right, excluding the check
+	// digit itself.
+	sum := 0
+	for i := len(s) - 2; i >= 0; i-- {
+		d := int(s[i] - '0')
+		if (len(s)-2-i)%2 == 0 {
+			d *= 3
+		}
+		sum += d
+	}
+	check := (10 - sum%10) % 10
+	if check != int(s[len(s)-1]-'0') {
+		return fmt.Errorf("%q has the wrong check digit — it should end in %d. "+
+			"Usually that means two digits are transposed", s, check)
+	}
+	return nil
+}

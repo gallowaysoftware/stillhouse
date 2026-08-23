@@ -8,6 +8,7 @@ import { Shell } from "@/components/Shell";
 import { materialClient, productClient } from "@/lib/clients";
 import { CreateProductRequestSchema } from "@/gen/stillhouse/v1/product_pb";
 import { SpiritKind } from "@/gen/stillhouse/v1/recipe_pb";
+import { Product } from "@/gen/stillhouse/v1/product_pb";
 import { formatCAD, spiritKindLabel } from "@/lib/format";
 import { WriteOnly } from "@/lib/role";
 
@@ -30,6 +31,11 @@ export function ProductsPage() {
     queryFn: () => productClient.listProducts({}),
   });
   const [showForm, setShowForm] = useState(false);
+  // Trade and label details are edited apart from the production ones:
+  // bottle size and strength change what is in the bottle, a GTIN or a
+  // case configuration changes how it is sold, and they are set by
+  // different people on different days.
+  const [editingSKU, setEditingSKU] = useState<string | null>(null);
 
   const createProduct = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof CreateProductRequestSchema>>) =>
@@ -102,7 +108,18 @@ export function ProductsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      {editingSKU && (
+        <SKUPanel
+          product={list.data?.products.find((p) => p.id === editingSKU)}
+          onClose={() => setEditingSKU(null)}
+          onSaved={() => {
+            qc.invalidateQueries({ queryKey: ["listProducts"] });
+            setEditingSKU(null);
+          }}
+        />
+      )}
+
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
@@ -111,16 +128,18 @@ export function ProductsPage() {
               <th className="px-4 py-3 text-right">Bottle (mL)</th>
               <th className="px-4 py-3 text-right">Target ABV</th>
               <th className="px-4 py-3 text-right">Avg cost/bottle</th>
+              <th className="px-4 py-3">GTIN</th>
+              <th className="px-4 py-3 text-right">Per case</th>
               <th className="px-4 py-3">Notes</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {list.isLoading && (
-              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
+              <tr><td colSpan={8} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!list.isLoading && list.data?.products.length === 0 && (
               <EmptyRow
-                colSpan={6}
+                colSpan={8}
                 title="No products yet"
                 message="A product is a finished SKU — bottle size, target proof, label notes. Define one before recording a bottling run."
                 action={
@@ -136,12 +155,18 @@ export function ProductsPage() {
               />
             )}
             {list.data?.products.map((p) => (
-              <tr key={p.id}>
+              <tr key={p.id} onClick={() => setEditingSKU(p.id)} className="cursor-pointer hover:bg-surface-3">
                 <td className="px-4 py-3 font-medium text-fg">{p.name}</td>
                 <td className="px-4 py-3 text-fg-muted">{spiritKindLabel(p.spiritKind)}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">{p.bottleSizeMl}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">{p.targetAbvPct.toFixed(1)}%</td>
                 <td className="px-4 py-3 text-right text-fg-muted"><CostCell productId={p.id} /></td>
+                <td className="px-4 py-3 font-mono text-xs text-fg-muted">
+                  {p.gtin || <span className="text-fg-subtle">—</span>}
+                </td>
+                <td className="px-4 py-3 text-right text-fg-muted">
+                  {p.bottlesPerCase || <span className="text-fg-subtle">—</span>}
+                </td>
                 <td className="px-4 py-3 text-fg-muted">{p.labelNotes}</td>
               </tr>
             ))}
@@ -204,6 +229,136 @@ function Field({
           className="w-full rounded border border-border-strong px-3 py-2 text-sm"
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * Trade and label details for one SKU.
+ *
+ * Everything here is the licensee's declaration, not Stillhouse's
+ * derivation. In particular the common name — the standard-of-identity
+ * name under Division 2 of the Food and Drug Regulations — is not
+ * inferred from the spirit kind, and the age statement is not taken from
+ * the maturation clock. Whether a spirit qualifies, and what a blend may
+ * claim, rest on how it was made and how long it sat. Filling either in
+ * automatically would be putting words on somebody's label.
+ */
+function SKUPanel({
+  product, onClose, onSaved,
+}: {
+  product?: Product;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const save = useMutation({
+    mutationFn: (m: Parameters<typeof productClient.updateProductSKU>[0]) =>
+      productClient.updateProductSKU(m),
+    onSuccess: onSaved,
+  });
+  if (!product) return null;
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        const fd = new FormData(e.currentTarget);
+        const num = (k: string) => Number(fd.get(k) ?? 0) || 0;
+        save.mutate({
+          id: product.id,
+          gtin: fd.get("gtin")?.toString() ?? "",
+          cspcCode: fd.get("cspc_code")?.toString() ?? "",
+          bottlesPerCase: num("bottles_per_case"),
+          casesPerLayer: num("cases_per_layer"),
+          layersPerPallet: num("layers_per_pallet"),
+          caseGrossWeightKg: num("case_weight"),
+          commonName: fd.get("common_name")?.toString() ?? "",
+          ageStatement: fd.get("age_statement")?.toString() ?? "",
+          containerMarking: fd.get("container_marking")?.toString() ?? "",
+          allergenStatement: fd.get("allergen_statement")?.toString() ?? "",
+          countryOfOrigin: fd.get("country_of_origin")?.toString() ?? "",
+          marketingDescription: fd.get("marketing_description")?.toString() ?? "",
+        });
+      }}
+      className="mb-6 rounded-lg border border-border bg-surface-2 p-5 shadow-sm"
+    >
+      <div className="mb-4 flex items-baseline justify-between">
+        <h2 className="text-sm font-semibold text-fg">{product.name} — trade &amp; label</h2>
+        <button type="button" onClick={onClose} className="text-xs text-fg-muted hover:text-fg">
+          Close
+        </button>
+      </div>
+
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Identifiers</p>
+      <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <SKUField label="GTIN" name="gtin" defaultValue={product.gtin}
+                  help="8, 12, 13 or 14 digits. The check digit is verified." />
+        <SKUField label="Board product number (CSPC)" name="cspc_code" defaultValue={product.cspcCode} />
+      </div>
+
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Case &amp; pallet</p>
+      <div className="mb-4 grid gap-3 sm:grid-cols-4">
+        <SKUField label="Bottles per case" name="bottles_per_case" type="number"
+                  defaultValue={product.bottlesPerCase ? String(product.bottlesPerCase) : ""} />
+        <SKUField label="Cases per layer" name="cases_per_layer" type="number"
+                  defaultValue={product.casesPerLayer ? String(product.casesPerLayer) : ""} />
+        <SKUField label="Layers per pallet" name="layers_per_pallet" type="number"
+                  defaultValue={product.layersPerPallet ? String(product.layersPerPallet) : ""} />
+        <SKUField label="Case weight (kg)" name="case_weight" type="number" step="0.01"
+                  defaultValue={product.caseGrossWeightKg ? String(product.caseGrossWeightKg) : ""} />
+      </div>
+
+      <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-fg-subtle">Label</p>
+      <p className="mb-3 text-xs text-fg-muted">
+        These are your declarations. Stillhouse doesn't infer the common name from the
+        spirit kind or the age from the maturation clock — whether a spirit qualifies,
+        and what a blend may claim, are yours to say.
+      </p>
+      <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <SKUField label="Common name (standard of identity)" name="common_name"
+                  defaultValue={product.commonName} help="&quot;Canadian Whisky&quot;, &quot;Gin&quot;, &quot;Vodka&quot;…" />
+        <SKUField label="Age statement" name="age_statement" defaultValue={product.ageStatement} />
+        <SKUField label="Country of origin" name="country_of_origin" defaultValue={product.countryOfOrigin} />
+        <SKUField label="Allergen statement" name="allergen_statement" defaultValue={product.allergenStatement} />
+        <SKUField label="Container marking (Excise Act s.87)" name="container_marking"
+                  className="sm:col-span-2" defaultValue={product.containerMarking} />
+        <SKUField label="Marketing description" name="marketing_description"
+                  className="sm:col-span-2" defaultValue={product.marketingDescription} />
+      </div>
+
+      <WriteOnly>
+        <div className="flex items-center gap-3">
+          <button type="submit" disabled={save.isPending}
+                  className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50">
+            {save.isPending ? "Saving…" : "Save"}
+          </button>
+          {save.error && (
+            <span className="text-sm text-danger-fg">
+              {save.error instanceof ConnectError ? save.error.rawMessage : String(save.error)}
+            </span>
+          )}
+        </div>
+      </WriteOnly>
+    </form>
+  );
+}
+
+function SKUField({ label, name, type = "text", step, defaultValue, help, className }: {
+  label: string; name: string; type?: string; step?: string;
+  defaultValue?: string; help?: string; className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
+      <input
+        key={defaultValue}
+        name={name}
+        type={type}
+        step={step}
+        defaultValue={defaultValue ?? ""}
+        className="w-full rounded border border-border-strong px-2 py-1.5 text-sm"
+      />
+      {help && <p className="mt-1 text-xs text-fg-subtle">{help}</p>}
     </div>
   );
 }

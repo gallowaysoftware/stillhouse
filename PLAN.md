@@ -270,14 +270,6 @@ Methanol and congener results, water chemistry, allergen statements, attached
 to a gauge or a run. A release sign-off that gates removal. Nothing in the
 category does this well, and it pairs naturally with `C1`.
 
-### F6 · SKU registry and label data — P1
-
-Products carry name, size, ABV and label notes. Missing: GTIN/UPC, case
-configuration, board product numbers (CSPC and provincial equivalents),
-standards-of-identity declarations under Division 2 of the Food and Drug
-Regulations, and the alcohol-container information CRA requires under s.87
-(EDM3-2-3). Needed by `D1`, `I2` and any e-commerce listing.
-
 ### F7 · Forecasting — P2
 
 Raw material, WIP and finished-goods forecasting. Ekos ships it; it is what

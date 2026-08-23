@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createProduct = `-- name: CreateProduct :one
@@ -16,7 +17,7 @@ INSERT INTO products (
     tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at
+) RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
 `
 
 type CreateProductParams struct {
@@ -49,12 +50,24 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Gtin,
+		&i.CspcCode,
+		&i.BottlesPerCase,
+		&i.CasesPerLayer,
+		&i.LayersPerPallet,
+		&i.CaseGrossWeightKg,
+		&i.CommonName,
+		&i.AgeStatement,
+		&i.ContainerMarking,
+		&i.AllergenStatement,
+		&i.CountryOfOrigin,
+		&i.MarketingDescription,
 	)
 	return i, err
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at FROM products WHERE id = $1
+SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description FROM products WHERE id = $1
 `
 
 func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -71,12 +84,24 @@ func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Gtin,
+		&i.CspcCode,
+		&i.BottlesPerCase,
+		&i.CasesPerLayer,
+		&i.LayersPerPallet,
+		&i.CaseGrossWeightKg,
+		&i.CommonName,
+		&i.AgeStatement,
+		&i.ContainerMarking,
+		&i.AllergenStatement,
+		&i.CountryOfOrigin,
+		&i.MarketingDescription,
 	)
 	return i, err
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at FROM products
+SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description FROM products
 WHERE ($1::boolean OR NOT archived)
 ORDER BY archived, name
 `
@@ -101,6 +126,18 @@ func (q *Queries) ListProducts(ctx context.Context, includeArchived bool) ([]Pro
 			&i.Archived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Gtin,
+			&i.CspcCode,
+			&i.BottlesPerCase,
+			&i.CasesPerLayer,
+			&i.LayersPerPallet,
+			&i.CaseGrossWeightKg,
+			&i.CommonName,
+			&i.AgeStatement,
+			&i.ContainerMarking,
+			&i.AllergenStatement,
+			&i.CountryOfOrigin,
+			&i.MarketingDescription,
 		); err != nil {
 			return nil, err
 		}
@@ -113,7 +150,7 @@ func (q *Queries) ListProducts(ctx context.Context, includeArchived bool) ([]Pro
 }
 
 const setProductArchived = `-- name: SetProductArchived :one
-UPDATE products SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at
+UPDATE products SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
 `
 
 type SetProductArchivedParams struct {
@@ -135,6 +172,18 @@ func (q *Queries) SetProductArchived(ctx context.Context, arg SetProductArchived
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Gtin,
+		&i.CspcCode,
+		&i.BottlesPerCase,
+		&i.CasesPerLayer,
+		&i.LayersPerPallet,
+		&i.CaseGrossWeightKg,
+		&i.CommonName,
+		&i.AgeStatement,
+		&i.ContainerMarking,
+		&i.AllergenStatement,
+		&i.CountryOfOrigin,
+		&i.MarketingDescription,
 	)
 	return i, err
 }
@@ -147,7 +196,7 @@ SET name           = $2,
     target_abv_pct = $5,
     label_notes    = $6
 WHERE id = $1
-RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at
+RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
 `
 
 type UpdateProductParams struct {
@@ -180,6 +229,100 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Gtin,
+		&i.CspcCode,
+		&i.BottlesPerCase,
+		&i.CasesPerLayer,
+		&i.LayersPerPallet,
+		&i.CaseGrossWeightKg,
+		&i.CommonName,
+		&i.AgeStatement,
+		&i.ContainerMarking,
+		&i.AllergenStatement,
+		&i.CountryOfOrigin,
+		&i.MarketingDescription,
+	)
+	return i, err
+}
+
+const updateProductSKU = `-- name: UpdateProductSKU :one
+UPDATE products
+SET gtin                  = $2,
+    cspc_code             = $3,
+    bottles_per_case      = $4,
+    cases_per_layer       = $5,
+    layers_per_pallet     = $6,
+    case_gross_weight_kg  = $7,
+    common_name           = $8,
+    age_statement         = $9,
+    container_marking     = $10,
+    allergen_statement    = $11,
+    country_of_origin     = $12,
+    marketing_description = $13
+WHERE id = $1
+RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
+`
+
+type UpdateProductSKUParams struct {
+	ID                   uuid.UUID     `json:"id"`
+	Gtin                 string        `json:"gtin"`
+	CspcCode             string        `json:"cspc_code"`
+	BottlesPerCase       pgtype.Int4   `json:"bottles_per_case"`
+	CasesPerLayer        pgtype.Int4   `json:"cases_per_layer"`
+	LayersPerPallet      pgtype.Int4   `json:"layers_per_pallet"`
+	CaseGrossWeightKg    pgtype.Float8 `json:"case_gross_weight_kg"`
+	CommonName           string        `json:"common_name"`
+	AgeStatement         string        `json:"age_statement"`
+	ContainerMarking     string        `json:"container_marking"`
+	AllergenStatement    string        `json:"allergen_statement"`
+	CountryOfOrigin      string        `json:"country_of_origin"`
+	MarketingDescription string        `json:"marketing_description"`
+}
+
+// The trade and label fields, set separately from the production ones.
+// Bottle size and strength change what is in the bottle; a GTIN or a
+// case configuration changes how it is sold, and the two are edited by
+// different people on different days.
+func (q *Queries) UpdateProductSKU(ctx context.Context, arg UpdateProductSKUParams) (Product, error) {
+	row := q.db.QueryRow(ctx, updateProductSKU,
+		arg.ID,
+		arg.Gtin,
+		arg.CspcCode,
+		arg.BottlesPerCase,
+		arg.CasesPerLayer,
+		arg.LayersPerPallet,
+		arg.CaseGrossWeightKg,
+		arg.CommonName,
+		arg.AgeStatement,
+		arg.ContainerMarking,
+		arg.AllergenStatement,
+		arg.CountryOfOrigin,
+		arg.MarketingDescription,
+	)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.SpiritKind,
+		&i.BottleSizeMl,
+		&i.TargetAbvPct,
+		&i.LabelNotes,
+		&i.Archived,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Gtin,
+		&i.CspcCode,
+		&i.BottlesPerCase,
+		&i.CasesPerLayer,
+		&i.LayersPerPallet,
+		&i.CaseGrossWeightKg,
+		&i.CommonName,
+		&i.AgeStatement,
+		&i.ContainerMarking,
+		&i.AllergenStatement,
+		&i.CountryOfOrigin,
+		&i.MarketingDescription,
 	)
 	return i, err
 }

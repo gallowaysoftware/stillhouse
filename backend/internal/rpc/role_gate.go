@@ -223,6 +223,9 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.PricingService/ComputeProvincialPricing": roleViewer,
 
 	// ProductService
+	// Trade and label details are commercial rather than production
+	// data, and a wrong GTIN sends the wrong case to a distributor.
+	"/stillhouse.v1.ProductService/UpdateProductSKU":   roleOperator,
 	"/stillhouse.v1.ProductService/CreateProduct":      roleOperator,
 	"/stillhouse.v1.ProductService/UpdateProduct":      roleOperator,
 	"/stillhouse.v1.ProductService/ListProducts":       roleViewer,

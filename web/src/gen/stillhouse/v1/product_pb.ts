@@ -14,7 +14,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/product.proto.
  */
 export const file_stillhouse_v1_product: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGlsbGhvdXNlL3YxL3Byb2R1Y3QucHJvdG8SDXN0aWxsaG91c2UudjEinQIKB1Byb2R1Y3QSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEgwKBG5hbWUYAyABKAkSLgoLc3Bpcml0X2tpbmQYBCABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSFgoOYm90dGxlX3NpemVfbWwYBSABKAUSFgoOdGFyZ2V0X2Fidl9wY3QYBiABKAESEwoLbGFiZWxfbm90ZXMYByABKAkSEAoIYXJjaGl2ZWQYCCABKAgSLgoKY3JlYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgKIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAimQEKFENyZWF0ZVByb2R1Y3RSZXF1ZXN0EgwKBG5hbWUYASABKAkSLgoLc3Bpcml0X2tpbmQYAiABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSFgoOYm90dGxlX3NpemVfbWwYAyABKAUSFgoOdGFyZ2V0X2Fidl9wY3QYBCABKAESEwoLbGFiZWxfbm90ZXMYBSABKAkiQAoVQ3JlYXRlUHJvZHVjdFJlc3BvbnNlEicKB3Byb2R1Y3QYASABKAsyFi5zdGlsbGhvdXNlLnYxLlByb2R1Y3QipQEKFFVwZGF0ZVByb2R1Y3RSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSLgoLc3Bpcml0X2tpbmQYAyABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSFgoOYm90dGxlX3NpemVfbWwYBCABKAUSFgoOdGFyZ2V0X2Fidl9wY3QYBSABKAESEwoLbGFiZWxfbm90ZXMYBiABKAkiQAoVVXBkYXRlUHJvZHVjdFJlc3BvbnNlEicKB3Byb2R1Y3QYASABKAsyFi5zdGlsbGhvdXNlLnYxLlByb2R1Y3QiLwoTTGlzdFByb2R1Y3RzUmVxdWVzdBIYChBpbmNsdWRlX2FyY2hpdmVkGAEgASgIIkAKFExpc3RQcm9kdWN0c1Jlc3BvbnNlEigKCHByb2R1Y3RzGAEgAygLMhYuc3RpbGxob3VzZS52MS5Qcm9kdWN0Ih8KEUdldFByb2R1Y3RSZXF1ZXN0EgoKAmlkGAEgASgJIj0KEkdldFByb2R1Y3RSZXNwb25zZRInCgdwcm9kdWN0GAEgASgLMhYuc3RpbGxob3VzZS52MS5Qcm9kdWN0IjkKGVNldFByb2R1Y3RBcmNoaXZlZFJlcXVlc3QSCgoCaWQYASABKAkSEAoIYXJjaGl2ZWQYAiABKAgiRQoaU2V0UHJvZHVjdEFyY2hpdmVkUmVzcG9uc2USJwoHcHJvZHVjdBgBIAEoCzIWLnN0aWxsaG91c2UudjEuUHJvZHVjdDLfAwoOUHJvZHVjdFNlcnZpY2USWgoNQ3JlYXRlUHJvZHVjdBIjLnN0aWxsaG91c2UudjEuQ3JlYXRlUHJvZHVjdFJlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLkNyZWF0ZVByb2R1Y3RSZXNwb25zZRJaCg1VcGRhdGVQcm9kdWN0EiMuc3RpbGxob3VzZS52MS5VcGRhdGVQcm9kdWN0UmVxdWVzdBokLnN0aWxsaG91c2UudjEuVXBkYXRlUHJvZHVjdFJlc3BvbnNlElcKDExpc3RQcm9kdWN0cxIiLnN0aWxsaG91c2UudjEuTGlzdFByb2R1Y3RzUmVxdWVzdBojLnN0aWxsaG91c2UudjEuTGlzdFByb2R1Y3RzUmVzcG9uc2USUQoKR2V0UHJvZHVjdBIgLnN0aWxsaG91c2UudjEuR2V0UHJvZHVjdFJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkdldFByb2R1Y3RSZXNwb25zZRJpChJTZXRQcm9kdWN0QXJjaGl2ZWQSKC5zdGlsbGhvdXNlLnYxLlNldFByb2R1Y3RBcmNoaXZlZFJlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLlNldFByb2R1Y3RBcmNoaXZlZFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_recipe]);
+  fileDesc("ChtzdGlsbGhvdXNlL3YxL3Byb2R1Y3QucHJvdG8SDXN0aWxsaG91c2UudjEixwQKB1Byb2R1Y3QSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEgwKBG5hbWUYAyABKAkSLgoLc3Bpcml0X2tpbmQYBCABKA4yGS5zdGlsbGhvdXNlLnYxLlNwaXJpdEtpbmQSFgoOYm90dGxlX3NpemVfbWwYBSABKAUSFgoOdGFyZ2V0X2Fidl9wY3QYBiABKAESEwoLbGFiZWxfbm90ZXMYByABKAkSEAoIYXJjaGl2ZWQYCCABKAgSDAoEZ3RpbhgLIAEoCRIRCgljc3BjX2NvZGUYDCABKAkSGAoQYm90dGxlc19wZXJfY2FzZRgNIAEoBRIXCg9jYXNlc19wZXJfbGF5ZXIYDiABKAUSGQoRbGF5ZXJzX3Blcl9wYWxsZXQYDyABKAUSHAoUY2FzZV9ncm9zc193ZWlnaHRfa2cYECABKAESEwoLY29tbW9uX25hbWUYESABKAkSFQoNYWdlX3N0YXRlbWVudBgSIAEoCRIZChFjb250YWluZXJfbWFya2luZxgTIAEoCRIaChJhbGxlcmdlbl9zdGF0ZW1lbnQYFCABKAkSGQoRY291bnRyeV9vZl9vcmlnaW4YFSABKAkSHQoVbWFya2V0aW5nX2Rlc2NyaXB0aW9uGBYgASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEi4KCnVwZGF0ZWRfYXQYCiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIpkBChRDcmVhdGVQcm9kdWN0UmVxdWVzdBIMCgRuYW1lGAEgASgJEi4KC3NwaXJpdF9raW5kGAIgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEhYKDmJvdHRsZV9zaXplX21sGAMgASgFEhYKDnRhcmdldF9hYnZfcGN0GAQgASgBEhMKC2xhYmVsX25vdGVzGAUgASgJIkAKFUNyZWF0ZVByb2R1Y3RSZXNwb25zZRInCgdwcm9kdWN0GAEgASgLMhYuc3RpbGxob3VzZS52MS5Qcm9kdWN0IqUBChRVcGRhdGVQcm9kdWN0UmVxdWVzdBIKCgJpZBgBIAEoCRIMCgRuYW1lGAIgASgJEi4KC3NwaXJpdF9raW5kGAMgASgOMhkuc3RpbGxob3VzZS52MS5TcGlyaXRLaW5kEhYKDmJvdHRsZV9zaXplX21sGAQgASgFEhYKDnRhcmdldF9hYnZfcGN0GAUgASgBEhMKC2xhYmVsX25vdGVzGAYgASgJIkAKFVVwZGF0ZVByb2R1Y3RSZXNwb25zZRInCgdwcm9kdWN0GAEgASgLMhYuc3RpbGxob3VzZS52MS5Qcm9kdWN0Ii8KE0xpc3RQcm9kdWN0c1JlcXVlc3QSGAoQaW5jbHVkZV9hcmNoaXZlZBgBIAEoCCJAChRMaXN0UHJvZHVjdHNSZXNwb25zZRIoCghwcm9kdWN0cxgBIAMoCzIWLnN0aWxsaG91c2UudjEuUHJvZHVjdCIfChFHZXRQcm9kdWN0UmVxdWVzdBIKCgJpZBgBIAEoCSI9ChJHZXRQcm9kdWN0UmVzcG9uc2USJwoHcHJvZHVjdBgBIAEoCzIWLnN0aWxsaG91c2UudjEuUHJvZHVjdCI5ChlTZXRQcm9kdWN0QXJjaGl2ZWRSZXF1ZXN0EgoKAmlkGAEgASgJEhAKCGFyY2hpdmVkGAIgASgIIkUKGlNldFByb2R1Y3RBcmNoaXZlZFJlc3BvbnNlEicKB3Byb2R1Y3QYASABKAsyFi5zdGlsbGhvdXNlLnYxLlByb2R1Y3QizwIKF1VwZGF0ZVByb2R1Y3RTS1VSZXF1ZXN0EgoKAmlkGAEgASgJEgwKBGd0aW4YAiABKAkSEQoJY3NwY19jb2RlGAMgASgJEhgKEGJvdHRsZXNfcGVyX2Nhc2UYBCABKAUSFwoPY2FzZXNfcGVyX2xheWVyGAUgASgFEhkKEWxheWVyc19wZXJfcGFsbGV0GAYgASgFEhwKFGNhc2VfZ3Jvc3Nfd2VpZ2h0X2tnGAcgASgBEhMKC2NvbW1vbl9uYW1lGAggASgJEhUKDWFnZV9zdGF0ZW1lbnQYCSABKAkSGQoRY29udGFpbmVyX21hcmtpbmcYCiABKAkSGgoSYWxsZXJnZW5fc3RhdGVtZW50GAsgASgJEhkKEWNvdW50cnlfb2Zfb3JpZ2luGAwgASgJEh0KFW1hcmtldGluZ19kZXNjcmlwdGlvbhgNIAEoCSJDChhVcGRhdGVQcm9kdWN0U0tVUmVzcG9uc2USJwoHcHJvZHVjdBgBIAEoCzIWLnN0aWxsaG91c2UudjEuUHJvZHVjdDLEBAoOUHJvZHVjdFNlcnZpY2USYwoQVXBkYXRlUHJvZHVjdFNLVRImLnN0aWxsaG91c2UudjEuVXBkYXRlUHJvZHVjdFNLVVJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVByb2R1Y3RTS1VSZXNwb25zZRJaCg1DcmVhdGVQcm9kdWN0EiMuc3RpbGxob3VzZS52MS5DcmVhdGVQcm9kdWN0UmVxdWVzdBokLnN0aWxsaG91c2UudjEuQ3JlYXRlUHJvZHVjdFJlc3BvbnNlEloKDVVwZGF0ZVByb2R1Y3QSIy5zdGlsbGhvdXNlLnYxLlVwZGF0ZVByb2R1Y3RSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5VcGRhdGVQcm9kdWN0UmVzcG9uc2USVwoMTGlzdFByb2R1Y3RzEiIuc3RpbGxob3VzZS52MS5MaXN0UHJvZHVjdHNSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5MaXN0UHJvZHVjdHNSZXNwb25zZRJRCgpHZXRQcm9kdWN0EiAuc3RpbGxob3VzZS52MS5HZXRQcm9kdWN0UmVxdWVzdBohLnN0aWxsaG91c2UudjEuR2V0UHJvZHVjdFJlc3BvbnNlEmkKElNldFByb2R1Y3RBcmNoaXZlZBIoLnN0aWxsaG91c2UudjEuU2V0UHJvZHVjdEFyY2hpdmVkUmVxdWVzdBopLnN0aWxsaG91c2UudjEuU2V0UHJvZHVjdEFyY2hpdmVkUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_stillhouse_v1_recipe]);
 
 /**
  * @generated from message stillhouse.v1.Product
@@ -59,6 +59,90 @@ export type Product = Message<"stillhouse.v1.Product"> & {
    * @generated from field: bool archived = 8;
    */
   archived: boolean;
+
+  /**
+   * ----- trade identifiers -------------------------------------------
+   * GTIN-12/13/14. Text, because a leading zero is significant.
+   *
+   * @generated from field: string gtin = 11;
+   */
+  gtin: string;
+
+  /**
+   * The board's own number for this SKU. CSPC nationally; provincial
+   * boards issue their own.
+   *
+   * @generated from field: string cspc_code = 12;
+   */
+  cspcCode: string;
+
+  /**
+   * ----- case configuration ------------------------------------------
+   * Bottles per case is what a purchase order is written in; the rest is
+   * what a pallet is planned from. Zero means not recorded.
+   *
+   * @generated from field: int32 bottles_per_case = 13;
+   */
+  bottlesPerCase: number;
+
+  /**
+   * @generated from field: int32 cases_per_layer = 14;
+   */
+  casesPerLayer: number;
+
+  /**
+   * @generated from field: int32 layers_per_pallet = 15;
+   */
+  layersPerPallet: number;
+
+  /**
+   * @generated from field: double case_gross_weight_kg = 16;
+   */
+  caseGrossWeightKg: number;
+
+  /**
+   * ----- label content -----------------------------------------------
+   * The standard-of-identity name under Division 2 of the Food and Drug
+   * Regulations — "Canadian Whisky", "Gin". Deliberately separate from
+   * the SKU's marketing name and deliberately NOT derived from
+   * spirit_kind: whether a spirit qualifies is the licensee's
+   * declaration, and Stillhouse asserting it on their behalf would be
+   * putting words in their mouth on a label.
+   *
+   * @generated from field: string common_name = 17;
+   */
+  commonName: string;
+
+  /**
+   * The age statement, where one is made. Also the licensee's: the
+   * maturation clock knows how long a cask sat, and what a blend may
+   * claim is a different question.
+   *
+   * @generated from field: string age_statement = 18;
+   */
+  ageStatement: string;
+
+  /**
+   * What the container carries under Excise Act s.87 (EDM3-2-3).
+   *
+   * @generated from field: string container_marking = 19;
+   */
+  containerMarking: string;
+
+  /**
+   * @generated from field: string allergen_statement = 20;
+   */
+  allergenStatement: string;
+
+  /**
+   * @generated from field: string country_of_origin = 21;
+   */
+  countryOfOrigin: string;
+
+  /**
+   * @generated from field: string marketing_description = 22;
+   */
+  marketingDescription: string;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 9;
@@ -299,9 +383,111 @@ export const SetProductArchivedResponseSchema: GenMessage<SetProductArchivedResp
   messageDesc(file_stillhouse_v1_product, 10);
 
 /**
+ * @generated from message stillhouse.v1.UpdateProductSKURequest
+ */
+export type UpdateProductSKURequest = Message<"stillhouse.v1.UpdateProductSKURequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string gtin = 2;
+   */
+  gtin: string;
+
+  /**
+   * @generated from field: string cspc_code = 3;
+   */
+  cspcCode: string;
+
+  /**
+   * @generated from field: int32 bottles_per_case = 4;
+   */
+  bottlesPerCase: number;
+
+  /**
+   * @generated from field: int32 cases_per_layer = 5;
+   */
+  casesPerLayer: number;
+
+  /**
+   * @generated from field: int32 layers_per_pallet = 6;
+   */
+  layersPerPallet: number;
+
+  /**
+   * @generated from field: double case_gross_weight_kg = 7;
+   */
+  caseGrossWeightKg: number;
+
+  /**
+   * @generated from field: string common_name = 8;
+   */
+  commonName: string;
+
+  /**
+   * @generated from field: string age_statement = 9;
+   */
+  ageStatement: string;
+
+  /**
+   * @generated from field: string container_marking = 10;
+   */
+  containerMarking: string;
+
+  /**
+   * @generated from field: string allergen_statement = 11;
+   */
+  allergenStatement: string;
+
+  /**
+   * @generated from field: string country_of_origin = 12;
+   */
+  countryOfOrigin: string;
+
+  /**
+   * @generated from field: string marketing_description = 13;
+   */
+  marketingDescription: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.UpdateProductSKURequest.
+ * Use `create(UpdateProductSKURequestSchema)` to create a new message.
+ */
+export const UpdateProductSKURequestSchema: GenMessage<UpdateProductSKURequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_product, 11);
+
+/**
+ * @generated from message stillhouse.v1.UpdateProductSKUResponse
+ */
+export type UpdateProductSKUResponse = Message<"stillhouse.v1.UpdateProductSKUResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.Product product = 1;
+   */
+  product?: Product | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.UpdateProductSKUResponse.
+ * Use `create(UpdateProductSKUResponseSchema)` to create a new message.
+ */
+export const UpdateProductSKUResponseSchema: GenMessage<UpdateProductSKUResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_product, 12);
+
+/**
  * @generated from service stillhouse.v1.ProductService
  */
 export const ProductService: GenService<{
+  /**
+   * @generated from rpc stillhouse.v1.ProductService.UpdateProductSKU
+   */
+  updateProductSKU: {
+    methodKind: "unary";
+    input: typeof UpdateProductSKURequestSchema;
+    output: typeof UpdateProductSKUResponseSchema;
+  },
   /**
    * @generated from rpc stillhouse.v1.ProductService.CreateProduct
    */
