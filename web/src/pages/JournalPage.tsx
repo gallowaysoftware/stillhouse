@@ -97,11 +97,25 @@ export function JournalPage() {
                 className="rounded border border-border-strong px-3 py-2 text-sm"
               />
             </div>
+            {/* Two files with two audiences. The first is for a person:
+                both accounts on a row, warnings above the header. The
+                second is for QuickBooks or Xero — one row per side, no
+                comment rows, and it refuses rather than emitting a
+                partial journal, because half a journal reconciles to
+                within the missing half and nobody notices. */}
             <a
               href={`/export/journal.csv?from=${from}&to=${to}`}
-              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+              className="rounded border border-border-strong px-3 py-2 text-sm hover:bg-surface-3"
+              title="One row per event, with warnings. For reading."
             >
               Download CSV
+            </a>
+            <a
+              href={`/export/journal-entries.csv?from=${from}&to=${to}`}
+              className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover"
+              title="One row per side, no comment rows. For importing into QuickBooks Online or Xero. Refuses while any event is unmapped."
+            >
+              Download for QuickBooks / Xero
             </a>
           </div>
 

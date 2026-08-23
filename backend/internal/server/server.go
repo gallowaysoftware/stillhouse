@@ -213,6 +213,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	// The monthly close: duty payable, material in and out, cost of
 	// sales, as one CSV with its own caveats attached.
 	mux.Handle("/export/journal.csv", journalExportHandler(sm, tdb, logger))
+	mux.Handle("/export/journal-entries.csv", journalEntriesExportHandler(sm, tdb, logger))
 	// One bundle per reporting period: the figures as filed, the movements
 	// behind each line, the determinations and instruments behind each
 	// movement, and the trail.

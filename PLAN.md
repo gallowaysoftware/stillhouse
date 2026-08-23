@@ -176,16 +176,27 @@ rather than separate problems:
 
 ### G2 · QuickBooks Online sync — P1
 
-OAuth, chart-of-accounts mapping, invoices and bills pushed, payments pulled.
-Every competitor has it and it is the first question on every evaluation.
+Stage 203 shipped the file: importable journal entries, one row per side,
+refusing rather than emitting a partial journal. That covers both QBO and
+Xero, and for a distillery filing monthly it may well be the whole
+requirement — the note above turned out to be right that this was a
+transport rather than a design.
 
-Stage 161 shipped `G1` first, deliberately, and it may turn out to be enough:
-the account mapping and the event set it needs already exist, so this becomes
-a transport rather than a design.
+What is left is the *live* sync, and it is the part that cannot be
+written from here: an OAuth app registered with Intuit, its refresh-token
+handling, and the API's own idea of a journal entry. The same wall as
+G4's vendor adapters. Worth doing when somebody is running enough volume
+that a monthly file is a chore rather than a routine.
+
+Pulling payments back is a separate question and a larger one: it makes
+Stillhouse a reader of the accounting system rather than a writer to it,
+and the invoice ledger from stage 180 would need to reconcile against it.
 
 ### G3 · Xero sync — P2
 
-Same shape as `G2`. Second because QBO dominates in Canada.
+The file from stage 203 imports into Xero as it stands — same shape, same
+refusals. Only the live sync remains, and the same wall: an OAuth app,
+registered with Xero this time.
 
 ### G4 · POS and e-commerce ingest — P1
 
