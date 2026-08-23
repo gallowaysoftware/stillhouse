@@ -228,17 +228,16 @@ rather than a silent correction.
 
 ## Track F — planning and operations
 
-### F2 · Work orders and task assignment — P1
-
-Production activities assigned by role, user and due date, with status. What a
-second employee needs before the system is usable by a team rather than an
-owner.
-
 ### F3 · Production scheduling — P1
 
 Bottling and distillation scheduled from forecast and actual shipments, with a
 combined view of inventory, people and equipment. Historical run durations
 inform the estimate. Purtrak's most-cited operational feature.
+
+`F2` shipped in stage 171, so there is a board with dates and owners on it and
+work orders record when they actually started and finished — which is where the
+historical durations this needs will come from. What is missing is the
+forecast, the capacity model (`F4`), and the scheduling view itself.
 
 ### F4 · Equipment and still register — P2
 

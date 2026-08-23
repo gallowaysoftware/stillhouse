@@ -242,6 +242,10 @@ func alertKindToProto(k sqlcgen.AlertKind) stillhousev1.AlertKind {
 		return stillhousev1.AlertKind_ALERT_KIND_LICENCE_EXPIRED
 	case sqlcgen.AlertKindLicenceSecurityExpiring:
 		return stillhousev1.AlertKind_ALERT_KIND_LICENCE_SECURITY_EXPIRING
+	case sqlcgen.AlertKindWorkOrderOverdue:
+		return stillhousev1.AlertKind_ALERT_KIND_WORK_ORDER_OVERDUE
+	case sqlcgen.AlertKindWorkOrderUnassigned:
+		return stillhousev1.AlertKind_ALERT_KIND_WORK_ORDER_UNASSIGNED
 	}
 	return stillhousev1.AlertKind_ALERT_KIND_UNSPECIFIED
 }

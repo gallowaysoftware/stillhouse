@@ -1,0 +1,119 @@
+// What a second person needs.
+//
+// Stillhouse recorded what had happened and never what was going to.
+// That works for an owner-operator holding the plan in their head, and
+// stops working the day somebody else walks in — because "what should I
+// be doing" has no answer in the system.
+//
+// A work order is deliberately thin: an intention with a subject, an
+// owner and a date. Not a second copy of the production record. The
+// temptation is to have it hold quantities and reconcile them against
+// what happened, and that way there are two sources of truth for one
+// batch and the trusted one is whichever was typed into last.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/user.proto";
+
+enum WorkOrderKind {
+  WORK_ORDER_KIND_UNSPECIFIED = 0;
+  WORK_ORDER_KIND_MASH = 1;
+  WORK_ORDER_KIND_FERMENTATION = 2;
+  WORK_ORDER_KIND_DISTILLATION = 3;
+  WORK_ORDER_KIND_BOTTLING = 4;
+  WORK_ORDER_KIND_BARREL_FILL = 5;
+  WORK_ORDER_KIND_BARREL_DUMP = 6;
+  WORK_ORDER_KIND_REGAUGE = 7;
+  WORK_ORDER_KIND_CLEANING = 8;
+  WORK_ORDER_KIND_MAINTENANCE = 9;
+  WORK_ORDER_KIND_OTHER = 10;
+}
+
+enum WorkOrderStatus {
+  WORK_ORDER_STATUS_UNSPECIFIED = 0;
+  WORK_ORDER_STATUS_PLANNED = 1;
+  WORK_ORDER_STATUS_IN_PROGRESS = 2;
+  WORK_ORDER_STATUS_DONE = 3;
+  WORK_ORDER_STATUS_CANCELLED = 4;
+}
+
+message WorkOrder {
+  string id = 1;
+  int32  work_order_no = 2;
+  WorkOrderKind kind = 3;
+  WorkOrderStatus status = 4;
+  string title = 5;
+  string detail = 6;
+
+  // Who it is for. Empty is a real and common state — an unassigned job
+  // on the board is what planning a week looks like.
+  string assigned_to = 7;
+  string assigned_to_name = 8;
+  // Or a role, when it is "somebody who can operate the still" rather
+  // than a named person.
+  UserRole assigned_role = 9;
+
+  string location_id = 10;
+  string location_name = 11;
+  string scheduled_for = 12;  // ISO date
+  string due_on = 13;         // ISO date
+
+  // What it is about, when it is about something that already exists.
+  // At most one.
+  string container_id = 14;
+  string container_name = 15;
+  string product_id = 16;
+  string product_name = 17;
+  string recipe_id = 18;
+  string recipe_name = 19;
+
+  // What it produced. The link runs order → record, so the production
+  // tables know nothing about planning.
+  string mash_run_id = 20;
+  string distillation_run_id = 21;
+  string bottling_run_id = 22;
+
+  google.protobuf.Timestamp started_at = 23;
+  google.protobuf.Timestamp completed_at = 24;
+  string completed_by_name = 25;
+  string cancel_reason = 26;
+}
+
+message SaveWorkOrderRequest {
+  string id = 1;  // empty creates
+  WorkOrderKind kind = 2;
+  string title = 3;
+  string detail = 4;
+  string assigned_to = 5;
+  UserRole assigned_role = 6;
+  string location_id = 7;
+  string scheduled_for = 8;
+  string due_on = 9;
+  string container_id = 10;
+  string product_id = 11;
+  string recipe_id = 12;
+}
+message SaveWorkOrderResponse { WorkOrder work_order = 1; }
+
+message SetWorkOrderStatusRequest {
+  string id = 1;
+  WorkOrderStatus status = 2;
+  string cancel_reason = 3;
+}
+message SetWorkOrderStatusResponse { WorkOrder work_order = 1; }
+
+message ListWorkOrdersRequest {
+  bool open_only = 1;
+  // Empty for everyone's; "me" is the caller's own board.
+  string assigned_to = 2;
+  int32 limit = 3;  // 0 = 100
+}
+message ListWorkOrdersResponse { repeated WorkOrder work_orders = 1; }
+
+service WorkOrderService {
+  rpc SaveWorkOrder(SaveWorkOrderRequest) returns (SaveWorkOrderResponse);
+  rpc SetWorkOrderStatus(SetWorkOrderStatusRequest) returns (SetWorkOrderStatusResponse);
+  rpc ListWorkOrders(ListWorkOrdersRequest) returns (ListWorkOrdersResponse);
+}

@@ -123,6 +123,45 @@ func Evaluate(
 	}
 	out = append(out, licenceAlerts...)
 
+	workAlerts, err := evaluateWorkOrders(ctx, q, now)
+	if err != nil {
+		return nil, fmt.Errorf("work orders: %w", err)
+	}
+	out = append(out, workAlerts...)
+
+	return out, nil
+}
+
+// evaluateWorkOrders raises open work whose *due* date has passed.
+//
+// Deliberately not "scheduled for a day in the past". A job scheduled
+// Monday and done Tuesday is an ordinary week, and a system that shouts
+// about it is a system people mute — which would cost more than the
+// alert is worth, because the same channel carries the return deadline.
+// A missed due date is a commitment broken and is worth one line.
+func evaluateWorkOrders(ctx context.Context, q *sqlcgen.Queries, now time.Time) ([]Alert, error) {
+	rows, err := q.AlertOverdueWorkOrders(ctx, pgtype.Date{Valid: true, Time: now})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Alert, 0, len(rows))
+	for _, r := range rows {
+		days := int(now.Sub(r.DueOn.Time).Hours() / 24)
+		who := "nobody is assigned"
+		if r.AssignedToName != "" {
+			who = r.AssignedToName
+		}
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindWorkOrderOverdue,
+			Severity:   sqlcgen.AlertSeverityWarning,
+			SubjectKey: r.ID.String(),
+			Title:      fmt.Sprintf("Work order %d is overdue: %s", r.WorkOrderNo, r.Title),
+			Detail: fmt.Sprintf("Due %s, %d day%s ago — %s.",
+				r.DueOn.Time.Format("2006-01-02"), days, plural(days), who),
+			EntityType: "work_order",
+			EntityID:   uuid.NullUUID{UUID: r.ID, Valid: true},
+		})
+	}
 	return out, nil
 }
 

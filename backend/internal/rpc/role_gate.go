@@ -49,6 +49,14 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// WorkOrderService. Raising and moving work is an operator action —
+	// the whole point is that the person doing the job can pick it up and
+	// mark it done without asking the owner. Reading the board is a
+	// viewer one.
+	"/stillhouse.v1.WorkOrderService/ListWorkOrders":     roleViewer,
+	"/stillhouse.v1.WorkOrderService/SaveWorkOrder":      roleOperator,
+	"/stillhouse.v1.WorkOrderService/SetWorkOrderStatus": roleOperator,
+
 	// LocationService. Moving a cask between premises is an operator
 	// action — the person with the forklift is who knows. Defining what
 	// the premises *are* follows the licence, so it sits with the owner.

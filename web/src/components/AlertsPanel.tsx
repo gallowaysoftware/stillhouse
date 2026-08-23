@@ -143,6 +143,9 @@ function linkFor(a: Alert): string | null {
       return a.entityId ? `/fermentations/${a.entityId}` : "/fermentations";
     case AlertKind.BARREL_UNMEASURED:
       return a.entityId ? `/barrels/${a.entityId}` : "/barrels";
+    case AlertKind.WORK_ORDER_OVERDUE:
+    case AlertKind.WORK_ORDER_UNASSIGNED:
+      return "/work";
     case AlertKind.LICENCE_EXPIRING:
     case AlertKind.LICENCE_EXPIRED:
     case AlertKind.LICENCE_SECURITY_EXPIRING:

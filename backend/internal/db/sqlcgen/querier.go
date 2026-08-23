@@ -22,6 +22,11 @@ type Querier interface {
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	AddPurchaseOrderLine(ctx context.Context, arg AddPurchaseOrderLineParams) (PurchaseOrderLine, error)
+	// Open work whose due date has passed. Deliberately not "scheduled for
+	// the past": a job scheduled Monday and done Tuesday is normal, and a
+	// system that shouts about it gets muted. A missed *due* date is a
+	// commitment broken.
+	AlertOverdueWorkOrders(ctx context.Context, today pgtype.Date) ([]AlertOverdueWorkOrdersRow, error)
 	// A live fermentation whose most recent log is older than the cutoff.
 	// Both live statuses count: a ferment pitched three days ago with no
 	// readings at all is exactly as unattended as one that stopped being
@@ -148,6 +153,7 @@ type Querier interface {
 	CreateTOTPRecoveryCode(ctx context.Context, arg CreateTOTPRecoveryCodeParams) error
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateWorkOrder(ctx context.Context, arg CreateWorkOrderParams) (WorkOrder, error)
 	// What this buyer has actually taken. Voided removals are excluded —
 	// they were withdrawn, and counting them would overstate what left.
 	CustomerRemovalTotals(ctx context.Context, customerID uuid.NullUUID) (CustomerRemovalTotalsRow, error)
@@ -255,6 +261,7 @@ type Querier interface {
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserTOTP(ctx context.Context, userID uuid.UUID) (UserTotp, error)
+	GetWorkOrder(ctx context.Context, id uuid.UUID) (WorkOrder, error)
 	// Holding does NOT clear the release. A lot held after release is a
 	// recall in its early form, and erasing the fact that somebody released
 	// it would remove the most important part of that record.
@@ -298,6 +305,9 @@ type Querier interface {
 	// rather than a correlated subquery so listing the register is one query
 	// regardless of how many instruments a distillery holds.
 	LatestCalibrationsForInstruments(ctx context.Context) ([]InstrumentCalibration, error)
+	// Points a work order at what it produced. The link runs order → record,
+	// so the production tables know nothing about planning.
+	LinkWorkOrderOutput(ctx context.Context, arg LinkWorkOrderOutputParams) (WorkOrder, error)
 	ListAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
 	// Who hears about it. Viewers are excluded: an alert is a call to act,
 	// and someone who cannot act on anything should not be paged about it.
@@ -436,6 +446,7 @@ type Querier interface {
 	// distilleries under one address.
 	ListUsersByEmail(ctx context.Context, email string) ([]User, error)
 	ListUsersForTenant(ctx context.Context, tenantID uuid.UUID) ([]User, error)
+	ListWorkOrders(ctx context.Context, arg ListWorkOrdersParams) ([]ListWorkOrdersRow, error)
 	// Document-number allocation.
 	//
 	// Every `next_*_no` query below is `SELECT MAX(n) + 1` against a column
@@ -470,6 +481,7 @@ type Querier interface {
 	NextPurchaseOrderNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
 	NextRemovalNo(ctx context.Context) (int32, error)
+	NextWorkOrderNo(ctx context.Context) (int32, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	// Whether anything is still owed on this order, so the status can follow
 	// the lines rather than being set by hand.
@@ -550,6 +562,10 @@ type Querier interface {
 	// argument), so it cannot leak across pooled connections.
 	SetTenantContext(ctx context.Context, setConfig string) error
 	SetUserAlertEmail(ctx context.Context, arg SetUserAlertEmailParams) (User, error)
+	// started_at and completed_at are stamped by the transition rather than
+	// supplied, so "when did this actually start" is a fact rather than
+	// something somebody typed afterwards.
+	SetWorkOrderStatus(ctx context.Context, arg SetWorkOrderStatusParams) (WorkOrder, error)
 	// The acknowledgement is written in the same statement that sets the
 	// status, so a submitted period can never exist without one. The table's
 	// CHECK holds the other half of that guarantee for any path that is not
@@ -696,6 +712,7 @@ type Querier interface {
 	// is. The caller that still holds a live session (ChangeMyPassword)
 	// re-stamps its own session from the returned sessions_revoked_at.
 	UpdateUserPassword(ctx context.Context, arg UpdateUserPasswordParams) (User, error)
+	UpdateWorkOrder(ctx context.Context, arg UpdateWorkOrderParams) (WorkOrder, error)
 	// Idempotent by (tenant, kind, subject). An evaluation that finds the
 	// same condition still true bumps last_seen_at and refreshes the text —
 	// "four days of cover" becomes "two days of cover" without becoming a

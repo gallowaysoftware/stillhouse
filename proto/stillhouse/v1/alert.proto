@@ -21,6 +21,8 @@ enum AlertKind {
   ALERT_KIND_LICENCE_EXPIRING = 6;      // a held licence coming up for renewal
   ALERT_KIND_LICENCE_EXPIRED = 7;       // one that already lapsed
   ALERT_KIND_LICENCE_SECURITY_EXPIRING = 8;  // the s.23 security behind it
+  ALERT_KIND_WORK_ORDER_OVERDUE = 9;         // open work past its due date
+  ALERT_KIND_WORK_ORDER_UNASSIGNED = 10;     // due soon and nobody owns it
 }
 
 enum AlertSeverity {

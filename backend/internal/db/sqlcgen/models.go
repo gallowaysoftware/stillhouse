@@ -23,6 +23,8 @@ const (
 	AlertKindLicenceExpiring         AlertKind = "licence_expiring"
 	AlertKindLicenceExpired          AlertKind = "licence_expired"
 	AlertKindLicenceSecurityExpiring AlertKind = "licence_security_expiring"
+	AlertKindWorkOrderOverdue        AlertKind = "work_order_overdue"
+	AlertKindWorkOrderUnassigned     AlertKind = "work_order_unassigned"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -1469,6 +1471,100 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 	return string(ns.UserRole), nil
 }
 
+type WorkOrderKind string
+
+const (
+	WorkOrderKindMash         WorkOrderKind = "mash"
+	WorkOrderKindFermentation WorkOrderKind = "fermentation"
+	WorkOrderKindDistillation WorkOrderKind = "distillation"
+	WorkOrderKindBottling     WorkOrderKind = "bottling"
+	WorkOrderKindBarrelFill   WorkOrderKind = "barrel_fill"
+	WorkOrderKindBarrelDump   WorkOrderKind = "barrel_dump"
+	WorkOrderKindRegauge      WorkOrderKind = "regauge"
+	WorkOrderKindCleaning     WorkOrderKind = "cleaning"
+	WorkOrderKindMaintenance  WorkOrderKind = "maintenance"
+	WorkOrderKindOther        WorkOrderKind = "other"
+)
+
+func (e *WorkOrderKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WorkOrderKind(s)
+	case string:
+		*e = WorkOrderKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WorkOrderKind: %T", src)
+	}
+	return nil
+}
+
+type NullWorkOrderKind struct {
+	WorkOrderKind WorkOrderKind `json:"work_order_kind"`
+	Valid         bool          `json:"valid"` // Valid is true if WorkOrderKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWorkOrderKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.WorkOrderKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WorkOrderKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWorkOrderKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WorkOrderKind), nil
+}
+
+type WorkOrderStatus string
+
+const (
+	WorkOrderStatusPlanned    WorkOrderStatus = "planned"
+	WorkOrderStatusInProgress WorkOrderStatus = "in_progress"
+	WorkOrderStatusDone       WorkOrderStatus = "done"
+	WorkOrderStatusCancelled  WorkOrderStatus = "cancelled"
+)
+
+func (e *WorkOrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WorkOrderStatus(s)
+	case string:
+		*e = WorkOrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WorkOrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullWorkOrderStatus struct {
+	WorkOrderStatus WorkOrderStatus `json:"work_order_status"`
+	Valid           bool            `json:"valid"` // Valid is true if WorkOrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWorkOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.WorkOrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WorkOrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWorkOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WorkOrderStatus), nil
+}
+
 type Alert struct {
 	ID             uuid.UUID          `json:"id"`
 	TenantID       uuid.UUID          `json:"tenant_id"`
@@ -2310,4 +2406,32 @@ type UserTotpRecoveryCode struct {
 	UserID    uuid.UUID          `json:"user_id"`
 	UsedAt    pgtype.Timestamptz `json:"used_at"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type WorkOrder struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	WorkOrderNo       int32              `json:"work_order_no"`
+	Kind              WorkOrderKind      `json:"kind"`
+	Status            WorkOrderStatus    `json:"status"`
+	Title             string             `json:"title"`
+	Detail            string             `json:"detail"`
+	AssignedTo        uuid.NullUUID      `json:"assigned_to"`
+	AssignedRole      NullUserRole       `json:"assigned_role"`
+	LocationID        uuid.NullUUID      `json:"location_id"`
+	ScheduledFor      pgtype.Date        `json:"scheduled_for"`
+	DueOn             pgtype.Date        `json:"due_on"`
+	ContainerID       uuid.NullUUID      `json:"container_id"`
+	ProductID         uuid.NullUUID      `json:"product_id"`
+	RecipeID          uuid.NullUUID      `json:"recipe_id"`
+	MashRunID         uuid.NullUUID      `json:"mash_run_id"`
+	DistillationRunID uuid.NullUUID      `json:"distillation_run_id"`
+	BottlingRunID     uuid.NullUUID      `json:"bottling_run_id"`
+	StartedAt         pgtype.Timestamptz `json:"started_at"`
+	CompletedAt       pgtype.Timestamptz `json:"completed_at"`
+	CompletedBy       uuid.NullUUID      `json:"completed_by"`
+	CancelReason      string             `json:"cancel_reason"`
+	CreatedBy         uuid.UUID          `json:"created_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
 }
