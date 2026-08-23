@@ -170,6 +170,24 @@ message B266Report {
   int32  packaged_duty_paid_bottles = 46;
   double packaged_non_duty_paid_laa = 47;
   int32  packaged_non_duty_paid_bottles = 48;
+  // The third column of that line: packaged into marked special
+  // containers rather than into bottles. Empty until stage 182 there was
+  // nothing that could write it. Containers unmarked under s.156 are
+  // excluded — their contents went back to bulk, and a return that says
+  // they were packaged and nothing about their coming back is wrong in
+  // the direction that over-reports.
+  double packaged_marked_containers_laa = 78;
+  double packaged_marked_containers_litres = 79;
+  int32  packaged_marked_containers_count = 80;
+
+  // And what left in them. Reported on its own rather than folded into
+  // the bottle removals: a marked container is one object with a volume,
+  // not a bottle count, and the two are charged on lines that ask
+  // different questions.
+  double delivered_marked_containers_laa = 81;
+  double delivered_marked_containers_litres = 82;
+  int32  delivered_marked_containers_count = 83;
+  double delivered_marked_containers_duty_cad = 84;
 
   // Duty crystallised at packaging in this period, by strength band —
   // the mirror of the removal split above, charged on the same two units.

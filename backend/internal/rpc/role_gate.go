@@ -390,6 +390,19 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.InvoicingService/SaveTaxRate":       roleOwner,
 	"/stillhouse.v1.InvoicingService/DeleteTaxRate":     roleOwner,
 
+	// MarkedContainerService. Filling and marking a keg, delivering it,
+	// and unmarking one under s.156 are all things the person on the
+	// floor does — the same class of act as a bottling run or a removal,
+	// and gating them above the operator means they get typed later by
+	// somebody who was not there.
+	"/stillhouse.v1.MarkedContainerService/ListMarkedContainers":   roleViewer,
+	"/stillhouse.v1.MarkedContainerService/GetMarkedContainer":     roleViewer,
+	"/stillhouse.v1.MarkedContainerService/ListMarkedDeliveries":   roleViewer,
+	"/stillhouse.v1.MarkedContainerService/MarkContainer":          roleOperator,
+	"/stillhouse.v1.MarkedContainerService/DeliverMarkedContainer": roleOperator,
+	"/stillhouse.v1.MarkedContainerService/UnmarkContainer":        roleOperator,
+	"/stillhouse.v1.MarkedContainerService/VoidMarkedDelivery":     roleOperator,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

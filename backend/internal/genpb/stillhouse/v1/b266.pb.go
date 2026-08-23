@@ -472,6 +472,23 @@ type B266Report struct {
 	PackagedDutyPaidBottles    int32   `protobuf:"varint,46,opt,name=packaged_duty_paid_bottles,json=packagedDutyPaidBottles,proto3" json:"packaged_duty_paid_bottles,omitempty"`
 	PackagedNonDutyPaidLaa     float64 `protobuf:"fixed64,47,opt,name=packaged_non_duty_paid_laa,json=packagedNonDutyPaidLaa,proto3" json:"packaged_non_duty_paid_laa,omitempty"`
 	PackagedNonDutyPaidBottles int32   `protobuf:"varint,48,opt,name=packaged_non_duty_paid_bottles,json=packagedNonDutyPaidBottles,proto3" json:"packaged_non_duty_paid_bottles,omitempty"`
+	// The third column of that line: packaged into marked special
+	// containers rather than into bottles. Empty until stage 182 there was
+	// nothing that could write it. Containers unmarked under s.156 are
+	// excluded — their contents went back to bulk, and a return that says
+	// they were packaged and nothing about their coming back is wrong in
+	// the direction that over-reports.
+	PackagedMarkedContainersLaa    float64 `protobuf:"fixed64,78,opt,name=packaged_marked_containers_laa,json=packagedMarkedContainersLaa,proto3" json:"packaged_marked_containers_laa,omitempty"`
+	PackagedMarkedContainersLitres float64 `protobuf:"fixed64,79,opt,name=packaged_marked_containers_litres,json=packagedMarkedContainersLitres,proto3" json:"packaged_marked_containers_litres,omitempty"`
+	PackagedMarkedContainersCount  int32   `protobuf:"varint,80,opt,name=packaged_marked_containers_count,json=packagedMarkedContainersCount,proto3" json:"packaged_marked_containers_count,omitempty"`
+	// And what left in them. Reported on its own rather than folded into
+	// the bottle removals: a marked container is one object with a volume,
+	// not a bottle count, and the two are charged on lines that ask
+	// different questions.
+	DeliveredMarkedContainersLaa     float64 `protobuf:"fixed64,81,opt,name=delivered_marked_containers_laa,json=deliveredMarkedContainersLaa,proto3" json:"delivered_marked_containers_laa,omitempty"`
+	DeliveredMarkedContainersLitres  float64 `protobuf:"fixed64,82,opt,name=delivered_marked_containers_litres,json=deliveredMarkedContainersLitres,proto3" json:"delivered_marked_containers_litres,omitempty"`
+	DeliveredMarkedContainersCount   int32   `protobuf:"varint,83,opt,name=delivered_marked_containers_count,json=deliveredMarkedContainersCount,proto3" json:"delivered_marked_containers_count,omitempty"`
+	DeliveredMarkedContainersDutyCad float64 `protobuf:"fixed64,84,opt,name=delivered_marked_containers_duty_cad,json=deliveredMarkedContainersDutyCad,proto3" json:"delivered_marked_containers_duty_cad,omitempty"`
 	// Duty crystallised at packaging in this period, by strength band —
 	// the mirror of the removal split above, charged on the same two units.
 	PackagedDutiedOver7Laa      float64 `protobuf:"fixed64,52,opt,name=packaged_dutied_over7_laa,json=packagedDutiedOver7Laa,proto3" json:"packaged_dutied_over7_laa,omitempty"` // charged per LAA
@@ -906,6 +923,55 @@ func (x *B266Report) GetPackagedNonDutyPaidLaa() float64 {
 func (x *B266Report) GetPackagedNonDutyPaidBottles() int32 {
 	if x != nil {
 		return x.PackagedNonDutyPaidBottles
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedMarkedContainersLaa() float64 {
+	if x != nil {
+		return x.PackagedMarkedContainersLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedMarkedContainersLitres() float64 {
+	if x != nil {
+		return x.PackagedMarkedContainersLitres
+	}
+	return 0
+}
+
+func (x *B266Report) GetPackagedMarkedContainersCount() int32 {
+	if x != nil {
+		return x.PackagedMarkedContainersCount
+	}
+	return 0
+}
+
+func (x *B266Report) GetDeliveredMarkedContainersLaa() float64 {
+	if x != nil {
+		return x.DeliveredMarkedContainersLaa
+	}
+	return 0
+}
+
+func (x *B266Report) GetDeliveredMarkedContainersLitres() float64 {
+	if x != nil {
+		return x.DeliveredMarkedContainersLitres
+	}
+	return 0
+}
+
+func (x *B266Report) GetDeliveredMarkedContainersCount() int32 {
+	if x != nil {
+		return x.DeliveredMarkedContainersCount
+	}
+	return 0
+}
+
+func (x *B266Report) GetDeliveredMarkedContainersDutyCad() float64 {
+	if x != nil {
+		return x.DeliveredMarkedContainersDutyCad
 	}
 	return 0
 }
@@ -1593,7 +1659,7 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\n" +
 	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
 	"\x06due_on\x18\n" +
-	" \x01(\tR\x05dueOn\"\x8e\x1d\n" +
+	" \x01(\tR\x05dueOn\"\x96!\n" +
 	"\n" +
 	"B266Report\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
@@ -1652,7 +1718,14 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"\x16packaged_duty_paid_laa\x18- \x01(\x01R\x13packagedDutyPaidLaa\x12;\n" +
 	"\x1apackaged_duty_paid_bottles\x18. \x01(\x05R\x17packagedDutyPaidBottles\x12:\n" +
 	"\x1apackaged_non_duty_paid_laa\x18/ \x01(\x01R\x16packagedNonDutyPaidLaa\x12B\n" +
-	"\x1epackaged_non_duty_paid_bottles\x180 \x01(\x05R\x1apackagedNonDutyPaidBottles\x129\n" +
+	"\x1epackaged_non_duty_paid_bottles\x180 \x01(\x05R\x1apackagedNonDutyPaidBottles\x12C\n" +
+	"\x1epackaged_marked_containers_laa\x18N \x01(\x01R\x1bpackagedMarkedContainersLaa\x12I\n" +
+	"!packaged_marked_containers_litres\x18O \x01(\x01R\x1epackagedMarkedContainersLitres\x12G\n" +
+	" packaged_marked_containers_count\x18P \x01(\x05R\x1dpackagedMarkedContainersCount\x12E\n" +
+	"\x1fdelivered_marked_containers_laa\x18Q \x01(\x01R\x1cdeliveredMarkedContainersLaa\x12K\n" +
+	"\"delivered_marked_containers_litres\x18R \x01(\x01R\x1fdeliveredMarkedContainersLitres\x12I\n" +
+	"!delivered_marked_containers_count\x18S \x01(\x05R\x1edeliveredMarkedContainersCount\x12N\n" +
+	"$delivered_marked_containers_duty_cad\x18T \x01(\x01R deliveredMarkedContainersDutyCad\x129\n" +
 	"\x19packaged_dutied_over7_laa\x184 \x01(\x01R\x16packagedDutiedOver7Laa\x12B\n" +
 	"\x1epackaged_dutied_over7_duty_cad\x185 \x01(\x01R\x1apackagedDutiedOver7DutyCad\x12A\n" +
 	"\x1dpackaged_dutied_under7_litres\x186 \x01(\x01R\x1apackagedDutiedUnder7Litres\x12D\n" +

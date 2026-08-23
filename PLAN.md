@@ -51,12 +51,9 @@ Stage 146 gave EDM10-1-7 page 3 its bulk vocabulary — imports, receipts
 from and deliveries to other spirits licensees and licensed users,
 packaged spirits returned to bulk, denaturing to DA and SDA, exports, and
 bulk returned to production — along with the four lines that existed on
-the report but that nothing could ever write. What is left needs something
-else first:
+the report but that nothing could ever write. Stage 182 added the third
+column of the packaging split. What is left needs something else first:
 
-- **Spirits packaged in marked special containers**, on page 3 and as the
-  third column of the packaging split. Waits on `B3`: they are packaging,
-  not bulk, and need their own model.
 - **Page 1 line 6** — imported spirits delivered to licensed users, at the
   Schedule 5 special duty rate. Waits on that rate being sourced; see
   `A2`.
@@ -86,17 +83,6 @@ licensed users domestic/imported, other excise warehouses, export, returned to
 spirits licensee, breakage, other), duty-paid reductions (packaged, marked
 special containers, other), and the cross-form handoffs to B266 that ¶39
 specifies. `RemovalDestinationKind` already covers most of the reduction rows.
-
-### B3 · Marked special containers — P1
-
-EDM3-8-1. Containers 100–1,500 L marked for delivery to registered users or
-bottle-your-own premises. They are *packaging*, they have their own B266 and
-B262 lines, they can be unmarked and returned to bulk (s.156), and the keg
-channel is a live revenue line for craft distillers. Currently unrepresentable.
-
-Stage 143 split B266's packaging figures by duty treatment (duty-paid against
-non-duty-paid); the third column on that line — *packaged in marked special
-containers* — waits on this item.
 
 ### B4 · B263 — licensed user return — P2
 

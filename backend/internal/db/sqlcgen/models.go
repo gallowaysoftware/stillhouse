@@ -1191,6 +1191,50 @@ func (ns NullLossDutyTreatment) Value() (driver.Value, error) {
 	return string(ns.LossDutyTreatment), nil
 }
 
+type MarkedContainerStatus string
+
+const (
+	MarkedContainerStatusMarked    MarkedContainerStatus = "marked"
+	MarkedContainerStatusDelivered MarkedContainerStatus = "delivered"
+	MarkedContainerStatusUnmarked  MarkedContainerStatus = "unmarked"
+	MarkedContainerStatusDestroyed MarkedContainerStatus = "destroyed"
+)
+
+func (e *MarkedContainerStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = MarkedContainerStatus(s)
+	case string:
+		*e = MarkedContainerStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for MarkedContainerStatus: %T", src)
+	}
+	return nil
+}
+
+type NullMarkedContainerStatus struct {
+	MarkedContainerStatus MarkedContainerStatus `json:"marked_container_status"`
+	Valid                 bool                  `json:"valid"` // Valid is true if MarkedContainerStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullMarkedContainerStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.MarkedContainerStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.MarkedContainerStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullMarkedContainerStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.MarkedContainerStatus), nil
+}
+
 type MashMetricKind string
 
 const (
@@ -2507,6 +2551,55 @@ type Location struct {
 	ArchivedAt      pgtype.Timestamptz `json:"archived_at"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+}
+
+type MarkedContainerDelivery struct {
+	ID              uuid.UUID          `json:"id"`
+	TenantID        uuid.UUID          `json:"tenant_id"`
+	DeliveryNo      int32              `json:"delivery_no"`
+	ContainerID     uuid.UUID          `json:"container_id"`
+	DeliveryDate    pgtype.Date        `json:"delivery_date"`
+	CustomerID      uuid.NullUUID      `json:"customer_id"`
+	DestinationName string             `json:"destination_name"`
+	Reference       string             `json:"reference"`
+	VolumeL         float64            `json:"volume_l"`
+	AbvPct          float64            `json:"abv_pct"`
+	Laa             float64            `json:"laa"`
+	DutyRatePerLaa  float64            `json:"duty_rate_per_laa"`
+	DutyAmountCad   float64            `json:"duty_amount_cad"`
+	Notes           string             `json:"notes"`
+	VoidedAt        pgtype.Timestamptz `json:"voided_at"`
+	VoidReason      string             `json:"void_reason"`
+	CreatedBy       uuid.UUID          `json:"created_by"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type MarkedSpecialContainer struct {
+	ID                uuid.UUID             `json:"id"`
+	TenantID          uuid.UUID             `json:"tenant_id"`
+	ContainerNo       int32                 `json:"container_no"`
+	Mark              string                `json:"mark"`
+	CapacityL         float64               `json:"capacity_l"`
+	ProductID         uuid.NullUUID         `json:"product_id"`
+	Description       string                `json:"description"`
+	Status            MarkedContainerStatus `json:"status"`
+	SourceContainerID uuid.UUID             `json:"source_container_id"`
+	VolumeL           float64               `json:"volume_l"`
+	AbvPct            float64               `json:"abv_pct"`
+	Laa               float64               `json:"laa"`
+	FilledOn          pgtype.Date           `json:"filled_on"`
+	FilledBy          uuid.NullUUID         `json:"filled_by"`
+	BulkMovementID    uuid.NullUUID         `json:"bulk_movement_id"`
+	DutyRatePerLaa    pgtype.Float8         `json:"duty_rate_per_laa"`
+	DutyAmountCad     pgtype.Float8         `json:"duty_amount_cad"`
+	DutyRateSource    string                `json:"duty_rate_source"`
+	Notes             string                `json:"notes"`
+	UnmarkedOn        pgtype.Date           `json:"unmarked_on"`
+	UnmarkedReason    string                `json:"unmarked_reason"`
+	UnmarkMovementID  uuid.NullUUID         `json:"unmark_movement_id"`
+	CreatedBy         uuid.UUID             `json:"created_by"`
+	CreatedAt         pgtype.Timestamptz    `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz    `json:"updated_at"`
 }
 
 type MashIngredientUsage struct {

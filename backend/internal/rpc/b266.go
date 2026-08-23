@@ -426,12 +426,36 @@ func gatherB266Totals(
 	// What that balance is made of. Current facts, deliberately not walked
 	// back: ownership and possession have no ledger behind them yet, so a
 	// walk would be a fiction, and the screens label these as current.
-	if split, se := q.BulkOwnershipSplitAsOf(ctx); se == nil {
-		t.heldForOthersLAA = split.HeldForOthersLaa
-		t.heldElsewhereLAA = split.HeldElsewhereLaa
-		t.thirdPartyElsewhereLAA = split.ThirdPartyElsewhereLaa
-	} else {
+	split, se := q.BulkOwnershipSplitAsOf(ctx)
+	if se != nil {
 		return t, se
+	}
+	t.heldForOthersLAA = split.HeldForOthersLaa
+	t.heldElsewhereLAA = split.HeldElsewhereLaa
+	t.thirdPartyElsewhereLAA = split.ThirdPartyElsewhereLaa
+	// Marked special containers, the third column of the packaging split.
+	markStart := pgtype.Date{Valid: true, Time: periodStart}
+	markEnd := pgtype.Date{Valid: true, Time: queryEnd}
+	if m, me := q.SumMarkedContainersPackagedInPeriod(ctx,
+		sqlcgen.SumMarkedContainersPackagedInPeriodParams{
+			PeriodStart: markStart, PeriodEnd: markEnd,
+		}); me == nil {
+		t.markedPackagedLAA = m.TotalLaa
+		t.markedPackagedLitres = m.TotalLitres
+		t.markedPackagedCount = m.ContainerCount
+	} else {
+		return t, me
+	}
+	if d, de := q.SumMarkedDeliveriesInPeriod(ctx,
+		sqlcgen.SumMarkedDeliveriesInPeriodParams{
+			PeriodStart: markStart, PeriodEnd: markEnd,
+		}); de == nil {
+		t.markedDeliveredLAA = d.TotalLaa
+		t.markedDeliveredLitres = d.TotalLitres
+		t.markedDeliveredCount = d.DeliveryCount
+		t.markedDeliveredDuty = d.DutyCad
+	} else {
+		return t, de
 	}
 	packaged, err := q.SumPackagedOnHandAsOf(ctx, pgtype.Date{Valid: true, Time: queryEnd})
 	if err != nil {

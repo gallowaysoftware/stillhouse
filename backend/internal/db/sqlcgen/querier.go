@@ -169,6 +169,8 @@ type Querier interface {
 	CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error)
 	CreateLabResult(ctx context.Context, arg CreateLabResultParams) (LabResult, error)
 	CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error)
+	CreateMarkedContainer(ctx context.Context, arg CreateMarkedContainerParams) (MarkedSpecialContainer, error)
+	CreateMarkedDelivery(ctx context.Context, arg CreateMarkedDeliveryParams) (MarkedContainerDelivery, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
@@ -308,6 +310,8 @@ type Querier interface {
 	GetInvoiceForUpdate(ctx context.Context, id uuid.UUID) (Invoice, error)
 	GetInvoiceLineOwner(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	GetLocation(ctx context.Context, id uuid.UUID) (Location, error)
+	GetMarkedContainer(ctx context.Context, id uuid.UUID) (GetMarkedContainerRow, error)
+	GetMarkedContainerForUpdate(ctx context.Context, id uuid.UUID) (MarkedSpecialContainer, error)
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error)
@@ -492,6 +496,8 @@ type Querier interface {
 	// factored into a view so that adding a reason to it is a deliberate edit
 	// somebody reads, not a silent inheritance.
 	ListLosses(ctx context.Context, arg ListLossesParams) ([]ListLossesRow, error)
+	ListMarkedContainers(ctx context.Context, onHandOnly bool) ([]ListMarkedContainersRow, error)
+	ListMarkedDeliveries(ctx context.Context) ([]ListMarkedDeliveriesRow, error)
 	ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error)
 	ListMashMetrics(ctx context.Context, mashRunID uuid.UUID) ([]MashMetric, error)
 	ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]ListMashRunsRow, error)
@@ -591,6 +597,8 @@ type Querier interface {
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)
+	NextMarkedContainerNo(ctx context.Context) (int32, error)
+	NextMarkedDeliveryNo(ctx context.Context) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)
 	NextPurchaseOrderNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
@@ -708,6 +716,11 @@ type Querier interface {
 	SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error)
 	SetInstrumentStatus(ctx context.Context, arg SetInstrumentStatusParams) (Instrument, error)
 	SetInvoicePaymentStatus(ctx context.Context, arg SetInvoicePaymentStatusParams) (Invoice, error)
+	SetMarkedContainerStatus(ctx context.Context, arg SetMarkedContainerStatusParams) (MarkedSpecialContainer, error)
+	// Unconditional, unlike SetMarkedContainerStatus, which only advances a
+	// container that is still on the premises. Voiding a delivery has to be
+	// able to bring one back.
+	SetMarkedContainerStatusForce(ctx context.Context, arg SetMarkedContainerStatusForceParams) (MarkedSpecialContainer, error)
 	// Charges often arrive after the goods — a freight invoice a week later.
 	// Setting them updates the landed cost of a lot already on the shelf,
 	// which is correct: the cost of getting it here did not change, only
@@ -876,6 +889,13 @@ type Querier interface {
 	// not part of the losses total, and counting it in both places would
 	// overstate what left the warehouse.
 	SumLossesByTreatmentInPeriod(ctx context.Context, arg SumLossesByTreatmentInPeriodParams) (SumLossesByTreatmentInPeriodRow, error)
+	// The third column of the B266 packaging split: what was packaged into
+	// marked special containers rather than into bottles. Unmarked containers
+	// are excluded — under s.156 their contents went back to bulk, and the
+	// return should not say they were packaged and then say nothing about
+	// their coming back.
+	SumMarkedContainersPackagedInPeriod(ctx context.Context, arg SumMarkedContainersPackagedInPeriodParams) (SumMarkedContainersPackagedInPeriodRow, error)
+	SumMarkedDeliveriesInPeriod(ctx context.Context, arg SumMarkedDeliveriesInPeriodParams) (SumMarkedDeliveriesInPeriodRow, error)
 	// Packaged LAA and bottles on hand as at a moment. Same reverse walk as
 	// SumBulkOnHandAsOf and for the same reason: packaged inventory only ever
 	// receives bottling runs and only ever loses removals, so undoing both back
@@ -909,6 +929,9 @@ type Querier interface {
 	// path, which likewise has no tenant context to offer.
 	TouchAPIToken(ctx context.Context, tokenHash []byte) error
 	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
+	// s.156: unmarked, and its contents returned to bulk. A movement in the
+	// ledger, not a correction — the alcohol really did go back.
+	UnmarkMarkedContainer(ctx context.Context, arg UnmarkMarkedContainerParams) (MarkedSpecialContainer, error)
 	UpdateBulkContainer(ctx context.Context, arg UpdateBulkContainerParams) (BulkContainer, error)
 	UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulkContainerBalanceParams) (BulkContainer, error)
 	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) (Customer, error)
@@ -992,6 +1015,7 @@ type Querier interface {
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)
 	VoidInvoice(ctx context.Context, arg VoidInvoiceParams) (Invoice, error)
+	VoidMarkedDelivery(ctx context.Context, arg VoidMarkedDeliveryParams) (MarkedContainerDelivery, error)
 	VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error)
 }
 

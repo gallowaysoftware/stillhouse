@@ -90,6 +90,10 @@ var exportTables = []string{
 	"bottling_runs",
 	"bottling_run_stamp_usage",
 	"packaged_inventory",
+	// Packaging that is not bottles: EDM3-8-1 marked special containers,
+	// and where each went.
+	"marked_special_containers",
+	"marked_container_deliveries",
 	"lab_results",
 	"customers",
 	"price_lists",

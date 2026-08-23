@@ -445,6 +445,24 @@ function ReportView({
               dim
             />
           )}
+          {/* The third column of the packaging line. Counted in
+              containers rather than bottles, because that is what one
+              is — and containers unmarked under s.156 are already out of
+              this figure, their contents having gone back to bulk. */}
+          {report.packagedMarkedContainersCount > 0 && (
+            <Row
+              k="  of which marked special containers"
+              v={`${formatLAA(report.packagedMarkedContainersLaa)} (${report.packagedMarkedContainersCount} container${report.packagedMarkedContainersCount === 1 ? "" : "s"})`}
+              dim
+            />
+          )}
+          {report.deliveredMarkedContainersCount > 0 && (
+            <Row
+              k="Delivered in marked special containers"
+              v={`${formatLAA(report.deliveredMarkedContainersLaa)} (${report.deliveredMarkedContainersCount} container${report.deliveredMarkedContainersCount === 1 ? "" : "s"})`}
+              dim
+            />
+          )}
           <Row k="Removed duty-paid"      v={`${formatLAA(report.packagedRemovedDutyPaidLaa)} (${report.packagedRemovedDutyPaidBottles.toLocaleString()} bottles)`} dim />
           <Row k="Closing on hand"        v={`${formatLAA(report.packagedClosingLaa)} (${report.packagedClosingBottles.toLocaleString()} bottles)`} bold />
         </Card>

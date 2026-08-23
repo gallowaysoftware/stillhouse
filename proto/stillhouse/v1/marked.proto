@@ -1,0 +1,187 @@
+// Marked special containers.
+//
+// EDM3-8-1: a container of 100 to 1,500 litres, marked rather than
+// stamped, for delivery to a registered user or to bottle-your-own
+// premises. They are packaging — the alcohol has left bulk — and they
+// have their own lines on the B266 and the B262. Stage 143 split the
+// packaging figures by duty treatment and left the third column of that
+// line, "packaged in marked special containers", with nothing that could
+// write it.
+//
+// What Stillhouse does not do is decide what the mark has to say. The
+// marking requirements are EDM3-8-1's and are the licensee's to satisfy;
+// the field records what was applied so an auditor can see it, and
+// nothing is generated. No excise stamp is drawn either: these are
+// marked, which is the whole distinction, and a licensee whose
+// circumstances differ will see that no stamp was consumed rather than
+// discovering a silent one.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/alcoholometry.proto";
+import "stillhouse/v1/instrument.proto";
+
+enum MarkedContainerStatus {
+  MARKED_CONTAINER_STATUS_UNSPECIFIED = 0;
+  // Filled and marked, on the premises.
+  MARKED_CONTAINER_STATUS_MARKED = 1;
+  // Gone to a registered user or bottle-your-own premises.
+  MARKED_CONTAINER_STATUS_DELIVERED = 2;
+  // Unmarked under s.156, contents returned to bulk.
+  MARKED_CONTAINER_STATUS_UNMARKED = 3;
+  MARKED_CONTAINER_STATUS_DESTROYED = 4;
+}
+
+message MarkedContainer {
+  string id = 1;
+  int32  container_no = 2;
+  // What was actually marked on it.
+  string mark = 3;
+  double capacity_l = 4;
+  string product_id = 5;
+  string product_name = 6;
+  string description = 7;
+  MarkedContainerStatus status = 8;
+
+  string source_container_id = 9;
+  string source_container_name = 10;
+  double volume_l = 11;
+  double abv_pct = 12;
+  double laa = 13;
+  string filled_on = 14;      // ISO date
+
+  // Duty crystallised at the fill, when the licensee's duty point is at
+  // packaging. duty_set is false when this was not a duty event, which is
+  // a different statement from duty of zero.
+  bool   duty_set = 15;
+  double duty_rate_per_laa = 16;
+  double duty_amount_cad = 17;
+  string duty_rate_source = 18;
+
+  string notes = 19;
+  string unmarked_on = 20;
+  string unmarked_reason = 21;
+  google.protobuf.Timestamp created_at = 22;
+}
+
+message MarkContainerRequest {
+  // The mark applied to the container. Required — an unmarked container
+  // is not a marked special container.
+  string mark = 1;
+  // Must be between 100 and 1,500 litres, which is what makes it one.
+  double capacity_l = 2;
+  string product_id = 3;      // optional
+  string description = 4;
+
+  // Drawn from bulk. Filling is a packaging act and the bulk side sees
+  // it leave, exactly as a bottling run does.
+  string source_container_id = 5;
+  string filled_on = 6;       // ISO date; empty = today
+
+  // The gauge, in the shape every gauging call takes.
+  double volume_l = 7;
+  double density_kg_m3 = 8;
+  bool   density_kg_m3_set = 9;
+  double abv_pct = 10;
+  double temperature_c = 11;
+  bool   temperature_c_set = 12;
+  InstrumentRefs instruments = 13;
+
+  string notes = 14;
+}
+message MarkContainerResponse {
+  MarkedContainer container = 1;
+  // How the strength was arrived at: from a hydrometer indication, from a
+  // volume correction only, or uncorrected. Never absent — a figure with
+  // no stated determination is the thing the gauging paths exist to
+  // prevent.
+  StrengthSource strength_source = 2;
+  double strength_pct_20c = 3;
+  double volume_l_20c = 4;
+  repeated string warnings = 5;
+}
+
+message ListMarkedContainersRequest {
+  // Only those still on the premises.
+  bool on_hand_only = 1;
+}
+message ListMarkedContainersResponse {
+  repeated MarkedContainer containers = 1;
+  double on_hand_laa = 2;
+  int32  on_hand_count = 3;
+}
+
+message GetMarkedContainerRequest { string id = 1; }
+message GetMarkedContainerResponse { MarkedContainer container = 1; }
+
+// s.156: unmarked, and its contents returned to bulk. A movement in the
+// ledger, not a correction — the alcohol really did go back.
+message UnmarkContainerRequest {
+  string id = 1;
+  // Where the contents go back to. May differ from where they came from.
+  string destination_container_id = 2;
+  string unmarked_on = 3;     // ISO date; empty = today
+  string reason = 4;          // required
+}
+message UnmarkContainerResponse {
+  MarkedContainer container = 1;
+  double returned_laa = 2;
+}
+
+message MarkedDelivery {
+  string id = 1;
+  int32  delivery_no = 2;
+  string container_id = 3;
+  int32  container_no = 4;
+  string mark = 5;
+  string delivery_date = 6;   // ISO date
+  string customer_id = 7;
+  string customer_name = 8;
+  string destination_name = 9;
+  string reference = 10;
+  double volume_l = 11;
+  double abv_pct = 12;
+  double laa = 13;
+  double duty_rate_per_laa = 14;
+  double duty_amount_cad = 15;
+  string notes = 16;
+}
+
+message DeliverMarkedContainerRequest {
+  string container_id = 1;
+  // Who it went to. Naming a customer takes the classification from
+  // them, for the same reason a removal does.
+  string customer_id = 2;
+  string destination_name = 3;
+  string delivery_date = 4;   // ISO date; empty = today
+  string reference = 5;
+  string notes = 6;
+}
+message DeliverMarkedContainerResponse {
+  MarkedDelivery delivery = 1;
+  MarkedContainer container = 2;
+  // Duty this delivery crystallised. Zero when it was taken at the fill,
+  // which is a fact about the duty point rather than an omission.
+  double duty_cad = 3;
+}
+
+message ListMarkedDeliveriesRequest {}
+message ListMarkedDeliveriesResponse { repeated MarkedDelivery deliveries = 1; }
+
+message VoidMarkedDeliveryRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidMarkedDeliveryResponse { MarkedDelivery delivery = 1; }
+
+service MarkedContainerService {
+  rpc MarkContainer(MarkContainerRequest) returns (MarkContainerResponse);
+  rpc ListMarkedContainers(ListMarkedContainersRequest) returns (ListMarkedContainersResponse);
+  rpc GetMarkedContainer(GetMarkedContainerRequest) returns (GetMarkedContainerResponse);
+  rpc UnmarkContainer(UnmarkContainerRequest) returns (UnmarkContainerResponse);
+  rpc DeliverMarkedContainer(DeliverMarkedContainerRequest) returns (DeliverMarkedContainerResponse);
+  rpc ListMarkedDeliveries(ListMarkedDeliveriesRequest) returns (ListMarkedDeliveriesResponse);
+  rpc VoidMarkedDelivery(VoidMarkedDeliveryRequest) returns (VoidMarkedDeliveryResponse);
+}

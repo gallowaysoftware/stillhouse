@@ -39,8 +39,18 @@ type b266Totals struct {
 	heldForOthersLAA       float64
 	heldElsewhereLAA       float64
 	thirdPartyElsewhereLAA float64
-	packagedClosingLAA     float64
-	packagedClosingBottle  int32
+
+	// Marked special containers: the third column of the packaging split,
+	// and what left in them.
+	markedPackagedLAA     float64
+	markedPackagedLitres  float64
+	markedPackagedCount   int32
+	markedDeliveredLAA    float64
+	markedDeliveredLitres float64
+	markedDeliveredCount  int32
+	markedDeliveredDuty   float64
+	packagedClosingLAA    float64
+	packagedClosingBottle int32
 
 	// Bottling runs in the period, voided runs excluded.
 	//
@@ -137,17 +147,24 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		PeriodStart: periodStart.Format("2006-01-02"),
 		PeriodEnd:   periodEnd.Format("2006-01-02"),
 
-		BulkProductionLaa:             t.laa("production_gauge"),
-		BulkReceivedInBondLaa:         t.laa("transfer_in_bond"),
-		BulkBlendInLaa:                t.laa("blend"),
-		BulkTransferredToPackagingLaa: t.laa("transfer_to_packaging"),
-		BulkTransferredOutInBondLaa:   t.laa("transfer_out_in_bond"),
-		BulkLossesLaa:                 t.laa("loss_evaporation") + t.laa("loss_unaccounted"),
-		BulkDestroyedLaa:              t.laa("destruction"),
-		BulkClosingLaa:                round4(t.bulkClosingLAA),
-		BulkClosingHeldForOthersLaa:   round4(t.heldForOthersLAA),
-		BulkHeldElsewhereLaa:          round4(t.heldElsewhereLAA),
-		BulkThirdPartyElsewhereLaa:    round4(t.thirdPartyElsewhereLAA),
+		BulkProductionLaa:                t.laa("production_gauge"),
+		BulkReceivedInBondLaa:            t.laa("transfer_in_bond"),
+		BulkBlendInLaa:                   t.laa("blend"),
+		BulkTransferredToPackagingLaa:    t.laa("transfer_to_packaging"),
+		BulkTransferredOutInBondLaa:      t.laa("transfer_out_in_bond"),
+		BulkLossesLaa:                    t.laa("loss_evaporation") + t.laa("loss_unaccounted"),
+		BulkDestroyedLaa:                 t.laa("destruction"),
+		BulkClosingLaa:                   round4(t.bulkClosingLAA),
+		BulkClosingHeldForOthersLaa:      round4(t.heldForOthersLAA),
+		BulkHeldElsewhereLaa:             round4(t.heldElsewhereLAA),
+		BulkThirdPartyElsewhereLaa:       round4(t.thirdPartyElsewhereLAA),
+		PackagedMarkedContainersLaa:      round4(t.markedPackagedLAA),
+		PackagedMarkedContainersLitres:   round4(t.markedPackagedLitres),
+		PackagedMarkedContainersCount:    t.markedPackagedCount,
+		DeliveredMarkedContainersLaa:     round4(t.markedDeliveredLAA),
+		DeliveredMarkedContainersLitres:  round4(t.markedDeliveredLitres),
+		DeliveredMarkedContainersCount:   t.markedDeliveredCount,
+		DeliveredMarkedContainersDutyCad: round2(t.markedDeliveredDuty),
 		// Adopted stock is reported but deliberately NOT counted among the
 		// receipts below, so the reverse-walk puts it in the opening
 		// balance. It was in the warehouse before the period; only the
