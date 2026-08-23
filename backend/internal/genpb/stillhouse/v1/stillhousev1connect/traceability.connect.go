@@ -41,11 +41,17 @@ const (
 	// TraceabilityServiceTraceBottlingRunProcedure is the fully-qualified name of the
 	// TraceabilityService's TraceBottlingRun RPC.
 	TraceabilityServiceTraceBottlingRunProcedure = "/stillhouse.v1.TraceabilityService/TraceBottlingRun"
+	// TraceabilityServiceSimulateRecallProcedure is the fully-qualified name of the
+	// TraceabilityService's SimulateRecall RPC.
+	TraceabilityServiceSimulateRecallProcedure = "/stillhouse.v1.TraceabilityService/SimulateRecall"
 )
 
 // TraceabilityServiceClient is a client for the stillhouse.v1.TraceabilityService service.
 type TraceabilityServiceClient interface {
 	TraceBottlingRun(context.Context, *connect.Request[v1.TraceBottlingRunRequest]) (*connect.Response[v1.TraceBottlingRunResponse], error)
+	// Forward from a material lot to everything that might carry it and
+	// everyone who received it. Read-only; it simulates, it does not act.
+	SimulateRecall(context.Context, *connect.Request[v1.SimulateRecallRequest]) (*connect.Response[v1.SimulateRecallResponse], error)
 }
 
 // NewTraceabilityServiceClient constructs a client for the stillhouse.v1.TraceabilityService
@@ -65,12 +71,19 @@ func NewTraceabilityServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(traceabilityServiceMethods.ByName("TraceBottlingRun")),
 			connect.WithClientOptions(opts...),
 		),
+		simulateRecall: connect.NewClient[v1.SimulateRecallRequest, v1.SimulateRecallResponse](
+			httpClient,
+			baseURL+TraceabilityServiceSimulateRecallProcedure,
+			connect.WithSchema(traceabilityServiceMethods.ByName("SimulateRecall")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // traceabilityServiceClient implements TraceabilityServiceClient.
 type traceabilityServiceClient struct {
 	traceBottlingRun *connect.Client[v1.TraceBottlingRunRequest, v1.TraceBottlingRunResponse]
+	simulateRecall   *connect.Client[v1.SimulateRecallRequest, v1.SimulateRecallResponse]
 }
 
 // TraceBottlingRun calls stillhouse.v1.TraceabilityService.TraceBottlingRun.
@@ -78,9 +91,17 @@ func (c *traceabilityServiceClient) TraceBottlingRun(ctx context.Context, req *c
 	return c.traceBottlingRun.CallUnary(ctx, req)
 }
 
+// SimulateRecall calls stillhouse.v1.TraceabilityService.SimulateRecall.
+func (c *traceabilityServiceClient) SimulateRecall(ctx context.Context, req *connect.Request[v1.SimulateRecallRequest]) (*connect.Response[v1.SimulateRecallResponse], error) {
+	return c.simulateRecall.CallUnary(ctx, req)
+}
+
 // TraceabilityServiceHandler is an implementation of the stillhouse.v1.TraceabilityService service.
 type TraceabilityServiceHandler interface {
 	TraceBottlingRun(context.Context, *connect.Request[v1.TraceBottlingRunRequest]) (*connect.Response[v1.TraceBottlingRunResponse], error)
+	// Forward from a material lot to everything that might carry it and
+	// everyone who received it. Read-only; it simulates, it does not act.
+	SimulateRecall(context.Context, *connect.Request[v1.SimulateRecallRequest]) (*connect.Response[v1.SimulateRecallResponse], error)
 }
 
 // NewTraceabilityServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -96,10 +117,18 @@ func NewTraceabilityServiceHandler(svc TraceabilityServiceHandler, opts ...conne
 		connect.WithSchema(traceabilityServiceMethods.ByName("TraceBottlingRun")),
 		connect.WithHandlerOptions(opts...),
 	)
+	traceabilityServiceSimulateRecallHandler := connect.NewUnaryHandler(
+		TraceabilityServiceSimulateRecallProcedure,
+		svc.SimulateRecall,
+		connect.WithSchema(traceabilityServiceMethods.ByName("SimulateRecall")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.TraceabilityService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TraceabilityServiceTraceBottlingRunProcedure:
 			traceabilityServiceTraceBottlingRunHandler.ServeHTTP(w, r)
+		case TraceabilityServiceSimulateRecallProcedure:
+			traceabilityServiceSimulateRecallHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -111,4 +140,8 @@ type UnimplementedTraceabilityServiceHandler struct{}
 
 func (UnimplementedTraceabilityServiceHandler) TraceBottlingRun(context.Context, *connect.Request[v1.TraceBottlingRunRequest]) (*connect.Response[v1.TraceBottlingRunResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TraceabilityService.TraceBottlingRun is not implemented"))
+}
+
+func (UnimplementedTraceabilityServiceHandler) SimulateRecall(context.Context, *connect.Request[v1.SimulateRecallRequest]) (*connect.Response[v1.SimulateRecallResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TraceabilityService.SimulateRecall is not implemented"))
 }

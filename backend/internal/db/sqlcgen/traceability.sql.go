@@ -256,3 +256,264 @@ func (q *Queries) DistillationChainFromGauge(ctx context.Context, bulkMovementID
 	}
 	return items, nil
 }
+
+const recallExactChainFromMaterialLot = `-- name: RecallExactChainFromMaterialLot :many
+SELECT ml.id            AS material_lot_id,
+       ml.supplier_lot,
+       m.name           AS material_name,
+       s.name           AS supplier_name,
+       mr.id            AS mash_run_id,
+       mr.mash_no,
+       mr.mash_date,
+       mu.quantity_used,
+       mu.uom,
+       fr.id            AS fermentation_run_id,
+       fr.fermenter_label,
+       dr.id            AS distillation_run_id,
+       dr.run_no        AS distillation_run_no,
+       dr.voided_at     AS distillation_voided_at,
+       g.id             AS production_gauge_id,
+       g.gauge_date,
+       g.laa            AS gauge_laa,
+       g.destination_container_id,
+       bc.name          AS container_name
+FROM material_lots ml
+JOIN materials m               ON m.id = ml.material_id
+LEFT JOIN suppliers s          ON s.id = ml.supplier_id
+JOIN mash_ingredient_usage mu  ON mu.material_lot_id = ml.id
+JOIN mash_runs mr              ON mr.id = mu.mash_run_id
+LEFT JOIN fermentation_runs fr ON fr.mash_run_id = mr.id
+LEFT JOIN distillation_charges dc ON dc.fermentation_run_id = fr.id
+LEFT JOIN distillation_runs dr ON dr.id = dc.distillation_run_id
+LEFT JOIN production_gauges g  ON g.distillation_run_id = dr.id
+LEFT JOIN bulk_containers bc   ON bc.id = g.destination_container_id
+WHERE ml.id = $1
+ORDER BY mr.mash_date, mr.mash_no, fr.fermenter_label, dr.run_no
+`
+
+type RecallExactChainFromMaterialLotRow struct {
+	MaterialLotID          uuid.UUID          `json:"material_lot_id"`
+	SupplierLot            string             `json:"supplier_lot"`
+	MaterialName           string             `json:"material_name"`
+	SupplierName           pgtype.Text        `json:"supplier_name"`
+	MashRunID              uuid.UUID          `json:"mash_run_id"`
+	MashNo                 int32              `json:"mash_no"`
+	MashDate               pgtype.Date        `json:"mash_date"`
+	QuantityUsed           float64            `json:"quantity_used"`
+	Uom                    string             `json:"uom"`
+	FermentationRunID      uuid.NullUUID      `json:"fermentation_run_id"`
+	FermenterLabel         pgtype.Text        `json:"fermenter_label"`
+	DistillationRunID      uuid.NullUUID      `json:"distillation_run_id"`
+	DistillationRunNo      pgtype.Int4        `json:"distillation_run_no"`
+	DistillationVoidedAt   pgtype.Timestamptz `json:"distillation_voided_at"`
+	ProductionGaugeID      uuid.NullUUID      `json:"production_gauge_id"`
+	GaugeDate              pgtype.Timestamptz `json:"gauge_date"`
+	GaugeLaa               pgtype.Float8      `json:"gauge_laa"`
+	DestinationContainerID uuid.NullUUID      `json:"destination_container_id"`
+	ContainerName          pgtype.Text        `json:"container_name"`
+}
+
+// Forward from a material lot to every production gauge it reached.
+//
+// This half of a recall is exact. A material lot goes into named mashes,
+// those mashes into named fermentations, those into named distillation
+// charges, and each run has one gauge. Every link is a recorded row and
+// nothing is inferred.
+//
+// Where it stops is the point of the query. A gauge puts spirit into a
+// container, and from there it is blended, transferred and vatted — after
+// which "which mash is in this tank" is no longer a fact the ledger
+// holds. Everything past the gauge is possible contact, not certainty,
+// and is asked for separately so the two never get added together.
+func (q *Queries) RecallExactChainFromMaterialLot(ctx context.Context, materialLotID uuid.UUID) ([]RecallExactChainFromMaterialLotRow, error) {
+	rows, err := q.db.Query(ctx, recallExactChainFromMaterialLot, materialLotID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecallExactChainFromMaterialLotRow{}
+	for rows.Next() {
+		var i RecallExactChainFromMaterialLotRow
+		if err := rows.Scan(
+			&i.MaterialLotID,
+			&i.SupplierLot,
+			&i.MaterialName,
+			&i.SupplierName,
+			&i.MashRunID,
+			&i.MashNo,
+			&i.MashDate,
+			&i.QuantityUsed,
+			&i.Uom,
+			&i.FermentationRunID,
+			&i.FermenterLabel,
+			&i.DistillationRunID,
+			&i.DistillationRunNo,
+			&i.DistillationVoidedAt,
+			&i.ProductionGaugeID,
+			&i.GaugeDate,
+			&i.GaugeLaa,
+			&i.DestinationContainerID,
+			&i.ContainerName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const recallPackagedLotsFromContainers = `-- name: RecallPackagedLotsFromContainers :many
+SELECT br.id            AS bottling_run_id,
+       br.bottling_date AS bottled_on,
+       br.bottle_count,
+       br.voided_at     AS bottling_voided_at,
+       br.source_container_id,
+       bc.name          AS container_name,
+       pi.id            AS packaged_inventory_id,
+       pi.lot_code,
+       pi.bottles_packaged,
+       pi.bottles_on_hand,
+       pi.bottles_removed,
+       p.name           AS product_name
+FROM bottling_runs br
+JOIN bulk_containers bc        ON bc.id = br.source_container_id
+LEFT JOIN packaged_inventory pi ON pi.bottling_run_id = br.id
+LEFT JOIN products p           ON p.id = pi.product_id
+WHERE br.source_container_id = ANY($1::uuid[])
+  AND br.bottling_date >= $2::date
+ORDER BY br.bottling_date, br.id
+`
+
+type RecallPackagedLotsFromContainersParams struct {
+	ContainerIds []uuid.UUID `json:"container_ids"`
+	Earliest     pgtype.Date `json:"earliest"`
+}
+
+type RecallPackagedLotsFromContainersRow struct {
+	BottlingRunID       uuid.UUID          `json:"bottling_run_id"`
+	BottledOn           pgtype.Date        `json:"bottled_on"`
+	BottleCount         int32              `json:"bottle_count"`
+	BottlingVoidedAt    pgtype.Timestamptz `json:"bottling_voided_at"`
+	SourceContainerID   uuid.UUID          `json:"source_container_id"`
+	ContainerName       string             `json:"container_name"`
+	PackagedInventoryID uuid.NullUUID      `json:"packaged_inventory_id"`
+	LotCode             pgtype.Text        `json:"lot_code"`
+	BottlesPackaged     pgtype.Int4        `json:"bottles_packaged"`
+	BottlesOnHand       pgtype.Int4        `json:"bottles_on_hand"`
+	BottlesRemoved      pgtype.Int4        `json:"bottles_removed"`
+	ProductName         pgtype.Text        `json:"product_name"`
+}
+
+// Bottling runs that drew from a container after affected spirit entered
+// it, and the packaged lots they produced.
+//
+// Possible contact, not certainty, and the distinction is load-bearing in
+// both directions: treating it as certainty recalls stock that was never
+// affected, and ignoring it leaves affected stock on a shelf. Stillhouse
+// reports the boundary and does not decide which side of it an operator
+// should act on — that is a food-safety judgement with a cost attached,
+// and it is theirs.
+//
+// "After" is by bottling date against the earliest affected gauge into
+// that container. A run that bottled before the spirit arrived cannot
+// contain it.
+func (q *Queries) RecallPackagedLotsFromContainers(ctx context.Context, arg RecallPackagedLotsFromContainersParams) ([]RecallPackagedLotsFromContainersRow, error) {
+	rows, err := q.db.Query(ctx, recallPackagedLotsFromContainers, arg.ContainerIds, arg.Earliest)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecallPackagedLotsFromContainersRow{}
+	for rows.Next() {
+		var i RecallPackagedLotsFromContainersRow
+		if err := rows.Scan(
+			&i.BottlingRunID,
+			&i.BottledOn,
+			&i.BottleCount,
+			&i.BottlingVoidedAt,
+			&i.SourceContainerID,
+			&i.ContainerName,
+			&i.PackagedInventoryID,
+			&i.LotCode,
+			&i.BottlesPackaged,
+			&i.BottlesOnHand,
+			&i.BottlesRemoved,
+			&i.ProductName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const recallRemovalsForPackagedLots = `-- name: RecallRemovalsForPackagedLots :many
+SELECT r.id,
+       r.removal_date,
+       r.bottles_removed,
+       r.destination_name,
+       r.voided_at,
+       COALESCE(c.name, '')::text AS customer_name,
+       COALESCE(c.id::text, '')::text AS customer_id,
+       pi.lot_code,
+       pi.id AS packaged_inventory_id
+FROM packaging_removals r
+JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+LEFT JOIN customers c      ON c.id = r.customer_id
+WHERE r.packaged_inventory_id = ANY($1::uuid[])
+ORDER BY r.removal_date, r.id
+`
+
+type RecallRemovalsForPackagedLotsRow struct {
+	ID                  uuid.UUID          `json:"id"`
+	RemovalDate         pgtype.Date        `json:"removal_date"`
+	BottlesRemoved      int32              `json:"bottles_removed"`
+	DestinationName     string             `json:"destination_name"`
+	VoidedAt            pgtype.Timestamptz `json:"voided_at"`
+	CustomerName        string             `json:"customer_name"`
+	CustomerID          string             `json:"customer_id"`
+	LotCode             string             `json:"lot_code"`
+	PackagedInventoryID uuid.UUID          `json:"packaged_inventory_id"`
+}
+
+// One down: every removal of an affected packaged lot, and who received
+// it. This is the list a recall notice is written from.
+//
+// Voided removals are excluded — the stock did not leave — but a voided
+// removal is not the same as one that never happened, so the caller is
+// told the count separately rather than the rows just being absent.
+func (q *Queries) RecallRemovalsForPackagedLots(ctx context.Context, packagedInventoryIds []uuid.UUID) ([]RecallRemovalsForPackagedLotsRow, error) {
+	rows, err := q.db.Query(ctx, recallRemovalsForPackagedLots, packagedInventoryIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecallRemovalsForPackagedLotsRow{}
+	for rows.Next() {
+		var i RecallRemovalsForPackagedLotsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.RemovalDate,
+			&i.BottlesRemoved,
+			&i.DestinationName,
+			&i.VoidedAt,
+			&i.CustomerName,
+			&i.CustomerID,
+			&i.LotCode,
+			&i.PackagedInventoryID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

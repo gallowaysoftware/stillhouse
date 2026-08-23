@@ -30,6 +30,106 @@ message TraceBottlingRunResponse {
   repeated TraceabilityNode nodes = 3;
 }
 
+// A recall walks the chain the other way: from something known to be
+// wrong, forward to everything that might carry it and everyone who
+// received it. SFCR calls this one-up-one-down.
+//
+// The whole design turns on one boundary. Up to the production gauge the
+// chain is exact — a material lot goes into named mashes, those into
+// named fermentations, those into named charges, and each run has one
+// gauge. Past the gauge, spirit is blended, vatted and transferred, and
+// "which mash is in this tank" stops being a fact the ledger holds.
+//
+// Stillhouse reports both halves and never adds them together. Treating
+// possible contact as certainty recalls stock that was never affected;
+// ignoring it leaves affected stock on a shelf. Which side to act on is a
+// food-safety judgement with a cost attached, and it belongs to the
+// licensee.
+message RecallMashLink {
+  string mash_run_id = 1;
+  int32  mash_no = 2;
+  string mash_date = 3;
+  double quantity_used = 4;
+  string uom = 5;
+}
+
+message RecallGaugeLink {
+  string production_gauge_id = 1;
+  string gauge_date = 2;
+  double laa = 3;
+  string container_id = 4;
+  string container_name = 5;
+  int32  distillation_run_no = 6;
+  // True when the run behind this gauge was voided — its spirit went back
+  // out of the ledger and is not on any shelf.
+  bool   voided = 7;
+}
+
+message RecallPackagedLot {
+  string packaged_inventory_id = 1;
+  string lot_code = 2;
+  string product_name = 3;
+  string bottled_on = 4;
+  string container_name = 5;
+  int32  bottles_packaged = 6;
+  // What is still here and can simply be held, against what has gone and
+  // has to be chased. The two are what make a recall actionable.
+  int32  bottles_on_hand = 7;
+  int32  bottles_removed = 8;
+  bool   voided = 9;
+}
+
+message RecallRemoval {
+  string id = 1;
+  string removal_date = 2;
+  int32  bottles = 3;
+  string lot_code = 4;
+  string customer_id = 5;
+  string customer_name = 6;
+  string destination_name = 7;
+  bool   voided = 8;
+}
+
+message SimulateRecallRequest {
+  // The material lot believed to be at fault. Other origins can be added;
+  // this is the one a food-safety recall actually starts from.
+  string material_lot_id = 1;
+}
+message SimulateRecallResponse {
+  // One up: where the implicated material came from.
+  string material_name = 1;
+  string supplier_name = 2;
+  string supplier_lot = 3;
+
+  // Exact: recorded links, nothing inferred.
+  repeated RecallMashLink mashes = 4;
+  repeated RecallGaugeLink gauges = 5;
+
+  // Possible contact: everything bottled from a container that received
+  // affected spirit, on or after it arrived. Not certainty — see the
+  // comment on this service.
+  repeated RecallPackagedLot packaged_lots = 6;
+  repeated RecallRemoval removals = 7;
+
+  // Totals over the possible-contact set, so the size of the decision is
+  // visible before the list is read.
+  int32 bottles_packaged = 8;
+  int32 bottles_on_hand = 9;
+  int32 bottles_removed = 10;
+  // Removals that were voided: the stock did not leave, but a voided
+  // removal is not the same as one that never happened.
+  int32 voided_removals = 11;
+
+  // Said plainly on the response rather than left to the client to know.
+  string exactness_note = 12;
+  // Set when the chain cannot be walked at all — an unknown lot, or one
+  // that never reached a mash.
+  string note = 13;
+}
+
 service TraceabilityService {
   rpc TraceBottlingRun(TraceBottlingRunRequest) returns (TraceBottlingRunResponse);
+  // Forward from a material lot to everything that might carry it and
+  // everyone who received it. Read-only; it simulates, it does not act.
+  rpc SimulateRecall(SimulateRecallRequest) returns (SimulateRecallResponse);
 }

@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/traceability.proto.
  */
 export const file_stillhouse_v1_traceability: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdGlsbGhvdXNlL3YxL3RyYWNlYWJpbGl0eS5wcm90bxINc3RpbGxob3VzZS52MSJ/ChBUcmFjZWFiaWxpdHlOb2RlEgwKBGtpbmQYASABKAkSCgoCaWQYAiABKAkSEAoIaGVhZGxpbmUYAyABKAkSDgoGZGV0YWlsGAQgASgJEi8KC29jY3VycmVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIyChdUcmFjZUJvdHRsaW5nUnVuUmVxdWVzdBIXCg9ib3R0bGluZ19ydW5faWQYASABKAkidQoYVHJhY2VCb3R0bGluZ1J1blJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIQCghsb3RfY29kZRgCIAEoCRIuCgVub2RlcxgDIAMoCzIfLnN0aWxsaG91c2UudjEuVHJhY2VhYmlsaXR5Tm9kZTJ6ChNUcmFjZWFiaWxpdHlTZXJ2aWNlEmMKEFRyYWNlQm90dGxpbmdSdW4SJi5zdGlsbGhvdXNlLnYxLlRyYWNlQm90dGxpbmdSdW5SZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5UcmFjZUJvdHRsaW5nUnVuUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("CiBzdGlsbGhvdXNlL3YxL3RyYWNlYWJpbGl0eS5wcm90bxINc3RpbGxob3VzZS52MSJ/ChBUcmFjZWFiaWxpdHlOb2RlEgwKBGtpbmQYASABKAkSCgoCaWQYAiABKAkSEAoIaGVhZGxpbmUYAyABKAkSDgoGZGV0YWlsGAQgASgJEi8KC29jY3VycmVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIyChdUcmFjZUJvdHRsaW5nUnVuUmVxdWVzdBIXCg9ib3R0bGluZ19ydW5faWQYASABKAkidQoYVHJhY2VCb3R0bGluZ1J1blJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIQCghsb3RfY29kZRgCIAEoCRIuCgVub2RlcxgDIAMoCzIfLnN0aWxsaG91c2UudjEuVHJhY2VhYmlsaXR5Tm9kZSJtCg5SZWNhbGxNYXNoTGluaxITCgttYXNoX3J1bl9pZBgBIAEoCRIPCgdtYXNoX25vGAIgASgFEhEKCW1hc2hfZGF0ZRgDIAEoCRIVCg1xdWFudGl0eV91c2VkGAQgASgBEgsKA3VvbRgFIAEoCSKqAQoPUmVjYWxsR2F1Z2VMaW5rEhsKE3Byb2R1Y3Rpb25fZ2F1Z2VfaWQYASABKAkSEgoKZ2F1Z2VfZGF0ZRgCIAEoCRILCgNsYWEYAyABKAESFAoMY29udGFpbmVyX2lkGAQgASgJEhYKDmNvbnRhaW5lcl9uYW1lGAUgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5fbm8YBiABKAUSDgoGdm9pZGVkGAcgASgIIuIBChFSZWNhbGxQYWNrYWdlZExvdBIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYASABKAkSEAoIbG90X2NvZGUYAiABKAkSFAoMcHJvZHVjdF9uYW1lGAMgASgJEhIKCmJvdHRsZWRfb24YBCABKAkSFgoOY29udGFpbmVyX25hbWUYBSABKAkSGAoQYm90dGxlc19wYWNrYWdlZBgGIAEoBRIXCg9ib3R0bGVzX29uX2hhbmQYByABKAUSFwoPYm90dGxlc19yZW1vdmVkGAggASgFEg4KBnZvaWRlZBgJIAEoCCKqAQoNUmVjYWxsUmVtb3ZhbBIKCgJpZBgBIAEoCRIUCgxyZW1vdmFsX2RhdGUYAiABKAkSDwoHYm90dGxlcxgDIAEoBRIQCghsb3RfY29kZRgEIAEoCRITCgtjdXN0b21lcl9pZBgFIAEoCRIVCg1jdXN0b21lcl9uYW1lGAYgASgJEhgKEGRlc3RpbmF0aW9uX25hbWUYByABKAkSDgoGdm9pZGVkGAggASgIIjAKFVNpbXVsYXRlUmVjYWxsUmVxdWVzdBIXCg9tYXRlcmlhbF9sb3RfaWQYASABKAkirwMKFlNpbXVsYXRlUmVjYWxsUmVzcG9uc2USFQoNbWF0ZXJpYWxfbmFtZRgBIAEoCRIVCg1zdXBwbGllcl9uYW1lGAIgASgJEhQKDHN1cHBsaWVyX2xvdBgDIAEoCRItCgZtYXNoZXMYBCADKAsyHS5zdGlsbGhvdXNlLnYxLlJlY2FsbE1hc2hMaW5rEi4KBmdhdWdlcxgFIAMoCzIeLnN0aWxsaG91c2UudjEuUmVjYWxsR2F1Z2VMaW5rEjcKDXBhY2thZ2VkX2xvdHMYBiADKAsyIC5zdGlsbGhvdXNlLnYxLlJlY2FsbFBhY2thZ2VkTG90Ei4KCHJlbW92YWxzGAcgAygLMhwuc3RpbGxob3VzZS52MS5SZWNhbGxSZW1vdmFsEhgKEGJvdHRsZXNfcGFja2FnZWQYCCABKAUSFwoPYm90dGxlc19vbl9oYW5kGAkgASgFEhcKD2JvdHRsZXNfcmVtb3ZlZBgKIAEoBRIXCg92b2lkZWRfcmVtb3ZhbHMYCyABKAUSFgoOZXhhY3RuZXNzX25vdGUYDCABKAkSDAoEbm90ZRgNIAEoCTLZAQoTVHJhY2VhYmlsaXR5U2VydmljZRJjChBUcmFjZUJvdHRsaW5nUnVuEiYuc3RpbGxob3VzZS52MS5UcmFjZUJvdHRsaW5nUnVuUmVxdWVzdBonLnN0aWxsaG91c2UudjEuVHJhY2VCb3R0bGluZ1J1blJlc3BvbnNlEl0KDlNpbXVsYXRlUmVjYWxsEiQuc3RpbGxob3VzZS52MS5TaW11bGF0ZVJlY2FsbFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLlNpbXVsYXRlUmVjYWxsUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.TraceabilityNode
@@ -112,6 +112,337 @@ export const TraceBottlingRunResponseSchema: GenMessage<TraceBottlingRunResponse
   messageDesc(file_stillhouse_v1_traceability, 2);
 
 /**
+ * A recall walks the chain the other way: from something known to be
+ * wrong, forward to everything that might carry it and everyone who
+ * received it. SFCR calls this one-up-one-down.
+ *
+ * The whole design turns on one boundary. Up to the production gauge the
+ * chain is exact — a material lot goes into named mashes, those into
+ * named fermentations, those into named charges, and each run has one
+ * gauge. Past the gauge, spirit is blended, vatted and transferred, and
+ * "which mash is in this tank" stops being a fact the ledger holds.
+ *
+ * Stillhouse reports both halves and never adds them together. Treating
+ * possible contact as certainty recalls stock that was never affected;
+ * ignoring it leaves affected stock on a shelf. Which side to act on is a
+ * food-safety judgement with a cost attached, and it belongs to the
+ * licensee.
+ *
+ * @generated from message stillhouse.v1.RecallMashLink
+ */
+export type RecallMashLink = Message<"stillhouse.v1.RecallMashLink"> & {
+  /**
+   * @generated from field: string mash_run_id = 1;
+   */
+  mashRunId: string;
+
+  /**
+   * @generated from field: int32 mash_no = 2;
+   */
+  mashNo: number;
+
+  /**
+   * @generated from field: string mash_date = 3;
+   */
+  mashDate: string;
+
+  /**
+   * @generated from field: double quantity_used = 4;
+   */
+  quantityUsed: number;
+
+  /**
+   * @generated from field: string uom = 5;
+   */
+  uom: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecallMashLink.
+ * Use `create(RecallMashLinkSchema)` to create a new message.
+ */
+export const RecallMashLinkSchema: GenMessage<RecallMashLink> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 3);
+
+/**
+ * @generated from message stillhouse.v1.RecallGaugeLink
+ */
+export type RecallGaugeLink = Message<"stillhouse.v1.RecallGaugeLink"> & {
+  /**
+   * @generated from field: string production_gauge_id = 1;
+   */
+  productionGaugeId: string;
+
+  /**
+   * @generated from field: string gauge_date = 2;
+   */
+  gaugeDate: string;
+
+  /**
+   * @generated from field: double laa = 3;
+   */
+  laa: number;
+
+  /**
+   * @generated from field: string container_id = 4;
+   */
+  containerId: string;
+
+  /**
+   * @generated from field: string container_name = 5;
+   */
+  containerName: string;
+
+  /**
+   * @generated from field: int32 distillation_run_no = 6;
+   */
+  distillationRunNo: number;
+
+  /**
+   * True when the run behind this gauge was voided — its spirit went back
+   * out of the ledger and is not on any shelf.
+   *
+   * @generated from field: bool voided = 7;
+   */
+  voided: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecallGaugeLink.
+ * Use `create(RecallGaugeLinkSchema)` to create a new message.
+ */
+export const RecallGaugeLinkSchema: GenMessage<RecallGaugeLink> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 4);
+
+/**
+ * @generated from message stillhouse.v1.RecallPackagedLot
+ */
+export type RecallPackagedLot = Message<"stillhouse.v1.RecallPackagedLot"> & {
+  /**
+   * @generated from field: string packaged_inventory_id = 1;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: string lot_code = 2;
+   */
+  lotCode: string;
+
+  /**
+   * @generated from field: string product_name = 3;
+   */
+  productName: string;
+
+  /**
+   * @generated from field: string bottled_on = 4;
+   */
+  bottledOn: string;
+
+  /**
+   * @generated from field: string container_name = 5;
+   */
+  containerName: string;
+
+  /**
+   * @generated from field: int32 bottles_packaged = 6;
+   */
+  bottlesPackaged: number;
+
+  /**
+   * What is still here and can simply be held, against what has gone and
+   * has to be chased. The two are what make a recall actionable.
+   *
+   * @generated from field: int32 bottles_on_hand = 7;
+   */
+  bottlesOnHand: number;
+
+  /**
+   * @generated from field: int32 bottles_removed = 8;
+   */
+  bottlesRemoved: number;
+
+  /**
+   * @generated from field: bool voided = 9;
+   */
+  voided: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecallPackagedLot.
+ * Use `create(RecallPackagedLotSchema)` to create a new message.
+ */
+export const RecallPackagedLotSchema: GenMessage<RecallPackagedLot> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 5);
+
+/**
+ * @generated from message stillhouse.v1.RecallRemoval
+ */
+export type RecallRemoval = Message<"stillhouse.v1.RecallRemoval"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string removal_date = 2;
+   */
+  removalDate: string;
+
+  /**
+   * @generated from field: int32 bottles = 3;
+   */
+  bottles: number;
+
+  /**
+   * @generated from field: string lot_code = 4;
+   */
+  lotCode: string;
+
+  /**
+   * @generated from field: string customer_id = 5;
+   */
+  customerId: string;
+
+  /**
+   * @generated from field: string customer_name = 6;
+   */
+  customerName: string;
+
+  /**
+   * @generated from field: string destination_name = 7;
+   */
+  destinationName: string;
+
+  /**
+   * @generated from field: bool voided = 8;
+   */
+  voided: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecallRemoval.
+ * Use `create(RecallRemovalSchema)` to create a new message.
+ */
+export const RecallRemovalSchema: GenMessage<RecallRemoval> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 6);
+
+/**
+ * @generated from message stillhouse.v1.SimulateRecallRequest
+ */
+export type SimulateRecallRequest = Message<"stillhouse.v1.SimulateRecallRequest"> & {
+  /**
+   * The material lot believed to be at fault. Other origins can be added;
+   * this is the one a food-safety recall actually starts from.
+   *
+   * @generated from field: string material_lot_id = 1;
+   */
+  materialLotId: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SimulateRecallRequest.
+ * Use `create(SimulateRecallRequestSchema)` to create a new message.
+ */
+export const SimulateRecallRequestSchema: GenMessage<SimulateRecallRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 7);
+
+/**
+ * @generated from message stillhouse.v1.SimulateRecallResponse
+ */
+export type SimulateRecallResponse = Message<"stillhouse.v1.SimulateRecallResponse"> & {
+  /**
+   * One up: where the implicated material came from.
+   *
+   * @generated from field: string material_name = 1;
+   */
+  materialName: string;
+
+  /**
+   * @generated from field: string supplier_name = 2;
+   */
+  supplierName: string;
+
+  /**
+   * @generated from field: string supplier_lot = 3;
+   */
+  supplierLot: string;
+
+  /**
+   * Exact: recorded links, nothing inferred.
+   *
+   * @generated from field: repeated stillhouse.v1.RecallMashLink mashes = 4;
+   */
+  mashes: RecallMashLink[];
+
+  /**
+   * @generated from field: repeated stillhouse.v1.RecallGaugeLink gauges = 5;
+   */
+  gauges: RecallGaugeLink[];
+
+  /**
+   * Possible contact: everything bottled from a container that received
+   * affected spirit, on or after it arrived. Not certainty — see the
+   * comment on this service.
+   *
+   * @generated from field: repeated stillhouse.v1.RecallPackagedLot packaged_lots = 6;
+   */
+  packagedLots: RecallPackagedLot[];
+
+  /**
+   * @generated from field: repeated stillhouse.v1.RecallRemoval removals = 7;
+   */
+  removals: RecallRemoval[];
+
+  /**
+   * Totals over the possible-contact set, so the size of the decision is
+   * visible before the list is read.
+   *
+   * @generated from field: int32 bottles_packaged = 8;
+   */
+  bottlesPackaged: number;
+
+  /**
+   * @generated from field: int32 bottles_on_hand = 9;
+   */
+  bottlesOnHand: number;
+
+  /**
+   * @generated from field: int32 bottles_removed = 10;
+   */
+  bottlesRemoved: number;
+
+  /**
+   * Removals that were voided: the stock did not leave, but a voided
+   * removal is not the same as one that never happened.
+   *
+   * @generated from field: int32 voided_removals = 11;
+   */
+  voidedRemovals: number;
+
+  /**
+   * Said plainly on the response rather than left to the client to know.
+   *
+   * @generated from field: string exactness_note = 12;
+   */
+  exactnessNote: string;
+
+  /**
+   * Set when the chain cannot be walked at all — an unknown lot, or one
+   * that never reached a mash.
+   *
+   * @generated from field: string note = 13;
+   */
+  note: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SimulateRecallResponse.
+ * Use `create(SimulateRecallResponseSchema)` to create a new message.
+ */
+export const SimulateRecallResponseSchema: GenMessage<SimulateRecallResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 8);
+
+/**
  * @generated from service stillhouse.v1.TraceabilityService
  */
 export const TraceabilityService: GenService<{
@@ -122,6 +453,17 @@ export const TraceabilityService: GenService<{
     methodKind: "unary";
     input: typeof TraceBottlingRunRequestSchema;
     output: typeof TraceBottlingRunResponseSchema;
+  },
+  /**
+   * Forward from a material lot to everything that might carry it and
+   * everyone who received it. Read-only; it simulates, it does not act.
+   *
+   * @generated from rpc stillhouse.v1.TraceabilityService.SimulateRecall
+   */
+  simulateRecall: {
+    methodKind: "unary";
+    input: typeof SimulateRecallRequestSchema;
+    output: typeof SimulateRecallResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_traceability, 0);

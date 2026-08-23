@@ -214,6 +214,599 @@ func (x *TraceBottlingRunResponse) GetNodes() []*TraceabilityNode {
 	return nil
 }
 
+// A recall walks the chain the other way: from something known to be
+// wrong, forward to everything that might carry it and everyone who
+// received it. SFCR calls this one-up-one-down.
+//
+// The whole design turns on one boundary. Up to the production gauge the
+// chain is exact — a material lot goes into named mashes, those into
+// named fermentations, those into named charges, and each run has one
+// gauge. Past the gauge, spirit is blended, vatted and transferred, and
+// "which mash is in this tank" stops being a fact the ledger holds.
+//
+// Stillhouse reports both halves and never adds them together. Treating
+// possible contact as certainty recalls stock that was never affected;
+// ignoring it leaves affected stock on a shelf. Which side to act on is a
+// food-safety judgement with a cost attached, and it belongs to the
+// licensee.
+type RecallMashLink struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	MashRunId     string                 `protobuf:"bytes,1,opt,name=mash_run_id,json=mashRunId,proto3" json:"mash_run_id,omitempty"`
+	MashNo        int32                  `protobuf:"varint,2,opt,name=mash_no,json=mashNo,proto3" json:"mash_no,omitempty"`
+	MashDate      string                 `protobuf:"bytes,3,opt,name=mash_date,json=mashDate,proto3" json:"mash_date,omitempty"`
+	QuantityUsed  float64                `protobuf:"fixed64,4,opt,name=quantity_used,json=quantityUsed,proto3" json:"quantity_used,omitempty"`
+	Uom           string                 `protobuf:"bytes,5,opt,name=uom,proto3" json:"uom,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecallMashLink) Reset() {
+	*x = RecallMashLink{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecallMashLink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecallMashLink) ProtoMessage() {}
+
+func (x *RecallMashLink) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecallMashLink.ProtoReflect.Descriptor instead.
+func (*RecallMashLink) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *RecallMashLink) GetMashRunId() string {
+	if x != nil {
+		return x.MashRunId
+	}
+	return ""
+}
+
+func (x *RecallMashLink) GetMashNo() int32 {
+	if x != nil {
+		return x.MashNo
+	}
+	return 0
+}
+
+func (x *RecallMashLink) GetMashDate() string {
+	if x != nil {
+		return x.MashDate
+	}
+	return ""
+}
+
+func (x *RecallMashLink) GetQuantityUsed() float64 {
+	if x != nil {
+		return x.QuantityUsed
+	}
+	return 0
+}
+
+func (x *RecallMashLink) GetUom() string {
+	if x != nil {
+		return x.Uom
+	}
+	return ""
+}
+
+type RecallGaugeLink struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ProductionGaugeId string                 `protobuf:"bytes,1,opt,name=production_gauge_id,json=productionGaugeId,proto3" json:"production_gauge_id,omitempty"`
+	GaugeDate         string                 `protobuf:"bytes,2,opt,name=gauge_date,json=gaugeDate,proto3" json:"gauge_date,omitempty"`
+	Laa               float64                `protobuf:"fixed64,3,opt,name=laa,proto3" json:"laa,omitempty"`
+	ContainerId       string                 `protobuf:"bytes,4,opt,name=container_id,json=containerId,proto3" json:"container_id,omitempty"`
+	ContainerName     string                 `protobuf:"bytes,5,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`
+	DistillationRunNo int32                  `protobuf:"varint,6,opt,name=distillation_run_no,json=distillationRunNo,proto3" json:"distillation_run_no,omitempty"`
+	// True when the run behind this gauge was voided — its spirit went back
+	// out of the ledger and is not on any shelf.
+	Voided        bool `protobuf:"varint,7,opt,name=voided,proto3" json:"voided,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecallGaugeLink) Reset() {
+	*x = RecallGaugeLink{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecallGaugeLink) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecallGaugeLink) ProtoMessage() {}
+
+func (x *RecallGaugeLink) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecallGaugeLink.ProtoReflect.Descriptor instead.
+func (*RecallGaugeLink) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *RecallGaugeLink) GetProductionGaugeId() string {
+	if x != nil {
+		return x.ProductionGaugeId
+	}
+	return ""
+}
+
+func (x *RecallGaugeLink) GetGaugeDate() string {
+	if x != nil {
+		return x.GaugeDate
+	}
+	return ""
+}
+
+func (x *RecallGaugeLink) GetLaa() float64 {
+	if x != nil {
+		return x.Laa
+	}
+	return 0
+}
+
+func (x *RecallGaugeLink) GetContainerId() string {
+	if x != nil {
+		return x.ContainerId
+	}
+	return ""
+}
+
+func (x *RecallGaugeLink) GetContainerName() string {
+	if x != nil {
+		return x.ContainerName
+	}
+	return ""
+}
+
+func (x *RecallGaugeLink) GetDistillationRunNo() int32 {
+	if x != nil {
+		return x.DistillationRunNo
+	}
+	return 0
+}
+
+func (x *RecallGaugeLink) GetVoided() bool {
+	if x != nil {
+		return x.Voided
+	}
+	return false
+}
+
+type RecallPackagedLot struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	PackagedInventoryId string                 `protobuf:"bytes,1,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
+	LotCode             string                 `protobuf:"bytes,2,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
+	ProductName         string                 `protobuf:"bytes,3,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	BottledOn           string                 `protobuf:"bytes,4,opt,name=bottled_on,json=bottledOn,proto3" json:"bottled_on,omitempty"`
+	ContainerName       string                 `protobuf:"bytes,5,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`
+	BottlesPackaged     int32                  `protobuf:"varint,6,opt,name=bottles_packaged,json=bottlesPackaged,proto3" json:"bottles_packaged,omitempty"`
+	// What is still here and can simply be held, against what has gone and
+	// has to be chased. The two are what make a recall actionable.
+	BottlesOnHand  int32 `protobuf:"varint,7,opt,name=bottles_on_hand,json=bottlesOnHand,proto3" json:"bottles_on_hand,omitempty"`
+	BottlesRemoved int32 `protobuf:"varint,8,opt,name=bottles_removed,json=bottlesRemoved,proto3" json:"bottles_removed,omitempty"`
+	Voided         bool  `protobuf:"varint,9,opt,name=voided,proto3" json:"voided,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *RecallPackagedLot) Reset() {
+	*x = RecallPackagedLot{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecallPackagedLot) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecallPackagedLot) ProtoMessage() {}
+
+func (x *RecallPackagedLot) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecallPackagedLot.ProtoReflect.Descriptor instead.
+func (*RecallPackagedLot) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *RecallPackagedLot) GetPackagedInventoryId() string {
+	if x != nil {
+		return x.PackagedInventoryId
+	}
+	return ""
+}
+
+func (x *RecallPackagedLot) GetLotCode() string {
+	if x != nil {
+		return x.LotCode
+	}
+	return ""
+}
+
+func (x *RecallPackagedLot) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *RecallPackagedLot) GetBottledOn() string {
+	if x != nil {
+		return x.BottledOn
+	}
+	return ""
+}
+
+func (x *RecallPackagedLot) GetContainerName() string {
+	if x != nil {
+		return x.ContainerName
+	}
+	return ""
+}
+
+func (x *RecallPackagedLot) GetBottlesPackaged() int32 {
+	if x != nil {
+		return x.BottlesPackaged
+	}
+	return 0
+}
+
+func (x *RecallPackagedLot) GetBottlesOnHand() int32 {
+	if x != nil {
+		return x.BottlesOnHand
+	}
+	return 0
+}
+
+func (x *RecallPackagedLot) GetBottlesRemoved() int32 {
+	if x != nil {
+		return x.BottlesRemoved
+	}
+	return 0
+}
+
+func (x *RecallPackagedLot) GetVoided() bool {
+	if x != nil {
+		return x.Voided
+	}
+	return false
+}
+
+type RecallRemoval struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	RemovalDate     string                 `protobuf:"bytes,2,opt,name=removal_date,json=removalDate,proto3" json:"removal_date,omitempty"`
+	Bottles         int32                  `protobuf:"varint,3,opt,name=bottles,proto3" json:"bottles,omitempty"`
+	LotCode         string                 `protobuf:"bytes,4,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
+	CustomerId      string                 `protobuf:"bytes,5,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName    string                 `protobuf:"bytes,6,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	DestinationName string                 `protobuf:"bytes,7,opt,name=destination_name,json=destinationName,proto3" json:"destination_name,omitempty"`
+	Voided          bool                   `protobuf:"varint,8,opt,name=voided,proto3" json:"voided,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *RecallRemoval) Reset() {
+	*x = RecallRemoval{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecallRemoval) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecallRemoval) ProtoMessage() {}
+
+func (x *RecallRemoval) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecallRemoval.ProtoReflect.Descriptor instead.
+func (*RecallRemoval) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *RecallRemoval) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RecallRemoval) GetRemovalDate() string {
+	if x != nil {
+		return x.RemovalDate
+	}
+	return ""
+}
+
+func (x *RecallRemoval) GetBottles() int32 {
+	if x != nil {
+		return x.Bottles
+	}
+	return 0
+}
+
+func (x *RecallRemoval) GetLotCode() string {
+	if x != nil {
+		return x.LotCode
+	}
+	return ""
+}
+
+func (x *RecallRemoval) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *RecallRemoval) GetCustomerName() string {
+	if x != nil {
+		return x.CustomerName
+	}
+	return ""
+}
+
+func (x *RecallRemoval) GetDestinationName() string {
+	if x != nil {
+		return x.DestinationName
+	}
+	return ""
+}
+
+func (x *RecallRemoval) GetVoided() bool {
+	if x != nil {
+		return x.Voided
+	}
+	return false
+}
+
+type SimulateRecallRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The material lot believed to be at fault. Other origins can be added;
+	// this is the one a food-safety recall actually starts from.
+	MaterialLotId string `protobuf:"bytes,1,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SimulateRecallRequest) Reset() {
+	*x = SimulateRecallRequest{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SimulateRecallRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimulateRecallRequest) ProtoMessage() {}
+
+func (x *SimulateRecallRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimulateRecallRequest.ProtoReflect.Descriptor instead.
+func (*SimulateRecallRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *SimulateRecallRequest) GetMaterialLotId() string {
+	if x != nil {
+		return x.MaterialLotId
+	}
+	return ""
+}
+
+type SimulateRecallResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// One up: where the implicated material came from.
+	MaterialName string `protobuf:"bytes,1,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"`
+	SupplierName string `protobuf:"bytes,2,opt,name=supplier_name,json=supplierName,proto3" json:"supplier_name,omitempty"`
+	SupplierLot  string `protobuf:"bytes,3,opt,name=supplier_lot,json=supplierLot,proto3" json:"supplier_lot,omitempty"`
+	// Exact: recorded links, nothing inferred.
+	Mashes []*RecallMashLink  `protobuf:"bytes,4,rep,name=mashes,proto3" json:"mashes,omitempty"`
+	Gauges []*RecallGaugeLink `protobuf:"bytes,5,rep,name=gauges,proto3" json:"gauges,omitempty"`
+	// Possible contact: everything bottled from a container that received
+	// affected spirit, on or after it arrived. Not certainty — see the
+	// comment on this service.
+	PackagedLots []*RecallPackagedLot `protobuf:"bytes,6,rep,name=packaged_lots,json=packagedLots,proto3" json:"packaged_lots,omitempty"`
+	Removals     []*RecallRemoval     `protobuf:"bytes,7,rep,name=removals,proto3" json:"removals,omitempty"`
+	// Totals over the possible-contact set, so the size of the decision is
+	// visible before the list is read.
+	BottlesPackaged int32 `protobuf:"varint,8,opt,name=bottles_packaged,json=bottlesPackaged,proto3" json:"bottles_packaged,omitempty"`
+	BottlesOnHand   int32 `protobuf:"varint,9,opt,name=bottles_on_hand,json=bottlesOnHand,proto3" json:"bottles_on_hand,omitempty"`
+	BottlesRemoved  int32 `protobuf:"varint,10,opt,name=bottles_removed,json=bottlesRemoved,proto3" json:"bottles_removed,omitempty"`
+	// Removals that were voided: the stock did not leave, but a voided
+	// removal is not the same as one that never happened.
+	VoidedRemovals int32 `protobuf:"varint,11,opt,name=voided_removals,json=voidedRemovals,proto3" json:"voided_removals,omitempty"`
+	// Said plainly on the response rather than left to the client to know.
+	ExactnessNote string `protobuf:"bytes,12,opt,name=exactness_note,json=exactnessNote,proto3" json:"exactness_note,omitempty"`
+	// Set when the chain cannot be walked at all — an unknown lot, or one
+	// that never reached a mash.
+	Note          string `protobuf:"bytes,13,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SimulateRecallResponse) Reset() {
+	*x = SimulateRecallResponse{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SimulateRecallResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimulateRecallResponse) ProtoMessage() {}
+
+func (x *SimulateRecallResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimulateRecallResponse.ProtoReflect.Descriptor instead.
+func (*SimulateRecallResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SimulateRecallResponse) GetMaterialName() string {
+	if x != nil {
+		return x.MaterialName
+	}
+	return ""
+}
+
+func (x *SimulateRecallResponse) GetSupplierName() string {
+	if x != nil {
+		return x.SupplierName
+	}
+	return ""
+}
+
+func (x *SimulateRecallResponse) GetSupplierLot() string {
+	if x != nil {
+		return x.SupplierLot
+	}
+	return ""
+}
+
+func (x *SimulateRecallResponse) GetMashes() []*RecallMashLink {
+	if x != nil {
+		return x.Mashes
+	}
+	return nil
+}
+
+func (x *SimulateRecallResponse) GetGauges() []*RecallGaugeLink {
+	if x != nil {
+		return x.Gauges
+	}
+	return nil
+}
+
+func (x *SimulateRecallResponse) GetPackagedLots() []*RecallPackagedLot {
+	if x != nil {
+		return x.PackagedLots
+	}
+	return nil
+}
+
+func (x *SimulateRecallResponse) GetRemovals() []*RecallRemoval {
+	if x != nil {
+		return x.Removals
+	}
+	return nil
+}
+
+func (x *SimulateRecallResponse) GetBottlesPackaged() int32 {
+	if x != nil {
+		return x.BottlesPackaged
+	}
+	return 0
+}
+
+func (x *SimulateRecallResponse) GetBottlesOnHand() int32 {
+	if x != nil {
+		return x.BottlesOnHand
+	}
+	return 0
+}
+
+func (x *SimulateRecallResponse) GetBottlesRemoved() int32 {
+	if x != nil {
+		return x.BottlesRemoved
+	}
+	return 0
+}
+
+func (x *SimulateRecallResponse) GetVoidedRemovals() int32 {
+	if x != nil {
+		return x.VoidedRemovals
+	}
+	return 0
+}
+
+func (x *SimulateRecallResponse) GetExactnessNote() string {
+	if x != nil {
+		return x.ExactnessNote
+	}
+	return ""
+}
+
+func (x *SimulateRecallResponse) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
 var File_stillhouse_v1_traceability_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_traceability_proto_rawDesc = "" +
@@ -231,9 +824,63 @@ const file_stillhouse_v1_traceability_proto_rawDesc = "" +
 	"\x18TraceBottlingRunResponse\x12&\n" +
 	"\x0fbottling_run_id\x18\x01 \x01(\tR\rbottlingRunId\x12\x19\n" +
 	"\blot_code\x18\x02 \x01(\tR\alotCode\x125\n" +
-	"\x05nodes\x18\x03 \x03(\v2\x1f.stillhouse.v1.TraceabilityNodeR\x05nodes2z\n" +
+	"\x05nodes\x18\x03 \x03(\v2\x1f.stillhouse.v1.TraceabilityNodeR\x05nodes\"\x9d\x01\n" +
+	"\x0eRecallMashLink\x12\x1e\n" +
+	"\vmash_run_id\x18\x01 \x01(\tR\tmashRunId\x12\x17\n" +
+	"\amash_no\x18\x02 \x01(\x05R\x06mashNo\x12\x1b\n" +
+	"\tmash_date\x18\x03 \x01(\tR\bmashDate\x12#\n" +
+	"\rquantity_used\x18\x04 \x01(\x01R\fquantityUsed\x12\x10\n" +
+	"\x03uom\x18\x05 \x01(\tR\x03uom\"\x84\x02\n" +
+	"\x0fRecallGaugeLink\x12.\n" +
+	"\x13production_gauge_id\x18\x01 \x01(\tR\x11productionGaugeId\x12\x1d\n" +
+	"\n" +
+	"gauge_date\x18\x02 \x01(\tR\tgaugeDate\x12\x10\n" +
+	"\x03laa\x18\x03 \x01(\x01R\x03laa\x12!\n" +
+	"\fcontainer_id\x18\x04 \x01(\tR\vcontainerId\x12%\n" +
+	"\x0econtainer_name\x18\x05 \x01(\tR\rcontainerName\x12.\n" +
+	"\x13distillation_run_no\x18\x06 \x01(\x05R\x11distillationRunNo\x12\x16\n" +
+	"\x06voided\x18\a \x01(\bR\x06voided\"\xdf\x02\n" +
+	"\x11RecallPackagedLot\x122\n" +
+	"\x15packaged_inventory_id\x18\x01 \x01(\tR\x13packagedInventoryId\x12\x19\n" +
+	"\blot_code\x18\x02 \x01(\tR\alotCode\x12!\n" +
+	"\fproduct_name\x18\x03 \x01(\tR\vproductName\x12\x1d\n" +
+	"\n" +
+	"bottled_on\x18\x04 \x01(\tR\tbottledOn\x12%\n" +
+	"\x0econtainer_name\x18\x05 \x01(\tR\rcontainerName\x12)\n" +
+	"\x10bottles_packaged\x18\x06 \x01(\x05R\x0fbottlesPackaged\x12&\n" +
+	"\x0fbottles_on_hand\x18\a \x01(\x05R\rbottlesOnHand\x12'\n" +
+	"\x0fbottles_removed\x18\b \x01(\x05R\x0ebottlesRemoved\x12\x16\n" +
+	"\x06voided\x18\t \x01(\bR\x06voided\"\x80\x02\n" +
+	"\rRecallRemoval\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\fremoval_date\x18\x02 \x01(\tR\vremovalDate\x12\x18\n" +
+	"\abottles\x18\x03 \x01(\x05R\abottles\x12\x19\n" +
+	"\blot_code\x18\x04 \x01(\tR\alotCode\x12\x1f\n" +
+	"\vcustomer_id\x18\x05 \x01(\tR\n" +
+	"customerId\x12#\n" +
+	"\rcustomer_name\x18\x06 \x01(\tR\fcustomerName\x12)\n" +
+	"\x10destination_name\x18\a \x01(\tR\x0fdestinationName\x12\x16\n" +
+	"\x06voided\x18\b \x01(\bR\x06voided\"?\n" +
+	"\x15SimulateRecallRequest\x12&\n" +
+	"\x0fmaterial_lot_id\x18\x01 \x01(\tR\rmaterialLotId\"\xd5\x04\n" +
+	"\x16SimulateRecallResponse\x12#\n" +
+	"\rmaterial_name\x18\x01 \x01(\tR\fmaterialName\x12#\n" +
+	"\rsupplier_name\x18\x02 \x01(\tR\fsupplierName\x12!\n" +
+	"\fsupplier_lot\x18\x03 \x01(\tR\vsupplierLot\x125\n" +
+	"\x06mashes\x18\x04 \x03(\v2\x1d.stillhouse.v1.RecallMashLinkR\x06mashes\x126\n" +
+	"\x06gauges\x18\x05 \x03(\v2\x1e.stillhouse.v1.RecallGaugeLinkR\x06gauges\x12E\n" +
+	"\rpackaged_lots\x18\x06 \x03(\v2 .stillhouse.v1.RecallPackagedLotR\fpackagedLots\x128\n" +
+	"\bremovals\x18\a \x03(\v2\x1c.stillhouse.v1.RecallRemovalR\bremovals\x12)\n" +
+	"\x10bottles_packaged\x18\b \x01(\x05R\x0fbottlesPackaged\x12&\n" +
+	"\x0fbottles_on_hand\x18\t \x01(\x05R\rbottlesOnHand\x12'\n" +
+	"\x0fbottles_removed\x18\n" +
+	" \x01(\x05R\x0ebottlesRemoved\x12'\n" +
+	"\x0fvoided_removals\x18\v \x01(\x05R\x0evoidedRemovals\x12%\n" +
+	"\x0eexactness_note\x18\f \x01(\tR\rexactnessNote\x12\x12\n" +
+	"\x04note\x18\r \x01(\tR\x04note2\xd9\x01\n" +
 	"\x13TraceabilityService\x12c\n" +
-	"\x10TraceBottlingRun\x12&.stillhouse.v1.TraceBottlingRunRequest\x1a'.stillhouse.v1.TraceBottlingRunResponseB\xd5\x01\n" +
+	"\x10TraceBottlingRun\x12&.stillhouse.v1.TraceBottlingRunRequest\x1a'.stillhouse.v1.TraceBottlingRunResponse\x12]\n" +
+	"\x0eSimulateRecall\x12$.stillhouse.v1.SimulateRecallRequest\x1a%.stillhouse.v1.SimulateRecallResponseB\xd5\x01\n" +
 	"\x11com.stillhouse.v1B\x11TraceabilityProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -248,23 +895,35 @@ func file_stillhouse_v1_traceability_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_traceability_proto_rawDescData
 }
 
-var file_stillhouse_v1_traceability_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_stillhouse_v1_traceability_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_stillhouse_v1_traceability_proto_goTypes = []any{
 	(*TraceabilityNode)(nil),         // 0: stillhouse.v1.TraceabilityNode
 	(*TraceBottlingRunRequest)(nil),  // 1: stillhouse.v1.TraceBottlingRunRequest
 	(*TraceBottlingRunResponse)(nil), // 2: stillhouse.v1.TraceBottlingRunResponse
-	(*timestamppb.Timestamp)(nil),    // 3: google.protobuf.Timestamp
+	(*RecallMashLink)(nil),           // 3: stillhouse.v1.RecallMashLink
+	(*RecallGaugeLink)(nil),          // 4: stillhouse.v1.RecallGaugeLink
+	(*RecallPackagedLot)(nil),        // 5: stillhouse.v1.RecallPackagedLot
+	(*RecallRemoval)(nil),            // 6: stillhouse.v1.RecallRemoval
+	(*SimulateRecallRequest)(nil),    // 7: stillhouse.v1.SimulateRecallRequest
+	(*SimulateRecallResponse)(nil),   // 8: stillhouse.v1.SimulateRecallResponse
+	(*timestamppb.Timestamp)(nil),    // 9: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_traceability_proto_depIdxs = []int32{
-	3, // 0: stillhouse.v1.TraceabilityNode.occurred_at:type_name -> google.protobuf.Timestamp
+	9, // 0: stillhouse.v1.TraceabilityNode.occurred_at:type_name -> google.protobuf.Timestamp
 	0, // 1: stillhouse.v1.TraceBottlingRunResponse.nodes:type_name -> stillhouse.v1.TraceabilityNode
-	1, // 2: stillhouse.v1.TraceabilityService.TraceBottlingRun:input_type -> stillhouse.v1.TraceBottlingRunRequest
-	2, // 3: stillhouse.v1.TraceabilityService.TraceBottlingRun:output_type -> stillhouse.v1.TraceBottlingRunResponse
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 2: stillhouse.v1.SimulateRecallResponse.mashes:type_name -> stillhouse.v1.RecallMashLink
+	4, // 3: stillhouse.v1.SimulateRecallResponse.gauges:type_name -> stillhouse.v1.RecallGaugeLink
+	5, // 4: stillhouse.v1.SimulateRecallResponse.packaged_lots:type_name -> stillhouse.v1.RecallPackagedLot
+	6, // 5: stillhouse.v1.SimulateRecallResponse.removals:type_name -> stillhouse.v1.RecallRemoval
+	1, // 6: stillhouse.v1.TraceabilityService.TraceBottlingRun:input_type -> stillhouse.v1.TraceBottlingRunRequest
+	7, // 7: stillhouse.v1.TraceabilityService.SimulateRecall:input_type -> stillhouse.v1.SimulateRecallRequest
+	2, // 8: stillhouse.v1.TraceabilityService.TraceBottlingRun:output_type -> stillhouse.v1.TraceBottlingRunResponse
+	8, // 9: stillhouse.v1.TraceabilityService.SimulateRecall:output_type -> stillhouse.v1.SimulateRecallResponse
+	8, // [8:10] is the sub-list for method output_type
+	6, // [6:8] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_traceability_proto_init() }
@@ -278,7 +937,7 @@ func file_stillhouse_v1_traceability_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_traceability_proto_rawDesc), len(file_stillhouse_v1_traceability_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

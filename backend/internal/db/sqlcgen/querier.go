@@ -785,6 +785,40 @@ type Querier interface {
 	// Whether anything is still owed on this order, so the status can follow
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
+	// Forward from a material lot to every production gauge it reached.
+	//
+	// This half of a recall is exact. A material lot goes into named mashes,
+	// those mashes into named fermentations, those into named distillation
+	// charges, and each run has one gauge. Every link is a recorded row and
+	// nothing is inferred.
+	//
+	// Where it stops is the point of the query. A gauge puts spirit into a
+	// container, and from there it is blended, transferred and vatted — after
+	// which "which mash is in this tank" is no longer a fact the ledger
+	// holds. Everything past the gauge is possible contact, not certainty,
+	// and is asked for separately so the two never get added together.
+	RecallExactChainFromMaterialLot(ctx context.Context, materialLotID uuid.UUID) ([]RecallExactChainFromMaterialLotRow, error)
+	// Bottling runs that drew from a container after affected spirit entered
+	// it, and the packaged lots they produced.
+	//
+	// Possible contact, not certainty, and the distinction is load-bearing in
+	// both directions: treating it as certainty recalls stock that was never
+	// affected, and ignoring it leaves affected stock on a shelf. Stillhouse
+	// reports the boundary and does not decide which side of it an operator
+	// should act on — that is a food-safety judgement with a cost attached,
+	// and it is theirs.
+	//
+	// "After" is by bottling date against the earliest affected gauge into
+	// that container. A run that bottled before the spirit arrived cannot
+	// contain it.
+	RecallPackagedLotsFromContainers(ctx context.Context, arg RecallPackagedLotsFromContainersParams) ([]RecallPackagedLotsFromContainersRow, error)
+	// One down: every removal of an affected packaged lot, and who received
+	// it. This is the list a recall notice is written from.
+	//
+	// Voided removals are excluded — the stock did not leave — but a voided
+	// removal is not the same as one that never happened, so the caller is
+	// told the count separately rather than the rows just being absent.
+	RecallRemovalsForPackagedLots(ctx context.Context, packagedInventoryIds []uuid.UUID) ([]RecallRemovalsForPackagedLotsRow, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
 	RecordEquipmentService(ctx context.Context, arg RecordEquipmentServiceParams) (EquipmentServiceEvent, error)
 	RecordInvoicePayment(ctx context.Context, arg RecordInvoicePaymentParams) (InvoicePayment, error)

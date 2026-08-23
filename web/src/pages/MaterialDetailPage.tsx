@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { RecallPanel } from "@/components/RecallPanel";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
@@ -163,14 +164,15 @@ export function MaterialDetailPage() {
               <th className="px-4 py-3 text-right">On hand</th>
               <th className="px-4 py-3 text-right">Unit cost (CAD)</th>
               <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3">Trace</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {lots.isLoading && (
-              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
+              <tr><td colSpan={7} className="px-4 py-3 text-fg-muted">Loading…</td></tr>
             )}
             {!lots.isLoading && (lots.data?.lots ?? []).length === 0 && (
-              <tr><td colSpan={6} className="px-4 py-3 text-fg-muted">No lots recorded yet.</td></tr>
+              <tr><td colSpan={7} className="px-4 py-3 text-fg-muted">No lots recorded yet.</td></tr>
             )}
             {lots.data?.lots.map((l) => (
               <tr key={l.id}>
@@ -182,6 +184,12 @@ export function MaterialDetailPage() {
                 <td className="px-4 py-3 text-right font-medium text-fg">{formatQty(l.quantityOnHand)}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">{l.unitCostCadSet ? `$${l.unitCostCad.toFixed(3)}` : "—"}</td>
                 <td className="px-4 py-3 text-fg-muted">{l.notes}</td>
+                {/* Forward from this lot to everything that might carry it.
+                    On the lot row because a recall starts with somebody
+                    holding a supplier's lot number in their hand. */}
+                <td className="px-4 py-3">
+                  <RecallPanel lotId={l.id} lotLabel={l.supplierLot || l.id.slice(0, 8)} />
+                </td>
               </tr>
             ))}
           </tbody>

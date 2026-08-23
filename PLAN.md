@@ -259,11 +259,18 @@ has `container_deposit_cad` as a line — nothing reports it.
 
 ### I5 · Food safety and traceability — P2
 
-`TraceBottlingRun` is a good base, and stage 167 added the other half a recall
-needs: a lot can be held by a named person with a reason, and lab results
-attach to the gauge, run or cask they were measured on. What is left is SFCR
-one-up-one-down traceability, a preventive control plan where required, and a
-recall simulation that runs the trace backwards from a lot code.
+Stage 194 shipped the recall simulation and the one-up-one-down walk: from a
+material lot forward to the mashes, gauges, packaged lots and removals it
+reached, with the exact half and the possible-contact half reported apart.
+
+What is left is narrower:
+
+- **Other origins.** The walk starts from a material lot, which is the
+  food-safety case. Starting from a cask, a tank or a packaged lot is the
+  same walk from a different node and is mostly plumbing.
+- **A preventive control plan** where SFCR requires one. That is a document
+  with a required structure, not a query, and it needs the regulation's own
+  wording rather than a paraphrase — same discipline as the excise notices.
 
 ---
 
