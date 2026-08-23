@@ -152,7 +152,7 @@ func (s *SchedulingService) DemandForecast(
 				line.Overridden = true
 				line.OverrideReason = o.Reason
 				line.Basis = "entered by hand"
-				if e := fillRequirement(ctx, q, id, line); e != nil {
+				if e := fillRequirement(ctx, q, id, line, start); e != nil {
 					return e
 				}
 				out.TotalLaaNeeded += line.LaaNeeded
@@ -166,7 +166,7 @@ func (s *SchedulingService) DemandForecast(
 			line.Missing = r.Missing
 			line.Basis = r.Basis
 			line.MonthsUsed = r.MonthsUsed
-			if e := fillRequirement(ctx, q, id, line); e != nil {
+			if e := fillRequirement(ctx, q, id, line, start); e != nil {
 				return e
 			}
 			out.TotalLaaNeeded += line.LaaNeeded
@@ -324,7 +324,8 @@ func forecastMethodFromProto(m stillhousev1.ForecastMethod) sqlcgen.NullForecast
 // zero bottles, which is the honest answer: nothing forecast is nothing
 // to make. Only the materials half can refuse for a reason of its own.
 func fillRequirement(
-	ctx context.Context, q *sqlcgen.Queries, productID uuid.UUID, line *stillhousev1.ForecastLine,
+	ctx context.Context, q *sqlcgen.Queries, productID uuid.UUID,
+	line *stillhousev1.ForecastLine, needBy time.Time,
 ) error {
 	prod, err := q.GetProduct(ctx, productID)
 	if err != nil {
@@ -355,7 +356,96 @@ func fillRequirement(
 			Material: g.Material, Quantity: g.Quantity, Uom: g.UOM,
 		})
 	}
+
+	sched, err := planFor(ctx, q, productID, req, needBy)
+	if err != nil {
+		return err
+	}
+	line.Mashes = sched.Mashes
+	line.MashesAvailable = sched.MashesAvailable
+	line.MashesMissing = sched.MashesMissing
+	line.MashVessel = sched.VesselName
+	line.OrderBy = sched.OrderBy
+	line.OrderByAvailable = sched.OrderByAvailable
+	line.OrderByMissing = sched.OrderByMissing
 	return nil
+}
+
+// planFor turns a requirement into mashes and an order-by date.
+//
+// Both halves refuse independently, and for reasons that live in
+// different places: the mash count wants a vessel on the recipe, the
+// order date wants lead times on the materials. An operator who has done
+// one and not the other should see the half they have.
+func planFor(
+	ctx context.Context, q *sqlcgen.Queries, productID uuid.UUID,
+	req forecast.Requirement, needBy time.Time,
+) (forecast.Schedule, error) {
+	rv, err := q.RecipeForProduct(ctx, productID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return forecast.Plan(req, nil, forecast.Lead{}, needBy), nil
+		}
+		return forecast.Schedule{}, err
+	}
+
+	var plant *forecast.Plant
+	if rv.MashVesselName.Valid {
+		plant = &forecast.Plant{
+			Name:         rv.MashVesselName.String,
+			CapacityL:    rv.MashVesselCapacityL.Float64,
+			BatchVolumeL: rv.TargetWaterL.Float64,
+		}
+	}
+
+	lead, err := q.LongestLeadTimeForRecipe(ctx, rv.ID)
+	if err != nil {
+		return forecast.Schedule{}, err
+	}
+	return forecast.Plan(req, plant, forecast.Lead{
+		MaxDays:         lead.MaxDays,
+		Slowest:         lead.SlowestMaterial,
+		WithoutLeadTime: lead.WithoutLeadTime,
+		TotalLines:      lead.Total,
+	}, needBy), nil
+}
+
+// SetRecipeMashEquipment states which vessel a recipe is mashed in, or
+// clears it — which puts the mash count back to refusing rather than
+// leaving plant that is no longer used planning the work.
+func (s *SchedulingService) SetRecipeMashEquipment(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.SetRecipeMashEquipmentRequest],
+) (*connect.Response[stillhousev1.SetRecipeMashEquipmentResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	rvID, err := uuid.Parse(req.Msg.GetRecipeVersionId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid recipe_version_id"))
+	}
+	var eq uuid.NullUUID
+	if v := strings.TrimSpace(req.Msg.GetEquipmentId()); v != "" {
+		id, e := uuid.Parse(v)
+		if e != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid equipment_id"))
+		}
+		eq = uuid.NullUUID{UUID: id, Valid: true}
+	}
+	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := q.SetRecipeMashEquipment(ctx, sqlcgen.SetRecipeMashEquipmentParams{
+			ID: rvID, MashEquipmentID: eq,
+		}); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "recipe_version", rvID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{"mash_equipment_id": req.Msg.GetEquipmentId()})
+	}); err != nil {
+		s.logger.Error("SetRecipeMashEquipment", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.SetRecipeMashEquipmentResponse{}), nil
 }
 
 // recipeBatchFor projects one batch of the recipe a product is planned

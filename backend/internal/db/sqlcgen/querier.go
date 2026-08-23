@@ -751,6 +751,14 @@ type Querier interface {
 	// and recipe versions take no row lock at all). Reversing that in one
 	// caller and not another is how two of these deadlock.
 	LockDocumentSequence(ctx context.Context, counter string) error
+	// The longest lead time across a recipe's materials, and which one it is.
+	//
+	// The longest rather than the average, because an order arrives when its
+	// slowest line does. Materials with no lead time recorded are counted
+	// separately: a bill where half the lines have no lead time gives an
+	// order-by date that is only as good as the half that does, and saying so
+	// is the difference between a date and a guess.
+	LongestLeadTimeForRecipe(ctx context.Context, recipeVersionID uuid.UUID) (LongestLeadTimeForRecipeRow, error)
 	LookupPOSProduct(ctx context.Context, arg LookupPOSProductParams) (uuid.UUID, error)
 	MarkAlertNotified(ctx context.Context, id uuid.UUID) error
 	MarkMaterialLotInvoiced(ctx context.Context, arg MarkMaterialLotInvoicedParams) (MaterialLot, error)
@@ -1063,6 +1071,7 @@ type Querier interface {
 	SetPurchaseOrderStatus(ctx context.Context, arg SetPurchaseOrderStatusParams) (PurchaseOrder, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
+	SetRecipeMashEquipment(ctx context.Context, arg SetRecipeMashEquipmentParams) error
 	SetRemovalShipment(ctx context.Context, arg SetRemovalShipmentParams) error
 	SetSalesOrderStatus(ctx context.Context, arg SetSalesOrderStatusParams) (SalesOrder, error)
 	SetShipmentShipDate(ctx context.Context, arg SetShipmentShipDateParams) (Shipment, error)

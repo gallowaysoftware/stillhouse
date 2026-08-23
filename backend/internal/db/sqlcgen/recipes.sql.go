@@ -104,7 +104,7 @@ INSERT INTO recipe_versions (
     gin_ngs_input_l, gin_ngs_input_abv_pct
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
-) RETURNING id, tenant_id, recipe_id, version_no, notes, mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct
+) RETURNING id, tenant_id, recipe_id, version_no, notes, mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct, mash_equipment_id
 `
 
 type CreateRecipeVersionParams struct {
@@ -156,6 +156,7 @@ func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersi
 		&i.MacerationHours,
 		&i.GinNgsInputL,
 		&i.GinNgsInputAbvPct,
+		&i.MashEquipmentID,
 	)
 	return i, err
 }
@@ -182,7 +183,7 @@ func (q *Queries) GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error) {
 }
 
 const getRecipeVersion = `-- name: GetRecipeVersion :one
-SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct FROM recipe_versions WHERE id = $1
+SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct, mash_equipment_id FROM recipe_versions WHERE id = $1
 `
 
 func (q *Queries) GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error) {
@@ -204,6 +205,7 @@ func (q *Queries) GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVer
 		&i.MacerationHours,
 		&i.GinNgsInputL,
 		&i.GinNgsInputAbvPct,
+		&i.MashEquipmentID,
 	)
 	return i, err
 }
@@ -325,7 +327,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uui
 
 const listRecipeVersions = `-- name: ListRecipeVersions :many
 SELECT
-    v.id, v.tenant_id, v.recipe_id, v.version_no, v.notes, v.mash_efficiency_fraction, v.ferment_efficiency_fraction, v.distillation_recovery_fraction, v.target_water_l, v.created_at, v.tasting_notes, v.distillation_method, v.maceration_hours, v.gin_ngs_input_l, v.gin_ngs_input_abv_pct,
+    v.id, v.tenant_id, v.recipe_id, v.version_no, v.notes, v.mash_efficiency_fraction, v.ferment_efficiency_fraction, v.distillation_recovery_fraction, v.target_water_l, v.created_at, v.tasting_notes, v.distillation_method, v.maceration_hours, v.gin_ngs_input_l, v.gin_ngs_input_abv_pct, v.mash_equipment_id,
     s.juniper       AS sensory_juniper,
     s.citrus        AS sensory_citrus,
     s.herbal        AS sensory_herbal,
@@ -374,6 +376,7 @@ type ListRecipeVersionsRow struct {
 	MacerationHours              pgtype.Float8      `json:"maceration_hours"`
 	GinNgsInputL                 pgtype.Float8      `json:"gin_ngs_input_l"`
 	GinNgsInputAbvPct            pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
+	MashEquipmentID              uuid.NullUUID      `json:"mash_equipment_id"`
 	SensoryJuniper               pgtype.Int2        `json:"sensory_juniper"`
 	SensoryCitrus                pgtype.Int2        `json:"sensory_citrus"`
 	SensoryHerbal                pgtype.Int2        `json:"sensory_herbal"`
@@ -432,6 +435,7 @@ func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([
 			&i.MacerationHours,
 			&i.GinNgsInputL,
 			&i.GinNgsInputAbvPct,
+			&i.MashEquipmentID,
 			&i.SensoryJuniper,
 			&i.SensoryCitrus,
 			&i.SensoryHerbal,

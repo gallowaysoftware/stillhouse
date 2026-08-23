@@ -165,15 +165,14 @@ they need, and the grain to make it — scaled through the recipe a product
 is now explicitly linked to, with free and maturing alcohol reported
 apart.
 
-What is left of this item is the part that needs plant, not arithmetic:
+Capacity and lead time followed in stage 205: batches become mashes of a
+stated vessel, and the bill gets an order-by date from its slowest line.
 
-- **Capacity.** A requirement of 2.4 batches is three mashes on a tun of a
-  given size, and Stillhouse knows the equipment register but not which
-  vessel a recipe is mashed in. Wants a link from recipe to plant, and
-  the same refusal discipline when it is unset.
-- **Lead time.** `materials.lead_time_days` exists and nothing reads it.
-  A grain requirement for next month is only actionable if it says when
-  to order.
+F7 is done as far as arithmetic goes. What could still be built on it is
+scheduling proper — putting those mashes on the calendar against the work
+already booked on that vessel, which stage 185's board has the data for
+and does not do. That is a different item in shape from forecasting, and
+belongs with `F3` rather than here.
 
 ---
 

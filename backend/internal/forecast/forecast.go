@@ -224,3 +224,90 @@ func roundTo(v float64, places int) float64 {
 	p := math.Pow(10, float64(places))
 	return math.Round(v*p) / p
 }
+
+// Plant is the vessel a recipe is mashed in, when one is stated.
+type Plant struct {
+	Name      string
+	CapacityL float64
+	// BatchVolumeL is the recipe's own batch volume, so the two can be
+	// compared. Zero means the recipe does not say, which is its own
+	// refusal — a mash count against an unknown batch size is arithmetic
+	// with a hole in it.
+	BatchVolumeL float64
+}
+
+// Lead is what is known about how long the materials take to arrive.
+type Lead struct {
+	MaxDays int32
+	// Slowest names the material that sets the date, because that is the
+	// one to chase.
+	Slowest string
+	// WithoutLeadTime is how many lines have none recorded. A date
+	// computed over half a bill is only as good as that half, and an
+	// order-by date nobody can trust is worse than none.
+	WithoutLeadTime int32
+	TotalLines      int32
+}
+
+// Schedule is when to mash and when to order.
+type Schedule struct {
+	// Mashes is the batch count rounded up to whole mashes of the stated
+	// vessel. Zero and unavailable are different, as everywhere else.
+	Mashes          int32
+	MashesAvailable bool
+	MashesMissing   string
+	VesselName      string
+
+	OrderBy          string
+	OrderByAvailable bool
+	OrderByMissing   string
+}
+
+// Plan works out the mashes a requirement implies and the date the
+// materials have to be ordered by.
+//
+// needBy is the first day of the period being planned: the materials have
+// to be in before anything is mashed, so the order date counts back from
+// there.
+func Plan(req Requirement, p *Plant, l Lead, needBy time.Time) Schedule {
+	var s Schedule
+
+	switch {
+	case !req.GrainAvailable:
+		s.MashesMissing = "the materials could not be worked out, so neither can the number of mashes."
+	case p == nil:
+		s.MashesMissing = "no mash vessel is stated on this recipe, so the batches cannot be turned into mashes. Two and a bit batches is three mashes on one tun and two on a larger one."
+	case p.CapacityL <= 0:
+		s.MashesMissing = fmt.Sprintf("%s has no capacity recorded, so it cannot say how many mashes this comes to.", p.Name)
+	case p.BatchVolumeL <= 0:
+		s.MashesMissing = "this recipe does not state its batch volume, so it cannot be measured against the vessel."
+	default:
+		s.VesselName = p.Name
+		// Two constraints, and the tighter one wins: the recipe needs
+		// this many batches, and each batch may itself be larger than the
+		// tun — in which case one batch is already more than one mash.
+		perMash := p.CapacityL / p.BatchVolumeL
+		if perMash <= 0 {
+			s.MashesMissing = fmt.Sprintf("%s is smaller than one batch of this recipe.", p.Name)
+			break
+		}
+		s.Mashes = int32(math.Ceil(req.Batches / perMash))
+		s.MashesAvailable = true
+	}
+
+	switch {
+	case l.TotalLines == 0:
+		s.OrderByMissing = "this recipe has no materials on it, so there is nothing to order."
+	case l.WithoutLeadTime > 0:
+		// Deliberately a refusal rather than a date computed over the
+		// lines that happen to have one. A date that is right for half a
+		// bill is a date somebody will trust.
+		s.OrderByMissing = fmt.Sprintf(
+			"%d of %d materials on this recipe have no lead time recorded, so an order-by date would only be right for the rest. Record them on the material.",
+			l.WithoutLeadTime, l.TotalLines)
+	default:
+		s.OrderBy = needBy.AddDate(0, 0, -int(l.MaxDays)).Format("2006-01-02")
+		s.OrderByAvailable = true
+	}
+	return s
+}

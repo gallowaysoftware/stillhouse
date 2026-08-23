@@ -3641,6 +3641,8 @@ type RecipeVersion struct {
 	MacerationHours              pgtype.Float8      `json:"maceration_hours"`
 	GinNgsInputL                 pgtype.Float8      `json:"gin_ngs_input_l"`
 	GinNgsInputAbvPct            pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
+	// The vessel this recipe is mashed in. NULL means unstated, and the number of mashes a requirement implies is refused rather than assumed from whatever plant happens to be largest.
+	MashEquipmentID uuid.NullUUID `json:"mash_equipment_id"`
 }
 
 type RecipeVersionSensory struct {

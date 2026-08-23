@@ -684,11 +684,24 @@ type ForecastLine struct {
 	// it is the number an operator reasons in, and because it makes the
 	// linear-scaling assumption visible: 2.4 batches is three mashes, and
 	// no arithmetic here can decide that for them.
-	Batches       float64                `protobuf:"fixed64,16,opt,name=batches,proto3" json:"batches,omitempty"`
-	Materials     []*MaterialRequirement `protobuf:"bytes,17,rep,name=materials,proto3" json:"materials,omitempty"`
-	RecipeName    string                 `protobuf:"bytes,18,opt,name=recipe_name,json=recipeName,proto3" json:"recipe_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Batches    float64                `protobuf:"fixed64,16,opt,name=batches,proto3" json:"batches,omitempty"`
+	Materials  []*MaterialRequirement `protobuf:"bytes,17,rep,name=materials,proto3" json:"materials,omitempty"`
+	RecipeName string                 `protobuf:"bytes,18,opt,name=recipe_name,json=recipeName,proto3" json:"recipe_name,omitempty"`
+	// Batches rounded up to whole mashes of the vessel the recipe states.
+	// A batch count is arithmetic; a mash count is a fact about the plant,
+	// and an unstated vessel refuses rather than assuming one.
+	Mashes          int32  `protobuf:"varint,19,opt,name=mashes,proto3" json:"mashes,omitempty"`
+	MashesAvailable bool   `protobuf:"varint,20,opt,name=mashes_available,json=mashesAvailable,proto3" json:"mashes_available,omitempty"`
+	MashesMissing   string `protobuf:"bytes,21,opt,name=mashes_missing,json=mashesMissing,proto3" json:"mashes_missing,omitempty"`
+	MashVessel      string `protobuf:"bytes,22,opt,name=mash_vessel,json=mashVessel,proto3" json:"mash_vessel,omitempty"`
+	// When the materials have to be ordered, counting back from the start
+	// of the period by the longest lead time on the bill — an order arrives
+	// when its slowest line does.
+	OrderBy          string `protobuf:"bytes,23,opt,name=order_by,json=orderBy,proto3" json:"order_by,omitempty"`
+	OrderByAvailable bool   `protobuf:"varint,24,opt,name=order_by_available,json=orderByAvailable,proto3" json:"order_by_available,omitempty"`
+	OrderByMissing   string `protobuf:"bytes,25,opt,name=order_by_missing,json=orderByMissing,proto3" json:"order_by_missing,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *ForecastLine) Reset() {
@@ -843,6 +856,55 @@ func (x *ForecastLine) GetMaterials() []*MaterialRequirement {
 func (x *ForecastLine) GetRecipeName() string {
 	if x != nil {
 		return x.RecipeName
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetMashes() int32 {
+	if x != nil {
+		return x.Mashes
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetMashesAvailable() bool {
+	if x != nil {
+		return x.MashesAvailable
+	}
+	return false
+}
+
+func (x *ForecastLine) GetMashesMissing() string {
+	if x != nil {
+		return x.MashesMissing
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetMashVessel() string {
+	if x != nil {
+		return x.MashVessel
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetOrderBy() string {
+	if x != nil {
+		return x.OrderBy
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetOrderByAvailable() bool {
+	if x != nil {
+		return x.OrderByAvailable
+	}
+	return false
+}
+
+func (x *ForecastLine) GetOrderByMissing() string {
+	if x != nil {
+		return x.OrderByMissing
 	}
 	return ""
 }
@@ -1375,6 +1437,96 @@ func (*SetProductRecipeResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{14}
 }
 
+type SetRecipeMashEquipmentRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	RecipeVersionId string                 `protobuf:"bytes,1,opt,name=recipe_version_id,json=recipeVersionId,proto3" json:"recipe_version_id,omitempty"`
+	// Empty clears it, putting the mash count back to refusing rather than
+	// leaving a vessel that is no longer used planning the work.
+	EquipmentId   string `protobuf:"bytes,2,opt,name=equipment_id,json=equipmentId,proto3" json:"equipment_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetRecipeMashEquipmentRequest) Reset() {
+	*x = SetRecipeMashEquipmentRequest{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetRecipeMashEquipmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRecipeMashEquipmentRequest) ProtoMessage() {}
+
+func (x *SetRecipeMashEquipmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRecipeMashEquipmentRequest.ProtoReflect.Descriptor instead.
+func (*SetRecipeMashEquipmentRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SetRecipeMashEquipmentRequest) GetRecipeVersionId() string {
+	if x != nil {
+		return x.RecipeVersionId
+	}
+	return ""
+}
+
+func (x *SetRecipeMashEquipmentRequest) GetEquipmentId() string {
+	if x != nil {
+		return x.EquipmentId
+	}
+	return ""
+}
+
+type SetRecipeMashEquipmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetRecipeMashEquipmentResponse) Reset() {
+	*x = SetRecipeMashEquipmentResponse{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetRecipeMashEquipmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetRecipeMashEquipmentResponse) ProtoMessage() {}
+
+func (x *SetRecipeMashEquipmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetRecipeMashEquipmentResponse.ProtoReflect.Descriptor instead.
+func (*SetRecipeMashEquipmentResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{16}
+}
+
 var File_stillhouse_v1_scheduling_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
@@ -1433,7 +1585,7 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\x10short_of_alcohol\x18\a \x01(\bR\x0eshortOfAlcohol\x12\x14\n" +
 	"\x05basis\x18\b \x01(\tR\x05basis\x12\x1f\n" +
 	"\vblind_spots\x18\t \x03(\tR\n" +
-	"blindSpots\"\xaa\x05\n" +
+	"blindSpots\"\xa8\a\n" +
 	"\fForecastLine\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12!\n" +
@@ -1459,7 +1611,15 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\abatches\x18\x10 \x01(\x01R\abatches\x12@\n" +
 	"\tmaterials\x18\x11 \x03(\v2\".stillhouse.v1.MaterialRequirementR\tmaterials\x12\x1f\n" +
 	"\vrecipe_name\x18\x12 \x01(\tR\n" +
-	"recipeName\"_\n" +
+	"recipeName\x12\x16\n" +
+	"\x06mashes\x18\x13 \x01(\x05R\x06mashes\x12)\n" +
+	"\x10mashes_available\x18\x14 \x01(\bR\x0fmashesAvailable\x12%\n" +
+	"\x0emashes_missing\x18\x15 \x01(\tR\rmashesMissing\x12\x1f\n" +
+	"\vmash_vessel\x18\x16 \x01(\tR\n" +
+	"mashVessel\x12\x19\n" +
+	"\border_by\x18\x17 \x01(\tR\aorderBy\x12,\n" +
+	"\x12order_by_available\x18\x18 \x01(\bR\x10orderByAvailable\x12(\n" +
+	"\x10order_by_missing\x18\x19 \x01(\tR\x0eorderByMissing\"_\n" +
 	"\x13MaterialRequirement\x12\x1a\n" +
 	"\bmaterial\x18\x01 \x01(\tR\bmaterial\x12\x1a\n" +
 	"\bquantity\x18\x02 \x01(\x01R\bquantity\x12\x10\n" +
@@ -1496,18 +1656,23 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12*\n" +
 	"\x11recipe_version_id\x18\x02 \x01(\tR\x0frecipeVersionId\"\x1a\n" +
-	"\x18SetProductRecipeResponse*\x9e\x01\n" +
+	"\x18SetProductRecipeResponse\"n\n" +
+	"\x1dSetRecipeMashEquipmentRequest\x12*\n" +
+	"\x11recipe_version_id\x18\x01 \x01(\tR\x0frecipeVersionId\x12!\n" +
+	"\fequipment_id\x18\x02 \x01(\tR\vequipmentId\" \n" +
+	"\x1eSetRecipeMashEquipmentResponse*\x9e\x01\n" +
 	"\x0eForecastMethod\x12\x1f\n" +
 	"\x1bFORECAST_METHOD_UNSPECIFIED\x10\x00\x12$\n" +
 	" FORECAST_METHOD_TRAILING_AVERAGE\x10\x01\x12)\n" +
 	"%FORECAST_METHOD_SAME_PERIOD_LAST_YEAR\x10\x02\x12\x1a\n" +
-	"\x16FORECAST_METHOD_MANUAL\x10\x032\x89\x04\n" +
+	"\x16FORECAST_METHOD_MANUAL\x10\x032\x80\x05\n" +
 	"\x11SchedulingService\x12]\n" +
 	"\x0eProductionPlan\x12$.stillhouse.v1.ProductionPlanRequest\x1a%.stillhouse.v1.ProductionPlanResponse\x12]\n" +
 	"\x0eDemandForecast\x12$.stillhouse.v1.DemandForecastRequest\x1a%.stillhouse.v1.DemandForecastResponse\x12f\n" +
 	"\x11SetForecastMethod\x12'.stillhouse.v1.SetForecastMethodRequest\x1a(.stillhouse.v1.SetForecastMethodResponse\x12i\n" +
 	"\x12SaveDemandForecast\x12(.stillhouse.v1.SaveDemandForecastRequest\x1a).stillhouse.v1.SaveDemandForecastResponse\x12c\n" +
-	"\x10SetProductRecipe\x12&.stillhouse.v1.SetProductRecipeRequest\x1a'.stillhouse.v1.SetProductRecipeResponseB\xd3\x01\n" +
+	"\x10SetProductRecipe\x12&.stillhouse.v1.SetProductRecipeRequest\x1a'.stillhouse.v1.SetProductRecipeResponse\x12u\n" +
+	"\x16SetRecipeMashEquipment\x12,.stillhouse.v1.SetRecipeMashEquipmentRequest\x1a-.stillhouse.v1.SetRecipeMashEquipmentResponseB\xd3\x01\n" +
 	"\x11com.stillhouse.v1B\x0fSchedulingProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1523,30 +1688,32 @@ func file_stillhouse_v1_scheduling_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_scheduling_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_scheduling_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
+var file_stillhouse_v1_scheduling_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_stillhouse_v1_scheduling_proto_goTypes = []any{
-	(ForecastMethod)(0),                // 0: stillhouse.v1.ForecastMethod
-	(*DemandLine)(nil),                 // 1: stillhouse.v1.DemandLine
-	(*PlannableEquipment)(nil),         // 2: stillhouse.v1.PlannableEquipment
-	(*ScheduledWork)(nil),              // 3: stillhouse.v1.ScheduledWork
-	(*ProductionPlanRequest)(nil),      // 4: stillhouse.v1.ProductionPlanRequest
-	(*ProductionPlanResponse)(nil),     // 5: stillhouse.v1.ProductionPlanResponse
-	(*ForecastLine)(nil),               // 6: stillhouse.v1.ForecastLine
-	(*MaterialRequirement)(nil),        // 7: stillhouse.v1.MaterialRequirement
-	(*DemandForecastRequest)(nil),      // 8: stillhouse.v1.DemandForecastRequest
-	(*DemandForecastResponse)(nil),     // 9: stillhouse.v1.DemandForecastResponse
-	(*SetForecastMethodRequest)(nil),   // 10: stillhouse.v1.SetForecastMethodRequest
-	(*SetForecastMethodResponse)(nil),  // 11: stillhouse.v1.SetForecastMethodResponse
-	(*SaveDemandForecastRequest)(nil),  // 12: stillhouse.v1.SaveDemandForecastRequest
-	(*SaveDemandForecastResponse)(nil), // 13: stillhouse.v1.SaveDemandForecastResponse
-	(*SetProductRecipeRequest)(nil),    // 14: stillhouse.v1.SetProductRecipeRequest
-	(*SetProductRecipeResponse)(nil),   // 15: stillhouse.v1.SetProductRecipeResponse
-	(EquipmentKind)(0),                 // 16: stillhouse.v1.EquipmentKind
-	(EquipmentStatus)(0),               // 17: stillhouse.v1.EquipmentStatus
+	(ForecastMethod)(0),                    // 0: stillhouse.v1.ForecastMethod
+	(*DemandLine)(nil),                     // 1: stillhouse.v1.DemandLine
+	(*PlannableEquipment)(nil),             // 2: stillhouse.v1.PlannableEquipment
+	(*ScheduledWork)(nil),                  // 3: stillhouse.v1.ScheduledWork
+	(*ProductionPlanRequest)(nil),          // 4: stillhouse.v1.ProductionPlanRequest
+	(*ProductionPlanResponse)(nil),         // 5: stillhouse.v1.ProductionPlanResponse
+	(*ForecastLine)(nil),                   // 6: stillhouse.v1.ForecastLine
+	(*MaterialRequirement)(nil),            // 7: stillhouse.v1.MaterialRequirement
+	(*DemandForecastRequest)(nil),          // 8: stillhouse.v1.DemandForecastRequest
+	(*DemandForecastResponse)(nil),         // 9: stillhouse.v1.DemandForecastResponse
+	(*SetForecastMethodRequest)(nil),       // 10: stillhouse.v1.SetForecastMethodRequest
+	(*SetForecastMethodResponse)(nil),      // 11: stillhouse.v1.SetForecastMethodResponse
+	(*SaveDemandForecastRequest)(nil),      // 12: stillhouse.v1.SaveDemandForecastRequest
+	(*SaveDemandForecastResponse)(nil),     // 13: stillhouse.v1.SaveDemandForecastResponse
+	(*SetProductRecipeRequest)(nil),        // 14: stillhouse.v1.SetProductRecipeRequest
+	(*SetProductRecipeResponse)(nil),       // 15: stillhouse.v1.SetProductRecipeResponse
+	(*SetRecipeMashEquipmentRequest)(nil),  // 16: stillhouse.v1.SetRecipeMashEquipmentRequest
+	(*SetRecipeMashEquipmentResponse)(nil), // 17: stillhouse.v1.SetRecipeMashEquipmentResponse
+	(EquipmentKind)(0),                     // 18: stillhouse.v1.EquipmentKind
+	(EquipmentStatus)(0),                   // 19: stillhouse.v1.EquipmentStatus
 }
 var file_stillhouse_v1_scheduling_proto_depIdxs = []int32{
-	16, // 0: stillhouse.v1.PlannableEquipment.kind:type_name -> stillhouse.v1.EquipmentKind
-	17, // 1: stillhouse.v1.PlannableEquipment.status:type_name -> stillhouse.v1.EquipmentStatus
+	18, // 0: stillhouse.v1.PlannableEquipment.kind:type_name -> stillhouse.v1.EquipmentKind
+	19, // 1: stillhouse.v1.PlannableEquipment.status:type_name -> stillhouse.v1.EquipmentStatus
 	3,  // 2: stillhouse.v1.PlannableEquipment.scheduled:type_name -> stillhouse.v1.ScheduledWork
 	1,  // 3: stillhouse.v1.ProductionPlanResponse.demand:type_name -> stillhouse.v1.DemandLine
 	2,  // 4: stillhouse.v1.ProductionPlanResponse.equipment:type_name -> stillhouse.v1.PlannableEquipment
@@ -1560,13 +1727,15 @@ var file_stillhouse_v1_scheduling_proto_depIdxs = []int32{
 	10, // 12: stillhouse.v1.SchedulingService.SetForecastMethod:input_type -> stillhouse.v1.SetForecastMethodRequest
 	12, // 13: stillhouse.v1.SchedulingService.SaveDemandForecast:input_type -> stillhouse.v1.SaveDemandForecastRequest
 	14, // 14: stillhouse.v1.SchedulingService.SetProductRecipe:input_type -> stillhouse.v1.SetProductRecipeRequest
-	5,  // 15: stillhouse.v1.SchedulingService.ProductionPlan:output_type -> stillhouse.v1.ProductionPlanResponse
-	9,  // 16: stillhouse.v1.SchedulingService.DemandForecast:output_type -> stillhouse.v1.DemandForecastResponse
-	11, // 17: stillhouse.v1.SchedulingService.SetForecastMethod:output_type -> stillhouse.v1.SetForecastMethodResponse
-	13, // 18: stillhouse.v1.SchedulingService.SaveDemandForecast:output_type -> stillhouse.v1.SaveDemandForecastResponse
-	15, // 19: stillhouse.v1.SchedulingService.SetProductRecipe:output_type -> stillhouse.v1.SetProductRecipeResponse
-	15, // [15:20] is the sub-list for method output_type
-	10, // [10:15] is the sub-list for method input_type
+	16, // 15: stillhouse.v1.SchedulingService.SetRecipeMashEquipment:input_type -> stillhouse.v1.SetRecipeMashEquipmentRequest
+	5,  // 16: stillhouse.v1.SchedulingService.ProductionPlan:output_type -> stillhouse.v1.ProductionPlanResponse
+	9,  // 17: stillhouse.v1.SchedulingService.DemandForecast:output_type -> stillhouse.v1.DemandForecastResponse
+	11, // 18: stillhouse.v1.SchedulingService.SetForecastMethod:output_type -> stillhouse.v1.SetForecastMethodResponse
+	13, // 19: stillhouse.v1.SchedulingService.SaveDemandForecast:output_type -> stillhouse.v1.SaveDemandForecastResponse
+	15, // 20: stillhouse.v1.SchedulingService.SetProductRecipe:output_type -> stillhouse.v1.SetProductRecipeResponse
+	17, // 21: stillhouse.v1.SchedulingService.SetRecipeMashEquipment:output_type -> stillhouse.v1.SetRecipeMashEquipmentResponse
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
 	10, // [10:10] is the sub-list for extension type_name
 	10, // [10:10] is the sub-list for extension extendee
 	0,  // [0:10] is the sub-list for field type_name
@@ -1584,7 +1753,7 @@ func file_stillhouse_v1_scheduling_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_scheduling_proto_rawDesc), len(file_stillhouse_v1_scheduling_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   15,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

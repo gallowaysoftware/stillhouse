@@ -135,6 +135,7 @@ export function ForecastPanel() {
                   <th className="px-4 py-2 text-right">To make</th>
                   <th className="px-4 py-2 text-right">LAA</th>
                   <th className="px-4 py-2">Materials</th>
+                  <th className="px-4 py-2">Work</th>
                   <th className="px-4 py-2">Basis</th>
                   <th className="px-4 py-2"></th>
                 </tr>
@@ -178,6 +179,26 @@ export function ForecastPanel() {
                         </>
                       ) : (
                         <span className="text-fg-muted">{l.materialsMissing}</span>
+                      )}
+                    </td>
+                    {/* Two halves that refuse independently: the mash
+                        count wants a vessel on the recipe, the order date
+                        wants lead times on the materials. Somebody who has
+                        done one and not the other sees the half they have. */}
+                    <td className="px-4 py-2 text-xs">
+                      {l.mashesAvailable ? (
+                        <span>
+                          {l.mashes} mash{l.mashes === 1 ? "" : "es"} on {l.mashVessel}
+                        </span>
+                      ) : (
+                        <span className="text-fg-muted">{l.mashesMissing}</span>
+                      )}
+                      {l.orderByAvailable ? (
+                        <span className="block">order by {l.orderBy}</span>
+                      ) : (
+                        l.materialsAvailable && (
+                          <span className="block text-fg-muted">{l.orderByMissing}</span>
+                        )
                       )}
                     </td>
                     <td className="px-4 py-2 text-xs text-fg-muted">

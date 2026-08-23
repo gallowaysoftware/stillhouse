@@ -401,6 +401,7 @@ var procedureMinRole = map[string]minRole{
 	// Which recipe a product is planned from decides the grain a plan
 	// asks somebody to buy, so it is the back office's.
 	"/stillhouse.v1.SchedulingService/SetProductRecipe":       roleOwner,
+	"/stillhouse.v1.SchedulingService/SetRecipeMashEquipment": roleOwner,
 	"/stillhouse.v1.POSService/ListPOSSales":                  roleViewer,
 	"/stillhouse.v1.POSService/ListPOSProductMappings":        roleViewer,
 	"/stillhouse.v1.POSService/IngestPOSSales":                roleOperator,

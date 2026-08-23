@@ -62,6 +62,9 @@ const (
 	// SchedulingServiceSetProductRecipeProcedure is the fully-qualified name of the SchedulingService's
 	// SetProductRecipe RPC.
 	SchedulingServiceSetProductRecipeProcedure = "/stillhouse.v1.SchedulingService/SetProductRecipe"
+	// SchedulingServiceSetRecipeMashEquipmentProcedure is the fully-qualified name of the
+	// SchedulingService's SetRecipeMashEquipment RPC.
+	SchedulingServiceSetRecipeMashEquipmentProcedure = "/stillhouse.v1.SchedulingService/SetRecipeMashEquipment"
 )
 
 // SchedulingServiceClient is a client for the stillhouse.v1.SchedulingService service.
@@ -77,6 +80,7 @@ type SchedulingServiceClient interface {
 	// most of the time and wrong exactly when a recipe has changed, which
 	// is when somebody is most likely to be planning.
 	SetProductRecipe(context.Context, *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error)
+	SetRecipeMashEquipment(context.Context, *connect.Request[v1.SetRecipeMashEquipmentRequest]) (*connect.Response[v1.SetRecipeMashEquipmentResponse], error)
 }
 
 // NewSchedulingServiceClient constructs a client for the stillhouse.v1.SchedulingService service.
@@ -120,16 +124,23 @@ func NewSchedulingServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(schedulingServiceMethods.ByName("SetProductRecipe")),
 			connect.WithClientOptions(opts...),
 		),
+		setRecipeMashEquipment: connect.NewClient[v1.SetRecipeMashEquipmentRequest, v1.SetRecipeMashEquipmentResponse](
+			httpClient,
+			baseURL+SchedulingServiceSetRecipeMashEquipmentProcedure,
+			connect.WithSchema(schedulingServiceMethods.ByName("SetRecipeMashEquipment")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // schedulingServiceClient implements SchedulingServiceClient.
 type schedulingServiceClient struct {
-	productionPlan     *connect.Client[v1.ProductionPlanRequest, v1.ProductionPlanResponse]
-	demandForecast     *connect.Client[v1.DemandForecastRequest, v1.DemandForecastResponse]
-	setForecastMethod  *connect.Client[v1.SetForecastMethodRequest, v1.SetForecastMethodResponse]
-	saveDemandForecast *connect.Client[v1.SaveDemandForecastRequest, v1.SaveDemandForecastResponse]
-	setProductRecipe   *connect.Client[v1.SetProductRecipeRequest, v1.SetProductRecipeResponse]
+	productionPlan         *connect.Client[v1.ProductionPlanRequest, v1.ProductionPlanResponse]
+	demandForecast         *connect.Client[v1.DemandForecastRequest, v1.DemandForecastResponse]
+	setForecastMethod      *connect.Client[v1.SetForecastMethodRequest, v1.SetForecastMethodResponse]
+	saveDemandForecast     *connect.Client[v1.SaveDemandForecastRequest, v1.SaveDemandForecastResponse]
+	setProductRecipe       *connect.Client[v1.SetProductRecipeRequest, v1.SetProductRecipeResponse]
+	setRecipeMashEquipment *connect.Client[v1.SetRecipeMashEquipmentRequest, v1.SetRecipeMashEquipmentResponse]
 }
 
 // ProductionPlan calls stillhouse.v1.SchedulingService.ProductionPlan.
@@ -157,6 +168,11 @@ func (c *schedulingServiceClient) SetProductRecipe(ctx context.Context, req *con
 	return c.setProductRecipe.CallUnary(ctx, req)
 }
 
+// SetRecipeMashEquipment calls stillhouse.v1.SchedulingService.SetRecipeMashEquipment.
+func (c *schedulingServiceClient) SetRecipeMashEquipment(ctx context.Context, req *connect.Request[v1.SetRecipeMashEquipmentRequest]) (*connect.Response[v1.SetRecipeMashEquipmentResponse], error) {
+	return c.setRecipeMashEquipment.CallUnary(ctx, req)
+}
+
 // SchedulingServiceHandler is an implementation of the stillhouse.v1.SchedulingService service.
 type SchedulingServiceHandler interface {
 	ProductionPlan(context.Context, *connect.Request[v1.ProductionPlanRequest]) (*connect.Response[v1.ProductionPlanResponse], error)
@@ -170,6 +186,7 @@ type SchedulingServiceHandler interface {
 	// most of the time and wrong exactly when a recipe has changed, which
 	// is when somebody is most likely to be planning.
 	SetProductRecipe(context.Context, *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error)
+	SetRecipeMashEquipment(context.Context, *connect.Request[v1.SetRecipeMashEquipmentRequest]) (*connect.Response[v1.SetRecipeMashEquipmentResponse], error)
 }
 
 // NewSchedulingServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -209,6 +226,12 @@ func NewSchedulingServiceHandler(svc SchedulingServiceHandler, opts ...connect.H
 		connect.WithSchema(schedulingServiceMethods.ByName("SetProductRecipe")),
 		connect.WithHandlerOptions(opts...),
 	)
+	schedulingServiceSetRecipeMashEquipmentHandler := connect.NewUnaryHandler(
+		SchedulingServiceSetRecipeMashEquipmentProcedure,
+		svc.SetRecipeMashEquipment,
+		connect.WithSchema(schedulingServiceMethods.ByName("SetRecipeMashEquipment")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.SchedulingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SchedulingServiceProductionPlanProcedure:
@@ -221,6 +244,8 @@ func NewSchedulingServiceHandler(svc SchedulingServiceHandler, opts ...connect.H
 			schedulingServiceSaveDemandForecastHandler.ServeHTTP(w, r)
 		case SchedulingServiceSetProductRecipeProcedure:
 			schedulingServiceSetProductRecipeHandler.ServeHTTP(w, r)
+		case SchedulingServiceSetRecipeMashEquipmentProcedure:
+			schedulingServiceSetRecipeMashEquipmentHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -248,4 +273,8 @@ func (UnimplementedSchedulingServiceHandler) SaveDemandForecast(context.Context,
 
 func (UnimplementedSchedulingServiceHandler) SetProductRecipe(context.Context, *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.SetProductRecipe is not implemented"))
+}
+
+func (UnimplementedSchedulingServiceHandler) SetRecipeMashEquipment(context.Context, *connect.Request[v1.SetRecipeMashEquipmentRequest]) (*connect.Response[v1.SetRecipeMashEquipmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.SetRecipeMashEquipment is not implemented"))
 }

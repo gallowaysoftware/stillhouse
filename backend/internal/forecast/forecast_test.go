@@ -218,3 +218,95 @@ func TestRequire_RecipeProjectingNothingRefuses(t *testing.T) {
 		}
 	}
 }
+
+// A batch count is arithmetic; a mash count is a fact about the plant.
+// 2.4 batches is three mashes on one tun and two on a larger one, and
+// Stillhouse cannot pick the tun.
+
+var needBy = time.Date(2026, 9, 1, 0, 0, 0, 0, time.UTC)
+
+func aReq() Requirement {
+	return Requirement{GrainAvailable: true, Batches: 2.4, LAANeeded: 240}
+}
+
+func TestPlan_RoundsBatchesUpToWholeMashes(t *testing.T) {
+	// A tun that holds exactly one batch: 2.4 batches is three mashes.
+	got := Plan(aReq(), &Plant{Name: "Mash tun 1", CapacityL: 1000, BatchVolumeL: 1000},
+		Lead{MaxDays: 14, TotalLines: 2, Slowest: "Rye"}, needBy)
+	if !got.MashesAvailable {
+		t.Fatalf("refused: %s", got.MashesMissing)
+	}
+	if got.Mashes != 3 {
+		t.Errorf("mashes: got %d, want 3 — 2.4 batches does not fit in two", got.Mashes)
+	}
+
+	// A tun that holds two batches: the same requirement is two mashes.
+	big := Plan(aReq(), &Plant{Name: "Big tun", CapacityL: 2000, BatchVolumeL: 1000},
+		Lead{MaxDays: 14, TotalLines: 2}, needBy)
+	if big.Mashes != 2 {
+		t.Errorf("larger tun: got %d mashes, want 2", big.Mashes)
+	}
+}
+
+// No stated vessel refuses rather than assuming one. Picking the largest
+// would be right at a distillery with one tun and wrong at any that has
+// reason to own two.
+func TestPlan_NoVesselRefusesTheMashCount(t *testing.T) {
+	got := Plan(aReq(), nil, Lead{MaxDays: 14, TotalLines: 2}, needBy)
+	if got.MashesAvailable {
+		t.Fatalf("counted %d mashes with no vessel stated", got.Mashes)
+	}
+	if got.Mashes != 0 {
+		t.Errorf("refused but reported %d", got.Mashes)
+	}
+	if !strings.Contains(got.MashesMissing, "larger one") {
+		t.Errorf("refusal does not explain: %q", got.MashesMissing)
+	}
+	// The order-by half is independent and still works.
+	if !got.OrderByAvailable {
+		t.Errorf("a missing vessel also killed the order date: %s", got.OrderByMissing)
+	}
+}
+
+// The order date counts back from when the materials are needed, and the
+// longest lead time sets it — an order arrives when its slowest line does.
+func TestPlan_OrderByCountsBackFromTheSlowestLine(t *testing.T) {
+	got := Plan(aReq(), &Plant{Name: "T", CapacityL: 1000, BatchVolumeL: 1000},
+		Lead{MaxDays: 21, TotalLines: 3, Slowest: "Malted barley"}, needBy)
+	if !got.OrderByAvailable {
+		t.Fatalf("refused: %s", got.OrderByMissing)
+	}
+	if got.OrderBy != "2026-08-11" {
+		t.Errorf("order by: got %s, want 2026-08-11 (21 days before 1 September)", got.OrderBy)
+	}
+}
+
+// A bill where some lines have no lead time gives a date that is only
+// right for the rest, and a date somebody trusts is worse than none.
+func TestPlan_PartialLeadTimesRefuseTheDate(t *testing.T) {
+	got := Plan(aReq(), &Plant{Name: "T", CapacityL: 1000, BatchVolumeL: 1000},
+		Lead{MaxDays: 21, TotalLines: 4, WithoutLeadTime: 2}, needBy)
+	if got.OrderByAvailable {
+		t.Fatalf("gave the date %s over a bill half of which has no lead time", got.OrderBy)
+	}
+	if !strings.Contains(got.OrderByMissing, "2 of 4") {
+		t.Errorf("refusal does not say how many: %q", got.OrderByMissing)
+	}
+	// And the mash half is independent.
+	if !got.MashesAvailable {
+		t.Errorf("missing lead times also killed the mash count: %s", got.MashesMissing)
+	}
+}
+
+// A vessel with no capacity recorded cannot say how many mashes anything
+// comes to, and dividing by it would produce an infinity.
+func TestPlan_VesselWithoutCapacityRefuses(t *testing.T) {
+	got := Plan(aReq(), &Plant{Name: "Unmeasured tun", BatchVolumeL: 1000},
+		Lead{MaxDays: 7, TotalLines: 1}, needBy)
+	if got.MashesAvailable {
+		t.Fatalf("counted %d mashes against a vessel with no capacity", got.Mashes)
+	}
+	if !strings.Contains(got.MashesMissing, "no capacity") {
+		t.Errorf("refusal: %q", got.MashesMissing)
+	}
+}

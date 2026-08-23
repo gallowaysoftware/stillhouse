@@ -55,10 +55,15 @@ RETURNING *;
 -- into alcohol. Refuses (no rows) when the operator has not said which
 -- recipe a product comes from — see 000068.
 SELECT rv.id, rv.mash_efficiency_fraction, rv.ferment_efficiency_fraction,
-       rv.distillation_recovery_fraction, r.name AS recipe_name, rv.version_no
+       rv.distillation_recovery_fraction, r.name AS recipe_name, rv.version_no,
+       rv.target_water_l,
+       -- The vessel, when one is stated. Both nullable: an unstated
+       -- vessel refuses the mash count rather than assuming one.
+       e.name AS mash_vessel_name, e.capacity_l AS mash_vessel_capacity_l
 FROM products p
 JOIN recipe_versions rv ON rv.id = p.recipe_version_id
 JOIN recipes r          ON r.id = rv.recipe_id
+LEFT JOIN equipment e   ON e.id = rv.mash_equipment_id AND e.retired_on IS NULL
 WHERE p.id = $1;
 
 -- name: RecipeIngredientsForProjection :many
@@ -83,3 +88,22 @@ WHERE NOT archived
   AND owner_customer_id IS NULL
   AND possession = 'held'
   AND current_laa > 0;
+
+-- name: SetRecipeMashEquipment :exec
+UPDATE recipe_versions SET mash_equipment_id = $2 WHERE id = $1;
+
+-- name: LongestLeadTimeForRecipe :one
+-- The longest lead time across a recipe's materials, and which one it is.
+--
+-- The longest rather than the average, because an order arrives when its
+-- slowest line does. Materials with no lead time recorded are counted
+-- separately: a bill where half the lines have no lead time gives an
+-- order-by date that is only as good as the half that does, and saying so
+-- is the difference between a date and a guess.
+SELECT COALESCE(MAX(m.lead_time_days), 0)::int AS max_days,
+       COUNT(*) FILTER (WHERE m.lead_time_days IS NULL OR m.lead_time_days = 0)::int AS without_lead_time,
+       COUNT(*)::int AS total,
+       COALESCE((ARRAY_AGG(m.name ORDER BY m.lead_time_days DESC NULLS LAST))[1], '')::text AS slowest_material
+FROM recipe_ingredients ri
+JOIN materials m ON m.id = ri.material_id
+WHERE ri.recipe_version_id = $1;

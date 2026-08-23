@@ -123,6 +123,42 @@ func (q *Queries) ListDemandForecastsForPeriod(ctx context.Context, arg ListDema
 	return items, nil
 }
 
+const longestLeadTimeForRecipe = `-- name: LongestLeadTimeForRecipe :one
+SELECT COALESCE(MAX(m.lead_time_days), 0)::int AS max_days,
+       COUNT(*) FILTER (WHERE m.lead_time_days IS NULL OR m.lead_time_days = 0)::int AS without_lead_time,
+       COUNT(*)::int AS total,
+       COALESCE((ARRAY_AGG(m.name ORDER BY m.lead_time_days DESC NULLS LAST))[1], '')::text AS slowest_material
+FROM recipe_ingredients ri
+JOIN materials m ON m.id = ri.material_id
+WHERE ri.recipe_version_id = $1
+`
+
+type LongestLeadTimeForRecipeRow struct {
+	MaxDays         int32  `json:"max_days"`
+	WithoutLeadTime int32  `json:"without_lead_time"`
+	Total           int32  `json:"total"`
+	SlowestMaterial string `json:"slowest_material"`
+}
+
+// The longest lead time across a recipe's materials, and which one it is.
+//
+// The longest rather than the average, because an order arrives when its
+// slowest line does. Materials with no lead time recorded are counted
+// separately: a bill where half the lines have no lead time gives an
+// order-by date that is only as good as the half that does, and saying so
+// is the difference between a date and a guess.
+func (q *Queries) LongestLeadTimeForRecipe(ctx context.Context, recipeVersionID uuid.UUID) (LongestLeadTimeForRecipeRow, error) {
+	row := q.db.QueryRow(ctx, longestLeadTimeForRecipe, recipeVersionID)
+	var i LongestLeadTimeForRecipeRow
+	err := row.Scan(
+		&i.MaxDays,
+		&i.WithoutLeadTime,
+		&i.Total,
+		&i.SlowestMaterial,
+	)
+	return i, err
+}
+
 const monthlyRemovalsByProduct = `-- name: MonthlyRemovalsByProduct :many
 SELECT pi.product_id,
        p.name AS product_name,
@@ -179,20 +215,28 @@ func (q *Queries) MonthlyRemovalsByProduct(ctx context.Context, since pgtype.Dat
 
 const recipeForProduct = `-- name: RecipeForProduct :one
 SELECT rv.id, rv.mash_efficiency_fraction, rv.ferment_efficiency_fraction,
-       rv.distillation_recovery_fraction, r.name AS recipe_name, rv.version_no
+       rv.distillation_recovery_fraction, r.name AS recipe_name, rv.version_no,
+       rv.target_water_l,
+       -- The vessel, when one is stated. Both nullable: an unstated
+       -- vessel refuses the mash count rather than assuming one.
+       e.name AS mash_vessel_name, e.capacity_l AS mash_vessel_capacity_l
 FROM products p
 JOIN recipe_versions rv ON rv.id = p.recipe_version_id
 JOIN recipes r          ON r.id = rv.recipe_id
+LEFT JOIN equipment e   ON e.id = rv.mash_equipment_id AND e.retired_on IS NULL
 WHERE p.id = $1
 `
 
 type RecipeForProductRow struct {
-	ID                           uuid.UUID `json:"id"`
-	MashEfficiencyFraction       float64   `json:"mash_efficiency_fraction"`
-	FermentEfficiencyFraction    float64   `json:"ferment_efficiency_fraction"`
-	DistillationRecoveryFraction float64   `json:"distillation_recovery_fraction"`
-	RecipeName                   string    `json:"recipe_name"`
-	VersionNo                    int32     `json:"version_no"`
+	ID                           uuid.UUID     `json:"id"`
+	MashEfficiencyFraction       float64       `json:"mash_efficiency_fraction"`
+	FermentEfficiencyFraction    float64       `json:"ferment_efficiency_fraction"`
+	DistillationRecoveryFraction float64       `json:"distillation_recovery_fraction"`
+	RecipeName                   string        `json:"recipe_name"`
+	VersionNo                    int32         `json:"version_no"`
+	TargetWaterL                 pgtype.Float8 `json:"target_water_l"`
+	MashVesselName               pgtype.Text   `json:"mash_vessel_name"`
+	MashVesselCapacityL          pgtype.Float8 `json:"mash_vessel_capacity_l"`
 }
 
 // The bill a product is planned from, with the efficiencies that turn it
@@ -208,6 +252,9 @@ func (q *Queries) RecipeForProduct(ctx context.Context, id uuid.UUID) (RecipeFor
 		&i.DistillationRecoveryFraction,
 		&i.RecipeName,
 		&i.VersionNo,
+		&i.TargetWaterL,
+		&i.MashVesselName,
+		&i.MashVesselCapacityL,
 	)
 	return i, err
 }
@@ -318,6 +365,20 @@ func (q *Queries) SetProductRecipe(ctx context.Context, arg SetProductRecipePara
 		&i.RecipeVersionID,
 	)
 	return i, err
+}
+
+const setRecipeMashEquipment = `-- name: SetRecipeMashEquipment :exec
+UPDATE recipe_versions SET mash_equipment_id = $2 WHERE id = $1
+`
+
+type SetRecipeMashEquipmentParams struct {
+	ID              uuid.UUID     `json:"id"`
+	MashEquipmentID uuid.NullUUID `json:"mash_equipment_id"`
+}
+
+func (q *Queries) SetRecipeMashEquipment(ctx context.Context, arg SetRecipeMashEquipmentParams) error {
+	_, err := q.db.Exec(ctx, setRecipeMashEquipment, arg.ID, arg.MashEquipmentID)
+	return err
 }
 
 const upsertDemandForecast = `-- name: UpsertDemandForecast :one

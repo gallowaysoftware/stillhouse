@@ -110,6 +110,7 @@ service SchedulingService {
   // most of the time and wrong exactly when a recipe has changed, which
   // is when somebody is most likely to be planning.
   rpc SetProductRecipe(SetProductRecipeRequest) returns (SetProductRecipeResponse);
+  rpc SetRecipeMashEquipment(SetRecipeMashEquipmentRequest) returns (SetRecipeMashEquipmentResponse);
 }
 
 // Demand forecasting. PLAN F7.
@@ -174,6 +175,21 @@ message ForecastLine {
   double batches = 16;
   repeated MaterialRequirement materials = 17;
   string recipe_name = 18;
+
+  // Batches rounded up to whole mashes of the vessel the recipe states.
+  // A batch count is arithmetic; a mash count is a fact about the plant,
+  // and an unstated vessel refuses rather than assuming one.
+  int32  mashes = 19;
+  bool   mashes_available = 20;
+  string mashes_missing = 21;
+  string mash_vessel = 22;
+
+  // When the materials have to be ordered, counting back from the start
+  // of the period by the longest lead time on the bill — an order arrives
+  // when its slowest line does.
+  string order_by = 23;
+  bool   order_by_available = 24;
+  string order_by_missing = 25;
 }
 
 message MaterialRequirement {
@@ -233,3 +249,11 @@ message SetProductRecipeRequest {
   string recipe_version_id = 2;
 }
 message SetProductRecipeResponse {}
+
+message SetRecipeMashEquipmentRequest {
+  string recipe_version_id = 1;
+  // Empty clears it, putting the mash count back to refusing rather than
+  // leaving a vessel that is no longer used planning the work.
+  string equipment_id = 2;
+}
+message SetRecipeMashEquipmentResponse {}
