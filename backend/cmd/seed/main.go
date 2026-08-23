@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -58,6 +59,23 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("create tenant: %v", err)
+	}
+
+	// Seed the licence register alongside the tenant. Without this a
+	// fresh install starts with an empty register while the tenant record
+	// carries a licence number — two places disagreeing about the same
+	// fact from the first minute, which is what SignupWithInvite was
+	// fixed for in stage 162. The expiry is left unset on purpose: this
+	// is a demo number and inventing a renewal date would produce a
+	// reminder for a day that means nothing.
+	if _, err := q.CreateExciseLicence(ctx, sqlcgen.CreateExciseLicenceParams{
+		TenantID:      tenant.ID,
+		Kind:          sqlcgen.ExciseLicenceKindSpirits,
+		LicenceNumber: tenant.CraSpiritsLicenceNumber,
+		EffectiveFrom: pgtype.Date{Valid: true, Time: time.Now().UTC()},
+		Notes:         "From seed. Replace with your real licence and set its expiry.",
+	}); err != nil {
+		log.Fatalf("create licence register entry: %v", err)
 	}
 
 	password := randomPassword()
