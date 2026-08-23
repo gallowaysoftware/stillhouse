@@ -65,7 +65,7 @@ INSERT INTO work_orders (
     tenant_id, work_order_no, kind, title, detail, assigned_to, assigned_role,
     location_id, scheduled_for, due_on, container_id, product_id, recipe_id, created_by
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at
+RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at, equipment_id
 `
 
 type CreateWorkOrderParams struct {
@@ -129,12 +129,13 @@ func (q *Queries) CreateWorkOrder(ctx context.Context, arg CreateWorkOrderParams
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }
 
 const getWorkOrder = `-- name: GetWorkOrder :one
-SELECT id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at FROM work_orders WHERE id = $1
+SELECT id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at, equipment_id FROM work_orders WHERE id = $1
 `
 
 func (q *Queries) GetWorkOrder(ctx context.Context, id uuid.UUID) (WorkOrder, error) {
@@ -166,6 +167,7 @@ func (q *Queries) GetWorkOrder(ctx context.Context, id uuid.UUID) (WorkOrder, er
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -176,7 +178,7 @@ UPDATE work_orders SET
     distillation_run_id = COALESCE($2::UUID, distillation_run_id),
     bottling_run_id     = COALESCE($3::UUID, bottling_run_id)
 WHERE id = $4
-RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at
+RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at, equipment_id
 `
 
 type LinkWorkOrderOutputParams struct {
@@ -222,12 +224,13 @@ func (q *Queries) LinkWorkOrderOutput(ctx context.Context, arg LinkWorkOrderOutp
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }
 
 const listWorkOrders = `-- name: ListWorkOrders :many
-SELECT w.id, w.tenant_id, w.work_order_no, w.kind, w.status, w.title, w.detail, w.assigned_to, w.assigned_role, w.location_id, w.scheduled_for, w.due_on, w.container_id, w.product_id, w.recipe_id, w.mash_run_id, w.distillation_run_id, w.bottling_run_id, w.started_at, w.completed_at, w.completed_by, w.cancel_reason, w.created_by, w.created_at, w.updated_at,
+SELECT w.id, w.tenant_id, w.work_order_no, w.kind, w.status, w.title, w.detail, w.assigned_to, w.assigned_role, w.location_id, w.scheduled_for, w.due_on, w.container_id, w.product_id, w.recipe_id, w.mash_run_id, w.distillation_run_id, w.bottling_run_id, w.started_at, w.completed_at, w.completed_by, w.cancel_reason, w.created_by, w.created_at, w.updated_at, w.equipment_id,
        COALESCE(u.display_name, '')  AS assigned_to_name,
        COALESCE(c.display_name, '')  AS completed_by_name,
        COALESCE(l.name, '')          AS location_name,
@@ -281,6 +284,7 @@ type ListWorkOrdersRow struct {
 	CreatedBy         uuid.UUID          `json:"created_by"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	EquipmentID       uuid.NullUUID      `json:"equipment_id"`
 	AssignedToName    string             `json:"assigned_to_name"`
 	CompletedByName   string             `json:"completed_by_name"`
 	LocationName      string             `json:"location_name"`
@@ -324,6 +328,7 @@ func (q *Queries) ListWorkOrders(ctx context.Context, arg ListWorkOrdersParams) 
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.EquipmentID,
 			&i.AssignedToName,
 			&i.CompletedByName,
 			&i.LocationName,
@@ -364,7 +369,7 @@ UPDATE work_orders SET
     cancel_reason = CASE WHEN $1::work_order_status = 'cancelled'
                          THEN $3::TEXT ELSE cancel_reason END
 WHERE id = $4
-RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at
+RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at, equipment_id
 `
 
 type SetWorkOrderStatusParams struct {
@@ -411,6 +416,7 @@ func (q *Queries) SetWorkOrderStatus(ctx context.Context, arg SetWorkOrderStatus
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -421,7 +427,7 @@ UPDATE work_orders SET
     location_id = $7, scheduled_for = $8, due_on = $9,
     container_id = $10, product_id = $11, recipe_id = $12
 WHERE id = $1 AND status IN ('planned', 'in_progress')
-RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at
+RETURNING id, tenant_id, work_order_no, kind, status, title, detail, assigned_to, assigned_role, location_id, scheduled_for, due_on, container_id, product_id, recipe_id, mash_run_id, distillation_run_id, bottling_run_id, started_at, completed_at, completed_by, cancel_reason, created_by, created_at, updated_at, equipment_id
 `
 
 type UpdateWorkOrderParams struct {
@@ -481,6 +487,7 @@ func (q *Queries) UpdateWorkOrder(ctx context.Context, arg UpdateWorkOrderParams
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }

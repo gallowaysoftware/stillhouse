@@ -29,6 +29,8 @@ const (
 	AlertKindProvincialFilingDue     AlertKind = "provincial_filing_due"
 	AlertKindProvincialFilingOverdue AlertKind = "provincial_filing_overdue"
 	AlertKindInvoiceOverdue          AlertKind = "invoice_overdue"
+	AlertKindEquipmentServiceDue     AlertKind = "equipment_service_due"
+	AlertKindEquipmentDown           AlertKind = "equipment_down"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -620,6 +622,99 @@ func (ns NullDutyPoint) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.DutyPoint), nil
+}
+
+type EquipmentKind string
+
+const (
+	EquipmentKindStill           EquipmentKind = "still"
+	EquipmentKindMashTun         EquipmentKind = "mash_tun"
+	EquipmentKindFermenterVessel EquipmentKind = "fermenter_vessel"
+	EquipmentKindFiller          EquipmentKind = "filler"
+	EquipmentKindPump            EquipmentKind = "pump"
+	EquipmentKindChiller         EquipmentKind = "chiller"
+	EquipmentKindBoiler          EquipmentKind = "boiler"
+	EquipmentKindCondenser       EquipmentKind = "condenser"
+	EquipmentKindBottlingLine    EquipmentKind = "bottling_line"
+	EquipmentKindOther           EquipmentKind = "other"
+)
+
+func (e *EquipmentKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EquipmentKind(s)
+	case string:
+		*e = EquipmentKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EquipmentKind: %T", src)
+	}
+	return nil
+}
+
+type NullEquipmentKind struct {
+	EquipmentKind EquipmentKind `json:"equipment_kind"`
+	Valid         bool          `json:"valid"` // Valid is true if EquipmentKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEquipmentKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.EquipmentKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EquipmentKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEquipmentKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EquipmentKind), nil
+}
+
+type EquipmentStatus string
+
+const (
+	EquipmentStatusInService EquipmentStatus = "in_service"
+	EquipmentStatusDown      EquipmentStatus = "down"
+	EquipmentStatusRetired   EquipmentStatus = "retired"
+)
+
+func (e *EquipmentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = EquipmentStatus(s)
+	case string:
+		*e = EquipmentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for EquipmentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullEquipmentStatus struct {
+	EquipmentStatus EquipmentStatus `json:"equipment_status"`
+	Valid           bool            `json:"valid"` // Valid is true if EquipmentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullEquipmentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.EquipmentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.EquipmentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullEquipmentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.EquipmentStatus), nil
 }
 
 type ExciseLicenceKind string
@@ -2137,6 +2232,7 @@ type BottlingRun struct {
 	DutyAmountCad           pgtype.Float8      `json:"duty_amount_cad"`
 	DutyRateSource          string             `json:"duty_rate_source"`
 	OwnerCustomerID         uuid.NullUUID      `json:"owner_customer_id"`
+	EquipmentID             uuid.NullUUID      `json:"equipment_id"`
 }
 
 type BottlingRunStampUsage struct {
@@ -2278,6 +2374,44 @@ type DistillationRun struct {
 	VoidedAt     pgtype.Timestamptz `json:"voided_at"`
 	VoidedBy     uuid.NullUUID      `json:"voided_by"`
 	VoidedReason string             `json:"voided_reason"`
+	EquipmentID  uuid.NullUUID      `json:"equipment_id"`
+}
+
+type Equipment struct {
+	ID                   uuid.UUID          `json:"id"`
+	TenantID             uuid.UUID          `json:"tenant_id"`
+	Name                 string             `json:"name"`
+	Kind                 EquipmentKind      `json:"kind"`
+	Status               EquipmentStatus    `json:"status"`
+	LocationID           uuid.NullUUID      `json:"location_id"`
+	Manufacturer         string             `json:"manufacturer"`
+	Model                string             `json:"model"`
+	SerialNo             string             `json:"serial_no"`
+	CommissionedOn       pgtype.Date        `json:"commissioned_on"`
+	CapacityL            pgtype.Float8      `json:"capacity_l"`
+	TypicalRunHours      pgtype.Float8      `json:"typical_run_hours"`
+	ServiceIntervalHours pgtype.Float8      `json:"service_interval_hours"`
+	ServiceIntervalDays  pgtype.Int4        `json:"service_interval_days"`
+	Notes                string             `json:"notes"`
+	RetiredOn            pgtype.Date        `json:"retired_on"`
+	RetiredReason        string             `json:"retired_reason"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt            pgtype.Timestamptz `json:"updated_at"`
+}
+
+type EquipmentServiceEvent struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	EquipmentID    uuid.UUID          `json:"equipment_id"`
+	PerformedOn    pgtype.Date        `json:"performed_on"`
+	Description    string             `json:"description"`
+	PerformedBy    string             `json:"performed_by"`
+	HoursAtService pgtype.Float8      `json:"hours_at_service"`
+	CostCad        pgtype.Numeric     `json:"cost_cad"`
+	WorkOrderID    uuid.NullUUID      `json:"work_order_id"`
+	Notes          string             `json:"notes"`
+	RecordedBy     uuid.UUID          `json:"recorded_by"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
 }
 
 type ExciseLicence struct {
@@ -2637,6 +2771,7 @@ type MashRun struct {
 	Notes           string             `json:"notes"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	EquipmentID     uuid.NullUUID      `json:"equipment_id"`
 }
 
 type Material struct {
@@ -3170,4 +3305,5 @@ type WorkOrder struct {
 	CreatedBy         uuid.UUID          `json:"created_by"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+	EquipmentID       uuid.NullUUID      `json:"equipment_id"`
 }

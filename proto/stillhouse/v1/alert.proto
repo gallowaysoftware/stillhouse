@@ -32,6 +32,11 @@ enum AlertKind {
   // Issued, past due, and still owed. A warning rather than a crisis
   // until it has been outstanding two months.
   ALERT_KIND_INVOICE_OVERDUE = 14;
+  // Plant overdue for its recorded service interval, and plant that is
+  // down. Only items with an interval recorded can be due — a schedule
+  // Stillhouse invented is one nobody agreed to.
+  ALERT_KIND_EQUIPMENT_SERVICE_DUE = 15;
+  ALERT_KIND_EQUIPMENT_DOWN = 16;
 }
 
 enum AlertSeverity {

@@ -45,6 +45,9 @@ var exportTables = []string{
 	// meeting them on a gauge.
 	"instruments",
 	"instrument_calibrations",
+	// The plant, and what has been done to it.
+	"equipment",
+	"equipment_service_events",
 	"suppliers",
 	"purchase_orders",
 	"purchase_order_lines",

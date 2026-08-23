@@ -107,7 +107,7 @@ INSERT INTO distillation_runs (
     tenant_id, run_no, still_label, run_date, status, notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason
+) RETURNING id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason, equipment_id
 `
 
 type CreateDistillationRunParams struct {
@@ -142,6 +142,7 @@ func (q *Queries) CreateDistillationRun(ctx context.Context, arg CreateDistillat
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -259,7 +260,7 @@ func (q *Queries) GetDistillationCut(ctx context.Context, id uuid.UUID) (Distill
 }
 
 const getDistillationRun = `-- name: GetDistillationRun :one
-SELECT id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason FROM distillation_runs WHERE id = $1
+SELECT id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason, equipment_id FROM distillation_runs WHERE id = $1
 `
 
 func (q *Queries) GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error) {
@@ -278,6 +279,7 @@ func (q *Queries) GetDistillationRun(ctx context.Context, id uuid.UUID) (Distill
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -409,7 +411,7 @@ func (q *Queries) ListDistillationCuts(ctx context.Context, distillationRunID uu
 }
 
 const listDistillationRuns = `-- name: ListDistillationRuns :many
-SELECT id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason FROM distillation_runs
+SELECT id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason, equipment_id FROM distillation_runs
 WHERE ($1::distillation_status IS NULL OR status = $1::distillation_status)
 ORDER BY run_date DESC, run_no DESC
 `
@@ -436,6 +438,7 @@ func (q *Queries) ListDistillationRuns(ctx context.Context, status NullDistillat
 			&i.VoidedAt,
 			&i.VoidedBy,
 			&i.VoidedReason,
+			&i.EquipmentID,
 		); err != nil {
 			return nil, err
 		}
@@ -507,7 +510,7 @@ func (q *Queries) UpdateDistillationCut(ctx context.Context, arg UpdateDistillat
 }
 
 const updateDistillationStatus = `-- name: UpdateDistillationStatus :one
-UPDATE distillation_runs SET status = $2 WHERE id = $1 RETURNING id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason
+UPDATE distillation_runs SET status = $2 WHERE id = $1 RETURNING id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason, equipment_id
 `
 
 type UpdateDistillationStatusParams struct {
@@ -531,6 +534,7 @@ func (q *Queries) UpdateDistillationStatus(ctx context.Context, arg UpdateDistil
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -541,7 +545,7 @@ SET voided_at = NOW(),
     voided_by = $2,
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
-RETURNING id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason
+RETURNING id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason, equipment_id
 `
 
 type VoidDistillationRunParams struct {
@@ -566,6 +570,7 @@ func (q *Queries) VoidDistillationRun(ctx context.Context, arg VoidDistillationR
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.EquipmentID,
 	)
 	return i, err
 }

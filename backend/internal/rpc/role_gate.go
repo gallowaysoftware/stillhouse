@@ -403,6 +403,17 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.MarkedContainerService/UnmarkContainer":        roleOperator,
 	"/stillhouse.v1.MarkedContainerService/VoidMarkedDelivery":     roleOperator,
 
+	// EquipmentService. Recording that a pump was serviced is what the
+	// person who serviced it does, and marking a still down is what the
+	// person who found it down does — both operator acts. Adding a still
+	// to the register is a fact about the licensed premises, so it sits
+	// with the owner.
+	"/stillhouse.v1.EquipmentService/ListEquipment":   roleViewer,
+	"/stillhouse.v1.EquipmentService/GetEquipment":    roleViewer,
+	"/stillhouse.v1.EquipmentService/RecordService":   roleOperator,
+	"/stillhouse.v1.EquipmentService/SaveEquipment":   roleOwner,
+	"/stillhouse.v1.EquipmentService/DeleteEquipment": roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

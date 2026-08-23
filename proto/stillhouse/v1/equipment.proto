@@ -1,0 +1,157 @@
+// The stills, and everything else that has a capacity or a service
+// interval.
+//
+// Bulk containers are vessels that hold alcohol, and they were already
+// first-class. What never existed is the plant: the still itself, the
+// mash tun, the filler, the pumps — things a run is performed *on*
+// rather than *into*. Without them a distillation run names no still,
+// capacity is a number in somebody's head, and maintenance is a reminder
+// on a phone.
+//
+// Where a figure has not been recorded it is absent rather than zero, and
+// what depends on it refuses rather than assuming. A made-up run duration
+// produces a schedule that looks authoritative and is fiction.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum EquipmentKind {
+  EQUIPMENT_KIND_UNSPECIFIED = 0;
+  EQUIPMENT_KIND_STILL = 1;
+  EQUIPMENT_KIND_MASH_TUN = 2;
+  EQUIPMENT_KIND_FERMENTER_VESSEL = 3;
+  EQUIPMENT_KIND_FILLER = 4;
+  EQUIPMENT_KIND_PUMP = 5;
+  EQUIPMENT_KIND_CHILLER = 6;
+  EQUIPMENT_KIND_BOILER = 7;
+  EQUIPMENT_KIND_CONDENSER = 8;
+  EQUIPMENT_KIND_BOTTLING_LINE = 9;
+  EQUIPMENT_KIND_OTHER = 10;
+}
+
+enum EquipmentStatus {
+  EQUIPMENT_STATUS_UNSPECIFIED = 0;
+  EQUIPMENT_STATUS_IN_SERVICE = 1;
+  EQUIPMENT_STATUS_DOWN = 2;
+  EQUIPMENT_STATUS_RETIRED = 3;
+}
+
+message Equipment {
+  string id = 1;
+  string name = 2;
+  EquipmentKind kind = 3;
+  EquipmentStatus status = 4;
+  string location_id = 5;
+  string location_name = 6;
+  string manufacturer = 7;
+  string model = 8;
+  string serial_no = 9;
+  string commissioned_on = 10;   // ISO date
+
+  // Absent rather than zero where nobody has recorded it. The *_set
+  // flags are what let a scheduler refuse to plan against a capacity
+  // nobody knows instead of planning against nothing.
+  double capacity_l = 11;
+  bool   capacity_l_set = 12;
+  double typical_run_hours = 13;
+  bool   typical_run_hours_set = 14;
+  double service_interval_hours = 15;
+  bool   service_interval_hours_set = 16;
+  int32  service_interval_days = 17;
+  bool   service_interval_days_set = 18;
+
+  string notes = 19;
+  string retired_on = 20;
+  string retired_reason = 21;
+  string last_serviced_on = 22;  // ISO date; empty if never
+  // Days since the last service, or since commissioning where there has
+  // been none. Zero when no interval is recorded, because nothing is due.
+  int32  days_since_service = 23;
+  bool   service_due = 24;
+  int32  run_count = 25;
+  google.protobuf.Timestamp updated_at = 26;
+}
+
+message SaveEquipmentRequest {
+  string id = 1;                 // empty creates
+  string name = 2;
+  EquipmentKind kind = 3;
+  EquipmentStatus status = 4;
+  string location_id = 5;
+  string manufacturer = 6;
+  string model = 7;
+  string serial_no = 8;
+  string commissioned_on = 9;
+  double capacity_l = 10;
+  bool   capacity_l_set = 11;
+  double typical_run_hours = 12;
+  bool   typical_run_hours_set = 13;
+  double service_interval_hours = 14;
+  bool   service_interval_hours_set = 15;
+  int32  service_interval_days = 16;
+  bool   service_interval_days_set = 17;
+  string notes = 18;
+  string retired_on = 19;
+  string retired_reason = 20;
+}
+message SaveEquipmentResponse { Equipment equipment = 1; }
+
+message ListEquipmentRequest { bool include_retired = 1; }
+message ListEquipmentResponse {
+  repeated Equipment equipment = 1;
+  int32 in_service = 2;
+  int32 down = 3;
+  int32 service_due = 4;
+  // Items with no capacity recorded. Named because scheduling cannot use
+  // them and the operator is the only one who knows the figure.
+  int32 capacity_unknown = 5;
+}
+
+message GetEquipmentRequest { string id = 1; }
+message GetEquipmentResponse {
+  Equipment equipment = 1;
+  repeated ServiceEvent services = 2;
+  // What runs on it have actually taken, from work orders that recorded a
+  // start and a finish. The basis for an honest estimate, as against a
+  // typed one.
+  double observed_median_hours = 3;
+  int32  observed_runs = 4;
+}
+
+message DeleteEquipmentRequest { string id = 1; }
+message DeleteEquipmentResponse {}
+
+message ServiceEvent {
+  string id = 1;
+  string performed_on = 2;       // ISO date
+  string description = 3;
+  string performed_by = 4;
+  double hours_at_service = 5;
+  bool   hours_at_service_set = 6;
+  string cost_cad = 7;           // decimal string; empty if not recorded
+  string work_order_id = 8;
+  string notes = 9;
+}
+
+message RecordServiceRequest {
+  string equipment_id = 1;
+  string performed_on = 2;       // ISO date; empty = today
+  string description = 3;        // required
+  string performed_by = 4;
+  double hours_at_service = 5;
+  bool   hours_at_service_set = 6;
+  string cost_cad = 7;
+  string work_order_id = 8;
+  string notes = 9;
+}
+message RecordServiceResponse { Equipment equipment = 1; }
+
+service EquipmentService {
+  rpc SaveEquipment(SaveEquipmentRequest) returns (SaveEquipmentResponse);
+  rpc ListEquipment(ListEquipmentRequest) returns (ListEquipmentResponse);
+  rpc GetEquipment(GetEquipmentRequest) returns (GetEquipmentResponse);
+  rpc DeleteEquipment(DeleteEquipmentRequest) returns (DeleteEquipmentResponse);
+  rpc RecordService(RecordServiceRequest) returns (RecordServiceResponse);
+}

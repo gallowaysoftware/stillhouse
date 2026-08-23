@@ -102,7 +102,7 @@ INSERT INTO mash_runs (
     tenant_id, recipe_version_id, mash_no, mash_date, status, notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at
+) RETURNING id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at, equipment_id
 `
 
 type CreateMashRunParams struct {
@@ -134,6 +134,7 @@ func (q *Queries) CreateMashRun(ctx context.Context, arg CreateMashRunParams) (M
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -180,7 +181,7 @@ func (q *Queries) DebitMaterialLot(ctx context.Context, arg DebitMaterialLotPara
 }
 
 const getMashRun = `-- name: GetMashRun :one
-SELECT id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at FROM mash_runs WHERE id = $1
+SELECT id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at, equipment_id FROM mash_runs WHERE id = $1
 `
 
 func (q *Queries) GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error) {
@@ -196,6 +197,7 @@ func (q *Queries) GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }
@@ -305,7 +307,7 @@ func (q *Queries) ListMashMetrics(ctx context.Context, mashRunID uuid.UUID) ([]M
 }
 
 const listMashRuns = `-- name: ListMashRuns :many
-SELECT mr.id, mr.tenant_id, mr.recipe_version_id, mr.mash_no, mr.mash_date, mr.status, mr.notes, mr.created_at, mr.updated_at,
+SELECT mr.id, mr.tenant_id, mr.recipe_version_id, mr.mash_no, mr.mash_date, mr.status, mr.notes, mr.created_at, mr.updated_at, mr.equipment_id,
        r.name        AS recipe_name,
        rv.version_no AS recipe_version_no
 FROM mash_runs mr
@@ -331,6 +333,7 @@ type ListMashRunsRow struct {
 	Notes           string             `json:"notes"`
 	CreatedAt       pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt       pgtype.Timestamptz `json:"updated_at"`
+	EquipmentID     uuid.NullUUID      `json:"equipment_id"`
 	RecipeName      string             `json:"recipe_name"`
 	RecipeVersionNo int32              `json:"recipe_version_no"`
 }
@@ -354,6 +357,7 @@ func (q *Queries) ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]L
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.EquipmentID,
 			&i.RecipeName,
 			&i.RecipeVersionNo,
 		); err != nil {
@@ -379,7 +383,7 @@ func (q *Queries) NextMashNo(ctx context.Context) (int32, error) {
 }
 
 const updateMashStatus = `-- name: UpdateMashStatus :one
-UPDATE mash_runs SET status = $2 WHERE id = $1 RETURNING id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at
+UPDATE mash_runs SET status = $2 WHERE id = $1 RETURNING id, tenant_id, recipe_version_id, mash_no, mash_date, status, notes, created_at, updated_at, equipment_id
 `
 
 type UpdateMashStatusParams struct {
@@ -400,6 +404,7 @@ func (q *Queries) UpdateMashStatus(ctx context.Context, arg UpdateMashStatusPara
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.EquipmentID,
 	)
 	return i, err
 }

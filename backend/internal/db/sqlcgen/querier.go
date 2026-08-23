@@ -226,6 +226,7 @@ type Querier interface {
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteCostRates(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
+	DeleteEquipment(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLine(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLines(ctx context.Context, invoiceID uuid.UUID) error
 	DeleteLabourEntry(ctx context.Context, id uuid.UUID) error
@@ -248,6 +249,18 @@ type Querier interface {
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
 	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error)
+	EquipmentDown(ctx context.Context) ([]EquipmentDownRow, error)
+	// What runs on this actually took, from the work orders that recorded a
+	// start and a finish. The estimate F3 will need comes from here rather
+	// than from a number somebody typed once.
+	EquipmentRunDurations(ctx context.Context, equipmentID uuid.NullUUID) ([]EquipmentRunDurationsRow, error)
+	// Items whose recorded interval has elapsed since their last service, or
+	// which have never been serviced at all.
+	//
+	// Only items with an interval recorded. One without is never due, because
+	// a service schedule Stillhouse invented is a schedule nobody agreed to —
+	// and the register shows plainly that no interval is set.
+	EquipmentServiceDue(ctx context.Context) ([]EquipmentServiceDueRow, error)
 	// A label code carries the first 64 bits of a row's id, which is the
 	// first 16 characters of its hex form. Matching on a prefix rather than a
 	// whole id is why every one of these returns a set: two rows sharing a
@@ -301,6 +314,7 @@ type Querier interface {
 	GetDefaultLocation(ctx context.Context) (Location, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
+	GetEquipment(ctx context.Context, id uuid.UUID) (GetEquipmentRow, error)
 	GetExciseLicence(ctx context.Context, id uuid.UUID) (ExciseLicence, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
 	GetInstrument(ctx context.Context, id uuid.UUID) (Instrument, error)
@@ -452,6 +466,10 @@ type Querier interface {
 	// always spans an indexation, so a period rate would charge half of them
 	// at the wrong one.
 	ListDutiableLossesInPeriod(ctx context.Context, arg ListDutiableLossesInPeriodParams) ([]ListDutiableLossesInPeriodRow, error)
+	// Each item with its last service and the runs it has carried, so the
+	// register answers "when was this last looked at" without a second call.
+	ListEquipment(ctx context.Context, includeRetired bool) ([]ListEquipmentRow, error)
+	ListEquipmentService(ctx context.Context, equipmentID uuid.UUID) ([]EquipmentServiceEvent, error)
 	// Ceased licences are included and flagged rather than hidden: a return
 	// filed under a licence that has since been surrendered still has to be
 	// explicable years later.
@@ -640,6 +658,7 @@ type Querier interface {
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	RecordEquipmentService(ctx context.Context, arg RecordEquipmentServiceParams) (EquipmentServiceEvent, error)
 	RecordInvoicePayment(ctx context.Context, arg RecordInvoicePaymentParams) (InvoicePayment, error)
 	RecordLabour(ctx context.Context, arg RecordLabourParams) (LabourEntry, error)
 	// Closes the loop. laa_produced and produced_on are set together — the
@@ -699,6 +718,7 @@ type Querier interface {
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SalesOrderOutstanding(ctx context.Context, salesOrderID uuid.UUID) (SalesOrderOutstandingRow, error)
 	SaveCostRates(ctx context.Context, arg SaveCostRatesParams) (CostRate, error)
+	SaveEquipment(ctx context.Context, arg SaveEquipmentParams) (Equipment, error)
 	SaveProvincialRegistration(ctx context.Context, arg SaveProvincialRegistrationParams) (ProvincialRegistration, error)
 	SaveProvincialReportDefinition(ctx context.Context, arg SaveProvincialReportDefinitionParams) (ProvincialReportDefinition, error)
 	SaveTaxRate(ctx context.Context, arg SaveTaxRateParams) (TaxRate, error)
@@ -710,6 +730,7 @@ type Querier interface {
 	SetBulkContainerPossession(ctx context.Context, arg SetBulkContainerPossessionParams) (BulkContainer, error)
 	SetCustomerArchived(ctx context.Context, arg SetCustomerArchivedParams) (Customer, error)
 	SetDefaultLocation(ctx context.Context, id uuid.UUID) (Location, error)
+	SetDistillationEquipment(ctx context.Context, arg SetDistillationEquipmentParams) error
 	// Moves the cutover. Not exposed in the UI: the date is set once, when the
 	// tenant is created or when this migration ran, and moving it re-attributes
 	// duty across events that may already have been filed. Here so a support

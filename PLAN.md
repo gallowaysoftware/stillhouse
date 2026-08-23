@@ -185,15 +185,10 @@ combined view of inventory, people and equipment. Historical run durations
 inform the estimate. Purtrak's most-cited operational feature.
 
 `F2` shipped in stage 171, so there is a board with dates and owners on it and
-work orders record when they actually started and finished — which is where the
-historical durations this needs will come from. What is missing is the
-forecast, the capacity model (`F4`), and the scheduling view itself.
-
-### F4 · Equipment and still register — P2
-
-Stills, tanks, pumps and the filler as first-class assets. Runs attributed to
-equipment, capacity known, maintenance scheduled and logged. Prerequisite for
-`F3` doing anything honest about capacity.
+work orders record when they actually started and finished. `F4` shipped in
+stage 184, so equipment has a capacity where one is recorded and the observed
+median run duration is already computed from those work orders. What is left
+is the forecast and the scheduling view itself.
 
 ### F7 · Forecasting — P2
 

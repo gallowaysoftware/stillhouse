@@ -87,6 +87,8 @@ var Kinds = []string{
 	string(sqlcgen.AlertKindProvincialFilingDue),
 	string(sqlcgen.AlertKindProvincialFilingOverdue),
 	string(sqlcgen.AlertKindInvoiceOverdue),
+	string(sqlcgen.AlertKindEquipmentServiceDue),
+	string(sqlcgen.AlertKindEquipmentDown),
 }
 
 // Alert is one condition found true, before it is written.
@@ -144,6 +146,12 @@ func Evaluate(
 		return nil, fmt.Errorf("work orders: %w", err)
 	}
 	out = append(out, workAlerts...)
+
+	equipmentAlerts, err := evaluateEquipment(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("equipment: %w", err)
+	}
+	out = append(out, equipmentAlerts...)
 
 	invoiceAlerts, err := evaluateOverdueInvoices(ctx, q)
 	if err != nil {
@@ -640,6 +648,56 @@ func evaluateOverdueInvoices(ctx context.Context, q *sqlcgen.Queries) ([]Alert, 
 				days, plural(days), inv.DueDate.Time.Format("2006-01-02")),
 			EntityType: "invoice",
 			EntityID:   uuid.NullUUID{UUID: inv.ID, Valid: true},
+		})
+	}
+	return out, nil
+}
+
+// evaluateEquipment raises on plant that is down, and on plant whose
+// recorded service interval has elapsed.
+//
+// Only items with an interval recorded. One without is never due: a
+// service schedule Stillhouse invented is one nobody agreed to, and the
+// register already shows plainly that no interval is set.
+func evaluateEquipment(ctx context.Context, q *sqlcgen.Queries) ([]Alert, error) {
+	due, err := q.EquipmentServiceDue(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Alert, 0, len(due))
+	for _, e := range due {
+		detail := fmt.Sprintf("%d days since the last service; the interval is %d.",
+			e.DaysSince, e.ServiceIntervalDays.Int32)
+		if !e.LastServicedOn.Valid {
+			detail = fmt.Sprintf("Never serviced, and %d days since it was "+
+				"commissioned; the interval is %d.",
+				e.DaysSince, e.ServiceIntervalDays.Int32)
+		}
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindEquipmentServiceDue,
+			Severity:   sqlcgen.AlertSeverityWarning,
+			SubjectKey: e.ID.String(),
+			Title:      e.Name + " is due for service",
+			Detail:     detail,
+			EntityType: "equipment",
+			EntityID:   uuid.NullUUID{UUID: e.ID, Valid: true},
+		})
+	}
+
+	down, err := q.EquipmentDown(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range down {
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindEquipmentDown,
+			Severity:   sqlcgen.AlertSeverityCritical,
+			SubjectKey: e.ID.String(),
+			Title:      e.Name + " is down",
+			Detail: "Nothing can be scheduled on it until it is back in service. " +
+				"Record the repair against it so the register shows what happened.",
+			EntityType: "equipment",
+			EntityID:   uuid.NullUUID{UUID: e.ID, Valid: true},
 		})
 	}
 	return out, nil

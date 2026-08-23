@@ -27,6 +27,7 @@ const navGroups: NavGroup[] = [
       { to: "/products", en: "Products", fr: "Produits" },
       { to: "/stamps", en: "Excise stamps", fr: "Timbres d'accise" },
       { to: "/instruments", en: "Instruments", fr: "Instruments" },
+      { to: "/equipment", en: "Equipment", fr: "Équipement" },
       { to: "/labels", en: "Labels", fr: "Étiquettes" },
       { to: "/customers", en: "Customers", fr: "Clients" },
       { to: "/import", en: "Import", fr: "Importer" },
