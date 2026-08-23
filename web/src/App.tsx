@@ -30,6 +30,7 @@ import { SalesPage } from "./pages/SalesPage";
 import { LabelsPage } from "./pages/LabelsPage";
 import { CostingPage } from "./pages/CostingPage";
 import { ProvincialPage } from "./pages/ProvincialPage";
+import { InvoicesPage } from "./pages/InvoicesPage";
 import { WorkOrdersPage } from "./pages/WorkOrdersPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
@@ -83,6 +84,7 @@ export function App() {
       <Route path="/labels" element={<Guarded><LabelsPage /></Guarded>} />
       <Route path="/costing" element={<Guarded><CostingPage /></Guarded>} />
       <Route path="/provincial" element={<Guarded><ProvincialPage /></Guarded>} />
+      <Route path="/invoices" element={<Guarded><InvoicesPage /></Guarded>} />
       <Route path="/work" element={<Guarded><WorkOrdersPage /></Guarded>} />
       <Route path="/settings" element={<Guarded><SettingsPage /></Guarded>} />
     </Routes>

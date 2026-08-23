@@ -116,6 +116,12 @@ var exportTables = []string{
 	"provincial_registrations",
 	"provincial_report_definitions",
 	"provincial_report_periods",
+	// The receivables ledger. An export offered for retention that omits
+	// what was invoiced and what came in is missing half the trail.
+	"tax_rates",
+	"invoices",
+	"invoice_lines",
+	"invoice_payments",
 	"alerts",
 	"audit_events",
 }

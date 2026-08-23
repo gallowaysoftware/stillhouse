@@ -252,6 +252,8 @@ func alertKindToProto(k sqlcgen.AlertKind) stillhousev1.AlertKind {
 		return stillhousev1.AlertKind_ALERT_KIND_PROVINCIAL_FILING_DUE
 	case sqlcgen.AlertKindProvincialFilingOverdue:
 		return stillhousev1.AlertKind_ALERT_KIND_PROVINCIAL_FILING_OVERDUE
+	case sqlcgen.AlertKindInvoiceOverdue:
+		return stillhousev1.AlertKind_ALERT_KIND_INVOICE_OVERDUE
 	}
 	return stillhousev1.AlertKind_ALERT_KIND_UNSPECIFIED
 }

@@ -148,12 +148,6 @@ spine production hangs from; Stillhouse has no customer concept at all. `D1`
 unblocks provincial reporting (`I1`) and the POS loop (`G4`); the order →
 pick → removal chain shipped in stage 173.
 
-### D3 · Invoicing — P1
-
-Invoice generation from orders, numbering, terms, credit notes, AR ageing.
-**Quebec:** invoices must be available in French (Bill 96 / Charter of the
-French Language) — depends on `H6`.
-
 ### D4a · A generated bill of lading — P2
 
 Picking, packing slips, carrier and tracking shipped with the sales chain
@@ -270,6 +264,11 @@ rediscovered as a gap.
 ## Track H — platform
 
 ### H6 · Full bilingual coverage — P1
+
+Also blocks the Quebec half of invoicing: an invoice must be available in
+French (Bill 96 / Charter of the French Language), and stage 180 shipped the
+document in English only.
+
 
 `lib/i18n` works but is imported in 4 of 46 components. Quebec is 73
 distilleries, roughly a quarter of the national market, and Bill 96 makes

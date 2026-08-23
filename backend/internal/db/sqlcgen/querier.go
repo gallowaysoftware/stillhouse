@@ -12,6 +12,16 @@ import (
 )
 
 type Querier interface {
+	// What is owed, by how long it has been owed for.
+	//
+	// Buckets are measured from the due date, not the issue date: an invoice
+	// on 60-day terms issued 45 days ago is not overdue, and a report that
+	// says it is trains people to ignore the report.
+	//
+	// Credit notes carry negative totals through the same buckets, so a
+	// customer with an outstanding credit reads as owing less rather than
+	// appearing twice.
+	ARAgeing(ctx context.Context) ([]ARAgeingRow, error)
 	// Says a human has seen it. Deliberately not the same as resolving:
 	// resolution is a claim about the world and only the evaluator can make
 	// it. An acknowledged alert stays open while its condition holds.
@@ -19,6 +29,7 @@ type Querier interface {
 	AddDistillationCharge(ctx context.Context, arg AddDistillationChargeParams) (DistillationCharge, error)
 	AddDistillationCut(ctx context.Context, arg AddDistillationCutParams) (DistillationCut, error)
 	AddFermentationLog(ctx context.Context, arg AddFermentationLogParams) (FermentationLog, error)
+	AddInvoiceLine(ctx context.Context, arg AddInvoiceLineParams) (InvoiceLine, error)
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	AddPurchaseOrderLine(ctx context.Context, arg AddPurchaseOrderLineParams) (PurchaseOrderLine, error)
@@ -155,6 +166,7 @@ type Querier interface {
 	CreateInstrument(ctx context.Context, arg CreateInstrumentParams) (Instrument, error)
 	CreateInventoryAdjustment(ctx context.Context, arg CreateInventoryAdjustmentParams) (InventoryAdjustment, error)
 	CreateInviteCode(ctx context.Context, arg CreateInviteCodeParams) (InviteCode, error)
+	CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error)
 	CreateLabResult(ctx context.Context, arg CreateLabResultParams) (LabResult, error)
 	CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error)
 	CreateMashRun(ctx context.Context, arg CreateMashRunParams) (MashRun, error)
@@ -211,6 +223,8 @@ type Querier interface {
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteCostRates(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
+	DeleteInvoiceLine(ctx context.Context, id uuid.UUID) error
+	DeleteInvoiceLines(ctx context.Context, invoiceID uuid.UUID) error
 	DeleteLabourEntry(ctx context.Context, id uuid.UUID) error
 	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
 	DeleteProvincialRegistration(ctx context.Context, id uuid.UUID) error
@@ -220,6 +234,7 @@ type Querier interface {
 	DeleteSalesOrderLine(ctx context.Context, id uuid.UUID) error
 	DeleteShipmentLine(ctx context.Context, id uuid.UUID) error
 	DeleteTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) error
+	DeleteTaxRate(ctx context.Context, id uuid.UUID) error
 	// Hard delete — every FK to tenants is ON DELETE CASCADE so this wipes
 	// the entire tenant footprint (users, recipes, mashes, ferments,
 	// distillations, barrels, bulk, bottling, removals, B266 history,
@@ -289,6 +304,9 @@ type Querier interface {
 	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
 	// expires_at to decide if the code is actually usable.
 	GetInviteCode(ctx context.Context, code string) (InviteCode, error)
+	GetInvoice(ctx context.Context, id uuid.UUID) (GetInvoiceRow, error)
+	GetInvoiceForUpdate(ctx context.Context, id uuid.UUID) (Invoice, error)
+	GetInvoiceLineOwner(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 	GetLocation(ctx context.Context, id uuid.UUID) (Location, error)
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
@@ -351,6 +369,8 @@ type Querier interface {
 	// the counterparty, the document, the determination and the author, none of
 	// which a side-effect movement needs because its parent row has them.
 	InsertExternalBulkMovement(ctx context.Context, arg InsertExternalBulkMovementParams) (BulkMovement, error)
+	InvoiceTotals(ctx context.Context, invoiceID uuid.UUID) (InvoiceTotalsRow, error)
+	IssueInvoice(ctx context.Context, arg IssueInvoiceParams) (Invoice, error)
 	// Duty crystallised in the period, from wherever the duty point falls.
 	//
 	// Both sources are read and neither is filtered out, because across a
@@ -445,6 +465,9 @@ type Querier interface {
 	// history and the period review behind B266 line D.
 	ListInventoryAdjustments(ctx context.Context, arg ListInventoryAdjustmentsParams) ([]ListInventoryAdjustmentsRow, error)
 	ListInviteCodesByCreator(ctx context.Context, createdByUserID uuid.UUID) ([]InviteCode, error)
+	ListInvoiceLines(ctx context.Context, invoiceID uuid.UUID) ([]InvoiceLine, error)
+	ListInvoicePayments(ctx context.Context, invoiceID uuid.UUID) ([]InvoicePayment, error)
+	ListInvoices(ctx context.Context, openOnly bool) ([]ListInvoicesRow, error)
 	ListJournalAccounts(ctx context.Context) ([]JournalAccount, error)
 	// Filtered by whichever subject the caller names; all of them NULL
 	// returns the tenant's whole lab history, newest first.
@@ -517,6 +540,7 @@ type Querier interface {
 	// bottles, and voiding the run does not un-apply them.
 	ListStampUsageForOrder(ctx context.Context, stampOrderID uuid.UUID) ([]ListStampUsageForOrderRow, error)
 	ListSuppliers(ctx context.Context, includeArchived bool) ([]Supplier, error)
+	ListTaxRates(ctx context.Context) ([]TaxRate, error)
 	// Everything that is not simply ours-and-here, which is the list an
 	// operator needs before they sign a return or value their inventory.
 	ListThirdPartyBulkContainers(ctx context.Context) ([]ListThirdPartyBulkContainersRow, error)
@@ -566,6 +590,7 @@ type Querier interface {
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
+	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)
 	NextPurchaseOrderNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
@@ -573,6 +598,9 @@ type Querier interface {
 	NextSalesOrderNo(ctx context.Context) (int32, error)
 	NextShipmentNo(ctx context.Context) (int32, error)
 	NextWorkOrderNo(ctx context.Context) (int32, error)
+	// Issued invoices past their due date with money still on them, for the
+	// alert evaluator.
+	OverdueInvoices(ctx context.Context) ([]OverdueInvoicesRow, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	// Unfiled periods with a due date on or before a day, for the alert
 	// evaluator. A definition with no recorded due-days produces periods
@@ -603,6 +631,7 @@ type Querier interface {
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	RecordInvoicePayment(ctx context.Context, arg RecordInvoicePaymentParams) (InvoicePayment, error)
 	RecordLabour(ctx context.Context, arg RecordLabourParams) (LabourEntry, error)
 	// Closes the loop. laa_produced and produced_on are set together — the
 	// CHECK enforces it — so a run can never be half-recorded, and loss_laa
@@ -663,6 +692,7 @@ type Querier interface {
 	SaveCostRates(ctx context.Context, arg SaveCostRatesParams) (CostRate, error)
 	SaveProvincialRegistration(ctx context.Context, arg SaveProvincialRegistrationParams) (ProvincialRegistration, error)
 	SaveProvincialReportDefinition(ctx context.Context, arg SaveProvincialReportDefinitionParams) (ProvincialReportDefinition, error)
+	SaveTaxRate(ctx context.Context, arg SaveTaxRateParams) (TaxRate, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
@@ -677,6 +707,7 @@ type Querier interface {
 	// path exists that is deliberate rather than improvised.
 	SetDutyPointEffectiveFrom(ctx context.Context, arg SetDutyPointEffectiveFromParams) (Tenant, error)
 	SetInstrumentStatus(ctx context.Context, arg SetInstrumentStatusParams) (Instrument, error)
+	SetInvoicePaymentStatus(ctx context.Context, arg SetInvoicePaymentStatusParams) (Invoice, error)
 	// Charges often arrive after the goods — a freight invoice a week later.
 	// Setting them updates the landed cost of a lot already on the shelf,
 	// which is correct: the cost of getting it here did not change, only
@@ -704,6 +735,11 @@ type Querier interface {
 	// supplied, so "when did this actually start" is a fact rather than
 	// something somebody typed afterwards.
 	SetWorkOrderStatus(ctx context.Context, arg SetWorkOrderStatusParams) (WorkOrder, error)
+	// What a shipment actually delivered, priced from the order line it
+	// satisfied where there is one. A pick with no order line behind it has
+	// no agreed price, and comes back with a null so the caller can say so
+	// rather than invoicing at zero.
+	ShipmentLinesForInvoicing(ctx context.Context, shipmentID uuid.UUID) ([]ShipmentLinesForInvoicingRow, error)
 	// What a picker is about to put on the return, per lot, before they
 	// commit to it.
 	ShipmentLotBreakdown(ctx context.Context, shipmentID uuid.UUID) ([]ShipmentLotBreakdownRow, error)
@@ -863,6 +899,12 @@ type Querier interface {
 	// two bands for exactly this reason.
 	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)
 	SumStampInventory(ctx context.Context) ([]SumStampInventoryRow, error)
+	// Every tax applying to a jurisdiction on a date: the ones recorded for
+	// that jurisdiction and the ones recorded for everywhere. Only the most
+	// recent of each name is returned, so superseding a rate means adding a
+	// new row rather than editing the old one — an invoice already issued
+	// keeps the rate it was issued at.
+	TaxRatesInForce(ctx context.Context, arg TaxRatesInForceParams) ([]TaxRate, error)
 	// Same keyhole, write half. Best-effort last_used_at stamp on the auth
 	// path, which likewise has no tenant context to offer.
 	TouchAPIToken(ctx context.Context, tokenHash []byte) error
@@ -949,6 +991,7 @@ type Querier interface {
 	VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)
+	VoidInvoice(ctx context.Context, arg VoidInvoiceParams) (Invoice, error)
 	VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error)
 }
 

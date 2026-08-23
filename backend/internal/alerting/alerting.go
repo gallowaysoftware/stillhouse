@@ -28,6 +28,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/filing"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/money"
 )
 
 // Thresholds. Each is an operational judgement rather than a figure from
@@ -85,6 +86,7 @@ var Kinds = []string{
 	string(sqlcgen.AlertKindRedistillationOpen),
 	string(sqlcgen.AlertKindProvincialFilingDue),
 	string(sqlcgen.AlertKindProvincialFilingOverdue),
+	string(sqlcgen.AlertKindInvoiceOverdue),
 }
 
 // Alert is one condition found true, before it is written.
@@ -142,6 +144,12 @@ func Evaluate(
 		return nil, fmt.Errorf("work orders: %w", err)
 	}
 	out = append(out, workAlerts...)
+
+	invoiceAlerts, err := evaluateOverdueInvoices(ctx, q)
+	if err != nil {
+		return nil, fmt.Errorf("invoices: %w", err)
+	}
+	out = append(out, invoiceAlerts...)
 
 	provincialAlerts, err := evaluateProvincialFilings(ctx, q, now)
 	if err != nil {
@@ -591,6 +599,47 @@ func evaluateProvincialFilings(
 				p.PeriodEnd.Time.Format("2006-01-02")),
 			EntityType: "provincial_report_period",
 			EntityID:   uuid.NullUUID{UUID: p.ID, Valid: true},
+		})
+	}
+	return out, nil
+}
+
+// evaluateOverdueInvoices raises on issued invoices past their due date
+// with money still on them.
+//
+// Warning rather than critical: an invoice a week late is a phone call,
+// not an emergency, and a distillery whose alert list is full of things
+// that are not emergencies stops reading it. It escalates once the money
+// has been outstanding for two months, which is the point at which it
+// stops being an oversight.
+func evaluateOverdueInvoices(ctx context.Context, q *sqlcgen.Queries) ([]Alert, error) {
+	rows, err := q.OverdueInvoices(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Alert, 0, len(rows))
+	for _, inv := range rows {
+		outstanding := money.FromNumeric(inv.Outstanding)
+		// A fully paid invoice can still be listed here if its status was
+		// never advanced; the balance is the fact, so it decides.
+		if outstanding.Sign() <= 0 {
+			continue
+		}
+		days := int(time.Since(inv.DueDate.Time).Hours() / 24)
+		sev := sqlcgen.AlertSeverityWarning
+		if days > 60 {
+			sev = sqlcgen.AlertSeverityCritical
+		}
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindInvoiceOverdue,
+			Severity:   sev,
+			SubjectKey: inv.ID.String(),
+			Title: fmt.Sprintf("Invoice %d — %s owes $%s",
+				inv.InvoiceNo, inv.CustomerName, outstanding.String(2)),
+			Detail: fmt.Sprintf("%d day%s past due (%s).",
+				days, plural(days), inv.DueDate.Time.Format("2006-01-02")),
+			EntityType: "invoice",
+			EntityID:   uuid.NullUUID{UUID: inv.ID, Valid: true},
 		})
 	}
 	return out, nil

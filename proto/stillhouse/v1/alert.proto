@@ -29,6 +29,9 @@ enum AlertKind {
   // more gently than the federal deadline.
   ALERT_KIND_PROVINCIAL_FILING_DUE = 12;
   ALERT_KIND_PROVINCIAL_FILING_OVERDUE = 13;
+  // Issued, past due, and still owed. A warning rather than a crisis
+  // until it has been outstanding two months.
+  ALERT_KIND_INVOICE_OVERDUE = 14;
 }
 
 enum AlertSeverity {

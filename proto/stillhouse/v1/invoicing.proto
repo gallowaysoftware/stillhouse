@@ -1,0 +1,246 @@
+// Getting paid.
+//
+// Stage 173 gave the distillery an order and a shipment; neither of them
+// asks anybody for money. An invoice is the document a customer pays
+// against, and the record that says whether they have.
+//
+// Tax is the part worth being careful about. A rate is a fact about a
+// jurisdiction and a date, and one half-remembered produces an invoice
+// wrong by exactly that amount on every line. Rates are entered by the
+// licensee, effective-dated, and carry the provenance the pricing rates
+// and the provincial requirements already carry. An invoice with no rate
+// configured shows no tax and says so, rather than showing zero.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/provincial.proto";
+
+enum InvoiceKind {
+  INVOICE_KIND_UNSPECIFIED = 0;
+  INVOICE_KIND_INVOICE = 1;
+  INVOICE_KIND_CREDIT_NOTE = 2;
+}
+
+enum InvoiceStatus {
+  INVOICE_STATUS_UNSPECIFIED = 0;
+  INVOICE_STATUS_DRAFT = 1;
+  INVOICE_STATUS_ISSUED = 2;
+  INVOICE_STATUS_PART_PAID = 3;
+  INVOICE_STATUS_PAID = 4;
+  INVOICE_STATUS_VOID = 5;
+}
+
+message TaxRate {
+  string id = 1;
+  // ISO 3166-2, or empty for one that applies everywhere.
+  string jurisdiction = 2;
+  string name = 3;             // GST, HST, QST, PST
+  // A decimal string fraction: "0.05", not "5".
+  string rate = 4;
+  string effective_from = 5;   // ISO date
+  string registration_no = 6;
+  RequirementProvenance provenance = 7;
+  string authority = 8;
+  string notes = 9;
+}
+
+message SaveTaxRateRequest {
+  string jurisdiction = 1;
+  string name = 2;
+  string rate = 3;
+  string effective_from = 4;   // ISO date; empty = today
+  string registration_no = 5;
+  RequirementProvenance provenance = 6;
+  string authority = 7;
+  string notes = 8;
+}
+message SaveTaxRateResponse { TaxRate rate = 1; }
+
+message ListTaxRatesRequest {}
+message ListTaxRatesResponse { repeated TaxRate rates = 1; }
+
+message DeleteTaxRateRequest { string id = 1; }
+message DeleteTaxRateResponse {}
+
+// ----- invoices -------------------------------------------------------------
+
+message InvoiceLine {
+  string id = 1;
+  string product_id = 2;
+  string description = 3;
+  // Decimal strings throughout: money on a document somebody signs, and
+  // rendering it through a double is how a cent goes missing.
+  string quantity = 4;
+  string unit_price = 5;
+  string line_total = 6;
+  string tax_name = 7;
+  string tax_rate = 8;
+  string tax_amount = 9;
+}
+
+message Invoice {
+  string id = 1;
+  InvoiceKind kind = 2;
+  int32  invoice_no = 3;
+  string customer_id = 4;
+  string customer_name = 5;
+  string sales_order_id = 6;
+  string shipment_id = 7;
+  string credits_invoice_id = 8;
+  InvoiceStatus status = 9;
+  string issue_date = 10;      // ISO date
+  string due_date = 11;
+  int32  terms_days = 12;
+  string currency = 13;
+  string bill_to_name = 14;
+  string bill_to_address = 15;
+  string customer_reference = 16;
+  string notes = 17;
+  string void_reason = 18;
+  repeated InvoiceLine lines = 19;
+  string subtotal = 20;
+  string tax = 21;
+  string total = 22;
+  string paid = 23;
+  string outstanding = 24;
+  // Days past due; zero when not yet due or not issued.
+  int32  days_overdue = 25;
+  google.protobuf.Timestamp issued_at = 26;
+  google.protobuf.Timestamp created_at = 27;
+  // Set when the invoice could not be fully priced or taxed. Never
+  // empty when something is missing — an invoice quietly short by its
+  // tax is worse than one that refuses to be issued.
+  repeated string warnings = 28;
+}
+
+message CreateInvoiceRequest {
+  string customer_id = 1;
+  // Optional. Naming a shipment fills the lines from what it actually
+  // delivered, priced from the order line each pick satisfied.
+  string shipment_id = 2;
+  string sales_order_id = 3;
+  string customer_reference = 4;
+  string notes = 5;
+}
+message CreateInvoiceResponse { Invoice invoice = 1; }
+
+message AddInvoiceLineRequest {
+  string invoice_id = 1;
+  string product_id = 2;       // optional
+  string description = 3;
+  string quantity = 4;
+  string unit_price = 5;
+}
+message AddInvoiceLineResponse { Invoice invoice = 1; }
+
+message RemoveInvoiceLineRequest { string line_id = 1; }
+message RemoveInvoiceLineResponse { Invoice invoice = 1; }
+
+message IssueInvoiceRequest {
+  string id = 1;
+  string issue_date = 2;       // ISO date; empty = today
+  // Overrides the customer's recorded terms. -1 uses theirs.
+  int32  terms_days = 3;
+}
+message IssueInvoiceResponse { Invoice invoice = 1; }
+
+message VoidInvoiceRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidInvoiceResponse { Invoice invoice = 1; }
+
+message CreateCreditNoteRequest {
+  // The invoice being credited. A credit note with nothing to credit is
+  // a refund, and this is not that.
+  string invoice_id = 1;
+  string reason = 2;
+  // Empty credits the whole invoice.
+  repeated CreditNoteLine lines = 3;
+}
+message CreditNoteLine {
+  string description = 1;
+  string quantity = 2;
+  string unit_price = 3;
+  string product_id = 4;
+}
+message CreateCreditNoteResponse { Invoice credit_note = 1; }
+
+message ListInvoicesRequest { bool open_only = 1; }
+message ListInvoicesResponse { repeated Invoice invoices = 1; }
+
+message GetInvoiceRequest { string id = 1; }
+message GetInvoiceResponse {
+  Invoice invoice = 1;
+  repeated InvoicePayment payments = 2;
+}
+
+message InvoicePayment {
+  string id = 1;
+  string received_on = 2;      // ISO date
+  string amount = 3;
+  string method = 4;
+  string reference = 5;
+  string notes = 6;
+}
+
+message RecordPaymentRequest {
+  string invoice_id = 1;
+  string amount = 2;
+  string received_on = 3;      // ISO date; empty = today
+  string method = 4;
+  string reference = 5;
+  string notes = 6;
+}
+message RecordPaymentResponse { Invoice invoice = 1; }
+
+// ----- ageing ---------------------------------------------------------------
+
+// One age band. Repeated rather than a field per band, so the server
+// names them — which is where the decision about what a band means lives
+// — and so a licensee who wants different bands later does not need a
+// wire change.
+message AgeingBucket {
+  string label = 1;
+  string amount = 2;
+  // True for bands that are actually late, so a screen can colour them
+  // without parsing the label.
+  bool overdue = 3;
+}
+
+message AgeingLine {
+  string customer_id = 1;
+  string customer_name = 2;
+  string total = 3;
+  repeated AgeingBucket buckets = 4;
+  int32  invoices = 5;
+}
+
+message AgeingReportRequest {}
+message AgeingReportResponse {
+  repeated AgeingLine lines = 1;
+  string total = 2;
+  // Buckets run from the due date, not the issue date: an invoice on
+  // 60-day terms issued 45 days ago is not overdue, and a report that
+  // says it is trains people to ignore the report.
+  string basis = 3;
+}
+
+service InvoicingService {
+  rpc SaveTaxRate(SaveTaxRateRequest) returns (SaveTaxRateResponse);
+  rpc ListTaxRates(ListTaxRatesRequest) returns (ListTaxRatesResponse);
+  rpc DeleteTaxRate(DeleteTaxRateRequest) returns (DeleteTaxRateResponse);
+
+  rpc CreateInvoice(CreateInvoiceRequest) returns (CreateInvoiceResponse);
+  rpc AddInvoiceLine(AddInvoiceLineRequest) returns (AddInvoiceLineResponse);
+  rpc RemoveInvoiceLine(RemoveInvoiceLineRequest) returns (RemoveInvoiceLineResponse);
+  rpc IssueInvoice(IssueInvoiceRequest) returns (IssueInvoiceResponse);
+  rpc VoidInvoice(VoidInvoiceRequest) returns (VoidInvoiceResponse);
+  rpc CreateCreditNote(CreateCreditNoteRequest) returns (CreateCreditNoteResponse);
+  rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+  rpc GetInvoice(GetInvoiceRequest) returns (GetInvoiceResponse);
+  rpc RecordPayment(RecordPaymentRequest) returns (RecordPaymentResponse);
+  rpc AgeingReport(AgeingReportRequest) returns (AgeingReportResponse);
+}

@@ -371,6 +371,25 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.ProvincialService/DeleteProvincialRegistration":    roleOwner,
 	"/stillhouse.v1.ProvincialService/SaveProvincialReportDefinition":  roleOwner,
 
+	// InvoicingService. Asking a customer for money, and saying they
+	// have paid, are back-office acts — and the tax rates behind them are
+	// a compliance policy, so they sit with the owner and are on the
+	// accountant's surface. Reading what is owed is a viewer act: the
+	// person who answers the phone should be able to see it.
+	"/stillhouse.v1.InvoicingService/ListInvoices":      roleViewer,
+	"/stillhouse.v1.InvoicingService/GetInvoice":        roleViewer,
+	"/stillhouse.v1.InvoicingService/ListTaxRates":      roleViewer,
+	"/stillhouse.v1.InvoicingService/AgeingReport":      roleViewer,
+	"/stillhouse.v1.InvoicingService/CreateInvoice":     roleOwner,
+	"/stillhouse.v1.InvoicingService/AddInvoiceLine":    roleOwner,
+	"/stillhouse.v1.InvoicingService/RemoveInvoiceLine": roleOwner,
+	"/stillhouse.v1.InvoicingService/IssueInvoice":      roleOwner,
+	"/stillhouse.v1.InvoicingService/VoidInvoice":       roleOwner,
+	"/stillhouse.v1.InvoicingService/CreateCreditNote":  roleOwner,
+	"/stillhouse.v1.InvoicingService/RecordPayment":     roleOwner,
+	"/stillhouse.v1.InvoicingService/SaveTaxRate":       roleOwner,
+	"/stillhouse.v1.InvoicingService/DeleteTaxRate":     roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,
@@ -489,6 +508,12 @@ var accountantAlso = map[string]bool{
 	"/stillhouse.v1.ProvincialService/SaveProvincialReportDefinition": true,
 	"/stillhouse.v1.ProvincialService/GenerateProvincialPeriods":      true,
 	"/stillhouse.v1.ProvincialService/MarkProvincialReportFiled":      true,
+	// Sales tax is a compliance policy, and the receivables ledger is the
+	// other half of the books the engagement is about.
+	"/stillhouse.v1.InvoicingService/SaveTaxRate":      true,
+	"/stillhouse.v1.InvoicingService/DeleteTaxRate":    true,
+	"/stillhouse.v1.InvoicingService/CreateCreditNote": true,
+	"/stillhouse.v1.InvoicingService/RecordPayment":    true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a

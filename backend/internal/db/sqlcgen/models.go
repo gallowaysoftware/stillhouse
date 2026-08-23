@@ -28,6 +28,7 @@ const (
 	AlertKindRedistillationOpen      AlertKind = "redistillation_open"
 	AlertKindProvincialFilingDue     AlertKind = "provincial_filing_due"
 	AlertKindProvincialFilingOverdue AlertKind = "provincial_filing_overdue"
+	AlertKindInvoiceOverdue          AlertKind = "invoice_overdue"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -970,6 +971,93 @@ func (ns NullInventoryAdjustmentReason) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.InventoryAdjustmentReason), nil
+}
+
+type InvoiceKind string
+
+const (
+	InvoiceKindInvoice    InvoiceKind = "invoice"
+	InvoiceKindCreditNote InvoiceKind = "credit_note"
+)
+
+func (e *InvoiceKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InvoiceKind(s)
+	case string:
+		*e = InvoiceKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InvoiceKind: %T", src)
+	}
+	return nil
+}
+
+type NullInvoiceKind struct {
+	InvoiceKind InvoiceKind `json:"invoice_kind"`
+	Valid       bool        `json:"valid"` // Valid is true if InvoiceKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInvoiceKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.InvoiceKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InvoiceKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInvoiceKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InvoiceKind), nil
+}
+
+type InvoiceStatus string
+
+const (
+	InvoiceStatusDraft    InvoiceStatus = "draft"
+	InvoiceStatusIssued   InvoiceStatus = "issued"
+	InvoiceStatusPartPaid InvoiceStatus = "part_paid"
+	InvoiceStatusPaid     InvoiceStatus = "paid"
+	InvoiceStatusVoid     InvoiceStatus = "void"
+)
+
+func (e *InvoiceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = InvoiceStatus(s)
+	case string:
+		*e = InvoiceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for InvoiceStatus: %T", src)
+	}
+	return nil
+}
+
+type NullInvoiceStatus struct {
+	InvoiceStatus InvoiceStatus `json:"invoice_status"`
+	Valid         bool          `json:"valid"` // Valid is true if InvoiceStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullInvoiceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.InvoiceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.InvoiceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullInvoiceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.InvoiceStatus), nil
 }
 
 type JournalEventKind string
@@ -2298,6 +2386,62 @@ type InviteCode struct {
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 }
 
+type Invoice struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	Kind              InvoiceKind        `json:"kind"`
+	InvoiceNo         int32              `json:"invoice_no"`
+	CustomerID        uuid.UUID          `json:"customer_id"`
+	SalesOrderID      uuid.NullUUID      `json:"sales_order_id"`
+	ShipmentID        uuid.NullUUID      `json:"shipment_id"`
+	CreditsInvoiceID  uuid.NullUUID      `json:"credits_invoice_id"`
+	Status            InvoiceStatus      `json:"status"`
+	IssueDate         pgtype.Date        `json:"issue_date"`
+	TermsDays         int32              `json:"terms_days"`
+	DueDate           pgtype.Date        `json:"due_date"`
+	Currency          string             `json:"currency"`
+	BillToName        string             `json:"bill_to_name"`
+	BillToAddress     string             `json:"bill_to_address"`
+	CustomerReference string             `json:"customer_reference"`
+	Notes             string             `json:"notes"`
+	VoidReason        string             `json:"void_reason"`
+	VoidedAt          pgtype.Timestamptz `json:"voided_at"`
+	IssuedAt          pgtype.Timestamptz `json:"issued_at"`
+	IssuedBy          uuid.NullUUID      `json:"issued_by"`
+	CreatedBy         uuid.UUID          `json:"created_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
+type InvoiceLine struct {
+	ID          uuid.UUID          `json:"id"`
+	TenantID    uuid.UUID          `json:"tenant_id"`
+	InvoiceID   uuid.UUID          `json:"invoice_id"`
+	ProductID   uuid.NullUUID      `json:"product_id"`
+	Description string             `json:"description"`
+	Quantity    pgtype.Numeric     `json:"quantity"`
+	UnitPrice   pgtype.Numeric     `json:"unit_price"`
+	LineTotal   pgtype.Numeric     `json:"line_total"`
+	TaxName     string             `json:"tax_name"`
+	TaxRate     pgtype.Numeric     `json:"tax_rate"`
+	TaxAmount   pgtype.Numeric     `json:"tax_amount"`
+	SortOrder   int32              `json:"sort_order"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type InvoicePayment struct {
+	ID         uuid.UUID          `json:"id"`
+	TenantID   uuid.UUID          `json:"tenant_id"`
+	InvoiceID  uuid.UUID          `json:"invoice_id"`
+	ReceivedOn pgtype.Date        `json:"received_on"`
+	Amount     pgtype.Numeric     `json:"amount"`
+	Method     string             `json:"method"`
+	Reference  string             `json:"reference"`
+	Notes      string             `json:"notes"`
+	RecordedBy uuid.UUID          `json:"recorded_by"`
+	CreatedAt  pgtype.Timestamptz `json:"created_at"`
+}
+
 type JournalAccount struct {
 	TenantID      uuid.UUID          `json:"tenant_id"`
 	Kind          JournalEventKind   `json:"kind"`
@@ -2837,6 +2981,21 @@ type Supplier struct {
 	ArchivedAt       pgtype.Timestamptz `json:"archived_at"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type TaxRate struct {
+	ID             uuid.UUID             `json:"id"`
+	TenantID       uuid.UUID             `json:"tenant_id"`
+	Jurisdiction   string                `json:"jurisdiction"`
+	Name           string                `json:"name"`
+	Rate           pgtype.Numeric        `json:"rate"`
+	EffectiveFrom  pgtype.Date           `json:"effective_from"`
+	RegistrationNo string                `json:"registration_no"`
+	Provenance     RequirementProvenance `json:"provenance"`
+	Authority      string                `json:"authority"`
+	Notes          string                `json:"notes"`
+	CreatedBy      uuid.UUID             `json:"created_by"`
+	CreatedAt      pgtype.Timestamptz    `json:"created_at"`
 }
 
 type Tenant struct {

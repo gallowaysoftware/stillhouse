@@ -50,6 +50,9 @@ const (
 	// more gently than the federal deadline.
 	AlertKind_ALERT_KIND_PROVINCIAL_FILING_DUE     AlertKind = 12
 	AlertKind_ALERT_KIND_PROVINCIAL_FILING_OVERDUE AlertKind = 13
+	// Issued, past due, and still owed. A warning rather than a crisis
+	// until it has been outstanding two months.
+	AlertKind_ALERT_KIND_INVOICE_OVERDUE AlertKind = 14
 )
 
 // Enum value maps for AlertKind.
@@ -69,6 +72,7 @@ var (
 		11: "ALERT_KIND_REDISTILLATION_OPEN",
 		12: "ALERT_KIND_PROVINCIAL_FILING_DUE",
 		13: "ALERT_KIND_PROVINCIAL_FILING_OVERDUE",
+		14: "ALERT_KIND_INVOICE_OVERDUE",
 	}
 	AlertKind_value = map[string]int32{
 		"ALERT_KIND_UNSPECIFIED":               0,
@@ -85,6 +89,7 @@ var (
 		"ALERT_KIND_REDISTILLATION_OPEN":       11,
 		"ALERT_KIND_PROVINCIAL_FILING_DUE":     12,
 		"ALERT_KIND_PROVINCIAL_FILING_OVERDUE": 13,
+		"ALERT_KIND_INVOICE_OVERDUE":           14,
 	}
 )
 
@@ -715,7 +720,7 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"\x14SetAlertEmailRequest\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\"1\n" +
 	"\x15SetAlertEmailResponse\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled*\xeb\x03\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled*\x8b\x04\n" +
 	"\tAlertKind\x12\x1a\n" +
 	"\x16ALERT_KIND_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15ALERT_KIND_FILING_DUE\x10\x01\x12\x1d\n" +
@@ -731,7 +736,8 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"\x12\"\n" +
 	"\x1eALERT_KIND_REDISTILLATION_OPEN\x10\v\x12$\n" +
 	" ALERT_KIND_PROVINCIAL_FILING_DUE\x10\f\x12(\n" +
-	"$ALERT_KIND_PROVINCIAL_FILING_OVERDUE\x10\r*\x81\x01\n" +
+	"$ALERT_KIND_PROVINCIAL_FILING_OVERDUE\x10\r\x12\x1e\n" +
+	"\x1aALERT_KIND_INVOICE_OVERDUE\x10\x0e*\x81\x01\n" +
 	"\rAlertSeverity\x12\x1e\n" +
 	"\x1aALERT_SEVERITY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13ALERT_SEVERITY_INFO\x10\x01\x12\x1a\n" +
