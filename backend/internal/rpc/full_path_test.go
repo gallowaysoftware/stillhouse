@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/testdb"
 )
 
 // TestBottlingRunCostFullChain wires the chain of queries that
@@ -267,15 +268,7 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 // integration test in this file.
 func integrationPool(t *testing.T) (*pgxpool.Pool, *sqlcgen.Queries) {
 	t.Helper()
-	adminDSN := os.Getenv("STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN")
-	if adminDSN == "" {
-		t.Skip("set STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN to run this test")
-	}
-	pool, err := pgxpool.New(context.Background(), adminDSN)
-	if err != nil {
-		t.Fatalf("admin pool: %v", err)
-	}
-	t.Cleanup(func() { pool.Close() })
+	pool := testdb.AdminPool(t)
 	return pool, sqlcgen.New(pool)
 }
 

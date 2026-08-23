@@ -43,6 +43,13 @@ cd backend && go vet ./...
 cd backend && go build ./...
 cd backend && go test ./...
 
+# DB-backed tests need one DSN — the superuser one. The pool the code
+# under test runs through is derived from it with SET ROLE stillhouse_app
+# (internal/testdb), so the tests exercise RLS the way production does.
+cd backend && STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN=\
+  "postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable" \
+  go test ./...
+
 # Frontend
 cd web && npm run lint
 cd web && npm run build

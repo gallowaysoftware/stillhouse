@@ -505,27 +505,6 @@ status, scheduling.
 
 Not features. The reasons to believe the numbers above are right.
 
-### K5 · DB-backed tests share a database and bypass RLS — P2
-
-The integration tests connect as `STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN`, a
-superuser, so `WithTenantTx` sets the tenant GUC and row-level security does
-not act on it. Two consequences, both real:
-
-- **Tests are not isolated from each other.** A period left behind by one
-  test is visible to the next test's tenant, because the period-lock query
-  is only tenant-scoped by RLS. This bit during stage 151: a leftover
-  submitted period blocked writes for every other tenant in the database.
-- **The DB-backed tests do not exercise RLS at all.** They prove the SQL and
-  the handlers; they prove nothing about tenant isolation. Stage 152 added a
-  schema test that asserts every tenant-scoped table *has* the policy — this
-  is the other half, proving the policy actually bites at runtime.
-
-Options, roughly in order of cost: run each test in a transaction that rolls
-back; give each test its own database; or run the suite as `stillhouse_app`
-and keep a superuser connection only for fixture setup. The last one would
-make the tests prove tenant isolation as a side effect, which is worth more
-than the other two.
-
 ### K3 · `_pct` means two different scales — P2
 
 `abv_pct` is 0–100. `extract_pct`, `moisture_pct` and the three recipe

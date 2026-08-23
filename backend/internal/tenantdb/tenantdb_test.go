@@ -2,60 +2,30 @@ package tenantdb
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/testdb"
 )
 
-// integrationDSN returns the DSN to use for the integration test or skips
-// the test if not set. Set STILLHOUSE_INTEGRATION_TEST_DSN to the
-// stillhouse_app (non-super) role DSN to run.
-func integrationDSN(t *testing.T) string {
-	t.Helper()
-	dsn := os.Getenv("STILLHOUSE_INTEGRATION_TEST_DSN")
-	if dsn == "" {
-		t.Skip("set STILLHOUSE_INTEGRATION_TEST_DSN to run RLS integration tests")
-	}
-	return dsn
-}
-
-// adminDSN is the superuser DSN used to set up test fixtures (it bypasses
-// RLS so we can create rows across tenants).
-func adminDSN(t *testing.T) string {
-	t.Helper()
-	dsn := os.Getenv("STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN")
-	if dsn == "" {
-		t.Skip("set STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN to run RLS integration tests")
-	}
-	return dsn
-}
+// These two tests are the ones that actually prove tenant isolation, and
+// until stage 153 neither of them ran: they wanted a second environment
+// variable naming the stillhouse_app DSN, nobody set it, and the suite
+// reported a confident green while skipping the only thing that checks
+// the boundary holds. They now derive the app-role connection from the
+// one admin DSN the rest of the suite already needs — see internal/testdb.
 
 // TestRLSIsolation creates two tenants and a material in each via the
 // admin pool, then uses the app pool through WithTenantTx to query
 // materials under each tenant's context. Each tenant must see only its
 // own row.
 func TestRLSIsolation(t *testing.T) {
-	appDSN := integrationDSN(t)
-	adminDSN := adminDSN(t)
 	ctx := context.Background()
-
-	adminPool, err := pgxpool.New(ctx, adminDSN)
-	if err != nil {
-		t.Fatalf("admin pool: %v", err)
-	}
-	defer adminPool.Close()
-
-	appPool, err := pgxpool.New(ctx, appDSN)
-	if err != nil {
-		t.Fatalf("app pool: %v", err)
-	}
-	defer appPool.Close()
-
+	adminPool := testdb.AdminPool(t)
+	appPool := testdb.AppPool(t)
 	adminQ := sqlcgen.New(adminPool)
 	app := New(appPool)
 
@@ -190,17 +160,12 @@ func TestRLSIsolation(t *testing.T) {
 // test runs as stillhouse_app, which is the only configuration that can
 // see it.
 func TestSetTenantContextEnablesAuditWriteDuringSignup(t *testing.T) {
-	dsn := integrationDSN(t)
 	ctx := context.Background()
-	pool, err := pgxpool.New(ctx, dsn)
-	if err != nil {
-		t.Fatalf("pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
+	pool := testdb.AppPool(t)
 	db := New(pool)
 
 	var tenantID uuid.UUID
-	err = db.WithoutTenantTx(ctx, func(ctx context.Context, q *sqlcgen.Queries) error {
+	err := db.WithoutTenantTx(ctx, func(ctx context.Context, q *sqlcgen.Queries) error {
 		tenant, e := q.CreateTenant(ctx, sqlcgen.CreateTenantParams{
 			Name:                    "Signup RLS " + uuid.NewString(),
 			CraSpiritsLicenceNumber: "SIGNUP-" + uuid.NewString(),

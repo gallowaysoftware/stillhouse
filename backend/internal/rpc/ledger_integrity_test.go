@@ -17,6 +17,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/testdb"
 )
 
 // The ledger's one non-negotiable invariant: alcohol is neither created nor
@@ -37,16 +38,11 @@ type ledgerFixture struct {
 
 func newLedgerFixture(t *testing.T) *ledgerFixture {
 	t.Helper()
-	dsn := os.Getenv("STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN")
-	if dsn == "" {
-		t.Skip("set STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN to run this test")
-	}
 	ctx := context.Background()
-	pool, err := pgxpool.New(ctx, dsn)
-	if err != nil {
-		t.Fatalf("pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
+	// Fixtures are seeded through the admin pool (crossing the tenant
+	// boundary on purpose); the handlers under test are driven through a
+	// pool that row-level security applies to. See internal/testdb.
+	pool := testdb.AdminPool(t)
 	q := sqlcgen.New(pool)
 
 	tenant, err := q.CreateTenant(ctx, sqlcgen.CreateTenantParams{
@@ -68,7 +64,7 @@ func newLedgerFixture(t *testing.T) *ledgerFixture {
 		t.Fatalf("create user: %v", err)
 	}
 	return &ledgerFixture{
-		pool: pool, db: tenantdb.New(pool), q: q,
+		pool: pool, db: tenantdb.New(testdb.AppPool(t)), q: q,
 		tenant: tenant, user: user, ctx: WithUser(ctx, user),
 	}
 }

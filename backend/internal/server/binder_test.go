@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"os"
 	"strings"
 	"testing"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/testdb"
 )
 
 // PLAN C2. Everything in the binder already existed in pieces —
@@ -23,8 +23,13 @@ import (
 // Needs a database: STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN.
 
 type binderFixture struct {
-	pool   *pgxpool.Pool
-	q      *sqlcgen.Queries
+	pool *pgxpool.Pool // superuser: fixture setup only
+	q    *sqlcgen.Queries
+
+	// app / appQ are what the code under test is driven through: a
+	// connection the RLS policies actually apply to, as in production.
+	app    *pgxpool.Pool
+	appQ   *sqlcgen.Queries
 	ctx    context.Context
 	tenant sqlcgen.Tenant
 	user   sqlcgen.User
@@ -32,17 +37,10 @@ type binderFixture struct {
 
 func newBinderFixture(t *testing.T) *binderFixture {
 	t.Helper()
-	dsn := os.Getenv("STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN")
-	if dsn == "" {
-		t.Skip("set STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN to run this test")
-	}
 	ctx := context.Background()
-	pool, err := pgxpool.New(ctx, dsn)
-	if err != nil {
-		t.Fatalf("pool: %v", err)
-	}
-	t.Cleanup(pool.Close)
+	pool := testdb.AdminPool(t)
 	q := sqlcgen.New(pool)
+	app := testdb.AppPool(t)
 
 	tenant, err := q.CreateTenant(ctx, sqlcgen.CreateTenantParams{
 		Name:                    "Binder Distillery " + uuid.NewString()[:8],
@@ -61,7 +59,11 @@ func newBinderFixture(t *testing.T) *binderFixture {
 	if err != nil {
 		t.Fatalf("create user: %v", err)
 	}
-	return &binderFixture{pool: pool, q: q, ctx: ctx, tenant: tenant, user: user}
+	return &binderFixture{
+		pool: pool, q: q,
+		app: app, appQ: sqlcgen.New(app),
+		ctx: ctx, tenant: tenant, user: user,
+	}
 }
 
 // period creates a period, optionally submitted with a snapshot.
@@ -107,7 +109,7 @@ func TestBinderReportsTheSnapshotNotAFreshComputation(t *testing.T) {
 	id := f.period(t, `{"bulkClosingLaa": 4242.5, "dutyPayableCad": 999.99,
 		"dutyRatePerLaa": 14.117, "periodStart": "2026-06-01", "periodEnd": "2026-06-30"}`)
 
-	files, _, err := buildB266Binder(f.ctx, f.pool, f.q, f.tenant.ID, id, f.user, time.Now().UTC())
+	files, _, err := buildB266Binder(f.ctx, f.app, f.appQ, f.tenant.ID, id, f.user, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("buildB266Binder: %v", err)
 	}
@@ -134,7 +136,7 @@ func TestBinderRefusesToPresentADraftAsFiled(t *testing.T) {
 	f := newBinderFixture(t)
 	id := f.period(t, "")
 
-	files, _, err := buildB266Binder(f.ctx, f.pool, f.q, f.tenant.ID, id, f.user, time.Now().UTC())
+	files, _, err := buildB266Binder(f.ctx, f.app, f.appQ, f.tenant.ID, id, f.user, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("buildB266Binder: %v", err)
 	}
@@ -156,7 +158,7 @@ func TestBinderCarriesEverySchedule(t *testing.T) {
 	f := newBinderFixture(t)
 	id := f.period(t, `{"periodStart": "2026-06-01", "periodEnd": "2026-06-30"}`)
 
-	files, name, err := buildB266Binder(f.ctx, f.pool, f.q, f.tenant.ID, id, f.user, time.Now().UTC())
+	files, name, err := buildB266Binder(f.ctx, f.app, f.appQ, f.tenant.ID, id, f.user, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("buildB266Binder: %v", err)
 	}
@@ -233,7 +235,7 @@ func TestBinderSchedulesAreBoundedByThePeriod(t *testing.T) {
 	}
 
 	id := f.period(t, `{"periodStart": "2026-06-01", "periodEnd": "2026-06-30"}`)
-	files, _, err := buildB266Binder(f.ctx, f.pool, f.q, f.tenant.ID, id, f.user, time.Now().UTC())
+	files, _, err := buildB266Binder(f.ctx, f.app, f.appQ, f.tenant.ID, id, f.user, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("buildB266Binder: %v", err)
 	}
@@ -261,7 +263,7 @@ func TestBinderReproducesTheFilingConfirmation(t *testing.T) {
 	f := newBinderFixture(t)
 	id := f.period(t, `{"periodStart": "2026-06-01", "periodEnd": "2026-06-30"}`)
 
-	files, _, err := buildB266Binder(f.ctx, f.pool, f.q, f.tenant.ID, id, f.user, time.Now().UTC())
+	files, _, err := buildB266Binder(f.ctx, f.app, f.appQ, f.tenant.ID, id, f.user, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("buildB266Binder: %v", err)
 	}
@@ -282,7 +284,7 @@ func TestBinderReproducesFilingBlockers(t *testing.T) {
 	id := f.period(t, `{"periodStart":"2026-06-01","periodEnd":"2026-06-30",
 		"filingBlockers":["3 losses totalling 12.0000 LAA have no duty treatment."]}`)
 
-	files, _, err := buildB266Binder(f.ctx, f.pool, f.q, f.tenant.ID, id, f.user, time.Now().UTC())
+	files, _, err := buildB266Binder(f.ctx, f.app, f.appQ, f.tenant.ID, id, f.user, time.Now().UTC())
 	if err != nil {
 		t.Fatalf("buildB266Binder: %v", err)
 	}
