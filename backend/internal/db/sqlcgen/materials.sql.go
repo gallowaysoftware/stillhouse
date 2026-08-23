@@ -93,7 +93,7 @@ INSERT INTO material_lots (
     tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, unit_cost_cad
 ) VALUES (
     $1, $2, $3, $4, $4, $5, $6, $7
-) RETURNING id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad
+) RETURNING id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad, purchase_order_line_id, supplier_id, freight_cad, import_duty_cad, handling_cad, invoice_reference, invoiced_at, landed_unit_cost_cad
 `
 
 type CreateMaterialLotParams struct {
@@ -129,6 +129,14 @@ func (q *Queries) CreateMaterialLot(ctx context.Context, arg CreateMaterialLotPa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UnitCostCad,
+		&i.PurchaseOrderLineID,
+		&i.SupplierID,
+		&i.FreightCad,
+		&i.ImportDutyCad,
+		&i.HandlingCad,
+		&i.InvoiceReference,
+		&i.InvoicedAt,
+		&i.LandedUnitCostCad,
 	)
 	return i, err
 }
@@ -159,7 +167,7 @@ func (q *Queries) GetMaterial(ctx context.Context, id uuid.UUID) (Material, erro
 }
 
 const getMaterialLot = `-- name: GetMaterialLot :one
-SELECT id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad FROM material_lots WHERE id = $1
+SELECT id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad, purchase_order_line_id, supplier_id, freight_cad, import_duty_cad, handling_cad, invoice_reference, invoiced_at, landed_unit_cost_cad FROM material_lots WHERE id = $1
 `
 
 func (q *Queries) GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error) {
@@ -177,12 +185,20 @@ func (q *Queries) GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UnitCostCad,
+		&i.PurchaseOrderLineID,
+		&i.SupplierID,
+		&i.FreightCad,
+		&i.ImportDutyCad,
+		&i.HandlingCad,
+		&i.InvoiceReference,
+		&i.InvoicedAt,
+		&i.LandedUnitCostCad,
 	)
 	return i, err
 }
 
 const listMaterialLots = `-- name: ListMaterialLots :many
-SELECT id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad FROM material_lots
+SELECT id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad, purchase_order_line_id, supplier_id, freight_cad, import_duty_cad, handling_cad, invoice_reference, invoiced_at, landed_unit_cost_cad FROM material_lots
 WHERE ($1::uuid IS NULL OR material_id = $1::uuid)
   AND (NOT $2::boolean OR quantity_on_hand > 0)
 ORDER BY received_at DESC
@@ -214,6 +230,14 @@ func (q *Queries) ListMaterialLots(ctx context.Context, arg ListMaterialLotsPara
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UnitCostCad,
+			&i.PurchaseOrderLineID,
+			&i.SupplierID,
+			&i.FreightCad,
+			&i.ImportDutyCad,
+			&i.HandlingCad,
+			&i.InvoiceReference,
+			&i.InvoicedAt,
+			&i.LandedUnitCostCad,
 		); err != nil {
 			return nil, err
 		}

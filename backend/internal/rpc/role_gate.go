@@ -49,6 +49,23 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// PurchasingService. Receiving is an operator action — the person on
+	// the loading dock is who knows what arrived. Committing the
+	// distillery to a purchase is not, and neither is the supplier
+	// record behind it.
+	"/stillhouse.v1.PurchasingService/ListSuppliers":           roleViewer,
+	"/stillhouse.v1.PurchasingService/ListPurchaseOrders":      roleViewer,
+	"/stillhouse.v1.PurchasingService/GetPurchaseOrder":        roleViewer,
+	"/stillhouse.v1.PurchasingService/ListGRNI":                roleViewer,
+	"/stillhouse.v1.PurchasingService/ReceiveAgainstPO":        roleOperator,
+	"/stillhouse.v1.PurchasingService/SetLandedCharges":        roleOperator,
+	"/stillhouse.v1.PurchasingService/MarkLotInvoiced":         roleOperator,
+	"/stillhouse.v1.PurchasingService/SaveSupplier":            roleOwner,
+	"/stillhouse.v1.PurchasingService/CreatePurchaseOrder":     roleOwner,
+	"/stillhouse.v1.PurchasingService/AddPurchaseOrderLine":    roleOwner,
+	"/stillhouse.v1.PurchasingService/RemovePurchaseOrderLine": roleOwner,
+	"/stillhouse.v1.PurchasingService/SetPurchaseOrderStatus":  roleOwner,
+
 	// LabService. Recording a result and holding a lot are operator
 	// actions — the person who has the certificate in their hand, or who
 	// found the problem, is who should be able to act. Releasing is not:

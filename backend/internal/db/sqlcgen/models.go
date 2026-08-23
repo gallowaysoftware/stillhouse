@@ -1195,6 +1195,52 @@ func (ns NullMaterialKind) Value() (driver.Value, error) {
 	return string(ns.MaterialKind), nil
 }
 
+type PurchaseOrderStatus string
+
+const (
+	PurchaseOrderStatusDraft             PurchaseOrderStatus = "draft"
+	PurchaseOrderStatusPlaced            PurchaseOrderStatus = "placed"
+	PurchaseOrderStatusPartiallyReceived PurchaseOrderStatus = "partially_received"
+	PurchaseOrderStatusReceived          PurchaseOrderStatus = "received"
+	PurchaseOrderStatusClosed            PurchaseOrderStatus = "closed"
+	PurchaseOrderStatusCancelled         PurchaseOrderStatus = "cancelled"
+)
+
+func (e *PurchaseOrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PurchaseOrderStatus(s)
+	case string:
+		*e = PurchaseOrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PurchaseOrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPurchaseOrderStatus struct {
+	PurchaseOrderStatus PurchaseOrderStatus `json:"purchase_order_status"`
+	Valid               bool                `json:"valid"` // Valid is true if PurchaseOrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPurchaseOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PurchaseOrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PurchaseOrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPurchaseOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PurchaseOrderStatus), nil
+}
+
 type RemovalDestinationKind string
 
 const (
@@ -1916,17 +1962,25 @@ type Material struct {
 }
 
 type MaterialLot struct {
-	ID               uuid.UUID          `json:"id"`
-	TenantID         uuid.UUID          `json:"tenant_id"`
-	MaterialID       uuid.UUID          `json:"material_id"`
-	SupplierLot      string             `json:"supplier_lot"`
-	QuantityReceived float64            `json:"quantity_received"`
-	QuantityOnHand   float64            `json:"quantity_on_hand"`
-	ReceivedAt       pgtype.Timestamptz `json:"received_at"`
-	Notes            string             `json:"notes"`
-	CreatedAt        pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
-	UnitCostCad      pgtype.Float8      `json:"unit_cost_cad"`
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	MaterialID          uuid.UUID          `json:"material_id"`
+	SupplierLot         string             `json:"supplier_lot"`
+	QuantityReceived    float64            `json:"quantity_received"`
+	QuantityOnHand      float64            `json:"quantity_on_hand"`
+	ReceivedAt          pgtype.Timestamptz `json:"received_at"`
+	Notes               string             `json:"notes"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	UnitCostCad         pgtype.Float8      `json:"unit_cost_cad"`
+	PurchaseOrderLineID uuid.NullUUID      `json:"purchase_order_line_id"`
+	SupplierID          uuid.NullUUID      `json:"supplier_id"`
+	FreightCad          float64            `json:"freight_cad"`
+	ImportDutyCad       float64            `json:"import_duty_cad"`
+	HandlingCad         float64            `json:"handling_cad"`
+	InvoiceReference    string             `json:"invoice_reference"`
+	InvoicedAt          pgtype.Timestamptz `json:"invoiced_at"`
+	LandedUnitCostCad   pgtype.Float8      `json:"landed_unit_cost_cad"`
 }
 
 type PackagedInventory struct {
@@ -2054,6 +2108,40 @@ type ProductionGauge struct {
 	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
 }
 
+type PurchaseOrder struct {
+	ID           uuid.UUID           `json:"id"`
+	TenantID     uuid.UUID           `json:"tenant_id"`
+	SupplierID   uuid.UUID           `json:"supplier_id"`
+	PoNo         int32               `json:"po_no"`
+	Status       PurchaseOrderStatus `json:"status"`
+	OrderedOn    pgtype.Date         `json:"ordered_on"`
+	ExpectedOn   pgtype.Date         `json:"expected_on"`
+	Reference    string              `json:"reference"`
+	Currency     string              `json:"currency"`
+	Notes        string              `json:"notes"`
+	PlacedBy     uuid.NullUUID       `json:"placed_by"`
+	PlacedAt     pgtype.Timestamptz  `json:"placed_at"`
+	ClosedAt     pgtype.Timestamptz  `json:"closed_at"`
+	CancelledAt  pgtype.Timestamptz  `json:"cancelled_at"`
+	CancelReason string              `json:"cancel_reason"`
+	CreatedAt    pgtype.Timestamptz  `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz  `json:"updated_at"`
+}
+
+type PurchaseOrderLine struct {
+	ID               uuid.UUID          `json:"id"`
+	TenantID         uuid.UUID          `json:"tenant_id"`
+	PurchaseOrderID  uuid.UUID          `json:"purchase_order_id"`
+	MaterialID       uuid.UUID          `json:"material_id"`
+	QuantityOrdered  float64            `json:"quantity_ordered"`
+	QuantityReceived float64            `json:"quantity_received"`
+	UnitPrice        pgtype.Numeric     `json:"unit_price"`
+	Uom              string             `json:"uom"`
+	Notes            string             `json:"notes"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Recipe struct {
 	ID               uuid.UUID          `json:"id"`
 	TenantID         uuid.UUID          `json:"tenant_id"`
@@ -2135,6 +2223,23 @@ type Session struct {
 	Token  string             `json:"token"`
 	Data   []byte             `json:"data"`
 	Expiry pgtype.Timestamptz `json:"expiry"`
+}
+
+type Supplier struct {
+	ID               uuid.UUID          `json:"id"`
+	TenantID         uuid.UUID          `json:"tenant_id"`
+	Name             string             `json:"name"`
+	AccountReference string             `json:"account_reference"`
+	ContactName      string             `json:"contact_name"`
+	Email            string             `json:"email"`
+	Phone            string             `json:"phone"`
+	Address          string             `json:"address"`
+	PaymentTermsDays pgtype.Int4        `json:"payment_terms_days"`
+	Country          string             `json:"country"`
+	Notes            string             `json:"notes"`
+	ArchivedAt       pgtype.Timestamptz `json:"archived_at"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Tenant struct {

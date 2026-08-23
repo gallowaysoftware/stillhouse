@@ -142,7 +142,7 @@ const debitMaterialLot = `-- name: DebitMaterialLot :one
 UPDATE material_lots
 SET quantity_on_hand = quantity_on_hand - $2
 WHERE id = $1 AND quantity_on_hand >= $2
-RETURNING id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad
+RETURNING id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad, purchase_order_line_id, supplier_id, freight_cad, import_duty_cad, handling_cad, invoice_reference, invoiced_at, landed_unit_cost_cad
 `
 
 type DebitMaterialLotParams struct {
@@ -167,6 +167,14 @@ func (q *Queries) DebitMaterialLot(ctx context.Context, arg DebitMaterialLotPara
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UnitCostCad,
+		&i.PurchaseOrderLineID,
+		&i.SupplierID,
+		&i.FreightCad,
+		&i.ImportDutyCad,
+		&i.HandlingCad,
+		&i.InvoiceReference,
+		&i.InvoicedAt,
+		&i.LandedUnitCostCad,
 	)
 	return i, err
 }

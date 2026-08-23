@@ -95,7 +95,8 @@ func (q *Queries) JournalDutyEvents(ctx context.Context, arg JournalDutyEventsPa
 }
 
 const journalMaterialConsumption = `-- name: JournalMaterialConsumption :many
-SELECT mu.id, mr.mash_date, mu.quantity_used, ml.unit_cost_cad,
+SELECT mu.id, mr.mash_date, mu.quantity_used,
+       COALESCE(ml.landed_unit_cost_cad, ml.unit_cost_cad) AS unit_cost_cad,
        m.name AS material_name, mu.uom, mr.mash_no
 FROM mash_ingredient_usage mu
 JOIN mash_runs mr ON mr.id = mu.mash_run_id
@@ -152,6 +153,7 @@ func (q *Queries) JournalMaterialConsumption(ctx context.Context, arg JournalMat
 
 const journalMaterialReceipts = `-- name: JournalMaterialReceipts :many
 SELECT ml.id, ml.received_at, ml.quantity_received, ml.unit_cost_cad,
+       ml.landed_unit_cost_cad,
        m.name AS material_name, m.uom, ml.supplier_lot
 FROM material_lots ml
 JOIN materials m ON m.id = ml.material_id
@@ -166,13 +168,14 @@ type JournalMaterialReceiptsParams struct {
 }
 
 type JournalMaterialReceiptsRow struct {
-	ID               uuid.UUID          `json:"id"`
-	ReceivedAt       pgtype.Timestamptz `json:"received_at"`
-	QuantityReceived float64            `json:"quantity_received"`
-	UnitCostCad      pgtype.Float8      `json:"unit_cost_cad"`
-	MaterialName     string             `json:"material_name"`
-	Uom              string             `json:"uom"`
-	SupplierLot      string             `json:"supplier_lot"`
+	ID                uuid.UUID          `json:"id"`
+	ReceivedAt        pgtype.Timestamptz `json:"received_at"`
+	QuantityReceived  float64            `json:"quantity_received"`
+	UnitCostCad       pgtype.Float8      `json:"unit_cost_cad"`
+	LandedUnitCostCad pgtype.Float8      `json:"landed_unit_cost_cad"`
+	MaterialName      string             `json:"material_name"`
+	Uom               string             `json:"uom"`
+	SupplierLot       string             `json:"supplier_lot"`
 }
 
 // Raw material in, at the lot cost actually recorded. A lot with no unit
@@ -192,6 +195,7 @@ func (q *Queries) JournalMaterialReceipts(ctx context.Context, arg JournalMateri
 			&i.ReceivedAt,
 			&i.QuantityReceived,
 			&i.UnitCostCad,
+			&i.LandedUnitCostCad,
 			&i.MaterialName,
 			&i.Uom,
 			&i.SupplierLot,

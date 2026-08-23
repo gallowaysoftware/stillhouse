@@ -199,20 +199,6 @@ regime; spirits do not, but returns still happen.
 
 ## Track E — purchasing and cost
 
-### E1 · Suppliers and purchase orders — P1
-
-Supplier records, POs with lines, approval flow, expected dates, open-PO view.
-`RecordMaterialReceipt` currently stands alone with no order behind it.
-
-### E2 · Receiving against a PO, and GRNI — P1
-
-Receipt matched to PO line, partial receipts, goods received not yet invoiced.
-
-### E3 · Landed cost — P1
-
-Freight, duty and handling absorbed into the unit cost of a material lot
-rather than sitting in an expense account. Purtrak added this explicitly.
-
 ### E4 · Full COGS — P1
 
 `BottlingRunCost` and `ProductCostSummary` cover direct materials and honestly
@@ -221,7 +207,10 @@ valuation, and finished-goods inventory value for the balance sheet.
 
 Stage 161 pulled the chain walk into `internal/costing` so the cost screen and
 the accounting journal share one answer, and left the two WIP journal kinds
-unemitted rather than inventing a valuation — those are this item.
+unemitted rather than inventing a valuation. Stage 168 made the direct-material
+figure a *landed* one — freight, duty and handling now sit in the cost of the
+grain. What is left is labour, overhead absorption, WIP valuation and
+finished-goods inventory value for the balance sheet.
 
 ### E5 · Reorder points and low-stock alerts — P2
 

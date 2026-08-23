@@ -67,6 +67,9 @@ type Journal struct {
 	PeriodEnd   time.Time
 	Lines       []Line
 	Warnings    []Warning
+	// Notes are true statements about how the figures were arrived at,
+	// as against Warnings, which are things that could not be done.
+	Notes []string
 	// TotalsByKind is what each kind contributed, for the summary at the
 	// top of the export and for a quick eyeball against the B266.
 	TotalsByKind map[sqlcgen.JournalEventKind]float64
@@ -186,7 +189,7 @@ func (j *Journal) addMaterialReceipts(
 		return fmt.Errorf("material receipts: %w", err)
 	}
 	m := mapping[sqlcgen.JournalEventKindMaterialReceipt]
-	var unpriced int
+	var unpriced, landedCount int
 	for _, r := range rows {
 		if !r.UnitCostCad.Valid {
 			// Not zero. A lot with no recorded cost contributes no line,
@@ -195,15 +198,30 @@ func (j *Journal) addMaterialReceipts(
 			unpriced++
 			continue
 		}
+		// Landed cost, not the supplier's price: freight, duty and
+		// handling belong in the value of the inventory rather than in
+		// an expense account. The basis says which, because posting
+		// 0.80/kg when the invoice says 0.55/kg is correct and needs to
+		// be explicable to whoever reconciles the freight bill.
+		unit := r.UnitCostCad.Float64
+		basis := "recorded lot cost × quantity received"
+		if r.LandedUnitCostCad.Valid {
+			unit = r.LandedUnitCostCad.Float64
+			if unit != r.UnitCostCad.Float64 {
+				landedCount++
+				basis = "landed cost (supplier price plus freight, duty and handling, " +
+					"spread over the quantity) × quantity received"
+			}
+		}
 		j.add(Line{
 			Date:        r.ReceivedAt.Time,
 			Kind:        sqlcgen.JournalEventKindMaterialReceipt,
 			Description: r.MaterialName,
 			Reference:   r.SupplierLot,
-			AmountCAD:   round2(r.QuantityReceived * r.UnitCostCad.Float64),
+			AmountCAD:   round2(r.QuantityReceived * unit),
 			Memo: fmt.Sprintf("%s %.3f %s @ %.4f",
-				r.MaterialName, r.QuantityReceived, r.Uom, r.UnitCostCad.Float64),
-			Basis: "recorded lot cost × quantity received",
+				r.MaterialName, r.QuantityReceived, r.Uom, unit),
+			Basis: basis,
 		}, m)
 	}
 	if unpriced > 0 {
@@ -214,6 +232,16 @@ func (j *Journal) addMaterialReceipts(
 					"produced no line. Inventory is understated by whatever they cost.",
 				unpriced, plural(unpriced)),
 		})
+	}
+	if landedCount > 0 {
+		// Not a warning — this is the correct treatment — but somebody
+		// reconciling against supplier invoices will find the totals do
+		// not match, and should know why before they go looking.
+		j.Notes = append(j.Notes, fmt.Sprintf(
+			"%d receipt%s are posted at landed cost rather than the supplier's price, "+
+				"because freight, duty and handling belong in the value of the inventory. "+
+				"These lines will not tie to the supplier invoices on their own.",
+			landedCount, plural(landedCount)))
 	}
 	return nil
 }

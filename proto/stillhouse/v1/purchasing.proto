@@ -1,0 +1,217 @@
+// The order behind the delivery.
+//
+// RecordMaterialReceipt stood alone: grain arrived, somebody typed the
+// quantity and maybe a price, and nothing said what had been ordered,
+// from whom, at what price, or whether the delivery matched. Nobody
+// could answer "what is on order" without a filing cabinet, a short
+// delivery was invisible, and freight and duty sat in an expense account
+// instead of in the cost of the grain — so every downstream figure was
+// understated by exactly what it cost to get it to the door.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message Supplier {
+  string id = 1;
+  string name = 2;
+  string account_reference = 3;
+  string contact_name = 4;
+  string email = 5;
+  string phone = 6;
+  string address = 7;
+  // Net days. -1 means none recorded; 0 means due on receipt, which is
+  // a different statement.
+  int32  payment_terms_days = 8;
+  // Where they are, which decides whether a purchase carries import duty
+  // and cross-border freight.
+  string country = 9;
+  string notes = 10;
+  google.protobuf.Timestamp archived_at = 11;
+}
+
+message SaveSupplierRequest {
+  string id = 1;  // empty creates
+  string name = 2;
+  string account_reference = 3;
+  string contact_name = 4;
+  string email = 5;
+  string phone = 6;
+  string address = 7;
+  int32  payment_terms_days = 8;
+  string country = 9;
+  string notes = 10;
+  bool   archived = 11;
+}
+message SaveSupplierResponse { Supplier supplier = 1; }
+
+message ListSuppliersRequest { bool include_archived = 1; }
+message ListSuppliersResponse { repeated Supplier suppliers = 1; }
+
+// Deliberately few states: an approval workflow with six of them is a
+// workflow people route around.
+enum PurchaseOrderStatus {
+  PURCHASE_ORDER_STATUS_UNSPECIFIED = 0;
+  PURCHASE_ORDER_STATUS_DRAFT = 1;
+  PURCHASE_ORDER_STATUS_PLACED = 2;
+  PURCHASE_ORDER_STATUS_PARTIALLY_RECEIVED = 3;
+  PURCHASE_ORDER_STATUS_RECEIVED = 4;
+  PURCHASE_ORDER_STATUS_CLOSED = 5;
+  PURCHASE_ORDER_STATUS_CANCELLED = 6;
+}
+
+message PurchaseOrderLine {
+  string id = 1;
+  string material_id = 2;
+  string material_name = 3;
+  double quantity_ordered = 4;
+  double quantity_received = 5;
+  // Per unit, in the order's currency. A decimal string, because it is
+  // money on a document somebody signs.
+  string unit_price = 6;
+  string uom = 7;
+  string notes = 8;
+}
+
+message PurchaseOrder {
+  string id = 1;
+  int32  po_no = 2;
+  string supplier_id = 3;
+  string supplier_name = 4;
+  PurchaseOrderStatus status = 5;
+  string ordered_on = 6;   // ISO date
+  string expected_on = 7;  // ISO date
+  string reference = 8;
+  string currency = 9;
+  string notes = 10;
+  string cancel_reason = 11;
+  repeated PurchaseOrderLine lines = 12;
+  // Sum of quantity × unit price across the lines, as a decimal string.
+  string total_value = 13;
+  google.protobuf.Timestamp placed_at = 14;
+}
+
+message CreatePurchaseOrderRequest {
+  string supplier_id = 1;
+  string ordered_on = 2;
+  string expected_on = 3;
+  string reference = 4;
+  string currency = 5;  // empty = CAD
+  string notes = 6;
+}
+message CreatePurchaseOrderResponse { PurchaseOrder purchase_order = 1; }
+
+message AddPurchaseOrderLineRequest {
+  string purchase_order_id = 1;
+  string material_id = 2;
+  double quantity_ordered = 3;
+  string unit_price = 4;
+  string uom = 5;
+  string notes = 6;
+}
+message AddPurchaseOrderLineResponse { PurchaseOrder purchase_order = 1; }
+
+message RemovePurchaseOrderLineRequest { string line_id = 1; }
+message RemovePurchaseOrderLineResponse { PurchaseOrder purchase_order = 1; }
+
+message SetPurchaseOrderStatusRequest {
+  string id = 1;
+  PurchaseOrderStatus status = 2;
+  string cancel_reason = 3;
+}
+message SetPurchaseOrderStatusResponse { PurchaseOrder purchase_order = 1; }
+
+message ListPurchaseOrdersRequest {
+  // Only what is still owed: draft, placed, partially received.
+  bool open_only = 1;
+}
+message ListPurchaseOrdersResponse { repeated PurchaseOrder purchase_orders = 1; }
+
+message GetPurchaseOrderRequest { string id = 1; }
+message GetPurchaseOrderResponse { PurchaseOrder purchase_order = 1; }
+
+// ----- receiving -----------------------------------------------------------
+
+message ReceiveAgainstPORequest {
+  string purchase_order_line_id = 1;
+  double quantity_received = 2;
+  string supplier_lot = 3;
+  string received_on = 4;  // ISO date; empty = today
+  // Overrides the line's agreed price when the delivery came at a
+  // different one. Empty takes the line's.
+  string unit_price = 5;
+  // Landed cost. Freight, duty and handling belong in the cost of the
+  // grain, not in an expense account — without them inventory value and
+  // cost of sales are understated by exactly what it cost to get it
+  // here. Often they arrive later; SetLandedCharges updates a lot
+  // already on the shelf.
+  double freight_cad = 6;
+  double import_duty_cad = 7;
+  double handling_cad = 8;
+  string invoice_reference = 9;
+  string notes = 10;
+}
+message ReceiveAgainstPOResponse {
+  string material_lot_id = 1;
+  // What this lot actually costs per unit once freight, duty and
+  // handling are spread over it. The figure everything downstream
+  // should use.
+  double landed_unit_cost_cad = 2;
+  bool   landed_unit_cost_known = 3;
+  // The line's remaining quantity after this receipt.
+  double quantity_outstanding = 4;
+  PurchaseOrder purchase_order = 5;
+}
+
+message SetLandedChargesRequest {
+  string material_lot_id = 1;
+  double freight_cad = 2;
+  double import_duty_cad = 3;
+  double handling_cad = 4;
+}
+message SetLandedChargesResponse {
+  string material_lot_id = 1;
+  double landed_unit_cost_cad = 2;
+  bool   landed_unit_cost_known = 3;
+}
+
+message MarkLotInvoicedRequest {
+  string material_lot_id = 1;
+  string invoice_reference = 2;
+}
+message MarkLotInvoicedResponse { string material_lot_id = 1; }
+
+message GRNILine {
+  string material_lot_id = 1;
+  string material_name = 2;
+  string supplier_name = 3;
+  string supplier_lot = 4;
+  double quantity = 5;
+  double unit_cost_cad = 6;
+  double landed_unit_cost_cad = 7;
+  double value_cad = 8;
+  string received_on = 9;
+}
+message ListGRNIRequest {}
+message ListGRNIResponse {
+  repeated GRNILine lines = 1;
+  double total_value_cad = 2;
+}
+
+service PurchasingService {
+  rpc SaveSupplier(SaveSupplierRequest) returns (SaveSupplierResponse);
+  rpc ListSuppliers(ListSuppliersRequest) returns (ListSuppliersResponse);
+
+  rpc CreatePurchaseOrder(CreatePurchaseOrderRequest) returns (CreatePurchaseOrderResponse);
+  rpc AddPurchaseOrderLine(AddPurchaseOrderLineRequest) returns (AddPurchaseOrderLineResponse);
+  rpc RemovePurchaseOrderLine(RemovePurchaseOrderLineRequest) returns (RemovePurchaseOrderLineResponse);
+  rpc SetPurchaseOrderStatus(SetPurchaseOrderStatusRequest) returns (SetPurchaseOrderStatusResponse);
+  rpc ListPurchaseOrders(ListPurchaseOrdersRequest) returns (ListPurchaseOrdersResponse);
+  rpc GetPurchaseOrder(GetPurchaseOrderRequest) returns (GetPurchaseOrderResponse);
+
+  rpc ReceiveAgainstPO(ReceiveAgainstPORequest) returns (ReceiveAgainstPOResponse);
+  rpc SetLandedCharges(SetLandedChargesRequest) returns (SetLandedChargesResponse);
+  rpc MarkLotInvoiced(MarkLotInvoicedRequest) returns (MarkLotInvoicedResponse);
+  rpc ListGRNI(ListGRNIRequest) returns (ListGRNIResponse);
+}

@@ -25,6 +25,7 @@ import { PricingPage } from "./pages/PricingPage";
 import { CustomersPage } from "./pages/CustomersPage";
 import { JournalPage } from "./pages/JournalPage";
 import { ImportPage } from "./pages/ImportPage";
+import { PurchasingPage } from "./pages/PurchasingPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
@@ -72,6 +73,7 @@ export function App() {
       <Route path="/customers" element={<Guarded><CustomersPage /></Guarded>} />
       <Route path="/journal" element={<Guarded><JournalPage /></Guarded>} />
       <Route path="/import" element={<Guarded><ImportPage /></Guarded>} />
+      <Route path="/purchasing" element={<Guarded><PurchasingPage /></Guarded>} />
       <Route path="/settings" element={<Guarded><SettingsPage /></Guarded>} />
     </Routes>
   );

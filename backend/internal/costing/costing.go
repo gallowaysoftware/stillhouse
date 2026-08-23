@@ -120,10 +120,16 @@ func BottlingRunMaterialCost(
 					QuantityUsed: ing.QuantityUsed,
 					UOM:          ing.Uom,
 				}
-				if lot.UnitCostCad.Valid {
+				// The landed cost, not the supplier's price. Freight,
+				// duty and handling are part of what the grain cost;
+				// leaving them out understates every figure built on
+				// this by exactly what it cost to get the grain here.
+				// It is a generated column, so it falls back to the
+				// unit cost when there are no charges.
+				if lot.LandedUnitCostCad.Valid {
 					line.Priced = true
-					line.UnitCostCAD = lot.UnitCostCad.Float64
-					line.LineCostCAD = ing.QuantityUsed * lot.UnitCostCad.Float64
+					line.UnitCostCAD = lot.LandedUnitCostCad.Float64
+					line.LineCostCAD = ing.QuantityUsed * lot.LandedUnitCostCad.Float64
 					out.TotalCAD += line.LineCostCAD
 				} else {
 					out.UnpricedLines++

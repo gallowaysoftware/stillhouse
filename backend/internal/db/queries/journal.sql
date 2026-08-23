@@ -58,6 +58,7 @@ ORDER BY event_date, source_id;
 -- cost contributes nothing and is reported as unpriced rather than as
 -- zero — a zero would silently understate inventory.
 SELECT ml.id, ml.received_at, ml.quantity_received, ml.unit_cost_cad,
+       ml.landed_unit_cost_cad,
        m.name AS material_name, m.uom, ml.supplier_lot
 FROM material_lots ml
 JOIN materials m ON m.id = ml.material_id
@@ -67,7 +68,8 @@ ORDER BY ml.received_at, ml.id;
 
 -- name: JournalMaterialConsumption :many
 -- Raw material into a mash, valued at the lot it came from.
-SELECT mu.id, mr.mash_date, mu.quantity_used, ml.unit_cost_cad,
+SELECT mu.id, mr.mash_date, mu.quantity_used,
+       COALESCE(ml.landed_unit_cost_cad, ml.unit_cost_cad) AS unit_cost_cad,
        m.name AS material_name, mu.uom, mr.mash_no
 FROM mash_ingredient_usage mu
 JOIN mash_runs mr ON mr.id = mu.mash_run_id

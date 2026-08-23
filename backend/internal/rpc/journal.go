@@ -148,6 +148,15 @@ func journalToProto(j *journal.Journal) *stillhousev1.PreviewJournalResponse {
 			LineCount: counts[kind],
 		})
 	}
+	// Notes ride alongside the warnings in the same list on the wire —
+	// both are things whoever imports this needs to read — but they are
+	// distinguished by wording rather than by a second field, because a
+	// second list is a second thing to forget to render.
+	for _, n := range j.Notes {
+		out.Warnings = append(out.Warnings, &stillhousev1.JournalWarning{
+			Kind: "note", Detail: n,
+		})
+	}
 	for _, w := range j.Warnings {
 		out.Warnings = append(out.Warnings, &stillhousev1.JournalWarning{
 			Kind: w.Kind, Detail: w.Detail,
