@@ -355,6 +355,12 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.CostingService/SaveCostRates":       roleOwner,
 	"/stillhouse.v1.CostingService/DeleteCostRates":     roleOwner,
 	"/stillhouse.v1.CostingService/InventoryValue":      roleViewer,
+	// WIP production is a read; the charge basis behind it is an
+	// accounting policy, so stating it sits with the same role that sets
+	// the cost rates rather than with whoever can read a cost.
+	"/stillhouse.v1.CostingService/WIPProduction":     roleViewer,
+	"/stillhouse.v1.CostingService/GetWIPChargeBasis": roleViewer,
+	"/stillhouse.v1.CostingService/SetWIPChargeBasis": roleOwner,
 
 	// ProvincialService. Registering with a board, and recording what it
 	// expects and when, is the same class of act as the licence register
@@ -562,8 +568,11 @@ var accountantAlso = map[string]bool{
 	// Labour and overhead rates are a costing policy, and what the
 	// inventory is worth follows from them. Both are the engagement, not
 	// something to ask the owner to type on the bookkeeper's behalf.
-	"/stillhouse.v1.CostingService/SaveCostRates":   true,
-	"/stillhouse.v1.CostingService/DeleteCostRates": true,
+	"/stillhouse.v1.CostingService/SaveCostRates":     true,
+	"/stillhouse.v1.CostingService/WIPProduction":     true,
+	"/stillhouse.v1.CostingService/GetWIPChargeBasis": true,
+	"/stillhouse.v1.CostingService/SetWIPChargeBasis": true,
+	"/stillhouse.v1.CostingService/DeleteCostRates":   true,
 	// Provincial reporting is a filing engagement like the B266, and the
 	// consultant is usually the one who knows what each board wants.
 	"/stillhouse.v1.ProvincialService/SaveProvincialRegistration":     true,

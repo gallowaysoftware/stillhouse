@@ -70,6 +70,15 @@ const (
 	// CostingServiceInventoryValueProcedure is the fully-qualified name of the CostingService's
 	// InventoryValue RPC.
 	CostingServiceInventoryValueProcedure = "/stillhouse.v1.CostingService/InventoryValue"
+	// CostingServiceWIPProductionProcedure is the fully-qualified name of the CostingService's
+	// WIPProduction RPC.
+	CostingServiceWIPProductionProcedure = "/stillhouse.v1.CostingService/WIPProduction"
+	// CostingServiceGetWIPChargeBasisProcedure is the fully-qualified name of the CostingService's
+	// GetWIPChargeBasis RPC.
+	CostingServiceGetWIPChargeBasisProcedure = "/stillhouse.v1.CostingService/GetWIPChargeBasis"
+	// CostingServiceSetWIPChargeBasisProcedure is the fully-qualified name of the CostingService's
+	// SetWIPChargeBasis RPC.
+	CostingServiceSetWIPChargeBasisProcedure = "/stillhouse.v1.CostingService/SetWIPChargeBasis"
 )
 
 // CostingServiceClient is a client for the stillhouse.v1.CostingService service.
@@ -82,6 +91,11 @@ type CostingServiceClient interface {
 	ListLabour(context.Context, *connect.Request[v1.ListLabourRequest]) (*connect.Response[v1.ListLabourResponse], error)
 	BottlingRunFullCost(context.Context, *connect.Request[v1.BottlingRunFullCostRequest]) (*connect.Response[v1.BottlingRunFullCostResponse], error)
 	InventoryValue(context.Context, *connect.Request[v1.InventoryValueRequest]) (*connect.Response[v1.InventoryValueResponse], error)
+	// Spirit gauged into work in progress, valued by walking forward from
+	// the mashes behind it. PLAN E7.
+	WIPProduction(context.Context, *connect.Request[v1.WIPProductionRequest]) (*connect.Response[v1.WIPProductionResponse], error)
+	GetWIPChargeBasis(context.Context, *connect.Request[v1.GetWIPChargeBasisRequest]) (*connect.Response[v1.GetWIPChargeBasisResponse], error)
+	SetWIPChargeBasis(context.Context, *connect.Request[v1.SetWIPChargeBasisRequest]) (*connect.Response[v1.SetWIPChargeBasisResponse], error)
 }
 
 // NewCostingServiceClient constructs a client for the stillhouse.v1.CostingService service. By
@@ -143,6 +157,24 @@ func NewCostingServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(costingServiceMethods.ByName("InventoryValue")),
 			connect.WithClientOptions(opts...),
 		),
+		wIPProduction: connect.NewClient[v1.WIPProductionRequest, v1.WIPProductionResponse](
+			httpClient,
+			baseURL+CostingServiceWIPProductionProcedure,
+			connect.WithSchema(costingServiceMethods.ByName("WIPProduction")),
+			connect.WithClientOptions(opts...),
+		),
+		getWIPChargeBasis: connect.NewClient[v1.GetWIPChargeBasisRequest, v1.GetWIPChargeBasisResponse](
+			httpClient,
+			baseURL+CostingServiceGetWIPChargeBasisProcedure,
+			connect.WithSchema(costingServiceMethods.ByName("GetWIPChargeBasis")),
+			connect.WithClientOptions(opts...),
+		),
+		setWIPChargeBasis: connect.NewClient[v1.SetWIPChargeBasisRequest, v1.SetWIPChargeBasisResponse](
+			httpClient,
+			baseURL+CostingServiceSetWIPChargeBasisProcedure,
+			connect.WithSchema(costingServiceMethods.ByName("SetWIPChargeBasis")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -156,6 +188,9 @@ type costingServiceClient struct {
 	listLabour          *connect.Client[v1.ListLabourRequest, v1.ListLabourResponse]
 	bottlingRunFullCost *connect.Client[v1.BottlingRunFullCostRequest, v1.BottlingRunFullCostResponse]
 	inventoryValue      *connect.Client[v1.InventoryValueRequest, v1.InventoryValueResponse]
+	wIPProduction       *connect.Client[v1.WIPProductionRequest, v1.WIPProductionResponse]
+	getWIPChargeBasis   *connect.Client[v1.GetWIPChargeBasisRequest, v1.GetWIPChargeBasisResponse]
+	setWIPChargeBasis   *connect.Client[v1.SetWIPChargeBasisRequest, v1.SetWIPChargeBasisResponse]
 }
 
 // SaveCostRates calls stillhouse.v1.CostingService.SaveCostRates.
@@ -198,6 +233,21 @@ func (c *costingServiceClient) InventoryValue(ctx context.Context, req *connect.
 	return c.inventoryValue.CallUnary(ctx, req)
 }
 
+// WIPProduction calls stillhouse.v1.CostingService.WIPProduction.
+func (c *costingServiceClient) WIPProduction(ctx context.Context, req *connect.Request[v1.WIPProductionRequest]) (*connect.Response[v1.WIPProductionResponse], error) {
+	return c.wIPProduction.CallUnary(ctx, req)
+}
+
+// GetWIPChargeBasis calls stillhouse.v1.CostingService.GetWIPChargeBasis.
+func (c *costingServiceClient) GetWIPChargeBasis(ctx context.Context, req *connect.Request[v1.GetWIPChargeBasisRequest]) (*connect.Response[v1.GetWIPChargeBasisResponse], error) {
+	return c.getWIPChargeBasis.CallUnary(ctx, req)
+}
+
+// SetWIPChargeBasis calls stillhouse.v1.CostingService.SetWIPChargeBasis.
+func (c *costingServiceClient) SetWIPChargeBasis(ctx context.Context, req *connect.Request[v1.SetWIPChargeBasisRequest]) (*connect.Response[v1.SetWIPChargeBasisResponse], error) {
+	return c.setWIPChargeBasis.CallUnary(ctx, req)
+}
+
 // CostingServiceHandler is an implementation of the stillhouse.v1.CostingService service.
 type CostingServiceHandler interface {
 	SaveCostRates(context.Context, *connect.Request[v1.SaveCostRatesRequest]) (*connect.Response[v1.SaveCostRatesResponse], error)
@@ -208,6 +258,11 @@ type CostingServiceHandler interface {
 	ListLabour(context.Context, *connect.Request[v1.ListLabourRequest]) (*connect.Response[v1.ListLabourResponse], error)
 	BottlingRunFullCost(context.Context, *connect.Request[v1.BottlingRunFullCostRequest]) (*connect.Response[v1.BottlingRunFullCostResponse], error)
 	InventoryValue(context.Context, *connect.Request[v1.InventoryValueRequest]) (*connect.Response[v1.InventoryValueResponse], error)
+	// Spirit gauged into work in progress, valued by walking forward from
+	// the mashes behind it. PLAN E7.
+	WIPProduction(context.Context, *connect.Request[v1.WIPProductionRequest]) (*connect.Response[v1.WIPProductionResponse], error)
+	GetWIPChargeBasis(context.Context, *connect.Request[v1.GetWIPChargeBasisRequest]) (*connect.Response[v1.GetWIPChargeBasisResponse], error)
+	SetWIPChargeBasis(context.Context, *connect.Request[v1.SetWIPChargeBasisRequest]) (*connect.Response[v1.SetWIPChargeBasisResponse], error)
 }
 
 // NewCostingServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -265,6 +320,24 @@ func NewCostingServiceHandler(svc CostingServiceHandler, opts ...connect.Handler
 		connect.WithSchema(costingServiceMethods.ByName("InventoryValue")),
 		connect.WithHandlerOptions(opts...),
 	)
+	costingServiceWIPProductionHandler := connect.NewUnaryHandler(
+		CostingServiceWIPProductionProcedure,
+		svc.WIPProduction,
+		connect.WithSchema(costingServiceMethods.ByName("WIPProduction")),
+		connect.WithHandlerOptions(opts...),
+	)
+	costingServiceGetWIPChargeBasisHandler := connect.NewUnaryHandler(
+		CostingServiceGetWIPChargeBasisProcedure,
+		svc.GetWIPChargeBasis,
+		connect.WithSchema(costingServiceMethods.ByName("GetWIPChargeBasis")),
+		connect.WithHandlerOptions(opts...),
+	)
+	costingServiceSetWIPChargeBasisHandler := connect.NewUnaryHandler(
+		CostingServiceSetWIPChargeBasisProcedure,
+		svc.SetWIPChargeBasis,
+		connect.WithSchema(costingServiceMethods.ByName("SetWIPChargeBasis")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.CostingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case CostingServiceSaveCostRatesProcedure:
@@ -283,6 +356,12 @@ func NewCostingServiceHandler(svc CostingServiceHandler, opts ...connect.Handler
 			costingServiceBottlingRunFullCostHandler.ServeHTTP(w, r)
 		case CostingServiceInventoryValueProcedure:
 			costingServiceInventoryValueHandler.ServeHTTP(w, r)
+		case CostingServiceWIPProductionProcedure:
+			costingServiceWIPProductionHandler.ServeHTTP(w, r)
+		case CostingServiceGetWIPChargeBasisProcedure:
+			costingServiceGetWIPChargeBasisHandler.ServeHTTP(w, r)
+		case CostingServiceSetWIPChargeBasisProcedure:
+			costingServiceSetWIPChargeBasisHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -322,4 +401,16 @@ func (UnimplementedCostingServiceHandler) BottlingRunFullCost(context.Context, *
 
 func (UnimplementedCostingServiceHandler) InventoryValue(context.Context, *connect.Request[v1.InventoryValueRequest]) (*connect.Response[v1.InventoryValueResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.CostingService.InventoryValue is not implemented"))
+}
+
+func (UnimplementedCostingServiceHandler) WIPProduction(context.Context, *connect.Request[v1.WIPProductionRequest]) (*connect.Response[v1.WIPProductionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.CostingService.WIPProduction is not implemented"))
+}
+
+func (UnimplementedCostingServiceHandler) GetWIPChargeBasis(context.Context, *connect.Request[v1.GetWIPChargeBasisRequest]) (*connect.Response[v1.GetWIPChargeBasisResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.CostingService.GetWIPChargeBasis is not implemented"))
+}
+
+func (UnimplementedCostingServiceHandler) SetWIPChargeBasis(context.Context, *connect.Request[v1.SetWIPChargeBasisRequest]) (*connect.Response[v1.SetWIPChargeBasisResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.CostingService.SetWIPChargeBasis is not implemented"))
 }

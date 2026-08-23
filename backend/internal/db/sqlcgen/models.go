@@ -1164,6 +1164,7 @@ const (
 	JournalEventKindMaterialConsumption JournalEventKind = "material_consumption"
 	JournalEventKindCogsOnRemoval       JournalEventKind = "cogs_on_removal"
 	JournalEventKindWipToFinishedGoods  JournalEventKind = "wip_to_finished_goods"
+	JournalEventKindWipProduction       JournalEventKind = "wip_production"
 )
 
 func (e *JournalEventKind) Scan(src interface{}) error {
@@ -2096,6 +2097,48 @@ func (ns NullUserRole) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.UserRole), nil
+}
+
+type WipChargeBasis string
+
+const (
+	WipChargeBasisChargedVolume WipChargeBasis = "charged_volume"
+	WipChargeBasisChargedLaa    WipChargeBasis = "charged_laa"
+)
+
+func (e *WipChargeBasis) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = WipChargeBasis(s)
+	case string:
+		*e = WipChargeBasis(s)
+	default:
+		return fmt.Errorf("unsupported scan type for WipChargeBasis: %T", src)
+	}
+	return nil
+}
+
+type NullWipChargeBasis struct {
+	WipChargeBasis WipChargeBasis `json:"wip_charge_basis"`
+	Valid          bool           `json:"valid"` // Valid is true if WipChargeBasis is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullWipChargeBasis) Scan(value interface{}) error {
+	if value == nil {
+		ns.WipChargeBasis, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.WipChargeBasis.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullWipChargeBasis) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.WipChargeBasis), nil
 }
 
 type WorkOrderKind string
@@ -3419,6 +3462,8 @@ type Tenant struct {
 	FiscalMonthNotificationRef      string           `json:"fiscal_month_notification_ref"`
 	FilingFrequencyAuthorizationRef string           `json:"filing_frequency_authorization_ref"`
 	RequireBatchRelease             bool             `json:"require_batch_release"`
+	// How a fermentation's cost is apportioned across the distillation runs it was charged to. NULL means the licensee has not stated one, and WIP production value is refused rather than guessed.
+	WipChargeBasis NullWipChargeBasis `json:"wip_charge_basis"`
 }
 
 type User struct {

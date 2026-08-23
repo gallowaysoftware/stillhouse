@@ -25,7 +25,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/costing.proto.
  */
 export const file_stillhouse_v1_costing: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGlsbGhvdXNlL3YxL2Nvc3RpbmcucHJvdG8SDXN0aWxsaG91c2UudjEi3QEKCUNvc3RSYXRlcxIKCgJpZBgBIAEoCRIWCg5lZmZlY3RpdmVfZnJvbRgCIAEoCRIgChhsYWJvdXJfcmF0ZV9jYWRfcGVyX2hvdXIYAyABKAkSNAoOb3ZlcmhlYWRfYmFzaXMYBCABKA4yHC5zdGlsbGhvdXNlLnYxLk92ZXJoZWFkQmFzaXMSFQoNb3ZlcmhlYWRfcmF0ZRgFIAEoCRINCgVub3RlcxgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKsAQoUU2F2ZUNvc3RSYXRlc1JlcXVlc3QSFgoOZWZmZWN0aXZlX2Zyb20YASABKAkSIAoYbGFib3VyX3JhdGVfY2FkX3Blcl9ob3VyGAIgASgJEjQKDm92ZXJoZWFkX2Jhc2lzGAMgASgOMhwuc3RpbGxob3VzZS52MS5PdmVyaGVhZEJhc2lzEhUKDW92ZXJoZWFkX3JhdGUYBCABKAkSDQoFbm90ZXMYBSABKAkiQAoVU2F2ZUNvc3RSYXRlc1Jlc3BvbnNlEicKBXJhdGVzGAEgASgLMhguc3RpbGxob3VzZS52MS5Db3N0UmF0ZXMiFgoUTGlzdENvc3RSYXRlc1JlcXVlc3QiQAoVTGlzdENvc3RSYXRlc1Jlc3BvbnNlEicKBXJhdGVzGAEgAygLMhguc3RpbGxob3VzZS52MS5Db3N0UmF0ZXMiJAoWRGVsZXRlQ29zdFJhdGVzUmVxdWVzdBIKCgJpZBgBIAEoCSIZChdEZWxldGVDb3N0UmF0ZXNSZXNwb25zZSJxCg1MYWJvdXJTdWJqZWN0EhMKC21hc2hfcnVuX2lkGAEgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYAiABKAkSFwoPYm90dGxpbmdfcnVuX2lkGAMgASgJEhUKDXdvcmtfb3JkZXJfaWQYBCABKAki9wEKC0xhYm91ckVudHJ5EgoKAmlkGAEgASgJEi0KB3N1YmplY3QYAiABKAsyHC5zdGlsbGhvdXNlLnYxLkxhYm91clN1YmplY3QSEQoJd29ya2VkX29uGAMgASgJEg0KBWhvdXJzGAQgASgBEhkKEXdvcmtlZF9ieV91c2VyX2lkGAUgASgJEhYKDndvcmtlZF9ieV9uYW1lGAYgASgJEhkKEXJhdGVfY2FkX3Blcl9ob3VyGAcgASgJEg0KBW5vdGVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIsMBChNSZWNvcmRMYWJvdXJSZXF1ZXN0Ei0KB3N1YmplY3QYASABKAsyHC5zdGlsbGhvdXNlLnYxLkxhYm91clN1YmplY3QSEQoJd29ya2VkX29uGAIgASgJEg0KBWhvdXJzGAMgASgBEhkKEXdvcmtlZF9ieV91c2VyX2lkGAQgASgJEhYKDndvcmtlZF9ieV9uYW1lGAUgASgJEhkKEXJhdGVfY2FkX3Blcl9ob3VyGAYgASgJEg0KBW5vdGVzGAcgASgJIkEKFFJlY29yZExhYm91clJlc3BvbnNlEikKBWVudHJ5GAEgASgLMhouc3RpbGxob3VzZS52MS5MYWJvdXJFbnRyeSImChhEZWxldGVMYWJvdXJFbnRyeVJlcXVlc3QSCgoCaWQYASABKAkiGwoZRGVsZXRlTGFib3VyRW50cnlSZXNwb25zZSJCChFMaXN0TGFib3VyUmVxdWVzdBItCgdzdWJqZWN0GAEgASgLMhwuc3RpbGxob3VzZS52MS5MYWJvdXJTdWJqZWN0IlYKEkxpc3RMYWJvdXJSZXNwb25zZRIrCgdlbnRyaWVzGAEgAygLMhouc3RpbGxob3VzZS52MS5MYWJvdXJFbnRyeRITCgt0b3RhbF9ob3VycxgCIAEoASJkCg1Db3N0Q29tcG9uZW50EgwKBG5hbWUYASABKAkSEgoKYW1vdW50X2NhZBgCIAEoARINCgViYXNpcxgDIAEoCRIRCglhdmFpbGFibGUYBCABKAgSDwoHbWlzc2luZxgFIAEoCSI1ChpCb3R0bGluZ1J1bkZ1bGxDb3N0UmVxdWVzdBIXCg9ib3R0bGluZ19ydW5faWQYASABKAkizwIKG0JvdHRsaW5nUnVuRnVsbENvc3RSZXNwb25zZRIXCg9ib3R0bGluZ19ydW5faWQYASABKAkSFAoMYm90dGxlX2NvdW50GAIgASgFEi8KCW1hdGVyaWFscxgDIAEoCzIcLnN0aWxsaG91c2UudjEuQ29zdENvbXBvbmVudBIsCgZsYWJvdXIYBCABKAsyHC5zdGlsbGhvdXNlLnYxLkNvc3RDb21wb25lbnQSLgoIb3ZlcmhlYWQYBSABKAsyHC5zdGlsbGhvdXNlLnYxLkNvc3RDb21wb25lbnQSEQoJdG90YWxfY2FkGAYgASgBEhYKDnBlcl9ib3R0bGVfY2FkGAcgASgBEhAKCGNvbXBsZXRlGAggASgIEhQKDGxhYm91cl9ob3VycxgJIAEoARIfChd1bnByaWNlZF9tYXRlcmlhbF9saW5lcxgKIAEoBSKSAQoSSW52ZW50b3J5VmFsdWVMaW5lEgwKBG5hbWUYASABKAkSDgoGZGV0YWlsGAIgASgJEgsKA2xhYRgDIAEoARIPCgdib3R0bGVzGAQgASgFEhAKCHVuaXRfY2FkGAUgASgBEhEKCXZhbHVlX2NhZBgGIAEoARIOCgZ2YWx1ZWQYByABKAgSCwoDd2h5GAggASgJIo8BCg9JbnZlbnRvcnlCdWNrZXQSEQoJdmFsdWVfY2FkGAEgASgBEjAKBWxpbmVzGAIgAygLMiEuc3RpbGxob3VzZS52MS5JbnZlbnRvcnlWYWx1ZUxpbmUSEQoJdG90YWxfbGFhGAMgASgBEhIKCnZhbHVlZF9sYWEYBCABKAESEAoIdW52YWx1ZWQYBSABKAUiFwoVSW52ZW50b3J5VmFsdWVSZXF1ZXN0Ip8BChZJbnZlbnRvcnlWYWx1ZVJlc3BvbnNlEisKA3dpcBgBIAEoCzIeLnN0aWxsaG91c2UudjEuSW52ZW50b3J5QnVja2V0EjYKDmZpbmlzaGVkX2dvb2RzGAIgASgLMh4uc3RpbGxob3VzZS52MS5JbnZlbnRvcnlCdWNrZXQSEQoJdG90YWxfY2FkGAMgASgBEg0KBWJhc2lzGAQgASgJKpcBCg1PdmVyaGVhZEJhc2lzEh4KGk9WRVJIRUFEX0JBU0lTX1VOU1BFQ0lGSUVEEAASJgoiT1ZFUkhFQURfQkFTSVNfUEVSX01BVEVSSUFMX0RPTExBUhABEiIKHk9WRVJIRUFEX0JBU0lTX1BFUl9MQUJPVVJfSE9VUhACEhoKFk9WRVJIRUFEX0JBU0lTX1BFUl9MQUEQAzKLBgoOQ29zdGluZ1NlcnZpY2USWgoNU2F2ZUNvc3RSYXRlcxIjLnN0aWxsaG91c2UudjEuU2F2ZUNvc3RSYXRlc1JlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLlNhdmVDb3N0UmF0ZXNSZXNwb25zZRJaCg1MaXN0Q29zdFJhdGVzEiMuc3RpbGxob3VzZS52MS5MaXN0Q29zdFJhdGVzUmVxdWVzdBokLnN0aWxsaG91c2UudjEuTGlzdENvc3RSYXRlc1Jlc3BvbnNlEmAKD0RlbGV0ZUNvc3RSYXRlcxIlLnN0aWxsaG91c2UudjEuRGVsZXRlQ29zdFJhdGVzUmVxdWVzdBomLnN0aWxsaG91c2UudjEuRGVsZXRlQ29zdFJhdGVzUmVzcG9uc2USVwoMUmVjb3JkTGFib3VyEiIuc3RpbGxob3VzZS52MS5SZWNvcmRMYWJvdXJSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5SZWNvcmRMYWJvdXJSZXNwb25zZRJmChFEZWxldGVMYWJvdXJFbnRyeRInLnN0aWxsaG91c2UudjEuRGVsZXRlTGFib3VyRW50cnlSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5EZWxldGVMYWJvdXJFbnRyeVJlc3BvbnNlElEKCkxpc3RMYWJvdXISIC5zdGlsbGhvdXNlLnYxLkxpc3RMYWJvdXJSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5MaXN0TGFib3VyUmVzcG9uc2USbAoTQm90dGxpbmdSdW5GdWxsQ29zdBIpLnN0aWxsaG91c2UudjEuQm90dGxpbmdSdW5GdWxsQ29zdFJlcXVlc3QaKi5zdGlsbGhvdXNlLnYxLkJvdHRsaW5nUnVuRnVsbENvc3RSZXNwb25zZRJdCg5JbnZlbnRvcnlWYWx1ZRIkLnN0aWxsaG91c2UudjEuSW52ZW50b3J5VmFsdWVSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5JbnZlbnRvcnlWYWx1ZVJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChtzdGlsbGhvdXNlL3YxL2Nvc3RpbmcucHJvdG8SDXN0aWxsaG91c2UudjEi3QEKCUNvc3RSYXRlcxIKCgJpZBgBIAEoCRIWCg5lZmZlY3RpdmVfZnJvbRgCIAEoCRIgChhsYWJvdXJfcmF0ZV9jYWRfcGVyX2hvdXIYAyABKAkSNAoOb3ZlcmhlYWRfYmFzaXMYBCABKA4yHC5zdGlsbGhvdXNlLnYxLk92ZXJoZWFkQmFzaXMSFQoNb3ZlcmhlYWRfcmF0ZRgFIAEoCRINCgVub3RlcxgGIAEoCRIuCgpjcmVhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCKsAQoUU2F2ZUNvc3RSYXRlc1JlcXVlc3QSFgoOZWZmZWN0aXZlX2Zyb20YASABKAkSIAoYbGFib3VyX3JhdGVfY2FkX3Blcl9ob3VyGAIgASgJEjQKDm92ZXJoZWFkX2Jhc2lzGAMgASgOMhwuc3RpbGxob3VzZS52MS5PdmVyaGVhZEJhc2lzEhUKDW92ZXJoZWFkX3JhdGUYBCABKAkSDQoFbm90ZXMYBSABKAkiQAoVU2F2ZUNvc3RSYXRlc1Jlc3BvbnNlEicKBXJhdGVzGAEgASgLMhguc3RpbGxob3VzZS52MS5Db3N0UmF0ZXMiFgoUTGlzdENvc3RSYXRlc1JlcXVlc3QiQAoVTGlzdENvc3RSYXRlc1Jlc3BvbnNlEicKBXJhdGVzGAEgAygLMhguc3RpbGxob3VzZS52MS5Db3N0UmF0ZXMiJAoWRGVsZXRlQ29zdFJhdGVzUmVxdWVzdBIKCgJpZBgBIAEoCSIZChdEZWxldGVDb3N0UmF0ZXNSZXNwb25zZSJxCg1MYWJvdXJTdWJqZWN0EhMKC21hc2hfcnVuX2lkGAEgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYAiABKAkSFwoPYm90dGxpbmdfcnVuX2lkGAMgASgJEhUKDXdvcmtfb3JkZXJfaWQYBCABKAki9wEKC0xhYm91ckVudHJ5EgoKAmlkGAEgASgJEi0KB3N1YmplY3QYAiABKAsyHC5zdGlsbGhvdXNlLnYxLkxhYm91clN1YmplY3QSEQoJd29ya2VkX29uGAMgASgJEg0KBWhvdXJzGAQgASgBEhkKEXdvcmtlZF9ieV91c2VyX2lkGAUgASgJEhYKDndvcmtlZF9ieV9uYW1lGAYgASgJEhkKEXJhdGVfY2FkX3Blcl9ob3VyGAcgASgJEg0KBW5vdGVzGAggASgJEi4KCmNyZWF0ZWRfYXQYCSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIsMBChNSZWNvcmRMYWJvdXJSZXF1ZXN0Ei0KB3N1YmplY3QYASABKAsyHC5zdGlsbGhvdXNlLnYxLkxhYm91clN1YmplY3QSEQoJd29ya2VkX29uGAIgASgJEg0KBWhvdXJzGAMgASgBEhkKEXdvcmtlZF9ieV91c2VyX2lkGAQgASgJEhYKDndvcmtlZF9ieV9uYW1lGAUgASgJEhkKEXJhdGVfY2FkX3Blcl9ob3VyGAYgASgJEg0KBW5vdGVzGAcgASgJIkEKFFJlY29yZExhYm91clJlc3BvbnNlEikKBWVudHJ5GAEgASgLMhouc3RpbGxob3VzZS52MS5MYWJvdXJFbnRyeSImChhEZWxldGVMYWJvdXJFbnRyeVJlcXVlc3QSCgoCaWQYASABKAkiGwoZRGVsZXRlTGFib3VyRW50cnlSZXNwb25zZSJCChFMaXN0TGFib3VyUmVxdWVzdBItCgdzdWJqZWN0GAEgASgLMhwuc3RpbGxob3VzZS52MS5MYWJvdXJTdWJqZWN0IlYKEkxpc3RMYWJvdXJSZXNwb25zZRIrCgdlbnRyaWVzGAEgAygLMhouc3RpbGxob3VzZS52MS5MYWJvdXJFbnRyeRITCgt0b3RhbF9ob3VycxgCIAEoASJkCg1Db3N0Q29tcG9uZW50EgwKBG5hbWUYASABKAkSEgoKYW1vdW50X2NhZBgCIAEoARINCgViYXNpcxgDIAEoCRIRCglhdmFpbGFibGUYBCABKAgSDwoHbWlzc2luZxgFIAEoCSI1ChpCb3R0bGluZ1J1bkZ1bGxDb3N0UmVxdWVzdBIXCg9ib3R0bGluZ19ydW5faWQYASABKAkizwIKG0JvdHRsaW5nUnVuRnVsbENvc3RSZXNwb25zZRIXCg9ib3R0bGluZ19ydW5faWQYASABKAkSFAoMYm90dGxlX2NvdW50GAIgASgFEi8KCW1hdGVyaWFscxgDIAEoCzIcLnN0aWxsaG91c2UudjEuQ29zdENvbXBvbmVudBIsCgZsYWJvdXIYBCABKAsyHC5zdGlsbGhvdXNlLnYxLkNvc3RDb21wb25lbnQSLgoIb3ZlcmhlYWQYBSABKAsyHC5zdGlsbGhvdXNlLnYxLkNvc3RDb21wb25lbnQSEQoJdG90YWxfY2FkGAYgASgBEhYKDnBlcl9ib3R0bGVfY2FkGAcgASgBEhAKCGNvbXBsZXRlGAggASgIEhQKDGxhYm91cl9ob3VycxgJIAEoARIfChd1bnByaWNlZF9tYXRlcmlhbF9saW5lcxgKIAEoBSKSAQoSSW52ZW50b3J5VmFsdWVMaW5lEgwKBG5hbWUYASABKAkSDgoGZGV0YWlsGAIgASgJEgsKA2xhYRgDIAEoARIPCgdib3R0bGVzGAQgASgFEhAKCHVuaXRfY2FkGAUgASgBEhEKCXZhbHVlX2NhZBgGIAEoARIOCgZ2YWx1ZWQYByABKAgSCwoDd2h5GAggASgJIo8BCg9JbnZlbnRvcnlCdWNrZXQSEQoJdmFsdWVfY2FkGAEgASgBEjAKBWxpbmVzGAIgAygLMiEuc3RpbGxob3VzZS52MS5JbnZlbnRvcnlWYWx1ZUxpbmUSEQoJdG90YWxfbGFhGAMgASgBEhIKCnZhbHVlZF9sYWEYBCABKAESEAoIdW52YWx1ZWQYBSABKAUiFwoVSW52ZW50b3J5VmFsdWVSZXF1ZXN0Ip8BChZJbnZlbnRvcnlWYWx1ZVJlc3BvbnNlEisKA3dpcBgBIAEoCzIeLnN0aWxsaG91c2UudjEuSW52ZW50b3J5QnVja2V0EjYKDmZpbmlzaGVkX2dvb2RzGAIgASgLMh4uc3RpbGxob3VzZS52MS5JbnZlbnRvcnlCdWNrZXQSEQoJdG90YWxfY2FkGAMgASgBEg0KBWJhc2lzGAQgASgJIqwBCghXSVBHYXVnZRIKCgJpZBgBIAEoCRISCgpnYXVnZV9kYXRlGAIgASgJEgsKA2xhYRgDIAEoARIWCg5jb250YWluZXJfbmFtZRgEIAEoCRISCgphbW91bnRfY2FkGAUgASgBEhEKCWF2YWlsYWJsZRgGIAEoCBIPCgdtaXNzaW5nGAcgASgJEg0KBWJhc2lzGAggASgJEhQKDGNoYXJnZV9jb3VudBgJIAEoBSJAChRXSVBQcm9kdWN0aW9uUmVxdWVzdBIUCgxwZXJpb2Rfc3RhcnQYASABKAkSEgoKcGVyaW9kX2VuZBgCIAEoCSLhAQoVV0lQUHJvZHVjdGlvblJlc3BvbnNlEicKBmdhdWdlcxgBIAMoCzIXLnN0aWxsaG91c2UudjEuV0lQR2F1Z2USEQoJdG90YWxfY2FkGAIgASgBEhQKDHZhbHVlZF9jb3VudBgDIAEoBRIRCgl0b3RhbF9sYWEYBCABKAESEgoKdmFsdWVkX2xhYRgFIAEoARIQCghjb21wbGV0ZRgGIAEoCBIPCgdyZWZ1c2VkGAcgASgJEiwKBWJhc2lzGAggASgOMh0uc3RpbGxob3VzZS52MS5XSVBDaGFyZ2VCYXNpcyJIChhTZXRXSVBDaGFyZ2VCYXNpc1JlcXVlc3QSLAoFYmFzaXMYASABKA4yHS5zdGlsbGhvdXNlLnYxLldJUENoYXJnZUJhc2lzIkkKGVNldFdJUENoYXJnZUJhc2lzUmVzcG9uc2USLAoFYmFzaXMYASABKA4yHS5zdGlsbGhvdXNlLnYxLldJUENoYXJnZUJhc2lzIhoKGEdldFdJUENoYXJnZUJhc2lzUmVxdWVzdCJJChlHZXRXSVBDaGFyZ2VCYXNpc1Jlc3BvbnNlEiwKBWJhc2lzGAEgASgOMh0uc3RpbGxob3VzZS52MS5XSVBDaGFyZ2VCYXNpcyqXAQoNT3ZlcmhlYWRCYXNpcxIeChpPVkVSSEVBRF9CQVNJU19VTlNQRUNJRklFRBAAEiYKIk9WRVJIRUFEX0JBU0lTX1BFUl9NQVRFUklBTF9ET0xMQVIQARIiCh5PVkVSSEVBRF9CQVNJU19QRVJfTEFCT1VSX0hPVVIQAhIaChZPVkVSSEVBRF9CQVNJU19QRVJfTEFBEAMqeQoOV0lQQ2hhcmdlQmFzaXMSIAocV0lQX0NIQVJHRV9CQVNJU19VTlNQRUNJRklFRBAAEiMKH1dJUF9DSEFSR0VfQkFTSVNfQ0hBUkdFRF9WT0xVTUUQARIgChxXSVBfQ0hBUkdFX0JBU0lTX0NIQVJHRURfTEFBEAIytwgKDkNvc3RpbmdTZXJ2aWNlEloKDVNhdmVDb3N0UmF0ZXMSIy5zdGlsbGhvdXNlLnYxLlNhdmVDb3N0UmF0ZXNSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5TYXZlQ29zdFJhdGVzUmVzcG9uc2USWgoNTGlzdENvc3RSYXRlcxIjLnN0aWxsaG91c2UudjEuTGlzdENvc3RSYXRlc1JlcXVlc3QaJC5zdGlsbGhvdXNlLnYxLkxpc3RDb3N0UmF0ZXNSZXNwb25zZRJgCg9EZWxldGVDb3N0UmF0ZXMSJS5zdGlsbGhvdXNlLnYxLkRlbGV0ZUNvc3RSYXRlc1JlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkRlbGV0ZUNvc3RSYXRlc1Jlc3BvbnNlElcKDFJlY29yZExhYm91chIiLnN0aWxsaG91c2UudjEuUmVjb3JkTGFib3VyUmVxdWVzdBojLnN0aWxsaG91c2UudjEuUmVjb3JkTGFib3VyUmVzcG9uc2USZgoRRGVsZXRlTGFib3VyRW50cnkSJy5zdGlsbGhvdXNlLnYxLkRlbGV0ZUxhYm91ckVudHJ5UmVxdWVzdBooLnN0aWxsaG91c2UudjEuRGVsZXRlTGFib3VyRW50cnlSZXNwb25zZRJRCgpMaXN0TGFib3VyEiAuc3RpbGxob3VzZS52MS5MaXN0TGFib3VyUmVxdWVzdBohLnN0aWxsaG91c2UudjEuTGlzdExhYm91clJlc3BvbnNlEmwKE0JvdHRsaW5nUnVuRnVsbENvc3QSKS5zdGlsbGhvdXNlLnYxLkJvdHRsaW5nUnVuRnVsbENvc3RSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5Cb3R0bGluZ1J1bkZ1bGxDb3N0UmVzcG9uc2USXQoOSW52ZW50b3J5VmFsdWUSJC5zdGlsbGhvdXNlLnYxLkludmVudG9yeVZhbHVlUmVxdWVzdBolLnN0aWxsaG91c2UudjEuSW52ZW50b3J5VmFsdWVSZXNwb25zZRJaCg1XSVBQcm9kdWN0aW9uEiMuc3RpbGxob3VzZS52MS5XSVBQcm9kdWN0aW9uUmVxdWVzdBokLnN0aWxsaG91c2UudjEuV0lQUHJvZHVjdGlvblJlc3BvbnNlEmYKEUdldFdJUENoYXJnZUJhc2lzEicuc3RpbGxob3VzZS52MS5HZXRXSVBDaGFyZ2VCYXNpc1JlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLkdldFdJUENoYXJnZUJhc2lzUmVzcG9uc2USZgoRU2V0V0lQQ2hhcmdlQmFzaXMSJy5zdGlsbGhvdXNlLnYxLlNldFdJUENoYXJnZUJhc2lzUmVxdWVzdBooLnN0aWxsaG91c2UudjEuU2V0V0lQQ2hhcmdlQmFzaXNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.CostRates
@@ -702,6 +702,221 @@ export const InventoryValueResponseSchema: GenMessage<InventoryValueResponse> = 
   messageDesc(file_stillhouse_v1_costing, 21);
 
 /**
+ * @generated from message stillhouse.v1.WIPGauge
+ */
+export type WIPGauge = Message<"stillhouse.v1.WIPGauge"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string gauge_date = 2;
+   */
+  gaugeDate: string;
+
+  /**
+   * @generated from field: double laa = 3;
+   */
+  laa: number;
+
+  /**
+   * @generated from field: string container_name = 4;
+   */
+  containerName: string;
+
+  /**
+   * The cost this gauge carried into work in progress. available is false
+   * when the walk back to the mashes refused, and missing says why —
+   * an unvalued gauge is not a gauge worth nothing.
+   *
+   * @generated from field: double amount_cad = 5;
+   */
+  amountCad: number;
+
+  /**
+   * @generated from field: bool available = 6;
+   */
+  available: boolean;
+
+  /**
+   * @generated from field: string missing = 7;
+   */
+  missing: string;
+
+  /**
+   * @generated from field: string basis = 8;
+   */
+  basis: string;
+
+  /**
+   * How many distillation charges the walk went through. More than one
+   * means the spirit came from several fermentations and the cost is a
+   * blend of their mashes.
+   *
+   * @generated from field: int32 charge_count = 9;
+   */
+  chargeCount: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.WIPGauge.
+ * Use `create(WIPGaugeSchema)` to create a new message.
+ */
+export const WIPGaugeSchema: GenMessage<WIPGauge> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 22);
+
+/**
+ * @generated from message stillhouse.v1.WIPProductionRequest
+ */
+export type WIPProductionRequest = Message<"stillhouse.v1.WIPProductionRequest"> & {
+  /**
+   * ISO date, inclusive
+   *
+   * @generated from field: string period_start = 1;
+   */
+  periodStart: string;
+
+  /**
+   * ISO date, inclusive
+   *
+   * @generated from field: string period_end = 2;
+   */
+  periodEnd: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.WIPProductionRequest.
+ * Use `create(WIPProductionRequestSchema)` to create a new message.
+ */
+export const WIPProductionRequestSchema: GenMessage<WIPProductionRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 23);
+
+/**
+ * @generated from message stillhouse.v1.WIPProductionResponse
+ */
+export type WIPProductionResponse = Message<"stillhouse.v1.WIPProductionResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.WIPGauge gauges = 1;
+   */
+  gauges: WIPGauge[];
+
+  /**
+   * total_cad is the sum of the gauges that could be valued; valued_count
+   * says how many that was. A total over eleven gauges of which three are
+   * unvalued is not the period's WIP, and the two together make that
+   * visible.
+   *
+   * @generated from field: double total_cad = 2;
+   */
+  totalCad: number;
+
+  /**
+   * @generated from field: int32 valued_count = 3;
+   */
+  valuedCount: number;
+
+  /**
+   * @generated from field: double total_laa = 4;
+   */
+  totalLaa: number;
+
+  /**
+   * @generated from field: double valued_laa = 5;
+   */
+  valuedLaa: number;
+
+  /**
+   * @generated from field: bool complete = 6;
+   */
+  complete: boolean;
+
+  /**
+   * Set when the licensee has not stated a charge basis. Everything above
+   * is empty when it is.
+   *
+   * @generated from field: string refused = 7;
+   */
+  refused: string;
+
+  /**
+   * @generated from field: stillhouse.v1.WIPChargeBasis basis = 8;
+   */
+  basis: WIPChargeBasis;
+};
+
+/**
+ * Describes the message stillhouse.v1.WIPProductionResponse.
+ * Use `create(WIPProductionResponseSchema)` to create a new message.
+ */
+export const WIPProductionResponseSchema: GenMessage<WIPProductionResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 24);
+
+/**
+ * @generated from message stillhouse.v1.SetWIPChargeBasisRequest
+ */
+export type SetWIPChargeBasisRequest = Message<"stillhouse.v1.SetWIPChargeBasisRequest"> & {
+  /**
+   * @generated from field: stillhouse.v1.WIPChargeBasis basis = 1;
+   */
+  basis: WIPChargeBasis;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetWIPChargeBasisRequest.
+ * Use `create(SetWIPChargeBasisRequestSchema)` to create a new message.
+ */
+export const SetWIPChargeBasisRequestSchema: GenMessage<SetWIPChargeBasisRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 25);
+
+/**
+ * @generated from message stillhouse.v1.SetWIPChargeBasisResponse
+ */
+export type SetWIPChargeBasisResponse = Message<"stillhouse.v1.SetWIPChargeBasisResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.WIPChargeBasis basis = 1;
+   */
+  basis: WIPChargeBasis;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetWIPChargeBasisResponse.
+ * Use `create(SetWIPChargeBasisResponseSchema)` to create a new message.
+ */
+export const SetWIPChargeBasisResponseSchema: GenMessage<SetWIPChargeBasisResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 26);
+
+/**
+ * @generated from message stillhouse.v1.GetWIPChargeBasisRequest
+ */
+export type GetWIPChargeBasisRequest = Message<"stillhouse.v1.GetWIPChargeBasisRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.GetWIPChargeBasisRequest.
+ * Use `create(GetWIPChargeBasisRequestSchema)` to create a new message.
+ */
+export const GetWIPChargeBasisRequestSchema: GenMessage<GetWIPChargeBasisRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 27);
+
+/**
+ * @generated from message stillhouse.v1.GetWIPChargeBasisResponse
+ */
+export type GetWIPChargeBasisResponse = Message<"stillhouse.v1.GetWIPChargeBasisResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.WIPChargeBasis basis = 1;
+   */
+  basis: WIPChargeBasis;
+};
+
+/**
+ * Describes the message stillhouse.v1.GetWIPChargeBasisResponse.
+ * Use `create(GetWIPChargeBasisResponseSchema)` to create a new message.
+ */
+export const GetWIPChargeBasisResponseSchema: GenMessage<GetWIPChargeBasisResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_costing, 28);
+
+/**
  * How overhead is spread over what was made. There is no correct answer,
  * only a stated one.
  *
@@ -744,6 +959,42 @@ export enum OverheadBasis {
  */
 export const OverheadBasisSchema: GenEnum<OverheadBasis> = /*@__PURE__*/
   enumDesc(file_stillhouse_v1_costing, 0);
+
+/**
+ * How a fermentation's cost is apportioned across the distillation runs it
+ * was charged to. Unset is a refusal, not a default: which of these is
+ * right is the licensee's accounting policy, and a WIP figure produced on
+ * a convention nobody chose would reconcile and never be questioned.
+ *
+ * @generated from enum stillhouse.v1.WIPChargeBasis
+ */
+export enum WIPChargeBasis {
+  /**
+   * @generated from enum value: WIP_CHARGE_BASIS_UNSPECIFIED = 0;
+   */
+  WIP_CHARGE_BASIS_UNSPECIFIED = 0,
+
+  /**
+   * Cost follows litres of wash charged to the still.
+   *
+   * @generated from enum value: WIP_CHARGE_BASIS_CHARGED_VOLUME = 1;
+   */
+  WIP_CHARGE_BASIS_CHARGED_VOLUME = 1,
+
+  /**
+   * Cost follows litres of absolute alcohol charged. A low-wines run and a
+   * spirit run drawing the same litres do not carry the same alcohol.
+   *
+   * @generated from enum value: WIP_CHARGE_BASIS_CHARGED_LAA = 2;
+   */
+  WIP_CHARGE_BASIS_CHARGED_LAA = 2,
+}
+
+/**
+ * Describes the enum stillhouse.v1.WIPChargeBasis.
+ */
+export const WIPChargeBasisSchema: GenEnum<WIPChargeBasis> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_costing, 1);
 
 /**
  * @generated from service stillhouse.v1.CostingService
@@ -812,6 +1063,33 @@ export const CostingService: GenService<{
     methodKind: "unary";
     input: typeof InventoryValueRequestSchema;
     output: typeof InventoryValueResponseSchema;
+  },
+  /**
+   * Spirit gauged into work in progress, valued by walking forward from
+   * the mashes behind it. PLAN E7.
+   *
+   * @generated from rpc stillhouse.v1.CostingService.WIPProduction
+   */
+  wIPProduction: {
+    methodKind: "unary";
+    input: typeof WIPProductionRequestSchema;
+    output: typeof WIPProductionResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.CostingService.GetWIPChargeBasis
+   */
+  getWIPChargeBasis: {
+    methodKind: "unary";
+    input: typeof GetWIPChargeBasisRequestSchema;
+    output: typeof GetWIPChargeBasisResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.CostingService.SetWIPChargeBasis
+   */
+  setWIPChargeBasis: {
+    methodKind: "unary";
+    input: typeof SetWIPChargeBasisRequestSchema;
+    output: typeof SetWIPChargeBasisResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_costing, 0);

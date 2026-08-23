@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
 import { EmptyRow } from "@/components/EmptyState";
+import { WIPProductionTab } from "@/components/WIPProductionTab";
 import { Shell } from "@/components/Shell";
 import { costingClient } from "@/lib/clients";
 import { OverheadBasis } from "@/gen/stillhouse/v1/costing_pb";
@@ -21,7 +22,7 @@ function errText(e: unknown): string {
 }
 
 export function CostingPage() {
-  const [tab, setTab] = useState<"value" | "rates">("value");
+  const [tab, setTab] = useState<"value" | "wip" | "rates">("value");
   return (
     <Shell>
       <div className="mb-6">
@@ -35,7 +36,7 @@ export function CostingPage() {
       </div>
 
       <div className="mb-4 flex gap-1 border-b border-border text-sm">
-        {([["value", "Inventory value"], ["rates", "Rates"]] as const).map(([k, label]) => (
+        {([["value", "Inventory value"], ["wip", "Into WIP"], ["rates", "Rates"]] as const).map(([k, label]) => (
           <button
             key={k}
             onClick={() => setTab(k)}
@@ -49,6 +50,7 @@ export function CostingPage() {
       </div>
 
       {tab === "value" && <ValueTab />}
+      {tab === "wip" && <WIPProductionTab />}
       {tab === "rates" && <RatesTab />}
     </Shell>
   );

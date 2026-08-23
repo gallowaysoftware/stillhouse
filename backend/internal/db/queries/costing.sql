@@ -123,3 +123,117 @@ ORDER BY br.bottling_date, br.lot_code;
 SELECT COUNT(*)::INTEGER AS n
 FROM packaged_inventory
 WHERE owner_customer_id IS NOT NULL AND bottles_on_hand > 0;
+
+-- name: ProductionGaugeWIPCost :many
+-- Spirit gauged into bulk, valued by walking forward from the mashes
+-- behind it. PLAN E7.
+--
+-- Four steps, three of which have a recorded basis and need no convention:
+--
+--   mash_cost      what the mash's materials cost, at the lot each came
+--                  from. priced is false when any usage has no lot or the
+--                  lot has no cost — the mash is then unvalued rather than
+--                  cheap, and the difference is reported.
+--   ferment_share  a mash that fed one fermentation gives it everything.
+--                  One that fed several splits by initial_volume_l, and
+--                  refuses (NULL) if any of them is missing it, because a
+--                  share computed over the ones that happen to have a
+--                  volume would silently overstate them.
+--   charge_share   a fermentation's share of each still it was charged
+--                  to, on the licensee's stated basis: litres charged or
+--                  LAA charged. The denominator is every charge that
+--                  fermentation made, not only the ones inside the
+--                  reporting period, because the share is a property of
+--                  the fermentation.
+--   gauge          production_gauges is UNIQUE on distillation_run_id, so
+--                  a run's cost is its gauge's cost entire.
+--
+-- A fermentation whose wash was never fully charged leaves cost behind on
+-- purpose. Wash that never reached a still is not work in progress; it is
+-- a loss, and allocating it to the spirit that did get made would inflate
+-- the value of that spirit. unallocated_cad reports what stayed behind so
+-- it is visible rather than merely absent.
+WITH mash_cost AS (
+    SELECT mu.mash_run_id,
+           COALESCE(SUM(mu.quantity_used * COALESCE(ml.landed_unit_cost_cad, ml.unit_cost_cad)), 0)::double precision AS cost_cad,
+           BOOL_AND(ml.id IS NOT NULL AND COALESCE(ml.landed_unit_cost_cad, ml.unit_cost_cad) IS NOT NULL) AS priced,
+           COUNT(*) FILTER (WHERE ml.id IS NULL OR COALESCE(ml.landed_unit_cost_cad, ml.unit_cost_cad) IS NULL)::int AS unpriced_lines
+    FROM mash_ingredient_usage mu
+    LEFT JOIN material_lots ml ON ml.id = mu.material_lot_id
+    GROUP BY mu.mash_run_id
+), ferment_share AS (
+    SELECT f.id AS fermentation_run_id,
+           f.mash_run_id,
+           CASE
+             WHEN COUNT(*) OVER (PARTITION BY f.mash_run_id) = 1 THEN 1.0
+             WHEN BOOL_AND(f.initial_volume_l IS NOT NULL) OVER (PARTITION BY f.mash_run_id)
+                  AND SUM(f.initial_volume_l) OVER (PARTITION BY f.mash_run_id) > 0
+               THEN f.initial_volume_l / SUM(f.initial_volume_l) OVER (PARTITION BY f.mash_run_id)
+             ELSE NULL
+           END::double precision AS share
+    FROM fermentation_runs f
+), charge_basis AS (
+    SELECT dc.distillation_run_id,
+           dc.fermentation_run_id,
+           CASE WHEN sqlc.arg(basis)::text = 'charged_laa'
+                THEN dc.volume_charged_l * dc.abv_pct / 100
+                ELSE dc.volume_charged_l
+           END::double precision AS amount
+    FROM distillation_charges dc
+), charge_share AS (
+    SELECT cb.distillation_run_id,
+           cb.fermentation_run_id,
+           CASE WHEN SUM(cb.amount) OVER (PARTITION BY cb.fermentation_run_id) > 0
+                THEN cb.amount / SUM(cb.amount) OVER (PARTITION BY cb.fermentation_run_id)
+                ELSE NULL
+           END::double precision AS share
+    FROM charge_basis cb
+)
+SELECT g.id,
+       g.gauge_date,
+       g.laa,
+       g.distillation_run_id,
+       COALESCE(bc.name, '')::text AS container_name,
+       -- The value carried into WIP by this gauge. NULL where any step of
+       -- the walk refused, which is why the flags below travel with it.
+       -- The sum is NULL when any step of the walk refused. That has to
+       -- stay distinguishable from a genuine zero all the way to the
+       -- caller — a cost of nothing and a cost nobody could compute are
+       -- different claims, and conflating them produces a figure that
+       -- reconciles and never gets looked at again. Carried as an
+       -- explicit flag rather than as a nullable float, because the flag
+       -- is what the caller has to branch on and a NULL that reads as 0.0
+       -- one layer up is exactly the failure being guarded against.
+       COALESCE(SUM(mc.cost_cad * fs.share * cs.share), 0)::double precision AS cost_cad,
+       (SUM(mc.cost_cad * fs.share * cs.share) IS NOT NULL)::boolean AS cost_known,
+       -- Every reason this gauge could not be valued, so the operator is
+       -- told which mash or which fermentation to go and fix.
+       BOOL_AND(COALESCE(mc.priced, false))::boolean            AS all_mashes_priced,
+       BOOL_AND(fs.share IS NOT NULL)::boolean                  AS all_ferment_shares_known,
+       BOOL_AND(cs.share IS NOT NULL)::boolean                  AS all_charge_shares_known,
+       COUNT(*)::int                                            AS charge_count,
+       COALESCE(SUM(mc.unpriced_lines), 0)::int                 AS unpriced_material_lines
+FROM production_gauges g
+JOIN distillation_runs dr    ON dr.id = g.distillation_run_id
+JOIN bulk_containers bc      ON bc.id = g.destination_container_id
+JOIN charge_share cs         ON cs.distillation_run_id = g.distillation_run_id
+JOIN ferment_share fs        ON fs.fermentation_run_id = cs.fermentation_run_id
+LEFT JOIN mash_cost mc       ON mc.mash_run_id = fs.mash_run_id
+WHERE g.gauge_date >= sqlc.arg(period_start)::timestamptz
+  AND g.gauge_date <  sqlc.arg(period_end)::timestamptz
+  -- A voided run's spirit went back out of the ledger; carrying its cost
+  -- into WIP would value alcohol that is not there. Voids are how
+  -- Stillhouse reverses a distillation, so this is the ordinary case
+  -- rather than an edge one.
+  AND dr.voided_at IS NULL
+GROUP BY g.id, g.gauge_date, g.laa, g.distillation_run_id, bc.name
+ORDER BY g.gauge_date, g.id;
+
+-- name: GetWIPChargeBasis :one
+SELECT wip_charge_basis FROM tenants WHERE id = $1;
+
+-- name: SetWIPChargeBasis :one
+-- Stated by the licensee, never defaulted. See 000061.
+UPDATE tenants SET wip_charge_basis = $2, updated_at = NOW()
+WHERE id = $1
+RETURNING wip_charge_basis;

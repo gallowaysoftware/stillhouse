@@ -96,6 +96,62 @@ func (OverheadBasis) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{0}
 }
 
+// How a fermentation's cost is apportioned across the distillation runs it
+// was charged to. Unset is a refusal, not a default: which of these is
+// right is the licensee's accounting policy, and a WIP figure produced on
+// a convention nobody chose would reconcile and never be questioned.
+type WIPChargeBasis int32
+
+const (
+	WIPChargeBasis_WIP_CHARGE_BASIS_UNSPECIFIED WIPChargeBasis = 0
+	// Cost follows litres of wash charged to the still.
+	WIPChargeBasis_WIP_CHARGE_BASIS_CHARGED_VOLUME WIPChargeBasis = 1
+	// Cost follows litres of absolute alcohol charged. A low-wines run and a
+	// spirit run drawing the same litres do not carry the same alcohol.
+	WIPChargeBasis_WIP_CHARGE_BASIS_CHARGED_LAA WIPChargeBasis = 2
+)
+
+// Enum value maps for WIPChargeBasis.
+var (
+	WIPChargeBasis_name = map[int32]string{
+		0: "WIP_CHARGE_BASIS_UNSPECIFIED",
+		1: "WIP_CHARGE_BASIS_CHARGED_VOLUME",
+		2: "WIP_CHARGE_BASIS_CHARGED_LAA",
+	}
+	WIPChargeBasis_value = map[string]int32{
+		"WIP_CHARGE_BASIS_UNSPECIFIED":    0,
+		"WIP_CHARGE_BASIS_CHARGED_VOLUME": 1,
+		"WIP_CHARGE_BASIS_CHARGED_LAA":    2,
+	}
+)
+
+func (x WIPChargeBasis) Enum() *WIPChargeBasis {
+	p := new(WIPChargeBasis)
+	*p = x
+	return p
+}
+
+func (x WIPChargeBasis) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (WIPChargeBasis) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_costing_proto_enumTypes[1].Descriptor()
+}
+
+func (WIPChargeBasis) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_costing_proto_enumTypes[1]
+}
+
+func (x WIPChargeBasis) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use WIPChargeBasis.Descriptor instead.
+func (WIPChargeBasis) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{1}
+}
+
 type CostRates struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1493,6 +1549,446 @@ func (x *InventoryValueResponse) GetBasis() string {
 	return ""
 }
 
+type WIPGauge struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	GaugeDate     string                 `protobuf:"bytes,2,opt,name=gauge_date,json=gaugeDate,proto3" json:"gauge_date,omitempty"`
+	Laa           float64                `protobuf:"fixed64,3,opt,name=laa,proto3" json:"laa,omitempty"`
+	ContainerName string                 `protobuf:"bytes,4,opt,name=container_name,json=containerName,proto3" json:"container_name,omitempty"`
+	// The cost this gauge carried into work in progress. available is false
+	// when the walk back to the mashes refused, and missing says why —
+	// an unvalued gauge is not a gauge worth nothing.
+	AmountCad float64 `protobuf:"fixed64,5,opt,name=amount_cad,json=amountCad,proto3" json:"amount_cad,omitempty"`
+	Available bool    `protobuf:"varint,6,opt,name=available,proto3" json:"available,omitempty"`
+	Missing   string  `protobuf:"bytes,7,opt,name=missing,proto3" json:"missing,omitempty"`
+	Basis     string  `protobuf:"bytes,8,opt,name=basis,proto3" json:"basis,omitempty"`
+	// How many distillation charges the walk went through. More than one
+	// means the spirit came from several fermentations and the cost is a
+	// blend of their mashes.
+	ChargeCount   int32 `protobuf:"varint,9,opt,name=charge_count,json=chargeCount,proto3" json:"charge_count,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WIPGauge) Reset() {
+	*x = WIPGauge{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WIPGauge) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WIPGauge) ProtoMessage() {}
+
+func (x *WIPGauge) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WIPGauge.ProtoReflect.Descriptor instead.
+func (*WIPGauge) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *WIPGauge) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *WIPGauge) GetGaugeDate() string {
+	if x != nil {
+		return x.GaugeDate
+	}
+	return ""
+}
+
+func (x *WIPGauge) GetLaa() float64 {
+	if x != nil {
+		return x.Laa
+	}
+	return 0
+}
+
+func (x *WIPGauge) GetContainerName() string {
+	if x != nil {
+		return x.ContainerName
+	}
+	return ""
+}
+
+func (x *WIPGauge) GetAmountCad() float64 {
+	if x != nil {
+		return x.AmountCad
+	}
+	return 0
+}
+
+func (x *WIPGauge) GetAvailable() bool {
+	if x != nil {
+		return x.Available
+	}
+	return false
+}
+
+func (x *WIPGauge) GetMissing() string {
+	if x != nil {
+		return x.Missing
+	}
+	return ""
+}
+
+func (x *WIPGauge) GetBasis() string {
+	if x != nil {
+		return x.Basis
+	}
+	return ""
+}
+
+func (x *WIPGauge) GetChargeCount() int32 {
+	if x != nil {
+		return x.ChargeCount
+	}
+	return 0
+}
+
+type WIPProductionRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PeriodStart   string                 `protobuf:"bytes,1,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"` // ISO date, inclusive
+	PeriodEnd     string                 `protobuf:"bytes,2,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`       // ISO date, inclusive
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WIPProductionRequest) Reset() {
+	*x = WIPProductionRequest{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WIPProductionRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WIPProductionRequest) ProtoMessage() {}
+
+func (x *WIPProductionRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WIPProductionRequest.ProtoReflect.Descriptor instead.
+func (*WIPProductionRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *WIPProductionRequest) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *WIPProductionRequest) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
+type WIPProductionResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Gauges []*WIPGauge            `protobuf:"bytes,1,rep,name=gauges,proto3" json:"gauges,omitempty"`
+	// total_cad is the sum of the gauges that could be valued; valued_count
+	// says how many that was. A total over eleven gauges of which three are
+	// unvalued is not the period's WIP, and the two together make that
+	// visible.
+	TotalCad    float64 `protobuf:"fixed64,2,opt,name=total_cad,json=totalCad,proto3" json:"total_cad,omitempty"`
+	ValuedCount int32   `protobuf:"varint,3,opt,name=valued_count,json=valuedCount,proto3" json:"valued_count,omitempty"`
+	TotalLaa    float64 `protobuf:"fixed64,4,opt,name=total_laa,json=totalLaa,proto3" json:"total_laa,omitempty"`
+	ValuedLaa   float64 `protobuf:"fixed64,5,opt,name=valued_laa,json=valuedLaa,proto3" json:"valued_laa,omitempty"`
+	Complete    bool    `protobuf:"varint,6,opt,name=complete,proto3" json:"complete,omitempty"`
+	// Set when the licensee has not stated a charge basis. Everything above
+	// is empty when it is.
+	Refused       string         `protobuf:"bytes,7,opt,name=refused,proto3" json:"refused,omitempty"`
+	Basis         WIPChargeBasis `protobuf:"varint,8,opt,name=basis,proto3,enum=stillhouse.v1.WIPChargeBasis" json:"basis,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *WIPProductionResponse) Reset() {
+	*x = WIPProductionResponse{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *WIPProductionResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WIPProductionResponse) ProtoMessage() {}
+
+func (x *WIPProductionResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WIPProductionResponse.ProtoReflect.Descriptor instead.
+func (*WIPProductionResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *WIPProductionResponse) GetGauges() []*WIPGauge {
+	if x != nil {
+		return x.Gauges
+	}
+	return nil
+}
+
+func (x *WIPProductionResponse) GetTotalCad() float64 {
+	if x != nil {
+		return x.TotalCad
+	}
+	return 0
+}
+
+func (x *WIPProductionResponse) GetValuedCount() int32 {
+	if x != nil {
+		return x.ValuedCount
+	}
+	return 0
+}
+
+func (x *WIPProductionResponse) GetTotalLaa() float64 {
+	if x != nil {
+		return x.TotalLaa
+	}
+	return 0
+}
+
+func (x *WIPProductionResponse) GetValuedLaa() float64 {
+	if x != nil {
+		return x.ValuedLaa
+	}
+	return 0
+}
+
+func (x *WIPProductionResponse) GetComplete() bool {
+	if x != nil {
+		return x.Complete
+	}
+	return false
+}
+
+func (x *WIPProductionResponse) GetRefused() string {
+	if x != nil {
+		return x.Refused
+	}
+	return ""
+}
+
+func (x *WIPProductionResponse) GetBasis() WIPChargeBasis {
+	if x != nil {
+		return x.Basis
+	}
+	return WIPChargeBasis_WIP_CHARGE_BASIS_UNSPECIFIED
+}
+
+type SetWIPChargeBasisRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Basis         WIPChargeBasis         `protobuf:"varint,1,opt,name=basis,proto3,enum=stillhouse.v1.WIPChargeBasis" json:"basis,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetWIPChargeBasisRequest) Reset() {
+	*x = SetWIPChargeBasisRequest{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetWIPChargeBasisRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetWIPChargeBasisRequest) ProtoMessage() {}
+
+func (x *SetWIPChargeBasisRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetWIPChargeBasisRequest.ProtoReflect.Descriptor instead.
+func (*SetWIPChargeBasisRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *SetWIPChargeBasisRequest) GetBasis() WIPChargeBasis {
+	if x != nil {
+		return x.Basis
+	}
+	return WIPChargeBasis_WIP_CHARGE_BASIS_UNSPECIFIED
+}
+
+type SetWIPChargeBasisResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Basis         WIPChargeBasis         `protobuf:"varint,1,opt,name=basis,proto3,enum=stillhouse.v1.WIPChargeBasis" json:"basis,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetWIPChargeBasisResponse) Reset() {
+	*x = SetWIPChargeBasisResponse{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetWIPChargeBasisResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetWIPChargeBasisResponse) ProtoMessage() {}
+
+func (x *SetWIPChargeBasisResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetWIPChargeBasisResponse.ProtoReflect.Descriptor instead.
+func (*SetWIPChargeBasisResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *SetWIPChargeBasisResponse) GetBasis() WIPChargeBasis {
+	if x != nil {
+		return x.Basis
+	}
+	return WIPChargeBasis_WIP_CHARGE_BASIS_UNSPECIFIED
+}
+
+type GetWIPChargeBasisRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWIPChargeBasisRequest) Reset() {
+	*x = GetWIPChargeBasisRequest{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWIPChargeBasisRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWIPChargeBasisRequest) ProtoMessage() {}
+
+func (x *GetWIPChargeBasisRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWIPChargeBasisRequest.ProtoReflect.Descriptor instead.
+func (*GetWIPChargeBasisRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{27}
+}
+
+type GetWIPChargeBasisResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Basis         WIPChargeBasis         `protobuf:"varint,1,opt,name=basis,proto3,enum=stillhouse.v1.WIPChargeBasis" json:"basis,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetWIPChargeBasisResponse) Reset() {
+	*x = GetWIPChargeBasisResponse{}
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetWIPChargeBasisResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetWIPChargeBasisResponse) ProtoMessage() {}
+
+func (x *GetWIPChargeBasisResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_costing_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetWIPChargeBasisResponse.ProtoReflect.Descriptor instead.
+func (*GetWIPChargeBasisResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_costing_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *GetWIPChargeBasisResponse) GetBasis() WIPChargeBasis {
+	if x != nil {
+		return x.Basis
+	}
+	return WIPChargeBasis_WIP_CHARGE_BASIS_UNSPECIFIED
+}
+
 var File_stillhouse_v1_costing_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_costing_proto_rawDesc = "" +
@@ -1598,12 +2094,49 @@ const file_stillhouse_v1_costing_proto_rawDesc = "" +
 	"\x03wip\x18\x01 \x01(\v2\x1e.stillhouse.v1.InventoryBucketR\x03wip\x12E\n" +
 	"\x0efinished_goods\x18\x02 \x01(\v2\x1e.stillhouse.v1.InventoryBucketR\rfinishedGoods\x12\x1b\n" +
 	"\ttotal_cad\x18\x03 \x01(\x01R\btotalCad\x12\x14\n" +
-	"\x05basis\x18\x04 \x01(\tR\x05basis*\x97\x01\n" +
+	"\x05basis\x18\x04 \x01(\tR\x05basis\"\x82\x02\n" +
+	"\bWIPGauge\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
+	"\n" +
+	"gauge_date\x18\x02 \x01(\tR\tgaugeDate\x12\x10\n" +
+	"\x03laa\x18\x03 \x01(\x01R\x03laa\x12%\n" +
+	"\x0econtainer_name\x18\x04 \x01(\tR\rcontainerName\x12\x1d\n" +
+	"\n" +
+	"amount_cad\x18\x05 \x01(\x01R\tamountCad\x12\x1c\n" +
+	"\tavailable\x18\x06 \x01(\bR\tavailable\x12\x18\n" +
+	"\amissing\x18\a \x01(\tR\amissing\x12\x14\n" +
+	"\x05basis\x18\b \x01(\tR\x05basis\x12!\n" +
+	"\fcharge_count\x18\t \x01(\x05R\vchargeCount\"X\n" +
+	"\x14WIPProductionRequest\x12!\n" +
+	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x02 \x01(\tR\tperiodEnd\"\xaf\x02\n" +
+	"\x15WIPProductionResponse\x12/\n" +
+	"\x06gauges\x18\x01 \x03(\v2\x17.stillhouse.v1.WIPGaugeR\x06gauges\x12\x1b\n" +
+	"\ttotal_cad\x18\x02 \x01(\x01R\btotalCad\x12!\n" +
+	"\fvalued_count\x18\x03 \x01(\x05R\vvaluedCount\x12\x1b\n" +
+	"\ttotal_laa\x18\x04 \x01(\x01R\btotalLaa\x12\x1d\n" +
+	"\n" +
+	"valued_laa\x18\x05 \x01(\x01R\tvaluedLaa\x12\x1a\n" +
+	"\bcomplete\x18\x06 \x01(\bR\bcomplete\x12\x18\n" +
+	"\arefused\x18\a \x01(\tR\arefused\x123\n" +
+	"\x05basis\x18\b \x01(\x0e2\x1d.stillhouse.v1.WIPChargeBasisR\x05basis\"O\n" +
+	"\x18SetWIPChargeBasisRequest\x123\n" +
+	"\x05basis\x18\x01 \x01(\x0e2\x1d.stillhouse.v1.WIPChargeBasisR\x05basis\"P\n" +
+	"\x19SetWIPChargeBasisResponse\x123\n" +
+	"\x05basis\x18\x01 \x01(\x0e2\x1d.stillhouse.v1.WIPChargeBasisR\x05basis\"\x1a\n" +
+	"\x18GetWIPChargeBasisRequest\"P\n" +
+	"\x19GetWIPChargeBasisResponse\x123\n" +
+	"\x05basis\x18\x01 \x01(\x0e2\x1d.stillhouse.v1.WIPChargeBasisR\x05basis*\x97\x01\n" +
 	"\rOverheadBasis\x12\x1e\n" +
 	"\x1aOVERHEAD_BASIS_UNSPECIFIED\x10\x00\x12&\n" +
 	"\"OVERHEAD_BASIS_PER_MATERIAL_DOLLAR\x10\x01\x12\"\n" +
 	"\x1eOVERHEAD_BASIS_PER_LABOUR_HOUR\x10\x02\x12\x1a\n" +
-	"\x16OVERHEAD_BASIS_PER_LAA\x10\x032\x8b\x06\n" +
+	"\x16OVERHEAD_BASIS_PER_LAA\x10\x03*y\n" +
+	"\x0eWIPChargeBasis\x12 \n" +
+	"\x1cWIP_CHARGE_BASIS_UNSPECIFIED\x10\x00\x12#\n" +
+	"\x1fWIP_CHARGE_BASIS_CHARGED_VOLUME\x10\x01\x12 \n" +
+	"\x1cWIP_CHARGE_BASIS_CHARGED_LAA\x10\x022\xb7\b\n" +
 	"\x0eCostingService\x12Z\n" +
 	"\rSaveCostRates\x12#.stillhouse.v1.SaveCostRatesRequest\x1a$.stillhouse.v1.SaveCostRatesResponse\x12Z\n" +
 	"\rListCostRates\x12#.stillhouse.v1.ListCostRatesRequest\x1a$.stillhouse.v1.ListCostRatesResponse\x12`\n" +
@@ -1613,7 +2146,10 @@ const file_stillhouse_v1_costing_proto_rawDesc = "" +
 	"\n" +
 	"ListLabour\x12 .stillhouse.v1.ListLabourRequest\x1a!.stillhouse.v1.ListLabourResponse\x12l\n" +
 	"\x13BottlingRunFullCost\x12).stillhouse.v1.BottlingRunFullCostRequest\x1a*.stillhouse.v1.BottlingRunFullCostResponse\x12]\n" +
-	"\x0eInventoryValue\x12$.stillhouse.v1.InventoryValueRequest\x1a%.stillhouse.v1.InventoryValueResponseB\xd0\x01\n" +
+	"\x0eInventoryValue\x12$.stillhouse.v1.InventoryValueRequest\x1a%.stillhouse.v1.InventoryValueResponse\x12Z\n" +
+	"\rWIPProduction\x12#.stillhouse.v1.WIPProductionRequest\x1a$.stillhouse.v1.WIPProductionResponse\x12f\n" +
+	"\x11GetWIPChargeBasis\x12'.stillhouse.v1.GetWIPChargeBasisRequest\x1a(.stillhouse.v1.GetWIPChargeBasisResponse\x12f\n" +
+	"\x11SetWIPChargeBasis\x12'.stillhouse.v1.SetWIPChargeBasisRequest\x1a(.stillhouse.v1.SetWIPChargeBasisResponseB\xd0\x01\n" +
 	"\x11com.stillhouse.v1B\fCostingProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1628,73 +2164,92 @@ func file_stillhouse_v1_costing_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_costing_proto_rawDescData
 }
 
-var file_stillhouse_v1_costing_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_costing_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_stillhouse_v1_costing_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_stillhouse_v1_costing_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_stillhouse_v1_costing_proto_goTypes = []any{
 	(OverheadBasis)(0),                  // 0: stillhouse.v1.OverheadBasis
-	(*CostRates)(nil),                   // 1: stillhouse.v1.CostRates
-	(*SaveCostRatesRequest)(nil),        // 2: stillhouse.v1.SaveCostRatesRequest
-	(*SaveCostRatesResponse)(nil),       // 3: stillhouse.v1.SaveCostRatesResponse
-	(*ListCostRatesRequest)(nil),        // 4: stillhouse.v1.ListCostRatesRequest
-	(*ListCostRatesResponse)(nil),       // 5: stillhouse.v1.ListCostRatesResponse
-	(*DeleteCostRatesRequest)(nil),      // 6: stillhouse.v1.DeleteCostRatesRequest
-	(*DeleteCostRatesResponse)(nil),     // 7: stillhouse.v1.DeleteCostRatesResponse
-	(*LabourSubject)(nil),               // 8: stillhouse.v1.LabourSubject
-	(*LabourEntry)(nil),                 // 9: stillhouse.v1.LabourEntry
-	(*RecordLabourRequest)(nil),         // 10: stillhouse.v1.RecordLabourRequest
-	(*RecordLabourResponse)(nil),        // 11: stillhouse.v1.RecordLabourResponse
-	(*DeleteLabourEntryRequest)(nil),    // 12: stillhouse.v1.DeleteLabourEntryRequest
-	(*DeleteLabourEntryResponse)(nil),   // 13: stillhouse.v1.DeleteLabourEntryResponse
-	(*ListLabourRequest)(nil),           // 14: stillhouse.v1.ListLabourRequest
-	(*ListLabourResponse)(nil),          // 15: stillhouse.v1.ListLabourResponse
-	(*CostComponent)(nil),               // 16: stillhouse.v1.CostComponent
-	(*BottlingRunFullCostRequest)(nil),  // 17: stillhouse.v1.BottlingRunFullCostRequest
-	(*BottlingRunFullCostResponse)(nil), // 18: stillhouse.v1.BottlingRunFullCostResponse
-	(*InventoryValueLine)(nil),          // 19: stillhouse.v1.InventoryValueLine
-	(*InventoryBucket)(nil),             // 20: stillhouse.v1.InventoryBucket
-	(*InventoryValueRequest)(nil),       // 21: stillhouse.v1.InventoryValueRequest
-	(*InventoryValueResponse)(nil),      // 22: stillhouse.v1.InventoryValueResponse
-	(*timestamppb.Timestamp)(nil),       // 23: google.protobuf.Timestamp
+	(WIPChargeBasis)(0),                 // 1: stillhouse.v1.WIPChargeBasis
+	(*CostRates)(nil),                   // 2: stillhouse.v1.CostRates
+	(*SaveCostRatesRequest)(nil),        // 3: stillhouse.v1.SaveCostRatesRequest
+	(*SaveCostRatesResponse)(nil),       // 4: stillhouse.v1.SaveCostRatesResponse
+	(*ListCostRatesRequest)(nil),        // 5: stillhouse.v1.ListCostRatesRequest
+	(*ListCostRatesResponse)(nil),       // 6: stillhouse.v1.ListCostRatesResponse
+	(*DeleteCostRatesRequest)(nil),      // 7: stillhouse.v1.DeleteCostRatesRequest
+	(*DeleteCostRatesResponse)(nil),     // 8: stillhouse.v1.DeleteCostRatesResponse
+	(*LabourSubject)(nil),               // 9: stillhouse.v1.LabourSubject
+	(*LabourEntry)(nil),                 // 10: stillhouse.v1.LabourEntry
+	(*RecordLabourRequest)(nil),         // 11: stillhouse.v1.RecordLabourRequest
+	(*RecordLabourResponse)(nil),        // 12: stillhouse.v1.RecordLabourResponse
+	(*DeleteLabourEntryRequest)(nil),    // 13: stillhouse.v1.DeleteLabourEntryRequest
+	(*DeleteLabourEntryResponse)(nil),   // 14: stillhouse.v1.DeleteLabourEntryResponse
+	(*ListLabourRequest)(nil),           // 15: stillhouse.v1.ListLabourRequest
+	(*ListLabourResponse)(nil),          // 16: stillhouse.v1.ListLabourResponse
+	(*CostComponent)(nil),               // 17: stillhouse.v1.CostComponent
+	(*BottlingRunFullCostRequest)(nil),  // 18: stillhouse.v1.BottlingRunFullCostRequest
+	(*BottlingRunFullCostResponse)(nil), // 19: stillhouse.v1.BottlingRunFullCostResponse
+	(*InventoryValueLine)(nil),          // 20: stillhouse.v1.InventoryValueLine
+	(*InventoryBucket)(nil),             // 21: stillhouse.v1.InventoryBucket
+	(*InventoryValueRequest)(nil),       // 22: stillhouse.v1.InventoryValueRequest
+	(*InventoryValueResponse)(nil),      // 23: stillhouse.v1.InventoryValueResponse
+	(*WIPGauge)(nil),                    // 24: stillhouse.v1.WIPGauge
+	(*WIPProductionRequest)(nil),        // 25: stillhouse.v1.WIPProductionRequest
+	(*WIPProductionResponse)(nil),       // 26: stillhouse.v1.WIPProductionResponse
+	(*SetWIPChargeBasisRequest)(nil),    // 27: stillhouse.v1.SetWIPChargeBasisRequest
+	(*SetWIPChargeBasisResponse)(nil),   // 28: stillhouse.v1.SetWIPChargeBasisResponse
+	(*GetWIPChargeBasisRequest)(nil),    // 29: stillhouse.v1.GetWIPChargeBasisRequest
+	(*GetWIPChargeBasisResponse)(nil),   // 30: stillhouse.v1.GetWIPChargeBasisResponse
+	(*timestamppb.Timestamp)(nil),       // 31: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_costing_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.CostRates.overhead_basis:type_name -> stillhouse.v1.OverheadBasis
-	23, // 1: stillhouse.v1.CostRates.created_at:type_name -> google.protobuf.Timestamp
+	31, // 1: stillhouse.v1.CostRates.created_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.SaveCostRatesRequest.overhead_basis:type_name -> stillhouse.v1.OverheadBasis
-	1,  // 3: stillhouse.v1.SaveCostRatesResponse.rates:type_name -> stillhouse.v1.CostRates
-	1,  // 4: stillhouse.v1.ListCostRatesResponse.rates:type_name -> stillhouse.v1.CostRates
-	8,  // 5: stillhouse.v1.LabourEntry.subject:type_name -> stillhouse.v1.LabourSubject
-	23, // 6: stillhouse.v1.LabourEntry.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 7: stillhouse.v1.RecordLabourRequest.subject:type_name -> stillhouse.v1.LabourSubject
-	9,  // 8: stillhouse.v1.RecordLabourResponse.entry:type_name -> stillhouse.v1.LabourEntry
-	8,  // 9: stillhouse.v1.ListLabourRequest.subject:type_name -> stillhouse.v1.LabourSubject
-	9,  // 10: stillhouse.v1.ListLabourResponse.entries:type_name -> stillhouse.v1.LabourEntry
-	16, // 11: stillhouse.v1.BottlingRunFullCostResponse.materials:type_name -> stillhouse.v1.CostComponent
-	16, // 12: stillhouse.v1.BottlingRunFullCostResponse.labour:type_name -> stillhouse.v1.CostComponent
-	16, // 13: stillhouse.v1.BottlingRunFullCostResponse.overhead:type_name -> stillhouse.v1.CostComponent
-	19, // 14: stillhouse.v1.InventoryBucket.lines:type_name -> stillhouse.v1.InventoryValueLine
-	20, // 15: stillhouse.v1.InventoryValueResponse.wip:type_name -> stillhouse.v1.InventoryBucket
-	20, // 16: stillhouse.v1.InventoryValueResponse.finished_goods:type_name -> stillhouse.v1.InventoryBucket
-	2,  // 17: stillhouse.v1.CostingService.SaveCostRates:input_type -> stillhouse.v1.SaveCostRatesRequest
-	4,  // 18: stillhouse.v1.CostingService.ListCostRates:input_type -> stillhouse.v1.ListCostRatesRequest
-	6,  // 19: stillhouse.v1.CostingService.DeleteCostRates:input_type -> stillhouse.v1.DeleteCostRatesRequest
-	10, // 20: stillhouse.v1.CostingService.RecordLabour:input_type -> stillhouse.v1.RecordLabourRequest
-	12, // 21: stillhouse.v1.CostingService.DeleteLabourEntry:input_type -> stillhouse.v1.DeleteLabourEntryRequest
-	14, // 22: stillhouse.v1.CostingService.ListLabour:input_type -> stillhouse.v1.ListLabourRequest
-	17, // 23: stillhouse.v1.CostingService.BottlingRunFullCost:input_type -> stillhouse.v1.BottlingRunFullCostRequest
-	21, // 24: stillhouse.v1.CostingService.InventoryValue:input_type -> stillhouse.v1.InventoryValueRequest
-	3,  // 25: stillhouse.v1.CostingService.SaveCostRates:output_type -> stillhouse.v1.SaveCostRatesResponse
-	5,  // 26: stillhouse.v1.CostingService.ListCostRates:output_type -> stillhouse.v1.ListCostRatesResponse
-	7,  // 27: stillhouse.v1.CostingService.DeleteCostRates:output_type -> stillhouse.v1.DeleteCostRatesResponse
-	11, // 28: stillhouse.v1.CostingService.RecordLabour:output_type -> stillhouse.v1.RecordLabourResponse
-	13, // 29: stillhouse.v1.CostingService.DeleteLabourEntry:output_type -> stillhouse.v1.DeleteLabourEntryResponse
-	15, // 30: stillhouse.v1.CostingService.ListLabour:output_type -> stillhouse.v1.ListLabourResponse
-	18, // 31: stillhouse.v1.CostingService.BottlingRunFullCost:output_type -> stillhouse.v1.BottlingRunFullCostResponse
-	22, // 32: stillhouse.v1.CostingService.InventoryValue:output_type -> stillhouse.v1.InventoryValueResponse
-	25, // [25:33] is the sub-list for method output_type
-	17, // [17:25] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	2,  // 3: stillhouse.v1.SaveCostRatesResponse.rates:type_name -> stillhouse.v1.CostRates
+	2,  // 4: stillhouse.v1.ListCostRatesResponse.rates:type_name -> stillhouse.v1.CostRates
+	9,  // 5: stillhouse.v1.LabourEntry.subject:type_name -> stillhouse.v1.LabourSubject
+	31, // 6: stillhouse.v1.LabourEntry.created_at:type_name -> google.protobuf.Timestamp
+	9,  // 7: stillhouse.v1.RecordLabourRequest.subject:type_name -> stillhouse.v1.LabourSubject
+	10, // 8: stillhouse.v1.RecordLabourResponse.entry:type_name -> stillhouse.v1.LabourEntry
+	9,  // 9: stillhouse.v1.ListLabourRequest.subject:type_name -> stillhouse.v1.LabourSubject
+	10, // 10: stillhouse.v1.ListLabourResponse.entries:type_name -> stillhouse.v1.LabourEntry
+	17, // 11: stillhouse.v1.BottlingRunFullCostResponse.materials:type_name -> stillhouse.v1.CostComponent
+	17, // 12: stillhouse.v1.BottlingRunFullCostResponse.labour:type_name -> stillhouse.v1.CostComponent
+	17, // 13: stillhouse.v1.BottlingRunFullCostResponse.overhead:type_name -> stillhouse.v1.CostComponent
+	20, // 14: stillhouse.v1.InventoryBucket.lines:type_name -> stillhouse.v1.InventoryValueLine
+	21, // 15: stillhouse.v1.InventoryValueResponse.wip:type_name -> stillhouse.v1.InventoryBucket
+	21, // 16: stillhouse.v1.InventoryValueResponse.finished_goods:type_name -> stillhouse.v1.InventoryBucket
+	24, // 17: stillhouse.v1.WIPProductionResponse.gauges:type_name -> stillhouse.v1.WIPGauge
+	1,  // 18: stillhouse.v1.WIPProductionResponse.basis:type_name -> stillhouse.v1.WIPChargeBasis
+	1,  // 19: stillhouse.v1.SetWIPChargeBasisRequest.basis:type_name -> stillhouse.v1.WIPChargeBasis
+	1,  // 20: stillhouse.v1.SetWIPChargeBasisResponse.basis:type_name -> stillhouse.v1.WIPChargeBasis
+	1,  // 21: stillhouse.v1.GetWIPChargeBasisResponse.basis:type_name -> stillhouse.v1.WIPChargeBasis
+	3,  // 22: stillhouse.v1.CostingService.SaveCostRates:input_type -> stillhouse.v1.SaveCostRatesRequest
+	5,  // 23: stillhouse.v1.CostingService.ListCostRates:input_type -> stillhouse.v1.ListCostRatesRequest
+	7,  // 24: stillhouse.v1.CostingService.DeleteCostRates:input_type -> stillhouse.v1.DeleteCostRatesRequest
+	11, // 25: stillhouse.v1.CostingService.RecordLabour:input_type -> stillhouse.v1.RecordLabourRequest
+	13, // 26: stillhouse.v1.CostingService.DeleteLabourEntry:input_type -> stillhouse.v1.DeleteLabourEntryRequest
+	15, // 27: stillhouse.v1.CostingService.ListLabour:input_type -> stillhouse.v1.ListLabourRequest
+	18, // 28: stillhouse.v1.CostingService.BottlingRunFullCost:input_type -> stillhouse.v1.BottlingRunFullCostRequest
+	22, // 29: stillhouse.v1.CostingService.InventoryValue:input_type -> stillhouse.v1.InventoryValueRequest
+	25, // 30: stillhouse.v1.CostingService.WIPProduction:input_type -> stillhouse.v1.WIPProductionRequest
+	29, // 31: stillhouse.v1.CostingService.GetWIPChargeBasis:input_type -> stillhouse.v1.GetWIPChargeBasisRequest
+	27, // 32: stillhouse.v1.CostingService.SetWIPChargeBasis:input_type -> stillhouse.v1.SetWIPChargeBasisRequest
+	4,  // 33: stillhouse.v1.CostingService.SaveCostRates:output_type -> stillhouse.v1.SaveCostRatesResponse
+	6,  // 34: stillhouse.v1.CostingService.ListCostRates:output_type -> stillhouse.v1.ListCostRatesResponse
+	8,  // 35: stillhouse.v1.CostingService.DeleteCostRates:output_type -> stillhouse.v1.DeleteCostRatesResponse
+	12, // 36: stillhouse.v1.CostingService.RecordLabour:output_type -> stillhouse.v1.RecordLabourResponse
+	14, // 37: stillhouse.v1.CostingService.DeleteLabourEntry:output_type -> stillhouse.v1.DeleteLabourEntryResponse
+	16, // 38: stillhouse.v1.CostingService.ListLabour:output_type -> stillhouse.v1.ListLabourResponse
+	19, // 39: stillhouse.v1.CostingService.BottlingRunFullCost:output_type -> stillhouse.v1.BottlingRunFullCostResponse
+	23, // 40: stillhouse.v1.CostingService.InventoryValue:output_type -> stillhouse.v1.InventoryValueResponse
+	26, // 41: stillhouse.v1.CostingService.WIPProduction:output_type -> stillhouse.v1.WIPProductionResponse
+	30, // 42: stillhouse.v1.CostingService.GetWIPChargeBasis:output_type -> stillhouse.v1.GetWIPChargeBasisResponse
+	28, // 43: stillhouse.v1.CostingService.SetWIPChargeBasis:output_type -> stillhouse.v1.SetWIPChargeBasisResponse
+	33, // [33:44] is the sub-list for method output_type
+	22, // [22:33] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_costing_proto_init() }
@@ -1707,8 +2262,8 @@ func file_stillhouse_v1_costing_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_costing_proto_rawDesc), len(file_stillhouse_v1_costing_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   22,
+			NumEnums:      2,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

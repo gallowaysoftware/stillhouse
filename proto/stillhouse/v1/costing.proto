@@ -172,6 +172,63 @@ message InventoryValueResponse {
   string basis = 4;
 }
 
+// How a fermentation's cost is apportioned across the distillation runs it
+// was charged to. Unset is a refusal, not a default: which of these is
+// right is the licensee's accounting policy, and a WIP figure produced on
+// a convention nobody chose would reconcile and never be questioned.
+enum WIPChargeBasis {
+  WIP_CHARGE_BASIS_UNSPECIFIED = 0;
+  // Cost follows litres of wash charged to the still.
+  WIP_CHARGE_BASIS_CHARGED_VOLUME = 1;
+  // Cost follows litres of absolute alcohol charged. A low-wines run and a
+  // spirit run drawing the same litres do not carry the same alcohol.
+  WIP_CHARGE_BASIS_CHARGED_LAA = 2;
+}
+
+message WIPGauge {
+  string id = 1;
+  string gauge_date = 2;
+  double laa = 3;
+  string container_name = 4;
+  // The cost this gauge carried into work in progress. available is false
+  // when the walk back to the mashes refused, and missing says why —
+  // an unvalued gauge is not a gauge worth nothing.
+  double amount_cad = 5;
+  bool   available = 6;
+  string missing = 7;
+  string basis = 8;
+  // How many distillation charges the walk went through. More than one
+  // means the spirit came from several fermentations and the cost is a
+  // blend of their mashes.
+  int32  charge_count = 9;
+}
+
+message WIPProductionRequest {
+  string period_start = 1;  // ISO date, inclusive
+  string period_end = 2;    // ISO date, inclusive
+}
+message WIPProductionResponse {
+  repeated WIPGauge gauges = 1;
+  // total_cad is the sum of the gauges that could be valued; valued_count
+  // says how many that was. A total over eleven gauges of which three are
+  // unvalued is not the period's WIP, and the two together make that
+  // visible.
+  double total_cad = 2;
+  int32  valued_count = 3;
+  double total_laa = 4;
+  double valued_laa = 5;
+  bool   complete = 6;
+  // Set when the licensee has not stated a charge basis. Everything above
+  // is empty when it is.
+  string refused = 7;
+  WIPChargeBasis basis = 8;
+}
+
+message SetWIPChargeBasisRequest { WIPChargeBasis basis = 1; }
+message SetWIPChargeBasisResponse { WIPChargeBasis basis = 1; }
+message GetWIPChargeBasisRequest {}
+message GetWIPChargeBasisResponse { WIPChargeBasis basis = 1; }
+
 service CostingService {
   rpc SaveCostRates(SaveCostRatesRequest) returns (SaveCostRatesResponse);
   rpc ListCostRates(ListCostRatesRequest) returns (ListCostRatesResponse);
@@ -183,4 +240,10 @@ service CostingService {
 
   rpc BottlingRunFullCost(BottlingRunFullCostRequest) returns (BottlingRunFullCostResponse);
   rpc InventoryValue(InventoryValueRequest) returns (InventoryValueResponse);
+
+  // Spirit gauged into work in progress, valued by walking forward from
+  // the mashes behind it. PLAN E7.
+  rpc WIPProduction(WIPProductionRequest) returns (WIPProductionResponse);
+  rpc GetWIPChargeBasis(GetWIPChargeBasisRequest) returns (GetWIPChargeBasisResponse);
+  rpc SetWIPChargeBasis(SetWIPChargeBasisRequest) returns (SetWIPChargeBasisResponse);
 }

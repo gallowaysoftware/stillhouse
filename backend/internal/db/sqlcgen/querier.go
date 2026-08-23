@@ -418,6 +418,7 @@ type Querier interface {
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
 	GetUserTOTP(ctx context.Context, userID uuid.UUID) (UserTotp, error)
+	GetWIPChargeBasis(ctx context.Context, id uuid.UUID) (NullWipChargeBasis, error)
 	GetWorkOrder(ctx context.Context, id uuid.UUID) (WorkOrder, error)
 	// Holding does NOT clear the release. A lot held after release is a
 	// recall in its early form, and erasing the fact that somebody released
@@ -727,6 +728,35 @@ type Querier interface {
 	// recomputed every time it is generated, so comparing against one would
 	// compare a figure against itself and always agree.
 	PriorFiledB266Period(ctx context.Context, periodStart pgtype.Date) (B266Period, error)
+	// Spirit gauged into bulk, valued by walking forward from the mashes
+	// behind it. PLAN E7.
+	//
+	// Four steps, three of which have a recorded basis and need no convention:
+	//
+	//   mash_cost      what the mash's materials cost, at the lot each came
+	//                  from. priced is false when any usage has no lot or the
+	//                  lot has no cost — the mash is then unvalued rather than
+	//                  cheap, and the difference is reported.
+	//   ferment_share  a mash that fed one fermentation gives it everything.
+	//                  One that fed several splits by initial_volume_l, and
+	//                  refuses (NULL) if any of them is missing it, because a
+	//                  share computed over the ones that happen to have a
+	//                  volume would silently overstate them.
+	//   charge_share   a fermentation's share of each still it was charged
+	//                  to, on the licensee's stated basis: litres charged or
+	//                  LAA charged. The denominator is every charge that
+	//                  fermentation made, not only the ones inside the
+	//                  reporting period, because the share is a property of
+	//                  the fermentation.
+	//   gauge          production_gauges is UNIQUE on distillation_run_id, so
+	//                  a run's cost is its gauge's cost entire.
+	//
+	// A fermentation whose wash was never fully charged leaves cost behind on
+	// purpose. Wash that never reached a still is not work in progress; it is
+	// a loss, and allocating it to the spirit that did get made would inflate
+	// the value of that spirit. unallocated_cad reports what stayed behind so
+	// it is visible rather than merely absent.
+	ProductionGaugeWIPCost(ctx context.Context, arg ProductionGaugeWIPCostParams) ([]ProductionGaugeWIPCostRow, error)
 	// Unfiled periods with a due date on or before a day, for the alert
 	// evaluator. A definition with no recorded due-days produces periods
 	// with a NULL due_on, which cannot be overdue and is not alerted on —
@@ -890,6 +920,8 @@ type Querier interface {
 	// argument), so it cannot leak across pooled connections.
 	SetTenantContext(ctx context.Context, setConfig string) error
 	SetUserAlertEmail(ctx context.Context, arg SetUserAlertEmailParams) (User, error)
+	// Stated by the licensee, never defaulted. See 000061.
+	SetWIPChargeBasis(ctx context.Context, arg SetWIPChargeBasisParams) (NullWipChargeBasis, error)
 	// started_at and completed_at are stamped by the transition rather than
 	// supplied, so "when did this actually start" is a fact rather than
 	// something somebody typed afterwards.

@@ -132,14 +132,6 @@ regime; spirits do not, but returns still happen.
 
 ## Track E — purchasing and cost
 
-### E7 · Production into work in progress — P2
-
-Stage 178 emits the transfer *out* of WIP at bottling, at the full cost of the
-run that drew it. Its twin — spirit gauged into WIP at production — still has
-no line, because valuing it means walking forward from the mashes to each gauge
-and apportioning a mash that fed several of them. That apportionment is a
-convention Stillhouse does not have; 000040's argument stands until it does.
-
 ---
 
 ## Track F — planning and operations
