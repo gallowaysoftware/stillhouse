@@ -47,6 +47,10 @@ cd backend && go test ./...
 # DB-backed tests need one DSN — the superuser one. The pool the code
 # under test runs through is derived from it with SET ROLE stillhouse_app
 # (internal/testdb), so the tests exercise RLS the way production does.
+#
+# One run at a time: the suite owns the database while it runs. Two
+# concurrent runs against one database collide and fail somewhere
+# unrelated to the cause.
 cd backend && STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN=\
   "postgres://stillhouse:stillhouse@localhost:5432/stillhouse?sslmode=disable" \
   go test ./...

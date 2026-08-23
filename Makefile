@@ -137,6 +137,13 @@ test: ## Run all unit tests.
 
 test-integration: ## Run DB-backed tests against the local Postgres (requires dev-up).
 	@set -euo pipefail
+	# One run at a time. The DB-backed suite owns the database while it
+	# runs: stage 153 stopped the packages within a single run from
+	# interfering with each other, but two concurrent `go test` runs
+	# against one database still collide — a period one run submits is
+	# visible to the other, and the failure surfaces as an unrelated
+	# assertion somewhere else. If a release fails here for no reason
+	# you can see, check nothing else is running the suite.
 	# One DSN is enough since stage 153: the pool the code under test runs
 	# through is derived from the admin one with SET ROLE, so the tests
 	# exercise RLS the way production does without a second password to
