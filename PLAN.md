@@ -117,13 +117,13 @@ B269 authorization for separate returns per branch or division. `F1` shipped in
 stage 170, so there is now something to divide by; what is left is the
 authorization itself and a return scoped to one location.
 
-### B6 · Licence renewal and security tracking — **shipped, stage 162**
+### B6 · Licence security sufficiency — P2
 
-Two-year terms, the 30-day renewal window and the s.23 security all became
-alerts once `B1` gave them a subject. What is left of this item is the parts
-that are not reminders: tracking whether the posted security is *sufficient*
-to cover amounts owing, which needs the duty liability at a point in time
-rather than a date.
+The renewal reminders shipped in stage 162: two-year terms, the 30-day window
+and the s.23 security expiry are all alerts now that `B1` gives them a subject.
+What is left is the part that is not a reminder — whether the posted security is
+*sufficient* to cover amounts owing, which needs the duty liability at a point
+in time rather than a date.
 
 ---
 
