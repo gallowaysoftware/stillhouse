@@ -211,6 +211,7 @@ type Querier interface {
 	// lot with no run as unvalued rather than free — see the accounting
 	// journal's cost-of-sales line.
 	CreatePackagedInventoryAdopted(ctx context.Context, arg CreatePackagedInventoryAdoptedParams) (PackagedInventory, error)
+	CreatePackagedReturn(ctx context.Context, arg CreatePackagedReturnParams) (PackagedReturn, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
 	CreatePriceList(ctx context.Context, arg CreatePriceListParams) (PriceList, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
@@ -615,6 +616,7 @@ type Querier interface {
 	// back to the client for an aging calc. packaged_inventory.bottling_run_id
 	// is nullable to support backfill cases.
 	ListPackagedInventory(ctx context.Context, includeEmpty bool) ([]ListPackagedInventoryRow, error)
+	ListPackagedReturns(ctx context.Context, rowLimit int32) ([]ListPackagedReturnsRow, error)
 	ListPriceListEntries(ctx context.Context, priceListID uuid.UUID) ([]ListPriceListEntriesRow, error)
 	// as_of empty means every list; otherwise only those in force that day.
 	ListPriceLists(ctx context.Context, asOf pgtype.Date) ([]PriceList, error)
@@ -732,6 +734,7 @@ type Querier interface {
 	NextMarkedContainerNo(ctx context.Context) (int32, error)
 	NextMarkedDeliveryNo(ctx context.Context) (int32, error)
 	NextMashNo(ctx context.Context) (int32, error)
+	NextPackagedReturnNo(ctx context.Context) (int32, error)
 	NextPurchaseOrderNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
 	NextRemovalNo(ctx context.Context) (int32, error)
@@ -896,6 +899,11 @@ type Querier interface {
 	// any skew either resolves alerts that are still true or leaves ones
 	// that are not. This must run in the same transaction as the upserts.
 	ResolveStaleAlerts(ctx context.Context, kinds []string) ([]Alert, error)
+	// Only a saleable return restocks; the caller decides, and passes zero for
+	// one that does not. bottles_removed is reduced too, so the lot's own
+	// arithmetic — packaged, removed, on hand — still ties out. Without that
+	// a returned bottle would show as both removed and on hand.
+	RestockFromReturn(ctx context.Context, arg RestockFromReturnParams) (PackagedInventory, error)
 	// The 30% single-retail-store supply rule (EDM8-1-1 ¶20): a licensee may
 	// not supply more than 30% of a retail store's stock from its own
 	// production. What Stillhouse can compute is its own side of that —
@@ -1166,6 +1174,14 @@ type Querier interface {
 	// already treat voids. The period lock stops that arising for a period
 	// already filed.
 	SumPackagedOnHandAsOf(ctx context.Context, asOf pgtype.Date) (SumPackagedOnHandAsOfRow, error)
+	// Product that came back from the duty-paid market during the period.
+	//
+	// Reported on the return as information, and deliberately NOT netted
+	// against anything. Duty crystallised when these goods were packaged or
+	// removed and does not un-crystallise because they came back; recovering
+	// it is a refund claim with a B256 behind it (PLAN A9). A return that
+	// quietly reduced duty payable would understate a filed return.
+	SumPackagedReturnsInPeriod(ctx context.Context, arg SumPackagedReturnsInPeriodParams) (SumPackagedReturnsInPeriodRow, error)
 	// Split by rate band, because the two bands are not taxed in the same
 	// unit: spirits above 7% ABV pay per litre of absolute alcohol, at or
 	// below 7% pay per litre of product. Reporting one blended "rate per LAA"
@@ -1272,6 +1288,7 @@ type Querier interface {
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)
 	VoidInvoice(ctx context.Context, arg VoidInvoiceParams) (Invoice, error)
 	VoidMarkedDelivery(ctx context.Context, arg VoidMarkedDeliveryParams) (MarkedContainerDelivery, error)
+	VoidPackagedReturn(ctx context.Context, arg VoidPackagedReturnParams) (PackagedReturn, error)
 	VoidRemoval(ctx context.Context, arg VoidRemovalParams) (PackagingRemoval, error)
 }
 

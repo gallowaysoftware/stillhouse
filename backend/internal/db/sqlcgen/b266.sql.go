@@ -847,6 +847,25 @@ WITH running AS (
            COALESCE(SUM(bottles_removed), 0)::int AS bottles
     FROM packaging_removals
     WHERE removal_date >= $1 AND voided_at IS NULL
+), returned_after AS (
+    -- Stage 198. A saleable return adds bottles back to
+    -- packaged_inventory, so it is inside ` + "`" + `running` + "`" + ` above and has to be
+    -- undone here exactly as a run or a removal is. Leaving it out would
+    -- do precisely what the adjustment note below warns about: change a
+    -- balance with nothing in the walk to undo, silently restating a
+    -- period already filed.
+    --
+    -- Unsaleable returns never restocked, so they are not here. LAA on
+    -- the same bottles × size × strength basis the rest of this query
+    -- uses, so the two sides subtract cleanly.
+    SELECT COALESCE(SUM(r.bottles * p.bottle_size_ml * p.target_abv_pct / 100000.0), 0)::double precision AS laa,
+           COALESCE(SUM(r.bottles), 0)::int AS bottles
+    FROM packaged_returns r
+    JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+    JOIN products p            ON p.id = pi.product_id
+    WHERE r.returned_on >= $1
+      AND r.voided_at IS NULL
+      AND r.condition = 'saleable'
 ), adjusted_after AS (
     -- Stage 186. Until it, packaged inventory only ever gained from a
     -- run and lost to a removal, and this walk relied on that. A count
@@ -860,10 +879,10 @@ WITH running AS (
     WHERE occurred_on >= $1
 )
 SELECT (running.total_laa     - packaged_after.laa     + removed_after.laa
-        - adjusted_after.laa)::double precision AS total_laa,
+        - adjusted_after.laa   - returned_after.laa)::double precision AS total_laa,
        (running.total_bottles - packaged_after.bottles + removed_after.bottles
-        - adjusted_after.bottles)::int          AS total_bottles
-FROM running, packaged_after, removed_after, adjusted_after
+        - adjusted_after.bottles - returned_after.bottles)::int          AS total_bottles
+FROM running, packaged_after, removed_after, adjusted_after, returned_after
 `
 
 type SumPackagedOnHandAsOfRow struct {
@@ -888,6 +907,53 @@ func (q *Queries) SumPackagedOnHandAsOf(ctx context.Context, asOf pgtype.Date) (
 	row := q.db.QueryRow(ctx, sumPackagedOnHandAsOf, asOf)
 	var i SumPackagedOnHandAsOfRow
 	err := row.Scan(&i.TotalLaa, &i.TotalBottles)
+	return i, err
+}
+
+const sumPackagedReturnsInPeriod = `-- name: SumPackagedReturnsInPeriod :one
+SELECT COUNT(*)::int AS n,
+       COALESCE(SUM(r.bottles) FILTER (WHERE r.condition = 'saleable'), 0)::int AS saleable_bottles,
+       COALESCE(SUM(r.bottles) FILTER (WHERE r.condition = 'unsaleable'), 0)::int AS unsaleable_bottles,
+       COALESCE(SUM(r.bottles * p.bottle_size_ml * p.target_abv_pct / 100000.0), 0)::double precision AS laa,
+       COALESCE(SUM(r.duty_paid_cad), 0)::numeric AS duty_paid_cad
+FROM packaged_returns r
+JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+JOIN products p            ON p.id = pi.product_id
+WHERE r.returned_on >= $1::date
+  AND r.returned_on <= $2::date
+  AND r.voided_at IS NULL
+`
+
+type SumPackagedReturnsInPeriodParams struct {
+	PeriodStart pgtype.Date `json:"period_start"`
+	PeriodEnd   pgtype.Date `json:"period_end"`
+}
+
+type SumPackagedReturnsInPeriodRow struct {
+	N                 int32          `json:"n"`
+	SaleableBottles   int32          `json:"saleable_bottles"`
+	UnsaleableBottles int32          `json:"unsaleable_bottles"`
+	Laa               float64        `json:"laa"`
+	DutyPaidCad       pgtype.Numeric `json:"duty_paid_cad"`
+}
+
+// Product that came back from the duty-paid market during the period.
+//
+// Reported on the return as information, and deliberately NOT netted
+// against anything. Duty crystallised when these goods were packaged or
+// removed and does not un-crystallise because they came back; recovering
+// it is a refund claim with a B256 behind it (PLAN A9). A return that
+// quietly reduced duty payable would understate a filed return.
+func (q *Queries) SumPackagedReturnsInPeriod(ctx context.Context, arg SumPackagedReturnsInPeriodParams) (SumPackagedReturnsInPeriodRow, error) {
+	row := q.db.QueryRow(ctx, sumPackagedReturnsInPeriod, arg.PeriodStart, arg.PeriodEnd)
+	var i SumPackagedReturnsInPeriodRow
+	err := row.Scan(
+		&i.N,
+		&i.SaleableBottles,
+		&i.UnsaleableBottles,
+		&i.Laa,
+		&i.DutyPaidCad,
+	)
 	return i, err
 }
 

@@ -124,9 +124,15 @@ special containers (`B3`) but is a distinct asset-tracking problem.
 
 ### D7 · Consignment, returns and credits — P2
 
-Product coming back from the duty-paid market, credit notes, restocking, and
-the refund path in `A9`. Small wine licensees have a specific consignment
-regime; spirits do not, but returns still happen.
+Returns, restocking and credit notes shipped in stage 198. What is left is
+the half that was always going to wait: **the refund itself**. A return
+records that duty was paid and remains paid; claiming it back is a B256
+under s.181/s.182 and is `A9`, blocked on sourcing that form's rules.
+
+Consignment proper — stock at a customer's premises that is still ours —
+is a separate question from a return and is not started. It interacts with
+possession (stage 176) rather than with duty, since the goods have not
+been removed.
 
 ---
 

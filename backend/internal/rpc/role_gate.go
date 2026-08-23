@@ -373,7 +373,14 @@ var procedureMinRole = map[string]minRole{
 	// decision; reading the delivery log is not.
 	// A cask statement is a document about a customer's own property,
 	// assembled from records a viewer can already read one by one.
-	"/stillhouse.v1.BarrelService/CaskStatement":              roleViewer,
+	"/stillhouse.v1.BarrelService/CaskStatement": roleViewer,
+	// A return moves duty-paid stock back onto the shelf, which is an
+	// operator action like a removal — the person on the loading dock is
+	// who knows what came back and what condition it is in. Voiding one
+	// is a correction to the record and sits with the back office.
+	"/stillhouse.v1.RemovalService/ListPackagedReturns":       roleViewer,
+	"/stillhouse.v1.RemovalService/RecordPackagedReturn":      roleOperator,
+	"/stillhouse.v1.RemovalService/VoidPackagedReturn":        roleOwner,
 	"/stillhouse.v1.WebhookService/ListWebhookEndpoints":      roleViewer,
 	"/stillhouse.v1.WebhookService/ListWebhookDeliveries":     roleViewer,
 	"/stillhouse.v1.WebhookService/CreateWebhookEndpoint":     roleOwner,

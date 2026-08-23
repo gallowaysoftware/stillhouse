@@ -83,6 +83,71 @@ func (RemovalDestinationKind) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{0}
 }
 
+// Product coming back from the duty-paid market. PLAN D7.
+//
+// Spirits have no consignment regime the way small wine licensees do, but
+// returns happen: damaged cases, delistings, over-ordering. What a return
+// must never do is quietly undo duty. It crystallised when the goods were
+// packaged or removed, and it does not un-crystallise because they came
+// back — recovering it is a refund claim with a B256 behind it, which is
+// PLAN A9 and is blocked on sourcing that form's rules.
+//
+// So a return here restocks, credits the customer, records that duty was
+// paid and remains paid, and says outright that the refund is a separate
+// claim Stillhouse cannot yet make.
+type PackagedReturnCondition int32
+
+const (
+	PackagedReturnCondition_PACKAGED_RETURN_CONDITION_UNSPECIFIED PackagedReturnCondition = 0
+	// Back into stock: it can be sold again.
+	PackagedReturnCondition_PACKAGED_RETURN_CONDITION_SALEABLE PackagedReturnCondition = 1
+	// Came back but cannot be sold, so it does not restock. Whether its
+	// destruction is relieved is the question EDM3-4-1 asks of any
+	// destruction, and it is answered on the destruction, not here.
+	PackagedReturnCondition_PACKAGED_RETURN_CONDITION_UNSALEABLE PackagedReturnCondition = 2
+)
+
+// Enum value maps for PackagedReturnCondition.
+var (
+	PackagedReturnCondition_name = map[int32]string{
+		0: "PACKAGED_RETURN_CONDITION_UNSPECIFIED",
+		1: "PACKAGED_RETURN_CONDITION_SALEABLE",
+		2: "PACKAGED_RETURN_CONDITION_UNSALEABLE",
+	}
+	PackagedReturnCondition_value = map[string]int32{
+		"PACKAGED_RETURN_CONDITION_UNSPECIFIED": 0,
+		"PACKAGED_RETURN_CONDITION_SALEABLE":    1,
+		"PACKAGED_RETURN_CONDITION_UNSALEABLE":  2,
+	}
+)
+
+func (x PackagedReturnCondition) Enum() *PackagedReturnCondition {
+	p := new(PackagedReturnCondition)
+	*p = x
+	return p
+}
+
+func (x PackagedReturnCondition) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PackagedReturnCondition) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_removal_proto_enumTypes[1].Descriptor()
+}
+
+func (PackagedReturnCondition) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_removal_proto_enumTypes[1]
+}
+
+func (x PackagedReturnCondition) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PackagedReturnCondition.Descriptor instead.
+func (PackagedReturnCondition) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{1}
+}
+
 type PackagingRemoval struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -687,6 +752,565 @@ func (x *VoidRemovalResponse) GetRemoval() *PackagingRemoval {
 	return nil
 }
 
+type PackagedReturn struct {
+	state               protoimpl.MessageState  `protogen:"open.v1"`
+	Id                  string                  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ReturnNo            int32                   `protobuf:"varint,2,opt,name=return_no,json=returnNo,proto3" json:"return_no,omitempty"`
+	PackagedInventoryId string                  `protobuf:"bytes,3,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
+	LotCode             string                  `protobuf:"bytes,4,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
+	ProductName         string                  `protobuf:"bytes,5,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	CustomerId          string                  `protobuf:"bytes,6,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName        string                  `protobuf:"bytes,7,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	RemovalId           string                  `protobuf:"bytes,8,opt,name=removal_id,json=removalId,proto3" json:"removal_id,omitempty"`
+	Bottles             int32                   `protobuf:"varint,9,opt,name=bottles,proto3" json:"bottles,omitempty"`
+	Condition           PackagedReturnCondition `protobuf:"varint,10,opt,name=condition,proto3,enum=stillhouse.v1.PackagedReturnCondition" json:"condition,omitempty"`
+	ReturnedOn          string                  `protobuf:"bytes,11,opt,name=returned_on,json=returnedOn,proto3" json:"returned_on,omitempty"`
+	Reason              string                  `protobuf:"bytes,12,opt,name=reason,proto3" json:"reason,omitempty"`
+	CreditAmountCad     float64                 `protobuf:"fixed64,13,opt,name=credit_amount_cad,json=creditAmountCad,proto3" json:"credit_amount_cad,omitempty"`
+	CreditAmountSet     bool                    `protobuf:"varint,14,opt,name=credit_amount_set,json=creditAmountSet,proto3" json:"credit_amount_set,omitempty"`
+	CreditNoteNo        string                  `protobuf:"bytes,15,opt,name=credit_note_no,json=creditNoteNo,proto3" json:"credit_note_no,omitempty"`
+	DutyPaidCad         float64                 `protobuf:"fixed64,16,opt,name=duty_paid_cad,json=dutyPaidCad,proto3" json:"duty_paid_cad,omitempty"`
+	DutyPaidSet         bool                    `protobuf:"varint,17,opt,name=duty_paid_set,json=dutyPaidSet,proto3" json:"duty_paid_set,omitempty"`
+	Notes               string                  `protobuf:"bytes,18,opt,name=notes,proto3" json:"notes,omitempty"`
+	Voided              bool                    `protobuf:"varint,19,opt,name=voided,proto3" json:"voided,omitempty"`
+	VoidReason          string                  `protobuf:"bytes,20,opt,name=void_reason,json=voidReason,proto3" json:"void_reason,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *PackagedReturn) Reset() {
+	*x = PackagedReturn{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PackagedReturn) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PackagedReturn) ProtoMessage() {}
+
+func (x *PackagedReturn) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PackagedReturn.ProtoReflect.Descriptor instead.
+func (*PackagedReturn) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *PackagedReturn) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetReturnNo() int32 {
+	if x != nil {
+		return x.ReturnNo
+	}
+	return 0
+}
+
+func (x *PackagedReturn) GetPackagedInventoryId() string {
+	if x != nil {
+		return x.PackagedInventoryId
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetLotCode() string {
+	if x != nil {
+		return x.LotCode
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetCustomerName() string {
+	if x != nil {
+		return x.CustomerName
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetRemovalId() string {
+	if x != nil {
+		return x.RemovalId
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetBottles() int32 {
+	if x != nil {
+		return x.Bottles
+	}
+	return 0
+}
+
+func (x *PackagedReturn) GetCondition() PackagedReturnCondition {
+	if x != nil {
+		return x.Condition
+	}
+	return PackagedReturnCondition_PACKAGED_RETURN_CONDITION_UNSPECIFIED
+}
+
+func (x *PackagedReturn) GetReturnedOn() string {
+	if x != nil {
+		return x.ReturnedOn
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetCreditAmountCad() float64 {
+	if x != nil {
+		return x.CreditAmountCad
+	}
+	return 0
+}
+
+func (x *PackagedReturn) GetCreditAmountSet() bool {
+	if x != nil {
+		return x.CreditAmountSet
+	}
+	return false
+}
+
+func (x *PackagedReturn) GetCreditNoteNo() string {
+	if x != nil {
+		return x.CreditNoteNo
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetDutyPaidCad() float64 {
+	if x != nil {
+		return x.DutyPaidCad
+	}
+	return 0
+}
+
+func (x *PackagedReturn) GetDutyPaidSet() bool {
+	if x != nil {
+		return x.DutyPaidSet
+	}
+	return false
+}
+
+func (x *PackagedReturn) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+func (x *PackagedReturn) GetVoided() bool {
+	if x != nil {
+		return x.Voided
+	}
+	return false
+}
+
+func (x *PackagedReturn) GetVoidReason() string {
+	if x != nil {
+		return x.VoidReason
+	}
+	return ""
+}
+
+type RecordPackagedReturnRequest struct {
+	state               protoimpl.MessageState  `protogen:"open.v1"`
+	PackagedInventoryId string                  `protobuf:"bytes,1,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
+	CustomerId          string                  `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	RemovalId           string                  `protobuf:"bytes,3,opt,name=removal_id,json=removalId,proto3" json:"removal_id,omitempty"`
+	Bottles             int32                   `protobuf:"varint,4,opt,name=bottles,proto3" json:"bottles,omitempty"`
+	Condition           PackagedReturnCondition `protobuf:"varint,5,opt,name=condition,proto3,enum=stillhouse.v1.PackagedReturnCondition" json:"condition,omitempty"`
+	ReturnedOn          string                  `protobuf:"bytes,6,opt,name=returned_on,json=returnedOn,proto3" json:"returned_on,omitempty"`
+	Reason              string                  `protobuf:"bytes,7,opt,name=reason,proto3" json:"reason,omitempty"`
+	CreditAmountCad     float64                 `protobuf:"fixed64,8,opt,name=credit_amount_cad,json=creditAmountCad,proto3" json:"credit_amount_cad,omitempty"`
+	CreditAmountSet     bool                    `protobuf:"varint,9,opt,name=credit_amount_set,json=creditAmountSet,proto3" json:"credit_amount_set,omitempty"`
+	CreditNoteNo        string                  `protobuf:"bytes,10,opt,name=credit_note_no,json=creditNoteNo,proto3" json:"credit_note_no,omitempty"`
+	Notes               string                  `protobuf:"bytes,11,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *RecordPackagedReturnRequest) Reset() {
+	*x = RecordPackagedReturnRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordPackagedReturnRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordPackagedReturnRequest) ProtoMessage() {}
+
+func (x *RecordPackagedReturnRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordPackagedReturnRequest.ProtoReflect.Descriptor instead.
+func (*RecordPackagedReturnRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *RecordPackagedReturnRequest) GetPackagedInventoryId() string {
+	if x != nil {
+		return x.PackagedInventoryId
+	}
+	return ""
+}
+
+func (x *RecordPackagedReturnRequest) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *RecordPackagedReturnRequest) GetRemovalId() string {
+	if x != nil {
+		return x.RemovalId
+	}
+	return ""
+}
+
+func (x *RecordPackagedReturnRequest) GetBottles() int32 {
+	if x != nil {
+		return x.Bottles
+	}
+	return 0
+}
+
+func (x *RecordPackagedReturnRequest) GetCondition() PackagedReturnCondition {
+	if x != nil {
+		return x.Condition
+	}
+	return PackagedReturnCondition_PACKAGED_RETURN_CONDITION_UNSPECIFIED
+}
+
+func (x *RecordPackagedReturnRequest) GetReturnedOn() string {
+	if x != nil {
+		return x.ReturnedOn
+	}
+	return ""
+}
+
+func (x *RecordPackagedReturnRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *RecordPackagedReturnRequest) GetCreditAmountCad() float64 {
+	if x != nil {
+		return x.CreditAmountCad
+	}
+	return 0
+}
+
+func (x *RecordPackagedReturnRequest) GetCreditAmountSet() bool {
+	if x != nil {
+		return x.CreditAmountSet
+	}
+	return false
+}
+
+func (x *RecordPackagedReturnRequest) GetCreditNoteNo() string {
+	if x != nil {
+		return x.CreditNoteNo
+	}
+	return ""
+}
+
+func (x *RecordPackagedReturnRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+type RecordPackagedReturnResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	PackagedReturn *PackagedReturn        `protobuf:"bytes,1,opt,name=packaged_return,json=packagedReturn,proto3" json:"packaged_return,omitempty"`
+	// Said on every response, not in the documentation: the operator
+	// recording a return is the person who will otherwise assume the duty
+	// came back with the bottles.
+	DutyNote      string `protobuf:"bytes,2,opt,name=duty_note,json=dutyNote,proto3" json:"duty_note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordPackagedReturnResponse) Reset() {
+	*x = RecordPackagedReturnResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordPackagedReturnResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordPackagedReturnResponse) ProtoMessage() {}
+
+func (x *RecordPackagedReturnResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordPackagedReturnResponse.ProtoReflect.Descriptor instead.
+func (*RecordPackagedReturnResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *RecordPackagedReturnResponse) GetPackagedReturn() *PackagedReturn {
+	if x != nil {
+		return x.PackagedReturn
+	}
+	return nil
+}
+
+func (x *RecordPackagedReturnResponse) GetDutyNote() string {
+	if x != nil {
+		return x.DutyNote
+	}
+	return ""
+}
+
+type ListPackagedReturnsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPackagedReturnsRequest) Reset() {
+	*x = ListPackagedReturnsRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPackagedReturnsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPackagedReturnsRequest) ProtoMessage() {}
+
+func (x *ListPackagedReturnsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPackagedReturnsRequest.ProtoReflect.Descriptor instead.
+func (*ListPackagedReturnsRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ListPackagedReturnsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type ListPackagedReturnsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Returns       []*PackagedReturn      `protobuf:"bytes,1,rep,name=returns,proto3" json:"returns,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPackagedReturnsResponse) Reset() {
+	*x = ListPackagedReturnsResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPackagedReturnsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPackagedReturnsResponse) ProtoMessage() {}
+
+func (x *ListPackagedReturnsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPackagedReturnsResponse.ProtoReflect.Descriptor instead.
+func (*ListPackagedReturnsResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListPackagedReturnsResponse) GetReturns() []*PackagedReturn {
+	if x != nil {
+		return x.Returns
+	}
+	return nil
+}
+
+type VoidPackagedReturnRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Reason        string                 `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VoidPackagedReturnRequest) Reset() {
+	*x = VoidPackagedReturnRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidPackagedReturnRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidPackagedReturnRequest) ProtoMessage() {}
+
+func (x *VoidPackagedReturnRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidPackagedReturnRequest.ProtoReflect.Descriptor instead.
+func (*VoidPackagedReturnRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *VoidPackagedReturnRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *VoidPackagedReturnRequest) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+type VoidPackagedReturnResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	PackagedReturn *PackagedReturn        `protobuf:"bytes,1,opt,name=packaged_return,json=packagedReturn,proto3" json:"packaged_return,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *VoidPackagedReturnResponse) Reset() {
+	*x = VoidPackagedReturnResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VoidPackagedReturnResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VoidPackagedReturnResponse) ProtoMessage() {}
+
+func (x *VoidPackagedReturnResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VoidPackagedReturnResponse.ProtoReflect.Descriptor instead.
+func (*VoidPackagedReturnResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *VoidPackagedReturnResponse) GetPackagedReturn() *PackagedReturn {
+	if x != nil {
+		return x.PackagedReturn
+	}
+	return nil
+}
+
 var File_stillhouse_v1_removal_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_removal_proto_rawDesc = "" +
@@ -748,7 +1372,61 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"P\n" +
 	"\x13VoidRemovalResponse\x129\n" +
-	"\aremoval\x18\x01 \x01(\v2\x1f.stillhouse.v1.PackagingRemovalR\aremoval*\xbc\x02\n" +
+	"\aremoval\x18\x01 \x01(\v2\x1f.stillhouse.v1.PackagingRemovalR\aremoval\"\xc2\x05\n" +
+	"\x0ePackagedReturn\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
+	"\treturn_no\x18\x02 \x01(\x05R\breturnNo\x122\n" +
+	"\x15packaged_inventory_id\x18\x03 \x01(\tR\x13packagedInventoryId\x12\x19\n" +
+	"\blot_code\x18\x04 \x01(\tR\alotCode\x12!\n" +
+	"\fproduct_name\x18\x05 \x01(\tR\vproductName\x12\x1f\n" +
+	"\vcustomer_id\x18\x06 \x01(\tR\n" +
+	"customerId\x12#\n" +
+	"\rcustomer_name\x18\a \x01(\tR\fcustomerName\x12\x1d\n" +
+	"\n" +
+	"removal_id\x18\b \x01(\tR\tremovalId\x12\x18\n" +
+	"\abottles\x18\t \x01(\x05R\abottles\x12D\n" +
+	"\tcondition\x18\n" +
+	" \x01(\x0e2&.stillhouse.v1.PackagedReturnConditionR\tcondition\x12\x1f\n" +
+	"\vreturned_on\x18\v \x01(\tR\n" +
+	"returnedOn\x12\x16\n" +
+	"\x06reason\x18\f \x01(\tR\x06reason\x12*\n" +
+	"\x11credit_amount_cad\x18\r \x01(\x01R\x0fcreditAmountCad\x12*\n" +
+	"\x11credit_amount_set\x18\x0e \x01(\bR\x0fcreditAmountSet\x12$\n" +
+	"\x0ecredit_note_no\x18\x0f \x01(\tR\fcreditNoteNo\x12\"\n" +
+	"\rduty_paid_cad\x18\x10 \x01(\x01R\vdutyPaidCad\x12\"\n" +
+	"\rduty_paid_set\x18\x11 \x01(\bR\vdutyPaidSet\x12\x14\n" +
+	"\x05notes\x18\x12 \x01(\tR\x05notes\x12\x16\n" +
+	"\x06voided\x18\x13 \x01(\bR\x06voided\x12\x1f\n" +
+	"\vvoid_reason\x18\x14 \x01(\tR\n" +
+	"voidReason\"\xbe\x03\n" +
+	"\x1bRecordPackagedReturnRequest\x122\n" +
+	"\x15packaged_inventory_id\x18\x01 \x01(\tR\x13packagedInventoryId\x12\x1f\n" +
+	"\vcustomer_id\x18\x02 \x01(\tR\n" +
+	"customerId\x12\x1d\n" +
+	"\n" +
+	"removal_id\x18\x03 \x01(\tR\tremovalId\x12\x18\n" +
+	"\abottles\x18\x04 \x01(\x05R\abottles\x12D\n" +
+	"\tcondition\x18\x05 \x01(\x0e2&.stillhouse.v1.PackagedReturnConditionR\tcondition\x12\x1f\n" +
+	"\vreturned_on\x18\x06 \x01(\tR\n" +
+	"returnedOn\x12\x16\n" +
+	"\x06reason\x18\a \x01(\tR\x06reason\x12*\n" +
+	"\x11credit_amount_cad\x18\b \x01(\x01R\x0fcreditAmountCad\x12*\n" +
+	"\x11credit_amount_set\x18\t \x01(\bR\x0fcreditAmountSet\x12$\n" +
+	"\x0ecredit_note_no\x18\n" +
+	" \x01(\tR\fcreditNoteNo\x12\x14\n" +
+	"\x05notes\x18\v \x01(\tR\x05notes\"\x83\x01\n" +
+	"\x1cRecordPackagedReturnResponse\x12F\n" +
+	"\x0fpackaged_return\x18\x01 \x01(\v2\x1d.stillhouse.v1.PackagedReturnR\x0epackagedReturn\x12\x1b\n" +
+	"\tduty_note\x18\x02 \x01(\tR\bdutyNote\"2\n" +
+	"\x1aListPackagedReturnsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\"V\n" +
+	"\x1bListPackagedReturnsResponse\x127\n" +
+	"\areturns\x18\x01 \x03(\v2\x1d.stillhouse.v1.PackagedReturnR\areturns\"C\n" +
+	"\x19VoidPackagedReturnRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"d\n" +
+	"\x1aVoidPackagedReturnResponse\x12F\n" +
+	"\x0fpackaged_return\x18\x01 \x01(\v2\x1d.stillhouse.v1.PackagedReturnR\x0epackagedReturn*\xbc\x02\n" +
 	"\x16RemovalDestinationKind\x12(\n" +
 	"$REMOVAL_DESTINATION_KIND_UNSPECIFIED\x10\x00\x12/\n" +
 	"+REMOVAL_DESTINATION_KIND_DUTY_PAID_CUSTOMER\x10\x01\x12#\n" +
@@ -756,11 +1434,18 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x1fREMOVAL_DESTINATION_KIND_SAMPLE\x10\x03\x12&\n" +
 	"\"REMOVAL_DESTINATION_KIND_DESTROYED\x10\x04\x121\n" +
 	"-REMOVAL_DESTINATION_KIND_TRANSFER_OUT_IN_BOND\x10\x05\x12\"\n" +
-	"\x1eREMOVAL_DESTINATION_KIND_OTHER\x10\x062\x9b\x02\n" +
+	"\x1eREMOVAL_DESTINATION_KIND_OTHER\x10\x06*\x96\x01\n" +
+	"\x17PackagedReturnCondition\x12)\n" +
+	"%PACKAGED_RETURN_CONDITION_UNSPECIFIED\x10\x00\x12&\n" +
+	"\"PACKAGED_RETURN_CONDITION_SALEABLE\x10\x01\x12(\n" +
+	"$PACKAGED_RETURN_CONDITION_UNSALEABLE\x10\x022\xe5\x04\n" +
 	"\x0eRemovalService\x12Z\n" +
 	"\rCreateRemoval\x12#.stillhouse.v1.CreateRemovalRequest\x1a$.stillhouse.v1.CreateRemovalResponse\x12W\n" +
 	"\fListRemovals\x12\".stillhouse.v1.ListRemovalsRequest\x1a#.stillhouse.v1.ListRemovalsResponse\x12T\n" +
-	"\vVoidRemoval\x12!.stillhouse.v1.VoidRemovalRequest\x1a\".stillhouse.v1.VoidRemovalResponseB\xd0\x01\n" +
+	"\vVoidRemoval\x12!.stillhouse.v1.VoidRemovalRequest\x1a\".stillhouse.v1.VoidRemovalResponse\x12o\n" +
+	"\x14RecordPackagedReturn\x12*.stillhouse.v1.RecordPackagedReturnRequest\x1a+.stillhouse.v1.RecordPackagedReturnResponse\x12l\n" +
+	"\x13ListPackagedReturns\x12).stillhouse.v1.ListPackagedReturnsRequest\x1a*.stillhouse.v1.ListPackagedReturnsResponse\x12i\n" +
+	"\x12VoidPackagedReturn\x12(.stillhouse.v1.VoidPackagedReturnRequest\x1a).stillhouse.v1.VoidPackagedReturnResponseB\xd0\x01\n" +
 	"\x11com.stillhouse.v1B\fRemovalProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -775,38 +1460,57 @@ func file_stillhouse_v1_removal_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_removal_proto_rawDescData
 }
 
-var file_stillhouse_v1_removal_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_removal_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_stillhouse_v1_removal_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_stillhouse_v1_removal_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_stillhouse_v1_removal_proto_goTypes = []any{
-	(RemovalDestinationKind)(0),   // 0: stillhouse.v1.RemovalDestinationKind
-	(*PackagingRemoval)(nil),      // 1: stillhouse.v1.PackagingRemoval
-	(*CreateRemovalRequest)(nil),  // 2: stillhouse.v1.CreateRemovalRequest
-	(*CreateRemovalResponse)(nil), // 3: stillhouse.v1.CreateRemovalResponse
-	(*ListRemovalsRequest)(nil),   // 4: stillhouse.v1.ListRemovalsRequest
-	(*ListRemovalsResponse)(nil),  // 5: stillhouse.v1.ListRemovalsResponse
-	(*VoidRemovalRequest)(nil),    // 6: stillhouse.v1.VoidRemovalRequest
-	(*VoidRemovalResponse)(nil),   // 7: stillhouse.v1.VoidRemovalResponse
-	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
+	(RemovalDestinationKind)(0),          // 0: stillhouse.v1.RemovalDestinationKind
+	(PackagedReturnCondition)(0),         // 1: stillhouse.v1.PackagedReturnCondition
+	(*PackagingRemoval)(nil),             // 2: stillhouse.v1.PackagingRemoval
+	(*CreateRemovalRequest)(nil),         // 3: stillhouse.v1.CreateRemovalRequest
+	(*CreateRemovalResponse)(nil),        // 4: stillhouse.v1.CreateRemovalResponse
+	(*ListRemovalsRequest)(nil),          // 5: stillhouse.v1.ListRemovalsRequest
+	(*ListRemovalsResponse)(nil),         // 6: stillhouse.v1.ListRemovalsResponse
+	(*VoidRemovalRequest)(nil),           // 7: stillhouse.v1.VoidRemovalRequest
+	(*VoidRemovalResponse)(nil),          // 8: stillhouse.v1.VoidRemovalResponse
+	(*PackagedReturn)(nil),               // 9: stillhouse.v1.PackagedReturn
+	(*RecordPackagedReturnRequest)(nil),  // 10: stillhouse.v1.RecordPackagedReturnRequest
+	(*RecordPackagedReturnResponse)(nil), // 11: stillhouse.v1.RecordPackagedReturnResponse
+	(*ListPackagedReturnsRequest)(nil),   // 12: stillhouse.v1.ListPackagedReturnsRequest
+	(*ListPackagedReturnsResponse)(nil),  // 13: stillhouse.v1.ListPackagedReturnsResponse
+	(*VoidPackagedReturnRequest)(nil),    // 14: stillhouse.v1.VoidPackagedReturnRequest
+	(*VoidPackagedReturnResponse)(nil),   // 15: stillhouse.v1.VoidPackagedReturnResponse
+	(*timestamppb.Timestamp)(nil),        // 16: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_removal_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.PackagingRemoval.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
-	8,  // 1: stillhouse.v1.PackagingRemoval.created_at:type_name -> google.protobuf.Timestamp
-	8,  // 2: stillhouse.v1.PackagingRemoval.voided_at:type_name -> google.protobuf.Timestamp
+	16, // 1: stillhouse.v1.PackagingRemoval.created_at:type_name -> google.protobuf.Timestamp
+	16, // 2: stillhouse.v1.PackagingRemoval.voided_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: stillhouse.v1.CreateRemovalRequest.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
-	1,  // 4: stillhouse.v1.CreateRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
-	1,  // 5: stillhouse.v1.ListRemovalsResponse.removals:type_name -> stillhouse.v1.PackagingRemoval
-	1,  // 6: stillhouse.v1.VoidRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
-	2,  // 7: stillhouse.v1.RemovalService.CreateRemoval:input_type -> stillhouse.v1.CreateRemovalRequest
-	4,  // 8: stillhouse.v1.RemovalService.ListRemovals:input_type -> stillhouse.v1.ListRemovalsRequest
-	6,  // 9: stillhouse.v1.RemovalService.VoidRemoval:input_type -> stillhouse.v1.VoidRemovalRequest
-	3,  // 10: stillhouse.v1.RemovalService.CreateRemoval:output_type -> stillhouse.v1.CreateRemovalResponse
-	5,  // 11: stillhouse.v1.RemovalService.ListRemovals:output_type -> stillhouse.v1.ListRemovalsResponse
-	7,  // 12: stillhouse.v1.RemovalService.VoidRemoval:output_type -> stillhouse.v1.VoidRemovalResponse
-	10, // [10:13] is the sub-list for method output_type
-	7,  // [7:10] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	2,  // 4: stillhouse.v1.CreateRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
+	2,  // 5: stillhouse.v1.ListRemovalsResponse.removals:type_name -> stillhouse.v1.PackagingRemoval
+	2,  // 6: stillhouse.v1.VoidRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
+	1,  // 7: stillhouse.v1.PackagedReturn.condition:type_name -> stillhouse.v1.PackagedReturnCondition
+	1,  // 8: stillhouse.v1.RecordPackagedReturnRequest.condition:type_name -> stillhouse.v1.PackagedReturnCondition
+	9,  // 9: stillhouse.v1.RecordPackagedReturnResponse.packaged_return:type_name -> stillhouse.v1.PackagedReturn
+	9,  // 10: stillhouse.v1.ListPackagedReturnsResponse.returns:type_name -> stillhouse.v1.PackagedReturn
+	9,  // 11: stillhouse.v1.VoidPackagedReturnResponse.packaged_return:type_name -> stillhouse.v1.PackagedReturn
+	3,  // 12: stillhouse.v1.RemovalService.CreateRemoval:input_type -> stillhouse.v1.CreateRemovalRequest
+	5,  // 13: stillhouse.v1.RemovalService.ListRemovals:input_type -> stillhouse.v1.ListRemovalsRequest
+	7,  // 14: stillhouse.v1.RemovalService.VoidRemoval:input_type -> stillhouse.v1.VoidRemovalRequest
+	10, // 15: stillhouse.v1.RemovalService.RecordPackagedReturn:input_type -> stillhouse.v1.RecordPackagedReturnRequest
+	12, // 16: stillhouse.v1.RemovalService.ListPackagedReturns:input_type -> stillhouse.v1.ListPackagedReturnsRequest
+	14, // 17: stillhouse.v1.RemovalService.VoidPackagedReturn:input_type -> stillhouse.v1.VoidPackagedReturnRequest
+	4,  // 18: stillhouse.v1.RemovalService.CreateRemoval:output_type -> stillhouse.v1.CreateRemovalResponse
+	6,  // 19: stillhouse.v1.RemovalService.ListRemovals:output_type -> stillhouse.v1.ListRemovalsResponse
+	8,  // 20: stillhouse.v1.RemovalService.VoidRemoval:output_type -> stillhouse.v1.VoidRemovalResponse
+	11, // 21: stillhouse.v1.RemovalService.RecordPackagedReturn:output_type -> stillhouse.v1.RecordPackagedReturnResponse
+	13, // 22: stillhouse.v1.RemovalService.ListPackagedReturns:output_type -> stillhouse.v1.ListPackagedReturnsResponse
+	15, // 23: stillhouse.v1.RemovalService.VoidPackagedReturn:output_type -> stillhouse.v1.VoidPackagedReturnResponse
+	18, // [18:24] is the sub-list for method output_type
+	12, // [12:18] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_removal_proto_init() }
@@ -819,8 +1523,8 @@ func file_stillhouse_v1_removal_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_removal_proto_rawDesc), len(file_stillhouse_v1_removal_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   7,
+			NumEnums:      2,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

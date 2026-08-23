@@ -42,6 +42,15 @@ const (
 	// RemovalServiceVoidRemovalProcedure is the fully-qualified name of the RemovalService's
 	// VoidRemoval RPC.
 	RemovalServiceVoidRemovalProcedure = "/stillhouse.v1.RemovalService/VoidRemoval"
+	// RemovalServiceRecordPackagedReturnProcedure is the fully-qualified name of the RemovalService's
+	// RecordPackagedReturn RPC.
+	RemovalServiceRecordPackagedReturnProcedure = "/stillhouse.v1.RemovalService/RecordPackagedReturn"
+	// RemovalServiceListPackagedReturnsProcedure is the fully-qualified name of the RemovalService's
+	// ListPackagedReturns RPC.
+	RemovalServiceListPackagedReturnsProcedure = "/stillhouse.v1.RemovalService/ListPackagedReturns"
+	// RemovalServiceVoidPackagedReturnProcedure is the fully-qualified name of the RemovalService's
+	// VoidPackagedReturn RPC.
+	RemovalServiceVoidPackagedReturnProcedure = "/stillhouse.v1.RemovalService/VoidPackagedReturn"
 )
 
 // RemovalServiceClient is a client for the stillhouse.v1.RemovalService service.
@@ -49,6 +58,11 @@ type RemovalServiceClient interface {
 	CreateRemoval(context.Context, *connect.Request[v1.CreateRemovalRequest]) (*connect.Response[v1.CreateRemovalResponse], error)
 	ListRemovals(context.Context, *connect.Request[v1.ListRemovalsRequest]) (*connect.Response[v1.ListRemovalsResponse], error)
 	VoidRemoval(context.Context, *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error)
+	// Product coming back from the duty-paid market. It restocks and
+	// credits; it does not relieve duty. See PackagedReturnCondition.
+	RecordPackagedReturn(context.Context, *connect.Request[v1.RecordPackagedReturnRequest]) (*connect.Response[v1.RecordPackagedReturnResponse], error)
+	ListPackagedReturns(context.Context, *connect.Request[v1.ListPackagedReturnsRequest]) (*connect.Response[v1.ListPackagedReturnsResponse], error)
+	VoidPackagedReturn(context.Context, *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error)
 }
 
 // NewRemovalServiceClient constructs a client for the stillhouse.v1.RemovalService service. By
@@ -80,14 +94,35 @@ func NewRemovalServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(removalServiceMethods.ByName("VoidRemoval")),
 			connect.WithClientOptions(opts...),
 		),
+		recordPackagedReturn: connect.NewClient[v1.RecordPackagedReturnRequest, v1.RecordPackagedReturnResponse](
+			httpClient,
+			baseURL+RemovalServiceRecordPackagedReturnProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("RecordPackagedReturn")),
+			connect.WithClientOptions(opts...),
+		),
+		listPackagedReturns: connect.NewClient[v1.ListPackagedReturnsRequest, v1.ListPackagedReturnsResponse](
+			httpClient,
+			baseURL+RemovalServiceListPackagedReturnsProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("ListPackagedReturns")),
+			connect.WithClientOptions(opts...),
+		),
+		voidPackagedReturn: connect.NewClient[v1.VoidPackagedReturnRequest, v1.VoidPackagedReturnResponse](
+			httpClient,
+			baseURL+RemovalServiceVoidPackagedReturnProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("VoidPackagedReturn")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // removalServiceClient implements RemovalServiceClient.
 type removalServiceClient struct {
-	createRemoval *connect.Client[v1.CreateRemovalRequest, v1.CreateRemovalResponse]
-	listRemovals  *connect.Client[v1.ListRemovalsRequest, v1.ListRemovalsResponse]
-	voidRemoval   *connect.Client[v1.VoidRemovalRequest, v1.VoidRemovalResponse]
+	createRemoval        *connect.Client[v1.CreateRemovalRequest, v1.CreateRemovalResponse]
+	listRemovals         *connect.Client[v1.ListRemovalsRequest, v1.ListRemovalsResponse]
+	voidRemoval          *connect.Client[v1.VoidRemovalRequest, v1.VoidRemovalResponse]
+	recordPackagedReturn *connect.Client[v1.RecordPackagedReturnRequest, v1.RecordPackagedReturnResponse]
+	listPackagedReturns  *connect.Client[v1.ListPackagedReturnsRequest, v1.ListPackagedReturnsResponse]
+	voidPackagedReturn   *connect.Client[v1.VoidPackagedReturnRequest, v1.VoidPackagedReturnResponse]
 }
 
 // CreateRemoval calls stillhouse.v1.RemovalService.CreateRemoval.
@@ -105,11 +140,31 @@ func (c *removalServiceClient) VoidRemoval(ctx context.Context, req *connect.Req
 	return c.voidRemoval.CallUnary(ctx, req)
 }
 
+// RecordPackagedReturn calls stillhouse.v1.RemovalService.RecordPackagedReturn.
+func (c *removalServiceClient) RecordPackagedReturn(ctx context.Context, req *connect.Request[v1.RecordPackagedReturnRequest]) (*connect.Response[v1.RecordPackagedReturnResponse], error) {
+	return c.recordPackagedReturn.CallUnary(ctx, req)
+}
+
+// ListPackagedReturns calls stillhouse.v1.RemovalService.ListPackagedReturns.
+func (c *removalServiceClient) ListPackagedReturns(ctx context.Context, req *connect.Request[v1.ListPackagedReturnsRequest]) (*connect.Response[v1.ListPackagedReturnsResponse], error) {
+	return c.listPackagedReturns.CallUnary(ctx, req)
+}
+
+// VoidPackagedReturn calls stillhouse.v1.RemovalService.VoidPackagedReturn.
+func (c *removalServiceClient) VoidPackagedReturn(ctx context.Context, req *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error) {
+	return c.voidPackagedReturn.CallUnary(ctx, req)
+}
+
 // RemovalServiceHandler is an implementation of the stillhouse.v1.RemovalService service.
 type RemovalServiceHandler interface {
 	CreateRemoval(context.Context, *connect.Request[v1.CreateRemovalRequest]) (*connect.Response[v1.CreateRemovalResponse], error)
 	ListRemovals(context.Context, *connect.Request[v1.ListRemovalsRequest]) (*connect.Response[v1.ListRemovalsResponse], error)
 	VoidRemoval(context.Context, *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error)
+	// Product coming back from the duty-paid market. It restocks and
+	// credits; it does not relieve duty. See PackagedReturnCondition.
+	RecordPackagedReturn(context.Context, *connect.Request[v1.RecordPackagedReturnRequest]) (*connect.Response[v1.RecordPackagedReturnResponse], error)
+	ListPackagedReturns(context.Context, *connect.Request[v1.ListPackagedReturnsRequest]) (*connect.Response[v1.ListPackagedReturnsResponse], error)
+	VoidPackagedReturn(context.Context, *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error)
 }
 
 // NewRemovalServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -137,6 +192,24 @@ func NewRemovalServiceHandler(svc RemovalServiceHandler, opts ...connect.Handler
 		connect.WithSchema(removalServiceMethods.ByName("VoidRemoval")),
 		connect.WithHandlerOptions(opts...),
 	)
+	removalServiceRecordPackagedReturnHandler := connect.NewUnaryHandler(
+		RemovalServiceRecordPackagedReturnProcedure,
+		svc.RecordPackagedReturn,
+		connect.WithSchema(removalServiceMethods.ByName("RecordPackagedReturn")),
+		connect.WithHandlerOptions(opts...),
+	)
+	removalServiceListPackagedReturnsHandler := connect.NewUnaryHandler(
+		RemovalServiceListPackagedReturnsProcedure,
+		svc.ListPackagedReturns,
+		connect.WithSchema(removalServiceMethods.ByName("ListPackagedReturns")),
+		connect.WithHandlerOptions(opts...),
+	)
+	removalServiceVoidPackagedReturnHandler := connect.NewUnaryHandler(
+		RemovalServiceVoidPackagedReturnProcedure,
+		svc.VoidPackagedReturn,
+		connect.WithSchema(removalServiceMethods.ByName("VoidPackagedReturn")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.RemovalService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RemovalServiceCreateRemovalProcedure:
@@ -145,6 +218,12 @@ func NewRemovalServiceHandler(svc RemovalServiceHandler, opts ...connect.Handler
 			removalServiceListRemovalsHandler.ServeHTTP(w, r)
 		case RemovalServiceVoidRemovalProcedure:
 			removalServiceVoidRemovalHandler.ServeHTTP(w, r)
+		case RemovalServiceRecordPackagedReturnProcedure:
+			removalServiceRecordPackagedReturnHandler.ServeHTTP(w, r)
+		case RemovalServiceListPackagedReturnsProcedure:
+			removalServiceListPackagedReturnsHandler.ServeHTTP(w, r)
+		case RemovalServiceVoidPackagedReturnProcedure:
+			removalServiceVoidPackagedReturnHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -164,4 +243,16 @@ func (UnimplementedRemovalServiceHandler) ListRemovals(context.Context, *connect
 
 func (UnimplementedRemovalServiceHandler) VoidRemoval(context.Context, *connect.Request[v1.VoidRemovalRequest]) (*connect.Response[v1.VoidRemovalResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.VoidRemoval is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) RecordPackagedReturn(context.Context, *connect.Request[v1.RecordPackagedReturnRequest]) (*connect.Response[v1.RecordPackagedReturnResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.RecordPackagedReturn is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) ListPackagedReturns(context.Context, *connect.Request[v1.ListPackagedReturnsRequest]) (*connect.Response[v1.ListPackagedReturnsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.ListPackagedReturns is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) VoidPackagedReturn(context.Context, *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.VoidPackagedReturn is not implemented"))
 }

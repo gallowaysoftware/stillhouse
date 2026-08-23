@@ -83,4 +83,85 @@ service RemovalService {
   rpc CreateRemoval(CreateRemovalRequest) returns (CreateRemovalResponse);
   rpc ListRemovals(ListRemovalsRequest) returns (ListRemovalsResponse);
   rpc VoidRemoval(VoidRemovalRequest) returns (VoidRemovalResponse);
+
+  // Product coming back from the duty-paid market. It restocks and
+  // credits; it does not relieve duty. See PackagedReturnCondition.
+  rpc RecordPackagedReturn(RecordPackagedReturnRequest) returns (RecordPackagedReturnResponse);
+  rpc ListPackagedReturns(ListPackagedReturnsRequest) returns (ListPackagedReturnsResponse);
+  rpc VoidPackagedReturn(VoidPackagedReturnRequest) returns (VoidPackagedReturnResponse);
 }
+
+// Product coming back from the duty-paid market. PLAN D7.
+//
+// Spirits have no consignment regime the way small wine licensees do, but
+// returns happen: damaged cases, delistings, over-ordering. What a return
+// must never do is quietly undo duty. It crystallised when the goods were
+// packaged or removed, and it does not un-crystallise because they came
+// back — recovering it is a refund claim with a B256 behind it, which is
+// PLAN A9 and is blocked on sourcing that form's rules.
+//
+// So a return here restocks, credits the customer, records that duty was
+// paid and remains paid, and says outright that the refund is a separate
+// claim Stillhouse cannot yet make.
+enum PackagedReturnCondition {
+  PACKAGED_RETURN_CONDITION_UNSPECIFIED = 0;
+  // Back into stock: it can be sold again.
+  PACKAGED_RETURN_CONDITION_SALEABLE = 1;
+  // Came back but cannot be sold, so it does not restock. Whether its
+  // destruction is relieved is the question EDM3-4-1 asks of any
+  // destruction, and it is answered on the destruction, not here.
+  PACKAGED_RETURN_CONDITION_UNSALEABLE = 2;
+}
+
+message PackagedReturn {
+  string id = 1;
+  int32  return_no = 2;
+  string packaged_inventory_id = 3;
+  string lot_code = 4;
+  string product_name = 5;
+  string customer_id = 6;
+  string customer_name = 7;
+  string removal_id = 8;
+  int32  bottles = 9;
+  PackagedReturnCondition condition = 10;
+  string returned_on = 11;
+  string reason = 12;
+  double credit_amount_cad = 13;
+  bool   credit_amount_set = 14;
+  string credit_note_no = 15;
+  double duty_paid_cad = 16;
+  bool   duty_paid_set = 17;
+  string notes = 18;
+  bool   voided = 19;
+  string void_reason = 20;
+}
+
+message RecordPackagedReturnRequest {
+  string packaged_inventory_id = 1;
+  string customer_id = 2;
+  string removal_id = 3;
+  int32  bottles = 4;
+  PackagedReturnCondition condition = 5;
+  string returned_on = 6;
+  string reason = 7;
+  double credit_amount_cad = 8;
+  bool   credit_amount_set = 9;
+  string credit_note_no = 10;
+  string notes = 11;
+}
+message RecordPackagedReturnResponse {
+  PackagedReturn packaged_return = 1;
+  // Said on every response, not in the documentation: the operator
+  // recording a return is the person who will otherwise assume the duty
+  // came back with the bottles.
+  string duty_note = 2;
+}
+
+message ListPackagedReturnsRequest { int32 limit = 1; }
+message ListPackagedReturnsResponse { repeated PackagedReturn returns = 1; }
+
+message VoidPackagedReturnRequest {
+  string id = 1;
+  string reason = 2;
+}
+message VoidPackagedReturnResponse { PackagedReturn packaged_return = 1; }

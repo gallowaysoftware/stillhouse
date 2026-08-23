@@ -1515,6 +1515,48 @@ func (ns NullOverheadBasis) Value() (driver.Value, error) {
 	return string(ns.OverheadBasis), nil
 }
 
+type PackagedReturnCondition string
+
+const (
+	PackagedReturnConditionSaleable   PackagedReturnCondition = "saleable"
+	PackagedReturnConditionUnsaleable PackagedReturnCondition = "unsaleable"
+)
+
+func (e *PackagedReturnCondition) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PackagedReturnCondition(s)
+	case string:
+		*e = PackagedReturnCondition(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PackagedReturnCondition: %T", src)
+	}
+	return nil
+}
+
+type NullPackagedReturnCondition struct {
+	PackagedReturnCondition PackagedReturnCondition `json:"packaged_return_condition"`
+	Valid                   bool                    `json:"valid"` // Valid is true if PackagedReturnCondition is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPackagedReturnCondition) Scan(value interface{}) error {
+	if value == nil {
+		ns.PackagedReturnCondition, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PackagedReturnCondition.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPackagedReturnCondition) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PackagedReturnCondition), nil
+}
+
 type PurchaseOrderStatus string
 
 const (
@@ -3089,6 +3131,29 @@ type PackagedInventory struct {
 	HoldReason      string             `json:"hold_reason"`
 	LocationID      uuid.NullUUID      `json:"location_id"`
 	OwnerCustomerID uuid.NullUUID      `json:"owner_customer_id"`
+}
+
+type PackagedReturn struct {
+	ID                  uuid.UUID               `json:"id"`
+	TenantID            uuid.UUID               `json:"tenant_id"`
+	ReturnNo            int32                   `json:"return_no"`
+	PackagedInventoryID uuid.UUID               `json:"packaged_inventory_id"`
+	CustomerID          uuid.NullUUID           `json:"customer_id"`
+	RemovalID           uuid.NullUUID           `json:"removal_id"`
+	Bottles             int32                   `json:"bottles"`
+	Condition           PackagedReturnCondition `json:"condition"`
+	ReturnedOn          pgtype.Date             `json:"returned_on"`
+	Reason              string                  `json:"reason"`
+	CreditAmountCad     pgtype.Numeric          `json:"credit_amount_cad"`
+	CreditNoteNo        string                  `json:"credit_note_no"`
+	DutyPaidCad         pgtype.Numeric          `json:"duty_paid_cad"`
+	Notes               string                  `json:"notes"`
+	VoidedAt            pgtype.Timestamptz      `json:"voided_at"`
+	VoidedBy            uuid.NullUUID           `json:"voided_by"`
+	VoidReason          string                  `json:"void_reason"`
+	CreatedBy           uuid.NullUUID           `json:"created_by"`
+	CreatedAt           pgtype.Timestamptz      `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz      `json:"updated_at"`
 }
 
 type PackagingRemoval struct {

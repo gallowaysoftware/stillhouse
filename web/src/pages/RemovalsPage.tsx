@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { ReturnsPanel } from "@/components/ReturnsPanel";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
@@ -294,6 +295,7 @@ export function RemovalsPage() {
         total={list.data?.totalCount ?? 0}
         onPage={setPage}
       />
+      <ReturnsPanel />
     </Shell>
   );
 }

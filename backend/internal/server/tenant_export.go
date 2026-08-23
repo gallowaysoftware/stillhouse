@@ -107,6 +107,10 @@ var exportTables = []string{
 	"price_lists",
 	"price_list_entries",
 	"packaging_removals",
+	// Stock coming back from the duty-paid market. Exported rather than
+	// exempted: it is a movement of dutiable goods with a credit attached,
+	// which is exactly what s.206 retention asks to be able to see.
+	"packaged_returns",
 	// The sales chain sits between the stock and the return: a removal
 	// names the shipment it came from, so exporting removals without
 	// shipments would leave that reference pointing at nothing.

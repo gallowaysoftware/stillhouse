@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/removal.proto.
  */
 export const file_stillhouse_v1_removal: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGlsbGhvdXNlL3YxL3JlbW92YWwucHJvdG8SDXN0aWxsaG91c2UudjEikAUKEFBhY2thZ2luZ1JlbW92YWwSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhIKCnJlbW92YWxfbm8YAyABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRIQCghsb3RfY29kZRgGIAEoCRIUCgxqdXJpc2RpY3Rpb24YByABKAkSFAoMcmVtb3ZhbF9kYXRlGAggASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgJIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAogASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYCyABKAkSEQoJcmVmZXJlbmNlGAwgASgJEhMKC2N1c3RvbWVyX2lkGBggASgJEhUKDWN1c3RvbWVyX25hbWUYGSABKAkSFgoOYm90dGxlX3NpemVfbWwYDSABKAUSFgoOYm90dGxlX2Fidl9wY3QYDiABKAESFAoMdG90YWxfbGl0cmVzGA8gASgBEhEKCXRvdGFsX2xhYRgQIAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgRIAEoARIXCg9kdXR5X2Ftb3VudF9jYWQYEiABKAESDQoFbm90ZXMYEyABKAkSLgoKY3JlYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJdm9pZGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCgl2b2lkZWRfYnkYFiABKAkSFQoNdm9pZGVkX3JlYXNvbhgXIAEoCSL2AQoUQ3JlYXRlUmVtb3ZhbFJlcXVlc3QSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAEgASgJEhQKDHJlbW92YWxfZGF0ZRgCIAEoCRIXCg9ib3R0bGVzX3JlbW92ZWQYAyABKAUSEwoLY3VzdG9tZXJfaWQYCCABKAkSPwoQZGVzdGluYXRpb25fa2luZBgEIAEoDjIlLnN0aWxsaG91c2UudjEuUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIYChBkZXN0aW5hdGlvbl9uYW1lGAUgASgJEhEKCXJlZmVyZW5jZRgGIAEoCRINCgVub3RlcxgHIAEoCSJJChVDcmVhdGVSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCJeChNMaXN0UmVtb3ZhbHNSZXF1ZXN0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg0KBWxpbWl0GAMgASgFEg4KBm9mZnNldBgEIAEoBSJeChRMaXN0UmVtb3ZhbHNSZXNwb25zZRIxCghyZW1vdmFscxgBIAMoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbBITCgt0b3RhbF9jb3VudBgCIAEoBSIwChJWb2lkUmVtb3ZhbFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkcKE1ZvaWRSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCq8AgoWUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIoCiRSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIvCitSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfRFVUWV9QQUlEX0NVU1RPTUVSEAESIwofUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0VYUE9SVBACEiMKH1JFTU9WQUxfREVTVElOQVRJT05fS0lORF9TQU1QTEUQAxImCiJSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfREVTVFJPWUVEEAQSMQotUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX1RSQU5TRkVSX09VVF9JTl9CT05EEAUSIgoeUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX09USEVSEAYymwIKDlJlbW92YWxTZXJ2aWNlEloKDUNyZWF0ZVJlbW92YWwSIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVJlbW92YWxSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5DcmVhdGVSZW1vdmFsUmVzcG9uc2USVwoMTGlzdFJlbW92YWxzEiIuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXNwb25zZRJUCgtWb2lkUmVtb3ZhbBIhLnN0aWxsaG91c2UudjEuVm9pZFJlbW92YWxSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5Wb2lkUmVtb3ZhbFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChtzdGlsbGhvdXNlL3YxL3JlbW92YWwucHJvdG8SDXN0aWxsaG91c2UudjEikAUKEFBhY2thZ2luZ1JlbW92YWwSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhIKCnJlbW92YWxfbm8YAyABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRIQCghsb3RfY29kZRgGIAEoCRIUCgxqdXJpc2RpY3Rpb24YByABKAkSFAoMcmVtb3ZhbF9kYXRlGAggASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgJIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAogASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYCyABKAkSEQoJcmVmZXJlbmNlGAwgASgJEhMKC2N1c3RvbWVyX2lkGBggASgJEhUKDWN1c3RvbWVyX25hbWUYGSABKAkSFgoOYm90dGxlX3NpemVfbWwYDSABKAUSFgoOYm90dGxlX2Fidl9wY3QYDiABKAESFAoMdG90YWxfbGl0cmVzGA8gASgBEhEKCXRvdGFsX2xhYRgQIAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgRIAEoARIXCg9kdXR5X2Ftb3VudF9jYWQYEiABKAESDQoFbm90ZXMYEyABKAkSLgoKY3JlYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJdm9pZGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCgl2b2lkZWRfYnkYFiABKAkSFQoNdm9pZGVkX3JlYXNvbhgXIAEoCSL2AQoUQ3JlYXRlUmVtb3ZhbFJlcXVlc3QSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAEgASgJEhQKDHJlbW92YWxfZGF0ZRgCIAEoCRIXCg9ib3R0bGVzX3JlbW92ZWQYAyABKAUSEwoLY3VzdG9tZXJfaWQYCCABKAkSPwoQZGVzdGluYXRpb25fa2luZBgEIAEoDjIlLnN0aWxsaG91c2UudjEuUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIYChBkZXN0aW5hdGlvbl9uYW1lGAUgASgJEhEKCXJlZmVyZW5jZRgGIAEoCRINCgVub3RlcxgHIAEoCSJJChVDcmVhdGVSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCJeChNMaXN0UmVtb3ZhbHNSZXF1ZXN0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg0KBWxpbWl0GAMgASgFEg4KBm9mZnNldBgEIAEoBSJeChRMaXN0UmVtb3ZhbHNSZXNwb25zZRIxCghyZW1vdmFscxgBIAMoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbBITCgt0b3RhbF9jb3VudBgCIAEoBSIwChJWb2lkUmVtb3ZhbFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkcKE1ZvaWRSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCLXAwoOUGFja2FnZWRSZXR1cm4SCgoCaWQYASABKAkSEQoJcmV0dXJuX25vGAIgASgFEh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgDIAEoCRIQCghsb3RfY29kZRgEIAEoCRIUCgxwcm9kdWN0X25hbWUYBSABKAkSEwoLY3VzdG9tZXJfaWQYBiABKAkSFQoNY3VzdG9tZXJfbmFtZRgHIAEoCRISCgpyZW1vdmFsX2lkGAggASgJEg8KB2JvdHRsZXMYCSABKAUSOQoJY29uZGl0aW9uGAogASgOMiYuc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybkNvbmRpdGlvbhITCgtyZXR1cm5lZF9vbhgLIAEoCRIOCgZyZWFzb24YDCABKAkSGQoRY3JlZGl0X2Ftb3VudF9jYWQYDSABKAESGQoRY3JlZGl0X2Ftb3VudF9zZXQYDiABKAgSFgoOY3JlZGl0X25vdGVfbm8YDyABKAkSFQoNZHV0eV9wYWlkX2NhZBgQIAEoARIVCg1kdXR5X3BhaWRfc2V0GBEgASgIEg0KBW5vdGVzGBIgASgJEg4KBnZvaWRlZBgTIAEoCBITCgt2b2lkX3JlYXNvbhgUIAEoCSKzAgobUmVjb3JkUGFja2FnZWRSZXR1cm5SZXF1ZXN0Eh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgBIAEoCRITCgtjdXN0b21lcl9pZBgCIAEoCRISCgpyZW1vdmFsX2lkGAMgASgJEg8KB2JvdHRsZXMYBCABKAUSOQoJY29uZGl0aW9uGAUgASgOMiYuc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybkNvbmRpdGlvbhITCgtyZXR1cm5lZF9vbhgGIAEoCRIOCgZyZWFzb24YByABKAkSGQoRY3JlZGl0X2Ftb3VudF9jYWQYCCABKAESGQoRY3JlZGl0X2Ftb3VudF9zZXQYCSABKAgSFgoOY3JlZGl0X25vdGVfbm8YCiABKAkSDQoFbm90ZXMYCyABKAkiaQocUmVjb3JkUGFja2FnZWRSZXR1cm5SZXNwb25zZRI2Cg9wYWNrYWdlZF9yZXR1cm4YASABKAsyHS5zdGlsbGhvdXNlLnYxLlBhY2thZ2VkUmV0dXJuEhEKCWR1dHlfbm90ZRgCIAEoCSIrChpMaXN0UGFja2FnZWRSZXR1cm5zUmVxdWVzdBINCgVsaW1pdBgBIAEoBSJNChtMaXN0UGFja2FnZWRSZXR1cm5zUmVzcG9uc2USLgoHcmV0dXJucxgBIAMoCzIdLnN0aWxsaG91c2UudjEuUGFja2FnZWRSZXR1cm4iNwoZVm9pZFBhY2thZ2VkUmV0dXJuUmVxdWVzdBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkiVAoaVm9pZFBhY2thZ2VkUmV0dXJuUmVzcG9uc2USNgoPcGFja2FnZWRfcmV0dXJuGAEgASgLMh0uc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybiq8AgoWUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIoCiRSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIvCitSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfRFVUWV9QQUlEX0NVU1RPTUVSEAESIwofUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0VYUE9SVBACEiMKH1JFTU9WQUxfREVTVElOQVRJT05fS0lORF9TQU1QTEUQAxImCiJSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfREVTVFJPWUVEEAQSMQotUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX1RSQU5TRkVSX09VVF9JTl9CT05EEAUSIgoeUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX09USEVSEAYqlgEKF1BhY2thZ2VkUmV0dXJuQ29uZGl0aW9uEikKJVBBQ0tBR0VEX1JFVFVSTl9DT05ESVRJT05fVU5TUEVDSUZJRUQQABImCiJQQUNLQUdFRF9SRVRVUk5fQ09ORElUSU9OX1NBTEVBQkxFEAESKAokUEFDS0FHRURfUkVUVVJOX0NPTkRJVElPTl9VTlNBTEVBQkxFEAIy5QQKDlJlbW92YWxTZXJ2aWNlEloKDUNyZWF0ZVJlbW92YWwSIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVJlbW92YWxSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5DcmVhdGVSZW1vdmFsUmVzcG9uc2USVwoMTGlzdFJlbW92YWxzEiIuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXNwb25zZRJUCgtWb2lkUmVtb3ZhbBIhLnN0aWxsaG91c2UudjEuVm9pZFJlbW92YWxSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5Wb2lkUmVtb3ZhbFJlc3BvbnNlEm8KFFJlY29yZFBhY2thZ2VkUmV0dXJuEiouc3RpbGxob3VzZS52MS5SZWNvcmRQYWNrYWdlZFJldHVyblJlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLlJlY29yZFBhY2thZ2VkUmV0dXJuUmVzcG9uc2USbAoTTGlzdFBhY2thZ2VkUmV0dXJucxIpLnN0aWxsaG91c2UudjEuTGlzdFBhY2thZ2VkUmV0dXJuc1JlcXVlc3QaKi5zdGlsbGhvdXNlLnYxLkxpc3RQYWNrYWdlZFJldHVybnNSZXNwb25zZRJpChJWb2lkUGFja2FnZWRSZXR1cm4SKC5zdGlsbGhvdXNlLnYxLlZvaWRQYWNrYWdlZFJldHVyblJlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLlZvaWRQYWNrYWdlZFJldHVyblJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.PackagingRemoval
@@ -328,6 +328,284 @@ export const VoidRemovalResponseSchema: GenMessage<VoidRemovalResponse> = /*@__P
   messageDesc(file_stillhouse_v1_removal, 6);
 
 /**
+ * @generated from message stillhouse.v1.PackagedReturn
+ */
+export type PackagedReturn = Message<"stillhouse.v1.PackagedReturn"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: int32 return_no = 2;
+   */
+  returnNo: number;
+
+  /**
+   * @generated from field: string packaged_inventory_id = 3;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: string lot_code = 4;
+   */
+  lotCode: string;
+
+  /**
+   * @generated from field: string product_name = 5;
+   */
+  productName: string;
+
+  /**
+   * @generated from field: string customer_id = 6;
+   */
+  customerId: string;
+
+  /**
+   * @generated from field: string customer_name = 7;
+   */
+  customerName: string;
+
+  /**
+   * @generated from field: string removal_id = 8;
+   */
+  removalId: string;
+
+  /**
+   * @generated from field: int32 bottles = 9;
+   */
+  bottles: number;
+
+  /**
+   * @generated from field: stillhouse.v1.PackagedReturnCondition condition = 10;
+   */
+  condition: PackagedReturnCondition;
+
+  /**
+   * @generated from field: string returned_on = 11;
+   */
+  returnedOn: string;
+
+  /**
+   * @generated from field: string reason = 12;
+   */
+  reason: string;
+
+  /**
+   * @generated from field: double credit_amount_cad = 13;
+   */
+  creditAmountCad: number;
+
+  /**
+   * @generated from field: bool credit_amount_set = 14;
+   */
+  creditAmountSet: boolean;
+
+  /**
+   * @generated from field: string credit_note_no = 15;
+   */
+  creditNoteNo: string;
+
+  /**
+   * @generated from field: double duty_paid_cad = 16;
+   */
+  dutyPaidCad: number;
+
+  /**
+   * @generated from field: bool duty_paid_set = 17;
+   */
+  dutyPaidSet: boolean;
+
+  /**
+   * @generated from field: string notes = 18;
+   */
+  notes: string;
+
+  /**
+   * @generated from field: bool voided = 19;
+   */
+  voided: boolean;
+
+  /**
+   * @generated from field: string void_reason = 20;
+   */
+  voidReason: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.PackagedReturn.
+ * Use `create(PackagedReturnSchema)` to create a new message.
+ */
+export const PackagedReturnSchema: GenMessage<PackagedReturn> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 7);
+
+/**
+ * @generated from message stillhouse.v1.RecordPackagedReturnRequest
+ */
+export type RecordPackagedReturnRequest = Message<"stillhouse.v1.RecordPackagedReturnRequest"> & {
+  /**
+   * @generated from field: string packaged_inventory_id = 1;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: string customer_id = 2;
+   */
+  customerId: string;
+
+  /**
+   * @generated from field: string removal_id = 3;
+   */
+  removalId: string;
+
+  /**
+   * @generated from field: int32 bottles = 4;
+   */
+  bottles: number;
+
+  /**
+   * @generated from field: stillhouse.v1.PackagedReturnCondition condition = 5;
+   */
+  condition: PackagedReturnCondition;
+
+  /**
+   * @generated from field: string returned_on = 6;
+   */
+  returnedOn: string;
+
+  /**
+   * @generated from field: string reason = 7;
+   */
+  reason: string;
+
+  /**
+   * @generated from field: double credit_amount_cad = 8;
+   */
+  creditAmountCad: number;
+
+  /**
+   * @generated from field: bool credit_amount_set = 9;
+   */
+  creditAmountSet: boolean;
+
+  /**
+   * @generated from field: string credit_note_no = 10;
+   */
+  creditNoteNo: string;
+
+  /**
+   * @generated from field: string notes = 11;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecordPackagedReturnRequest.
+ * Use `create(RecordPackagedReturnRequestSchema)` to create a new message.
+ */
+export const RecordPackagedReturnRequestSchema: GenMessage<RecordPackagedReturnRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 8);
+
+/**
+ * @generated from message stillhouse.v1.RecordPackagedReturnResponse
+ */
+export type RecordPackagedReturnResponse = Message<"stillhouse.v1.RecordPackagedReturnResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.PackagedReturn packaged_return = 1;
+   */
+  packagedReturn?: PackagedReturn | undefined;
+
+  /**
+   * Said on every response, not in the documentation: the operator
+   * recording a return is the person who will otherwise assume the duty
+   * came back with the bottles.
+   *
+   * @generated from field: string duty_note = 2;
+   */
+  dutyNote: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecordPackagedReturnResponse.
+ * Use `create(RecordPackagedReturnResponseSchema)` to create a new message.
+ */
+export const RecordPackagedReturnResponseSchema: GenMessage<RecordPackagedReturnResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 9);
+
+/**
+ * @generated from message stillhouse.v1.ListPackagedReturnsRequest
+ */
+export type ListPackagedReturnsRequest = Message<"stillhouse.v1.ListPackagedReturnsRequest"> & {
+  /**
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListPackagedReturnsRequest.
+ * Use `create(ListPackagedReturnsRequestSchema)` to create a new message.
+ */
+export const ListPackagedReturnsRequestSchema: GenMessage<ListPackagedReturnsRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 10);
+
+/**
+ * @generated from message stillhouse.v1.ListPackagedReturnsResponse
+ */
+export type ListPackagedReturnsResponse = Message<"stillhouse.v1.ListPackagedReturnsResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.PackagedReturn returns = 1;
+   */
+  returns: PackagedReturn[];
+};
+
+/**
+ * Describes the message stillhouse.v1.ListPackagedReturnsResponse.
+ * Use `create(ListPackagedReturnsResponseSchema)` to create a new message.
+ */
+export const ListPackagedReturnsResponseSchema: GenMessage<ListPackagedReturnsResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 11);
+
+/**
+ * @generated from message stillhouse.v1.VoidPackagedReturnRequest
+ */
+export type VoidPackagedReturnRequest = Message<"stillhouse.v1.VoidPackagedReturnRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string reason = 2;
+   */
+  reason: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.VoidPackagedReturnRequest.
+ * Use `create(VoidPackagedReturnRequestSchema)` to create a new message.
+ */
+export const VoidPackagedReturnRequestSchema: GenMessage<VoidPackagedReturnRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 12);
+
+/**
+ * @generated from message stillhouse.v1.VoidPackagedReturnResponse
+ */
+export type VoidPackagedReturnResponse = Message<"stillhouse.v1.VoidPackagedReturnResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.PackagedReturn packaged_return = 1;
+   */
+  packagedReturn?: PackagedReturn | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.VoidPackagedReturnResponse.
+ * Use `create(VoidPackagedReturnResponseSchema)` to create a new message.
+ */
+export const VoidPackagedReturnResponseSchema: GenMessage<VoidPackagedReturnResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 13);
+
+/**
  * @generated from enum stillhouse.v1.RemovalDestinationKind
  */
 export enum RemovalDestinationKind {
@@ -374,6 +652,51 @@ export const RemovalDestinationKindSchema: GenEnum<RemovalDestinationKind> = /*@
   enumDesc(file_stillhouse_v1_removal, 0);
 
 /**
+ * Product coming back from the duty-paid market. PLAN D7.
+ *
+ * Spirits have no consignment regime the way small wine licensees do, but
+ * returns happen: damaged cases, delistings, over-ordering. What a return
+ * must never do is quietly undo duty. It crystallised when the goods were
+ * packaged or removed, and it does not un-crystallise because they came
+ * back — recovering it is a refund claim with a B256 behind it, which is
+ * PLAN A9 and is blocked on sourcing that form's rules.
+ *
+ * So a return here restocks, credits the customer, records that duty was
+ * paid and remains paid, and says outright that the refund is a separate
+ * claim Stillhouse cannot yet make.
+ *
+ * @generated from enum stillhouse.v1.PackagedReturnCondition
+ */
+export enum PackagedReturnCondition {
+  /**
+   * @generated from enum value: PACKAGED_RETURN_CONDITION_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * Back into stock: it can be sold again.
+   *
+   * @generated from enum value: PACKAGED_RETURN_CONDITION_SALEABLE = 1;
+   */
+  SALEABLE = 1,
+
+  /**
+   * Came back but cannot be sold, so it does not restock. Whether its
+   * destruction is relieved is the question EDM3-4-1 asks of any
+   * destruction, and it is answered on the destruction, not here.
+   *
+   * @generated from enum value: PACKAGED_RETURN_CONDITION_UNSALEABLE = 2;
+   */
+  UNSALEABLE = 2,
+}
+
+/**
+ * Describes the enum stillhouse.v1.PackagedReturnCondition.
+ */
+export const PackagedReturnConditionSchema: GenEnum<PackagedReturnCondition> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_removal, 1);
+
+/**
  * @generated from service stillhouse.v1.RemovalService
  */
 export const RemovalService: GenService<{
@@ -400,6 +723,33 @@ export const RemovalService: GenService<{
     methodKind: "unary";
     input: typeof VoidRemovalRequestSchema;
     output: typeof VoidRemovalResponseSchema;
+  },
+  /**
+   * Product coming back from the duty-paid market. It restocks and
+   * credits; it does not relieve duty. See PackagedReturnCondition.
+   *
+   * @generated from rpc stillhouse.v1.RemovalService.RecordPackagedReturn
+   */
+  recordPackagedReturn: {
+    methodKind: "unary";
+    input: typeof RecordPackagedReturnRequestSchema;
+    output: typeof RecordPackagedReturnResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.RemovalService.ListPackagedReturns
+   */
+  listPackagedReturns: {
+    methodKind: "unary";
+    input: typeof ListPackagedReturnsRequestSchema;
+    output: typeof ListPackagedReturnsResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.RemovalService.VoidPackagedReturn
+   */
+  voidPackagedReturn: {
+    methodKind: "unary";
+    input: typeof VoidPackagedReturnRequestSchema;
+    output: typeof VoidPackagedReturnResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_removal, 0);
