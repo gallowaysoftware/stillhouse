@@ -1334,6 +1334,95 @@ func (ns NullRemovalDestinationKind) Value() (driver.Value, error) {
 	return string(ns.RemovalDestinationKind), nil
 }
 
+type SalesOrderStatus string
+
+const (
+	SalesOrderStatusDraft            SalesOrderStatus = "draft"
+	SalesOrderStatusConfirmed        SalesOrderStatus = "confirmed"
+	SalesOrderStatusPartiallyShipped SalesOrderStatus = "partially_shipped"
+	SalesOrderStatusShipped          SalesOrderStatus = "shipped"
+	SalesOrderStatusClosed           SalesOrderStatus = "closed"
+	SalesOrderStatusCancelled        SalesOrderStatus = "cancelled"
+)
+
+func (e *SalesOrderStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = SalesOrderStatus(s)
+	case string:
+		*e = SalesOrderStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for SalesOrderStatus: %T", src)
+	}
+	return nil
+}
+
+type NullSalesOrderStatus struct {
+	SalesOrderStatus SalesOrderStatus `json:"sales_order_status"`
+	Valid            bool             `json:"valid"` // Valid is true if SalesOrderStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullSalesOrderStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.SalesOrderStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.SalesOrderStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullSalesOrderStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.SalesOrderStatus), nil
+}
+
+type ShipmentStatus string
+
+const (
+	ShipmentStatusPicking   ShipmentStatus = "picking"
+	ShipmentStatusShipped   ShipmentStatus = "shipped"
+	ShipmentStatusCancelled ShipmentStatus = "cancelled"
+)
+
+func (e *ShipmentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ShipmentStatus(s)
+	case string:
+		*e = ShipmentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ShipmentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullShipmentStatus struct {
+	ShipmentStatus ShipmentStatus `json:"shipment_status"`
+	Valid          bool           `json:"valid"` // Valid is true if ShipmentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullShipmentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ShipmentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ShipmentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullShipmentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ShipmentStatus), nil
+}
+
 type SpiritKind string
 
 const (
@@ -2185,6 +2274,7 @@ type PackagingRemoval struct {
 	VoidedReason        string                 `json:"voided_reason"`
 	CustomerID          uuid.NullUUID          `json:"customer_id"`
 	LocationID          uuid.NullUUID          `json:"location_id"`
+	ShipmentID          uuid.NullUUID          `json:"shipment_id"`
 }
 
 type PasswordResetToken struct {
@@ -2401,10 +2491,78 @@ type Redistillation struct {
 	UpdatedAt         pgtype.Timestamptz   `json:"updated_at"`
 }
 
+type SalesOrder struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	CustomerID        uuid.UUID          `json:"customer_id"`
+	OrderNo           int32              `json:"order_no"`
+	Status            SalesOrderStatus   `json:"status"`
+	OrderedOn         pgtype.Date        `json:"ordered_on"`
+	RequiredBy        pgtype.Date        `json:"required_by"`
+	CustomerReference string             `json:"customer_reference"`
+	PriceListID       uuid.NullUUID      `json:"price_list_id"`
+	LocationID        uuid.NullUUID      `json:"location_id"`
+	Notes             string             `json:"notes"`
+	ConfirmedAt       pgtype.Timestamptz `json:"confirmed_at"`
+	ConfirmedBy       uuid.NullUUID      `json:"confirmed_by"`
+	CancelledAt       pgtype.Timestamptz `json:"cancelled_at"`
+	CancelReason      string             `json:"cancel_reason"`
+	CreatedBy         uuid.UUID          `json:"created_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
+type SalesOrderLine struct {
+	ID             uuid.UUID          `json:"id"`
+	TenantID       uuid.UUID          `json:"tenant_id"`
+	SalesOrderID   uuid.UUID          `json:"sales_order_id"`
+	ProductID      uuid.UUID          `json:"product_id"`
+	BottlesOrdered int32              `json:"bottles_ordered"`
+	BottlesShipped int32              `json:"bottles_shipped"`
+	UnitPrice      pgtype.Numeric     `json:"unit_price"`
+	Notes          string             `json:"notes"`
+	CreatedAt      pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt      pgtype.Timestamptz `json:"updated_at"`
+}
+
 type Session struct {
 	Token  string             `json:"token"`
 	Data   []byte             `json:"data"`
 	Expiry pgtype.Timestamptz `json:"expiry"`
+}
+
+type Shipment struct {
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	SalesOrderID uuid.NullUUID      `json:"sales_order_id"`
+	CustomerID   uuid.UUID          `json:"customer_id"`
+	ShipmentNo   int32              `json:"shipment_no"`
+	Status       ShipmentStatus     `json:"status"`
+	LocationID   uuid.NullUUID      `json:"location_id"`
+	ShipDate     pgtype.Date        `json:"ship_date"`
+	Carrier      string             `json:"carrier"`
+	TrackingRef  string             `json:"tracking_ref"`
+	BolReference string             `json:"bol_reference"`
+	Notes        string             `json:"notes"`
+	ShippedAt    pgtype.Timestamptz `json:"shipped_at"`
+	ShippedBy    uuid.NullUUID      `json:"shipped_by"`
+	CancelledAt  pgtype.Timestamptz `json:"cancelled_at"`
+	CancelReason string             `json:"cancel_reason"`
+	CreatedBy    uuid.UUID          `json:"created_by"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+}
+
+type ShipmentLine struct {
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	ShipmentID          uuid.UUID          `json:"shipment_id"`
+	SalesOrderLineID    uuid.NullUUID      `json:"sales_order_line_id"`
+	PackagedInventoryID uuid.UUID          `json:"packaged_inventory_id"`
+	Bottles             int32              `json:"bottles"`
+	PackagingRemovalID  uuid.NullUUID      `json:"packaging_removal_id"`
+	Notes               string             `json:"notes"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 }
 
 type Supplier struct {

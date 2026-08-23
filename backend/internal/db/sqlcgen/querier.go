@@ -22,6 +22,8 @@ type Querier interface {
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	AddPurchaseOrderLine(ctx context.Context, arg AddPurchaseOrderLineParams) (PurchaseOrderLine, error)
+	AddSalesOrderLine(ctx context.Context, arg AddSalesOrderLineParams) (SalesOrderLine, error)
+	AddShipmentLine(ctx context.Context, arg AddShipmentLineParams) (ShipmentLine, error)
 	// Spirit that left stock into the still and has no output recorded after
 	// long enough that it should have. Alcohol off the books is the one
 	// shape of gap a period-end reconciliation cannot explain.
@@ -59,6 +61,10 @@ type Querier interface {
 	// For a barrel_dump-tagged bulk_movement, return the barrel + its fill
 	// history (so we can include the original distillation behind the fill).
 	BarrelDumpsForContainerFill(ctx context.Context, id uuid.UUID) ([]BarrelDumpsForContainerFillRow, error)
+	// Bottles spoken for on shipments that are still being picked. Picking
+	// does not decrement the lot — stock leaves once, at the shipment — so
+	// this is what stands between two pickers promising the same bottles.
+	BottlesPickedFromLot(ctx context.Context, packagedInventoryID uuid.UUID) (int32, error)
 	// Daily bottling rate per jurisdiction over the past 30 days. Used by the
 	// dashboard to convert on-hand stamp counts into a "days of stock" estimate.
 	Bottling30DayRatePerJurisdiction(ctx context.Context) ([]Bottling30DayRatePerJurisdictionRow, error)
@@ -72,6 +78,7 @@ type Querier interface {
 	// have only existed never accept a row here. Caller falls back to
 	// container.created_at for those.
 	BulkContainerLastActivity(ctx context.Context) ([]BulkContainerLastActivityRow, error)
+	CancelShipment(ctx context.Context, arg CancelShipmentParams) (Shipment, error)
 	// Only a loss can be classified. The reason guard is here rather than only
 	// in Go so that a caller cannot quietly attach a duty treatment to a
 	// production gauge and have it counted.
@@ -152,6 +159,8 @@ type Querier interface {
 	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
 	CreateRedistillation(ctx context.Context, arg CreateRedistillationParams) (Redistillation, error)
 	CreateRemoval(ctx context.Context, arg CreateRemovalParams) (PackagingRemoval, error)
+	CreateSalesOrder(ctx context.Context, arg CreateSalesOrderParams) (SalesOrder, error)
+	CreateShipment(ctx context.Context, arg CreateShipmentParams) (Shipment, error)
 	CreateStampDisposition(ctx context.Context, arg CreateStampDispositionParams) (ExciseStampDisposition, error)
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
 	CreateSupplier(ctx context.Context, arg CreateSupplierParams) (Supplier, error)
@@ -180,6 +189,8 @@ type Querier interface {
 	// Only reachable on a draft; the handler enforces that. A line that has
 	// been ordered against is history, not a typo.
 	DeletePurchaseOrderLine(ctx context.Context, id uuid.UUID) error
+	DeleteSalesOrderLine(ctx context.Context, id uuid.UUID) error
+	DeleteShipmentLine(ctx context.Context, id uuid.UUID) error
 	DeleteTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) error
 	// Hard delete — every FK to tenants is ON DELETE CASCADE so this wipes
 	// the entire tenant footprint (users, recipes, mashes, ferments,
@@ -249,6 +260,7 @@ type Querier interface {
 	GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUID) (PackagedInventory, error)
 	GetPackagedLotReleaseState(ctx context.Context, id uuid.UUID) (GetPackagedLotReleaseStateRow, error)
 	GetPriceList(ctx context.Context, id uuid.UUID) (PriceList, error)
+	GetPriceListEntryForProduct(ctx context.Context, arg GetPriceListEntryForProductParams) (PriceListEntry, error)
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
 	GetPurchaseOrder(ctx context.Context, id uuid.UUID) (PurchaseOrder, error)
@@ -262,6 +274,13 @@ type Querier interface {
 	GetRecipeVersionWhiskySensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionWhiskySensory, error)
 	GetRedistillation(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
+	GetSalesOrder(ctx context.Context, id uuid.UUID) (SalesOrder, error)
+	GetSalesOrderLineForUpdate(ctx context.Context, id uuid.UUID) (SalesOrderLine, error)
+	GetShipment(ctx context.Context, id uuid.UUID) (Shipment, error)
+	// Locked before shipping: shipping twice would write two sets of
+	// removals against one pallet and double the duty on the return.
+	GetShipmentForUpdate(ctx context.Context, id uuid.UUID) (Shipment, error)
+	GetShipmentLine(ctx context.Context, id uuid.UUID) (ShipmentLine, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetSupplier(ctx context.Context, id uuid.UUID) (Supplier, error)
 	GetTenantByID(ctx context.Context, id uuid.UUID) (Tenant, error)
@@ -274,6 +293,7 @@ type Querier interface {
 	HoldPackagedLot(ctx context.Context, arg HoldPackagedLotParams) (PackagedInventory, error)
 	IncrementPackagedOnHand(ctx context.Context, arg IncrementPackagedOnHandParams) (PackagedInventory, error)
 	IncrementPurchaseOrderLineReceived(ctx context.Context, arg IncrementPurchaseOrderLineReceivedParams) (PurchaseOrderLine, error)
+	IncrementSalesOrderLineShipped(ctx context.Context, arg IncrementSalesOrderLineShippedParams) (SalesOrderLine, error)
 	IncrementStampOrderApplied(ctx context.Context, arg IncrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	IncrementStampOrderVoided(ctx context.Context, arg IncrementStampOrderVoidedParams) (ExciseStampOrder, error)
 	InsertAuditEvent(ctx context.Context, arg InsertAuditEventParams) (AuditEvent, error)
@@ -311,6 +331,7 @@ type Querier interface {
 	// rather than a correlated subquery so listing the register is one query
 	// regardless of how many instruments a distillery holds.
 	LatestCalibrationsForInstruments(ctx context.Context) ([]InstrumentCalibration, error)
+	LinkShipmentLineRemoval(ctx context.Context, arg LinkShipmentLineRemovalParams) error
 	// Points a work order at what it produced. The link runs order → record,
 	// so the production tables know nothing about planning.
 	LinkWorkOrderOutput(ctx context.Context, arg LinkWorkOrderOutputParams) (WorkOrder, error)
@@ -429,6 +450,10 @@ type Querier interface {
 	ListRecipes(ctx context.Context, includeArchived bool) ([]Recipe, error)
 	ListRedistillations(ctx context.Context, arg ListRedistillationsParams) ([]ListRedistillationsRow, error)
 	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
+	ListSalesOrderLines(ctx context.Context, salesOrderID uuid.UUID) ([]ListSalesOrderLinesRow, error)
+	ListSalesOrders(ctx context.Context, openOnly bool) ([]ListSalesOrdersRow, error)
+	ListShipmentLines(ctx context.Context, shipmentID uuid.UUID) ([]ListShipmentLinesRow, error)
+	ListShipments(ctx context.Context, openOnly bool) ([]ListShipmentsRow, error)
 	// Everything not applied to a bottle, most recent first. The losses and
 	// thefts are what CRA asks about; the spoilage is what makes the
 	// arithmetic add up.
@@ -482,6 +507,7 @@ type Querier interface {
 	MarkAlertNotified(ctx context.Context, id uuid.UUID) error
 	MarkMaterialLotInvoiced(ctx context.Context, arg MarkMaterialLotInvoicedParams) (MaterialLot, error)
 	MarkRedistillationLossClassified(ctx context.Context, id uuid.UUID) (Redistillation, error)
+	MarkShipmentShipped(ctx context.Context, arg MarkShipmentShippedParams) (Shipment, error)
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
@@ -489,6 +515,8 @@ type Querier interface {
 	NextPurchaseOrderNo(ctx context.Context) (int32, error)
 	NextRecipeVersionNo(ctx context.Context, recipeID uuid.UUID) (int32, error)
 	NextRemovalNo(ctx context.Context) (int32, error)
+	NextSalesOrderNo(ctx context.Context) (int32, error)
+	NextShipmentNo(ctx context.Context) (int32, error)
 	NextWorkOrderNo(ctx context.Context) (int32, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	// Whether anything is still owed on this order, so the status can follow
@@ -514,6 +542,11 @@ type Querier interface {
 	// WHERE status = 'submitted' guard makes this a no-op on already-draft
 	// periods, returning no rows.
 	ReopenB266Period(ctx context.Context, id uuid.UUID) (B266Period, error)
+	// What is spoken for on confirmed, unshipped order lines. Deliberately a
+	// read rather than a decrement: the alcohol has not moved, and a B266
+	// built on promises rather than movements would be wrong. This tells the
+	// screen; it does not tell the ledger.
+	ReservedBottlesForProduct(ctx context.Context, productID uuid.UUID) (int32, error)
 	// The other half of the life cycle. Anything of these kinds that the
 	// evaluation just ran did NOT touch is no longer true, so it closes
 	// itself. Scoped to the kinds actually evaluated, so a failure in one
@@ -545,6 +578,7 @@ type Querier interface {
 	// tokens are left alone so the count means what it says.
 	RevokeAllAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
+	SalesOrderOutstanding(ctx context.Context, salesOrderID uuid.UUID) (SalesOrderOutstandingRow, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
@@ -570,6 +604,9 @@ type Querier interface {
 	SetPurchaseOrderStatus(ctx context.Context, arg SetPurchaseOrderStatusParams) (PurchaseOrder, error)
 	SetRecipeArchived(ctx context.Context, arg SetRecipeArchivedParams) (Recipe, error)
 	SetRecipeCurrentVersion(ctx context.Context, arg SetRecipeCurrentVersionParams) error
+	SetRemovalShipment(ctx context.Context, arg SetRemovalShipmentParams) error
+	SetSalesOrderStatus(ctx context.Context, arg SetSalesOrderStatusParams) (SalesOrder, error)
+	SetShipmentShipDate(ctx context.Context, arg SetShipmentShipDateParams) (Shipment, error)
 	SetTenantBatchReleaseRequired(ctx context.Context, arg SetTenantBatchReleaseRequiredParams) (Tenant, error)
 	// Sets the RLS GUC inside an already-open transaction. Used by signup,
 	// where the tenant does not exist when the transaction begins but must be
@@ -581,6 +618,16 @@ type Querier interface {
 	// supplied, so "when did this actually start" is a fact rather than
 	// something somebody typed afterwards.
 	SetWorkOrderStatus(ctx context.Context, arg SetWorkOrderStatusParams) (WorkOrder, error)
+	// What a picker is about to put on the return, per lot, before they
+	// commit to it.
+	ShipmentLotBreakdown(ctx context.Context, shipmentID uuid.UUID) ([]ShipmentLotBreakdownRow, error)
+	// On hand, spoken for, picked and free — per product.
+	//
+	// The three middle columns are the reason reservation can stay soft. The
+	// alcohol has not moved, so nothing is decremented and the B266 is built
+	// from movements only; but the screen still tells an operator that the
+	// cases in front of them are already promised to somebody.
+	StockCommitments(ctx context.Context) ([]StockCommitmentsRow, error)
 	// The acknowledgement is written in the same statement that sets the
 	// status, so a submitted period can never exist without one. The table's
 	// CHECK holds the other half of that guarantee for any path that is not

@@ -71,6 +71,13 @@ var exportTables = []string{
 	"bottling_run_stamp_usage",
 	"packaged_inventory",
 	"packaging_removals",
+	// The sales chain sits between the stock and the return: a removal
+	// now names the shipment it came from, so exporting removals without
+	// shipments would leave that reference pointing at nothing.
+	"sales_orders",
+	"sales_order_lines",
+	"shipments",
+	"shipment_lines",
 	"b266_periods",
 	"audit_events",
 }

@@ -299,6 +299,30 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.RecipeService/SaveRecipeVersionWhiskySensory": roleOperator,
 
 	// RemovalService
+	// SalesService. Picking and shipping are operator actions — the
+	// person putting cases on the truck is who knows what actually went
+	// on it, and ShipShipment is where the removals get written, so
+	// gating it above the picker would mean the removals get typed later
+	// by somebody who was not there. That is the failure this track
+	// exists to end.
+	//
+	// Committing the distillery to an order, and cancelling one, is a
+	// back-office act like a purchase order, so it sits with the owner.
+	"/stillhouse.v1.SalesService/ListSalesOrders":      roleViewer,
+	"/stillhouse.v1.SalesService/GetSalesOrder":        roleViewer,
+	"/stillhouse.v1.SalesService/ListShipments":        roleViewer,
+	"/stillhouse.v1.SalesService/GetShipment":          roleViewer,
+	"/stillhouse.v1.SalesService/ListStockCommitments": roleViewer,
+	"/stillhouse.v1.SalesService/CreateShipment":       roleOperator,
+	"/stillhouse.v1.SalesService/AddShipmentLine":      roleOperator,
+	"/stillhouse.v1.SalesService/RemoveShipmentLine":   roleOperator,
+	"/stillhouse.v1.SalesService/ShipShipment":         roleOperator,
+	"/stillhouse.v1.SalesService/CancelShipment":       roleOperator,
+	"/stillhouse.v1.SalesService/CreateSalesOrder":     roleOwner,
+	"/stillhouse.v1.SalesService/AddSalesOrderLine":    roleOwner,
+	"/stillhouse.v1.SalesService/RemoveSalesOrderLine": roleOwner,
+	"/stillhouse.v1.SalesService/SetSalesOrderStatus":  roleOwner,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

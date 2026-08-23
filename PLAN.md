@@ -153,12 +153,8 @@ restore actually returns.
 
 Competitor parity. Purtrak, Whiskey Systems and Ekos all treat sales as the
 spine production hangs from; Stillhouse has no customer concept at all. `D1`
-and `D6` unblock provincial reporting (`I1`) and the POS loop (`G4`).
-
-### D2 · Sales orders — P1
-
-Order header and lines against products, with status, reserved stock against
-packaged inventory, and backorder handling.
+unblocks provincial reporting (`I1`) and the POS loop (`G4`); the order →
+pick → removal chain shipped in stage 173.
 
 ### D3 · Invoicing — P1
 
@@ -166,22 +162,16 @@ Invoice generation from orders, numbering, terms, credit notes, AR ageing.
 **Quebec:** invoices must be available in French (Bill 96 / Charter of the
 French Language) — depends on `H6`.
 
-### D4 · Shipments, picking and documents — P1
+### D4a · A generated bill of lading — P2
 
-Pick lists, packing slips, bills of lading, carrier and tracking. Ekos and
-Purtrak both ship picking; Purtrak recently rebuilt theirs.
+Picking, packing slips, carrier and tracking shipped with the sales chain
+(stage 173); the BOL is recorded by reference, not produced. Most carriers
+supply their own form, so this is only worth doing for the ones that don't.
 
 ### D5 · Keg and returnable container tracking — P2
 
 Keg registry, deposits, fill/return cycle, freshness. Overlaps with marked
 special containers (`B3`) but is a distinct asset-tracking problem.
-
-### D6 · Removal generated from shipment — P1
-
-The item that makes the whole track pay for itself on the compliance side: a
-shipment produces the removal, rather than an operator remembering to record
-one. Closes the loop from order to B266 with no re-keying. Depends on `D2`,
-`D4`, and `A1` for the duty point.
 
 ### D7 · Consignment, returns and credits — P2
 
