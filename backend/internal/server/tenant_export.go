@@ -35,19 +35,34 @@ import (
 // → barrels → bottling → removals → B266 → audit) so a reviewer reading the
 // zip top-to-bottom can follow the chain.
 var exportTables = []string{
-	// The instrument register comes first: everything downstream that
-	// determined a quantity points back at it, and a reviewer reading the
-	// zip top-to-bottom needs to know what the serial numbers mean before
+	// Premises and licences come first. Everything below happens at a
+	// location, under a licence, and a reviewer needs to know which.
+	"locations",
+	"excise_licences",
+	// The instrument register: everything downstream that determined a
+	// quantity points back at it, and a reviewer reading the zip
+	// top-to-bottom needs to know what the serial numbers mean before
 	// meeting them on a gauge.
 	"instruments",
 	"instrument_calibrations",
+	"suppliers",
+	"purchase_orders",
+	"purchase_order_lines",
 	"materials",
-	"material_receipts",
+	// Every receipt of grain, with what it cost landed. Named
+	// material_receipts here until stage 174, which is a table that has
+	// never existed — so the export silently skipped it, and an s.206
+	// retention export went out with no record of what came in the door.
+	"material_lots",
 	"recipes",
 	"recipe_versions",
 	"recipe_ingredients",
+	"recipe_version_sensory",
+	"recipe_version_whisky_sensory",
+	"work_orders",
 	"mash_runs",
-	"mash_ingredients",
+	// Likewise mash_ingredients, which is called mash_ingredient_usage.
+	"mash_ingredient_usage",
 	"mash_metrics",
 	"fermentation_runs",
 	"fermentation_logs",
@@ -59,26 +74,37 @@ var exportTables = []string{
 	"distillation_runs",
 	"distillation_charges",
 	"distillation_cuts",
+	"redistillations",
 	// The determinations themselves. Without these the export could show
 	// what the quantities were and not how any of them was arrived at,
 	// which is the half an auditor actually asks about.
 	"production_gauges",
-	"barrels",
+	// And likewise barrels, which is bulk_containers plus the maturation
+	// record hanging off it. Char, cooperage, fill date and the
+	// maturation clock were all missing from the zip.
+	"barrel_attributes",
 	"barrel_events",
 	"products",
 	"excise_stamp_orders",
+	"excise_stamp_dispositions",
 	"bottling_runs",
 	"bottling_run_stamp_usage",
 	"packaged_inventory",
+	"lab_results",
+	"customers",
+	"price_lists",
+	"price_list_entries",
 	"packaging_removals",
 	// The sales chain sits between the stock and the return: a removal
-	// now names the shipment it came from, so exporting removals without
+	// names the shipment it came from, so exporting removals without
 	// shipments would leave that reference pointing at nothing.
 	"sales_orders",
 	"sales_order_lines",
 	"shipments",
 	"shipment_lines",
 	"b266_periods",
+	"journal_accounts",
+	"alerts",
 	"audit_events",
 }
 
