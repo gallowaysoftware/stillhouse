@@ -184,10 +184,19 @@ Same shape as `G2`. Second because QBO dominates in Canada.
 
 ### G4 · POS and e-commerce ingest — P1
 
-Square, Lightspeed, Shopify, Commerce7. A tasting-room sale becomes a duty-paid
-removal automatically. This is a compliance feature wearing a sales costume —
-every sale keyed by hand is a chance to under-report. The pricing engine
-already models `SALES_CHANNEL_ON_SITE_RETAIL`; nothing feeds it.
+The ingest shipped in stage 200: an idempotent batch endpoint, the SKU
+map, the pending/rejected queue, and posting to duty-paid removals through
+the same `recordRemoval` a hand-keyed one uses.
+
+What is left is the per-vendor adapters — Square, Lightspeed, Shopify,
+Commerce7 — and they are the part that cannot be written from here. Each
+needs its own OAuth app, webhook signature scheme and line-item shape, and
+those are credentials and API contracts rather than logic. Each adapter is
+thin: normalise the vendor's payload into `POSSaleLine` and call
+`IngestPOSSales`, which is deliberately where all the care already is.
+
+A CSV upload of the same shape would serve every till that has an export
+button and no API, and is probably worth more than any single adapter.
 
 ### G6 · Public API and webhooks — P2
 

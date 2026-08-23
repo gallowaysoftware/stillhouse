@@ -1650,6 +1650,50 @@ func (ns NullPackagedReturnCondition) Value() (driver.Value, error) {
 	return string(ns.PackagedReturnCondition), nil
 }
 
+type PosSaleStatus string
+
+const (
+	PosSaleStatusPending  PosSaleStatus = "pending"
+	PosSaleStatusPosted   PosSaleStatus = "posted"
+	PosSaleStatusRejected PosSaleStatus = "rejected"
+	PosSaleStatusIgnored  PosSaleStatus = "ignored"
+)
+
+func (e *PosSaleStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = PosSaleStatus(s)
+	case string:
+		*e = PosSaleStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for PosSaleStatus: %T", src)
+	}
+	return nil
+}
+
+type NullPosSaleStatus struct {
+	PosSaleStatus PosSaleStatus `json:"pos_sale_status"`
+	Valid         bool          `json:"valid"` // Valid is true if PosSaleStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPosSaleStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.PosSaleStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.PosSaleStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPosSaleStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.PosSaleStatus), nil
+}
+
 type PurchaseOrderStatus string
 
 const (
@@ -3317,6 +3361,32 @@ type PasswordResetToken struct {
 	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
 	UsedAt    pgtype.Timestamptz `json:"used_at"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type PosProductMap struct {
+	ID          uuid.UUID          `json:"id"`
+	TenantID    uuid.UUID          `json:"tenant_id"`
+	Source      string             `json:"source"`
+	ExternalSku string             `json:"external_sku"`
+	ProductID   uuid.UUID          `json:"product_id"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+}
+
+type PosSale struct {
+	ID           uuid.UUID          `json:"id"`
+	TenantID     uuid.UUID          `json:"tenant_id"`
+	Source       string             `json:"source"`
+	ExternalID   string             `json:"external_id"`
+	ExternalSku  string             `json:"external_sku"`
+	Description  string             `json:"description"`
+	Quantity     int32              `json:"quantity"`
+	UnitPriceCad pgtype.Numeric     `json:"unit_price_cad"`
+	SoldAt       pgtype.Timestamptz `json:"sold_at"`
+	Status       PosSaleStatus      `json:"status"`
+	RemovalID    uuid.NullUUID      `json:"removal_id"`
+	RejectReason string             `json:"reject_reason"`
+	ReceivedAt   pgtype.Timestamptz `json:"received_at"`
+	PostedAt     pgtype.Timestamptz `json:"posted_at"`
 }
 
 type PriceList struct {

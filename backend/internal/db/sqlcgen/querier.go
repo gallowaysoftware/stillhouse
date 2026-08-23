@@ -261,6 +261,7 @@ type Querier interface {
 	DeleteInvoiceLine(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLines(ctx context.Context, invoiceID uuid.UUID) error
 	DeleteLabourEntry(ctx context.Context, id uuid.UUID) error
+	DeletePOSProductMap(ctx context.Context, id uuid.UUID) error
 	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
 	DeleteProvincialRegistration(ctx context.Context, id uuid.UUID) error
 	// Only reachable on a draft; the handler enforces that. A line that has
@@ -464,6 +465,13 @@ type Querier interface {
 	// the counterparty, the document, the determination and the author, none of
 	// which a side-effect movement needs because its parent row has them.
 	InsertExternalBulkMovement(ctx context.Context, arg InsertExternalBulkMovementParams) (BulkMovement, error)
+	// The idempotent write. A redelivered line collides on
+	// (tenant, source, external_id) and DO NOTHING means no second row and
+	// therefore no second removal — see 000065.
+	//
+	// Returns nothing on a collision, which is how the caller counts
+	// duplicates without a second query.
+	InsertPOSSale(ctx context.Context, arg InsertPOSSaleParams) (PosSale, error)
 	InvoiceTotals(ctx context.Context, invoiceID uuid.UUID) (InvoiceTotalsRow, error)
 	IssueInvoice(ctx context.Context, arg IssueInvoiceParams) (Invoice, error)
 	// Duty crystallised in the period, from wherever the duty point falls.
@@ -629,12 +637,15 @@ type Querier interface {
 	ListMaterialLots(ctx context.Context, arg ListMaterialLotsParams) ([]MaterialLot, error)
 	ListMaterials(ctx context.Context, arg ListMaterialsParams) ([]Material, error)
 	ListOpenAlerts(ctx context.Context) ([]ListOpenAlertsRow, error)
+	ListPOSProductMap(ctx context.Context) ([]ListPOSProductMapRow, error)
+	ListPOSSales(ctx context.Context, arg ListPOSSalesParams) ([]ListPOSSalesRow, error)
 	ListPackagedAdjustments(ctx context.Context) ([]ListPackagedAdjustmentsRow, error)
 	// LEFT JOINs the originating bottling_run so we can carry first_bottled_date
 	// back to the client for an aging calc. packaged_inventory.bottling_run_id
 	// is nullable to support backfill cases.
 	ListPackagedInventory(ctx context.Context, includeEmpty bool) ([]ListPackagedInventoryRow, error)
 	ListPackagedReturns(ctx context.Context, rowLimit int32) ([]ListPackagedReturnsRow, error)
+	ListPendingPOSSales(ctx context.Context) ([]PosSale, error)
 	ListPriceListEntries(ctx context.Context, priceListID uuid.UUID) ([]ListPriceListEntriesRow, error)
 	// as_of empty means every list; otherwise only those in force that day.
 	ListPriceLists(ctx context.Context, asOf pgtype.Date) ([]PriceList, error)
@@ -725,8 +736,11 @@ type Querier interface {
 	// and recipe versions take no row lock at all). Reversing that in one
 	// caller and not another is how two of these deadlock.
 	LockDocumentSequence(ctx context.Context, counter string) error
+	LookupPOSProduct(ctx context.Context, arg LookupPOSProductParams) (uuid.UUID, error)
 	MarkAlertNotified(ctx context.Context, id uuid.UUID) error
 	MarkMaterialLotInvoiced(ctx context.Context, arg MarkMaterialLotInvoicedParams) (MaterialLot, error)
+	MarkPOSSalePosted(ctx context.Context, arg MarkPOSSalePostedParams) error
+	MarkPOSSaleRejected(ctx context.Context, arg MarkPOSSaleRejectedParams) error
 	MarkProvincialReportFiled(ctx context.Context, arg MarkProvincialReportFiledParams) (ProvincialReportPeriod, error)
 	MarkRedistillationLossClassified(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	MarkShipmentShipped(ctx context.Context, arg MarkShipmentShippedParams) (Shipment, error)
@@ -760,12 +774,21 @@ type Querier interface {
 	NextShipmentNo(ctx context.Context) (int32, error)
 	NextStockCountNo(ctx context.Context) (int32, error)
 	NextWorkOrderNo(ctx context.Context) (int32, error)
+	// Which lot a tasting-room sale comes off. Oldest first with stock on
+	// hand: a bottle sold over the counter came from the case that was
+	// already open, and FIFO is the only rule that does not require the
+	// till to know which lot the server reached for.
+	//
+	// Released lots only where release is required, because selling stock
+	// nobody has released is the thing batch release exists to stop.
+	OldestPackagedLotForProduct(ctx context.Context, arg OldestPackagedLotForProductParams) (PackagedInventory, error)
 	// Checked before any path that really removes a row. One query, in one
 	// place, so a delete added later cannot quietly escape a hold.
 	OpenLegalHoldCount(ctx context.Context) (int32, error)
 	// Issued invoices past their due date with money still on them, for the
 	// alert evaluator.
 	OverdueInvoices(ctx context.Context) ([]OverdueInvoicesRow, error)
+	POSSaleSummary(ctx context.Context) (POSSaleSummaryRow, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
 	PlaceLegalHold(ctx context.Context, arg PlaceLegalHoldParams) (LegalHold, error)
 	// Plant that can actually be planned against: in service, with a
@@ -995,6 +1018,7 @@ type Querier interface {
 	SetMaterialLotLandedCharges(ctx context.Context, arg SetMaterialLotLandedChargesParams) (MaterialLot, error)
 	SetMaterialLotQuantity(ctx context.Context, arg SetMaterialLotQuantityParams) (MaterialLot, error)
 	SetMaterialReorder(ctx context.Context, arg SetMaterialReorderParams) (Material, error)
+	SetPOSSaleIgnored(ctx context.Context, arg SetPOSSaleIgnoredParams) error
 	SetPackagedBottles(ctx context.Context, arg SetPackagedBottlesParams) (PackagedInventory, error)
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
 	// The status is cast explicitly at every use. Postgres cannot deduce one
@@ -1274,6 +1298,7 @@ type Querier interface {
 	// due. COALESCE keeps whatever the row already had.
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertJournalAccount(ctx context.Context, arg UpsertJournalAccountParams) (JournalAccount, error)
+	UpsertPOSProductMap(ctx context.Context, arg UpsertPOSProductMapParams) (PosProductMap, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
 	UpsertPriceListEntry(ctx context.Context, arg UpsertPriceListEntryParams) (PriceListEntry, error)
 	UpsertProvincialReportPeriod(ctx context.Context, arg UpsertProvincialReportPeriodParams) (ProvincialReportPeriod, error)

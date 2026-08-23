@@ -1,0 +1,124 @@
+// Tasting-room and web sales, arriving as data rather than as typing.
+// PLAN G4.
+//
+// This is a compliance feature wearing a sales costume: every sale keyed
+// by hand is a chance to under-report. Automating it introduces the
+// opposite failure, and that is the one this service is shaped around — a
+// POS webhook is delivered at least once, and a retry that creates a
+// second removal reports duty twice and takes stock off the shelf that is
+// still on it.
+//
+// So ingest is idempotent on the POS's own line id, and a sale whose SKU
+// nobody has mapped is REJECTED and kept rather than dropped. A sale that
+// vanishes because of a missing mapping is exactly the under-reporting
+// this feature exists to prevent, arriving through the door it opened.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+message POSSaleLine {
+  // The POS's own id for this line. Ingest is idempotent on it, so
+  // redelivering a batch is safe and expected.
+  string external_id = 1;
+  string external_sku = 2;
+  string description = 3;
+  int32  quantity = 4;
+  double unit_price_cad = 5;
+  bool   unit_price_set = 6;
+  // ISO 8601. When the sale happened, not when it was delivered here.
+  string sold_at = 7;
+}
+
+message IngestPOSSalesRequest {
+  // Which system these came from — "square", "shopify", a till name.
+  // Free text, because the set is not ours to close.
+  string source = 1;
+  repeated POSSaleLine lines = 2;
+  // Post what can be posted in the same call. Off by default: an
+  // operator connecting a till for the first time should see what
+  // arrived before it becomes removals on a return.
+  bool post_immediately = 3;
+}
+message IngestPOSSalesResponse {
+  int32 received = 1;
+  // Lines already seen. Not an error — redelivery is normal — and
+  // reported so a connector can tell "nothing new" from "nothing sent".
+  int32 duplicates = 2;
+  int32 posted = 3;
+  int32 rejected = 4;
+  repeated string rejections = 5;
+}
+
+message PostPOSSalesRequest {
+  // Empty means every pending sale.
+  repeated string sale_ids = 1;
+}
+message PostPOSSalesResponse {
+  int32 posted = 1;
+  int32 rejected = 2;
+  repeated string rejections = 3;
+}
+
+message POSSale {
+  string id = 1;
+  string source = 2;
+  string external_id = 3;
+  string external_sku = 4;
+  string product_name = 5;
+  string description = 6;
+  int32  quantity = 7;
+  double unit_price_cad = 8;
+  bool   unit_price_set = 9;
+  string sold_at = 10;
+  string status = 11;
+  string removal_id = 12;
+  string reject_reason = 13;
+}
+
+message ListPOSSalesRequest {
+  string status = 1;  // "", pending, posted, rejected, ignored
+  int32  limit = 2;
+}
+message ListPOSSalesResponse {
+  repeated POSSale sales = 1;
+  int32 pending = 2;
+  int32 posted = 3;
+  int32 rejected = 4;
+  int32 ignored = 5;
+}
+
+message IgnorePOSSaleRequest {
+  string id = 1;
+  string reason = 2;
+}
+message IgnorePOSSaleResponse {}
+
+message POSProductMapping {
+  string id = 1;
+  string source = 2;
+  string external_sku = 3;
+  string product_id = 4;
+  string product_name = 5;
+}
+message ListPOSProductMappingsRequest {}
+message ListPOSProductMappingsResponse { repeated POSProductMapping mappings = 1; }
+
+message SavePOSProductMappingRequest {
+  string source = 1;
+  string external_sku = 2;
+  string product_id = 3;
+}
+message SavePOSProductMappingResponse { POSProductMapping mapping = 1; }
+
+message DeletePOSProductMappingRequest { string id = 1; }
+message DeletePOSProductMappingResponse {}
+
+service POSService {
+  rpc IngestPOSSales(IngestPOSSalesRequest) returns (IngestPOSSalesResponse);
+  rpc PostPOSSales(PostPOSSalesRequest) returns (PostPOSSalesResponse);
+  rpc ListPOSSales(ListPOSSalesRequest) returns (ListPOSSalesResponse);
+  rpc IgnorePOSSale(IgnorePOSSaleRequest) returns (IgnorePOSSaleResponse);
+  rpc ListPOSProductMappings(ListPOSProductMappingsRequest) returns (ListPOSProductMappingsResponse);
+  rpc SavePOSProductMapping(SavePOSProductMappingRequest) returns (SavePOSProductMappingResponse);
+  rpc DeletePOSProductMapping(DeletePOSProductMappingRequest) returns (DeletePOSProductMappingResponse);
+}

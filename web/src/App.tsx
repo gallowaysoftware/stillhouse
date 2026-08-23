@@ -42,6 +42,7 @@ import { RecipesPage } from "./pages/RecipesPage";
 import { RemovalsPage } from "./pages/RemovalsPage";
 import { RequireAuth } from "./pages/RequireAuth";
 import { KegsPage } from "./pages/KegsPage";
+import { TillPage } from "./pages/TillPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { InstrumentsPage } from "./pages/InstrumentsPage";
 import { StampsPage } from "./pages/StampsPage";
@@ -95,6 +96,7 @@ export function App() {
       <Route path="/plan" element={<Guarded><PlanPage /></Guarded>} />
       <Route path="/counts" element={<Guarded><StockCountPage /></Guarded>} />
       <Route path="/work" element={<Guarded><WorkOrdersPage /></Guarded>} />
+      <Route path="/till" element={<Guarded><TillPage /></Guarded>} />
       <Route path="/kegs" element={<Guarded><KegsPage /></Guarded>} />
       <Route path="/settings" element={<Guarded><SettingsPage /></Guarded>} />
     </Routes>

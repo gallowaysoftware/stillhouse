@@ -381,6 +381,18 @@ var procedureMinRole = map[string]minRole{
 	// The keg register is asset tracking: the person moving the keg is
 	// who knows where it went. Buying one into the register is a
 	// purchase, so it sits with the back office.
+	// The till. Ingest is machine-to-machine and runs under an API token,
+	// so it sits at operator: the same person who can record a removal by
+	// hand. Posting is the same act. The SKU map decides which product a
+	// sale becomes a removal against — wrong duty and wrong stock on a
+	// filed return if it is wrong — so that is the back office's.
+	"/stillhouse.v1.POSService/ListPOSSales":                  roleViewer,
+	"/stillhouse.v1.POSService/ListPOSProductMappings":        roleViewer,
+	"/stillhouse.v1.POSService/IngestPOSSales":                roleOperator,
+	"/stillhouse.v1.POSService/PostPOSSales":                  roleOperator,
+	"/stillhouse.v1.POSService/IgnorePOSSale":                 roleOperator,
+	"/stillhouse.v1.POSService/SavePOSProductMapping":         roleOwner,
+	"/stillhouse.v1.POSService/DeletePOSProductMapping":       roleOwner,
 	"/stillhouse.v1.KegService/ListKegs":                      roleViewer,
 	"/stillhouse.v1.KegService/ListKegEvents":                 roleViewer,
 	"/stillhouse.v1.KegService/MoveKeg":                       roleOperator,

@@ -53,6 +53,7 @@ const navGroups: NavGroup[] = [
       { to: "/invoices", en: "Invoices", fr: "Factures" },
       { to: "/removals", en: "Removals", fr: "Sorties" },
       { to: "/kegs", en: "Kegs", fr: "Fûts" },
+      { to: "/till", en: "Till", fr: "Caisse" },
     ],
   },
   {
