@@ -68,6 +68,10 @@ type ChannelResult struct {
 	// everything that isn't theirs. This is the number that decides
 	// which channel is worth pursuing.
 	DistilleryNetCAD float64
+	// Citations are the rates this figure rests on, each with where it
+	// came from and when. What makes the number judgeable rather than
+	// merely produced.
+	Citations []Citation
 	// LowestProvenance is the weakest link among the rates actually used,
 	// so a caller can label the whole figure honestly.
 	LowestProvenance Provenance
@@ -95,14 +99,45 @@ func Compute(in Input) []JurisdictionBreakdown {
 	return out
 }
 
-// weakest tracks the least trustworthy rate a calculation leaned on.
-type weakest struct{ p Provenance }
+// weakest tracks what a calculation leaned on: the least trustworthy
+// rate among them, and where each one came from.
+//
+// Every rate a computation uses passes through use(), which makes this
+// the one place that can answer "why should I believe this number". The
+// provenance discipline was in the domain model from the start — every
+// Rate carries a Source and an AsOf — and until stage 166 none of it
+// reached the API, which is the only place an operator would ever see
+// it. Seventeen hand-maintained citations that nothing read was the
+// worst of the available options.
+type weakest struct {
+	p         Provenance
+	citations []Citation
+}
+
+// Citation is one rate a figure rests on, with its paperwork.
+type Citation struct {
+	// What the rate is, in words: "Ontario wholesale mark-up".
+	What       string
+	Value      float64
+	Provenance Provenance
+	// Where the value came from — a URL, or the name of the document.
+	Source string
+	// The ISO date it was published or last confirmed.
+	AsOf string
+	// Anything a reader needs in order not to misuse it.
+	Note string
+}
 
 func newWeakest() *weakest { return &weakest{p: Sourced} }
-func (w *weakest) use(r Rate) float64 {
+
+func (w *weakest) use(what string, r Rate) float64 {
 	if r.Provenance < w.p {
 		w.p = r.Provenance
 	}
+	w.citations = append(w.citations, Citation{
+		What: what, Value: r.Value, Provenance: r.Provenance,
+		Source: r.Source, AsOf: r.AsOf, Note: r.Note,
+	})
 	return r.Value
 }
 
@@ -132,24 +167,24 @@ func computeWholesale(in Input, j Jurisdiction) ChannelResult {
 	r.LandedCostCAD = in.LandedCostCAD()
 	r.FederalExciseCAD = in.FederalExciseCAD()
 	if hasAdValorem {
-		r.MarkupCAD = r.LandedCostCAD * w.use(j.WholesaleMarkupPctOfLanded)
+		r.MarkupCAD = r.LandedCostCAD * w.use("wholesale mark-up (% of landed cost)", j.WholesaleMarkupPctOfLanded)
 	} else {
-		r.MarkupCAD = in.VolumeL() * w.use(j.WholesalePerLitreCAD)
+		r.MarkupCAD = in.VolumeL() * w.use("wholesale mark-up (per litre)", j.WholesalePerLitreCAD)
 	}
 	if in.Imported && j.COSDPerLitreCAD.Known() {
-		r.COSDCAD = in.VolumeL() * w.use(j.COSDPerLitreCAD)
+		r.COSDCAD = in.VolumeL() * w.use("cost of service differential", j.COSDPerLitreCAD)
 	}
 	if j.ProvincialSpiritsTaxPct.Known() {
-		r.ProvincialTaxCAD = in.FOBCAD * w.use(j.ProvincialSpiritsTaxPct)
+		r.ProvincialTaxCAD = in.FOBCAD * w.use("provincial spirits tax", j.ProvincialSpiritsTaxPct)
 	}
 	r.ContainerDepositCAD = j.ContainerDepositCAD.Or(0)
 	if j.ContainerDepositCAD.Known() {
-		w.use(j.ContainerDepositCAD)
+		w.use("container deposit", j.ContainerDepositCAD)
 	}
 
 	beforeTax := r.LandedCostCAD + r.MarkupCAD + r.COSDCAD + r.ProvincialTaxCAD + r.ContainerDepositCAD
 	if j.SalesTaxPct.Known() {
-		r.SalesTaxCAD = beforeTax * w.use(j.SalesTaxPct)
+		r.SalesTaxCAD = beforeTax * w.use("sales tax", j.SalesTaxPct)
 	}
 	r.PriceToBuyerCAD = beforeTax + r.SalesTaxCAD
 	// The distillery sold at its quote; everything above the quote belongs
@@ -157,6 +192,7 @@ func computeWholesale(in Input, j Jurisdiction) ChannelResult {
 	r.DistilleryNetCAD = in.FOBCAD
 	r.Computable = true
 	r.LowestProvenance = w.p
+	r.Citations = w.citations
 	return r
 }
 
@@ -190,36 +226,44 @@ func computeOnSite(in Input, j Jurisdiction) ChannelResult {
 	r.FederalExciseCAD = in.FederalExciseCAD()
 	r.ContainerDepositCAD = j.ContainerDepositCAD.Or(0)
 	if j.ContainerDepositCAD.Known() {
-		w.use(j.ContainerDepositCAD)
+		w.use("container deposit", j.ContainerDepositCAD)
 	}
 	// Sales tax is computed on the pre-tax portion of a tax-inclusive
 	// shelf price, which is how a shop actually prices.
 	if j.SalesTaxPct.Known() {
-		rate := w.use(j.SalesTaxPct)
+		rate := w.use("sales tax", j.SalesTaxPct)
 		r.SalesTaxCAD = r.PriceToBuyerCAD - r.PriceToBuyerCAD/(1+rate)
 	}
 
 	switch j.OnSite.Kind {
 	case RemittanceMarkup:
-		r.MarkupCAD = r.PriceToBuyerCAD * w.use(j.OnSite.Rate)
+		r.MarkupCAD = r.PriceToBuyerCAD * w.use("on-site retail remittance", j.OnSite.Rate)
 	case RemittanceFeePerLitre:
-		r.MarkupCAD = in.VolumeL() * w.use(j.OnSite.Rate)
+		r.MarkupCAD = in.VolumeL() * w.use("on-site retail remittance", j.OnSite.Rate)
 	case RemittanceNone:
 		// Confirmed nothing is remitted.
 	default:
 		// Unrecorded. The arithmetic still runs, but the result is an
 		// upper bound and the caller must be told.
+		//
+		// The unknown rate is cited as well as reported missing, so the
+		// citation list explains the figure's provenance rather than
+		// contradicting it. Going through use() rather than setting
+		// w.p directly is what keeps the two in step — the test that
+		// compares the weakest citation against the reported provenance
+		// is how the discrepancy was found.
+		w.use("on-site retail remittance", j.OnSite.Rate)
 		r.Missing = append(r.Missing, Missing{
 			What: j.Name + " on-site remittance",
 			Why:  j.OnSite.Rate.Note,
 		})
-		w.p = Unknown
 	}
 
 	r.DistilleryNetCAD = r.PriceToBuyerCAD - r.FederalExciseCAD - r.SalesTaxCAD -
 		r.ContainerDepositCAD - r.MarkupCAD
 	r.Computable = true
 	r.LowestProvenance = w.p
+	r.Citations = w.citations
 	return r
 }
 

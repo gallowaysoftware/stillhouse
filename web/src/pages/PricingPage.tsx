@@ -146,6 +146,10 @@ function JurisdictionCard({ j }: { j: JurisdictionPricing }) {
 const CHANNEL_NAMES = ["—", "To the board", "Your own shop", "Export"];
 
 function ChannelCard({ c }: { c: ChannelPricing }) {
+  // Where the numbers came from. Collapsed by default — most of the time
+  // you want the price, not its paperwork — but one click away, because
+  // a price you can't trace is a price you can't quote.
+  const [showSources, setShowSources] = useState(false);
   return (
     <div className="bg-surface-2 p-4">
       <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -170,6 +174,41 @@ function ChannelCard({ c }: { c: ChannelPricing }) {
         </>
       ) : (
         <p className="text-sm font-medium text-fg-muted">Can't be priced yet</p>
+      )}
+
+      {c.computable && c.citations.length > 0 && (
+        <div className="mt-3 border-t border-border pt-2">
+          <button
+            onClick={() => setShowSources((v) => !v)}
+            className="text-[11px] text-fg-muted hover:text-fg"
+          >
+            {showSources ? "Hide" : "Where these numbers came from"} ({c.citations.length})
+          </button>
+          {showSources && (
+            <ul className="mt-2 space-y-1.5">
+              {c.citations.map((cit, i) => (
+                <li key={i} className="text-[11px] leading-snug">
+                  <span className="text-fg">{cit.what}</span>
+                  <span className="ml-1 text-fg-muted">
+                    {cit.provenance === RateProvenance.UNKNOWN
+                      ? "— not found"
+                      : `— ${cit.value}`}
+                  </span>
+                  <span className="ml-1 text-fg-subtle">
+                    ({provenanceWord(cit.provenance)})
+                  </span>
+                  {cit.source && (
+                    <span className="block text-fg-subtle">
+                      {cit.source}
+                      {cit.asOf && cit.asOf !== "unknown" && <> · as of {cit.asOf}</>}
+                    </span>
+                  )}
+                  {cit.note && <span className="block text-fg-subtle">{cit.note}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       {c.missing.length > 0 && (
@@ -200,6 +239,17 @@ function ChannelCard({ c }: { c: ChannelPricing }) {
  * the worth of the weakest rate inside it, and that should be visible
  * without reading the code.
  */
+// The one-word form, for a citation line. The chip above is the
+// figure-level summary; this labels an individual rate.
+function provenanceWord(p: RateProvenance): string {
+  switch (p) {
+    case RateProvenance.SOURCED: return "published";
+    case RateProvenance.INDICATIVE: return "indicative — planning only";
+    case RateProvenance.UNKNOWN: return "not found";
+    default: return "unspecified";
+  }
+}
+
 function ProvenanceChip({ p, computable }: { p: RateProvenance; computable: boolean }) {
   if (!computable) {
     return (

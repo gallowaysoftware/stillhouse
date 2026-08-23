@@ -106,6 +106,7 @@ func channelToProto(c pricing.ChannelResult) *stillhousev1.ChannelPricing {
 		Channel:          salesChannelToProto(c.Channel),
 		Computable:       c.Computable,
 		LowestProvenance: provenanceToProto(c.LowestProvenance),
+		Citations:        citationsToProto(c.Citations),
 	}
 	for _, m := range c.Missing {
 		out.Missing = append(out.Missing, &stillhousev1.MissingRate{What: m.What, Why: m.Why})
@@ -134,6 +135,21 @@ func salesChannelToProto(c pricing.Channel) stillhousev1.SalesChannel {
 	default:
 		return stillhousev1.SalesChannel_SALES_CHANNEL_WHOLESALE
 	}
+}
+
+func citationsToProto(cs []pricing.Citation) []*stillhousev1.RateCitation {
+	out := make([]*stillhousev1.RateCitation, 0, len(cs))
+	for _, c := range cs {
+		out = append(out, &stillhousev1.RateCitation{
+			What:       c.What,
+			Value:      c.Value,
+			Provenance: provenanceToProto(c.Provenance),
+			Source:     c.Source,
+			AsOf:       c.AsOf,
+			Note:       c.Note,
+		})
+	}
+	return out
 }
 
 func provenanceToProto(p pricing.Provenance) stillhousev1.RateProvenance {

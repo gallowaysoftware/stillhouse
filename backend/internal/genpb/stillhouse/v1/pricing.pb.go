@@ -141,6 +141,100 @@ func (SalesChannel) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{1}
 }
 
+// A rate a figure rests on, with its paperwork.
+//
+// Every Rate in the domain model has carried a Source and an AsOf since
+// the feature was written, and until stage 166 none of it reached here —
+// which is the only place an operator would ever see it. A price you
+// cannot trace is a price you cannot quote.
+type RateCitation struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// What the rate is, in words: "Ontario wholesale mark-up".
+	What       string         `protobuf:"bytes,1,opt,name=what,proto3" json:"what,omitempty"`
+	Value      float64        `protobuf:"fixed64,2,opt,name=value,proto3" json:"value,omitempty"`
+	Provenance RateProvenance `protobuf:"varint,3,opt,name=provenance,proto3,enum=stillhouse.v1.RateProvenance" json:"provenance,omitempty"`
+	// A URL, or the name of the document the value came from.
+	Source string `protobuf:"bytes,4,opt,name=source,proto3" json:"source,omitempty"`
+	// The ISO date it was published or last confirmed.
+	AsOf string `protobuf:"bytes,5,opt,name=as_of,json=asOf,proto3" json:"as_of,omitempty"`
+	// Anything a reader needs in order not to misuse it.
+	Note          string `protobuf:"bytes,6,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RateCitation) Reset() {
+	*x = RateCitation{}
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RateCitation) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RateCitation) ProtoMessage() {}
+
+func (x *RateCitation) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RateCitation.ProtoReflect.Descriptor instead.
+func (*RateCitation) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *RateCitation) GetWhat() string {
+	if x != nil {
+		return x.What
+	}
+	return ""
+}
+
+func (x *RateCitation) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *RateCitation) GetProvenance() RateProvenance {
+	if x != nil {
+		return x.Provenance
+	}
+	return RateProvenance_RATE_PROVENANCE_UNSPECIFIED
+}
+
+func (x *RateCitation) GetSource() string {
+	if x != nil {
+		return x.Source
+	}
+	return ""
+}
+
+func (x *RateCitation) GetAsOf() string {
+	if x != nil {
+		return x.AsOf
+	}
+	return ""
+}
+
+func (x *RateCitation) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
 // A rate a calculation needed and did not have.
 type MissingRate struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -153,7 +247,7 @@ type MissingRate struct {
 
 func (x *MissingRate) Reset() {
 	*x = MissingRate{}
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -165,7 +259,7 @@ func (x *MissingRate) String() string {
 func (*MissingRate) ProtoMessage() {}
 
 func (x *MissingRate) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -178,7 +272,7 @@ func (x *MissingRate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MissingRate.ProtoReflect.Descriptor instead.
 func (*MissingRate) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{0}
+	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *MissingRate) GetWhat() string {
@@ -216,13 +310,16 @@ type ChannelPricing struct {
 	DistilleryNetCad float64 `protobuf:"fixed64,12,opt,name=distillery_net_cad,json=distilleryNetCad,proto3" json:"distillery_net_cad,omitempty"`
 	// The weakest rate the figure leans on, so it can be labelled honestly.
 	LowestProvenance RateProvenance `protobuf:"varint,13,opt,name=lowest_provenance,json=lowestProvenance,proto3,enum=stillhouse.v1.RateProvenance" json:"lowest_provenance,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// Every rate the figure rests on, in the order it was used. What makes
+	// the number judgeable rather than merely produced.
+	Citations     []*RateCitation `protobuf:"bytes,14,rep,name=citations,proto3" json:"citations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ChannelPricing) Reset() {
 	*x = ChannelPricing{}
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -234,7 +331,7 @@ func (x *ChannelPricing) String() string {
 func (*ChannelPricing) ProtoMessage() {}
 
 func (x *ChannelPricing) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,7 +344,7 @@ func (x *ChannelPricing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChannelPricing.ProtoReflect.Descriptor instead.
 func (*ChannelPricing) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *ChannelPricing) GetChannel() SalesChannel {
@@ -341,6 +438,13 @@ func (x *ChannelPricing) GetLowestProvenance() RateProvenance {
 	return RateProvenance_RATE_PROVENANCE_UNSPECIFIED
 }
 
+func (x *ChannelPricing) GetCitations() []*RateCitation {
+	if x != nil {
+		return x.Citations
+	}
+	return nil
+}
+
 type JurisdictionPricing struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Code          string                 `protobuf:"bytes,1,opt,name=code,proto3" json:"code,omitempty"`
@@ -355,7 +459,7 @@ type JurisdictionPricing struct {
 
 func (x *JurisdictionPricing) Reset() {
 	*x = JurisdictionPricing{}
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -367,7 +471,7 @@ func (x *JurisdictionPricing) String() string {
 func (*JurisdictionPricing) ProtoMessage() {}
 
 func (x *JurisdictionPricing) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -380,7 +484,7 @@ func (x *JurisdictionPricing) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JurisdictionPricing.ProtoReflect.Descriptor instead.
 func (*JurisdictionPricing) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *JurisdictionPricing) GetCode() string {
@@ -447,7 +551,7 @@ type ComputeProvincialPricingRequest struct {
 
 func (x *ComputeProvincialPricingRequest) Reset() {
 	*x = ComputeProvincialPricingRequest{}
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -459,7 +563,7 @@ func (x *ComputeProvincialPricingRequest) String() string {
 func (*ComputeProvincialPricingRequest) ProtoMessage() {}
 
 func (x *ComputeProvincialPricingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -472,7 +576,7 @@ func (x *ComputeProvincialPricingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComputeProvincialPricingRequest.ProtoReflect.Descriptor instead.
 func (*ComputeProvincialPricingRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *ComputeProvincialPricingRequest) GetProductId() string {
@@ -532,7 +636,7 @@ type ComputeProvincialPricingResponse struct {
 
 func (x *ComputeProvincialPricingResponse) Reset() {
 	*x = ComputeProvincialPricingResponse{}
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -544,7 +648,7 @@ func (x *ComputeProvincialPricingResponse) String() string {
 func (*ComputeProvincialPricingResponse) ProtoMessage() {}
 
 func (x *ComputeProvincialPricingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_pricing_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_pricing_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -557,7 +661,7 @@ func (x *ComputeProvincialPricingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ComputeProvincialPricingResponse.ProtoReflect.Descriptor instead.
 func (*ComputeProvincialPricingResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_pricing_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *ComputeProvincialPricingResponse) GetJurisdictions() []*JurisdictionPricing {
@@ -606,10 +710,19 @@ var File_stillhouse_v1_pricing_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_pricing_proto_rawDesc = "" +
 	"\n" +
-	"\x1bstillhouse/v1/pricing.proto\x12\rstillhouse.v1\"3\n" +
+	"\x1bstillhouse/v1/pricing.proto\x12\rstillhouse.v1\"\xb8\x01\n" +
+	"\fRateCitation\x12\x12\n" +
+	"\x04what\x18\x01 \x01(\tR\x04what\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x01R\x05value\x12=\n" +
+	"\n" +
+	"provenance\x18\x03 \x01(\x0e2\x1d.stillhouse.v1.RateProvenanceR\n" +
+	"provenance\x12\x16\n" +
+	"\x06source\x18\x04 \x01(\tR\x06source\x12\x13\n" +
+	"\x05as_of\x18\x05 \x01(\tR\x04asOf\x12\x12\n" +
+	"\x04note\x18\x06 \x01(\tR\x04note\"3\n" +
 	"\vMissingRate\x12\x12\n" +
 	"\x04what\x18\x01 \x01(\tR\x04what\x12\x10\n" +
-	"\x03why\x18\x02 \x01(\tR\x03why\"\xda\x04\n" +
+	"\x03why\x18\x02 \x01(\tR\x03why\"\x95\x05\n" +
 	"\x0eChannelPricing\x125\n" +
 	"\achannel\x18\x01 \x01(\x0e2\x1b.stillhouse.v1.SalesChannelR\achannel\x12\x1e\n" +
 	"\n" +
@@ -627,7 +740,8 @@ const file_stillhouse_v1_pricing_proto_rawDesc = "" +
 	" \x01(\x01R\vsalesTaxCad\x12+\n" +
 	"\x12price_to_buyer_cad\x18\v \x01(\x01R\x0fpriceToBuyerCad\x12,\n" +
 	"\x12distillery_net_cad\x18\f \x01(\x01R\x10distilleryNetCad\x12J\n" +
-	"\x11lowest_provenance\x18\r \x01(\x0e2\x1d.stillhouse.v1.RateProvenanceR\x10lowestProvenance\"\x8c\x02\n" +
+	"\x11lowest_provenance\x18\r \x01(\x0e2\x1d.stillhouse.v1.RateProvenanceR\x10lowestProvenance\x129\n" +
+	"\tcitations\x18\x0e \x03(\v2\x1b.stillhouse.v1.RateCitationR\tcitations\"\x8c\x02\n" +
 	"\x13JurisdictionPricing\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\tR\x04code\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -678,31 +792,34 @@ func file_stillhouse_v1_pricing_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_pricing_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_pricing_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_stillhouse_v1_pricing_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_stillhouse_v1_pricing_proto_goTypes = []any{
 	(RateProvenance)(0),                      // 0: stillhouse.v1.RateProvenance
 	(SalesChannel)(0),                        // 1: stillhouse.v1.SalesChannel
-	(*MissingRate)(nil),                      // 2: stillhouse.v1.MissingRate
-	(*ChannelPricing)(nil),                   // 3: stillhouse.v1.ChannelPricing
-	(*JurisdictionPricing)(nil),              // 4: stillhouse.v1.JurisdictionPricing
-	(*ComputeProvincialPricingRequest)(nil),  // 5: stillhouse.v1.ComputeProvincialPricingRequest
-	(*ComputeProvincialPricingResponse)(nil), // 6: stillhouse.v1.ComputeProvincialPricingResponse
+	(*RateCitation)(nil),                     // 2: stillhouse.v1.RateCitation
+	(*MissingRate)(nil),                      // 3: stillhouse.v1.MissingRate
+	(*ChannelPricing)(nil),                   // 4: stillhouse.v1.ChannelPricing
+	(*JurisdictionPricing)(nil),              // 5: stillhouse.v1.JurisdictionPricing
+	(*ComputeProvincialPricingRequest)(nil),  // 6: stillhouse.v1.ComputeProvincialPricingRequest
+	(*ComputeProvincialPricingResponse)(nil), // 7: stillhouse.v1.ComputeProvincialPricingResponse
 }
 var file_stillhouse_v1_pricing_proto_depIdxs = []int32{
-	1, // 0: stillhouse.v1.ChannelPricing.channel:type_name -> stillhouse.v1.SalesChannel
-	2, // 1: stillhouse.v1.ChannelPricing.missing:type_name -> stillhouse.v1.MissingRate
-	0, // 2: stillhouse.v1.ChannelPricing.lowest_provenance:type_name -> stillhouse.v1.RateProvenance
-	3, // 3: stillhouse.v1.JurisdictionPricing.wholesale:type_name -> stillhouse.v1.ChannelPricing
-	3, // 4: stillhouse.v1.JurisdictionPricing.on_site_retail:type_name -> stillhouse.v1.ChannelPricing
-	3, // 5: stillhouse.v1.JurisdictionPricing.export:type_name -> stillhouse.v1.ChannelPricing
-	4, // 6: stillhouse.v1.ComputeProvincialPricingResponse.jurisdictions:type_name -> stillhouse.v1.JurisdictionPricing
-	5, // 7: stillhouse.v1.PricingService.ComputeProvincialPricing:input_type -> stillhouse.v1.ComputeProvincialPricingRequest
-	6, // 8: stillhouse.v1.PricingService.ComputeProvincialPricing:output_type -> stillhouse.v1.ComputeProvincialPricingResponse
-	8, // [8:9] is the sub-list for method output_type
-	7, // [7:8] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	0,  // 0: stillhouse.v1.RateCitation.provenance:type_name -> stillhouse.v1.RateProvenance
+	1,  // 1: stillhouse.v1.ChannelPricing.channel:type_name -> stillhouse.v1.SalesChannel
+	3,  // 2: stillhouse.v1.ChannelPricing.missing:type_name -> stillhouse.v1.MissingRate
+	0,  // 3: stillhouse.v1.ChannelPricing.lowest_provenance:type_name -> stillhouse.v1.RateProvenance
+	2,  // 4: stillhouse.v1.ChannelPricing.citations:type_name -> stillhouse.v1.RateCitation
+	4,  // 5: stillhouse.v1.JurisdictionPricing.wholesale:type_name -> stillhouse.v1.ChannelPricing
+	4,  // 6: stillhouse.v1.JurisdictionPricing.on_site_retail:type_name -> stillhouse.v1.ChannelPricing
+	4,  // 7: stillhouse.v1.JurisdictionPricing.export:type_name -> stillhouse.v1.ChannelPricing
+	5,  // 8: stillhouse.v1.ComputeProvincialPricingResponse.jurisdictions:type_name -> stillhouse.v1.JurisdictionPricing
+	6,  // 9: stillhouse.v1.PricingService.ComputeProvincialPricing:input_type -> stillhouse.v1.ComputeProvincialPricingRequest
+	7,  // 10: stillhouse.v1.PricingService.ComputeProvincialPricing:output_type -> stillhouse.v1.ComputeProvincialPricingResponse
+	10, // [10:11] is the sub-list for method output_type
+	9,  // [9:10] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_pricing_proto_init() }
@@ -716,7 +833,7 @@ func file_stillhouse_v1_pricing_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_pricing_proto_rawDesc), len(file_stillhouse_v1_pricing_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   5,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

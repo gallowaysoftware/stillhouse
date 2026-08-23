@@ -20,7 +20,64 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/pricing.proto.
  */
 export const file_stillhouse_v1_pricing: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGlsbGhvdXNlL3YxL3ByaWNpbmcucHJvdG8SDXN0aWxsaG91c2UudjEiKAoLTWlzc2luZ1JhdGUSDAoEd2hhdBgBIAEoCRILCgN3aHkYAiABKAkingMKDkNoYW5uZWxQcmljaW5nEiwKB2NoYW5uZWwYASABKA4yGy5zdGlsbGhvdXNlLnYxLlNhbGVzQ2hhbm5lbBISCgpjb21wdXRhYmxlGAIgASgIEisKB21pc3NpbmcYAyADKAsyGi5zdGlsbGhvdXNlLnYxLk1pc3NpbmdSYXRlEhcKD2xhbmRlZF9jb3N0X2NhZBgEIAEoARISCgptYXJrdXBfY2FkGAUgASgBEhAKCGNvc2RfY2FkGAYgASgBEhoKEnByb3ZpbmNpYWxfdGF4X2NhZBgHIAEoARIaChJmZWRlcmFsX2V4Y2lzZV9jYWQYCCABKAESHQoVY29udGFpbmVyX2RlcG9zaXRfY2FkGAkgASgBEhUKDXNhbGVzX3RheF9jYWQYCiABKAESGgoScHJpY2VfdG9fYnV5ZXJfY2FkGAsgASgBEhoKEmRpc3RpbGxlcnlfbmV0X2NhZBgMIAEoARI4ChFsb3dlc3RfcHJvdmVuYW5jZRgNIAEoDjIdLnN0aWxsaG91c2UudjEuUmF0ZVByb3ZlbmFuY2Ui2AEKE0p1cmlzZGljdGlvblByaWNpbmcSDAoEY29kZRgBIAEoCRIMCgRuYW1lGAIgASgJEg0KBW5vdGVzGAMgASgJEjAKCXdob2xlc2FsZRgEIAEoCzIdLnN0aWxsaG91c2UudjEuQ2hhbm5lbFByaWNpbmcSNQoOb25fc2l0ZV9yZXRhaWwYBSABKAsyHS5zdGlsbGhvdXNlLnYxLkNoYW5uZWxQcmljaW5nEi0KBmV4cG9ydBgGIAEoCzIdLnN0aWxsaG91c2UudjEuQ2hhbm5lbFByaWNpbmciqgEKH0NvbXB1dGVQcm92aW5jaWFsUHJpY2luZ1JlcXVlc3QSEgoKcHJvZHVjdF9pZBgBIAEoCRIPCgdmb2JfY2FkGAIgASgBEiAKGG9uX3NpdGVfcmV0YWlsX3ByaWNlX2NhZBgDIAEoARITCgtmcmVpZ2h0X2NhZBgEIAEoARIZChFpbXBvcnRfZHV0aWVzX2NhZBgFIAEoARIQCghpbXBvcnRlZBgGIAEoCCLZAQogQ29tcHV0ZVByb3ZpbmNpYWxQcmljaW5nUmVzcG9uc2USOQoNanVyaXNkaWN0aW9ucxgBIAMoCzIiLnN0aWxsaG91c2UudjEuSnVyaXNkaWN0aW9uUHJpY2luZxIUCgxwcm9kdWN0X25hbWUYAiABKAkSFgoOYm90dGxlX3NpemVfbWwYAyABKAUSFgoOYm90dGxlX2Fidl9wY3QYBCABKAESHAoUZmVkZXJhbF9kdXR5X3Blcl9sYWEYBSABKAESFgoObGFhX3Blcl9ib3R0bGUYBiABKAEqiwEKDlJhdGVQcm92ZW5hbmNlEh8KG1JBVEVfUFJPVkVOQU5DRV9VTlNQRUNJRklFRBAAEhsKF1JBVEVfUFJPVkVOQU5DRV9VTktOT1dOEAESHgoaUkFURV9QUk9WRU5BTkNFX0lORElDQVRJVkUQAhIbChdSQVRFX1BST1ZFTkFOQ0VfU09VUkNFRBADKoYBCgxTYWxlc0NoYW5uZWwSHQoZU0FMRVNfQ0hBTk5FTF9VTlNQRUNJRklFRBAAEhsKF1NBTEVTX0NIQU5ORUxfV0hPTEVTQUxFEAESIAocU0FMRVNfQ0hBTk5FTF9PTl9TSVRFX1JFVEFJTBACEhgKFFNBTEVTX0NIQU5ORUxfRVhQT1JUEAMyjQEKDlByaWNpbmdTZXJ2aWNlEnsKGENvbXB1dGVQcm92aW5jaWFsUHJpY2luZxIuLnN0aWxsaG91c2UudjEuQ29tcHV0ZVByb3ZpbmNpYWxQcmljaW5nUmVxdWVzdBovLnN0aWxsaG91c2UudjEuQ29tcHV0ZVByb3ZpbmNpYWxQcmljaW5nUmVzcG9uc2ViBnByb3RvMw");
+  fileDesc("ChtzdGlsbGhvdXNlL3YxL3ByaWNpbmcucHJvdG8SDXN0aWxsaG91c2UudjEiiwEKDFJhdGVDaXRhdGlvbhIMCgR3aGF0GAEgASgJEg0KBXZhbHVlGAIgASgBEjEKCnByb3ZlbmFuY2UYAyABKA4yHS5zdGlsbGhvdXNlLnYxLlJhdGVQcm92ZW5hbmNlEg4KBnNvdXJjZRgEIAEoCRINCgVhc19vZhgFIAEoCRIMCgRub3RlGAYgASgJIigKC01pc3NpbmdSYXRlEgwKBHdoYXQYASABKAkSCwoDd2h5GAIgASgJIs4DCg5DaGFubmVsUHJpY2luZxIsCgdjaGFubmVsGAEgASgOMhsuc3RpbGxob3VzZS52MS5TYWxlc0NoYW5uZWwSEgoKY29tcHV0YWJsZRgCIAEoCBIrCgdtaXNzaW5nGAMgAygLMhouc3RpbGxob3VzZS52MS5NaXNzaW5nUmF0ZRIXCg9sYW5kZWRfY29zdF9jYWQYBCABKAESEgoKbWFya3VwX2NhZBgFIAEoARIQCghjb3NkX2NhZBgGIAEoARIaChJwcm92aW5jaWFsX3RheF9jYWQYByABKAESGgoSZmVkZXJhbF9leGNpc2VfY2FkGAggASgBEh0KFWNvbnRhaW5lcl9kZXBvc2l0X2NhZBgJIAEoARIVCg1zYWxlc190YXhfY2FkGAogASgBEhoKEnByaWNlX3RvX2J1eWVyX2NhZBgLIAEoARIaChJkaXN0aWxsZXJ5X25ldF9jYWQYDCABKAESOAoRbG93ZXN0X3Byb3ZlbmFuY2UYDSABKA4yHS5zdGlsbGhvdXNlLnYxLlJhdGVQcm92ZW5hbmNlEi4KCWNpdGF0aW9ucxgOIAMoCzIbLnN0aWxsaG91c2UudjEuUmF0ZUNpdGF0aW9uItgBChNKdXJpc2RpY3Rpb25QcmljaW5nEgwKBGNvZGUYASABKAkSDAoEbmFtZRgCIAEoCRINCgVub3RlcxgDIAEoCRIwCgl3aG9sZXNhbGUYBCABKAsyHS5zdGlsbGhvdXNlLnYxLkNoYW5uZWxQcmljaW5nEjUKDm9uX3NpdGVfcmV0YWlsGAUgASgLMh0uc3RpbGxob3VzZS52MS5DaGFubmVsUHJpY2luZxItCgZleHBvcnQYBiABKAsyHS5zdGlsbGhvdXNlLnYxLkNoYW5uZWxQcmljaW5nIqoBCh9Db21wdXRlUHJvdmluY2lhbFByaWNpbmdSZXF1ZXN0EhIKCnByb2R1Y3RfaWQYASABKAkSDwoHZm9iX2NhZBgCIAEoARIgChhvbl9zaXRlX3JldGFpbF9wcmljZV9jYWQYAyABKAESEwoLZnJlaWdodF9jYWQYBCABKAESGQoRaW1wb3J0X2R1dGllc19jYWQYBSABKAESEAoIaW1wb3J0ZWQYBiABKAgi2QEKIENvbXB1dGVQcm92aW5jaWFsUHJpY2luZ1Jlc3BvbnNlEjkKDWp1cmlzZGljdGlvbnMYASADKAsyIi5zdGlsbGhvdXNlLnYxLkp1cmlzZGljdGlvblByaWNpbmcSFAoMcHJvZHVjdF9uYW1lGAIgASgJEhYKDmJvdHRsZV9zaXplX21sGAMgASgFEhYKDmJvdHRsZV9hYnZfcGN0GAQgASgBEhwKFGZlZGVyYWxfZHV0eV9wZXJfbGFhGAUgASgBEhYKDmxhYV9wZXJfYm90dGxlGAYgASgBKosBCg5SYXRlUHJvdmVuYW5jZRIfChtSQVRFX1BST1ZFTkFOQ0VfVU5TUEVDSUZJRUQQABIbChdSQVRFX1BST1ZFTkFOQ0VfVU5LTk9XThABEh4KGlJBVEVfUFJPVkVOQU5DRV9JTkRJQ0FUSVZFEAISGwoXUkFURV9QUk9WRU5BTkNFX1NPVVJDRUQQAyqGAQoMU2FsZXNDaGFubmVsEh0KGVNBTEVTX0NIQU5ORUxfVU5TUEVDSUZJRUQQABIbChdTQUxFU19DSEFOTkVMX1dIT0xFU0FMRRABEiAKHFNBTEVTX0NIQU5ORUxfT05fU0lURV9SRVRBSUwQAhIYChRTQUxFU19DSEFOTkVMX0VYUE9SVBADMo0BCg5QcmljaW5nU2VydmljZRJ7ChhDb21wdXRlUHJvdmluY2lhbFByaWNpbmcSLi5zdGlsbGhvdXNlLnYxLkNvbXB1dGVQcm92aW5jaWFsUHJpY2luZ1JlcXVlc3QaLy5zdGlsbGhvdXNlLnYxLkNvbXB1dGVQcm92aW5jaWFsUHJpY2luZ1Jlc3BvbnNlYgZwcm90bzM");
+
+/**
+ * A rate a figure rests on, with its paperwork.
+ *
+ * Every Rate in the domain model has carried a Source and an AsOf since
+ * the feature was written, and until stage 166 none of it reached here —
+ * which is the only place an operator would ever see it. A price you
+ * cannot trace is a price you cannot quote.
+ *
+ * @generated from message stillhouse.v1.RateCitation
+ */
+export type RateCitation = Message<"stillhouse.v1.RateCitation"> & {
+  /**
+   * What the rate is, in words: "Ontario wholesale mark-up".
+   *
+   * @generated from field: string what = 1;
+   */
+  what: string;
+
+  /**
+   * @generated from field: double value = 2;
+   */
+  value: number;
+
+  /**
+   * @generated from field: stillhouse.v1.RateProvenance provenance = 3;
+   */
+  provenance: RateProvenance;
+
+  /**
+   * A URL, or the name of the document the value came from.
+   *
+   * @generated from field: string source = 4;
+   */
+  source: string;
+
+  /**
+   * The ISO date it was published or last confirmed.
+   *
+   * @generated from field: string as_of = 5;
+   */
+  asOf: string;
+
+  /**
+   * Anything a reader needs in order not to misuse it.
+   *
+   * @generated from field: string note = 6;
+   */
+  note: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.RateCitation.
+ * Use `create(RateCitationSchema)` to create a new message.
+ */
+export const RateCitationSchema: GenMessage<RateCitation> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_pricing, 0);
 
 /**
  * A rate a calculation needed and did not have.
@@ -46,7 +103,7 @@ export type MissingRate = Message<"stillhouse.v1.MissingRate"> & {
  * Use `create(MissingRateSchema)` to create a new message.
  */
 export const MissingRateSchema: GenMessage<MissingRate> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_pricing, 0);
+  messageDesc(file_stillhouse_v1_pricing, 1);
 
 /**
  * @generated from message stillhouse.v1.ChannelPricing
@@ -126,6 +183,14 @@ export type ChannelPricing = Message<"stillhouse.v1.ChannelPricing"> & {
    * @generated from field: stillhouse.v1.RateProvenance lowest_provenance = 13;
    */
   lowestProvenance: RateProvenance;
+
+  /**
+   * Every rate the figure rests on, in the order it was used. What makes
+   * the number judgeable rather than merely produced.
+   *
+   * @generated from field: repeated stillhouse.v1.RateCitation citations = 14;
+   */
+  citations: RateCitation[];
 };
 
 /**
@@ -133,7 +198,7 @@ export type ChannelPricing = Message<"stillhouse.v1.ChannelPricing"> & {
  * Use `create(ChannelPricingSchema)` to create a new message.
  */
 export const ChannelPricingSchema: GenMessage<ChannelPricing> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_pricing, 1);
+  messageDesc(file_stillhouse_v1_pricing, 2);
 
 /**
  * @generated from message stillhouse.v1.JurisdictionPricing
@@ -175,7 +240,7 @@ export type JurisdictionPricing = Message<"stillhouse.v1.JurisdictionPricing"> &
  * Use `create(JurisdictionPricingSchema)` to create a new message.
  */
 export const JurisdictionPricingSchema: GenMessage<JurisdictionPricing> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_pricing, 2);
+  messageDesc(file_stillhouse_v1_pricing, 3);
 
 /**
  * @generated from message stillhouse.v1.ComputeProvincialPricingRequest
@@ -229,7 +294,7 @@ export type ComputeProvincialPricingRequest = Message<"stillhouse.v1.ComputeProv
  * Use `create(ComputeProvincialPricingRequestSchema)` to create a new message.
  */
 export const ComputeProvincialPricingRequestSchema: GenMessage<ComputeProvincialPricingRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_pricing, 3);
+  messageDesc(file_stillhouse_v1_pricing, 4);
 
 /**
  * @generated from message stillhouse.v1.ComputeProvincialPricingResponse
@@ -273,7 +338,7 @@ export type ComputeProvincialPricingResponse = Message<"stillhouse.v1.ComputePro
  * Use `create(ComputeProvincialPricingResponseSchema)` to create a new message.
  */
 export const ComputeProvincialPricingResponseSchema: GenMessage<ComputeProvincialPricingResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_pricing, 4);
+  messageDesc(file_stillhouse_v1_pricing, 5);
 
 /**
  * How much a rate can be trusted.

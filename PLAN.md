@@ -451,16 +451,6 @@ ambiguity where it actually lives, which is the name a human reads. Named
 `Fraction`/`Percent` types in the domain packages would promote the existing
 doc comments to compile errors.
 
-### K4 · Pricing provenance is collected and unreachable — P2
-
-`Rate.AsOf` is written by all 17 jurisdiction entries and read by nothing;
-`Rate.Source` likewise. `pricing.proto` has no field to carry either. The
-provenance discipline — every rate says where it came from and when — was built
-in the domain model and never wired to the API, which is where an operator
-would judge whether a number is trustworthy. Either surface both fields or
-delete them; seventeen hand-maintained values that nothing reads is the worst of
-the three options.
-
 ---
 
 ## Ordering

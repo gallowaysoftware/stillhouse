@@ -251,3 +251,65 @@ func TestZeroAlcoholPaysNoExcise(t *testing.T) {
 		t.Errorf("a 0%% product attracts no excise, got %.4f", in.FederalExciseCAD())
 	}
 }
+
+// Every rate the domain model carries has a Source and an AsOf, and
+// until stage 166 none of it reached anywhere an operator could see. A
+// price you cannot trace is a price you cannot quote.
+func TestEveryComputedFigureCitesItsRates(t *testing.T) {
+	in := Input{
+		FOBCAD: 30, FreightCAD: 2, BottleSizeML: 750, BottleABVPct: 40,
+		FederalDutyPerLAA: 13.864, OnSiteRetailPriceCAD: 45,
+	}
+	out := Compute(in)
+	if len(out) == 0 {
+		t.Fatal("no jurisdictions computed")
+	}
+
+	var checked int
+	for _, j := range out {
+		for _, ch := range []ChannelResult{j.Wholesale, j.OnSiteRetail} {
+			if !ch.Computable {
+				continue
+			}
+			checked++
+			if len(ch.Citations) == 0 {
+				t.Errorf("%s %s produced a price citing no rates at all",
+					j.Name, ch.Channel)
+				continue
+			}
+			for _, c := range ch.Citations {
+				if c.What == "" {
+					t.Errorf("%s %s cites a rate with no name", j.Name, ch.Channel)
+				}
+				// A sourced rate must say where it came from. An
+				// indicative one need not — that is what indicative
+				// means — but it must still be labelled as such, which
+				// the provenance does.
+				if c.Provenance == Sourced && c.Source == "" {
+					t.Errorf("%s %s: %q claims to be sourced but names no source",
+						j.Name, ch.Channel, c.What)
+				}
+				if c.Provenance == Sourced && c.AsOf == "" {
+					t.Errorf("%s %s: %q claims to be sourced but has no as-of date",
+						j.Name, ch.Channel, c.What)
+				}
+			}
+			// The weakest citation and the reported provenance have to
+			// agree, or the label on the figure is not describing the
+			// figure.
+			weakest := Sourced
+			for _, c := range ch.Citations {
+				if c.Provenance < weakest {
+					weakest = c.Provenance
+				}
+			}
+			if weakest != ch.LowestProvenance {
+				t.Errorf("%s %s reports provenance %v but its weakest citation is %v",
+					j.Name, ch.Channel, ch.LowestProvenance, weakest)
+			}
+		}
+	}
+	if checked == 0 {
+		t.Fatal("no computable channel was checked")
+	}
+}

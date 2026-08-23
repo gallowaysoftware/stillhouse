@@ -31,6 +31,25 @@ enum SalesChannel {
   SALES_CHANNEL_EXPORT = 3;          // leaving the province
 }
 
+// A rate a figure rests on, with its paperwork.
+//
+// Every Rate in the domain model has carried a Source and an AsOf since
+// the feature was written, and until stage 166 none of it reached here —
+// which is the only place an operator would ever see it. A price you
+// cannot trace is a price you cannot quote.
+message RateCitation {
+  // What the rate is, in words: "Ontario wholesale mark-up".
+  string what = 1;
+  double value = 2;
+  RateProvenance provenance = 3;
+  // A URL, or the name of the document the value came from.
+  string source = 4;
+  // The ISO date it was published or last confirmed.
+  string as_of = 5;
+  // Anything a reader needs in order not to misuse it.
+  string note = 6;
+}
+
 // A rate a calculation needed and did not have.
 message MissingRate {
   string what = 1;
@@ -59,6 +78,9 @@ message ChannelPricing {
   double distillery_net_cad = 12;
   // The weakest rate the figure leans on, so it can be labelled honestly.
   RateProvenance lowest_provenance = 13;
+  // Every rate the figure rests on, in the order it was used. What makes
+  // the number judgeable rather than merely produced.
+  repeated RateCitation citations = 14;
 }
 
 message JurisdictionPricing {
