@@ -113,9 +113,14 @@ type Querier interface {
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
 	DistillationChainFromGauge(ctx context.Context, bulkMovementID uuid.UUID) ([]DistillationChainFromGaugeRow, error)
-	// Returns the token row + the owning user in one round trip. revoked_at
-	// IS NULL is enforced inline so a revoked token is indistinguishable
-	// from a missing one at the SQL layer.
+	// The pre-tenant keyhole. Bearer auth has to resolve a token hash to its
+	// owner before any tenant context exists — that lookup is what
+	// establishes the tenant — so it cannot satisfy the RLS policy migration
+	// 000033 put on api_tokens. It goes through a SECURITY DEFINER function
+	// owned by stillhouse_auth (NOLOGIN, BYPASSRLS) instead, which is the
+	// only reach the app role has into this table without a tenant.
+	// revoked_at IS NULL is enforced inside the function, so a revoked token
+	// stays indistinguishable from a missing one.
 	GetAPITokenByHash(ctx context.Context, tokenHash []byte) (GetAPITokenByHashRow, error)
 	// Like GetAPITokenByHash but doesn't filter on revoked_at; used by the
 	// token-management RPC to ownership-check before revoke.
@@ -429,6 +434,8 @@ type Querier interface {
 	// two bands for exactly this reason.
 	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)
 	SumStampInventory(ctx context.Context) ([]SumStampInventoryRow, error)
+	// Same keyhole, write half. Best-effort last_used_at stamp on the auth
+	// path, which likewise has no tenant context to offer.
 	TouchAPIToken(ctx context.Context, tokenHash []byte) error
 	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	UpdateBulkContainer(ctx context.Context, arg UpdateBulkContainerParams) (BulkContainer, error)

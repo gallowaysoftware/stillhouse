@@ -30,6 +30,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/rpc"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
 func main() {
@@ -64,13 +65,21 @@ func main() {
 		log.Fatalf("get user: %v", err)
 	}
 
+	// api_tokens is under row-level security as of migration 000033, so
+	// the insert needs a tenant context even here. Going through
+	// WithTenantTx makes this binary correct against either DSN: the
+	// admin one (superuser, RLS bypassed anyway) and the app one.
 	tok, hash := newToken()
-	if _, err := q.CreateAPIToken(ctx, sqlcgen.CreateAPITokenParams{
-		TokenHash: hash,
-		TenantID:  u.TenantID,
-		UserID:    u.ID,
-		Name:      *name,
-	}); err != nil {
+	if err := tenantdb.New(pool).WithTenantTx(ctx, u.TenantID,
+		func(ctx context.Context, q *sqlcgen.Queries) error {
+			_, err := q.CreateAPIToken(ctx, sqlcgen.CreateAPITokenParams{
+				TokenHash: hash,
+				TenantID:  u.TenantID,
+				UserID:    u.ID,
+				Name:      *name,
+			})
+			return err
+		}); err != nil {
 		log.Fatalf("insert token: %v", err)
 	}
 

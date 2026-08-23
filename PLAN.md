@@ -398,32 +398,6 @@ Known issue F17: LAA, volume and duty carry full IEEE-754 noise
 format should carry decimals instead.
 
 
-### H11 · Row-level security is enforced by convention, not asserted — P1
-
-Tenant isolation holds today, and I verified it live: as `stillhouse_app`,
-cross-tenant reads return nothing and a forged `tenant_id` on an INSERT is
-refused by the `WITH CHECK` half. But the only thing making that true is that
-`DATABASE_URL` points at the non-superuser role. Nothing checks at startup, and
-`cmd/seed` plus the dev instructions both default to the superuser DSN, so the
-wrong value is one copy-paste away and fails silently — the app works perfectly
-with the tenant boundary switched off.
-
-Three concrete gaps, measured rather than assumed:
-
-- `api_tokens` carries `tenant_id` and has **neither RLS enabled nor any
-  policy**. Ownership is checked in Go only (`api_token.go`). It is the one
-  table where the stated invariant doesn't hold.
-- `recipe_version_sensory` and `recipe_version_whisky_sensory` have RLS enabled
-  but not `FORCE`. Latent — the app role is not their owner — but migration
-  `000004`'s own instruction is that every tenant-scoped table enables *and*
-  forces in the migration that creates it. (The other 26 do.)
-- No startup assertion. `SELECT current_setting('is_superuser')` and refuse to
-  boot, or log loudly.
-
-A schema test that enumerates every table carrying `tenant_id` and asserts
-RLS + FORCE + at least one policy would close all three and keep the next
-migration honest.
-
 ### H12 · Changing a password doesn't revoke anything — P1
 
 `ResetPassword` and `ChangeMyPassword` update the hash and return; the comment
@@ -542,8 +516,9 @@ not act on it. Two consequences, both real:
   is only tenant-scoped by RLS. This bit during stage 151: a leftover
   submitted period blocked writes for every other tenant in the database.
 - **The DB-backed tests do not exercise RLS at all.** They prove the SQL and
-  the handlers; they prove nothing about tenant isolation, which is `H11`'s
-  subject.
+  the handlers; they prove nothing about tenant isolation. Stage 152 added a
+  schema test that asserts every tenant-scoped table *has* the policy — this
+  is the other half, proving the policy actually bites at runtime.
 
 Options, roughly in order of cost: run each test in a transaction that rolls
 back; give each test its own database; or run the suite as `stillhouse_app`

@@ -41,6 +41,10 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		pool.Close()
 		return nil, err
 	}
+	if err := assertRLSEnforced(ctx, pool, logger, cfg.Dev); err != nil {
+		pool.Close()
+		return nil, err
+	}
 
 	sm := scs.New()
 	sm.Store = pgxstore.New(pool)
@@ -83,7 +87,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	pricingSvc := rpc.NewPricingService(tdb, logger)
 	traceabilitySvc := rpc.NewTraceabilityService(tdb, logger)
 	inviteSvc := rpc.NewInviteService(queries, tdb, sm, mailerImpl, logger)
-	apiTokenSvc := rpc.NewAPITokenService(queries, logger)
+	apiTokenSvc := rpc.NewAPITokenService(tdb, logger)
 	// Pure computation against the embedded CRA tables — no DB, no tenant.
 	alcoholometrySvc := rpc.NewAlcoholometryService(logger)
 

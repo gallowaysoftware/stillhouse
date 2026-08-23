@@ -57,10 +57,8 @@ SELECT
     u.email        AS user_email,
     u.display_name AS user_display_name,
     u.role         AS user_role
-FROM api_tokens t
+FROM auth_api_token($1::BYTEA) t
 JOIN users u ON u.id = t.user_id
-WHERE t.token_hash = $1
-  AND t.revoked_at IS NULL
 `
 
 type GetAPITokenByHashRow struct {
@@ -76,9 +74,14 @@ type GetAPITokenByHashRow struct {
 	UserRole        UserRole           `json:"user_role"`
 }
 
-// Returns the token row + the owning user in one round trip. revoked_at
-// IS NULL is enforced inline so a revoked token is indistinguishable
-// from a missing one at the SQL layer.
+// The pre-tenant keyhole. Bearer auth has to resolve a token hash to its
+// owner before any tenant context exists — that lookup is what
+// establishes the tenant — so it cannot satisfy the RLS policy migration
+// 000033 put on api_tokens. It goes through a SECURITY DEFINER function
+// owned by stillhouse_auth (NOLOGIN, BYPASSRLS) instead, which is the
+// only reach the app role has into this table without a tenant.
+// revoked_at IS NULL is enforced inside the function, so a revoked token
+// stays indistinguishable from a missing one.
 func (q *Queries) GetAPITokenByHash(ctx context.Context, tokenHash []byte) (GetAPITokenByHashRow, error) {
 	row := q.db.QueryRow(ctx, getAPITokenByHash, tokenHash)
 	var i GetAPITokenByHashRow
@@ -179,11 +182,11 @@ func (q *Queries) RevokeAPIToken(ctx context.Context, tokenHash []byte) (ApiToke
 }
 
 const touchAPIToken = `-- name: TouchAPIToken :exec
-UPDATE api_tokens
-SET last_used_at = NOW()
-WHERE token_hash = $1
+SELECT auth_touch_api_token($1::BYTEA)
 `
 
+// Same keyhole, write half. Best-effort last_used_at stamp on the auth
+// path, which likewise has no tenant context to offer.
 func (q *Queries) TouchAPIToken(ctx context.Context, tokenHash []byte) error {
 	_, err := q.db.Exec(ctx, touchAPIToken, tokenHash)
 	return err
