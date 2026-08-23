@@ -11,10 +11,10 @@ INSERT INTO bottling_runs (
     bottling_date, bottle_count, bottling_loss_l, lot_code,
     tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa,
     bulk_movement_id, notes,
-    duty_rate_per_laa, duty_amount_cad, duty_rate_source
+    duty_rate_per_laa, duty_amount_cad, duty_rate_source, owner_customer_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-    $15, $16, $17
+    $15, $16, $17, $18
 ) RETURNING *;
 
 -- name: GetBottlingRun :one
@@ -58,9 +58,9 @@ ORDER BY brs.created_at;
 -- name: UpsertPackagedInventory :one
 INSERT INTO packaged_inventory (
     tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
-    bottles_on_hand, bottles_packaged
+    bottles_on_hand, bottles_packaged, owner_customer_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $6
+    $1, $2, $3, $4, $5, $6, $6, $7
 )
 ON CONFLICT (product_id, lot_code, jurisdiction) DO UPDATE
 SET bottles_on_hand  = packaged_inventory.bottles_on_hand  + EXCLUDED.bottles_on_hand,
@@ -77,12 +77,14 @@ SELECT pi.*,
        p.target_abv_pct AS target_abv_pct,
        br.bottling_date AS first_bottled_date,
        COALESCE(rel.display_name, '') AS released_by_name,
-       COALESCE(hld.display_name, '') AS held_by_name
+       COALESCE(hld.display_name, '') AS held_by_name,
+       COALESCE(own.name, '') AS owner_name
 FROM packaged_inventory pi
 JOIN products p             ON p.id = pi.product_id
 LEFT JOIN bottling_runs br  ON br.id = pi.bottling_run_id
 LEFT JOIN users rel         ON rel.id = pi.released_by
 LEFT JOIN users hld         ON hld.id = pi.held_by
+LEFT JOIN customers own     ON own.id = pi.owner_customer_id
 WHERE pi.bottles_on_hand > 0
    OR sqlc.arg('include_empty')::boolean
 ORDER BY p.name, pi.jurisdiction, pi.lot_code;

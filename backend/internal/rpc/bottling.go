@@ -250,6 +250,7 @@ func (s *BottlingService) CreateBottlingRun(
 			Notes:                   in.GetNotes(),
 			DutyRatePerLaa:          dutyRate,
 			DutyAmountCad:           dutyAmount,
+			OwnerCustomerID:         source.OwnerCustomerID,
 			DutyRateSource:          dutySource,
 		})
 		if e != nil {
@@ -304,6 +305,11 @@ func (s *BottlingService) CreateBottlingRun(
 			Jurisdiction:  in.GetDestinationJurisdiction(),
 			BottlingRunID: uuid.NullUUID{UUID: run.ID, Valid: true},
 			BottlesOnHand: in.GetBottleCount(),
+			// Copied from the vessel it was drawn from, at the moment it
+			// was drawn. A lot bottled from a customer's cask is theirs
+			// whatever happens to the cask afterwards, which is why this
+			// is a copy and not a join — see migration 000056.
+			OwnerCustomerID: source.OwnerCustomerID,
 		})
 		if e != nil {
 			return e
@@ -670,6 +676,8 @@ func (s *BottlingService) ListPackagedInventory(
 			ReleasedByName:  r.ReleasedByName,
 			HoldReason:      r.HoldReason,
 			HeldByName:      r.HeldByName,
+			OwnerCustomerId: nullUUIDString(r.OwnerCustomerID),
+			OwnerName:       r.OwnerName,
 		}
 		if r.FirstBottledDate.Valid {
 			row.FirstBottledDate = formatDate(r.FirstBottledDate)

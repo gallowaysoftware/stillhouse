@@ -164,7 +164,7 @@ func (q *Queries) FindBulkContainersByName(ctx context.Context, name string) ([]
 }
 
 const findPackagedInventoryByIDPrefix = `-- name: FindPackagedInventoryByIDPrefix :many
-SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id, p.name AS product_name
+SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id, pi.owner_customer_id, p.name AS product_name
 FROM packaged_inventory pi
 JOIN products p ON p.id = pi.product_id
 WHERE substr(replace(pi.id::text, '-', ''), 1, 16) = $1::text
@@ -189,6 +189,7 @@ type FindPackagedInventoryByIDPrefixRow struct {
 	HeldBy          uuid.NullUUID      `json:"held_by"`
 	HoldReason      string             `json:"hold_reason"`
 	LocationID      uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID uuid.NullUUID      `json:"owner_customer_id"`
 	ProductName     string             `json:"product_name"`
 }
 
@@ -220,6 +221,7 @@ func (q *Queries) FindPackagedInventoryByIDPrefix(ctx context.Context, prefix st
 			&i.HeldBy,
 			&i.HoldReason,
 			&i.LocationID,
+			&i.OwnerCustomerID,
 			&i.ProductName,
 		); err != nil {
 			return nil, err
@@ -234,7 +236,7 @@ func (q *Queries) FindPackagedInventoryByIDPrefix(ctx context.Context, prefix st
 
 const findPackagedInventoryByLotCode = `-- name: FindPackagedInventoryByLotCode :many
 
-SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id, p.name AS product_name
+SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id, pi.owner_customer_id, p.name AS product_name
 FROM packaged_inventory pi
 JOIN products p ON p.id = pi.product_id
 WHERE upper(pi.lot_code) = upper($1::text)
@@ -259,6 +261,7 @@ type FindPackagedInventoryByLotCodeRow struct {
 	HeldBy          uuid.NullUUID      `json:"held_by"`
 	HoldReason      string             `json:"hold_reason"`
 	LocationID      uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID uuid.NullUUID      `json:"owner_customer_id"`
 	ProductName     string             `json:"product_name"`
 }
 
@@ -293,6 +296,7 @@ func (q *Queries) FindPackagedInventoryByLotCode(ctx context.Context, code strin
 			&i.HeldBy,
 			&i.HoldReason,
 			&i.LocationID,
+			&i.OwnerCustomerID,
 			&i.ProductName,
 		); err != nil {
 			return nil, err

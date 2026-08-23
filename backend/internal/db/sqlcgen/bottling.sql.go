@@ -37,11 +37,11 @@ INSERT INTO bottling_runs (
     bottling_date, bottle_count, bottling_loss_l, lot_code,
     tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa,
     bulk_movement_id, notes,
-    duty_rate_per_laa, duty_amount_cad, duty_rate_source
+    duty_rate_per_laa, duty_amount_cad, duty_rate_source, owner_customer_id
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
-    $15, $16, $17
-) RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source
+    $15, $16, $17, $18
+) RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source, owner_customer_id
 `
 
 type CreateBottlingRunParams struct {
@@ -62,6 +62,7 @@ type CreateBottlingRunParams struct {
 	DutyRatePerLaa          pgtype.Float8 `json:"duty_rate_per_laa"`
 	DutyAmountCad           pgtype.Float8 `json:"duty_amount_cad"`
 	DutyRateSource          string        `json:"duty_rate_source"`
+	OwnerCustomerID         uuid.NullUUID `json:"owner_customer_id"`
 }
 
 // duty_rate_per_laa and duty_amount_cad are NULL when this run is not a
@@ -87,6 +88,7 @@ func (q *Queries) CreateBottlingRun(ctx context.Context, arg CreateBottlingRunPa
 		arg.DutyRatePerLaa,
 		arg.DutyAmountCad,
 		arg.DutyRateSource,
+		arg.OwnerCustomerID,
 	)
 	var i BottlingRun
 	err := row.Scan(
@@ -113,6 +115,7 @@ func (q *Queries) CreateBottlingRun(ctx context.Context, arg CreateBottlingRunPa
 		&i.DutyRatePerLaa,
 		&i.DutyAmountCad,
 		&i.DutyRateSource,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -165,7 +168,7 @@ INSERT INTO packaged_inventory (
     tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
     bottles_on_hand, bottles_packaged
 ) VALUES ($1, $2, $3, $4, NULL, $5, $5)
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id, owner_customer_id
 `
 
 type CreatePackagedInventoryAdoptedParams struct {
@@ -210,6 +213,7 @@ func (q *Queries) CreatePackagedInventoryAdopted(ctx context.Context, arg Create
 		&i.HeldBy,
 		&i.HoldReason,
 		&i.LocationID,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -219,7 +223,7 @@ UPDATE packaged_inventory
 SET bottles_on_hand  = bottles_on_hand  - $2,
     bottles_packaged = bottles_packaged - $2
 WHERE id = $1 AND bottles_on_hand >= $2
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id, owner_customer_id
 `
 
 type DecrementPackagedInventoryByRunParams struct {
@@ -252,6 +256,7 @@ func (q *Queries) DecrementPackagedInventoryByRun(ctx context.Context, arg Decre
 		&i.HeldBy,
 		&i.HoldReason,
 		&i.LocationID,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -292,7 +297,7 @@ func (q *Queries) DecrementStampOrderApplied(ctx context.Context, arg DecrementS
 }
 
 const getBottlingRun = `-- name: GetBottlingRun :one
-SELECT id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source FROM bottling_runs WHERE id = $1
+SELECT id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source, owner_customer_id FROM bottling_runs WHERE id = $1
 `
 
 func (q *Queries) GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun, error) {
@@ -322,6 +327,7 @@ func (q *Queries) GetBottlingRun(ctx context.Context, id uuid.UUID) (BottlingRun
 		&i.DutyRatePerLaa,
 		&i.DutyAmountCad,
 		&i.DutyRateSource,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -386,7 +392,7 @@ func (q *Queries) ListBottlingRunStampUsage(ctx context.Context, bottlingRunID u
 }
 
 const listBottlingRuns = `-- name: ListBottlingRuns :many
-SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br.destination_jurisdiction, br.bottling_date, br.bottle_count, br.bottling_loss_l, br.lot_code, br.tank_gauge_volume_l, br.tank_gauge_abv_pct, br.tank_gauge_laa, br.bulk_movement_id, br.notes, br.created_at, br.updated_at, br.voided_at, br.voided_by, br.voided_reason, br.duty_rate_per_laa, br.duty_amount_cad, br.duty_rate_source,
+SELECT br.id, br.tenant_id, br.run_no, br.product_id, br.source_container_id, br.destination_jurisdiction, br.bottling_date, br.bottle_count, br.bottling_loss_l, br.lot_code, br.tank_gauge_volume_l, br.tank_gauge_abv_pct, br.tank_gauge_laa, br.bulk_movement_id, br.notes, br.created_at, br.updated_at, br.voided_at, br.voided_by, br.voided_reason, br.duty_rate_per_laa, br.duty_amount_cad, br.duty_rate_source, br.owner_customer_id,
        p.name AS product_name,
        p.bottle_size_ml AS product_bottle_size_ml,
        p.target_abv_pct AS product_target_abv_pct
@@ -429,6 +435,7 @@ type ListBottlingRunsRow struct {
 	DutyRatePerLaa          pgtype.Float8      `json:"duty_rate_per_laa"`
 	DutyAmountCad           pgtype.Float8      `json:"duty_amount_cad"`
 	DutyRateSource          string             `json:"duty_rate_source"`
+	OwnerCustomerID         uuid.NullUUID      `json:"owner_customer_id"`
 	ProductName             string             `json:"product_name"`
 	ProductBottleSizeMl     int32              `json:"product_bottle_size_ml"`
 	ProductTargetAbvPct     float64            `json:"product_target_abv_pct"`
@@ -472,6 +479,7 @@ func (q *Queries) ListBottlingRuns(ctx context.Context, arg ListBottlingRunsPara
 			&i.DutyRatePerLaa,
 			&i.DutyAmountCad,
 			&i.DutyRateSource,
+			&i.OwnerCustomerID,
 			&i.ProductName,
 			&i.ProductBottleSizeMl,
 			&i.ProductTargetAbvPct,
@@ -530,18 +538,20 @@ func (q *Queries) ListBottlingRunsForProduct(ctx context.Context, productID uuid
 }
 
 const listPackagedInventory = `-- name: ListPackagedInventory :many
-SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id,
+SELECT pi.id, pi.tenant_id, pi.product_id, pi.lot_code, pi.jurisdiction, pi.bottling_run_id, pi.bottles_on_hand, pi.bottles_packaged, pi.bottles_removed, pi.created_at, pi.updated_at, pi.released_at, pi.released_by, pi.release_notes, pi.held_at, pi.held_by, pi.hold_reason, pi.location_id, pi.owner_customer_id,
        p.name           AS product_name,
        p.bottle_size_ml AS bottle_size_ml,
        p.target_abv_pct AS target_abv_pct,
        br.bottling_date AS first_bottled_date,
        COALESCE(rel.display_name, '') AS released_by_name,
-       COALESCE(hld.display_name, '') AS held_by_name
+       COALESCE(hld.display_name, '') AS held_by_name,
+       COALESCE(own.name, '') AS owner_name
 FROM packaged_inventory pi
 JOIN products p             ON p.id = pi.product_id
 LEFT JOIN bottling_runs br  ON br.id = pi.bottling_run_id
 LEFT JOIN users rel         ON rel.id = pi.released_by
 LEFT JOIN users hld         ON hld.id = pi.held_by
+LEFT JOIN customers own     ON own.id = pi.owner_customer_id
 WHERE pi.bottles_on_hand > 0
    OR $1::boolean
 ORDER BY p.name, pi.jurisdiction, pi.lot_code
@@ -566,12 +576,14 @@ type ListPackagedInventoryRow struct {
 	HeldBy           uuid.NullUUID      `json:"held_by"`
 	HoldReason       string             `json:"hold_reason"`
 	LocationID       uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID  uuid.NullUUID      `json:"owner_customer_id"`
 	ProductName      string             `json:"product_name"`
 	BottleSizeMl     int32              `json:"bottle_size_ml"`
 	TargetAbvPct     float64            `json:"target_abv_pct"`
 	FirstBottledDate pgtype.Date        `json:"first_bottled_date"`
 	ReleasedByName   string             `json:"released_by_name"`
 	HeldByName       string             `json:"held_by_name"`
+	OwnerName        string             `json:"owner_name"`
 }
 
 // LEFT JOINs the originating bottling_run so we can carry first_bottled_date
@@ -605,12 +617,14 @@ func (q *Queries) ListPackagedInventory(ctx context.Context, includeEmpty bool) 
 			&i.HeldBy,
 			&i.HoldReason,
 			&i.LocationID,
+			&i.OwnerCustomerID,
 			&i.ProductName,
 			&i.BottleSizeMl,
 			&i.TargetAbvPct,
 			&i.FirstBottledDate,
 			&i.ReleasedByName,
 			&i.HeldByName,
+			&i.OwnerName,
 		); err != nil {
 			return nil, err
 		}
@@ -634,7 +648,7 @@ func (q *Queries) NextBottlingRunNo(ctx context.Context) (int32, error) {
 }
 
 const packagedInventoryByLot = `-- name: PackagedInventoryByLot :one
-SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id FROM packaged_inventory
+SELECT id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id, owner_customer_id FROM packaged_inventory
 WHERE product_id = $1 AND lot_code = $2 AND jurisdiction = $3
 `
 
@@ -666,6 +680,7 @@ func (q *Queries) PackagedInventoryByLot(ctx context.Context, arg PackagedInvent
 		&i.HeldBy,
 		&i.HoldReason,
 		&i.LocationID,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -673,23 +688,24 @@ func (q *Queries) PackagedInventoryByLot(ctx context.Context, arg PackagedInvent
 const upsertPackagedInventory = `-- name: UpsertPackagedInventory :one
 INSERT INTO packaged_inventory (
     tenant_id, product_id, lot_code, jurisdiction, bottling_run_id,
-    bottles_on_hand, bottles_packaged
+    bottles_on_hand, bottles_packaged, owner_customer_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $6
+    $1, $2, $3, $4, $5, $6, $6, $7
 )
 ON CONFLICT (product_id, lot_code, jurisdiction) DO UPDATE
 SET bottles_on_hand  = packaged_inventory.bottles_on_hand  + EXCLUDED.bottles_on_hand,
     bottles_packaged = packaged_inventory.bottles_packaged + EXCLUDED.bottles_packaged
-RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id
+RETURNING id, tenant_id, product_id, lot_code, jurisdiction, bottling_run_id, bottles_on_hand, bottles_packaged, bottles_removed, created_at, updated_at, released_at, released_by, release_notes, held_at, held_by, hold_reason, location_id, owner_customer_id
 `
 
 type UpsertPackagedInventoryParams struct {
-	TenantID      uuid.UUID     `json:"tenant_id"`
-	ProductID     uuid.UUID     `json:"product_id"`
-	LotCode       string        `json:"lot_code"`
-	Jurisdiction  string        `json:"jurisdiction"`
-	BottlingRunID uuid.NullUUID `json:"bottling_run_id"`
-	BottlesOnHand int32         `json:"bottles_on_hand"`
+	TenantID        uuid.UUID     `json:"tenant_id"`
+	ProductID       uuid.UUID     `json:"product_id"`
+	LotCode         string        `json:"lot_code"`
+	Jurisdiction    string        `json:"jurisdiction"`
+	BottlingRunID   uuid.NullUUID `json:"bottling_run_id"`
+	BottlesOnHand   int32         `json:"bottles_on_hand"`
+	OwnerCustomerID uuid.NullUUID `json:"owner_customer_id"`
 }
 
 func (q *Queries) UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error) {
@@ -700,6 +716,7 @@ func (q *Queries) UpsertPackagedInventory(ctx context.Context, arg UpsertPackage
 		arg.Jurisdiction,
 		arg.BottlingRunID,
 		arg.BottlesOnHand,
+		arg.OwnerCustomerID,
 	)
 	var i PackagedInventory
 	err := row.Scan(
@@ -721,6 +738,7 @@ func (q *Queries) UpsertPackagedInventory(ctx context.Context, arg UpsertPackage
 		&i.HeldBy,
 		&i.HoldReason,
 		&i.LocationID,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -731,7 +749,7 @@ SET voided_at = NOW(),
     voided_by = $2,
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
-RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source
+RETURNING id, tenant_id, run_no, product_id, source_container_id, destination_jurisdiction, bottling_date, bottle_count, bottling_loss_l, lot_code, tank_gauge_volume_l, tank_gauge_abv_pct, tank_gauge_laa, bulk_movement_id, notes, created_at, updated_at, voided_at, voided_by, voided_reason, duty_rate_per_laa, duty_amount_cad, duty_rate_source, owner_customer_id
 `
 
 type VoidBottlingRunParams struct {
@@ -767,6 +785,7 @@ func (q *Queries) VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams
 		&i.DutyRatePerLaa,
 		&i.DutyAmountCad,
 		&i.DutyRateSource,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }

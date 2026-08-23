@@ -425,8 +425,14 @@ type PackagedInventoryRow struct {
 	// The run behind the lot, so a release decision can see its lab
 	// results. Empty for adopted stock, which has no run.
 	BottlingRunId string `protobuf:"bytes,19,opt,name=bottling_run_id,json=bottlingRunId,proto3" json:"bottling_run_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Whose the bottles are. Copied from the vessel at the run, so a cask
+	// sold in place afterwards does not restate a closed period. Empty
+	// means the licensee's — which is every lot packaged before stage 183,
+	// and true of them.
+	OwnerCustomerId string `protobuf:"bytes,20,opt,name=owner_customer_id,json=ownerCustomerId,proto3" json:"owner_customer_id,omitempty"`
+	OwnerName       string `protobuf:"bytes,21,opt,name=owner_name,json=ownerName,proto3" json:"owner_name,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *PackagedInventoryRow) Reset() {
@@ -588,6 +594,20 @@ func (x *PackagedInventoryRow) GetHoldReason() string {
 func (x *PackagedInventoryRow) GetBottlingRunId() string {
 	if x != nil {
 		return x.BottlingRunId
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetOwnerCustomerId() string {
+	if x != nil {
+		return x.OwnerCustomerId
+	}
+	return ""
+}
+
+func (x *PackagedInventoryRow) GetOwnerName() string {
+	if x != nil {
+		return x.OwnerName
 	}
 	return ""
 }
@@ -1186,7 +1206,7 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"serial_end\x18\a \x01(\tR\tserialEnd\x12\x14\n" +
 	"\x05voids\x18\b \x01(\x05R\x05voids\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x84\x06\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xcf\x06\n" +
 	"\x14PackagedInventoryRow\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1d\n" +
 	"\n" +
@@ -1212,7 +1232,10 @@ const file_stillhouse_v1_bottling_proto_rawDesc = "" +
 	"heldByName\x12\x1f\n" +
 	"\vhold_reason\x18\x12 \x01(\tR\n" +
 	"holdReason\x12&\n" +
-	"\x0fbottling_run_id\x18\x13 \x01(\tR\rbottlingRunId\"\xc5\x02\n" +
+	"\x0fbottling_run_id\x18\x13 \x01(\tR\rbottlingRunId\x12*\n" +
+	"\x11owner_customer_id\x18\x14 \x01(\tR\x0fownerCustomerId\x12\x1d\n" +
+	"\n" +
+	"owner_name\x18\x15 \x01(\tR\townerName\"\xc5\x02\n" +
 	"\x18CreateBottlingRunRequest\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12.\n" +

@@ -214,11 +214,18 @@ const journalRemovalsForCOGS = `-- name: JournalRemovalsForCOGS :many
 SELECT r.id, r.removal_date, r.bottles_removed, r.destination_name,
        p.name AS product_name,
        pi.bottling_run_id,
-       br.bottle_count AS run_bottle_count
+       br.bottle_count AS run_bottle_count,
+       -- Whose the goods were when they were packaged. Cost of sales
+       -- presumes you owned what you sold; for a lot bottled from a
+       -- customer's cask nothing was sold, the revenue is a service fee,
+       -- and posting cost of sales against it overstates both sides.
+       pi.owner_customer_id,
+       COALESCE(oc.name, '') AS owner_name
 FROM packaging_removals r
 JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
 JOIN products p            ON p.id = pi.product_id
 LEFT JOIN bottling_runs br ON br.id = pi.bottling_run_id
+LEFT JOIN customers oc     ON oc.id = pi.owner_customer_id
 WHERE r.voided_at IS NULL
   AND r.removal_date >= $1::DATE
   AND r.removal_date <= $2::DATE
@@ -238,6 +245,8 @@ type JournalRemovalsForCOGSRow struct {
 	ProductName     string        `json:"product_name"`
 	BottlingRunID   uuid.NullUUID `json:"bottling_run_id"`
 	RunBottleCount  pgtype.Int4   `json:"run_bottle_count"`
+	OwnerCustomerID uuid.NullUUID `json:"owner_customer_id"`
+	OwnerName       string        `json:"owner_name"`
 }
 
 // Packaged stock leaving, with the bottling run behind it so its material
@@ -259,6 +268,8 @@ func (q *Queries) JournalRemovalsForCOGS(ctx context.Context, arg JournalRemoval
 			&i.ProductName,
 			&i.BottlingRunID,
 			&i.RunBottleCount,
+			&i.OwnerCustomerID,
+			&i.OwnerName,
 		); err != nil {
 			return nil, err
 		}

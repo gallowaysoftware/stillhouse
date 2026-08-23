@@ -351,7 +351,20 @@ export function BottlingPage() {
             {packaged.data?.rows.map((r) => (
               <tr key={r.id}>
                 <td className="px-4 py-3 font-medium text-fg">{r.productName}</td>
-                <td className="px-4 py-3 text-fg-muted">{r.lotCode}</td>
+                <td className="px-4 py-3 text-fg-muted">
+                  {r.lotCode}
+                  {/* Bottled from a customer's cask: on your B266 while
+                      you hold it, and not your inventory to value or
+                      sell. */}
+                  {r.ownerCustomerId && (
+                    <span
+                      title="Bottled from a customer's spirits. On your B266 while you hold it; not your stock to value or sell, and shipping it is a service rather than a sale."
+                      className="ml-2 rounded bg-surface-3 px-1.5 py-0.5 text-[11px] font-medium text-fg-muted"
+                    >
+                      {r.ownerName || "customer-owned"}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-fg-muted">{r.jurisdiction}</td>
                 <td className="px-4 py-3 text-right font-medium text-fg">{r.bottlesOnHand.toLocaleString()}</td>
                 <td className="px-4 py-3 text-right text-fg-muted">{r.bottlesPackaged.toLocaleString()}</td>

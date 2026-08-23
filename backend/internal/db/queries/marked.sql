@@ -6,9 +6,9 @@ INSERT INTO marked_special_containers (
     tenant_id, container_no, mark, capacity_l, product_id, description,
     source_container_id, volume_l, abv_pct, laa, filled_on, filled_by,
     bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source,
-    notes, created_by
+    notes, created_by, owner_customer_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
 ) RETURNING *;
 
 -- name: GetMarkedContainer :one

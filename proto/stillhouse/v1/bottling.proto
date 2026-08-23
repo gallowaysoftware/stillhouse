@@ -84,6 +84,12 @@ message PackagedInventoryRow {
   // The run behind the lot, so a release decision can see its lab
   // results. Empty for adopted stock, which has no run.
   string bottling_run_id = 19;
+  // Whose the bottles are. Copied from the vessel at the run, so a cask
+  // sold in place afterwards does not restate a closed period. Empty
+  // means the licensee's — which is every lot packaged before stage 183,
+  // and true of them.
+  string owner_customer_id = 20;
+  string owner_name = 21;
 }
 
 // --- requests ---

@@ -100,6 +100,10 @@ SELECT pi.id, pi.lot_code, pi.jurisdiction, pi.bottles_on_hand,
 FROM packaged_inventory pi
 JOIN products p ON p.id = pi.product_id
 WHERE pi.bottles_on_hand > 0
+  -- Owned stock only. A customer's bottles sitting in the warehouse are
+  -- on the B266 and not on the balance sheet — the same rule the bulk
+  -- side follows (stage 176), now that a lot knows whose it is.
+  AND pi.owner_customer_id IS NULL
 ORDER BY p.name, pi.lot_code;
 
 -- name: BottlingRunsInPeriodForWIP :many
@@ -114,3 +118,8 @@ WHERE br.bottling_date >= sqlc.arg(period_start)::date
   AND br.bottling_date <= sqlc.arg(period_end)::date
   AND br.voided_at IS NULL
 ORDER BY br.bottling_date, br.lot_code;
+
+-- name: CountThirdPartyPackagedLots :one
+SELECT COUNT(*)::INTEGER AS n
+FROM packaged_inventory
+WHERE owner_customer_id IS NOT NULL AND bottles_on_hand > 0;

@@ -2136,6 +2136,7 @@ type BottlingRun struct {
 	DutyRatePerLaa          pgtype.Float8      `json:"duty_rate_per_laa"`
 	DutyAmountCad           pgtype.Float8      `json:"duty_amount_cad"`
 	DutyRateSource          string             `json:"duty_rate_source"`
+	OwnerCustomerID         uuid.NullUUID      `json:"owner_customer_id"`
 }
 
 type BottlingRunStampUsage struct {
@@ -2600,6 +2601,7 @@ type MarkedSpecialContainer struct {
 	CreatedBy         uuid.UUID             `json:"created_by"`
 	CreatedAt         pgtype.Timestamptz    `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz    `json:"updated_at"`
+	OwnerCustomerID   uuid.NullUUID         `json:"owner_customer_id"`
 }
 
 type MashIngredientUsage struct {
@@ -2697,6 +2699,7 @@ type PackagedInventory struct {
 	HeldBy          uuid.NullUUID      `json:"held_by"`
 	HoldReason      string             `json:"hold_reason"`
 	LocationID      uuid.NullUUID      `json:"location_id"`
+	OwnerCustomerID uuid.NullUUID      `json:"owner_customer_id"`
 }
 
 type PackagingRemoval struct {

@@ -94,6 +94,19 @@ func (q *Queries) CostRatesInForceOn(ctx context.Context, onDate pgtype.Date) (C
 	return i, err
 }
 
+const countThirdPartyPackagedLots = `-- name: CountThirdPartyPackagedLots :one
+SELECT COUNT(*)::INTEGER AS n
+FROM packaged_inventory
+WHERE owner_customer_id IS NOT NULL AND bottles_on_hand > 0
+`
+
+func (q *Queries) CountThirdPartyPackagedLots(ctx context.Context) (int32, error) {
+	row := q.db.QueryRow(ctx, countThirdPartyPackagedLots)
+	var n int32
+	err := row.Scan(&n)
+	return n, err
+}
+
 const deleteCostRates = `-- name: DeleteCostRates :exec
 DELETE FROM cost_rates WHERE id = $1
 `
@@ -467,6 +480,10 @@ SELECT pi.id, pi.lot_code, pi.jurisdiction, pi.bottles_on_hand,
 FROM packaged_inventory pi
 JOIN products p ON p.id = pi.product_id
 WHERE pi.bottles_on_hand > 0
+  -- Owned stock only. A customer's bottles sitting in the warehouse are
+  -- on the B266 and not on the balance sheet — the same rule the bulk
+  -- side follows (stage 176), now that a lot knows whose it is.
+  AND pi.owner_customer_id IS NULL
 ORDER BY p.name, pi.lot_code
 `
 

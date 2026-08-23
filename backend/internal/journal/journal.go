@@ -311,39 +311,34 @@ func (j *Journal) addCOGS(
 	}
 	m := mapping[sqlcgen.JournalEventKindCogsOnRemoval]
 
-	// Cost of sales presumes the goods were ours to sell. Spirits owned by
-	// a customer and merely matured, packaged and shipped by the licensee
-	// were never on the licensee's balance sheet — the revenue is a
-	// service fee and there is no cost of sales at all.
+	// Cost of sales presumes the goods were ours to sell.
 	//
-	// The chain from a removal back to whoever owned the bulk it came from
-	// exists (removal → lot → bottling run → source container), but the
-	// container carries only its *current* owner, and a cask sold in place
-	// last quarter would restate a period already closed. Stillhouse
-	// therefore does not guess. It says so instead, once, when the tenant
-	// has any third-party spirits at all — because an accountant importing
-	// this needs to know the figure may include somebody else's goods, and
-	// a silently overstated cost of sales is exactly the kind of error
-	// that survives an audit by looking reasonable. See PLAN D8.
-	if n, ce := q.CountThirdPartyBulkContainers(ctx); ce == nil && n > 0 {
-		j.Warnings = append(j.Warnings, Warning{
-			Kind: string(sqlcgen.JournalEventKindCogsOnRemoval),
-			Detail: fmt.Sprintf(
-				"%d bulk container%s %s owned by a customer. Cost of sales below values "+
-					"every removal as if the goods were yours; ownership of packaged "+
-					"stock is not modelled yet, so any contract-packaged removal in "+
-					"this period is overstated here and its revenue is a service fee, "+
-					"not a sale.", n, plural(int(n)), wasWere(int(n))),
-		})
-	} else if ce != nil {
-		return fmt.Errorf("third-party containers: %w", ce)
-	}
+	// Spirits owned by a customer and merely matured, packaged and
+	// shipped by the licensee were never on the licensee's balance sheet:
+	// nothing was sold, the revenue is a service fee, and posting cost of
+	// sales against the removal overstates both sides of the books.
+	//
+	// Until stage 183 the chain from a removal back to whoever owned the
+	// bulk stopped at the bottling run, so this was a warning attached to
+	// a figure known to be wrong. The lot now carries the owner it was
+	// packaged under — copied at the run, not joined, so a cask sold in
+	// place afterwards does not restate a closed period — and the
+	// removals that were never sales are left out rather than annotated.
 
 	// Cost per run is looked up once and reused, because several removals
 	// commonly come off one run.
 	costPerBottle := map[uuid.UUID]float64{}
 	var unvalued int
+	var serviceOnly int
+	var firstOwner string
 	for _, r := range rows {
+		if r.OwnerCustomerID.Valid {
+			serviceOnly++
+			if firstOwner == "" {
+				firstOwner = r.OwnerName
+			}
+			continue
+		}
 		if !r.BottlingRunID.Valid || !r.RunBottleCount.Valid || r.RunBottleCount.Int32 <= 0 {
 			// Adopted stock, or a backfilled lot with no run behind it.
 			// There is no cost to attribute and inventing one would be
@@ -376,6 +371,18 @@ func (j *Journal) addCOGS(
 				r.BottlesRemoved, r.ProductName, r.DestinationName),
 			Basis: "direct materials only, at the bottling run's own cost; no labour or overhead",
 		}, m)
+	}
+	if serviceOnly > 0 {
+		// Said rather than silent: the removals are on the B266 and the
+		// revenue is real, so a reader comparing this journal to the
+		// return needs to know why the two do not line up bottle for
+		// bottle.
+		j.Notes = append(j.Notes, fmt.Sprintf(
+			"%d removal%s in this period %s stock owned by a customer (%s). No cost "+
+				"of sales is posted for them — nothing was sold, and the revenue is "+
+				"a service fee. They are still on the B266, because you held the "+
+				"spirits.",
+			serviceOnly, plural(serviceOnly), wasWere(serviceOnly), firstOwner))
 	}
 	if unvalued > 0 {
 		j.Warnings = append(j.Warnings, Warning{

@@ -140,16 +140,6 @@ Picking, packing slips, carrier and tracking shipped with the sales chain
 (stage 173); the BOL is recorded by reference, not produced. Most carriers
 supply their own form, so this is only worth doing for the ones that don't.
 
-### D8 · Ownership of packaged stock — P1
-
-Stage 173 gave bulk containers an owner; packaged inventory has none, so the
-chain from a removal back to whoever owned the spirits stops at the bottling
-run. Two consequences, both currently disclosed rather than fixed: cost of
-sales values every removal as if the goods were the licensee's (the journal
-attaches a warning saying so), and a contract-packaged removal's revenue is a
-service fee rather than a sale. Needs ownership to be effective-dated rather
-than a current column, or a cask sold in place restates a closed period.
-
 ### D5 · Keg and returnable container tracking — P2
 
 Keg registry, deposits, fill/return cycle, freshness. Overlaps with marked

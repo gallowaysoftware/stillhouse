@@ -17,10 +17,10 @@ INSERT INTO marked_special_containers (
     tenant_id, container_no, mark, capacity_l, product_id, description,
     source_container_id, volume_l, abv_pct, laa, filled_on, filled_by,
     bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source,
-    notes, created_by
+    notes, created_by, owner_customer_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18
-) RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+) RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at, owner_customer_id
 `
 
 type CreateMarkedContainerParams struct {
@@ -42,6 +42,7 @@ type CreateMarkedContainerParams struct {
 	DutyRateSource    string        `json:"duty_rate_source"`
 	Notes             string        `json:"notes"`
 	CreatedBy         uuid.UUID     `json:"created_by"`
+	OwnerCustomerID   uuid.NullUUID `json:"owner_customer_id"`
 }
 
 func (q *Queries) CreateMarkedContainer(ctx context.Context, arg CreateMarkedContainerParams) (MarkedSpecialContainer, error) {
@@ -64,6 +65,7 @@ func (q *Queries) CreateMarkedContainer(ctx context.Context, arg CreateMarkedCon
 		arg.DutyRateSource,
 		arg.Notes,
 		arg.CreatedBy,
+		arg.OwnerCustomerID,
 	)
 	var i MarkedSpecialContainer
 	err := row.Scan(
@@ -92,6 +94,7 @@ func (q *Queries) CreateMarkedContainer(ctx context.Context, arg CreateMarkedCon
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -164,7 +167,7 @@ func (q *Queries) CreateMarkedDelivery(ctx context.Context, arg CreateMarkedDeli
 }
 
 const getMarkedContainer = `-- name: GetMarkedContainer :one
-SELECT m.id, m.tenant_id, m.container_no, m.mark, m.capacity_l, m.product_id, m.description, m.status, m.source_container_id, m.volume_l, m.abv_pct, m.laa, m.filled_on, m.filled_by, m.bulk_movement_id, m.duty_rate_per_laa, m.duty_amount_cad, m.duty_rate_source, m.notes, m.unmarked_on, m.unmarked_reason, m.unmark_movement_id, m.created_by, m.created_at, m.updated_at, COALESCE(p.name, '') AS product_name,
+SELECT m.id, m.tenant_id, m.container_no, m.mark, m.capacity_l, m.product_id, m.description, m.status, m.source_container_id, m.volume_l, m.abv_pct, m.laa, m.filled_on, m.filled_by, m.bulk_movement_id, m.duty_rate_per_laa, m.duty_amount_cad, m.duty_rate_source, m.notes, m.unmarked_on, m.unmarked_reason, m.unmark_movement_id, m.created_by, m.created_at, m.updated_at, m.owner_customer_id, COALESCE(p.name, '') AS product_name,
        COALESCE(b.name, '') AS source_container_name
 FROM marked_special_containers m
 LEFT JOIN products p        ON p.id = m.product_id
@@ -198,6 +201,7 @@ type GetMarkedContainerRow struct {
 	CreatedBy           uuid.UUID             `json:"created_by"`
 	CreatedAt           pgtype.Timestamptz    `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz    `json:"updated_at"`
+	OwnerCustomerID     uuid.NullUUID         `json:"owner_customer_id"`
 	ProductName         string                `json:"product_name"`
 	SourceContainerName string                `json:"source_container_name"`
 }
@@ -231,6 +235,7 @@ func (q *Queries) GetMarkedContainer(ctx context.Context, id uuid.UUID) (GetMark
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OwnerCustomerID,
 		&i.ProductName,
 		&i.SourceContainerName,
 	)
@@ -238,7 +243,7 @@ func (q *Queries) GetMarkedContainer(ctx context.Context, id uuid.UUID) (GetMark
 }
 
 const getMarkedContainerForUpdate = `-- name: GetMarkedContainerForUpdate :one
-SELECT id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at FROM marked_special_containers WHERE id = $1 FOR UPDATE
+SELECT id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at, owner_customer_id FROM marked_special_containers WHERE id = $1 FOR UPDATE
 `
 
 func (q *Queries) GetMarkedContainerForUpdate(ctx context.Context, id uuid.UUID) (MarkedSpecialContainer, error) {
@@ -270,12 +275,13 @@ func (q *Queries) GetMarkedContainerForUpdate(ctx context.Context, id uuid.UUID)
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
 
 const listMarkedContainers = `-- name: ListMarkedContainers :many
-SELECT m.id, m.tenant_id, m.container_no, m.mark, m.capacity_l, m.product_id, m.description, m.status, m.source_container_id, m.volume_l, m.abv_pct, m.laa, m.filled_on, m.filled_by, m.bulk_movement_id, m.duty_rate_per_laa, m.duty_amount_cad, m.duty_rate_source, m.notes, m.unmarked_on, m.unmarked_reason, m.unmark_movement_id, m.created_by, m.created_at, m.updated_at, COALESCE(p.name, '') AS product_name,
+SELECT m.id, m.tenant_id, m.container_no, m.mark, m.capacity_l, m.product_id, m.description, m.status, m.source_container_id, m.volume_l, m.abv_pct, m.laa, m.filled_on, m.filled_by, m.bulk_movement_id, m.duty_rate_per_laa, m.duty_amount_cad, m.duty_rate_source, m.notes, m.unmarked_on, m.unmarked_reason, m.unmark_movement_id, m.created_by, m.created_at, m.updated_at, m.owner_customer_id, COALESCE(p.name, '') AS product_name,
        COALESCE(b.name, '') AS source_container_name
 FROM marked_special_containers m
 LEFT JOIN products p        ON p.id = m.product_id
@@ -310,6 +316,7 @@ type ListMarkedContainersRow struct {
 	CreatedBy           uuid.UUID             `json:"created_by"`
 	CreatedAt           pgtype.Timestamptz    `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz    `json:"updated_at"`
+	OwnerCustomerID     uuid.NullUUID         `json:"owner_customer_id"`
 	ProductName         string                `json:"product_name"`
 	SourceContainerName string                `json:"source_container_name"`
 }
@@ -349,6 +356,7 @@ func (q *Queries) ListMarkedContainers(ctx context.Context, onHandOnly bool) ([]
 			&i.CreatedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.OwnerCustomerID,
 			&i.ProductName,
 			&i.SourceContainerName,
 		); err != nil {
@@ -463,7 +471,7 @@ const setMarkedContainerStatus = `-- name: SetMarkedContainerStatus :one
 UPDATE marked_special_containers
 SET status = $1::marked_container_status, updated_at = NOW()
 WHERE id = $2 AND status = 'marked'
-RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at
+RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at, owner_customer_id
 `
 
 type SetMarkedContainerStatusParams struct {
@@ -500,6 +508,7 @@ func (q *Queries) SetMarkedContainerStatus(ctx context.Context, arg SetMarkedCon
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -508,7 +517,7 @@ const setMarkedContainerStatusForce = `-- name: SetMarkedContainerStatusForce :o
 UPDATE marked_special_containers
 SET status = $1::marked_container_status, updated_at = NOW()
 WHERE id = $2
-RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at
+RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at, owner_customer_id
 `
 
 type SetMarkedContainerStatusForceParams struct {
@@ -548,6 +557,7 @@ func (q *Queries) SetMarkedContainerStatusForce(ctx context.Context, arg SetMark
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }
@@ -636,7 +646,7 @@ SET status             = 'unmarked',
     unmark_movement_id = $3::uuid,
     updated_at         = NOW()
 WHERE id = $4 AND status = 'marked'
-RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at
+RETURNING id, tenant_id, container_no, mark, capacity_l, product_id, description, status, source_container_id, volume_l, abv_pct, laa, filled_on, filled_by, bulk_movement_id, duty_rate_per_laa, duty_amount_cad, duty_rate_source, notes, unmarked_on, unmarked_reason, unmark_movement_id, created_by, created_at, updated_at, owner_customer_id
 `
 
 type UnmarkMarkedContainerParams struct {
@@ -682,6 +692,7 @@ func (q *Queries) UnmarkMarkedContainer(ctx context.Context, arg UnmarkMarkedCon
 		&i.CreatedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.OwnerCustomerID,
 	)
 	return i, err
 }

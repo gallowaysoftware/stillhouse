@@ -142,6 +142,7 @@ type Querier interface {
 	// to ask on every journal build, and the answer decides whether the cost
 	// of sales figure needs a caveat attached — see journal.addCOGS.
 	CountThirdPartyBulkContainers(ctx context.Context) (int32, error)
+	CountThirdPartyPackagedLots(ctx context.Context) (int32, error)
 	CountUnusedTOTPRecoveryCodes(ctx context.Context, userID uuid.UUID) (int32, error)
 	// expires_at NULL means the token never expires. That is a deliberate
 	// choice at the RPC layer, not a default — see IssueAPIToken.
