@@ -1,6 +1,7 @@
 package forecast
 
 import (
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -127,5 +128,93 @@ func TestNoMethodRefuses(t *testing.T) {
 	got := Project("", []Observation{obs(2026, 6, 100)}, forMonth, 3)
 	if got.Available {
 		t.Error("forecast without a method")
+	}
+}
+
+// A forecast is only useful if it says what has to be made and bought.
+// The two halves fail independently and for different reasons, and
+// collapsing them into one availability would hide a usable answer
+// behind a missing one.
+
+func aRecipe() *RecipeBatch {
+	return &RecipeBatch{
+		Name:         "House rye v3",
+		ProjectedLAA: 100,
+		Ingredients: []GrainLine{
+			{Material: "Rye", Quantity: 200, UOM: "kg"},
+			{Material: "Malted barley", Quantity: 50, UOM: "kg"},
+		},
+	}
+}
+
+func TestRequire_NetsAgainstStockAndScalesTheBill(t *testing.T) {
+	// 1000 forecast, 400 on hand: 600 to make. 750 mL at 40% = 0.3 LAA
+	// each, so 180 LAA — 1.8 batches of a recipe that makes 100.
+	got := Require(1000, 400, 750, 40, aRecipe())
+
+	if got.BottlesToMake != 600 {
+		t.Errorf("bottles: got %d, want 600", got.BottlesToMake)
+	}
+	if got.LAANeeded != 180 {
+		t.Errorf("LAA: got %v, want 180", got.LAANeeded)
+	}
+	if !got.GrainAvailable {
+		t.Fatalf("grain refused: %s", got.GrainMissing)
+	}
+	if got.Batches != 1.8 {
+		t.Errorf("batches: got %v, want 1.8", got.Batches)
+	}
+	if len(got.GrainLines) != 2 || got.GrainLines[0].Quantity != 360 {
+		t.Errorf("grain lines: %+v", got.GrainLines)
+	}
+}
+
+// Stock already covering the forecast means nothing to make, and that has
+// to read as nothing rather than as a negative requirement.
+func TestRequire_StockCoveringTheForecastNeedsNothing(t *testing.T) {
+	got := Require(100, 400, 750, 40, aRecipe())
+	if got.BottlesToMake != 0 {
+		t.Errorf("bottles: got %d, want 0", got.BottlesToMake)
+	}
+	if got.LAANeeded != 0 {
+		t.Errorf("LAA: got %v, want 0", got.LAANeeded)
+	}
+	if got.GrainAvailable {
+		t.Error("asked for grain when nothing needs making")
+	}
+}
+
+// The alcohol figure needs only the product's own size and strength, so
+// it must survive a missing recipe. Reporting both as one availability
+// would hide it.
+func TestRequire_NoRecipeStillGivesTheAlcoholFigure(t *testing.T) {
+	got := Require(1000, 0, 750, 40, nil)
+	if got.LAANeeded != 300 {
+		t.Errorf("LAA: got %v, want 300 — this needs no recipe", got.LAANeeded)
+	}
+	if got.BottlesToMake != 1000 {
+		t.Errorf("bottles: got %d", got.BottlesToMake)
+	}
+	if got.GrainAvailable {
+		t.Error("produced grain quantities with no recipe linked")
+	}
+	if !strings.Contains(got.GrainMissing, "Link one") {
+		t.Errorf("refusal does not say what to do: %q", got.GrainMissing)
+	}
+}
+
+// A recipe that projects no alcohol cannot be scaled, and dividing by it
+// would produce an infinity that reads as a very large grain order.
+func TestRequire_RecipeProjectingNothingRefuses(t *testing.T) {
+	r := aRecipe()
+	r.ProjectedLAA = 0
+	got := Require(1000, 0, 750, 40, r)
+	if got.GrainAvailable {
+		t.Fatalf("scaled a recipe that projects nothing: %+v", got.GrainLines)
+	}
+	for _, l := range got.GrainLines {
+		if math.IsInf(l.Quantity, 0) || math.IsNaN(l.Quantity) {
+			t.Errorf("%s: %v", l.Material, l.Quantity)
+		}
 	}
 }

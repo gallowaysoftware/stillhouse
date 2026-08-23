@@ -6,14 +6,19 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
+
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/distilling"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/forecast"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
 )
 
 // forecastCaution is on every response rather than in the documentation,
@@ -147,6 +152,10 @@ func (s *SchedulingService) DemandForecast(
 				line.Overridden = true
 				line.OverrideReason = o.Reason
 				line.Basis = "entered by hand"
+				if e := fillRequirement(ctx, q, id, line); e != nil {
+					return e
+				}
+				out.TotalLaaNeeded += line.LaaNeeded
 				out.Lines = append(out.Lines, line)
 				continue
 			}
@@ -157,8 +166,19 @@ func (s *SchedulingService) DemandForecast(
 			line.Missing = r.Missing
 			line.Basis = r.Basis
 			line.MonthsUsed = r.MonthsUsed
+			if e := fillRequirement(ctx, q, id, line); e != nil {
+				return e
+			}
+			out.TotalLaaNeeded += line.LaaNeeded
 			out.Lines = append(out.Lines, line)
 		}
+		stock, e := q.AlcoholOnHandForPlanning(ctx)
+		if e != nil {
+			return e
+		}
+		out.FreeLaa = round4(stock.FreeLaa)
+		out.MaturingLaa = round4(stock.MaturingLaa)
+		out.TotalLaaNeeded = round4(out.TotalLaaNeeded)
 		return nil
 	})
 	if err != nil {
@@ -295,4 +315,135 @@ func forecastMethodFromProto(m stillhousev1.ForecastMethod) sqlcgen.NullForecast
 	// go back to being refused rather than keep a projection they do not
 	// believe.
 	return sqlcgen.NullForecastMethod{Valid: false}
+}
+
+// fillRequirement works out what a forecast line implies has to be made,
+// and bought to make it.
+//
+// A product with no forecast still gets its alcohol figure computed from
+// zero bottles, which is the honest answer: nothing forecast is nothing
+// to make. Only the materials half can refuse for a reason of its own.
+func fillRequirement(
+	ctx context.Context, q *sqlcgen.Queries, productID uuid.UUID, line *stillhousev1.ForecastLine,
+) error {
+	prod, err := q.GetProduct(ctx, productID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil
+		}
+		return err
+	}
+
+	batch, err := recipeBatchFor(ctx, q, productID)
+	if err != nil {
+		return err
+	}
+	if batch != nil {
+		line.RecipeName = batch.Name
+	}
+
+	req := forecast.Require(line.BottlesForecast, line.BottlesOnHand,
+		prod.BottleSizeMl, prod.TargetAbvPct, batch)
+
+	line.BottlesToMake = req.BottlesToMake
+	line.LaaNeeded = round4(req.LAANeeded)
+	line.MaterialsAvailable = req.GrainAvailable
+	line.MaterialsMissing = req.GrainMissing
+	line.Batches = req.Batches
+	for _, g := range req.GrainLines {
+		line.Materials = append(line.Materials, &stillhousev1.MaterialRequirement{
+			Material: g.Material, Quantity: g.Quantity, Uom: g.UOM,
+		})
+	}
+	return nil
+}
+
+// recipeBatchFor projects one batch of the recipe a product is planned
+// from, or returns nil when none is linked.
+//
+// The projection runs through internal/distilling, the same code a recipe
+// page shows, so the grain a plan asks for and the alcohol a recipe
+// promises are the same arithmetic rather than two of it.
+func recipeBatchFor(
+	ctx context.Context, q *sqlcgen.Queries, productID uuid.UUID,
+) (*forecast.RecipeBatch, error) {
+	rv, err := q.RecipeForProduct(ctx, productID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, nil // no recipe linked; Require reports why
+		}
+		return nil, err
+	}
+	rows, err := q.RecipeIngredientsForProjection(ctx, rv.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	ings := make([]distilling.Ingredient, 0, len(rows))
+	lines := make([]forecast.GrainLine, 0, len(rows))
+	for _, r := range rows {
+		lines = append(lines, forecast.GrainLine{
+			Material: r.MaterialName, Quantity: r.Quantity, UOM: r.Uom,
+		})
+		// Only what has an extract fraction can produce alcohol. A
+		// botanical has none and contributes nothing to the projection,
+		// while still being on the shopping list.
+		if !r.ExtractFraction.Valid || r.Uom != "kg" {
+			continue
+		}
+		ings = append(ings, distilling.Ingredient{
+			Name:    r.MaterialName,
+			MassKg:  r.Quantity,
+			Extract: units.Fraction(r.ExtractFraction.Float64),
+		})
+	}
+
+	p := distilling.ProjectBatch(ings, distilling.Efficiencies{
+		Mash:                 units.Fraction(rv.MashEfficiencyFraction),
+		Ferment:              units.Fraction(rv.FermentEfficiencyFraction),
+		DistillationRecovery: units.Fraction(rv.DistillationRecoveryFraction),
+	})
+	return &forecast.RecipeBatch{
+		Name:         fmt.Sprintf("%s v%d", rv.RecipeName, rv.VersionNo),
+		ProjectedLAA: p.TotalProjectedLAA,
+		Ingredients:  lines,
+	}, nil
+}
+
+// SetProductRecipe links a product to the recipe it is planned from, or
+// clears the link. Clearing puts material requirements back to refusing
+// rather than leaving a stale recipe planning next month's grain.
+func (s *SchedulingService) SetProductRecipe(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.SetProductRecipeRequest],
+) (*connect.Response[stillhousev1.SetProductRecipeResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	productID, err := uuid.Parse(req.Msg.GetProductId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid product_id"))
+	}
+	var rv uuid.NullUUID
+	if v := strings.TrimSpace(req.Msg.GetRecipeVersionId()); v != "" {
+		id, e := uuid.Parse(v)
+		if e != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid recipe_version_id"))
+		}
+		rv = uuid.NullUUID{UUID: id, Valid: true}
+	}
+	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if _, e := q.SetProductRecipe(ctx, sqlcgen.SetProductRecipeParams{
+			ID: productID, RecipeVersionID: rv,
+		}); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "product", productID.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{"recipe_version_id": req.Msg.GetRecipeVersionId()})
+	}); err != nil {
+		s.logger.Error("SetProductRecipe", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.SetProductRecipeResponse{}), nil
 }

@@ -26,7 +26,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/scheduling.proto.
  */
 export const file_stillhouse_v1_scheduling: GenFile = /*@__PURE__*/
-  fileDesc("Ch5zdGlsbGhvdXNlL3YxL3NjaGVkdWxpbmcucHJvdG8SDXN0aWxsaG91c2UudjEimwIKCkRlbWFuZExpbmUSEgoKcHJvZHVjdF9pZBgBIAEoCRIUCgxwcm9kdWN0X25hbWUYAiABKAkSFgoOYm90dGxlX3NpemVfbWwYAyABKAUSFgoOYm90dGxlX2Fidl9wY3QYBCABKAESFAoMYm90dGxlc19vd2VkGAUgASgFEhkKEWVhcmxpZXN0X3JlcXVpcmVkGAYgASgJEhcKD2JvdHRsZXNfb25faGFuZBgHIAEoBRIWCg5ib3R0bGVzX3BpY2tlZBgIIAEoBRIZChFib3R0bGVzX2F2YWlsYWJsZRgJIAEoBRIRCglzaG9ydGZhbGwYCiABKAUSFQoNc2hvcnRmYWxsX2xhYRgLIAEoARIMCgRsYXRlGAwgASgIIpQDChJQbGFubmFibGVFcXVpcG1lbnQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIqCgRraW5kGAMgASgOMhwuc3RpbGxob3VzZS52MS5FcXVpcG1lbnRLaW5kEi4KBnN0YXR1cxgEIAEoDjIeLnN0aWxsaG91c2UudjEuRXF1aXBtZW50U3RhdHVzEhIKCmNhcGFjaXR5X2wYBSABKAESFgoOY2FwYWNpdHlfbF9zZXQYBiABKAgSHQoVb2JzZXJ2ZWRfbWVkaWFuX2hvdXJzGAcgASgBEhUKDW9ic2VydmVkX3J1bnMYCCABKAUSGQoRdHlwaWNhbF9ydW5faG91cnMYCSABKAESHQoVdHlwaWNhbF9ydW5faG91cnNfc2V0GAogASgIEhEKCXBsYW5uYWJsZRgLIAEoCBIPCgd3aHlfbm90GAwgASgJEi8KCXNjaGVkdWxlZBgNIAMoCzIcLnN0aWxsaG91c2UudjEuU2NoZWR1bGVkV29yaxIXCg9zY2hlZHVsZWRfaG91cnMYDiABKAEigwEKDVNjaGVkdWxlZFdvcmsSFQoNd29ya19vcmRlcl9pZBgBIAEoCRIVCg13b3JrX29yZGVyX25vGAIgASgFEg0KBXRpdGxlGAMgASgJEhUKDXNjaGVkdWxlZF9mb3IYBCABKAkSDgoGZHVlX29uGAUgASgJEg4KBnN0YXR1cxgGIAEoCSIxChVQcm9kdWN0aW9uUGxhblJlcXVlc3QSDAoEZnJvbRgBIAEoCRIKCgJ0bxgCIAEoCSL/AQoWUHJvZHVjdGlvblBsYW5SZXNwb25zZRIpCgZkZW1hbmQYASADKAsyGS5zdGlsbGhvdXNlLnYxLkRlbWFuZExpbmUSNAoJZXF1aXBtZW50GAIgAygLMiEuc3RpbGxob3VzZS52MS5QbGFubmFibGVFcXVpcG1lbnQSDAoEZnJvbRgDIAEoCRIKCgJ0bxgEIAEoCRIVCg1zaG9ydGZhbGxfbGFhGAUgASgBEhUKDWF2YWlsYWJsZV9sYWEYBiABKAESGAoQc2hvcnRfb2ZfYWxjb2hvbBgHIAEoCBINCgViYXNpcxgIIAEoCRITCgtibGluZF9zcG90cxgJIAMoCSL7AQoMRm9yZWNhc3RMaW5lEhIKCnByb2R1Y3RfaWQYASABKAkSFAoMcHJvZHVjdF9uYW1lGAIgASgJEhkKEWJvdHRsZXNfY29tbWl0dGVkGAMgASgFEhgKEGJvdHRsZXNfZm9yZWNhc3QYBCABKAUSEQoJYXZhaWxhYmxlGAUgASgIEg8KB21pc3NpbmcYBiABKAkSDQoFYmFzaXMYByABKAkSEwoLbW9udGhzX3VzZWQYCCABKAUSEgoKb3ZlcnJpZGRlbhgJIAEoCBIXCg9vdmVycmlkZV9yZWFzb24YCiABKAkSFwoPYm90dGxlc19vbl9oYW5kGAsgASgFIiYKFURlbWFuZEZvcmVjYXN0UmVxdWVzdBINCgVtb250aBgBIAEoCSLYAQoWRGVtYW5kRm9yZWNhc3RSZXNwb25zZRIqCgVsaW5lcxgBIAMoCzIbLnN0aWxsaG91c2UudjEuRm9yZWNhc3RMaW5lEi0KBm1ldGhvZBgCIAEoDjIdLnN0aWxsaG91c2UudjEuRm9yZWNhc3RNZXRob2QSFwoPdHJhaWxpbmdfbW9udGhzGAMgASgFEhQKDHBlcmlvZF9zdGFydBgEIAEoCRISCgpwZXJpb2RfZW5kGAUgASgJEg8KB3JlZnVzZWQYBiABKAkSDwoHY2F1dGlvbhgHIAEoCSJiChhTZXRGb3JlY2FzdE1ldGhvZFJlcXVlc3QSLQoGbWV0aG9kGAEgASgOMh0uc3RpbGxob3VzZS52MS5Gb3JlY2FzdE1ldGhvZBIXCg90cmFpbGluZ19tb250aHMYAiABKAUiYwoZU2V0Rm9yZWNhc3RNZXRob2RSZXNwb25zZRItCgZtZXRob2QYASABKA4yHS5zdGlsbGhvdXNlLnYxLkZvcmVjYXN0TWV0aG9kEhcKD3RyYWlsaW5nX21vbnRocxgCIAEoBSJfChlTYXZlRGVtYW5kRm9yZWNhc3RSZXF1ZXN0EhIKCnByb2R1Y3RfaWQYASABKAkSDQoFbW9udGgYAiABKAkSDwoHYm90dGxlcxgDIAEoBRIOCgZyZWFzb24YBCABKAkiHAoaU2F2ZURlbWFuZEZvcmVjYXN0UmVzcG9uc2UqngEKDkZvcmVjYXN0TWV0aG9kEh8KG0ZPUkVDQVNUX01FVEhPRF9VTlNQRUNJRklFRBAAEiQKIEZPUkVDQVNUX01FVEhPRF9UUkFJTElOR19BVkVSQUdFEAESKQolRk9SRUNBU1RfTUVUSE9EX1NBTUVfUEVSSU9EX0xBU1RfWUVBUhACEhoKFkZPUkVDQVNUX01FVEhPRF9NQU5VQUwQAzKkAwoRU2NoZWR1bGluZ1NlcnZpY2USXQoOUHJvZHVjdGlvblBsYW4SJC5zdGlsbGhvdXNlLnYxLlByb2R1Y3Rpb25QbGFuUmVxdWVzdBolLnN0aWxsaG91c2UudjEuUHJvZHVjdGlvblBsYW5SZXNwb25zZRJdCg5EZW1hbmRGb3JlY2FzdBIkLnN0aWxsaG91c2UudjEuRGVtYW5kRm9yZWNhc3RSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5EZW1hbmRGb3JlY2FzdFJlc3BvbnNlEmYKEVNldEZvcmVjYXN0TWV0aG9kEicuc3RpbGxob3VzZS52MS5TZXRGb3JlY2FzdE1ldGhvZFJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNldEZvcmVjYXN0TWV0aG9kUmVzcG9uc2USaQoSU2F2ZURlbWFuZEZvcmVjYXN0Eiguc3RpbGxob3VzZS52MS5TYXZlRGVtYW5kRm9yZWNhc3RSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5TYXZlRGVtYW5kRm9yZWNhc3RSZXNwb25zZWIGcHJvdG8z", [file_stillhouse_v1_equipment]);
+  fileDesc("Ch5zdGlsbGhvdXNlL3YxL3NjaGVkdWxpbmcucHJvdG8SDXN0aWxsaG91c2UudjEimwIKCkRlbWFuZExpbmUSEgoKcHJvZHVjdF9pZBgBIAEoCRIUCgxwcm9kdWN0X25hbWUYAiABKAkSFgoOYm90dGxlX3NpemVfbWwYAyABKAUSFgoOYm90dGxlX2Fidl9wY3QYBCABKAESFAoMYm90dGxlc19vd2VkGAUgASgFEhkKEWVhcmxpZXN0X3JlcXVpcmVkGAYgASgJEhcKD2JvdHRsZXNfb25faGFuZBgHIAEoBRIWCg5ib3R0bGVzX3BpY2tlZBgIIAEoBRIZChFib3R0bGVzX2F2YWlsYWJsZRgJIAEoBRIRCglzaG9ydGZhbGwYCiABKAUSFQoNc2hvcnRmYWxsX2xhYRgLIAEoARIMCgRsYXRlGAwgASgIIpQDChJQbGFubmFibGVFcXVpcG1lbnQSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIqCgRraW5kGAMgASgOMhwuc3RpbGxob3VzZS52MS5FcXVpcG1lbnRLaW5kEi4KBnN0YXR1cxgEIAEoDjIeLnN0aWxsaG91c2UudjEuRXF1aXBtZW50U3RhdHVzEhIKCmNhcGFjaXR5X2wYBSABKAESFgoOY2FwYWNpdHlfbF9zZXQYBiABKAgSHQoVb2JzZXJ2ZWRfbWVkaWFuX2hvdXJzGAcgASgBEhUKDW9ic2VydmVkX3J1bnMYCCABKAUSGQoRdHlwaWNhbF9ydW5faG91cnMYCSABKAESHQoVdHlwaWNhbF9ydW5faG91cnNfc2V0GAogASgIEhEKCXBsYW5uYWJsZRgLIAEoCBIPCgd3aHlfbm90GAwgASgJEi8KCXNjaGVkdWxlZBgNIAMoCzIcLnN0aWxsaG91c2UudjEuU2NoZWR1bGVkV29yaxIXCg9zY2hlZHVsZWRfaG91cnMYDiABKAEigwEKDVNjaGVkdWxlZFdvcmsSFQoNd29ya19vcmRlcl9pZBgBIAEoCRIVCg13b3JrX29yZGVyX25vGAIgASgFEg0KBXRpdGxlGAMgASgJEhUKDXNjaGVkdWxlZF9mb3IYBCABKAkSDgoGZHVlX29uGAUgASgJEg4KBnN0YXR1cxgGIAEoCSIxChVQcm9kdWN0aW9uUGxhblJlcXVlc3QSDAoEZnJvbRgBIAEoCRIKCgJ0bxgCIAEoCSL/AQoWUHJvZHVjdGlvblBsYW5SZXNwb25zZRIpCgZkZW1hbmQYASADKAsyGS5zdGlsbGhvdXNlLnYxLkRlbWFuZExpbmUSNAoJZXF1aXBtZW50GAIgAygLMiEuc3RpbGxob3VzZS52MS5QbGFubmFibGVFcXVpcG1lbnQSDAoEZnJvbRgDIAEoCRIKCgJ0bxgEIAEoCRIVCg1zaG9ydGZhbGxfbGFhGAUgASgBEhUKDWF2YWlsYWJsZV9sYWEYBiABKAESGAoQc2hvcnRfb2ZfYWxjb2hvbBgHIAEoCBINCgViYXNpcxgIIAEoCRITCgtibGluZF9zcG90cxgJIAMoCSK9AwoMRm9yZWNhc3RMaW5lEhIKCnByb2R1Y3RfaWQYASABKAkSFAoMcHJvZHVjdF9uYW1lGAIgASgJEhkKEWJvdHRsZXNfY29tbWl0dGVkGAMgASgFEhgKEGJvdHRsZXNfZm9yZWNhc3QYBCABKAUSEQoJYXZhaWxhYmxlGAUgASgIEg8KB21pc3NpbmcYBiABKAkSDQoFYmFzaXMYByABKAkSEwoLbW9udGhzX3VzZWQYCCABKAUSEgoKb3ZlcnJpZGRlbhgJIAEoCBIXCg9vdmVycmlkZV9yZWFzb24YCiABKAkSFwoPYm90dGxlc19vbl9oYW5kGAsgASgFEhcKD2JvdHRsZXNfdG9fbWFrZRgMIAEoBRISCgpsYWFfbmVlZGVkGA0gASgBEhsKE21hdGVyaWFsc19hdmFpbGFibGUYDiABKAgSGQoRbWF0ZXJpYWxzX21pc3NpbmcYDyABKAkSDwoHYmF0Y2hlcxgQIAEoARI1CgltYXRlcmlhbHMYESADKAsyIi5zdGlsbGhvdXNlLnYxLk1hdGVyaWFsUmVxdWlyZW1lbnQSEwoLcmVjaXBlX25hbWUYEiABKAkiRgoTTWF0ZXJpYWxSZXF1aXJlbWVudBIQCghtYXRlcmlhbBgBIAEoCRIQCghxdWFudGl0eRgCIAEoARILCgN1b20YAyABKAkiJgoVRGVtYW5kRm9yZWNhc3RSZXF1ZXN0Eg0KBW1vbnRoGAEgASgJIpoCChZEZW1hbmRGb3JlY2FzdFJlc3BvbnNlEioKBWxpbmVzGAEgAygLMhsuc3RpbGxob3VzZS52MS5Gb3JlY2FzdExpbmUSLQoGbWV0aG9kGAIgASgOMh0uc3RpbGxob3VzZS52MS5Gb3JlY2FzdE1ldGhvZBIXCg90cmFpbGluZ19tb250aHMYAyABKAUSFAoMcGVyaW9kX3N0YXJ0GAQgASgJEhIKCnBlcmlvZF9lbmQYBSABKAkSDwoHcmVmdXNlZBgGIAEoCRIPCgdjYXV0aW9uGAcgASgJEhAKCGZyZWVfbGFhGAggASgBEhQKDG1hdHVyaW5nX2xhYRgJIAEoARIYChB0b3RhbF9sYWFfbmVlZGVkGAogASgBImIKGFNldEZvcmVjYXN0TWV0aG9kUmVxdWVzdBItCgZtZXRob2QYASABKA4yHS5zdGlsbGhvdXNlLnYxLkZvcmVjYXN0TWV0aG9kEhcKD3RyYWlsaW5nX21vbnRocxgCIAEoBSJjChlTZXRGb3JlY2FzdE1ldGhvZFJlc3BvbnNlEi0KBm1ldGhvZBgBIAEoDjIdLnN0aWxsaG91c2UudjEuRm9yZWNhc3RNZXRob2QSFwoPdHJhaWxpbmdfbW9udGhzGAIgASgFIl8KGVNhdmVEZW1hbmRGb3JlY2FzdFJlcXVlc3QSEgoKcHJvZHVjdF9pZBgBIAEoCRINCgVtb250aBgCIAEoCRIPCgdib3R0bGVzGAMgASgFEg4KBnJlYXNvbhgEIAEoCSIcChpTYXZlRGVtYW5kRm9yZWNhc3RSZXNwb25zZSJIChdTZXRQcm9kdWN0UmVjaXBlUmVxdWVzdBISCgpwcm9kdWN0X2lkGAEgASgJEhkKEXJlY2lwZV92ZXJzaW9uX2lkGAIgASgJIhoKGFNldFByb2R1Y3RSZWNpcGVSZXNwb25zZSqeAQoORm9yZWNhc3RNZXRob2QSHwobRk9SRUNBU1RfTUVUSE9EX1VOU1BFQ0lGSUVEEAASJAogRk9SRUNBU1RfTUVUSE9EX1RSQUlMSU5HX0FWRVJBR0UQARIpCiVGT1JFQ0FTVF9NRVRIT0RfU0FNRV9QRVJJT0RfTEFTVF9ZRUFSEAISGgoWRk9SRUNBU1RfTUVUSE9EX01BTlVBTBADMokEChFTY2hlZHVsaW5nU2VydmljZRJdCg5Qcm9kdWN0aW9uUGxhbhIkLnN0aWxsaG91c2UudjEuUHJvZHVjdGlvblBsYW5SZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5Qcm9kdWN0aW9uUGxhblJlc3BvbnNlEl0KDkRlbWFuZEZvcmVjYXN0EiQuc3RpbGxob3VzZS52MS5EZW1hbmRGb3JlY2FzdFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLkRlbWFuZEZvcmVjYXN0UmVzcG9uc2USZgoRU2V0Rm9yZWNhc3RNZXRob2QSJy5zdGlsbGhvdXNlLnYxLlNldEZvcmVjYXN0TWV0aG9kUmVxdWVzdBooLnN0aWxsaG91c2UudjEuU2V0Rm9yZWNhc3RNZXRob2RSZXNwb25zZRJpChJTYXZlRGVtYW5kRm9yZWNhc3QSKC5zdGlsbGhvdXNlLnYxLlNhdmVEZW1hbmRGb3JlY2FzdFJlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLlNhdmVEZW1hbmRGb3JlY2FzdFJlc3BvbnNlEmMKEFNldFByb2R1Y3RSZWNpcGUSJi5zdGlsbGhvdXNlLnYxLlNldFByb2R1Y3RSZWNpcGVSZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5TZXRQcm9kdWN0UmVjaXBlUmVzcG9uc2ViBnByb3RvMw", [file_stillhouse_v1_equipment]);
 
 /**
  * @generated from message stillhouse.v1.DemandLine
@@ -417,6 +417,53 @@ export type ForecastLine = Message<"stillhouse.v1.ForecastLine"> & {
    * @generated from field: int32 bottles_on_hand = 11;
    */
   bottlesOnHand: number;
+
+  /**
+   * What the forecast implies has to be made, and bought to make it.
+   *
+   * The two halves fail independently and for different reasons: the
+   * alcohol figure needs only this product's own size and strength, while
+   * the materials need a recipe somebody has linked. Reporting them as
+   * one availability would hide a usable answer behind a missing one.
+   *
+   * @generated from field: int32 bottles_to_make = 12;
+   */
+  bottlesToMake: number;
+
+  /**
+   * @generated from field: double laa_needed = 13;
+   */
+  laaNeeded: number;
+
+  /**
+   * @generated from field: bool materials_available = 14;
+   */
+  materialsAvailable: boolean;
+
+  /**
+   * @generated from field: string materials_missing = 15;
+   */
+  materialsMissing: string;
+
+  /**
+   * How many of the recipe's own batches this comes to. Reported because
+   * it is the number an operator reasons in, and because it makes the
+   * linear-scaling assumption visible: 2.4 batches is three mashes, and
+   * no arithmetic here can decide that for them.
+   *
+   * @generated from field: double batches = 16;
+   */
+  batches: number;
+
+  /**
+   * @generated from field: repeated stillhouse.v1.MaterialRequirement materials = 17;
+   */
+  materials: MaterialRequirement[];
+
+  /**
+   * @generated from field: string recipe_name = 18;
+   */
+  recipeName: string;
 };
 
 /**
@@ -425,6 +472,33 @@ export type ForecastLine = Message<"stillhouse.v1.ForecastLine"> & {
  */
 export const ForecastLineSchema: GenMessage<ForecastLine> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_scheduling, 5);
+
+/**
+ * @generated from message stillhouse.v1.MaterialRequirement
+ */
+export type MaterialRequirement = Message<"stillhouse.v1.MaterialRequirement"> & {
+  /**
+   * @generated from field: string material = 1;
+   */
+  material: string;
+
+  /**
+   * @generated from field: double quantity = 2;
+   */
+  quantity: number;
+
+  /**
+   * @generated from field: string uom = 3;
+   */
+  uom: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.MaterialRequirement.
+ * Use `create(MaterialRequirementSchema)` to create a new message.
+ */
+export const MaterialRequirementSchema: GenMessage<MaterialRequirement> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 6);
 
 /**
  * @generated from message stillhouse.v1.DemandForecastRequest
@@ -444,7 +518,7 @@ export type DemandForecastRequest = Message<"stillhouse.v1.DemandForecastRequest
  * Use `create(DemandForecastRequestSchema)` to create a new message.
  */
 export const DemandForecastRequestSchema: GenMessage<DemandForecastRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_scheduling, 6);
+  messageDesc(file_stillhouse_v1_scheduling, 7);
 
 /**
  * @generated from message stillhouse.v1.DemandForecastResponse
@@ -488,6 +562,29 @@ export type DemandForecastResponse = Message<"stillhouse.v1.DemandForecastRespon
    * @generated from field: string caution = 7;
    */
   caution: string;
+
+  /**
+   * Alcohol that could be bottled next month, and alcohol that could not
+   * because it is still in wood. Kept apart on purpose: adding a
+   * maturing cask to the free figure would say a shortfall is covered
+   * when it is not.
+   *
+   * @generated from field: double free_laa = 8;
+   */
+  freeLaa: number;
+
+  /**
+   * @generated from field: double maturing_laa = 9;
+   */
+  maturingLaa: number;
+
+  /**
+   * The sum of laa_needed across the lines above, so the shortfall can be
+   * read without adding a column up by hand.
+   *
+   * @generated from field: double total_laa_needed = 10;
+   */
+  totalLaaNeeded: number;
 };
 
 /**
@@ -495,7 +592,7 @@ export type DemandForecastResponse = Message<"stillhouse.v1.DemandForecastRespon
  * Use `create(DemandForecastResponseSchema)` to create a new message.
  */
 export const DemandForecastResponseSchema: GenMessage<DemandForecastResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_scheduling, 7);
+  messageDesc(file_stillhouse_v1_scheduling, 8);
 
 /**
  * @generated from message stillhouse.v1.SetForecastMethodRequest
@@ -517,7 +614,7 @@ export type SetForecastMethodRequest = Message<"stillhouse.v1.SetForecastMethodR
  * Use `create(SetForecastMethodRequestSchema)` to create a new message.
  */
 export const SetForecastMethodRequestSchema: GenMessage<SetForecastMethodRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_scheduling, 8);
+  messageDesc(file_stillhouse_v1_scheduling, 9);
 
 /**
  * @generated from message stillhouse.v1.SetForecastMethodResponse
@@ -539,7 +636,7 @@ export type SetForecastMethodResponse = Message<"stillhouse.v1.SetForecastMethod
  * Use `create(SetForecastMethodResponseSchema)` to create a new message.
  */
 export const SetForecastMethodResponseSchema: GenMessage<SetForecastMethodResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_scheduling, 9);
+  messageDesc(file_stillhouse_v1_scheduling, 10);
 
 /**
  * @generated from message stillhouse.v1.SaveDemandForecastRequest
@@ -571,7 +668,7 @@ export type SaveDemandForecastRequest = Message<"stillhouse.v1.SaveDemandForecas
  * Use `create(SaveDemandForecastRequestSchema)` to create a new message.
  */
 export const SaveDemandForecastRequestSchema: GenMessage<SaveDemandForecastRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_scheduling, 10);
+  messageDesc(file_stillhouse_v1_scheduling, 11);
 
 /**
  * @generated from message stillhouse.v1.SaveDemandForecastResponse
@@ -584,7 +681,45 @@ export type SaveDemandForecastResponse = Message<"stillhouse.v1.SaveDemandForeca
  * Use `create(SaveDemandForecastResponseSchema)` to create a new message.
  */
 export const SaveDemandForecastResponseSchema: GenMessage<SaveDemandForecastResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_scheduling, 11);
+  messageDesc(file_stillhouse_v1_scheduling, 12);
+
+/**
+ * @generated from message stillhouse.v1.SetProductRecipeRequest
+ */
+export type SetProductRecipeRequest = Message<"stillhouse.v1.SetProductRecipeRequest"> & {
+  /**
+   * @generated from field: string product_id = 1;
+   */
+  productId: string;
+
+  /**
+   * Empty clears it, which puts material requirements back to refusing
+   * rather than leaving a stale recipe planning next month's grain.
+   *
+   * @generated from field: string recipe_version_id = 2;
+   */
+  recipeVersionId: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SetProductRecipeRequest.
+ * Use `create(SetProductRecipeRequestSchema)` to create a new message.
+ */
+export const SetProductRecipeRequestSchema: GenMessage<SetProductRecipeRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 13);
+
+/**
+ * @generated from message stillhouse.v1.SetProductRecipeResponse
+ */
+export type SetProductRecipeResponse = Message<"stillhouse.v1.SetProductRecipeResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.SetProductRecipeResponse.
+ * Use `create(SetProductRecipeResponseSchema)` to create a new message.
+ */
+export const SetProductRecipeResponseSchema: GenMessage<SetProductRecipeResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_scheduling, 14);
 
 /**
  * Demand forecasting. PLAN F7.
@@ -676,6 +811,19 @@ export const SchedulingService: GenService<{
     methodKind: "unary";
     input: typeof SaveDemandForecastRequestSchema;
     output: typeof SaveDemandForecastResponseSchema;
+  },
+  /**
+   * Which recipe a product is planned from. Unset refuses rather than
+   * being inferred from the last run that made it — that would be right
+   * most of the time and wrong exactly when a recipe has changed, which
+   * is when somebody is most likely to be planning.
+   *
+   * @generated from rpc stillhouse.v1.SchedulingService.SetProductRecipe
+   */
+  setProductRecipe: {
+    methodKind: "unary";
+    input: typeof SetProductRecipeRequestSchema;
+    output: typeof SetProductRecipeResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_scheduling, 0);

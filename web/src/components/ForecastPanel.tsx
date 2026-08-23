@@ -115,6 +115,15 @@ export function ForecastPanel() {
             {d.caution}
           </Callout>
 
+          {/* Free and maturing are kept apart: adding a cask that needs
+              three more years to the available figure would say a
+              shortfall is covered when it is not. */}
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <FStat label="Alcohol needed" value={`${d.totalLaaNeeded.toFixed(2)} LAA`} />
+            <FStat label="Free to bottle" value={`${d.freeLaa.toFixed(2)} LAA`} />
+            <FStat label="Still maturing" value={`${d.maturingLaa.toFixed(2)} LAA`} hint="not available for this month" />
+          </div>
+
           <div className="mt-3 overflow-x-auto rounded-lg border border-border bg-surface-2">
             <table className="min-w-full divide-y divide-border text-sm">
               <thead className="bg-surface-3 text-left text-xs text-fg-muted">
@@ -123,6 +132,9 @@ export function ForecastPanel() {
                   <th className="px-4 py-2 text-right">Committed</th>
                   <th className="px-4 py-2 text-right">Forecast</th>
                   <th className="px-4 py-2 text-right">On hand</th>
+                  <th className="px-4 py-2 text-right">To make</th>
+                  <th className="px-4 py-2 text-right">LAA</th>
+                  <th className="px-4 py-2">Materials</th>
                   <th className="px-4 py-2">Basis</th>
                   <th className="px-4 py-2"></th>
                 </tr>
@@ -152,6 +164,22 @@ export function ForecastPanel() {
                       )}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums">{l.bottlesOnHand}</td>
+                    <td className="px-4 py-2 text-right tabular-nums">{l.bottlesToMake}</td>
+                    <td className="px-4 py-2 text-right tabular-nums">
+                      {l.laaNeeded > 0 ? l.laaNeeded.toFixed(2) : "—"}
+                    </td>
+                    <td className="px-4 py-2 text-xs">
+                      {l.materialsAvailable ? (
+                        <>
+                          <span className="tabular-nums">{l.batches}</span> × {l.recipeName}
+                          <span className="block text-fg-muted">
+                            {l.materials.map((m) => `${m.quantity} ${m.uom} ${m.material}`).join(", ")}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-fg-muted">{l.materialsMissing}</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-xs text-fg-muted">
                       {l.available ? l.basis || l.overrideReason : l.missing}
                     </td>
@@ -185,5 +213,15 @@ export function ForecastPanel() {
         </>
       ) : null}
     </section>
+  );
+}
+
+function FStat({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  return (
+    <div className="rounded border border-border p-3">
+      <div className="text-xs uppercase text-fg-muted">{label}</div>
+      <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
+      {hint && <div className="text-xs text-fg-muted">{hint}</div>}
+    </div>
   );
 }

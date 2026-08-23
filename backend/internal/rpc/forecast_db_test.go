@@ -180,3 +180,66 @@ func TestForecast_MethodCanBeCleared(t *testing.T) {
 		t.Error("clearing the method did not go back to refusing")
 	}
 }
+
+// The requirements half, end to end: a linked recipe turns a forecast
+// into grain, and no linked recipe refuses that half while still giving
+// the alcohol figure — which needs only the product's own size and
+// strength.
+func TestForecast_RequirementsRefuseGrainWithoutARecipe(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewSchedulingService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	prod := f.product(t, "Unlinked Gin", 750, 40)
+
+	if _, err := svc.SetForecastMethod(f.ctx, connect.NewRequest(&stillhousev1.SetForecastMethodRequest{
+		Method: stillhousev1.ForecastMethod_FORECAST_METHOD_MANUAL,
+	})); err != nil {
+		t.Fatalf("SetForecastMethod: %v", err)
+	}
+	next := time.Now().UTC().AddDate(0, 1, 0)
+	if _, err := svc.SaveDemandForecast(f.ctx, connect.NewRequest(&stillhousev1.SaveDemandForecastRequest{
+		ProductId: prod.ID.String(), Month: next.Format("2006-01-02"),
+		Bottles: 1000, Reason: "planning test",
+	})); err != nil {
+		t.Fatalf("SaveDemandForecast: %v", err)
+	}
+
+	resp, err := svc.DemandForecast(f.ctx, connect.NewRequest(&stillhousev1.DemandForecastRequest{
+		Month: next.Format("2006-01-02"),
+	}))
+	if err != nil {
+		t.Fatalf("DemandForecast: %v", err)
+	}
+	var line *stillhousev1.ForecastLine
+	for _, l := range resp.Msg.GetLines() {
+		if l.GetProductId() == prod.ID.String() {
+			line = l
+		}
+	}
+	if line == nil {
+		t.Fatal("the product is not in the forecast")
+	}
+
+	// The alcohol figure needs no recipe: 1000 × 750 mL × 40% = 300 LAA.
+	if !near(line.GetLaaNeeded(), 300, 1e-6) {
+		t.Errorf("LAA needed: got %v, want 300 — this half needs no recipe", line.GetLaaNeeded())
+	}
+	if line.GetBottlesToMake() != 1000 {
+		t.Errorf("bottles to make: %d", line.GetBottlesToMake())
+	}
+	// The materials half refuses, and says what to do.
+	if line.GetMaterialsAvailable() {
+		t.Fatalf("produced grain quantities with no recipe linked: %+v", line.GetMaterials())
+	}
+	if !strings.Contains(line.GetMaterialsMissing(), "Link one") {
+		t.Errorf("refusal does not say what to do: %q", line.GetMaterialsMissing())
+	}
+
+	// And the two stock figures are kept apart: a maturing cask is not
+	// available for next month's bottling.
+	if resp.Msg.GetFreeLaa() < 0 || resp.Msg.GetMaturingLaa() < 0 {
+		t.Errorf("negative stock figures: %v / %v", resp.Msg.GetFreeLaa(), resp.Msg.GetMaturingLaa())
+	}
+	if !near(resp.Msg.GetTotalLaaNeeded(), 300, 1e-6) {
+		t.Errorf("total LAA needed: got %v, want 300", resp.Msg.GetTotalLaaNeeded())
+	}
+}

@@ -310,7 +310,7 @@ func (q *Queries) FindPackagedInventoryByLotCode(ctx context.Context, code strin
 }
 
 const findProductByGTIN = `-- name: FindProductByGTIN :many
-SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description FROM products WHERE gtin = $1::text
+SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id FROM products WHERE gtin = $1::text
 `
 
 func (q *Queries) FindProductByGTIN(ctx context.Context, gtin string) ([]Product, error) {
@@ -345,6 +345,7 @@ func (q *Queries) FindProductByGTIN(ctx context.Context, gtin string) ([]Product
 			&i.AllergenStatement,
 			&i.CountryOfOrigin,
 			&i.MarketingDescription,
+			&i.RecipeVersionID,
 		); err != nil {
 			return nil, err
 		}
@@ -357,7 +358,7 @@ func (q *Queries) FindProductByGTIN(ctx context.Context, gtin string) ([]Product
 }
 
 const findProductsByIDPrefix = `-- name: FindProductsByIDPrefix :many
-SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description FROM products
+SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id FROM products
 WHERE substr(replace(id::text, '-', ''), 1, 16) = $1::text
 `
 
@@ -393,6 +394,7 @@ func (q *Queries) FindProductsByIDPrefix(ctx context.Context, prefix string) ([]
 			&i.AllergenStatement,
 			&i.CountryOfOrigin,
 			&i.MarketingDescription,
+			&i.RecipeVersionID,
 		); err != nil {
 			return nil, err
 		}

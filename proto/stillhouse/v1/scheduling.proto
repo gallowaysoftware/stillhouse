@@ -105,6 +105,11 @@ service SchedulingService {
   rpc DemandForecast(DemandForecastRequest) returns (DemandForecastResponse);
   rpc SetForecastMethod(SetForecastMethodRequest) returns (SetForecastMethodResponse);
   rpc SaveDemandForecast(SaveDemandForecastRequest) returns (SaveDemandForecastResponse);
+  // Which recipe a product is planned from. Unset refuses rather than
+  // being inferred from the last run that made it — that would be right
+  // most of the time and wrong exactly when a recipe has changed, which
+  // is when somebody is most likely to be planning.
+  rpc SetProductRecipe(SetProductRecipeRequest) returns (SetProductRecipeResponse);
 }
 
 // Demand forecasting. PLAN F7.
@@ -151,6 +156,30 @@ message ForecastLine {
   bool   overridden = 9;
   string override_reason = 10;
   int32  bottles_on_hand = 11;
+
+  // What the forecast implies has to be made, and bought to make it.
+  //
+  // The two halves fail independently and for different reasons: the
+  // alcohol figure needs only this product's own size and strength, while
+  // the materials need a recipe somebody has linked. Reporting them as
+  // one availability would hide a usable answer behind a missing one.
+  int32  bottles_to_make = 12;
+  double laa_needed = 13;
+  bool   materials_available = 14;
+  string materials_missing = 15;
+  // How many of the recipe's own batches this comes to. Reported because
+  // it is the number an operator reasons in, and because it makes the
+  // linear-scaling assumption visible: 2.4 batches is three mashes, and
+  // no arithmetic here can decide that for them.
+  double batches = 16;
+  repeated MaterialRequirement materials = 17;
+  string recipe_name = 18;
+}
+
+message MaterialRequirement {
+  string material = 1;
+  double quantity = 2;
+  string uom = 3;
 }
 
 message DemandForecastRequest {
@@ -168,6 +197,16 @@ message DemandForecastResponse {
   string refused = 6;
   // Said on the response, not in the documentation.
   string caution = 7;
+
+  // Alcohol that could be bottled next month, and alcohol that could not
+  // because it is still in wood. Kept apart on purpose: adding a
+  // maturing cask to the free figure would say a shortfall is covered
+  // when it is not.
+  double free_laa = 8;
+  double maturing_laa = 9;
+  // The sum of laa_needed across the lines above, so the shortfall can be
+  // read without adding a column up by hand.
+  double total_laa_needed = 10;
 }
 
 message SetForecastMethodRequest {
@@ -186,3 +225,11 @@ message SaveDemandForecastRequest {
   string reason = 4;
 }
 message SaveDemandForecastResponse {}
+
+message SetProductRecipeRequest {
+  string product_id = 1;
+  // Empty clears it, which puts material requirements back to refusing
+  // rather than leaving a stale recipe planning next month's grain.
+  string recipe_version_id = 2;
+}
+message SetProductRecipeResponse {}

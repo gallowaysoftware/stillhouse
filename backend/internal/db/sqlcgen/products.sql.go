@@ -17,7 +17,7 @@ INSERT INTO products (
     tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes
 ) VALUES (
     $1, $2, $3, $4, $5, $6
-) RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
+) RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id
 `
 
 type CreateProductParams struct {
@@ -62,12 +62,13 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) (P
 		&i.AllergenStatement,
 		&i.CountryOfOrigin,
 		&i.MarketingDescription,
+		&i.RecipeVersionID,
 	)
 	return i, err
 }
 
 const getProduct = `-- name: GetProduct :one
-SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description FROM products WHERE id = $1
+SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id FROM products WHERE id = $1
 `
 
 func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error) {
@@ -96,12 +97,13 @@ func (q *Queries) GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 		&i.AllergenStatement,
 		&i.CountryOfOrigin,
 		&i.MarketingDescription,
+		&i.RecipeVersionID,
 	)
 	return i, err
 }
 
 const listProducts = `-- name: ListProducts :many
-SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description FROM products
+SELECT id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id FROM products
 WHERE ($1::boolean OR NOT archived)
 ORDER BY archived, name
 `
@@ -138,6 +140,7 @@ func (q *Queries) ListProducts(ctx context.Context, includeArchived bool) ([]Pro
 			&i.AllergenStatement,
 			&i.CountryOfOrigin,
 			&i.MarketingDescription,
+			&i.RecipeVersionID,
 		); err != nil {
 			return nil, err
 		}
@@ -150,7 +153,7 @@ func (q *Queries) ListProducts(ctx context.Context, includeArchived bool) ([]Pro
 }
 
 const setProductArchived = `-- name: SetProductArchived :one
-UPDATE products SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
+UPDATE products SET archived = $2 WHERE id = $1 RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id
 `
 
 type SetProductArchivedParams struct {
@@ -184,6 +187,7 @@ func (q *Queries) SetProductArchived(ctx context.Context, arg SetProductArchived
 		&i.AllergenStatement,
 		&i.CountryOfOrigin,
 		&i.MarketingDescription,
+		&i.RecipeVersionID,
 	)
 	return i, err
 }
@@ -196,7 +200,7 @@ SET name           = $2,
     target_abv_pct = $5,
     label_notes    = $6
 WHERE id = $1
-RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
+RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id
 `
 
 type UpdateProductParams struct {
@@ -241,6 +245,7 @@ func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) (P
 		&i.AllergenStatement,
 		&i.CountryOfOrigin,
 		&i.MarketingDescription,
+		&i.RecipeVersionID,
 	)
 	return i, err
 }
@@ -260,7 +265,7 @@ SET gtin                  = $2,
     country_of_origin     = $12,
     marketing_description = $13
 WHERE id = $1
-RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description
+RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id
 `
 
 type UpdateProductSKUParams struct {
@@ -323,6 +328,7 @@ func (q *Queries) UpdateProductSKU(ctx context.Context, arg UpdateProductSKUPara
 		&i.AllergenStatement,
 		&i.CountryOfOrigin,
 		&i.MarketingDescription,
+		&i.RecipeVersionID,
 	)
 	return i, err
 }

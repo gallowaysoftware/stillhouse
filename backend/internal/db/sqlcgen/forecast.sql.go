@@ -12,6 +12,34 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const alcoholOnHandForPlanning = `-- name: AlcoholOnHandForPlanning :one
+SELECT COALESCE(SUM(current_laa) FILTER (WHERE kind <> 'barrel'), 0)::double precision AS free_laa,
+       COALESCE(SUM(current_laa) FILTER (WHERE kind = 'barrel'), 0)::double precision AS maturing_laa
+FROM bulk_containers
+WHERE NOT archived
+  AND owner_customer_id IS NULL
+  AND possession = 'held'
+  AND current_laa > 0
+`
+
+type AlcoholOnHandForPlanningRow struct {
+	FreeLaa     float64 `json:"free_laa"`
+	MaturingLaa float64 `json:"maturing_laa"`
+}
+
+// What could actually be bottled next month, split by whether it is ready.
+//
+// A cask still maturing is alcohol the distillery owns and cannot use for
+// next month's orders, so adding it to the free figure would say a
+// shortfall is covered when it is not. Barrels are counted separately for
+// exactly that reason.
+func (q *Queries) AlcoholOnHandForPlanning(ctx context.Context) (AlcoholOnHandForPlanningRow, error) {
+	row := q.db.QueryRow(ctx, alcoholOnHandForPlanning)
+	var i AlcoholOnHandForPlanningRow
+	err := row.Scan(&i.FreeLaa, &i.MaturingLaa)
+	return i, err
+}
+
 const deleteDemandForecast = `-- name: DeleteDemandForecast :exec
 DELETE FROM demand_forecasts WHERE id = $1
 `
@@ -149,6 +177,82 @@ func (q *Queries) MonthlyRemovalsByProduct(ctx context.Context, since pgtype.Dat
 	return items, nil
 }
 
+const recipeForProduct = `-- name: RecipeForProduct :one
+SELECT rv.id, rv.mash_efficiency_fraction, rv.ferment_efficiency_fraction,
+       rv.distillation_recovery_fraction, r.name AS recipe_name, rv.version_no
+FROM products p
+JOIN recipe_versions rv ON rv.id = p.recipe_version_id
+JOIN recipes r          ON r.id = rv.recipe_id
+WHERE p.id = $1
+`
+
+type RecipeForProductRow struct {
+	ID                           uuid.UUID `json:"id"`
+	MashEfficiencyFraction       float64   `json:"mash_efficiency_fraction"`
+	FermentEfficiencyFraction    float64   `json:"ferment_efficiency_fraction"`
+	DistillationRecoveryFraction float64   `json:"distillation_recovery_fraction"`
+	RecipeName                   string    `json:"recipe_name"`
+	VersionNo                    int32     `json:"version_no"`
+}
+
+// The bill a product is planned from, with the efficiencies that turn it
+// into alcohol. Refuses (no rows) when the operator has not said which
+// recipe a product comes from — see 000068.
+func (q *Queries) RecipeForProduct(ctx context.Context, id uuid.UUID) (RecipeForProductRow, error) {
+	row := q.db.QueryRow(ctx, recipeForProduct, id)
+	var i RecipeForProductRow
+	err := row.Scan(
+		&i.ID,
+		&i.MashEfficiencyFraction,
+		&i.FermentEfficiencyFraction,
+		&i.DistillationRecoveryFraction,
+		&i.RecipeName,
+		&i.VersionNo,
+	)
+	return i, err
+}
+
+const recipeIngredientsForProjection = `-- name: RecipeIngredientsForProjection :many
+SELECT ri.quantity, ri.uom, m.name AS material_name,
+       m.extract_fraction
+FROM recipe_ingredients ri
+JOIN materials m ON m.id = ri.material_id
+WHERE ri.recipe_version_id = $1
+ORDER BY ri.sort_order
+`
+
+type RecipeIngredientsForProjectionRow struct {
+	Quantity        float64       `json:"quantity"`
+	Uom             string        `json:"uom"`
+	MaterialName    string        `json:"material_name"`
+	ExtractFraction pgtype.Float8 `json:"extract_fraction"`
+}
+
+func (q *Queries) RecipeIngredientsForProjection(ctx context.Context, recipeVersionID uuid.UUID) ([]RecipeIngredientsForProjectionRow, error) {
+	rows, err := q.db.Query(ctx, recipeIngredientsForProjection, recipeVersionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecipeIngredientsForProjectionRow{}
+	for rows.Next() {
+		var i RecipeIngredientsForProjectionRow
+		if err := rows.Scan(
+			&i.Quantity,
+			&i.Uom,
+			&i.MaterialName,
+			&i.ExtractFraction,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setForecastSettings = `-- name: SetForecastSettings :one
 UPDATE tenants
 SET forecast_method = $2, forecast_trailing_months = $3, updated_at = NOW()
@@ -171,6 +275,48 @@ func (q *Queries) SetForecastSettings(ctx context.Context, arg SetForecastSettin
 	row := q.db.QueryRow(ctx, setForecastSettings, arg.ID, arg.ForecastMethod, arg.ForecastTrailingMonths)
 	var i SetForecastSettingsRow
 	err := row.Scan(&i.ForecastMethod, &i.ForecastTrailingMonths)
+	return i, err
+}
+
+const setProductRecipe = `-- name: SetProductRecipe :one
+UPDATE products SET recipe_version_id = $2, updated_at = NOW()
+WHERE id = $1
+RETURNING id, tenant_id, name, spirit_kind, bottle_size_ml, target_abv_pct, label_notes, archived, created_at, updated_at, gtin, cspc_code, bottles_per_case, cases_per_layer, layers_per_pallet, case_gross_weight_kg, common_name, age_statement, container_marking, allergen_statement, country_of_origin, marketing_description, recipe_version_id
+`
+
+type SetProductRecipeParams struct {
+	ID              uuid.UUID     `json:"id"`
+	RecipeVersionID uuid.NullUUID `json:"recipe_version_id"`
+}
+
+func (q *Queries) SetProductRecipe(ctx context.Context, arg SetProductRecipeParams) (Product, error) {
+	row := q.db.QueryRow(ctx, setProductRecipe, arg.ID, arg.RecipeVersionID)
+	var i Product
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.Name,
+		&i.SpiritKind,
+		&i.BottleSizeMl,
+		&i.TargetAbvPct,
+		&i.LabelNotes,
+		&i.Archived,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Gtin,
+		&i.CspcCode,
+		&i.BottlesPerCase,
+		&i.CasesPerLayer,
+		&i.LayersPerPallet,
+		&i.CaseGrossWeightKg,
+		&i.CommonName,
+		&i.AgeStatement,
+		&i.ContainerMarking,
+		&i.AllergenStatement,
+		&i.CountryOfOrigin,
+		&i.MarketingDescription,
+		&i.RecipeVersionID,
+	)
 	return i, err
 }
 

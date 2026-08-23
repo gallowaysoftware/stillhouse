@@ -59,6 +59,9 @@ const (
 	// SchedulingServiceSaveDemandForecastProcedure is the fully-qualified name of the
 	// SchedulingService's SaveDemandForecast RPC.
 	SchedulingServiceSaveDemandForecastProcedure = "/stillhouse.v1.SchedulingService/SaveDemandForecast"
+	// SchedulingServiceSetProductRecipeProcedure is the fully-qualified name of the SchedulingService's
+	// SetProductRecipe RPC.
+	SchedulingServiceSetProductRecipeProcedure = "/stillhouse.v1.SchedulingService/SetProductRecipe"
 )
 
 // SchedulingServiceClient is a client for the stillhouse.v1.SchedulingService service.
@@ -69,6 +72,11 @@ type SchedulingServiceClient interface {
 	DemandForecast(context.Context, *connect.Request[v1.DemandForecastRequest]) (*connect.Response[v1.DemandForecastResponse], error)
 	SetForecastMethod(context.Context, *connect.Request[v1.SetForecastMethodRequest]) (*connect.Response[v1.SetForecastMethodResponse], error)
 	SaveDemandForecast(context.Context, *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error)
+	// Which recipe a product is planned from. Unset refuses rather than
+	// being inferred from the last run that made it — that would be right
+	// most of the time and wrong exactly when a recipe has changed, which
+	// is when somebody is most likely to be planning.
+	SetProductRecipe(context.Context, *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error)
 }
 
 // NewSchedulingServiceClient constructs a client for the stillhouse.v1.SchedulingService service.
@@ -106,6 +114,12 @@ func NewSchedulingServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(schedulingServiceMethods.ByName("SaveDemandForecast")),
 			connect.WithClientOptions(opts...),
 		),
+		setProductRecipe: connect.NewClient[v1.SetProductRecipeRequest, v1.SetProductRecipeResponse](
+			httpClient,
+			baseURL+SchedulingServiceSetProductRecipeProcedure,
+			connect.WithSchema(schedulingServiceMethods.ByName("SetProductRecipe")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -115,6 +129,7 @@ type schedulingServiceClient struct {
 	demandForecast     *connect.Client[v1.DemandForecastRequest, v1.DemandForecastResponse]
 	setForecastMethod  *connect.Client[v1.SetForecastMethodRequest, v1.SetForecastMethodResponse]
 	saveDemandForecast *connect.Client[v1.SaveDemandForecastRequest, v1.SaveDemandForecastResponse]
+	setProductRecipe   *connect.Client[v1.SetProductRecipeRequest, v1.SetProductRecipeResponse]
 }
 
 // ProductionPlan calls stillhouse.v1.SchedulingService.ProductionPlan.
@@ -137,6 +152,11 @@ func (c *schedulingServiceClient) SaveDemandForecast(ctx context.Context, req *c
 	return c.saveDemandForecast.CallUnary(ctx, req)
 }
 
+// SetProductRecipe calls stillhouse.v1.SchedulingService.SetProductRecipe.
+func (c *schedulingServiceClient) SetProductRecipe(ctx context.Context, req *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error) {
+	return c.setProductRecipe.CallUnary(ctx, req)
+}
+
 // SchedulingServiceHandler is an implementation of the stillhouse.v1.SchedulingService service.
 type SchedulingServiceHandler interface {
 	ProductionPlan(context.Context, *connect.Request[v1.ProductionPlanRequest]) (*connect.Response[v1.ProductionPlanResponse], error)
@@ -145,6 +165,11 @@ type SchedulingServiceHandler interface {
 	DemandForecast(context.Context, *connect.Request[v1.DemandForecastRequest]) (*connect.Response[v1.DemandForecastResponse], error)
 	SetForecastMethod(context.Context, *connect.Request[v1.SetForecastMethodRequest]) (*connect.Response[v1.SetForecastMethodResponse], error)
 	SaveDemandForecast(context.Context, *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error)
+	// Which recipe a product is planned from. Unset refuses rather than
+	// being inferred from the last run that made it — that would be right
+	// most of the time and wrong exactly when a recipe has changed, which
+	// is when somebody is most likely to be planning.
+	SetProductRecipe(context.Context, *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error)
 }
 
 // NewSchedulingServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -178,6 +203,12 @@ func NewSchedulingServiceHandler(svc SchedulingServiceHandler, opts ...connect.H
 		connect.WithSchema(schedulingServiceMethods.ByName("SaveDemandForecast")),
 		connect.WithHandlerOptions(opts...),
 	)
+	schedulingServiceSetProductRecipeHandler := connect.NewUnaryHandler(
+		SchedulingServiceSetProductRecipeProcedure,
+		svc.SetProductRecipe,
+		connect.WithSchema(schedulingServiceMethods.ByName("SetProductRecipe")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.SchedulingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SchedulingServiceProductionPlanProcedure:
@@ -188,6 +219,8 @@ func NewSchedulingServiceHandler(svc SchedulingServiceHandler, opts ...connect.H
 			schedulingServiceSetForecastMethodHandler.ServeHTTP(w, r)
 		case SchedulingServiceSaveDemandForecastProcedure:
 			schedulingServiceSaveDemandForecastHandler.ServeHTTP(w, r)
+		case SchedulingServiceSetProductRecipeProcedure:
+			schedulingServiceSetProductRecipeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -211,4 +244,8 @@ func (UnimplementedSchedulingServiceHandler) SetForecastMethod(context.Context, 
 
 func (UnimplementedSchedulingServiceHandler) SaveDemandForecast(context.Context, *connect.Request[v1.SaveDemandForecastRequest]) (*connect.Response[v1.SaveDemandForecastResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.SaveDemandForecast is not implemented"))
+}
+
+func (UnimplementedSchedulingServiceHandler) SetProductRecipe(context.Context, *connect.Request[v1.SetProductRecipeRequest]) (*connect.Response[v1.SetProductRecipeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.SchedulingService.SetProductRecipe is not implemented"))
 }

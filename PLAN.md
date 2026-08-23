@@ -160,15 +160,20 @@ Finished-goods demand forecasting shipped in stage 201, alongside the
 actual-demand plan rather than instead of it, with the method stated and
 unset refusing.
 
-The other two the item named remain, and both are derived from this one
-rather than separate problems:
+Raw-material and WIP followed in stage 204: bottles to make, the alcohol
+they need, and the grain to make it — scaled through the recipe a product
+is now explicitly linked to, with free and maturing alcohol reported
+apart.
 
-- **Raw material.** Forecast bottles → recipe → grain, through
-  `internal/mashing`'s yield model. Wants the recipe's own efficiency
-  figures rather than a nominal one, so it inherits their refusals.
-- **WIP.** Forecast bottles → LAA needed → what is already maturing,
-  which is a subtraction against the barrel register once the first is
-  done.
+What is left of this item is the part that needs plant, not arithmetic:
+
+- **Capacity.** A requirement of 2.4 batches is three mashes on a tun of a
+  given size, and Stillhouse knows the equipment register but not which
+  vessel a recipe is mashed in. Wants a link from recipe to plant, and
+  the same refusal discipline when it is unset.
+- **Lead time.** `materials.lead_time_days` exists and nothing reads it.
+  A grain requirement for next month is only actionable if it says when
+  to order.
 
 ---
 

@@ -3493,6 +3493,8 @@ type Product struct {
 	AllergenStatement    string             `json:"allergen_statement"`
 	CountryOfOrigin      string             `json:"country_of_origin"`
 	MarketingDescription string             `json:"marketing_description"`
+	// The recipe this product is planned from. NULL means unstated, and material requirements are refused rather than inferred from past runs.
+	RecipeVersionID uuid.NullUUID `json:"recipe_version_id"`
 }
 
 type ProductionGauge struct {

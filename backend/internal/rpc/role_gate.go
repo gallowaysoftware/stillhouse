@@ -393,11 +393,14 @@ var procedureMinRole = map[string]minRole{
 	// distillery's operational figures to a cohort other licensees can
 	// see is not something an operator should be able to do on the
 	// owner's behalf.
-	"/stillhouse.v1.BenchmarkService/Benchmarks":              roleViewer,
-	"/stillhouse.v1.BenchmarkService/SetBenchmarkOptIn":       roleOwner,
-	"/stillhouse.v1.SchedulingService/DemandForecast":         roleViewer,
-	"/stillhouse.v1.SchedulingService/SetForecastMethod":      roleOwner,
-	"/stillhouse.v1.SchedulingService/SaveDemandForecast":     roleOwner,
+	"/stillhouse.v1.BenchmarkService/Benchmarks":          roleViewer,
+	"/stillhouse.v1.BenchmarkService/SetBenchmarkOptIn":   roleOwner,
+	"/stillhouse.v1.SchedulingService/DemandForecast":     roleViewer,
+	"/stillhouse.v1.SchedulingService/SetForecastMethod":  roleOwner,
+	"/stillhouse.v1.SchedulingService/SaveDemandForecast": roleOwner,
+	// Which recipe a product is planned from decides the grain a plan
+	// asks somebody to buy, so it is the back office's.
+	"/stillhouse.v1.SchedulingService/SetProductRecipe":       roleOwner,
 	"/stillhouse.v1.POSService/ListPOSSales":                  roleViewer,
 	"/stillhouse.v1.POSService/ListPOSProductMappings":        roleViewer,
 	"/stillhouse.v1.POSService/IngestPOSSales":                roleOperator,

@@ -8,6 +8,7 @@ package forecast
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -134,4 +135,92 @@ func seasonal(history []Observation, for_ time.Time) Result {
 
 func monthStart(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC)
+}
+
+// Requirement is what a forecast implies has to be made and bought.
+//
+// Every field can be unavailable independently, and the reasons differ:
+// the alcohol figure needs only the product's own size and strength,
+// while the grain figure needs a recipe somebody has linked. Reporting
+// them as one availability would hide a usable answer behind a missing
+// one.
+type Requirement struct {
+	BottlesToMake int32
+	// LAA the bottles would contain. Exact arithmetic on the product's
+	// own size and strength, so it is available whenever the forecast is.
+	LAANeeded float64
+
+	// Grain, through the recipe. Available only where a recipe is linked
+	// and its projection produces alcohol.
+	GrainAvailable bool
+	GrainMissing   string
+	// Scale is how many of the recipe's own batches the requirement comes
+	// to. Reported because it is the number an operator reasons in — "two
+	// and a bit mashes" — and because it makes the linearity assumption
+	// visible rather than buried.
+	Batches    float64
+	GrainLines []GrainLine
+}
+
+// GrainLine is one material and how much of it.
+type GrainLine struct {
+	Material string
+	Quantity float64
+	UOM      string
+}
+
+// RecipeBatch is a linked recipe reduced to what scaling needs: the
+// alcohol one batch of it projects, and the bill that produced that.
+type RecipeBatch struct {
+	Name         string
+	ProjectedLAA float64
+	Ingredients  []GrainLine
+}
+
+// Require turns a forecast into a requirement.
+//
+// The grain figure scales the recipe linearly, and that is an assumption
+// rather than a fact: a mash tun has a size, and three batches of a
+// recipe are three mashes rather than one large one. Batches is reported
+// so the assumption is visible — an operator who sees 2.4 knows to round
+// it to three mashes, which no amount of arithmetic here could decide
+// for them.
+func Require(forecastBottles, onHand int32, bottleSizeML int32, abvPct float64, r *RecipeBatch) Requirement {
+	req := Requirement{}
+	toMake := forecastBottles - onHand
+	if toMake < 0 {
+		toMake = 0
+	}
+	req.BottlesToMake = toMake
+	req.LAANeeded = float64(toMake) * float64(bottleSizeML) / 1000 * abvPct / 100
+
+	switch {
+	case r == nil:
+		req.GrainMissing = "no recipe is linked to this product, so the materials cannot be worked out. Link one on the product."
+		return req
+	case r.ProjectedLAA <= 0:
+		req.GrainMissing = fmt.Sprintf(
+			"%s projects no alcohol — check its grain bill and efficiencies — so there is nothing to scale.", r.Name)
+		return req
+	case req.LAANeeded <= 0:
+		req.GrainMissing = "stock on hand already covers the forecast, so nothing needs making."
+		return req
+	}
+
+	req.Batches = req.LAANeeded / r.ProjectedLAA
+	req.GrainAvailable = true
+	for _, in := range r.Ingredients {
+		req.GrainLines = append(req.GrainLines, GrainLine{
+			Material: in.Material,
+			Quantity: roundTo(in.Quantity*req.Batches, 3),
+			UOM:      in.UOM,
+		})
+	}
+	req.Batches = roundTo(req.Batches, 2)
+	return req
+}
+
+func roundTo(v float64, places int) float64 {
+	p := math.Pow(10, float64(places))
+	return math.Round(v*p) / p
 }

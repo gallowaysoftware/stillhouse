@@ -670,8 +670,25 @@ type ForecastLine struct {
 	Overridden     bool   `protobuf:"varint,9,opt,name=overridden,proto3" json:"overridden,omitempty"`
 	OverrideReason string `protobuf:"bytes,10,opt,name=override_reason,json=overrideReason,proto3" json:"override_reason,omitempty"`
 	BottlesOnHand  int32  `protobuf:"varint,11,opt,name=bottles_on_hand,json=bottlesOnHand,proto3" json:"bottles_on_hand,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// What the forecast implies has to be made, and bought to make it.
+	//
+	// The two halves fail independently and for different reasons: the
+	// alcohol figure needs only this product's own size and strength, while
+	// the materials need a recipe somebody has linked. Reporting them as
+	// one availability would hide a usable answer behind a missing one.
+	BottlesToMake      int32   `protobuf:"varint,12,opt,name=bottles_to_make,json=bottlesToMake,proto3" json:"bottles_to_make,omitempty"`
+	LaaNeeded          float64 `protobuf:"fixed64,13,opt,name=laa_needed,json=laaNeeded,proto3" json:"laa_needed,omitempty"`
+	MaterialsAvailable bool    `protobuf:"varint,14,opt,name=materials_available,json=materialsAvailable,proto3" json:"materials_available,omitempty"`
+	MaterialsMissing   string  `protobuf:"bytes,15,opt,name=materials_missing,json=materialsMissing,proto3" json:"materials_missing,omitempty"`
+	// How many of the recipe's own batches this comes to. Reported because
+	// it is the number an operator reasons in, and because it makes the
+	// linear-scaling assumption visible: 2.4 batches is three mashes, and
+	// no arithmetic here can decide that for them.
+	Batches       float64                `protobuf:"fixed64,16,opt,name=batches,proto3" json:"batches,omitempty"`
+	Materials     []*MaterialRequirement `protobuf:"bytes,17,rep,name=materials,proto3" json:"materials,omitempty"`
+	RecipeName    string                 `protobuf:"bytes,18,opt,name=recipe_name,json=recipeName,proto3" json:"recipe_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ForecastLine) Reset() {
@@ -781,6 +798,115 @@ func (x *ForecastLine) GetBottlesOnHand() int32 {
 	return 0
 }
 
+func (x *ForecastLine) GetBottlesToMake() int32 {
+	if x != nil {
+		return x.BottlesToMake
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetLaaNeeded() float64 {
+	if x != nil {
+		return x.LaaNeeded
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetMaterialsAvailable() bool {
+	if x != nil {
+		return x.MaterialsAvailable
+	}
+	return false
+}
+
+func (x *ForecastLine) GetMaterialsMissing() string {
+	if x != nil {
+		return x.MaterialsMissing
+	}
+	return ""
+}
+
+func (x *ForecastLine) GetBatches() float64 {
+	if x != nil {
+		return x.Batches
+	}
+	return 0
+}
+
+func (x *ForecastLine) GetMaterials() []*MaterialRequirement {
+	if x != nil {
+		return x.Materials
+	}
+	return nil
+}
+
+func (x *ForecastLine) GetRecipeName() string {
+	if x != nil {
+		return x.RecipeName
+	}
+	return ""
+}
+
+type MaterialRequirement struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Material      string                 `protobuf:"bytes,1,opt,name=material,proto3" json:"material,omitempty"`
+	Quantity      float64                `protobuf:"fixed64,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Uom           string                 `protobuf:"bytes,3,opt,name=uom,proto3" json:"uom,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MaterialRequirement) Reset() {
+	*x = MaterialRequirement{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MaterialRequirement) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MaterialRequirement) ProtoMessage() {}
+
+func (x *MaterialRequirement) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MaterialRequirement.ProtoReflect.Descriptor instead.
+func (*MaterialRequirement) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *MaterialRequirement) GetMaterial() string {
+	if x != nil {
+		return x.Material
+	}
+	return ""
+}
+
+func (x *MaterialRequirement) GetQuantity() float64 {
+	if x != nil {
+		return x.Quantity
+	}
+	return 0
+}
+
+func (x *MaterialRequirement) GetUom() string {
+	if x != nil {
+		return x.Uom
+	}
+	return ""
+}
+
 type DemandForecastRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The month to project, ISO date; any day in it. Empty means next
@@ -792,7 +918,7 @@ type DemandForecastRequest struct {
 
 func (x *DemandForecastRequest) Reset() {
 	*x = DemandForecastRequest{}
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -804,7 +930,7 @@ func (x *DemandForecastRequest) String() string {
 func (*DemandForecastRequest) ProtoMessage() {}
 
 func (x *DemandForecastRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -817,7 +943,7 @@ func (x *DemandForecastRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DemandForecastRequest.ProtoReflect.Descriptor instead.
 func (*DemandForecastRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DemandForecastRequest) GetMonth() string {
@@ -837,14 +963,23 @@ type DemandForecastResponse struct {
 	// Set when no method has been chosen. Everything above is empty then.
 	Refused string `protobuf:"bytes,6,opt,name=refused,proto3" json:"refused,omitempty"`
 	// Said on the response, not in the documentation.
-	Caution       string `protobuf:"bytes,7,opt,name=caution,proto3" json:"caution,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	Caution string `protobuf:"bytes,7,opt,name=caution,proto3" json:"caution,omitempty"`
+	// Alcohol that could be bottled next month, and alcohol that could not
+	// because it is still in wood. Kept apart on purpose: adding a
+	// maturing cask to the free figure would say a shortfall is covered
+	// when it is not.
+	FreeLaa     float64 `protobuf:"fixed64,8,opt,name=free_laa,json=freeLaa,proto3" json:"free_laa,omitempty"`
+	MaturingLaa float64 `protobuf:"fixed64,9,opt,name=maturing_laa,json=maturingLaa,proto3" json:"maturing_laa,omitempty"`
+	// The sum of laa_needed across the lines above, so the shortfall can be
+	// read without adding a column up by hand.
+	TotalLaaNeeded float64 `protobuf:"fixed64,10,opt,name=total_laa_needed,json=totalLaaNeeded,proto3" json:"total_laa_needed,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *DemandForecastResponse) Reset() {
 	*x = DemandForecastResponse{}
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -856,7 +991,7 @@ func (x *DemandForecastResponse) String() string {
 func (*DemandForecastResponse) ProtoMessage() {}
 
 func (x *DemandForecastResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -869,7 +1004,7 @@ func (x *DemandForecastResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DemandForecastResponse.ProtoReflect.Descriptor instead.
 func (*DemandForecastResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DemandForecastResponse) GetLines() []*ForecastLine {
@@ -921,6 +1056,27 @@ func (x *DemandForecastResponse) GetCaution() string {
 	return ""
 }
 
+func (x *DemandForecastResponse) GetFreeLaa() float64 {
+	if x != nil {
+		return x.FreeLaa
+	}
+	return 0
+}
+
+func (x *DemandForecastResponse) GetMaturingLaa() float64 {
+	if x != nil {
+		return x.MaturingLaa
+	}
+	return 0
+}
+
+func (x *DemandForecastResponse) GetTotalLaaNeeded() float64 {
+	if x != nil {
+		return x.TotalLaaNeeded
+	}
+	return 0
+}
+
 type SetForecastMethodRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Method         ForecastMethod         `protobuf:"varint,1,opt,name=method,proto3,enum=stillhouse.v1.ForecastMethod" json:"method,omitempty"`
@@ -931,7 +1087,7 @@ type SetForecastMethodRequest struct {
 
 func (x *SetForecastMethodRequest) Reset() {
 	*x = SetForecastMethodRequest{}
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -943,7 +1099,7 @@ func (x *SetForecastMethodRequest) String() string {
 func (*SetForecastMethodRequest) ProtoMessage() {}
 
 func (x *SetForecastMethodRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -956,7 +1112,7 @@ func (x *SetForecastMethodRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetForecastMethodRequest.ProtoReflect.Descriptor instead.
 func (*SetForecastMethodRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SetForecastMethodRequest) GetMethod() ForecastMethod {
@@ -983,7 +1139,7 @@ type SetForecastMethodResponse struct {
 
 func (x *SetForecastMethodResponse) Reset() {
 	*x = SetForecastMethodResponse{}
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -995,7 +1151,7 @@ func (x *SetForecastMethodResponse) String() string {
 func (*SetForecastMethodResponse) ProtoMessage() {}
 
 func (x *SetForecastMethodResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1008,7 +1164,7 @@ func (x *SetForecastMethodResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetForecastMethodResponse.ProtoReflect.Descriptor instead.
 func (*SetForecastMethodResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SetForecastMethodResponse) GetMethod() ForecastMethod {
@@ -1037,7 +1193,7 @@ type SaveDemandForecastRequest struct {
 
 func (x *SaveDemandForecastRequest) Reset() {
 	*x = SaveDemandForecastRequest{}
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1049,7 +1205,7 @@ func (x *SaveDemandForecastRequest) String() string {
 func (*SaveDemandForecastRequest) ProtoMessage() {}
 
 func (x *SaveDemandForecastRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1062,7 +1218,7 @@ func (x *SaveDemandForecastRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveDemandForecastRequest.ProtoReflect.Descriptor instead.
 func (*SaveDemandForecastRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *SaveDemandForecastRequest) GetProductId() string {
@@ -1101,7 +1257,7 @@ type SaveDemandForecastResponse struct {
 
 func (x *SaveDemandForecastResponse) Reset() {
 	*x = SaveDemandForecastResponse{}
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1113,7 +1269,7 @@ func (x *SaveDemandForecastResponse) String() string {
 func (*SaveDemandForecastResponse) ProtoMessage() {}
 
 func (x *SaveDemandForecastResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1126,7 +1282,97 @@ func (x *SaveDemandForecastResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SaveDemandForecastResponse.ProtoReflect.Descriptor instead.
 func (*SaveDemandForecastResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{12}
+}
+
+type SetProductRecipeRequest struct {
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	ProductId string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	// Empty clears it, which puts material requirements back to refusing
+	// rather than leaving a stale recipe planning next month's grain.
+	RecipeVersionId string `protobuf:"bytes,2,opt,name=recipe_version_id,json=recipeVersionId,proto3" json:"recipe_version_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *SetProductRecipeRequest) Reset() {
+	*x = SetProductRecipeRequest{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetProductRecipeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetProductRecipeRequest) ProtoMessage() {}
+
+func (x *SetProductRecipeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetProductRecipeRequest.ProtoReflect.Descriptor instead.
+func (*SetProductRecipeRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *SetProductRecipeRequest) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *SetProductRecipeRequest) GetRecipeVersionId() string {
+	if x != nil {
+		return x.RecipeVersionId
+	}
+	return ""
+}
+
+type SetProductRecipeResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SetProductRecipeResponse) Reset() {
+	*x = SetProductRecipeResponse{}
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SetProductRecipeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SetProductRecipeResponse) ProtoMessage() {}
+
+func (x *SetProductRecipeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_scheduling_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SetProductRecipeResponse.ProtoReflect.Descriptor instead.
+func (*SetProductRecipeResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_scheduling_proto_rawDescGZIP(), []int{14}
 }
 
 var File_stillhouse_v1_scheduling_proto protoreflect.FileDescriptor
@@ -1187,7 +1433,7 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\x10short_of_alcohol\x18\a \x01(\bR\x0eshortOfAlcohol\x12\x14\n" +
 	"\x05basis\x18\b \x01(\tR\x05basis\x12\x1f\n" +
 	"\vblind_spots\x18\t \x03(\tR\n" +
-	"blindSpots\"\x88\x03\n" +
+	"blindSpots\"\xaa\x05\n" +
 	"\fForecastLine\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12!\n" +
@@ -1204,9 +1450,22 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"overridden\x12'\n" +
 	"\x0foverride_reason\x18\n" +
 	" \x01(\tR\x0eoverrideReason\x12&\n" +
-	"\x0fbottles_on_hand\x18\v \x01(\x05R\rbottlesOnHand\"-\n" +
+	"\x0fbottles_on_hand\x18\v \x01(\x05R\rbottlesOnHand\x12&\n" +
+	"\x0fbottles_to_make\x18\f \x01(\x05R\rbottlesToMake\x12\x1d\n" +
+	"\n" +
+	"laa_needed\x18\r \x01(\x01R\tlaaNeeded\x12/\n" +
+	"\x13materials_available\x18\x0e \x01(\bR\x12materialsAvailable\x12+\n" +
+	"\x11materials_missing\x18\x0f \x01(\tR\x10materialsMissing\x12\x18\n" +
+	"\abatches\x18\x10 \x01(\x01R\abatches\x12@\n" +
+	"\tmaterials\x18\x11 \x03(\v2\".stillhouse.v1.MaterialRequirementR\tmaterials\x12\x1f\n" +
+	"\vrecipe_name\x18\x12 \x01(\tR\n" +
+	"recipeName\"_\n" +
+	"\x13MaterialRequirement\x12\x1a\n" +
+	"\bmaterial\x18\x01 \x01(\tR\bmaterial\x12\x1a\n" +
+	"\bquantity\x18\x02 \x01(\x01R\bquantity\x12\x10\n" +
+	"\x03uom\x18\x03 \x01(\tR\x03uom\"-\n" +
 	"\x15DemandForecastRequest\x12\x14\n" +
-	"\x05month\x18\x01 \x01(\tR\x05month\"\xa1\x02\n" +
+	"\x05month\x18\x01 \x01(\tR\x05month\"\x89\x03\n" +
 	"\x16DemandForecastResponse\x121\n" +
 	"\x05lines\x18\x01 \x03(\v2\x1b.stillhouse.v1.ForecastLineR\x05lines\x125\n" +
 	"\x06method\x18\x02 \x01(\x0e2\x1d.stillhouse.v1.ForecastMethodR\x06method\x12'\n" +
@@ -1215,7 +1474,11 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\n" +
 	"period_end\x18\x05 \x01(\tR\tperiodEnd\x12\x18\n" +
 	"\arefused\x18\x06 \x01(\tR\arefused\x12\x18\n" +
-	"\acaution\x18\a \x01(\tR\acaution\"z\n" +
+	"\acaution\x18\a \x01(\tR\acaution\x12\x19\n" +
+	"\bfree_laa\x18\b \x01(\x01R\afreeLaa\x12!\n" +
+	"\fmaturing_laa\x18\t \x01(\x01R\vmaturingLaa\x12(\n" +
+	"\x10total_laa_needed\x18\n" +
+	" \x01(\x01R\x0etotalLaaNeeded\"z\n" +
 	"\x18SetForecastMethodRequest\x125\n" +
 	"\x06method\x18\x01 \x01(\x0e2\x1d.stillhouse.v1.ForecastMethodR\x06method\x12'\n" +
 	"\x0ftrailing_months\x18\x02 \x01(\x05R\x0etrailingMonths\"{\n" +
@@ -1228,17 +1491,23 @@ const file_stillhouse_v1_scheduling_proto_rawDesc = "" +
 	"\x05month\x18\x02 \x01(\tR\x05month\x12\x18\n" +
 	"\abottles\x18\x03 \x01(\x05R\abottles\x12\x16\n" +
 	"\x06reason\x18\x04 \x01(\tR\x06reason\"\x1c\n" +
-	"\x1aSaveDemandForecastResponse*\x9e\x01\n" +
+	"\x1aSaveDemandForecastResponse\"d\n" +
+	"\x17SetProductRecipeRequest\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12*\n" +
+	"\x11recipe_version_id\x18\x02 \x01(\tR\x0frecipeVersionId\"\x1a\n" +
+	"\x18SetProductRecipeResponse*\x9e\x01\n" +
 	"\x0eForecastMethod\x12\x1f\n" +
 	"\x1bFORECAST_METHOD_UNSPECIFIED\x10\x00\x12$\n" +
 	" FORECAST_METHOD_TRAILING_AVERAGE\x10\x01\x12)\n" +
 	"%FORECAST_METHOD_SAME_PERIOD_LAST_YEAR\x10\x02\x12\x1a\n" +
-	"\x16FORECAST_METHOD_MANUAL\x10\x032\xa4\x03\n" +
+	"\x16FORECAST_METHOD_MANUAL\x10\x032\x89\x04\n" +
 	"\x11SchedulingService\x12]\n" +
 	"\x0eProductionPlan\x12$.stillhouse.v1.ProductionPlanRequest\x1a%.stillhouse.v1.ProductionPlanResponse\x12]\n" +
 	"\x0eDemandForecast\x12$.stillhouse.v1.DemandForecastRequest\x1a%.stillhouse.v1.DemandForecastResponse\x12f\n" +
 	"\x11SetForecastMethod\x12'.stillhouse.v1.SetForecastMethodRequest\x1a(.stillhouse.v1.SetForecastMethodResponse\x12i\n" +
-	"\x12SaveDemandForecast\x12(.stillhouse.v1.SaveDemandForecastRequest\x1a).stillhouse.v1.SaveDemandForecastResponseB\xd3\x01\n" +
+	"\x12SaveDemandForecast\x12(.stillhouse.v1.SaveDemandForecastRequest\x1a).stillhouse.v1.SaveDemandForecastResponse\x12c\n" +
+	"\x10SetProductRecipe\x12&.stillhouse.v1.SetProductRecipeRequest\x1a'.stillhouse.v1.SetProductRecipeResponseB\xd3\x01\n" +
 	"\x11com.stillhouse.v1B\x0fSchedulingProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1254,7 +1523,7 @@ func file_stillhouse_v1_scheduling_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_scheduling_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_stillhouse_v1_scheduling_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_stillhouse_v1_scheduling_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_stillhouse_v1_scheduling_proto_goTypes = []any{
 	(ForecastMethod)(0),                // 0: stillhouse.v1.ForecastMethod
 	(*DemandLine)(nil),                 // 1: stillhouse.v1.DemandLine
@@ -1263,38 +1532,44 @@ var file_stillhouse_v1_scheduling_proto_goTypes = []any{
 	(*ProductionPlanRequest)(nil),      // 4: stillhouse.v1.ProductionPlanRequest
 	(*ProductionPlanResponse)(nil),     // 5: stillhouse.v1.ProductionPlanResponse
 	(*ForecastLine)(nil),               // 6: stillhouse.v1.ForecastLine
-	(*DemandForecastRequest)(nil),      // 7: stillhouse.v1.DemandForecastRequest
-	(*DemandForecastResponse)(nil),     // 8: stillhouse.v1.DemandForecastResponse
-	(*SetForecastMethodRequest)(nil),   // 9: stillhouse.v1.SetForecastMethodRequest
-	(*SetForecastMethodResponse)(nil),  // 10: stillhouse.v1.SetForecastMethodResponse
-	(*SaveDemandForecastRequest)(nil),  // 11: stillhouse.v1.SaveDemandForecastRequest
-	(*SaveDemandForecastResponse)(nil), // 12: stillhouse.v1.SaveDemandForecastResponse
-	(EquipmentKind)(0),                 // 13: stillhouse.v1.EquipmentKind
-	(EquipmentStatus)(0),               // 14: stillhouse.v1.EquipmentStatus
+	(*MaterialRequirement)(nil),        // 7: stillhouse.v1.MaterialRequirement
+	(*DemandForecastRequest)(nil),      // 8: stillhouse.v1.DemandForecastRequest
+	(*DemandForecastResponse)(nil),     // 9: stillhouse.v1.DemandForecastResponse
+	(*SetForecastMethodRequest)(nil),   // 10: stillhouse.v1.SetForecastMethodRequest
+	(*SetForecastMethodResponse)(nil),  // 11: stillhouse.v1.SetForecastMethodResponse
+	(*SaveDemandForecastRequest)(nil),  // 12: stillhouse.v1.SaveDemandForecastRequest
+	(*SaveDemandForecastResponse)(nil), // 13: stillhouse.v1.SaveDemandForecastResponse
+	(*SetProductRecipeRequest)(nil),    // 14: stillhouse.v1.SetProductRecipeRequest
+	(*SetProductRecipeResponse)(nil),   // 15: stillhouse.v1.SetProductRecipeResponse
+	(EquipmentKind)(0),                 // 16: stillhouse.v1.EquipmentKind
+	(EquipmentStatus)(0),               // 17: stillhouse.v1.EquipmentStatus
 }
 var file_stillhouse_v1_scheduling_proto_depIdxs = []int32{
-	13, // 0: stillhouse.v1.PlannableEquipment.kind:type_name -> stillhouse.v1.EquipmentKind
-	14, // 1: stillhouse.v1.PlannableEquipment.status:type_name -> stillhouse.v1.EquipmentStatus
+	16, // 0: stillhouse.v1.PlannableEquipment.kind:type_name -> stillhouse.v1.EquipmentKind
+	17, // 1: stillhouse.v1.PlannableEquipment.status:type_name -> stillhouse.v1.EquipmentStatus
 	3,  // 2: stillhouse.v1.PlannableEquipment.scheduled:type_name -> stillhouse.v1.ScheduledWork
 	1,  // 3: stillhouse.v1.ProductionPlanResponse.demand:type_name -> stillhouse.v1.DemandLine
 	2,  // 4: stillhouse.v1.ProductionPlanResponse.equipment:type_name -> stillhouse.v1.PlannableEquipment
-	6,  // 5: stillhouse.v1.DemandForecastResponse.lines:type_name -> stillhouse.v1.ForecastLine
-	0,  // 6: stillhouse.v1.DemandForecastResponse.method:type_name -> stillhouse.v1.ForecastMethod
-	0,  // 7: stillhouse.v1.SetForecastMethodRequest.method:type_name -> stillhouse.v1.ForecastMethod
-	0,  // 8: stillhouse.v1.SetForecastMethodResponse.method:type_name -> stillhouse.v1.ForecastMethod
-	4,  // 9: stillhouse.v1.SchedulingService.ProductionPlan:input_type -> stillhouse.v1.ProductionPlanRequest
-	7,  // 10: stillhouse.v1.SchedulingService.DemandForecast:input_type -> stillhouse.v1.DemandForecastRequest
-	9,  // 11: stillhouse.v1.SchedulingService.SetForecastMethod:input_type -> stillhouse.v1.SetForecastMethodRequest
-	11, // 12: stillhouse.v1.SchedulingService.SaveDemandForecast:input_type -> stillhouse.v1.SaveDemandForecastRequest
-	5,  // 13: stillhouse.v1.SchedulingService.ProductionPlan:output_type -> stillhouse.v1.ProductionPlanResponse
-	8,  // 14: stillhouse.v1.SchedulingService.DemandForecast:output_type -> stillhouse.v1.DemandForecastResponse
-	10, // 15: stillhouse.v1.SchedulingService.SetForecastMethod:output_type -> stillhouse.v1.SetForecastMethodResponse
-	12, // 16: stillhouse.v1.SchedulingService.SaveDemandForecast:output_type -> stillhouse.v1.SaveDemandForecastResponse
-	13, // [13:17] is the sub-list for method output_type
-	9,  // [9:13] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	7,  // 5: stillhouse.v1.ForecastLine.materials:type_name -> stillhouse.v1.MaterialRequirement
+	6,  // 6: stillhouse.v1.DemandForecastResponse.lines:type_name -> stillhouse.v1.ForecastLine
+	0,  // 7: stillhouse.v1.DemandForecastResponse.method:type_name -> stillhouse.v1.ForecastMethod
+	0,  // 8: stillhouse.v1.SetForecastMethodRequest.method:type_name -> stillhouse.v1.ForecastMethod
+	0,  // 9: stillhouse.v1.SetForecastMethodResponse.method:type_name -> stillhouse.v1.ForecastMethod
+	4,  // 10: stillhouse.v1.SchedulingService.ProductionPlan:input_type -> stillhouse.v1.ProductionPlanRequest
+	8,  // 11: stillhouse.v1.SchedulingService.DemandForecast:input_type -> stillhouse.v1.DemandForecastRequest
+	10, // 12: stillhouse.v1.SchedulingService.SetForecastMethod:input_type -> stillhouse.v1.SetForecastMethodRequest
+	12, // 13: stillhouse.v1.SchedulingService.SaveDemandForecast:input_type -> stillhouse.v1.SaveDemandForecastRequest
+	14, // 14: stillhouse.v1.SchedulingService.SetProductRecipe:input_type -> stillhouse.v1.SetProductRecipeRequest
+	5,  // 15: stillhouse.v1.SchedulingService.ProductionPlan:output_type -> stillhouse.v1.ProductionPlanResponse
+	9,  // 16: stillhouse.v1.SchedulingService.DemandForecast:output_type -> stillhouse.v1.DemandForecastResponse
+	11, // 17: stillhouse.v1.SchedulingService.SetForecastMethod:output_type -> stillhouse.v1.SetForecastMethodResponse
+	13, // 18: stillhouse.v1.SchedulingService.SaveDemandForecast:output_type -> stillhouse.v1.SaveDemandForecastResponse
+	15, // 19: stillhouse.v1.SchedulingService.SetProductRecipe:output_type -> stillhouse.v1.SetProductRecipeResponse
+	15, // [15:20] is the sub-list for method output_type
+	10, // [10:15] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_scheduling_proto_init() }
@@ -1309,7 +1584,7 @@ func file_stillhouse_v1_scheduling_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_scheduling_proto_rawDesc), len(file_stillhouse_v1_scheduling_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   12,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

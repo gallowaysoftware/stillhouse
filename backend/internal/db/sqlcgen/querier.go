@@ -48,6 +48,13 @@ type Querier interface {
 	// is the figure that matters: the age at removal from wood, not the age
 	// today.
 	AgeEvidenceForBottlingRun(ctx context.Context, arg AgeEvidenceForBottlingRunParams) ([]AgeEvidenceForBottlingRunRow, error)
+	// What could actually be bottled next month, split by whether it is ready.
+	//
+	// A cask still maturing is alcohol the distillery owns and cannot use for
+	// next month's orders, so adding it to the free figure would say a
+	// shortfall is covered when it is not. Barrels are counted separately for
+	// exactly that reason.
+	AlcoholOnHandForPlanning(ctx context.Context) (AlcoholOnHandForPlanningRow, error)
 	// Spirit that left stock into the still and has no output recorded after
 	// long enough that it should have. Alcohol off the books is the one
 	// shape of gap a period-end reconciliation cannot explain.
@@ -911,6 +918,11 @@ type Querier interface {
 	// told the count separately rather than the rows just being absent.
 	RecallRemovalsForPackagedLots(ctx context.Context, packagedInventoryIds []uuid.UUID) ([]RecallRemovalsForPackagedLotsRow, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	// The bill a product is planned from, with the efficiencies that turn it
+	// into alcohol. Refuses (no rows) when the operator has not said which
+	// recipe a product comes from — see 000068.
+	RecipeForProduct(ctx context.Context, id uuid.UUID) (RecipeForProductRow, error)
+	RecipeIngredientsForProjection(ctx context.Context, recipeVersionID uuid.UUID) ([]RecipeIngredientsForProjectionRow, error)
 	RecordEquipmentService(ctx context.Context, arg RecordEquipmentServiceParams) (EquipmentServiceEvent, error)
 	RecordInvoicePayment(ctx context.Context, arg RecordInvoicePaymentParams) (InvoicePayment, error)
 	RecordKegEvent(ctx context.Context, arg RecordKegEventParams) (KegEvent, error)
@@ -1043,6 +1055,7 @@ type Querier interface {
 	SetPOSSaleIgnored(ctx context.Context, arg SetPOSSaleIgnoredParams) error
 	SetPackagedBottles(ctx context.Context, arg SetPackagedBottlesParams) (PackagedInventory, error)
 	SetProductArchived(ctx context.Context, arg SetProductArchivedParams) (Product, error)
+	SetProductRecipe(ctx context.Context, arg SetProductRecipeParams) (Product, error)
 	// The status is cast explicitly at every use. Postgres cannot deduce one
 	// type for a parameter that is both assigned to an enum column and
 	// compared against a literal, and the error it gives (42P08, inconsistent
