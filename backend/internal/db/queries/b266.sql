@@ -347,3 +347,57 @@ SELECT COALESCE(SUM(laa_delta), 0)::double precision AS net_laa,
 FROM packaged_adjustments
 WHERE occurred_on >= sqlc.arg(period_start)::date
   AND occurred_on <  sqlc.arg(period_end)::date;
+
+-- name: PriorFiledB266Period :one
+-- The most recent period that was actually filed and ends before this one
+-- starts. Drafts are excluded on purpose: a draft's closing balance is
+-- recomputed every time it is generated, so comparing against one would
+-- compare a figure against itself and always agree.
+SELECT * FROM b266_periods
+WHERE status = 'submitted'
+  AND period_end < @period_start::date
+ORDER BY period_end DESC
+LIMIT 1;
+
+-- name: ListBackdatedBulkMovements :many
+-- Movements booked into an already-filed span but entered after it was
+-- filed. occurred_at decides which return a movement belongs to;
+-- created_at is when the row appeared. A row where the second is later
+-- than the filing is one the filed return could not have counted.
+--
+-- net_laa is the movement's effect on total bulk on hand, spelled exactly
+-- as SumBulkOnHandAsOf spells it: in adds, out subtracts, and an internal
+-- move with both ends set nets to zero. That expression is the definition
+-- of the closing balance, so using anything else here would explain a
+-- discrepancy with arithmetic that did not cause it.
+--
+-- Ordered by the size of that effect, largest first, so the biggest
+-- contributor to a break is named first. Capped by the caller.
+SELECT m.id, m.reason, m.laa, m.occurred_at, m.created_at, m.notes,
+       COALESCE(c.name, '')::text AS container_name,
+       (  CASE WHEN m.destination_container_id IS NOT NULL THEN m.laa ELSE 0 END
+        - CASE WHEN m.source_container_id      IS NOT NULL THEN m.laa ELSE 0 END
+       )::double precision AS net_laa
+FROM bulk_movements m
+LEFT JOIN bulk_containers c
+       ON c.id = COALESCE(m.destination_container_id, m.source_container_id)
+WHERE m.occurred_at::date >= @period_start::date
+  AND m.occurred_at::date <= @period_end::date
+  AND m.created_at > @filed_at::timestamptz
+ORDER BY ABS(  CASE WHEN m.destination_container_id IS NOT NULL THEN m.laa ELSE 0 END
+             - CASE WHEN m.source_container_id      IS NOT NULL THEN m.laa ELSE 0 END) DESC,
+         m.occurred_at DESC
+LIMIT @row_limit::int;
+
+-- name: SumBackdatedBulkMovements :one
+-- The whole set, not the capped page: how many there are and what they do
+-- to the closing balance in total. Same expression as above.
+SELECT COUNT(*)::int AS n,
+       COALESCE(SUM(
+           CASE WHEN m.destination_container_id IS NOT NULL THEN m.laa ELSE 0 END
+         - CASE WHEN m.source_container_id      IS NOT NULL THEN m.laa ELSE 0 END
+       ), 0)::double precision AS net_laa
+FROM bulk_movements m
+WHERE m.occurred_at::date >= @period_start::date
+  AND m.occurred_at::date <= @period_end::date
+  AND m.created_at > @filed_at::timestamptz;

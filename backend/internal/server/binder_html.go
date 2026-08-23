@@ -110,6 +110,41 @@ not change if the underlying records are later corrected.</p>
 </table>
 {{end}}
 
+{{with .Report}}{{with .Continuity}}
+<div class="box">
+  <h3>Continuity with the previously filed return</h3>
+  {{if not .Checked}}
+  <p>No earlier filed return to compare against. The opening balances on
+  this return are walked back from the closing ones, so they tie out by
+  construction and cannot themselves show whether anything is missing.</p>
+  {{else}}
+  <p>Opening balances here against the closing balances of the return filed
+  for {{.PriorPeriodStart}} to {{.PriorPeriodEnd}}. This is the only figure
+  on the return that is not derived from the same ledger as the rest of
+  it.</p>
+  <table>
+    <thead><tr><th></th><th class="n">Filed closing</th><th class="n">Opening here</th><th class="n">Difference</th></tr></thead>
+    <tbody>
+      <tr><td>Bulk</td><td class="n">{{printf "%.4f" .PriorBulkClosingLaa}}</td><td class="n">{{printf "%.4f" .BulkOpeningLaa}}</td><td class="n">{{printf "%.4f" .BulkDiscrepancyLaa}}</td></tr>
+      <tr><td>Packaged</td><td class="n">{{printf "%.4f" .PriorPackagedClosingLaa}}</td><td class="n">{{printf "%.4f" .PackagedOpeningLaa}}</td><td class="n">{{printf "%.4f" .PackagedDiscrepancyLaa}}</td></tr>
+    </tbody>
+  </table>
+  {{if .Gap}}<p class="note">{{.GapNote}}</p>{{end}}
+  {{if .Backdated}}
+  <p>Recorded against the filed period after it was filed{{if .BackdatedTruncated}} (largest entries shown; {{.BackdatedTruncated}} more not listed){{end}}:</p>
+  <table>
+    <thead><tr><th>Dated</th><th>Entered</th><th>Container</th><th>Reason</th><th class="n">Effect (LAA)</th></tr></thead>
+    <tbody>
+    {{range .Backdated}}
+      <tr><td>{{.OccurredAt}}</td><td>{{.CreatedAt}}</td><td>{{.Container}}</td><td>{{.Reason}}</td><td class="n">{{printf "%.4f" .Laa}}</td></tr>
+    {{end}}
+    </tbody>
+  </table>
+  {{end}}
+  {{end}}
+</div>
+{{end}}{{end}}
+
 {{with .Report}}{{if .FilingBlockers}}
 <div class="box flag">
   <h3>Outstanding at the time this period was filed</h3>

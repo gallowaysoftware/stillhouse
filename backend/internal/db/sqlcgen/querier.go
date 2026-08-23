@@ -486,6 +486,20 @@ type Querier interface {
 	ListAllTenants(ctx context.Context) ([]Tenant, error)
 	ListAuditEvents(ctx context.Context, arg ListAuditEventsParams) ([]ListAuditEventsRow, error)
 	ListB266Periods(ctx context.Context) ([]B266Period, error)
+	// Movements booked into an already-filed span but entered after it was
+	// filed. occurred_at decides which return a movement belongs to;
+	// created_at is when the row appeared. A row where the second is later
+	// than the filing is one the filed return could not have counted.
+	//
+	// net_laa is the movement's effect on total bulk on hand, spelled exactly
+	// as SumBulkOnHandAsOf spells it: in adds, out subtracts, and an internal
+	// move with both ends set nets to zero. That expression is the definition
+	// of the closing balance, so using anything else here would explain a
+	// discrepancy with arithmetic that did not cause it.
+	//
+	// Ordered by the size of that effect, largest first, so the biggest
+	// contributor to a break is named first. Capped by the caller.
+	ListBackdatedBulkMovements(ctx context.Context, arg ListBackdatedBulkMovementsParams) ([]ListBackdatedBulkMovementsRow, error)
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
 	// The fill this cask is currently living off, so the angel's share can be
 	// measured against it without a round trip per barrel.
@@ -708,6 +722,11 @@ type Querier interface {
 	// too, with the reason it cannot, because an empty schedule and a
 	// schedule that silently dropped half the plant look identical.
 	PlannableEquipment(ctx context.Context) ([]PlannableEquipmentRow, error)
+	// The most recent period that was actually filed and ends before this one
+	// starts. Drafts are excluded on purpose: a draft's closing balance is
+	// recomputed every time it is generated, so comparing against one would
+	// compare a figure against itself and always agree.
+	PriorFiledB266Period(ctx context.Context, periodStart pgtype.Date) (B266Period, error)
 	// Unfiled periods with a due date on or before a day, for the alert
 	// evaluator. A definition with no recorded due-days produces periods
 	// with a NULL due_on, which cannot be overdue and is not alerted on —
@@ -899,6 +918,9 @@ type Querier interface {
 	// CHECK holds the other half of that guarantee for any path that is not
 	// this one.
 	SubmitB266Period(ctx context.Context, arg SubmitB266PeriodParams) (B266Period, error)
+	// The whole set, not the capped page: how many there are and what they do
+	// to the closing balance in total. Same expression as above.
+	SumBackdatedBulkMovements(ctx context.Context, arg SumBackdatedBulkMovementsParams) (SumBackdatedBulkMovementsRow, error)
 	// The same split for casks, which is where third-party ownership actually
 	// turns up: contract maturation and cask-ownership programmes are barrels.
 	SumBarrelLAAByOwnership(ctx context.Context) (SumBarrelLAAByOwnershipRow, error)

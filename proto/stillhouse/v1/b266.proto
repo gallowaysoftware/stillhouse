@@ -219,6 +219,76 @@ message B266Report {
   string duty_point_effective_from = 57;
 
   google.protobuf.Timestamp generated_at = 60;
+
+  // Whether this return continues the last one that was filed.
+  //
+  // The opening balances above are reverse-walked from closing, which
+  // means the return always balances against itself: an unreported or
+  // miscategorised movement is absorbed into the opening figure rather
+  // than showing up as a discrepancy. That is convenient and it is also
+  // the reason a bad period can look filable. The only independent check
+  // available is the previous return's closing balance, which is a figure
+  // the licensee already sent CRA and cannot quietly restate.
+  B266Continuity continuity = 89;
+}
+
+// A movement whose effect lands inside an already-filed period but which
+// was entered after that period was submitted. These are what make a
+// continuity break explainable: the return CRA holds was computed before
+// this row existed.
+message B266BackdatedEntry {
+  string id = 1;
+  // What kind of record this is, in the operator's words — "bulk
+  // movement", not a table name.
+  string kind = 2;
+  string reason = 3;
+  double laa = 4;
+  // The date the movement is booked to, which is the one inside the filed
+  // period.
+  string occurred_at = 5;
+  // When it was actually entered, which is after the filing.
+  string created_at = 6;
+  string container = 7;
+  string notes = 8;
+}
+
+// The comparison between this period's opening balances and the closing
+// balances of the last period actually filed.
+message B266Continuity {
+  // False when there is no prior filed period to check against — a first
+  // return, or one where every earlier period is still a draft. Not a
+  // problem, but not a clean bill of health either, and the two have to be
+  // distinguishable.
+  bool checked = 1;
+  string prior_period_start = 2;
+  string prior_period_end = 3;
+
+  double prior_bulk_closing_laa = 4;
+  double bulk_opening_laa = 5;
+  // This period's opening minus the prior period's closing. Zero is what
+  // a continuous set of books looks like.
+  double bulk_discrepancy_laa = 6;
+
+  double prior_packaged_closing_laa = 7;
+  double packaged_opening_laa = 8;
+  double packaged_discrepancy_laa = 9;
+
+  // Set when the prior filed period does not end the day before this one
+  // starts. An unfiled span between two returns is not itself an error —
+  // the licensee may have had nothing to report — but the continuity
+  // comparison spans it, so any movement inside the gap reads as a break.
+  bool gap = 10;
+  string gap_note = 11;
+
+  // Entries booked into the filed period after it was submitted. Ordered
+  // largest LAA first. Capped — see truncated.
+  repeated B266BackdatedEntry backdated = 12;
+  // How many backdated entries exist beyond the ones listed.
+  int32 backdated_truncated = 13;
+  // The total LAA effect of every backdated entry, including any not
+  // listed. Where this equals the discrepancy, the break is fully
+  // explained by them.
+  double backdated_net_laa = 14;
 }
 
 message GenerateB266Request {

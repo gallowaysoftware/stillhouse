@@ -282,9 +282,25 @@ rather than merely adequate.
 
 ### J1 · Filing readiness assistant — P2
 
-An LLM over the period that names the three things which will make the return
-not reconcile and points at the movements responsible. Builds on the MCP
-surface that already exists.
+The half that had to be deterministic shipped in stage 191: the return is
+compared against the closing balance of the last one filed, a break names
+the difference, and the entries most likely to have caused it — dated
+inside the filed period, entered after it was filed — are listed. That is
+the check that could not be left to a model, because it is arithmetic on a
+figure CRA already holds.
+
+What is left is the part a model is actually good at, and it is narrower
+than this item originally described:
+
+- Prose over the period that reads the blockers, the losses awaiting
+  classification and the continuity break together, and says which one to
+  do first. Today each speaks only for itself.
+- The same over the MCP surface, so the question can be asked at the still
+  rather than on the returns page.
+
+Deliberately still excluded: anything that puts a *number* on the return.
+A model may order the work and explain a discrepancy. It may not compute
+one.
 
 ### J2 · Anonymised cross-tenant benchmarks — P2
 

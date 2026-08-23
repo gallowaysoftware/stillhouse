@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/b266.proto.
  */
 export const file_stillhouse_v1_b266: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2IyNjYucHJvdG8SDXN0aWxsaG91c2UudjEiJgoYU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0EgoKAm9uGAEgASgJIqkBChlTdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRIWCg5kYXlzX3VudGlsX2R1ZRgEIAEoBRIdChVwcmV2aW91c19wZXJpb2Rfc3RhcnQYBSABKAkSGwoTcHJldmlvdXNfcGVyaW9kX2VuZBgGIAEoCSLVAwoKQjI2NlBlcmlvZBIKCgJpZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCRIpCgZzdGF0dXMYBCABKA4yGS5zdGlsbGhvdXNlLnYxLkIyNjZTdGF0dXMSMAoMc3VibWl0dGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxzdWJtaXR0ZWRfYnkYBiABKAkSDQoFbm90ZXMYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASOgoWZmlsaW5nX2Fja25vd2xlZGdlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASHgoWZmlsaW5nX2Fja25vd2xlZGdlZF9ieRgMIAEoCRIjChtmaWxpbmdfYWNrbm93bGVkZ2VkX2J5X25hbWUYDSABKAkSHgoWZmlsaW5nX2Fja25vd2xlZGdlbWVudBgOIAEoCRIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZkdWVfb24YCiABKAkikhUKCkIyNjZSZXBvcnQSFAoMcGVyaW9kX3N0YXJ0GAEgASgJEhIKCnBlcmlvZF9lbmQYAiABKAkSGAoQYnVsa19vcGVuaW5nX2xhYRgKIAEoARIbChNidWxrX3Byb2R1Y3Rpb25fbGFhGAsgASgBEiEKGWJ1bGtfcmVjZWl2ZWRfaW5fYm9uZF9sYWEYDCABKAESGQoRYnVsa19ibGVuZF9pbl9sYWEYDSABKAESKQohYnVsa190cmFuc2ZlcnJlZF90b19wYWNrYWdpbmdfbGFhGA4gASgBEigKIGJ1bGtfdHJhbnNmZXJyZWRfb3V0X2luX2JvbmRfbGFhGA8gASgBEhcKD2J1bGtfbG9zc2VzX2xhYRgQIAEoARIaChJidWxrX2Rlc3Ryb3llZF9sYWEYESABKAESGAoQYnVsa19jbG9zaW5nX2xhYRgSIAEoARIqCiJidWxrX29wZW5pbmdfaW52ZW50b3J5X2Fkb3B0ZWRfbGFhGBMgASgBEigKIGJ1bGtfY2xvc2luZ19oZWxkX2Zvcl9vdGhlcnNfbGFhGEsgASgBEh8KF2J1bGtfaGVsZF9lbHNld2hlcmVfbGFhGEwgASgBEiYKHmJ1bGtfdGhpcmRfcGFydHlfZWxzZXdoZXJlX2xhYRhNIAEoARIkChxwYWNrYWdlZF9hZGp1c3RtZW50c19uZXRfbGFhGFUgASgBEikKIXBhY2thZ2VkX2FkanVzdG1lbnRzX2luY3JlYXNlX2xhYRhWIAEoARIpCiFwYWNrYWdlZF9hZGp1c3RtZW50c19kZWNyZWFzZV9sYWEYVyABKAESIgoacGFja2FnZWRfYWRqdXN0bWVudHNfY291bnQYWCABKAUSHAoUYnVsa19hZGp1c3RtZW50c19sYWEYFCABKAESJQodYnVsa19hZGp1c3RtZW50c19pbmNyZWFzZV9sYWEYFSABKAESJQodYnVsa19hZGp1c3RtZW50c19kZWNyZWFzZV9sYWEYFiABKAESHgoWYnVsa19hZGp1c3RtZW50c19jb3VudBgXIAEoBRIZChFidWxrX2ltcG9ydGVkX2xhYRgYIAEoARInCh9idWxrX3JlY2VpdmVkX2Zyb21fbGljZW5zZWVfbGFhGBkgASgBEiwKJGJ1bGtfcmVjZWl2ZWRfZnJvbV9saWNlbnNlZF91c2VyX2xhYRgaIAEoARIqCiJidWxrX3BhY2thZ2VkX3JldHVybmVkX3RvX2J1bGtfbGFhGBsgASgBEiYKHmJ1bGtfZGVsaXZlcmVkX3RvX2xpY2Vuc2VlX2xhYRgcIAEoARIrCiNidWxrX2RlbGl2ZXJlZF90b19saWNlbnNlZF91c2VyX2xhYRgdIAEoARIZChFidWxrX2V4cG9ydGVkX2xhYRhAIAEoARIdChVidWxrX2RlbmF0dXJlZF9kYV9sYWEYQSABKAESHgoWYnVsa19kZW5hdHVyZWRfc2RhX2xhYRhCIAEoARInCh9idWxrX3JldHVybmVkX3RvX3Byb2R1Y3Rpb25fbGFhGEMgASgBEiAKGGJ1bGtfbG9zc2VzX3JlbGlldmVkX2xhYRhEIAEoARIgChhidWxrX2xvc3Nlc19kdXRpYWJsZV9sYWEYRSABKAESJAocYnVsa19sb3NzZXNfdW5jbGFzc2lmaWVkX2xhYRhGIAEoARIaChJkdXR5X29uX2xvc3Nlc19jYWQYRyABKAESFwoPZmlsaW5nX2Jsb2NrZXJzGEggAygJEg4KBmR1ZV9vbhhJIAEoCRIWCg5kYXlzX3VudGlsX2R1ZRhKIAEoBRIcChRwYWNrYWdlZF9vcGVuaW5nX2xhYRgeIAEoARIdChVwYWNrYWdlZF9wYWNrYWdlZF9sYWEYHyABKAESIQoZcGFja2FnZWRfcGFja2FnZWRfYm90dGxlcxggIAEoBRImCh5wYWNrYWdlZF9yZW1vdmVkX2R1dHlfcGFpZF9sYWEYISABKAESKgoicGFja2FnZWRfcmVtb3ZlZF9kdXR5X3BhaWRfYm90dGxlcxgiIAEoBRIcChRwYWNrYWdlZF9jbG9zaW5nX2xhYRgjIAEoARIgChhwYWNrYWdlZF9jbG9zaW5nX2JvdHRsZXMYJCABKAUSIwobcGFja2FnZWRfcGFja2FnaW5nX2xvc3NfbGFhGCUgASgBEiIKGnBhY2thZ2VkX3JlbW92ZWRfb3ZlcjdfbGFhGCYgASgBEicKH3BhY2thZ2VkX3JlbW92ZWRfb3ZlcjdfZHV0eV9jYWQYJyABKAESJgoecGFja2FnZWRfcmVtb3ZlZF9vdmVyN19ib3R0bGVzGCggASgFEiYKHnBhY2thZ2VkX3JlbW92ZWRfdW5kZXI3X2xpdHJlcxgpIAEoARIoCiBwYWNrYWdlZF9yZW1vdmVkX3VuZGVyN19kdXR5X2NhZBgqIAEoARInCh9wYWNrYWdlZF9yZW1vdmVkX3VuZGVyN19ib3R0bGVzGCsgASgFEiIKGmR1dHlfcmF0ZV9wZXJfbGl0cmVfdW5kZXI3GCwgASgBEh4KFnBhY2thZ2VkX2R1dHlfcGFpZF9sYWEYLSABKAESIgoacGFja2FnZWRfZHV0eV9wYWlkX2JvdHRsZXMYLiABKAUSIgoacGFja2FnZWRfbm9uX2R1dHlfcGFpZF9sYWEYLyABKAESJgoecGFja2FnZWRfbm9uX2R1dHlfcGFpZF9ib3R0bGVzGDAgASgFEiYKHnBhY2thZ2VkX21hcmtlZF9jb250YWluZXJzX2xhYRhOIAEoARIpCiFwYWNrYWdlZF9tYXJrZWRfY29udGFpbmVyc19saXRyZXMYTyABKAESKAogcGFja2FnZWRfbWFya2VkX2NvbnRhaW5lcnNfY291bnQYUCABKAUSJwofZGVsaXZlcmVkX21hcmtlZF9jb250YWluZXJzX2xhYRhRIAEoARIqCiJkZWxpdmVyZWRfbWFya2VkX2NvbnRhaW5lcnNfbGl0cmVzGFIgASgBEikKIWRlbGl2ZXJlZF9tYXJrZWRfY29udGFpbmVyc19jb3VudBhTIAEoBRIsCiRkZWxpdmVyZWRfbWFya2VkX2NvbnRhaW5lcnNfZHV0eV9jYWQYVCABKAESIQoZcGFja2FnZWRfZHV0aWVkX292ZXI3X2xhYRg0IAEoARImCh5wYWNrYWdlZF9kdXRpZWRfb3ZlcjdfZHV0eV9jYWQYNSABKAESJQodcGFja2FnZWRfZHV0aWVkX3VuZGVyN19saXRyZXMYNiABKAESJwofcGFja2FnZWRfZHV0aWVkX3VuZGVyN19kdXR5X2NhZBg3IAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgyIAEoARIYChBkdXR5X3BheWFibGVfY2FkGDMgASgBEiwKCmR1dHlfcG9pbnQYOCABKA4yGC5zdGlsbGhvdXNlLnYxLkR1dHlQb2ludBIhChlkdXR5X3BvaW50X2VmZmVjdGl2ZV9mcm9tGDkgASgJEjAKDGdlbmVyYXRlZF9hdBg8IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiPwoTR2VuZXJhdGVCMjY2UmVxdWVzdBIUCgxwZXJpb2Rfc3RhcnQYASABKAkSEgoKcGVyaW9kX2VuZBgCIAEoCSJsChRHZW5lcmF0ZUIyNjZSZXNwb25zZRIpCgZwZXJpb2QYASABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QSKQoGcmVwb3J0GAIgASgLMhkuc3RpbGxob3VzZS52MS5CMjY2UmVwb3J0Ih4KHEZpbGluZ0Fja25vd2xlZGdlbWVudFJlcXVlc3QiUQodRmlsaW5nQWNrbm93bGVkZ2VtZW50UmVzcG9uc2USEgoKc3RhdGVtZW50cxgBIAMoCRIcChRhY2tub3dsZWRnZW1lbnRfdGV4dBgCIAEoCSI/ChFTdWJtaXRCMjY2UmVxdWVzdBIRCglwZXJpb2RfaWQYASABKAkSFwoPYWNrbm93bGVkZ2VtZW50GAIgASgJImwKElN1Ym1pdEIyNjZSZXNwb25zZRIpCgZwZXJpb2QYASABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QSKwoIc25hcHNob3QYAiABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZSZXBvcnQiGAoWTGlzdEIyNjZQZXJpb2RzUmVxdWVzdCJFChdMaXN0QjI2NlBlcmlvZHNSZXNwb25zZRIqCgdwZXJpb2RzGAEgAygLMhkuc3RpbGxob3VzZS52MS5CMjY2UGVyaW9kIiIKFEdldEIyNjZQZXJpb2RSZXF1ZXN0EgoKAmlkGAEgASgJIm8KFUdldEIyNjZQZXJpb2RSZXNwb25zZRIpCgZwZXJpb2QYASABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QSKwoIc25hcHNob3QYAiABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZSZXBvcnQiNQoXUmVvcGVuQjI2NlBlcmlvZFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkUKGFJlb3BlbkIyNjZQZXJpb2RSZXNwb25zZRIpCgZwZXJpb2QYASABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QqWwoKQjI2NlN0YXR1cxIbChdCMjY2X1NUQVRVU19VTlNQRUNJRklFRBAAEhUKEUIyNjZfU1RBVFVTX0RSQUZUEAESGQoVQjI2Nl9TVEFUVVNfU1VCTUlUVEVEEAIyuwUKC0IyNjZTZXJ2aWNlEnUKGEdldEZpbGluZ0Fja25vd2xlZGdlbWVudBIrLnN0aWxsaG91c2UudjEuRmlsaW5nQWNrbm93bGVkZ2VtZW50UmVxdWVzdBosLnN0aWxsaG91c2UudjEuRmlsaW5nQWNrbm93bGVkZ2VtZW50UmVzcG9uc2USZgoRU3VnZ2VzdEIyNjZQZXJpb2QSJy5zdGlsbGhvdXNlLnYxLlN1Z2dlc3RCMjY2UGVyaW9kUmVxdWVzdBooLnN0aWxsaG91c2UudjEuU3VnZ2VzdEIyNjZQZXJpb2RSZXNwb25zZRJXCgxHZW5lcmF0ZUIyNjYSIi5zdGlsbGhvdXNlLnYxLkdlbmVyYXRlQjI2NlJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkdlbmVyYXRlQjI2NlJlc3BvbnNlElEKClN1Ym1pdEIyNjYSIC5zdGlsbGhvdXNlLnYxLlN1Ym1pdEIyNjZSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5TdWJtaXRCMjY2UmVzcG9uc2USYAoPTGlzdEIyNjZQZXJpb2RzEiUuc3RpbGxob3VzZS52MS5MaXN0QjI2NlBlcmlvZHNSZXF1ZXN0GiYuc3RpbGxob3VzZS52MS5MaXN0QjI2NlBlcmlvZHNSZXNwb25zZRJaCg1HZXRCMjY2UGVyaW9kEiMuc3RpbGxob3VzZS52MS5HZXRCMjY2UGVyaW9kUmVxdWVzdBokLnN0aWxsaG91c2UudjEuR2V0QjI2NlBlcmlvZFJlc3BvbnNlEmMKEFJlb3BlbkIyNjZQZXJpb2QSJi5zdGlsbGhvdXNlLnYxLlJlb3BlbkIyNjZQZXJpb2RSZXF1ZXN0Gicuc3RpbGxob3VzZS52MS5SZW9wZW5CMjY2UGVyaW9kUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_stillhouse_v1_tenant]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2IyNjYucHJvdG8SDXN0aWxsaG91c2UudjEiJgoYU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0EgoKAm9uGAEgASgJIqkBChlTdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlEhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg4KBmR1ZV9vbhgDIAEoCRIWCg5kYXlzX3VudGlsX2R1ZRgEIAEoBRIdChVwcmV2aW91c19wZXJpb2Rfc3RhcnQYBSABKAkSGwoTcHJldmlvdXNfcGVyaW9kX2VuZBgGIAEoCSLVAwoKQjI2NlBlcmlvZBIKCgJpZBgBIAEoCRIUCgxwZXJpb2Rfc3RhcnQYAiABKAkSEgoKcGVyaW9kX2VuZBgDIAEoCRIpCgZzdGF0dXMYBCABKA4yGS5zdGlsbGhvdXNlLnYxLkIyNjZTdGF0dXMSMAoMc3VibWl0dGVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIUCgxzdWJtaXR0ZWRfYnkYBiABKAkSDQoFbm90ZXMYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASOgoWZmlsaW5nX2Fja25vd2xlZGdlZF9hdBgLIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASHgoWZmlsaW5nX2Fja25vd2xlZGdlZF9ieRgMIAEoCRIjChtmaWxpbmdfYWNrbm93bGVkZ2VkX2J5X25hbWUYDSABKAkSHgoWZmlsaW5nX2Fja25vd2xlZGdlbWVudBgOIAEoCRIuCgp1cGRhdGVkX2F0GAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIOCgZkdWVfb24YCiABKAkixRUKCkIyNjZSZXBvcnQSFAoMcGVyaW9kX3N0YXJ0GAEgASgJEhIKCnBlcmlvZF9lbmQYAiABKAkSGAoQYnVsa19vcGVuaW5nX2xhYRgKIAEoARIbChNidWxrX3Byb2R1Y3Rpb25fbGFhGAsgASgBEiEKGWJ1bGtfcmVjZWl2ZWRfaW5fYm9uZF9sYWEYDCABKAESGQoRYnVsa19ibGVuZF9pbl9sYWEYDSABKAESKQohYnVsa190cmFuc2ZlcnJlZF90b19wYWNrYWdpbmdfbGFhGA4gASgBEigKIGJ1bGtfdHJhbnNmZXJyZWRfb3V0X2luX2JvbmRfbGFhGA8gASgBEhcKD2J1bGtfbG9zc2VzX2xhYRgQIAEoARIaChJidWxrX2Rlc3Ryb3llZF9sYWEYESABKAESGAoQYnVsa19jbG9zaW5nX2xhYRgSIAEoARIqCiJidWxrX29wZW5pbmdfaW52ZW50b3J5X2Fkb3B0ZWRfbGFhGBMgASgBEigKIGJ1bGtfY2xvc2luZ19oZWxkX2Zvcl9vdGhlcnNfbGFhGEsgASgBEh8KF2J1bGtfaGVsZF9lbHNld2hlcmVfbGFhGEwgASgBEiYKHmJ1bGtfdGhpcmRfcGFydHlfZWxzZXdoZXJlX2xhYRhNIAEoARIkChxwYWNrYWdlZF9hZGp1c3RtZW50c19uZXRfbGFhGFUgASgBEikKIXBhY2thZ2VkX2FkanVzdG1lbnRzX2luY3JlYXNlX2xhYRhWIAEoARIpCiFwYWNrYWdlZF9hZGp1c3RtZW50c19kZWNyZWFzZV9sYWEYVyABKAESIgoacGFja2FnZWRfYWRqdXN0bWVudHNfY291bnQYWCABKAUSHAoUYnVsa19hZGp1c3RtZW50c19sYWEYFCABKAESJQodYnVsa19hZGp1c3RtZW50c19pbmNyZWFzZV9sYWEYFSABKAESJQodYnVsa19hZGp1c3RtZW50c19kZWNyZWFzZV9sYWEYFiABKAESHgoWYnVsa19hZGp1c3RtZW50c19jb3VudBgXIAEoBRIZChFidWxrX2ltcG9ydGVkX2xhYRgYIAEoARInCh9idWxrX3JlY2VpdmVkX2Zyb21fbGljZW5zZWVfbGFhGBkgASgBEiwKJGJ1bGtfcmVjZWl2ZWRfZnJvbV9saWNlbnNlZF91c2VyX2xhYRgaIAEoARIqCiJidWxrX3BhY2thZ2VkX3JldHVybmVkX3RvX2J1bGtfbGFhGBsgASgBEiYKHmJ1bGtfZGVsaXZlcmVkX3RvX2xpY2Vuc2VlX2xhYRgcIAEoARIrCiNidWxrX2RlbGl2ZXJlZF90b19saWNlbnNlZF91c2VyX2xhYRgdIAEoARIZChFidWxrX2V4cG9ydGVkX2xhYRhAIAEoARIdChVidWxrX2RlbmF0dXJlZF9kYV9sYWEYQSABKAESHgoWYnVsa19kZW5hdHVyZWRfc2RhX2xhYRhCIAEoARInCh9idWxrX3JldHVybmVkX3RvX3Byb2R1Y3Rpb25fbGFhGEMgASgBEiAKGGJ1bGtfbG9zc2VzX3JlbGlldmVkX2xhYRhEIAEoARIgChhidWxrX2xvc3Nlc19kdXRpYWJsZV9sYWEYRSABKAESJAocYnVsa19sb3NzZXNfdW5jbGFzc2lmaWVkX2xhYRhGIAEoARIaChJkdXR5X29uX2xvc3Nlc19jYWQYRyABKAESFwoPZmlsaW5nX2Jsb2NrZXJzGEggAygJEg4KBmR1ZV9vbhhJIAEoCRIWCg5kYXlzX3VudGlsX2R1ZRhKIAEoBRIcChRwYWNrYWdlZF9vcGVuaW5nX2xhYRgeIAEoARIdChVwYWNrYWdlZF9wYWNrYWdlZF9sYWEYHyABKAESIQoZcGFja2FnZWRfcGFja2FnZWRfYm90dGxlcxggIAEoBRImCh5wYWNrYWdlZF9yZW1vdmVkX2R1dHlfcGFpZF9sYWEYISABKAESKgoicGFja2FnZWRfcmVtb3ZlZF9kdXR5X3BhaWRfYm90dGxlcxgiIAEoBRIcChRwYWNrYWdlZF9jbG9zaW5nX2xhYRgjIAEoARIgChhwYWNrYWdlZF9jbG9zaW5nX2JvdHRsZXMYJCABKAUSIwobcGFja2FnZWRfcGFja2FnaW5nX2xvc3NfbGFhGCUgASgBEiIKGnBhY2thZ2VkX3JlbW92ZWRfb3ZlcjdfbGFhGCYgASgBEicKH3BhY2thZ2VkX3JlbW92ZWRfb3ZlcjdfZHV0eV9jYWQYJyABKAESJgoecGFja2FnZWRfcmVtb3ZlZF9vdmVyN19ib3R0bGVzGCggASgFEiYKHnBhY2thZ2VkX3JlbW92ZWRfdW5kZXI3X2xpdHJlcxgpIAEoARIoCiBwYWNrYWdlZF9yZW1vdmVkX3VuZGVyN19kdXR5X2NhZBgqIAEoARInCh9wYWNrYWdlZF9yZW1vdmVkX3VuZGVyN19ib3R0bGVzGCsgASgFEiIKGmR1dHlfcmF0ZV9wZXJfbGl0cmVfdW5kZXI3GCwgASgBEh4KFnBhY2thZ2VkX2R1dHlfcGFpZF9sYWEYLSABKAESIgoacGFja2FnZWRfZHV0eV9wYWlkX2JvdHRsZXMYLiABKAUSIgoacGFja2FnZWRfbm9uX2R1dHlfcGFpZF9sYWEYLyABKAESJgoecGFja2FnZWRfbm9uX2R1dHlfcGFpZF9ib3R0bGVzGDAgASgFEiYKHnBhY2thZ2VkX21hcmtlZF9jb250YWluZXJzX2xhYRhOIAEoARIpCiFwYWNrYWdlZF9tYXJrZWRfY29udGFpbmVyc19saXRyZXMYTyABKAESKAogcGFja2FnZWRfbWFya2VkX2NvbnRhaW5lcnNfY291bnQYUCABKAUSJwofZGVsaXZlcmVkX21hcmtlZF9jb250YWluZXJzX2xhYRhRIAEoARIqCiJkZWxpdmVyZWRfbWFya2VkX2NvbnRhaW5lcnNfbGl0cmVzGFIgASgBEikKIWRlbGl2ZXJlZF9tYXJrZWRfY29udGFpbmVyc19jb3VudBhTIAEoBRIsCiRkZWxpdmVyZWRfbWFya2VkX2NvbnRhaW5lcnNfZHV0eV9jYWQYVCABKAESIQoZcGFja2FnZWRfZHV0aWVkX292ZXI3X2xhYRg0IAEoARImCh5wYWNrYWdlZF9kdXRpZWRfb3ZlcjdfZHV0eV9jYWQYNSABKAESJQodcGFja2FnZWRfZHV0aWVkX3VuZGVyN19saXRyZXMYNiABKAESJwofcGFja2FnZWRfZHV0aWVkX3VuZGVyN19kdXR5X2NhZBg3IAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgyIAEoARIYChBkdXR5X3BheWFibGVfY2FkGDMgASgBEiwKCmR1dHlfcG9pbnQYOCABKA4yGC5zdGlsbGhvdXNlLnYxLkR1dHlQb2ludBIhChlkdXR5X3BvaW50X2VmZmVjdGl2ZV9mcm9tGDkgASgJEjAKDGdlbmVyYXRlZF9hdBg8IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASMQoKY29udGludWl0eRhZIAEoCzIdLnN0aWxsaG91c2UudjEuQjI2NkNvbnRpbnVpdHkilgEKEkIyNjZCYWNrZGF0ZWRFbnRyeRIKCgJpZBgBIAEoCRIMCgRraW5kGAIgASgJEg4KBnJlYXNvbhgDIAEoCRILCgNsYWEYBCABKAESEwoLb2NjdXJyZWRfYXQYBSABKAkSEgoKY3JlYXRlZF9hdBgGIAEoCRIRCgljb250YWluZXIYByABKAkSDQoFbm90ZXMYCCABKAkioAMKDkIyNjZDb250aW51aXR5Eg8KB2NoZWNrZWQYASABKAgSGgoScHJpb3JfcGVyaW9kX3N0YXJ0GAIgASgJEhgKEHByaW9yX3BlcmlvZF9lbmQYAyABKAkSHgoWcHJpb3JfYnVsa19jbG9zaW5nX2xhYRgEIAEoARIYChBidWxrX29wZW5pbmdfbGFhGAUgASgBEhwKFGJ1bGtfZGlzY3JlcGFuY3lfbGFhGAYgASgBEiIKGnByaW9yX3BhY2thZ2VkX2Nsb3NpbmdfbGFhGAcgASgBEhwKFHBhY2thZ2VkX29wZW5pbmdfbGFhGAggASgBEiAKGHBhY2thZ2VkX2Rpc2NyZXBhbmN5X2xhYRgJIAEoARILCgNnYXAYCiABKAgSEAoIZ2FwX25vdGUYCyABKAkSNAoJYmFja2RhdGVkGAwgAygLMiEuc3RpbGxob3VzZS52MS5CMjY2QmFja2RhdGVkRW50cnkSGwoTYmFja2RhdGVkX3RydW5jYXRlZBgNIAEoBRIZChFiYWNrZGF0ZWRfbmV0X2xhYRgOIAEoASI/ChNHZW5lcmF0ZUIyNjZSZXF1ZXN0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJImwKFEdlbmVyYXRlQjI2NlJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZBIpCgZyZXBvcnQYAiABKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZSZXBvcnQiHgocRmlsaW5nQWNrbm93bGVkZ2VtZW50UmVxdWVzdCJRCh1GaWxpbmdBY2tub3dsZWRnZW1lbnRSZXNwb25zZRISCgpzdGF0ZW1lbnRzGAEgAygJEhwKFGFja25vd2xlZGdlbWVudF90ZXh0GAIgASgJIj8KEVN1Ym1pdEIyNjZSZXF1ZXN0EhEKCXBlcmlvZF9pZBgBIAEoCRIXCg9hY2tub3dsZWRnZW1lbnQYAiABKAkibAoSU3VibWl0QjI2NlJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZBIrCghzbmFwc2hvdBgCIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlJlcG9ydCIYChZMaXN0QjI2NlBlcmlvZHNSZXF1ZXN0IkUKF0xpc3RCMjY2UGVyaW9kc1Jlc3BvbnNlEioKB3BlcmlvZHMYASADKAsyGS5zdGlsbGhvdXNlLnYxLkIyNjZQZXJpb2QiIgoUR2V0QjI2NlBlcmlvZFJlcXVlc3QSCgoCaWQYASABKAkibwoVR2V0QjI2NlBlcmlvZFJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZBIrCghzbmFwc2hvdBgCIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlJlcG9ydCI1ChdSZW9wZW5CMjY2UGVyaW9kUmVxdWVzdBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkiRQoYUmVvcGVuQjI2NlBlcmlvZFJlc3BvbnNlEikKBnBlcmlvZBgBIAEoCzIZLnN0aWxsaG91c2UudjEuQjI2NlBlcmlvZCpbCgpCMjY2U3RhdHVzEhsKF0IyNjZfU1RBVFVTX1VOU1BFQ0lGSUVEEAASFQoRQjI2Nl9TVEFUVVNfRFJBRlQQARIZChVCMjY2X1NUQVRVU19TVUJNSVRURUQQAjK7BQoLQjI2NlNlcnZpY2USdQoYR2V0RmlsaW5nQWNrbm93bGVkZ2VtZW50Eisuc3RpbGxob3VzZS52MS5GaWxpbmdBY2tub3dsZWRnZW1lbnRSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5GaWxpbmdBY2tub3dsZWRnZW1lbnRSZXNwb25zZRJmChFTdWdnZXN0QjI2NlBlcmlvZBInLnN0aWxsaG91c2UudjEuU3VnZ2VzdEIyNjZQZXJpb2RSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5TdWdnZXN0QjI2NlBlcmlvZFJlc3BvbnNlElcKDEdlbmVyYXRlQjI2NhIiLnN0aWxsaG91c2UudjEuR2VuZXJhdGVCMjY2UmVxdWVzdBojLnN0aWxsaG91c2UudjEuR2VuZXJhdGVCMjY2UmVzcG9uc2USUQoKU3VibWl0QjI2NhIgLnN0aWxsaG91c2UudjEuU3VibWl0QjI2NlJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLlN1Ym1pdEIyNjZSZXNwb25zZRJgCg9MaXN0QjI2NlBlcmlvZHMSJS5zdGlsbGhvdXNlLnYxLkxpc3RCMjY2UGVyaW9kc1JlcXVlc3QaJi5zdGlsbGhvdXNlLnYxLkxpc3RCMjY2UGVyaW9kc1Jlc3BvbnNlEloKDUdldEIyNjZQZXJpb2QSIy5zdGlsbGhvdXNlLnYxLkdldEIyNjZQZXJpb2RSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5HZXRCMjY2UGVyaW9kUmVzcG9uc2USYwoQUmVvcGVuQjI2NlBlcmlvZBImLnN0aWxsaG91c2UudjEuUmVvcGVuQjI2NlBlcmlvZFJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLlJlb3BlbkIyNjZQZXJpb2RSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp, file_stillhouse_v1_tenant]);
 
 /**
  * @generated from message stillhouse.v1.SuggestB266PeriodRequest
@@ -672,6 +672,21 @@ export type B266Report = Message<"stillhouse.v1.B266Report"> & {
    * @generated from field: google.protobuf.Timestamp generated_at = 60;
    */
   generatedAt?: Timestamp | undefined;
+
+  /**
+   * Whether this return continues the last one that was filed.
+   *
+   * The opening balances above are reverse-walked from closing, which
+   * means the return always balances against itself: an unreported or
+   * miscategorised movement is absorbed into the opening figure rather
+   * than showing up as a discrepancy. That is convenient and it is also
+   * the reason a bad period can look filable. The only independent check
+   * available is the previous return's closing balance, which is a figure
+   * the licensee already sent CRA and cannot quietly restate.
+   *
+   * @generated from field: stillhouse.v1.B266Continuity continuity = 89;
+   */
+  continuity?: B266Continuity | undefined;
 };
 
 /**
@@ -680,6 +695,178 @@ export type B266Report = Message<"stillhouse.v1.B266Report"> & {
  */
 export const B266ReportSchema: GenMessage<B266Report> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_b266, 3);
+
+/**
+ * A movement whose effect lands inside an already-filed period but which
+ * was entered after that period was submitted. These are what make a
+ * continuity break explainable: the return CRA holds was computed before
+ * this row existed.
+ *
+ * @generated from message stillhouse.v1.B266BackdatedEntry
+ */
+export type B266BackdatedEntry = Message<"stillhouse.v1.B266BackdatedEntry"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * What kind of record this is, in the operator's words — "bulk
+   * movement", not a table name.
+   *
+   * @generated from field: string kind = 2;
+   */
+  kind: string;
+
+  /**
+   * @generated from field: string reason = 3;
+   */
+  reason: string;
+
+  /**
+   * @generated from field: double laa = 4;
+   */
+  laa: number;
+
+  /**
+   * The date the movement is booked to, which is the one inside the filed
+   * period.
+   *
+   * @generated from field: string occurred_at = 5;
+   */
+  occurredAt: string;
+
+  /**
+   * When it was actually entered, which is after the filing.
+   *
+   * @generated from field: string created_at = 6;
+   */
+  createdAt: string;
+
+  /**
+   * @generated from field: string container = 7;
+   */
+  container: string;
+
+  /**
+   * @generated from field: string notes = 8;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.B266BackdatedEntry.
+ * Use `create(B266BackdatedEntrySchema)` to create a new message.
+ */
+export const B266BackdatedEntrySchema: GenMessage<B266BackdatedEntry> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_b266, 4);
+
+/**
+ * The comparison between this period's opening balances and the closing
+ * balances of the last period actually filed.
+ *
+ * @generated from message stillhouse.v1.B266Continuity
+ */
+export type B266Continuity = Message<"stillhouse.v1.B266Continuity"> & {
+  /**
+   * False when there is no prior filed period to check against — a first
+   * return, or one where every earlier period is still a draft. Not a
+   * problem, but not a clean bill of health either, and the two have to be
+   * distinguishable.
+   *
+   * @generated from field: bool checked = 1;
+   */
+  checked: boolean;
+
+  /**
+   * @generated from field: string prior_period_start = 2;
+   */
+  priorPeriodStart: string;
+
+  /**
+   * @generated from field: string prior_period_end = 3;
+   */
+  priorPeriodEnd: string;
+
+  /**
+   * @generated from field: double prior_bulk_closing_laa = 4;
+   */
+  priorBulkClosingLaa: number;
+
+  /**
+   * @generated from field: double bulk_opening_laa = 5;
+   */
+  bulkOpeningLaa: number;
+
+  /**
+   * This period's opening minus the prior period's closing. Zero is what
+   * a continuous set of books looks like.
+   *
+   * @generated from field: double bulk_discrepancy_laa = 6;
+   */
+  bulkDiscrepancyLaa: number;
+
+  /**
+   * @generated from field: double prior_packaged_closing_laa = 7;
+   */
+  priorPackagedClosingLaa: number;
+
+  /**
+   * @generated from field: double packaged_opening_laa = 8;
+   */
+  packagedOpeningLaa: number;
+
+  /**
+   * @generated from field: double packaged_discrepancy_laa = 9;
+   */
+  packagedDiscrepancyLaa: number;
+
+  /**
+   * Set when the prior filed period does not end the day before this one
+   * starts. An unfiled span between two returns is not itself an error —
+   * the licensee may have had nothing to report — but the continuity
+   * comparison spans it, so any movement inside the gap reads as a break.
+   *
+   * @generated from field: bool gap = 10;
+   */
+  gap: boolean;
+
+  /**
+   * @generated from field: string gap_note = 11;
+   */
+  gapNote: string;
+
+  /**
+   * Entries booked into the filed period after it was submitted. Ordered
+   * largest LAA first. Capped — see truncated.
+   *
+   * @generated from field: repeated stillhouse.v1.B266BackdatedEntry backdated = 12;
+   */
+  backdated: B266BackdatedEntry[];
+
+  /**
+   * How many backdated entries exist beyond the ones listed.
+   *
+   * @generated from field: int32 backdated_truncated = 13;
+   */
+  backdatedTruncated: number;
+
+  /**
+   * The total LAA effect of every backdated entry, including any not
+   * listed. Where this equals the discrepancy, the break is fully
+   * explained by them.
+   *
+   * @generated from field: double backdated_net_laa = 14;
+   */
+  backdatedNetLaa: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.B266Continuity.
+ * Use `create(B266ContinuitySchema)` to create a new message.
+ */
+export const B266ContinuitySchema: GenMessage<B266Continuity> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_b266, 5);
 
 /**
  * @generated from message stillhouse.v1.GenerateB266Request
@@ -705,7 +892,7 @@ export type GenerateB266Request = Message<"stillhouse.v1.GenerateB266Request"> &
  * Use `create(GenerateB266RequestSchema)` to create a new message.
  */
 export const GenerateB266RequestSchema: GenMessage<GenerateB266Request> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 4);
+  messageDesc(file_stillhouse_v1_b266, 6);
 
 /**
  * @generated from message stillhouse.v1.GenerateB266Response
@@ -727,7 +914,7 @@ export type GenerateB266Response = Message<"stillhouse.v1.GenerateB266Response">
  * Use `create(GenerateB266ResponseSchema)` to create a new message.
  */
 export const GenerateB266ResponseSchema: GenMessage<GenerateB266Response> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 5);
+  messageDesc(file_stillhouse_v1_b266, 7);
 
 /**
  * The statements a person confirms before a period is marked submitted.
@@ -748,7 +935,7 @@ export type FilingAcknowledgementRequest = Message<"stillhouse.v1.FilingAcknowle
  * Use `create(FilingAcknowledgementRequestSchema)` to create a new message.
  */
 export const FilingAcknowledgementRequestSchema: GenMessage<FilingAcknowledgementRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 6);
+  messageDesc(file_stillhouse_v1_b266, 8);
 
 /**
  * @generated from message stillhouse.v1.FilingAcknowledgementResponse
@@ -774,7 +961,7 @@ export type FilingAcknowledgementResponse = Message<"stillhouse.v1.FilingAcknowl
  * Use `create(FilingAcknowledgementResponseSchema)` to create a new message.
  */
 export const FilingAcknowledgementResponseSchema: GenMessage<FilingAcknowledgementResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 7);
+  messageDesc(file_stillhouse_v1_b266, 9);
 
 /**
  * @generated from message stillhouse.v1.SubmitB266Request
@@ -800,7 +987,7 @@ export type SubmitB266Request = Message<"stillhouse.v1.SubmitB266Request"> & {
  * Use `create(SubmitB266RequestSchema)` to create a new message.
  */
 export const SubmitB266RequestSchema: GenMessage<SubmitB266Request> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 8);
+  messageDesc(file_stillhouse_v1_b266, 10);
 
 /**
  * @generated from message stillhouse.v1.SubmitB266Response
@@ -822,7 +1009,7 @@ export type SubmitB266Response = Message<"stillhouse.v1.SubmitB266Response"> & {
  * Use `create(SubmitB266ResponseSchema)` to create a new message.
  */
 export const SubmitB266ResponseSchema: GenMessage<SubmitB266Response> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 9);
+  messageDesc(file_stillhouse_v1_b266, 11);
 
 /**
  * @generated from message stillhouse.v1.ListB266PeriodsRequest
@@ -835,7 +1022,7 @@ export type ListB266PeriodsRequest = Message<"stillhouse.v1.ListB266PeriodsReque
  * Use `create(ListB266PeriodsRequestSchema)` to create a new message.
  */
 export const ListB266PeriodsRequestSchema: GenMessage<ListB266PeriodsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 10);
+  messageDesc(file_stillhouse_v1_b266, 12);
 
 /**
  * @generated from message stillhouse.v1.ListB266PeriodsResponse
@@ -852,7 +1039,7 @@ export type ListB266PeriodsResponse = Message<"stillhouse.v1.ListB266PeriodsResp
  * Use `create(ListB266PeriodsResponseSchema)` to create a new message.
  */
 export const ListB266PeriodsResponseSchema: GenMessage<ListB266PeriodsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 11);
+  messageDesc(file_stillhouse_v1_b266, 13);
 
 /**
  * @generated from message stillhouse.v1.GetB266PeriodRequest
@@ -869,7 +1056,7 @@ export type GetB266PeriodRequest = Message<"stillhouse.v1.GetB266PeriodRequest">
  * Use `create(GetB266PeriodRequestSchema)` to create a new message.
  */
 export const GetB266PeriodRequestSchema: GenMessage<GetB266PeriodRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 12);
+  messageDesc(file_stillhouse_v1_b266, 14);
 
 /**
  * @generated from message stillhouse.v1.GetB266PeriodResponse
@@ -894,7 +1081,7 @@ export type GetB266PeriodResponse = Message<"stillhouse.v1.GetB266PeriodResponse
  * Use `create(GetB266PeriodResponseSchema)` to create a new message.
  */
 export const GetB266PeriodResponseSchema: GenMessage<GetB266PeriodResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 13);
+  messageDesc(file_stillhouse_v1_b266, 15);
 
 /**
  * Reopen flips a submitted period back to draft. Owner-only — needed
@@ -921,7 +1108,7 @@ export type ReopenB266PeriodRequest = Message<"stillhouse.v1.ReopenB266PeriodReq
  * Use `create(ReopenB266PeriodRequestSchema)` to create a new message.
  */
 export const ReopenB266PeriodRequestSchema: GenMessage<ReopenB266PeriodRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 14);
+  messageDesc(file_stillhouse_v1_b266, 16);
 
 /**
  * @generated from message stillhouse.v1.ReopenB266PeriodResponse
@@ -938,7 +1125,7 @@ export type ReopenB266PeriodResponse = Message<"stillhouse.v1.ReopenB266PeriodRe
  * Use `create(ReopenB266PeriodResponseSchema)` to create a new message.
  */
 export const ReopenB266PeriodResponseSchema: GenMessage<ReopenB266PeriodResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_b266, 15);
+  messageDesc(file_stillhouse_v1_b266, 17);
 
 /**
  * @generated from enum stillhouse.v1.B266Status

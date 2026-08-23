@@ -4,6 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { Callout } from "@/components/Callout";
+import { ContinuityPanel } from "@/components/ContinuityPanel";
 import { LossClassificationCard } from "@/components/LossClassificationCard";
 import { Shell } from "@/components/Shell";
 import { b266Client } from "@/lib/clients";
@@ -485,6 +486,12 @@ function ReportView({
           <Row k="Closing on hand"        v={`${formatLAA(report.packagedClosingLaa)} (${report.packagedClosingBottles.toLocaleString()} bottles)`} bold />
         </Card>
       </div>
+
+      {/* Before the blockers, because it is the only check on this page
+          that compares the return against something outside its own
+          ledger. Everything else here is derived from the same movements
+          it is checking. */}
+      <ContinuityPanel c={report.continuity} />
 
       {report.filingBlockers.length > 0 && (
         <Callout tone="warning" title="This period isn't ready to file">

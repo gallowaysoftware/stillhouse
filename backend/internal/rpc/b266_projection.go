@@ -140,7 +140,43 @@ type b266Totals struct {
 	// semi-annual period always does — but the single rate the form asks
 	// to be quoted cannot describe the whole period.
 	rateChangeNote string
+
+	// Continuity inputs: the closing balances of the last period actually
+	// filed, and the entries booked into it after it was filed.
+	//
+	// Gathered rather than derived because they need the database, but
+	// compared in projectB266, because what they are compared against is
+	// the opening balance projectB266 itself reverse-walks. Splitting it
+	// that way keeps the comparison testable without a database, which is
+	// the whole reason the projection is a pure function.
+	//
+	// priorFiled false means there was no filed period before this one —
+	// a first return, or one whose predecessors are all still drafts.
+	priorFiled           bool
+	priorStart           time.Time
+	priorEnd             time.Time
+	priorBulkClosing     float64
+	priorPackagedClosing float64
+	// Entries whose occurred_at falls inside the prior filed period but
+	// whose created_at is after it was submitted, largest effect first,
+	// capped at backdatedListLimit. backdatedCount and backdatedNetLAA
+	// describe the whole set, not the capped list.
+	backdated       []*stillhousev1.B266BackdatedEntry
+	backdatedCount  int32
+	backdatedNetLAA float64
 }
+
+// backdatedListLimit caps how many offending entries a return names. The
+// count and the net effect are always for the whole set; this only bounds
+// the list, so a period with hundreds of late entries reports the total
+// honestly and names the ones worth looking at.
+const backdatedListLimit = 20
+
+// continuityToleranceLAA is the width of "these agree". Both sides are
+// round4 figures, so a comparison at exact equality would report a break
+// on floating-point noise alone. One part in ten thousand of a litre is
+// below anything a gauge can resolve.
+const continuityToleranceLAA = 0.0001
 
 // laa returns the LAA summed against a bulk movement reason, or zero if
 // the period saw no movement of that kind.
@@ -294,8 +330,82 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		report.DueOn = t.dueOn.Format("2006-01-02")
 		report.DaysUntilDue = int32(t.dueOn.Sub(dayStart(generatedAt)).Hours() / 24)
 	}
-	report.FilingBlockers = filingBlockers(t)
+	report.Continuity = continuity(t, report)
+	report.FilingBlockers = filingBlockers(t, report.Continuity)
 	return report
+}
+
+// continuity compares this return's opening balances against the closing
+// balances of the last return actually filed.
+//
+// This is the only independent check the return has. Every other figure on
+// it is derived from the same ledger it is being checked against, and the
+// opening balance in particular is reverse-walked from closing — so the
+// return balances against itself no matter what is missing. The prior
+// period's closing balance is different in kind: it is a number the
+// licensee already sent CRA, and it does not move when the ledger does.
+//
+// A break means one of three things, and Stillhouse does not guess which:
+// a movement was entered against the filed period after it was filed
+// (named in backdated, which is the common case and the one that is
+// fixable), a movement is missing entirely, or the prior return was wrong.
+func continuity(t b266Totals, report *stillhousev1.B266Report) *stillhousev1.B266Continuity {
+	c := &stillhousev1.B266Continuity{
+		BulkOpeningLaa:     report.BulkOpeningLaa,
+		PackagedOpeningLaa: report.PackagedOpeningLaa,
+	}
+	if !t.priorFiled {
+		return c
+	}
+	c.Checked = true
+	c.PriorPeriodStart = t.priorStart.Format("2006-01-02")
+	c.PriorPeriodEnd = t.priorEnd.Format("2006-01-02")
+	c.PriorBulkClosingLaa = round4(t.priorBulkClosing)
+	c.PriorPackagedClosingLaa = round4(t.priorPackagedClosing)
+	c.BulkDiscrepancyLaa = round4(report.BulkOpeningLaa - c.PriorBulkClosingLaa)
+	c.PackagedDiscrepancyLaa = round4(report.PackagedOpeningLaa - c.PriorPackagedClosingLaa)
+	c.Backdated = t.backdated
+	c.BackdatedNetLaa = round4(t.backdatedNetLAA)
+	if n := t.backdatedCount - int32(len(t.backdated)); n > 0 {
+		c.BackdatedTruncated = n
+	}
+
+	// A gap is not an error on its own — a licensee with nothing to report
+	// still has a continuous ledger across the span — but the comparison
+	// reaches across it, so anything that moved in between reads as a
+	// break. Saying so is the difference between a useful signal and a
+	// false alarm the operator learns to ignore.
+	if day := t.priorEnd.AddDate(0, 0, 1); !day.Equal(periodStartOf(report)) {
+		c.Gap = true
+		c.GapNote = fmt.Sprintf(
+			"The last filed return ended %s and this one starts %s, so %s is covered by neither. Any movement in that span shows up here as a discrepancy.",
+			c.PriorPeriodEnd, report.PeriodStart, describeGap(day, periodStartOf(report)))
+	}
+	return c
+}
+
+// periodStartOf re-parses the report's own formatted start date, so the
+// comparison is made against the date the return states rather than
+// against a separate value that could disagree with it.
+func periodStartOf(report *stillhousev1.B266Report) time.Time {
+	d, err := time.Parse("2006-01-02", report.PeriodStart)
+	if err != nil {
+		return time.Time{}
+	}
+	return d
+}
+
+// describeGap names the uncovered span in days, in the operator's words.
+func describeGap(from, to time.Time) string {
+	days := int(to.Sub(from).Hours() / 24)
+	switch {
+	case days <= 0:
+		return "an overlapping span"
+	case days == 1:
+		return "one day"
+	default:
+		return fmt.Sprintf("%d days", days)
+	}
 }
 
 // The `int(x*N + 0.5)` idiom these used to spell rounds correctly only for
@@ -321,8 +431,9 @@ func round4(x float64) float64 {
 // An empty list is not a promise the figures are right — only that nothing
 // is outstanding. The distinction matters: Stillhouse never files, and a
 // green light it cannot honestly give would be worse than no light at all.
-func filingBlockers(t b266Totals) []string {
+func filingBlockers(t b266Totals, c *stillhousev1.B266Continuity) []string {
 	var out []string
+	out = append(out, continuityBlockers(c)...)
 	if t.electionMismatch != "" {
 		out = append(out, t.electionMismatch)
 	}
@@ -342,6 +453,56 @@ func filingBlockers(t b266Totals) []string {
 	return out
 }
 
+// continuityBlockers turns a continuity break into the sentences an
+// operator can act on.
+//
+// A break is reported as a blocker rather than a warning because of what
+// it means: the opening balance on this return contradicts the closing
+// balance on one already filed. One of the two is wrong, and filing the
+// second without resolving that puts a figure in front of CRA that the
+// licensee's own prior return disagrees with.
+func continuityBlockers(c *stillhousev1.B266Continuity) []string {
+	if c == nil || !c.Checked {
+		return nil
+	}
+	var out []string
+	broken := math.Abs(c.BulkDiscrepancyLaa) > continuityToleranceLAA ||
+		math.Abs(c.PackagedDiscrepancyLaa) > continuityToleranceLAA
+	if !broken {
+		return nil
+	}
+	for _, d := range []struct {
+		what string
+		by   float64
+		from float64
+		to   float64
+	}{
+		{"Bulk", c.BulkDiscrepancyLaa, c.PriorBulkClosingLaa, c.BulkOpeningLaa},
+		{"Packaged", c.PackagedDiscrepancyLaa, c.PriorPackagedClosingLaa, c.PackagedOpeningLaa},
+	} {
+		if math.Abs(d.by) <= continuityToleranceLAA {
+			continue
+		}
+		out = append(out, fmt.Sprintf(
+			"%s opening balance is %.4f LAA but the return filed for %s to %s closed at %.4f — a difference of %.4f LAA. The opening balance here is walked back from what is on hand now, so the two disagreeing means the ledger changed after that return was filed.",
+			d.what, d.to, c.PriorPeriodStart, c.PriorPeriodEnd, d.from, d.by))
+	}
+	if n := c.BackdatedTruncated + int32(len(c.Backdated)); n > 0 {
+		explained := ""
+		if math.Abs(c.BackdatedNetLaa-c.BulkDiscrepancyLaa) <= continuityToleranceLAA {
+			explained = " That accounts for the bulk difference exactly."
+		}
+		out = append(out, fmt.Sprintf(
+			"%d entr%s dated inside that filed period were recorded after it was filed, moving %.4f LAA in total.%s Either amend the filed return or move these to the period they belong in.",
+			n, pluralY(n), c.BackdatedNetLaa, explained))
+	} else if c.Gap {
+		out = append(out, c.GapNote)
+	} else {
+		out = append(out, "Nothing was recorded against the filed period after it was filed, so the difference is not explained by a late entry. Check that the prior return's closing balance was right.")
+	}
+	return out
+}
+
 // plural is the "es" ending, for words like loss. QA found it appended to
 // "destruction" and to "line", producing "destructiones" and "linees" —
 // one of them on a B266 filing blocker, which is the last place to look
@@ -351,6 +512,16 @@ func plural(n int32) string {
 		return ""
 	}
 	return "es"
+}
+
+// pluralY is the "y"/"ies" ending, for entry. A third of these is a sign
+// the next one should be a real inflector, but two words in a filing
+// blocker is not the place to introduce one.
+func pluralY(n int32) string {
+	if n == 1 {
+		return "y"
+	}
+	return "ies"
 }
 
 // pluralS is the ordinary "s" ending.

@@ -604,7 +604,92 @@ func gatherB266Totals(
 		t.electionMismatch = why
 	}
 
+	if err := gatherContinuity(ctx, q, &t, periodStart); err != nil {
+		return t, err
+	}
+
 	return t, nil
+}
+
+// gatherContinuity loads the last filed return's closing balances and the
+// entries booked into it after it was filed.
+//
+// Everything here is best-effort in one specific sense: a return that
+// cannot be compared is reported as unchecked, not as an error. The
+// alternative is that an unreadable snapshot on some old period stops the
+// current one being generated at all, which trades a missing check for a
+// missing return. The distinction is on the wire — B266Continuity.checked
+// — so "nothing to compare against" never reads as "compared and agreed".
+func gatherContinuity(
+	ctx context.Context,
+	q *sqlcgen.Queries,
+	t *b266Totals,
+	periodStart time.Time,
+) error {
+	prior, err := q.PriorFiledB266Period(ctx, pgtype.Date{Valid: true, Time: periodStart})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil // first return, or every earlier period is a draft
+		}
+		return err
+	}
+	if len(prior.Snapshot) == 0 || !prior.SubmittedAt.Valid {
+		// A submitted period is supposed to carry both; one that does not
+		// predates the snapshot or was written by hand. Nothing to compare
+		// against, and saying so is better than comparing against zero.
+		return nil
+	}
+	var snap stillhousev1.B266Report
+	if err := protojson.Unmarshal(prior.Snapshot, &snap); err != nil {
+		return nil
+	}
+
+	t.priorFiled = true
+	t.priorStart = prior.PeriodStart.Time
+	t.priorEnd = prior.PeriodEnd.Time
+	t.priorBulkClosing = snap.GetBulkClosingLaa()
+	t.priorPackagedClosing = snap.GetPackagedClosingLaa()
+
+	// Bounded by the prior period's own dates and by when it was filed:
+	// an entry is only "late" relative to the filing that should have
+	// counted it.
+	span := sqlcgen.SumBackdatedBulkMovementsParams{
+		PeriodStart: prior.PeriodStart,
+		PeriodEnd:   prior.PeriodEnd,
+		FiledAt:     prior.SubmittedAt,
+	}
+	total, err := q.SumBackdatedBulkMovements(ctx, span)
+	if err != nil {
+		return err
+	}
+	t.backdatedCount = total.N
+	t.backdatedNetLAA = total.NetLaa
+	if total.N == 0 {
+		return nil
+	}
+
+	rows, err := q.ListBackdatedBulkMovements(ctx, sqlcgen.ListBackdatedBulkMovementsParams{
+		PeriodStart: prior.PeriodStart,
+		PeriodEnd:   prior.PeriodEnd,
+		FiledAt:     prior.SubmittedAt,
+		RowLimit:    backdatedListLimit,
+	})
+	if err != nil {
+		return err
+	}
+	for _, r := range rows {
+		t.backdated = append(t.backdated, &stillhousev1.B266BackdatedEntry{
+			Id:         r.ID.String(),
+			Kind:       "bulk movement",
+			Reason:     string(r.Reason),
+			Laa:        round4(r.NetLaa),
+			OccurredAt: r.OccurredAt.Time.Format("2006-01-02"),
+			CreatedAt:  r.CreatedAt.Time.Format("2006-01-02"),
+			Container:  r.ContainerName,
+			Notes:      r.Notes,
+		})
+	}
+	return nil
 }
 
 func b266PeriodToProto(p sqlcgen.B266Period) *stillhousev1.B266Period {

@@ -297,6 +297,124 @@ func (q *Queries) ListB266Periods(ctx context.Context) ([]B266Period, error) {
 	return items, nil
 }
 
+const listBackdatedBulkMovements = `-- name: ListBackdatedBulkMovements :many
+SELECT m.id, m.reason, m.laa, m.occurred_at, m.created_at, m.notes,
+       COALESCE(c.name, '')::text AS container_name,
+       (  CASE WHEN m.destination_container_id IS NOT NULL THEN m.laa ELSE 0 END
+        - CASE WHEN m.source_container_id      IS NOT NULL THEN m.laa ELSE 0 END
+       )::double precision AS net_laa
+FROM bulk_movements m
+LEFT JOIN bulk_containers c
+       ON c.id = COALESCE(m.destination_container_id, m.source_container_id)
+WHERE m.occurred_at::date >= $1::date
+  AND m.occurred_at::date <= $2::date
+  AND m.created_at > $3::timestamptz
+ORDER BY ABS(  CASE WHEN m.destination_container_id IS NOT NULL THEN m.laa ELSE 0 END
+             - CASE WHEN m.source_container_id      IS NOT NULL THEN m.laa ELSE 0 END) DESC,
+         m.occurred_at DESC
+LIMIT $4::int
+`
+
+type ListBackdatedBulkMovementsParams struct {
+	PeriodStart pgtype.Date        `json:"period_start"`
+	PeriodEnd   pgtype.Date        `json:"period_end"`
+	FiledAt     pgtype.Timestamptz `json:"filed_at"`
+	RowLimit    int32              `json:"row_limit"`
+}
+
+type ListBackdatedBulkMovementsRow struct {
+	ID            uuid.UUID          `json:"id"`
+	Reason        BulkMovementReason `json:"reason"`
+	Laa           float64            `json:"laa"`
+	OccurredAt    pgtype.Timestamptz `json:"occurred_at"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	Notes         string             `json:"notes"`
+	ContainerName string             `json:"container_name"`
+	NetLaa        float64            `json:"net_laa"`
+}
+
+// Movements booked into an already-filed span but entered after it was
+// filed. occurred_at decides which return a movement belongs to;
+// created_at is when the row appeared. A row where the second is later
+// than the filing is one the filed return could not have counted.
+//
+// net_laa is the movement's effect on total bulk on hand, spelled exactly
+// as SumBulkOnHandAsOf spells it: in adds, out subtracts, and an internal
+// move with both ends set nets to zero. That expression is the definition
+// of the closing balance, so using anything else here would explain a
+// discrepancy with arithmetic that did not cause it.
+//
+// Ordered by the size of that effect, largest first, so the biggest
+// contributor to a break is named first. Capped by the caller.
+func (q *Queries) ListBackdatedBulkMovements(ctx context.Context, arg ListBackdatedBulkMovementsParams) ([]ListBackdatedBulkMovementsRow, error) {
+	rows, err := q.db.Query(ctx, listBackdatedBulkMovements,
+		arg.PeriodStart,
+		arg.PeriodEnd,
+		arg.FiledAt,
+		arg.RowLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListBackdatedBulkMovementsRow{}
+	for rows.Next() {
+		var i ListBackdatedBulkMovementsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Reason,
+			&i.Laa,
+			&i.OccurredAt,
+			&i.CreatedAt,
+			&i.Notes,
+			&i.ContainerName,
+			&i.NetLaa,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const priorFiledB266Period = `-- name: PriorFiledB266Period :one
+SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods
+WHERE status = 'submitted'
+  AND period_end < $1::date
+ORDER BY period_end DESC
+LIMIT 1
+`
+
+// The most recent period that was actually filed and ends before this one
+// starts. Drafts are excluded on purpose: a draft's closing balance is
+// recomputed every time it is generated, so comparing against one would
+// compare a figure against itself and always agree.
+func (q *Queries) PriorFiledB266Period(ctx context.Context, periodStart pgtype.Date) (B266Period, error) {
+	row := q.db.QueryRow(ctx, priorFiledB266Period, periodStart)
+	var i B266Period
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.PeriodStart,
+		&i.PeriodEnd,
+		&i.Status,
+		&i.Snapshot,
+		&i.SubmittedAt,
+		&i.SubmittedBy,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DueOn,
+		&i.FilingAcknowledgedAt,
+		&i.FilingAcknowledgedBy,
+		&i.FilingAcknowledgement,
+	)
+	return i, err
+}
+
 const reopenB266Period = `-- name: ReopenB266Period :one
 UPDATE b266_periods
 SET status = 'draft'
@@ -381,6 +499,38 @@ func (q *Queries) SubmitB266Period(ctx context.Context, arg SubmitB266PeriodPara
 		&i.FilingAcknowledgedBy,
 		&i.FilingAcknowledgement,
 	)
+	return i, err
+}
+
+const sumBackdatedBulkMovements = `-- name: SumBackdatedBulkMovements :one
+SELECT COUNT(*)::int AS n,
+       COALESCE(SUM(
+           CASE WHEN m.destination_container_id IS NOT NULL THEN m.laa ELSE 0 END
+         - CASE WHEN m.source_container_id      IS NOT NULL THEN m.laa ELSE 0 END
+       ), 0)::double precision AS net_laa
+FROM bulk_movements m
+WHERE m.occurred_at::date >= $1::date
+  AND m.occurred_at::date <= $2::date
+  AND m.created_at > $3::timestamptz
+`
+
+type SumBackdatedBulkMovementsParams struct {
+	PeriodStart pgtype.Date        `json:"period_start"`
+	PeriodEnd   pgtype.Date        `json:"period_end"`
+	FiledAt     pgtype.Timestamptz `json:"filed_at"`
+}
+
+type SumBackdatedBulkMovementsRow struct {
+	N      int32   `json:"n"`
+	NetLaa float64 `json:"net_laa"`
+}
+
+// The whole set, not the capped page: how many there are and what they do
+// to the closing balance in total. Same expression as above.
+func (q *Queries) SumBackdatedBulkMovements(ctx context.Context, arg SumBackdatedBulkMovementsParams) (SumBackdatedBulkMovementsRow, error) {
+	row := q.db.QueryRow(ctx, sumBackdatedBulkMovements, arg.PeriodStart, arg.PeriodEnd, arg.FiledAt)
+	var i SumBackdatedBulkMovementsRow
+	err := row.Scan(&i.N, &i.NetLaa)
 	return i, err
 }
 
