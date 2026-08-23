@@ -1945,18 +1945,20 @@ type MashRun struct {
 }
 
 type Material struct {
-	ID          uuid.UUID          `json:"id"`
-	TenantID    uuid.UUID          `json:"tenant_id"`
-	Name        string             `json:"name"`
-	Kind        MaterialKind       `json:"kind"`
-	Uom         string             `json:"uom"`
-	Supplier    string             `json:"supplier"`
-	Notes       string             `json:"notes"`
-	ExtractPct  pgtype.Float8      `json:"extract_pct"`
-	MoisturePct pgtype.Float8      `json:"moisture_pct"`
-	Archived    bool               `json:"archived"`
-	CreatedAt   pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
+	ID       uuid.UUID    `json:"id"`
+	TenantID uuid.UUID    `json:"tenant_id"`
+	Name     string       `json:"name"`
+	Kind     MaterialKind `json:"kind"`
+	Uom      string       `json:"uom"`
+	Supplier string       `json:"supplier"`
+	Notes    string       `json:"notes"`
+	// Fermentable extract as a proportion of mass, in [0,1]. NOT a percentage.
+	ExtractFraction pgtype.Float8 `json:"extract_fraction"`
+	// Moisture as a proportion of mass, in [0,1]. NOT a percentage.
+	MoistureFraction pgtype.Float8      `json:"moisture_fraction"`
+	Archived         bool               `json:"archived"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
 	// Grain species, for gelatinisation guidance. NULL = unknown; the mash bench reports unknown rather than assuming a range.
 	Cereal NullCereal `json:"cereal"`
 }
@@ -2167,21 +2169,22 @@ type RecipeIngredient struct {
 }
 
 type RecipeVersion struct {
-	ID                      uuid.UUID          `json:"id"`
-	TenantID                uuid.UUID          `json:"tenant_id"`
-	RecipeID                uuid.UUID          `json:"recipe_id"`
-	VersionNo               int32              `json:"version_no"`
-	Notes                   string             `json:"notes"`
-	MashEfficiencyPct       float64            `json:"mash_efficiency_pct"`
-	FermentEfficiencyPct    float64            `json:"ferment_efficiency_pct"`
-	DistillationRecoveryPct float64            `json:"distillation_recovery_pct"`
-	TargetWaterL            pgtype.Float8      `json:"target_water_l"`
-	CreatedAt               pgtype.Timestamptz `json:"created_at"`
-	TastingNotes            string             `json:"tasting_notes"`
-	DistillationMethod      string             `json:"distillation_method"`
-	MacerationHours         pgtype.Float8      `json:"maceration_hours"`
-	GinNgsInputL            pgtype.Float8      `json:"gin_ngs_input_l"`
-	GinNgsInputAbvPct       pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
+	ID        uuid.UUID `json:"id"`
+	TenantID  uuid.UUID `json:"tenant_id"`
+	RecipeID  uuid.UUID `json:"recipe_id"`
+	VersionNo int32     `json:"version_no"`
+	Notes     string    `json:"notes"`
+	// Proportion of extract freed in the mash, in [0,1]. NOT a percentage.
+	MashEfficiencyFraction       float64            `json:"mash_efficiency_fraction"`
+	FermentEfficiencyFraction    float64            `json:"ferment_efficiency_fraction"`
+	DistillationRecoveryFraction float64            `json:"distillation_recovery_fraction"`
+	TargetWaterL                 pgtype.Float8      `json:"target_water_l"`
+	CreatedAt                    pgtype.Timestamptz `json:"created_at"`
+	TastingNotes                 string             `json:"tasting_notes"`
+	DistillationMethod           string             `json:"distillation_method"`
+	MacerationHours              pgtype.Float8      `json:"maceration_hours"`
+	GinNgsInputL                 pgtype.Float8      `json:"gin_ngs_input_l"`
+	GinNgsInputAbvPct            pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
 }
 
 type RecipeVersionSensory struct {

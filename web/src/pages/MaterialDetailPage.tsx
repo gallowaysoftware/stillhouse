@@ -72,7 +72,7 @@ export function MaterialDetailPage() {
         <p className="text-sm text-fg-muted">
           {materialKindLabel(m.kind)} · {m.uom}
           {m.supplier && <> · {m.supplier}</>}
-          {m.extractPctSet && <> · extract {(m.extractPct * 100).toFixed(2)}%</>}
+          {m.extractFractionSet && <> · extract {(m.extractFraction * 100).toFixed(2)}%</>}
         </p>
         {m.notes && <p className="mt-2 text-sm text-fg">{m.notes}</p>}
       </header>

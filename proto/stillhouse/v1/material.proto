@@ -43,10 +43,14 @@ message Material {
   // Fermentable-source parameters; only meaningful for kind in (GRAIN, MALT).
   // Both are fractions in [0,1]. Use the optional `_set` flags to disambiguate
   // "set to zero" from "not provided" on writes.
-  double extract_pct = 8;
-  bool   extract_pct_set = 9;
-  double moisture_pct = 10;
-  bool   moisture_pct_set = 11;
+  // A proportion in [0,1], NOT a percentage — 0.78, not 78. Named
+  // _fraction rather than _pct on purpose: abv_pct next door is 0–100,
+  // and the two being a hundredfold apart under the same suffix is how
+  // a strength gets divided by a hundred and duty gets understated.
+  double extract_fraction = 8;
+  bool   extract_fraction_set = 9;
+  double moisture_fraction = 10;
+  bool   moisture_fraction_set = 11;
   bool   archived = 12;
   // Grain species, for mash temperature guidance. Only meaningful for
   // kind in (GRAIN, MALT).
@@ -80,10 +84,10 @@ message CreateMaterialRequest {
   string uom = 3;
   string supplier = 4;
   string notes = 5;
-  double extract_pct = 6;
-  bool   extract_pct_set = 7;
-  double moisture_pct = 8;
-  bool   moisture_pct_set = 9;
+  double extract_fraction = 6;
+  bool   extract_fraction_set = 7;
+  double moisture_fraction = 8;
+  bool   moisture_fraction_set = 9;
   Cereal cereal = 10;
 }
 message CreateMaterialResponse { Material material = 1; }
@@ -94,10 +98,10 @@ message UpdateMaterialRequest {
   string uom = 3;
   string supplier = 4;
   string notes = 5;
-  double extract_pct = 6;
-  bool   extract_pct_set = 7;
-  double moisture_pct = 8;
-  bool   moisture_pct_set = 9;
+  double extract_fraction = 6;
+  bool   extract_fraction_set = 7;
+  double moisture_fraction = 8;
+  bool   moisture_fraction_set = 9;
   Cereal cereal = 10;
 }
 message UpdateMaterialResponse { Material material = 1; }

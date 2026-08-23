@@ -1,6 +1,10 @@
 package mashing
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
+)
 
 // GrainDisplacementLPerKg is how much volume a kilogram of mashed grain
 // occupies. Used only to estimate wash volume when it wasn't measured;
@@ -25,8 +29,11 @@ type Efficiency struct {
 	// ExtractAvailableKg is what the grain bill could have given up:
 	// Σ(mass × extract fraction).
 	ExtractAvailableKg float64
-	// Pct is measured ÷ available, as a percentage.
-	Pct float64
+	// Percent is measured ÷ available. Typed, because the field it is
+	// most often confused with — the recipe's mash_efficiency_pct — is a
+	// *fraction* of the same quantity, and the two sit three letters
+	// apart in the same product. See internal/units.
+	Percent units.Percent
 }
 
 // PlatoFromSG converts specific gravity to degrees Plato (extract as a
@@ -53,8 +60,8 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 	}
 	available := 0.0
 	for _, it := range bill {
-		if it.MassKg > 0 && it.ExtractPct > 0 {
-			available += it.MassKg * it.ExtractPct
+		if it.MassKg > 0 && it.Extract > 0 {
+			available += it.MassKg * it.Extract.Float()
 		}
 	}
 	if available <= 0 {
@@ -62,7 +69,7 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 			Severity: SeverityInfo,
 			Code:     "no_extract_data",
 			Title:    "Can't compute conversion efficiency",
-			Detail:   "None of the fermentables on this mash carry an extract percentage. Set it on the material to unlock this.",
+			Detail:   "None of the fermentables on this mash carry an extract figure. Set it on the material to unlock this.",
 		})
 		return
 	}
@@ -91,7 +98,7 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 		WashVolumeEstimated: estimated,
 		ExtractMeasuredKg:   measured,
 		ExtractAvailableKg:  available,
-		Pct:                 measured / available * 100,
+		Percent:             units.Percent(measured / available * 100),
 	}
 	b.Efficiency = eff
 
@@ -106,28 +113,28 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 	}
 
 	switch {
-	case eff.Pct > 100:
+	case eff.Percent > 100:
 		b.Findings = append(b.Findings, Finding{
 			Severity: SeverityWarning,
 			Code:     "efficiency_impossible",
-			Title:    fmt.Sprintf("Conversion efficiency computes to %.0f %%", eff.Pct),
+			Title:    fmt.Sprintf("Conversion efficiency computes to %.0f %%", eff.Percent),
 			Detail: "Above 100 % means the inputs disagree rather than that the mash over-performed — " +
 				"check the gravity reading, the wash volume, and the extract percentages on the materials.",
 		})
-	case eff.Pct < 60:
+	case eff.Percent < 60:
 		b.Findings = append(b.Findings, Finding{
 			Severity: SeverityProblem,
 			Code:     "efficiency_low",
-			Title:    fmt.Sprintf("Conversion efficiency %.0f %%", eff.Pct),
+			Title:    fmt.Sprintf("Conversion efficiency %.0f %%", eff.Percent),
 			Detail: "Well below what a healthy mash returns. Look at the conversion rest temperature, " +
 				"the pH, and — if the bill has maize or rice in it — whether the cereal cook actually " +
 				"gelatinised the starch before the malt went in.",
 		})
-	case eff.Pct < 75:
+	case eff.Percent < 75:
 		b.Findings = append(b.Findings, Finding{
 			Severity: SeverityWarning,
 			Code:     "efficiency_modest",
-			Title:    fmt.Sprintf("Conversion efficiency %.0f %%", eff.Pct),
+			Title:    fmt.Sprintf("Conversion efficiency %.0f %%", eff.Percent),
 			Detail:   "There is extract left in the tun. Small-scale mashes commonly sit at 75–90 %.",
 		})
 	}

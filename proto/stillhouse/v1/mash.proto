@@ -132,8 +132,8 @@ message MashIngredientUsage {
   string material_id = 3;
   string material_name = 4;
   MaterialKind material_kind = 5;
-  double material_extract_pct = 6;
-  bool   material_extract_pct_set = 7;
+  double material_extract_fraction = 6;
+  bool   material_extract_fraction_set = 7;
   double quantity_used = 8;
   string uom = 9;
   string notes = 10;

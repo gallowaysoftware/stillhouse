@@ -183,7 +183,7 @@ func alertTestMash(t *testing.T, f *ledgerFixture) sqlcgen.MashRun {
 	}
 	rv, err := f.q.CreateRecipeVersion(f.ctx, sqlcgen.CreateRecipeVersionParams{
 		TenantID: f.tenant.ID, RecipeID: recipe.ID, VersionNo: 1,
-		MashEfficiencyPct: 0.85, FermentEfficiencyPct: 0.92, DistillationRecoveryPct: 0.9,
+		MashEfficiencyFraction: 0.85, FermentEfficiencyFraction: 0.92, DistillationRecoveryFraction: 0.9,
 	})
 	if err != nil {
 		t.Fatalf("create recipe version: %v", err)

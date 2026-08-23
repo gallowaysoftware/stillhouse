@@ -60,9 +60,13 @@ message RecipeVersion {
   string recipe_id = 3;
   int32 version_no = 4;
   string notes = 5;
-  double mash_efficiency_pct = 6;
-  double ferment_efficiency_pct = 7;
-  double distillation_recovery_pct = 8;
+  // The three process efficiencies are proportions in [0,1] — 0.85, not
+  // 85. Named _fraction because a value of 85 here would overstate a
+  // projection a hundredfold, and the CHECK constraint that catches it
+  // cannot catch the opposite mistake on a strength.
+  double mash_efficiency_fraction = 6;
+  double ferment_efficiency_fraction = 7;
+  double distillation_recovery_fraction = 8;
   double target_water_l = 9;
   bool   target_water_l_set = 10;
   google.protobuf.Timestamp created_at = 11;
@@ -108,8 +112,8 @@ message RecipeIngredient {
   string material_id = 3;
   string material_name = 4;            // denormalized for display
   MaterialKind material_kind = 5;
-  double material_extract_pct = 6;     // 0 if not set
-  bool   material_extract_pct_set = 7;
+  double material_extract_fraction = 6;     // 0 if not set
+  bool   material_extract_fraction_set = 7;
   double quantity = 8;
   string uom = 9;
   string notes = 10;
@@ -153,7 +157,8 @@ message YieldCheck {
   bool   measurable = 1;
   double grain_kg = 2;
   double l_per_tonne = 3;
-  double weighted_extract_pct = 4;
+  // The bill's extract, mass-weighted. A proportion in [0,1].
+  double weighted_extract_fraction = 4;
   // Every gram of extract converted and fermented, nothing lost anywhere.
   // Physically unreachable — a projection above it means the inputs are
   // wrong.
@@ -211,9 +216,9 @@ message RecipeIngredientInput {
 message SaveRecipeVersionRequest {
   string recipe_id = 1;
   string notes = 2;
-  double mash_efficiency_pct = 3;
-  double ferment_efficiency_pct = 4;
-  double distillation_recovery_pct = 5;
+  double mash_efficiency_fraction = 3;
+  double ferment_efficiency_fraction = 4;
+  double distillation_recovery_fraction = 5;
   double target_water_l = 6;
   bool   target_water_l_set = 7;
   repeated RecipeIngredientInput ingredients = 8;

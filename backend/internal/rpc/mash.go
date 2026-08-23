@@ -154,15 +154,15 @@ func (s *MashService) GetMashRun(
 
 // projectMashLAA runs distilling.ProjectBatch over the mash's actual
 // ingredient usage using the recipe version's efficiency parameters.
-// Only ingredients with a set extract_pct AND uom "kg" contribute (matches
+// Only ingredients with a set extract_fraction AND uom "kg" contribute (matches
 // the projectRecipeVersion convention).
 func projectMashLAA(ingredients []sqlcgen.ListMashIngredientsRow, rv sqlcgen.RecipeVersion) float64 {
 	inputs := make([]distillingInput, 0, len(ingredients))
 	for _, ing := range ingredients {
-		if !ing.MaterialExtractPct.Valid || ing.Uom != "kg" {
+		if !ing.MaterialExtractFraction.Valid || ing.Uom != "kg" {
 			continue
 		}
-		inputs = append(inputs, distillingInput{MassKg: ing.QuantityUsed, ExtractPct: ing.MaterialExtractPct.Float64})
+		inputs = append(inputs, distillingInput{MassKg: ing.QuantityUsed, ExtractFraction: ing.MaterialExtractFraction.Float64})
 	}
 	if len(inputs) == 0 {
 		return 0
@@ -171,16 +171,16 @@ func projectMashLAA(ingredients []sqlcgen.ListMashIngredientsRow, rv sqlcgen.Rec
 	const ethanolDensity = 0.78934
 	total := 0.0
 	for _, in := range inputs {
-		massEthanolKg := in.MassKg * in.ExtractPct * rv.MashEfficiencyPct * gayLussac * rv.FermentEfficiencyPct
+		massEthanolKg := in.MassKg * in.ExtractFraction * rv.MashEfficiencyFraction * gayLussac * rv.FermentEfficiencyFraction
 		volL := massEthanolKg / ethanolDensity
-		total += volL * rv.DistillationRecoveryPct
+		total += volL * rv.DistillationRecoveryFraction
 	}
 	return float64(int(total*10000+0.5)) / 10000
 }
 
 type distillingInput struct {
-	MassKg     float64
-	ExtractPct float64
+	MassKg          float64
+	ExtractFraction float64
 }
 
 func (s *MashService) ListMashRuns(
@@ -459,7 +459,7 @@ func mashRunToProto(
 			},
 			ing.MaterialName,
 			ing.MaterialKind,
-			ing.MaterialExtractPct,
+			ing.MaterialExtractFraction,
 		)
 		if ing.SupplierLot.Valid {
 			proto.SupplierLot = ing.SupplierLot.String
@@ -496,8 +496,8 @@ func mashIngredientUsageToProto(
 		out.MaterialLotId = u.MaterialLotID.UUID.String()
 	}
 	if extract.Valid {
-		out.MaterialExtractPct = extract.Float64
-		out.MaterialExtractPctSet = true
+		out.MaterialExtractFraction = extract.Float64
+		out.MaterialExtractFractionSet = true
 	}
 	return out
 }

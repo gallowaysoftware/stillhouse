@@ -1,6 +1,10 @@
 package distilling
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
+)
 
 // EmpiricalYieldLPerExtractPointPerTonne is the curriculum's working rule
 // for predicted spirit yield: 6.06 litres of absolute alcohol per
@@ -48,8 +52,9 @@ type YieldCheck struct {
 	// LPerTonne is the projection expressed the way the industry quotes
 	// yield, so it can be compared with a published figure.
 	LPerTonne float64
-	// WeightedExtractPct is the bill's extract fraction, mass-weighted.
-	WeightedExtractPct float64
+	// WeightedExtract is the bill's extract, mass-weighted. A fraction,
+	// and typed as one — see internal/units.
+	WeightedExtract units.Fraction
 	// TheoreticalMaxLPerTonne is the stoichiometric ceiling for this bill:
 	// every gram of extract converted and every gram of sugar fermented,
 	// with nothing lost anywhere. Physically unreachable.
@@ -73,23 +78,23 @@ func CheckYield(ingredients []Ingredient, projectedLAA float64) YieldCheck {
 			continue
 		}
 		y.GrainKg += in.MassKg
-		extractKg += in.MassKg * in.ExtractPct
+		extractKg += in.MassKg * in.Extract.Float()
 	}
 	if y.GrainKg <= 0 || extractKg <= 0 {
 		return y
 	}
 	y.Measurable = true
-	y.WeightedExtractPct = extractKg / y.GrainKg
+	y.WeightedExtract = units.Fraction(extractKg / y.GrainKg)
 	tonnes := y.GrainKg / 1000
 	y.LPerTonne = projectedLAA / tonnes
 
 	// Stoichiometric ceiling: extract → ethanol by Gay-Lussac, converted
 	// to volume. Nothing lost at any stage.
-	y.TheoreticalMaxLPerTonne = y.WeightedExtractPct * 1000 * GayLussacRatio / EthanolDensityKgPerL
+	y.TheoreticalMaxLPerTonne = y.WeightedExtract.Float() * 1000 * GayLussacRatio / EthanolDensityKgPerL
 	// And what the curriculum says is actually achievable — the empirical
 	// factor applied to the fermentable share of the extract, not to all
 	// of it.
-	y.AchievableLPerTonne = y.WeightedExtractPct * SpiritMaltFermentability * 100 *
+	y.AchievableLPerTonne = y.WeightedExtract.Float() * SpiritMaltFermentability * 100 *
 		EmpiricalYieldLPerExtractPointPerTonne
 
 	y.assess()
@@ -108,12 +113,12 @@ func (y *YieldCheck) assess() {
 	// fraction: 78 gets typed where 0.78 belongs, and the projection comes
 	// back a hundredfold too big while looking exactly as confident as a
 	// real one.
-	if y.WeightedExtractPct > 1 {
+	if y.WeightedExtract > 1 {
 		y.Findings = append(y.Findings, Finding{
 			Severity: SeverityProblem,
 			Code:     "extract_out_of_range",
 			Title: fmt.Sprintf("Extract of %.2f means more extract than grain — this projection is not usable",
-				y.WeightedExtractPct),
+				y.WeightedExtract.Float()),
 			Detail: "Extract is a fraction of the ingredient's mass, not a percentage: malted " +
 				"barley is about 0.80, not 80. Correct it on the materials and the projection " +
 				"will fall by roughly a hundredfold.",

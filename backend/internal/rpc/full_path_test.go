@@ -51,12 +51,12 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 
 	// Material + lot at known price: 50 kg @ $1.50/kg = $75 of raw input.
 	mat, err := q.CreateMaterial(ctx, sqlcgen.CreateMaterialParams{
-		TenantID:   tenant.ID,
-		Name:       "Two-row malt",
-		Kind:       sqlcgen.MaterialKindMalt,
-		Uom:        "kg",
-		Supplier:   "Test Supplier",
-		ExtractPct: pgtype.Float8{Float64: 0.8, Valid: true},
+		TenantID:        tenant.ID,
+		Name:            "Two-row malt",
+		Kind:            sqlcgen.MaterialKindMalt,
+		Uom:             "kg",
+		Supplier:        "Test Supplier",
+		ExtractFraction: pgtype.Float8{Float64: 0.8, Valid: true},
 	})
 	if err != nil {
 		t.Fatalf("create material: %v", err)
@@ -83,7 +83,7 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 	}
 	rv, err := q.CreateRecipeVersion(ctx, sqlcgen.CreateRecipeVersionParams{
 		TenantID: tenant.ID, RecipeID: recipe.ID, VersionNo: 1,
-		MashEfficiencyPct: 0.85, FermentEfficiencyPct: 0.92, DistillationRecoveryPct: 0.9,
+		MashEfficiencyFraction: 0.85, FermentEfficiencyFraction: 0.92, DistillationRecoveryFraction: 0.9,
 	})
 	if err != nil {
 		t.Fatalf("create version: %v", err)

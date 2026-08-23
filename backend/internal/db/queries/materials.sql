@@ -1,6 +1,6 @@
 -- name: CreateMaterial :one
 INSERT INTO materials (
-    tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, cereal
+    tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, cereal
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
 ) RETURNING *;
@@ -11,8 +11,8 @@ SET name         = $2,
     uom          = $3,
     supplier     = $4,
     notes        = $5,
-    extract_pct  = $6,
-    moisture_pct = $7,
+    extract_fraction  = $6,
+    moisture_fraction = $7,
     cereal       = $8
 WHERE id = $1
 RETURNING *;

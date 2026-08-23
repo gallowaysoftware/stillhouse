@@ -27,7 +27,7 @@ WHERE recipe_id = $1;
 -- name: CreateRecipeVersion :one
 INSERT INTO recipe_versions (
     tenant_id, recipe_id, version_no, notes,
-    mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct,
+    mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction,
     target_water_l,
     tasting_notes, distillation_method, maceration_hours,
     gin_ngs_input_l, gin_ngs_input_abv_pct
@@ -91,7 +91,7 @@ SELECT ri.*,
        m.name AS material_name,
        m.kind AS material_kind,
        m.uom  AS material_uom,
-       m.extract_pct AS material_extract_pct
+       m.extract_fraction AS material_extract_fraction
 FROM recipe_ingredients ri
 JOIN materials m ON m.id = ri.material_id
 WHERE ri.recipe_version_id = $1

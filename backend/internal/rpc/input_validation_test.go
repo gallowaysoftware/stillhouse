@@ -90,19 +90,20 @@ func TestResolveAdoptedStockAcceptsAWeighedCharge(t *testing.T) {
 }
 
 func TestValidateFractionRejectsPercentages(t *testing.T) {
-	// extract_pct and moisture_pct are fractions despite their names, and
+	// extract_fraction and moisture_fraction are fractions, and say so in
+	// their names as of stage 169 — they used to be called _pct, which
 	// were never range-checked. 78 typed for 0.78 gave a 1077% ABV wash.
 	for _, v := range []float64{78, 1.5, -0.1, 100} {
-		if err := validateFraction("extract_pct", v); err == nil {
+		if err := validateFraction("extract_fraction", v); err == nil {
 			t.Errorf("validateFraction(%v) = nil, want an error", v)
 		}
 	}
 	for _, v := range []float64{0, 0.78, 1} {
-		if err := validateFraction("extract_pct", v); err != nil {
+		if err := validateFraction("extract_fraction", v); err != nil {
 			t.Errorf("validateFraction(%v) = %v, want nil", v, err)
 		}
 	}
-	if err := validateFraction("extract_pct", 78); err == nil ||
+	if err := validateFraction("extract_fraction", 78); err == nil ||
 		!strings.Contains(err.Error(), "0.78") {
 		t.Errorf("message should show the operator what they meant, got %v", err)
 	}

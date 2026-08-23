@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"sort"
+
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
 )
 
 // Severity ranks a finding. The bench is advisory — nothing here blocks a
@@ -33,9 +35,9 @@ type GrainBillItem struct {
 	Name   string
 	Cereal Cereal
 	MassKg float64
-	// ExtractPct is the fraction (0..1) of MassKg that is fermentable
+	// Extract is the proportion of MassKg that is fermentable
 	// extract, from the material record.
-	ExtractPct float64
+	Extract units.Fraction
 	// Malted marks a grain that brings its own enzymes.
 	Malted bool
 }

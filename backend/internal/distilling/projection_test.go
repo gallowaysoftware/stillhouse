@@ -11,7 +11,7 @@ func TestProjectBatch_SingleGrain(t *testing.T) {
 	//   × 0.511 × 0.92             = 31.168956 kg ethanol
 	//   ÷ 0.78934                  = 39.4873... L ethanol in wash
 	//   × 0.90                     = 35.5386 L LAA captured
-	in := []Ingredient{{Name: "Maris Otter", MassKg: 100, ExtractPct: 0.78}}
+	in := []Ingredient{{Name: "Maris Otter", MassKg: 100, Extract: 0.78}}
 	eff := Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}
 	p := ProjectBatch(in, eff)
 
@@ -31,9 +31,9 @@ func TestProjectBatch_MixedMashBill(t *testing.T) {
 	// A pretend Canadian rye-style mash bill: 70 kg rye + 25 kg corn + 5 kg malt.
 	// Sum of per-ingredient projected LAA must equal Total.
 	in := []Ingredient{
-		{Name: "Rye", MassKg: 70, ExtractPct: 0.65},
-		{Name: "Corn", MassKg: 25, ExtractPct: 0.72},
-		{Name: "Malted barley", MassKg: 5, ExtractPct: 0.78},
+		{Name: "Rye", MassKg: 70, Extract: 0.65},
+		{Name: "Corn", MassKg: 25, Extract: 0.72},
+		{Name: "Malted barley", MassKg: 5, Extract: 0.78},
 	}
 	eff := Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}
 	p := ProjectBatch(in, eff)
@@ -58,8 +58,8 @@ func TestProjectBatch_RoundingAndDegenerate(t *testing.T) {
 		eff  Efficiencies
 	}{
 		{"empty", nil, Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}},
-		{"zero mass", []Ingredient{{MassKg: 0, ExtractPct: 0.78}}, Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}},
-		{"zero extract", []Ingredient{{MassKg: 100, ExtractPct: 0}}, Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}},
+		{"zero mass", []Ingredient{{MassKg: 0, Extract: 0.78}}, Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}},
+		{"zero extract", []Ingredient{{MassKg: 100, Extract: 0}}, Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -76,7 +76,7 @@ func TestProjectWash(t *testing.T) {
 	//   ethanol mass = 100 × 0.78 × 0.85 × 0.511 × 0.92 = 31.166316 kg
 	//   ethanol vol  = 31.166316 / 0.78934 = 39.4843 L
 	//   ABV          = 39.4843 / 360 × 100 = ~10.97 %
-	in := []Ingredient{{MassKg: 100, ExtractPct: 0.78}}
+	in := []Ingredient{{MassKg: 100, Extract: 0.78}}
 	eff := Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}
 	w := ProjectWash(in, eff, 300)
 	if got, want := w.VolumeL, 360.0; !floatNear(got, want, 0.01) {
@@ -88,7 +88,7 @@ func TestProjectWash(t *testing.T) {
 }
 
 func TestProjectWash_NoWater(t *testing.T) {
-	in := []Ingredient{{MassKg: 100, ExtractPct: 0.78}}
+	in := []Ingredient{{MassKg: 100, Extract: 0.78}}
 	eff := Efficiencies{Mash: 0.85, Ferment: 0.92, DistillationRecovery: 0.90}
 	if w := ProjectWash(in, eff, 0); w.VolumeL != 0 || w.ABVPct != 0 {
 		t.Errorf("expected zero projection without water, got %+v", w)
@@ -97,7 +97,7 @@ func TestProjectWash_NoWater(t *testing.T) {
 
 func TestEfficienciesAreApplied(t *testing.T) {
 	// 100% efficiencies should yield exactly the theoretical max.
-	in := []Ingredient{{MassKg: 100, ExtractPct: 1.0}}
+	in := []Ingredient{{MassKg: 100, Extract: 1.0}}
 	full := Efficiencies{Mash: 1, Ferment: 1, DistillationRecovery: 1}
 	p := ProjectBatch(in, full)
 	// 100 × 1 × 1 × 0.511 × 1 = 51.1 kg ethanol

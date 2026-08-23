@@ -170,11 +170,15 @@ type Material struct {
 	// Fermentable-source parameters; only meaningful for kind in (GRAIN, MALT).
 	// Both are fractions in [0,1]. Use the optional `_set` flags to disambiguate
 	// "set to zero" from "not provided" on writes.
-	ExtractPct     float64 `protobuf:"fixed64,8,opt,name=extract_pct,json=extractPct,proto3" json:"extract_pct,omitempty"`
-	ExtractPctSet  bool    `protobuf:"varint,9,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
-	MoisturePct    float64 `protobuf:"fixed64,10,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
-	MoisturePctSet bool    `protobuf:"varint,11,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
-	Archived       bool    `protobuf:"varint,12,opt,name=archived,proto3" json:"archived,omitempty"`
+	// A proportion in [0,1], NOT a percentage — 0.78, not 78. Named
+	// _fraction rather than _pct on purpose: abv_pct next door is 0–100,
+	// and the two being a hundredfold apart under the same suffix is how
+	// a strength gets divided by a hundred and duty gets understated.
+	ExtractFraction     float64 `protobuf:"fixed64,8,opt,name=extract_fraction,json=extractFraction,proto3" json:"extract_fraction,omitempty"`
+	ExtractFractionSet  bool    `protobuf:"varint,9,opt,name=extract_fraction_set,json=extractFractionSet,proto3" json:"extract_fraction_set,omitempty"`
+	MoistureFraction    float64 `protobuf:"fixed64,10,opt,name=moisture_fraction,json=moistureFraction,proto3" json:"moisture_fraction,omitempty"`
+	MoistureFractionSet bool    `protobuf:"varint,11,opt,name=moisture_fraction_set,json=moistureFractionSet,proto3" json:"moisture_fraction_set,omitempty"`
+	Archived            bool    `protobuf:"varint,12,opt,name=archived,proto3" json:"archived,omitempty"`
 	// Grain species, for mash temperature guidance. Only meaningful for
 	// kind in (GRAIN, MALT).
 	Cereal        Cereal                 `protobuf:"varint,15,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
@@ -263,30 +267,30 @@ func (x *Material) GetNotes() string {
 	return ""
 }
 
-func (x *Material) GetExtractPct() float64 {
+func (x *Material) GetExtractFraction() float64 {
 	if x != nil {
-		return x.ExtractPct
+		return x.ExtractFraction
 	}
 	return 0
 }
 
-func (x *Material) GetExtractPctSet() bool {
+func (x *Material) GetExtractFractionSet() bool {
 	if x != nil {
-		return x.ExtractPctSet
+		return x.ExtractFractionSet
 	}
 	return false
 }
 
-func (x *Material) GetMoisturePct() float64 {
+func (x *Material) GetMoistureFraction() float64 {
 	if x != nil {
-		return x.MoisturePct
+		return x.MoistureFraction
 	}
 	return 0
 }
 
-func (x *Material) GetMoisturePctSet() bool {
+func (x *Material) GetMoistureFractionSet() bool {
 	if x != nil {
-		return x.MoisturePctSet
+		return x.MoistureFractionSet
 	}
 	return false
 }
@@ -452,19 +456,19 @@ func (x *MaterialLot) GetUnitCostCadSet() bool {
 }
 
 type CreateMaterialRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Kind           MaterialKind           `protobuf:"varint,2,opt,name=kind,proto3,enum=stillhouse.v1.MaterialKind" json:"kind,omitempty"`
-	Uom            string                 `protobuf:"bytes,3,opt,name=uom,proto3" json:"uom,omitempty"`
-	Supplier       string                 `protobuf:"bytes,4,opt,name=supplier,proto3" json:"supplier,omitempty"`
-	Notes          string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
-	ExtractPct     float64                `protobuf:"fixed64,6,opt,name=extract_pct,json=extractPct,proto3" json:"extract_pct,omitempty"`
-	ExtractPctSet  bool                   `protobuf:"varint,7,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
-	MoisturePct    float64                `protobuf:"fixed64,8,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
-	MoisturePctSet bool                   `protobuf:"varint,9,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
-	Cereal         Cereal                 `protobuf:"varint,10,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Name                string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Kind                MaterialKind           `protobuf:"varint,2,opt,name=kind,proto3,enum=stillhouse.v1.MaterialKind" json:"kind,omitempty"`
+	Uom                 string                 `protobuf:"bytes,3,opt,name=uom,proto3" json:"uom,omitempty"`
+	Supplier            string                 `protobuf:"bytes,4,opt,name=supplier,proto3" json:"supplier,omitempty"`
+	Notes               string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	ExtractFraction     float64                `protobuf:"fixed64,6,opt,name=extract_fraction,json=extractFraction,proto3" json:"extract_fraction,omitempty"`
+	ExtractFractionSet  bool                   `protobuf:"varint,7,opt,name=extract_fraction_set,json=extractFractionSet,proto3" json:"extract_fraction_set,omitempty"`
+	MoistureFraction    float64                `protobuf:"fixed64,8,opt,name=moisture_fraction,json=moistureFraction,proto3" json:"moisture_fraction,omitempty"`
+	MoistureFractionSet bool                   `protobuf:"varint,9,opt,name=moisture_fraction_set,json=moistureFractionSet,proto3" json:"moisture_fraction_set,omitempty"`
+	Cereal              Cereal                 `protobuf:"varint,10,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *CreateMaterialRequest) Reset() {
@@ -532,30 +536,30 @@ func (x *CreateMaterialRequest) GetNotes() string {
 	return ""
 }
 
-func (x *CreateMaterialRequest) GetExtractPct() float64 {
+func (x *CreateMaterialRequest) GetExtractFraction() float64 {
 	if x != nil {
-		return x.ExtractPct
+		return x.ExtractFraction
 	}
 	return 0
 }
 
-func (x *CreateMaterialRequest) GetExtractPctSet() bool {
+func (x *CreateMaterialRequest) GetExtractFractionSet() bool {
 	if x != nil {
-		return x.ExtractPctSet
+		return x.ExtractFractionSet
 	}
 	return false
 }
 
-func (x *CreateMaterialRequest) GetMoisturePct() float64 {
+func (x *CreateMaterialRequest) GetMoistureFraction() float64 {
 	if x != nil {
-		return x.MoisturePct
+		return x.MoistureFraction
 	}
 	return 0
 }
 
-func (x *CreateMaterialRequest) GetMoisturePctSet() bool {
+func (x *CreateMaterialRequest) GetMoistureFractionSet() bool {
 	if x != nil {
-		return x.MoisturePctSet
+		return x.MoistureFractionSet
 	}
 	return false
 }
@@ -612,19 +616,19 @@ func (x *CreateMaterialResponse) GetMaterial() *Material {
 }
 
 type UpdateMaterialRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Uom            string                 `protobuf:"bytes,3,opt,name=uom,proto3" json:"uom,omitempty"`
-	Supplier       string                 `protobuf:"bytes,4,opt,name=supplier,proto3" json:"supplier,omitempty"`
-	Notes          string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
-	ExtractPct     float64                `protobuf:"fixed64,6,opt,name=extract_pct,json=extractPct,proto3" json:"extract_pct,omitempty"`
-	ExtractPctSet  bool                   `protobuf:"varint,7,opt,name=extract_pct_set,json=extractPctSet,proto3" json:"extract_pct_set,omitempty"`
-	MoisturePct    float64                `protobuf:"fixed64,8,opt,name=moisture_pct,json=moisturePct,proto3" json:"moisture_pct,omitempty"`
-	MoisturePctSet bool                   `protobuf:"varint,9,opt,name=moisture_pct_set,json=moisturePctSet,proto3" json:"moisture_pct_set,omitempty"`
-	Cereal         Cereal                 `protobuf:"varint,10,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Uom                 string                 `protobuf:"bytes,3,opt,name=uom,proto3" json:"uom,omitempty"`
+	Supplier            string                 `protobuf:"bytes,4,opt,name=supplier,proto3" json:"supplier,omitempty"`
+	Notes               string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	ExtractFraction     float64                `protobuf:"fixed64,6,opt,name=extract_fraction,json=extractFraction,proto3" json:"extract_fraction,omitempty"`
+	ExtractFractionSet  bool                   `protobuf:"varint,7,opt,name=extract_fraction_set,json=extractFractionSet,proto3" json:"extract_fraction_set,omitempty"`
+	MoistureFraction    float64                `protobuf:"fixed64,8,opt,name=moisture_fraction,json=moistureFraction,proto3" json:"moisture_fraction,omitempty"`
+	MoistureFractionSet bool                   `protobuf:"varint,9,opt,name=moisture_fraction_set,json=moistureFractionSet,proto3" json:"moisture_fraction_set,omitempty"`
+	Cereal              Cereal                 `protobuf:"varint,10,opt,name=cereal,proto3,enum=stillhouse.v1.Cereal" json:"cereal,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *UpdateMaterialRequest) Reset() {
@@ -692,30 +696,30 @@ func (x *UpdateMaterialRequest) GetNotes() string {
 	return ""
 }
 
-func (x *UpdateMaterialRequest) GetExtractPct() float64 {
+func (x *UpdateMaterialRequest) GetExtractFraction() float64 {
 	if x != nil {
-		return x.ExtractPct
+		return x.ExtractFraction
 	}
 	return 0
 }
 
-func (x *UpdateMaterialRequest) GetExtractPctSet() bool {
+func (x *UpdateMaterialRequest) GetExtractFractionSet() bool {
 	if x != nil {
-		return x.ExtractPctSet
+		return x.ExtractFractionSet
 	}
 	return false
 }
 
-func (x *UpdateMaterialRequest) GetMoisturePct() float64 {
+func (x *UpdateMaterialRequest) GetMoistureFraction() float64 {
 	if x != nil {
-		return x.MoisturePct
+		return x.MoistureFraction
 	}
 	return 0
 }
 
-func (x *UpdateMaterialRequest) GetMoisturePctSet() bool {
+func (x *UpdateMaterialRequest) GetMoistureFractionSet() bool {
 	if x != nil {
-		return x.MoisturePctSet
+		return x.MoistureFractionSet
 	}
 	return false
 }
@@ -1624,7 +1628,7 @@ var File_stillhouse_v1_material_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\n" +
-	"\x1cstillhouse/v1/material.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x97\x04\n" +
+	"\x1cstillhouse/v1/material.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbf\x04\n" +
 	"\bMaterial\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x12\n" +
@@ -1632,13 +1636,12 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"\x04kind\x18\x04 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\x04kind\x12\x10\n" +
 	"\x03uom\x18\x05 \x01(\tR\x03uom\x12\x1a\n" +
 	"\bsupplier\x18\x06 \x01(\tR\bsupplier\x12\x14\n" +
-	"\x05notes\x18\a \x01(\tR\x05notes\x12\x1f\n" +
-	"\vextract_pct\x18\b \x01(\x01R\n" +
-	"extractPct\x12&\n" +
-	"\x0fextract_pct_set\x18\t \x01(\bR\rextractPctSet\x12!\n" +
-	"\fmoisture_pct\x18\n" +
-	" \x01(\x01R\vmoisturePct\x12(\n" +
-	"\x10moisture_pct_set\x18\v \x01(\bR\x0emoisturePctSet\x12\x1a\n" +
+	"\x05notes\x18\a \x01(\tR\x05notes\x12)\n" +
+	"\x10extract_fraction\x18\b \x01(\x01R\x0fextractFraction\x120\n" +
+	"\x14extract_fraction_set\x18\t \x01(\bR\x12extractFractionSet\x12+\n" +
+	"\x11moisture_fraction\x18\n" +
+	" \x01(\x01R\x10moistureFraction\x122\n" +
+	"\x15moisture_fraction_set\x18\v \x01(\bR\x13moistureFractionSet\x12\x1a\n" +
 	"\barchived\x18\f \x01(\bR\barchived\x12-\n" +
 	"\x06cereal\x18\x0f \x01(\x0e2\x15.stillhouse.v1.CerealR\x06cereal\x129\n" +
 	"\n" +
@@ -1662,33 +1665,31 @@ const file_stillhouse_v1_material_proto_rawDesc = "" +
 	"updated_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\"\n" +
 	"\runit_cost_cad\x18\v \x01(\x01R\vunitCostCad\x12)\n" +
-	"\x11unit_cost_cad_set\x18\f \x01(\bR\x0eunitCostCadSet\"\xe5\x02\n" +
+	"\x11unit_cost_cad_set\x18\f \x01(\bR\x0eunitCostCadSet\"\x8d\x03\n" +
 	"\x15CreateMaterialRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12/\n" +
 	"\x04kind\x18\x02 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\x04kind\x12\x10\n" +
 	"\x03uom\x18\x03 \x01(\tR\x03uom\x12\x1a\n" +
 	"\bsupplier\x18\x04 \x01(\tR\bsupplier\x12\x14\n" +
-	"\x05notes\x18\x05 \x01(\tR\x05notes\x12\x1f\n" +
-	"\vextract_pct\x18\x06 \x01(\x01R\n" +
-	"extractPct\x12&\n" +
-	"\x0fextract_pct_set\x18\a \x01(\bR\rextractPctSet\x12!\n" +
-	"\fmoisture_pct\x18\b \x01(\x01R\vmoisturePct\x12(\n" +
-	"\x10moisture_pct_set\x18\t \x01(\bR\x0emoisturePctSet\x12-\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\x12)\n" +
+	"\x10extract_fraction\x18\x06 \x01(\x01R\x0fextractFraction\x120\n" +
+	"\x14extract_fraction_set\x18\a \x01(\bR\x12extractFractionSet\x12+\n" +
+	"\x11moisture_fraction\x18\b \x01(\x01R\x10moistureFraction\x122\n" +
+	"\x15moisture_fraction_set\x18\t \x01(\bR\x13moistureFractionSet\x12-\n" +
 	"\x06cereal\x18\n" +
 	" \x01(\x0e2\x15.stillhouse.v1.CerealR\x06cereal\"M\n" +
 	"\x16CreateMaterialResponse\x123\n" +
-	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"\xc4\x02\n" +
+	"\bmaterial\x18\x01 \x01(\v2\x17.stillhouse.v1.MaterialR\bmaterial\"\xec\x02\n" +
 	"\x15UpdateMaterialRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x10\n" +
 	"\x03uom\x18\x03 \x01(\tR\x03uom\x12\x1a\n" +
 	"\bsupplier\x18\x04 \x01(\tR\bsupplier\x12\x14\n" +
-	"\x05notes\x18\x05 \x01(\tR\x05notes\x12\x1f\n" +
-	"\vextract_pct\x18\x06 \x01(\x01R\n" +
-	"extractPct\x12&\n" +
-	"\x0fextract_pct_set\x18\a \x01(\bR\rextractPctSet\x12!\n" +
-	"\fmoisture_pct\x18\b \x01(\x01R\vmoisturePct\x12(\n" +
-	"\x10moisture_pct_set\x18\t \x01(\bR\x0emoisturePctSet\x12-\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\x12)\n" +
+	"\x10extract_fraction\x18\x06 \x01(\x01R\x0fextractFraction\x120\n" +
+	"\x14extract_fraction_set\x18\a \x01(\bR\x12extractFractionSet\x12+\n" +
+	"\x11moisture_fraction\x18\b \x01(\x01R\x10moistureFraction\x122\n" +
+	"\x15moisture_fraction_set\x18\t \x01(\bR\x13moistureFractionSet\x12-\n" +
 	"\x06cereal\x18\n" +
 	" \x01(\x0e2\x15.stillhouse.v1.CerealR\x06cereal\"M\n" +
 	"\x16UpdateMaterialResponse\x123\n" +

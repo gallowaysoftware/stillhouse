@@ -375,19 +375,23 @@ func (x *Recipe) GetUpdatedAt() *timestamppb.Timestamp {
 }
 
 type RecipeVersion struct {
-	state                   protoimpl.MessageState `protogen:"open.v1"`
-	Id                      string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	TenantId                string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
-	RecipeId                string                 `protobuf:"bytes,3,opt,name=recipe_id,json=recipeId,proto3" json:"recipe_id,omitempty"`
-	VersionNo               int32                  `protobuf:"varint,4,opt,name=version_no,json=versionNo,proto3" json:"version_no,omitempty"`
-	Notes                   string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
-	MashEfficiencyPct       float64                `protobuf:"fixed64,6,opt,name=mash_efficiency_pct,json=mashEfficiencyPct,proto3" json:"mash_efficiency_pct,omitempty"`
-	FermentEfficiencyPct    float64                `protobuf:"fixed64,7,opt,name=ferment_efficiency_pct,json=fermentEfficiencyPct,proto3" json:"ferment_efficiency_pct,omitempty"`
-	DistillationRecoveryPct float64                `protobuf:"fixed64,8,opt,name=distillation_recovery_pct,json=distillationRecoveryPct,proto3" json:"distillation_recovery_pct,omitempty"`
-	TargetWaterL            float64                `protobuf:"fixed64,9,opt,name=target_water_l,json=targetWaterL,proto3" json:"target_water_l,omitempty"`
-	TargetWaterLSet         bool                   `protobuf:"varint,10,opt,name=target_water_l_set,json=targetWaterLSet,proto3" json:"target_water_l_set,omitempty"`
-	CreatedAt               *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	Ingredients             []*RecipeIngredient    `protobuf:"bytes,12,rep,name=ingredients,proto3" json:"ingredients,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	TenantId  string                 `protobuf:"bytes,2,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	RecipeId  string                 `protobuf:"bytes,3,opt,name=recipe_id,json=recipeId,proto3" json:"recipe_id,omitempty"`
+	VersionNo int32                  `protobuf:"varint,4,opt,name=version_no,json=versionNo,proto3" json:"version_no,omitempty"`
+	Notes     string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	// The three process efficiencies are proportions in [0,1] — 0.85, not
+	// 85. Named _fraction because a value of 85 here would overstate a
+	// projection a hundredfold, and the CHECK constraint that catches it
+	// cannot catch the opposite mistake on a strength.
+	MashEfficiencyFraction       float64                `protobuf:"fixed64,6,opt,name=mash_efficiency_fraction,json=mashEfficiencyFraction,proto3" json:"mash_efficiency_fraction,omitempty"`
+	FermentEfficiencyFraction    float64                `protobuf:"fixed64,7,opt,name=ferment_efficiency_fraction,json=fermentEfficiencyFraction,proto3" json:"ferment_efficiency_fraction,omitempty"`
+	DistillationRecoveryFraction float64                `protobuf:"fixed64,8,opt,name=distillation_recovery_fraction,json=distillationRecoveryFraction,proto3" json:"distillation_recovery_fraction,omitempty"`
+	TargetWaterL                 float64                `protobuf:"fixed64,9,opt,name=target_water_l,json=targetWaterL,proto3" json:"target_water_l,omitempty"`
+	TargetWaterLSet              bool                   `protobuf:"varint,10,opt,name=target_water_l_set,json=targetWaterLSet,proto3" json:"target_water_l_set,omitempty"`
+	CreatedAt                    *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	Ingredients                  []*RecipeIngredient    `protobuf:"bytes,12,rep,name=ingredients,proto3" json:"ingredients,omitempty"`
 	// Gin / botanical-bill fields. Optional for whisky-style recipes
 	// (they stay at defaults / unset). See [[BotanicalRole]] and
 	// [[DistillationMethod]] for the per-ingredient and per-version
@@ -471,23 +475,23 @@ func (x *RecipeVersion) GetNotes() string {
 	return ""
 }
 
-func (x *RecipeVersion) GetMashEfficiencyPct() float64 {
+func (x *RecipeVersion) GetMashEfficiencyFraction() float64 {
 	if x != nil {
-		return x.MashEfficiencyPct
+		return x.MashEfficiencyFraction
 	}
 	return 0
 }
 
-func (x *RecipeVersion) GetFermentEfficiencyPct() float64 {
+func (x *RecipeVersion) GetFermentEfficiencyFraction() float64 {
 	if x != nil {
-		return x.FermentEfficiencyPct
+		return x.FermentEfficiencyFraction
 	}
 	return 0
 }
 
-func (x *RecipeVersion) GetDistillationRecoveryPct() float64 {
+func (x *RecipeVersion) GetDistillationRecoveryFraction() float64 {
 	if x != nil {
-		return x.DistillationRecoveryPct
+		return x.DistillationRecoveryFraction
 	}
 	return 0
 }
@@ -807,18 +811,18 @@ func (x *GinSensoryScores) GetTastedAt() *timestamppb.Timestamp {
 }
 
 type RecipeIngredient struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	RecipeVersionId       string                 `protobuf:"bytes,2,opt,name=recipe_version_id,json=recipeVersionId,proto3" json:"recipe_version_id,omitempty"`
-	MaterialId            string                 `protobuf:"bytes,3,opt,name=material_id,json=materialId,proto3" json:"material_id,omitempty"`
-	MaterialName          string                 `protobuf:"bytes,4,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"` // denormalized for display
-	MaterialKind          MaterialKind           `protobuf:"varint,5,opt,name=material_kind,json=materialKind,proto3,enum=stillhouse.v1.MaterialKind" json:"material_kind,omitempty"`
-	MaterialExtractPct    float64                `protobuf:"fixed64,6,opt,name=material_extract_pct,json=materialExtractPct,proto3" json:"material_extract_pct,omitempty"` // 0 if not set
-	MaterialExtractPctSet bool                   `protobuf:"varint,7,opt,name=material_extract_pct_set,json=materialExtractPctSet,proto3" json:"material_extract_pct_set,omitempty"`
-	Quantity              float64                `protobuf:"fixed64,8,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	Uom                   string                 `protobuf:"bytes,9,opt,name=uom,proto3" json:"uom,omitempty"`
-	Notes                 string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
-	SortOrder             int32                  `protobuf:"varint,11,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	Id                         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	RecipeVersionId            string                 `protobuf:"bytes,2,opt,name=recipe_version_id,json=recipeVersionId,proto3" json:"recipe_version_id,omitempty"`
+	MaterialId                 string                 `protobuf:"bytes,3,opt,name=material_id,json=materialId,proto3" json:"material_id,omitempty"`
+	MaterialName               string                 `protobuf:"bytes,4,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"` // denormalized for display
+	MaterialKind               MaterialKind           `protobuf:"varint,5,opt,name=material_kind,json=materialKind,proto3,enum=stillhouse.v1.MaterialKind" json:"material_kind,omitempty"`
+	MaterialExtractFraction    float64                `protobuf:"fixed64,6,opt,name=material_extract_fraction,json=materialExtractFraction,proto3" json:"material_extract_fraction,omitempty"` // 0 if not set
+	MaterialExtractFractionSet bool                   `protobuf:"varint,7,opt,name=material_extract_fraction_set,json=materialExtractFractionSet,proto3" json:"material_extract_fraction_set,omitempty"`
+	Quantity                   float64                `protobuf:"fixed64,8,opt,name=quantity,proto3" json:"quantity,omitempty"`
+	Uom                        string                 `protobuf:"bytes,9,opt,name=uom,proto3" json:"uom,omitempty"`
+	Notes                      string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
+	SortOrder                  int32                  `protobuf:"varint,11,opt,name=sort_order,json=sortOrder,proto3" json:"sort_order,omitempty"`
 	// Botanical role on a gin recipe — defaults to UNSPECIFIED for
 	// non-botanical ingredients (grain, NGS, water).
 	BotanicalRole BotanicalRole `protobuf:"varint,12,opt,name=botanical_role,json=botanicalRole,proto3,enum=stillhouse.v1.BotanicalRole" json:"botanical_role,omitempty"`
@@ -891,16 +895,16 @@ func (x *RecipeIngredient) GetMaterialKind() MaterialKind {
 	return MaterialKind_MATERIAL_KIND_UNSPECIFIED
 }
 
-func (x *RecipeIngredient) GetMaterialExtractPct() float64 {
+func (x *RecipeIngredient) GetMaterialExtractFraction() float64 {
 	if x != nil {
-		return x.MaterialExtractPct
+		return x.MaterialExtractFraction
 	}
 	return 0
 }
 
-func (x *RecipeIngredient) GetMaterialExtractPctSet() bool {
+func (x *RecipeIngredient) GetMaterialExtractFractionSet() bool {
 	if x != nil {
-		return x.MaterialExtractPctSet
+		return x.MaterialExtractFractionSet
 	}
 	return false
 }
@@ -1093,11 +1097,12 @@ func (x *YieldFinding) GetDetail() string {
 // expressed the way the industry quotes yield so it can be compared with a
 // published figure.
 type YieldCheck struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	Measurable         bool                   `protobuf:"varint,1,opt,name=measurable,proto3" json:"measurable,omitempty"`
-	GrainKg            float64                `protobuf:"fixed64,2,opt,name=grain_kg,json=grainKg,proto3" json:"grain_kg,omitempty"`
-	LPerTonne          float64                `protobuf:"fixed64,3,opt,name=l_per_tonne,json=lPerTonne,proto3" json:"l_per_tonne,omitempty"`
-	WeightedExtractPct float64                `protobuf:"fixed64,4,opt,name=weighted_extract_pct,json=weightedExtractPct,proto3" json:"weighted_extract_pct,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Measurable bool                   `protobuf:"varint,1,opt,name=measurable,proto3" json:"measurable,omitempty"`
+	GrainKg    float64                `protobuf:"fixed64,2,opt,name=grain_kg,json=grainKg,proto3" json:"grain_kg,omitempty"`
+	LPerTonne  float64                `protobuf:"fixed64,3,opt,name=l_per_tonne,json=lPerTonne,proto3" json:"l_per_tonne,omitempty"`
+	// The bill's extract, mass-weighted. A proportion in [0,1].
+	WeightedExtractFraction float64 `protobuf:"fixed64,4,opt,name=weighted_extract_fraction,json=weightedExtractFraction,proto3" json:"weighted_extract_fraction,omitempty"`
 	// Every gram of extract converted and fermented, nothing lost anywhere.
 	// Physically unreachable — a projection above it means the inputs are
 	// wrong.
@@ -1160,9 +1165,9 @@ func (x *YieldCheck) GetLPerTonne() float64 {
 	return 0
 }
 
-func (x *YieldCheck) GetWeightedExtractPct() float64 {
+func (x *YieldCheck) GetWeightedExtractFraction() float64 {
 	if x != nil {
-		return x.WeightedExtractPct
+		return x.WeightedExtractFraction
 	}
 	return 0
 }
@@ -1773,15 +1778,15 @@ func (x *RecipeIngredientInput) GetBotanicalRole() BotanicalRole {
 }
 
 type SaveRecipeVersionRequest struct {
-	state                   protoimpl.MessageState   `protogen:"open.v1"`
-	RecipeId                string                   `protobuf:"bytes,1,opt,name=recipe_id,json=recipeId,proto3" json:"recipe_id,omitempty"`
-	Notes                   string                   `protobuf:"bytes,2,opt,name=notes,proto3" json:"notes,omitempty"`
-	MashEfficiencyPct       float64                  `protobuf:"fixed64,3,opt,name=mash_efficiency_pct,json=mashEfficiencyPct,proto3" json:"mash_efficiency_pct,omitempty"`
-	FermentEfficiencyPct    float64                  `protobuf:"fixed64,4,opt,name=ferment_efficiency_pct,json=fermentEfficiencyPct,proto3" json:"ferment_efficiency_pct,omitempty"`
-	DistillationRecoveryPct float64                  `protobuf:"fixed64,5,opt,name=distillation_recovery_pct,json=distillationRecoveryPct,proto3" json:"distillation_recovery_pct,omitempty"`
-	TargetWaterL            float64                  `protobuf:"fixed64,6,opt,name=target_water_l,json=targetWaterL,proto3" json:"target_water_l,omitempty"`
-	TargetWaterLSet         bool                     `protobuf:"varint,7,opt,name=target_water_l_set,json=targetWaterLSet,proto3" json:"target_water_l_set,omitempty"`
-	Ingredients             []*RecipeIngredientInput `protobuf:"bytes,8,rep,name=ingredients,proto3" json:"ingredients,omitempty"`
+	state                        protoimpl.MessageState   `protogen:"open.v1"`
+	RecipeId                     string                   `protobuf:"bytes,1,opt,name=recipe_id,json=recipeId,proto3" json:"recipe_id,omitempty"`
+	Notes                        string                   `protobuf:"bytes,2,opt,name=notes,proto3" json:"notes,omitempty"`
+	MashEfficiencyFraction       float64                  `protobuf:"fixed64,3,opt,name=mash_efficiency_fraction,json=mashEfficiencyFraction,proto3" json:"mash_efficiency_fraction,omitempty"`
+	FermentEfficiencyFraction    float64                  `protobuf:"fixed64,4,opt,name=ferment_efficiency_fraction,json=fermentEfficiencyFraction,proto3" json:"ferment_efficiency_fraction,omitempty"`
+	DistillationRecoveryFraction float64                  `protobuf:"fixed64,5,opt,name=distillation_recovery_fraction,json=distillationRecoveryFraction,proto3" json:"distillation_recovery_fraction,omitempty"`
+	TargetWaterL                 float64                  `protobuf:"fixed64,6,opt,name=target_water_l,json=targetWaterL,proto3" json:"target_water_l,omitempty"`
+	TargetWaterLSet              bool                     `protobuf:"varint,7,opt,name=target_water_l_set,json=targetWaterLSet,proto3" json:"target_water_l_set,omitempty"`
+	Ingredients                  []*RecipeIngredientInput `protobuf:"bytes,8,rep,name=ingredients,proto3" json:"ingredients,omitempty"`
 	// Gin-specific. Whisky recipes leave these unset.
 	TastingNotes         string             `protobuf:"bytes,9,opt,name=tasting_notes,json=tastingNotes,proto3" json:"tasting_notes,omitempty"`
 	DistillationMethod   DistillationMethod `protobuf:"varint,10,opt,name=distillation_method,json=distillationMethod,proto3,enum=stillhouse.v1.DistillationMethod" json:"distillation_method,omitempty"`
@@ -1839,23 +1844,23 @@ func (x *SaveRecipeVersionRequest) GetNotes() string {
 	return ""
 }
 
-func (x *SaveRecipeVersionRequest) GetMashEfficiencyPct() float64 {
+func (x *SaveRecipeVersionRequest) GetMashEfficiencyFraction() float64 {
 	if x != nil {
-		return x.MashEfficiencyPct
+		return x.MashEfficiencyFraction
 	}
 	return 0
 }
 
-func (x *SaveRecipeVersionRequest) GetFermentEfficiencyPct() float64 {
+func (x *SaveRecipeVersionRequest) GetFermentEfficiencyFraction() float64 {
 	if x != nil {
-		return x.FermentEfficiencyPct
+		return x.FermentEfficiencyFraction
 	}
 	return 0
 }
 
-func (x *SaveRecipeVersionRequest) GetDistillationRecoveryPct() float64 {
+func (x *SaveRecipeVersionRequest) GetDistillationRecoveryFraction() float64 {
 	if x != nil {
-		return x.DistillationRecoveryPct
+		return x.DistillationRecoveryFraction
 	}
 	return 0
 }
@@ -2622,17 +2627,17 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9d\b\n" +
+	"updated_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xbb\b\n" +
 	"\rRecipeVersion\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1b\n" +
 	"\trecipe_id\x18\x03 \x01(\tR\brecipeId\x12\x1d\n" +
 	"\n" +
 	"version_no\x18\x04 \x01(\x05R\tversionNo\x12\x14\n" +
-	"\x05notes\x18\x05 \x01(\tR\x05notes\x12.\n" +
-	"\x13mash_efficiency_pct\x18\x06 \x01(\x01R\x11mashEfficiencyPct\x124\n" +
-	"\x16ferment_efficiency_pct\x18\a \x01(\x01R\x14fermentEfficiencyPct\x12:\n" +
-	"\x19distillation_recovery_pct\x18\b \x01(\x01R\x17distillationRecoveryPct\x12$\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\x128\n" +
+	"\x18mash_efficiency_fraction\x18\x06 \x01(\x01R\x16mashEfficiencyFraction\x12>\n" +
+	"\x1bferment_efficiency_fraction\x18\a \x01(\x01R\x19fermentEfficiencyFraction\x12D\n" +
+	"\x1edistillation_recovery_fraction\x18\b \x01(\x01R\x1cdistillationRecoveryFraction\x12$\n" +
 	"\x0etarget_water_l\x18\t \x01(\x01R\ftargetWaterL\x12+\n" +
 	"\x12target_water_l_set\x18\n" +
 	" \x01(\bR\x0ftargetWaterLSet\x129\n" +
@@ -2678,16 +2683,16 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\voverall_set\x18\x14 \x01(\bR\n" +
 	"overallSet\x12#\n" +
 	"\rtasting_panel\x18\x15 \x01(\tR\ftastingPanel\x127\n" +
-	"\ttasted_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampR\btastedAt\"\xe9\x03\n" +
+	"\ttasted_at\x18\x16 \x01(\v2\x1a.google.protobuf.TimestampR\btastedAt\"\xfd\x03\n" +
 	"\x10RecipeIngredient\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12*\n" +
 	"\x11recipe_version_id\x18\x02 \x01(\tR\x0frecipeVersionId\x12\x1f\n" +
 	"\vmaterial_id\x18\x03 \x01(\tR\n" +
 	"materialId\x12#\n" +
 	"\rmaterial_name\x18\x04 \x01(\tR\fmaterialName\x12@\n" +
-	"\rmaterial_kind\x18\x05 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\fmaterialKind\x120\n" +
-	"\x14material_extract_pct\x18\x06 \x01(\x01R\x12materialExtractPct\x127\n" +
-	"\x18material_extract_pct_set\x18\a \x01(\bR\x15materialExtractPctSet\x12\x1a\n" +
+	"\rmaterial_kind\x18\x05 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\fmaterialKind\x12:\n" +
+	"\x19material_extract_fraction\x18\x06 \x01(\x01R\x17materialExtractFraction\x12A\n" +
+	"\x1dmaterial_extract_fraction_set\x18\a \x01(\bR\x1amaterialExtractFractionSet\x12\x1a\n" +
 	"\bquantity\x18\b \x01(\x01R\bquantity\x12\x10\n" +
 	"\x03uom\x18\t \x01(\tR\x03uom\x12\x14\n" +
 	"\x05notes\x18\n" +
@@ -2706,15 +2711,15 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\bseverity\x18\x01 \x01(\x0e2#.stillhouse.v1.YieldFindingSeverityR\bseverity\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
-	"\x06detail\x18\x04 \x01(\tR\x06detail\"\xc5\x02\n" +
+	"\x06detail\x18\x04 \x01(\tR\x06detail\"\xcf\x02\n" +
 	"\n" +
 	"YieldCheck\x12\x1e\n" +
 	"\n" +
 	"measurable\x18\x01 \x01(\bR\n" +
 	"measurable\x12\x19\n" +
 	"\bgrain_kg\x18\x02 \x01(\x01R\agrainKg\x12\x1e\n" +
-	"\vl_per_tonne\x18\x03 \x01(\x01R\tlPerTonne\x120\n" +
-	"\x14weighted_extract_pct\x18\x04 \x01(\x01R\x12weightedExtractPct\x12<\n" +
+	"\vl_per_tonne\x18\x03 \x01(\x01R\tlPerTonne\x12:\n" +
+	"\x19weighted_extract_fraction\x18\x04 \x01(\x01R\x17weightedExtractFraction\x12<\n" +
 	"\x1btheoretical_max_l_per_tonne\x18\x05 \x01(\x01R\x17theoreticalMaxLPerTonne\x123\n" +
 	"\x16achievable_l_per_tonne\x18\x06 \x01(\x01R\x13achievableLPerTonne\x127\n" +
 	"\bfindings\x18\a \x03(\v2\x1b.stillhouse.v1.YieldFindingR\bfindings\"\xd2\x02\n" +
@@ -2761,13 +2766,13 @@ const file_stillhouse_v1_recipe_proto_rawDesc = "" +
 	"\x05notes\x18\x04 \x01(\tR\x05notes\x12\x1d\n" +
 	"\n" +
 	"sort_order\x18\x05 \x01(\x05R\tsortOrder\x12C\n" +
-	"\x0ebotanical_role\x18\x06 \x01(\x0e2\x1c.stillhouse.v1.BotanicalRoleR\rbotanicalRole\"\xa0\x06\n" +
+	"\x0ebotanical_role\x18\x06 \x01(\x0e2\x1c.stillhouse.v1.BotanicalRoleR\rbotanicalRole\"\xbe\x06\n" +
 	"\x18SaveRecipeVersionRequest\x12\x1b\n" +
 	"\trecipe_id\x18\x01 \x01(\tR\brecipeId\x12\x14\n" +
-	"\x05notes\x18\x02 \x01(\tR\x05notes\x12.\n" +
-	"\x13mash_efficiency_pct\x18\x03 \x01(\x01R\x11mashEfficiencyPct\x124\n" +
-	"\x16ferment_efficiency_pct\x18\x04 \x01(\x01R\x14fermentEfficiencyPct\x12:\n" +
-	"\x19distillation_recovery_pct\x18\x05 \x01(\x01R\x17distillationRecoveryPct\x12$\n" +
+	"\x05notes\x18\x02 \x01(\tR\x05notes\x128\n" +
+	"\x18mash_efficiency_fraction\x18\x03 \x01(\x01R\x16mashEfficiencyFraction\x12>\n" +
+	"\x1bferment_efficiency_fraction\x18\x04 \x01(\x01R\x19fermentEfficiencyFraction\x12D\n" +
+	"\x1edistillation_recovery_fraction\x18\x05 \x01(\x01R\x1cdistillationRecoveryFraction\x12$\n" +
 	"\x0etarget_water_l\x18\x06 \x01(\x01R\ftargetWaterL\x12+\n" +
 	"\x12target_water_l_set\x18\a \x01(\bR\x0ftargetWaterLSet\x12F\n" +
 	"\vingredients\x18\b \x03(\v2$.stillhouse.v1.RecipeIngredientInputR\vingredients\x12#\n" +

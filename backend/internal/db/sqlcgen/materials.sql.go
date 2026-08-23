@@ -13,7 +13,7 @@ import (
 )
 
 const archiveMaterial = `-- name: ArchiveMaterial :one
-UPDATE materials SET archived = TRUE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, archived, created_at, updated_at, cereal
+UPDATE materials SET archived = TRUE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
 `
 
 func (q *Queries) ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -27,8 +27,8 @@ func (q *Queries) ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, 
 		&i.Uom,
 		&i.Supplier,
 		&i.Notes,
-		&i.ExtractPct,
-		&i.MoisturePct,
+		&i.ExtractFraction,
+		&i.MoistureFraction,
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -39,22 +39,22 @@ func (q *Queries) ArchiveMaterial(ctx context.Context, id uuid.UUID) (Material, 
 
 const createMaterial = `-- name: CreateMaterial :one
 INSERT INTO materials (
-    tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, cereal
+    tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, cereal
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, archived, created_at, updated_at, cereal
+) RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
 `
 
 type CreateMaterialParams struct {
-	TenantID    uuid.UUID     `json:"tenant_id"`
-	Name        string        `json:"name"`
-	Kind        MaterialKind  `json:"kind"`
-	Uom         string        `json:"uom"`
-	Supplier    string        `json:"supplier"`
-	Notes       string        `json:"notes"`
-	ExtractPct  pgtype.Float8 `json:"extract_pct"`
-	MoisturePct pgtype.Float8 `json:"moisture_pct"`
-	Cereal      NullCereal    `json:"cereal"`
+	TenantID         uuid.UUID     `json:"tenant_id"`
+	Name             string        `json:"name"`
+	Kind             MaterialKind  `json:"kind"`
+	Uom              string        `json:"uom"`
+	Supplier         string        `json:"supplier"`
+	Notes            string        `json:"notes"`
+	ExtractFraction  pgtype.Float8 `json:"extract_fraction"`
+	MoistureFraction pgtype.Float8 `json:"moisture_fraction"`
+	Cereal           NullCereal    `json:"cereal"`
 }
 
 func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error) {
@@ -65,8 +65,8 @@ func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) 
 		arg.Uom,
 		arg.Supplier,
 		arg.Notes,
-		arg.ExtractPct,
-		arg.MoisturePct,
+		arg.ExtractFraction,
+		arg.MoistureFraction,
 		arg.Cereal,
 	)
 	var i Material
@@ -78,8 +78,8 @@ func (q *Queries) CreateMaterial(ctx context.Context, arg CreateMaterialParams) 
 		&i.Uom,
 		&i.Supplier,
 		&i.Notes,
-		&i.ExtractPct,
-		&i.MoisturePct,
+		&i.ExtractFraction,
+		&i.MoistureFraction,
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -142,7 +142,7 @@ func (q *Queries) CreateMaterialLot(ctx context.Context, arg CreateMaterialLotPa
 }
 
 const getMaterial = `-- name: GetMaterial :one
-SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, archived, created_at, updated_at, cereal FROM materials WHERE id = $1
+SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal FROM materials WHERE id = $1
 `
 
 func (q *Queries) GetMaterial(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -156,8 +156,8 @@ func (q *Queries) GetMaterial(ctx context.Context, id uuid.UUID) (Material, erro
 		&i.Uom,
 		&i.Supplier,
 		&i.Notes,
-		&i.ExtractPct,
-		&i.MoisturePct,
+		&i.ExtractFraction,
+		&i.MoistureFraction,
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -250,7 +250,7 @@ func (q *Queries) ListMaterialLots(ctx context.Context, arg ListMaterialLotsPara
 }
 
 const listMaterials = `-- name: ListMaterials :many
-SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, archived, created_at, updated_at, cereal FROM materials
+SELECT id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal FROM materials
 WHERE ($1::material_kind IS NULL OR kind = $1::material_kind)
   AND ($2::boolean OR NOT archived)
 ORDER BY kind, name
@@ -278,8 +278,8 @@ func (q *Queries) ListMaterials(ctx context.Context, arg ListMaterialsParams) ([
 			&i.Uom,
 			&i.Supplier,
 			&i.Notes,
-			&i.ExtractPct,
-			&i.MoisturePct,
+			&i.ExtractFraction,
+			&i.MoistureFraction,
 			&i.Archived,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -296,7 +296,7 @@ func (q *Queries) ListMaterials(ctx context.Context, arg ListMaterialsParams) ([
 }
 
 const unarchiveMaterial = `-- name: UnarchiveMaterial :one
-UPDATE materials SET archived = FALSE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, archived, created_at, updated_at, cereal
+UPDATE materials SET archived = FALSE WHERE id = $1 RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
 `
 
 func (q *Queries) UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error) {
@@ -310,8 +310,8 @@ func (q *Queries) UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material
 		&i.Uom,
 		&i.Supplier,
 		&i.Notes,
-		&i.ExtractPct,
-		&i.MoisturePct,
+		&i.ExtractFraction,
+		&i.MoistureFraction,
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -326,22 +326,22 @@ SET name         = $2,
     uom          = $3,
     supplier     = $4,
     notes        = $5,
-    extract_pct  = $6,
-    moisture_pct = $7,
+    extract_fraction  = $6,
+    moisture_fraction = $7,
     cereal       = $8
 WHERE id = $1
-RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_pct, moisture_pct, archived, created_at, updated_at, cereal
+RETURNING id, tenant_id, name, kind, uom, supplier, notes, extract_fraction, moisture_fraction, archived, created_at, updated_at, cereal
 `
 
 type UpdateMaterialParams struct {
-	ID          uuid.UUID     `json:"id"`
-	Name        string        `json:"name"`
-	Uom         string        `json:"uom"`
-	Supplier    string        `json:"supplier"`
-	Notes       string        `json:"notes"`
-	ExtractPct  pgtype.Float8 `json:"extract_pct"`
-	MoisturePct pgtype.Float8 `json:"moisture_pct"`
-	Cereal      NullCereal    `json:"cereal"`
+	ID               uuid.UUID     `json:"id"`
+	Name             string        `json:"name"`
+	Uom              string        `json:"uom"`
+	Supplier         string        `json:"supplier"`
+	Notes            string        `json:"notes"`
+	ExtractFraction  pgtype.Float8 `json:"extract_fraction"`
+	MoistureFraction pgtype.Float8 `json:"moisture_fraction"`
+	Cereal           NullCereal    `json:"cereal"`
 }
 
 func (q *Queries) UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) (Material, error) {
@@ -351,8 +351,8 @@ func (q *Queries) UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) 
 		arg.Uom,
 		arg.Supplier,
 		arg.Notes,
-		arg.ExtractPct,
-		arg.MoisturePct,
+		arg.ExtractFraction,
+		arg.MoistureFraction,
 		arg.Cereal,
 	)
 	var i Material
@@ -364,8 +364,8 @@ func (q *Queries) UpdateMaterial(ctx context.Context, arg UpdateMaterialParams) 
 		&i.Uom,
 		&i.Supplier,
 		&i.Notes,
-		&i.ExtractPct,
-		&i.MoisturePct,
+		&i.ExtractFraction,
+		&i.MoistureFraction,
 		&i.Archived,
 		&i.CreatedAt,
 		&i.UpdatedAt,

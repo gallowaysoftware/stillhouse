@@ -17,6 +17,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/distilling"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
 )
 
 type RecipeService struct {
@@ -201,13 +202,13 @@ func (s *RecipeService) SaveRecipeVersion(
 	if len(in.GetIngredients()) == 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("at least one ingredient is required"))
 	}
-	if err := validateEfficiency("mash_efficiency_pct", in.GetMashEfficiencyPct()); err != nil {
+	if err := validateEfficiency("mash_efficiency_fraction", in.GetMashEfficiencyFraction()); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := validateEfficiency("ferment_efficiency_pct", in.GetFermentEfficiencyPct()); err != nil {
+	if err := validateEfficiency("ferment_efficiency_fraction", in.GetFermentEfficiencyFraction()); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	if err := validateEfficiency("distillation_recovery_pct", in.GetDistillationRecoveryPct()); err != nil {
+	if err := validateEfficiency("distillation_recovery_fraction", in.GetDistillationRecoveryFraction()); err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 
@@ -247,19 +248,19 @@ func (s *RecipeService) SaveRecipeVersion(
 		}
 
 		v, e := q.CreateRecipeVersion(ctx, sqlcgen.CreateRecipeVersionParams{
-			TenantID:                u.TenantID,
-			RecipeID:                recipeID,
-			VersionNo:               nextNo,
-			Notes:                   in.GetNotes(),
-			MashEfficiencyPct:       in.GetMashEfficiencyPct(),
-			FermentEfficiencyPct:    in.GetFermentEfficiencyPct(),
-			DistillationRecoveryPct: in.GetDistillationRecoveryPct(),
-			TargetWaterL:            waterL,
-			TastingNotes:            in.GetTastingNotes(),
-			DistillationMethod:      distillationMethodToDB(in.GetDistillationMethod()),
-			MacerationHours:         macerationHours,
-			GinNgsInputL:            ngsInputL,
-			GinNgsInputAbvPct:       ngsInputAbv,
+			TenantID:                     u.TenantID,
+			RecipeID:                     recipeID,
+			VersionNo:                    nextNo,
+			Notes:                        in.GetNotes(),
+			MashEfficiencyFraction:       in.GetMashEfficiencyFraction(),
+			FermentEfficiencyFraction:    in.GetFermentEfficiencyFraction(),
+			DistillationRecoveryFraction: in.GetDistillationRecoveryFraction(),
+			TargetWaterL:                 waterL,
+			TastingNotes:                 in.GetTastingNotes(),
+			DistillationMethod:           distillationMethodToDB(in.GetDistillationMethod()),
+			MacerationHours:              macerationHours,
+			GinNgsInputL:                 ngsInputL,
+			GinNgsInputAbvPct:            ngsInputAbv,
 		})
 		if e != nil {
 			return e
@@ -308,9 +309,9 @@ func (s *RecipeService) SaveRecipeVersion(
 			sqlcgen.AuditActionCreate, map[string]any{
 				"recipe_id":     recipeID.String(),
 				"version_no":    v.VersionNo,
-				"mash_eff":      v.MashEfficiencyPct,
-				"ferment_eff":   v.FermentEfficiencyPct,
-				"distill_recov": v.DistillationRecoveryPct,
+				"mash_eff":      v.MashEfficiencyFraction,
+				"ferment_eff":   v.FermentEfficiencyFraction,
+				"distill_recov": v.DistillationRecoveryFraction,
 				"total_laa":     resp.Projection.GetTotalProjectedLaa(),
 				"ingredient_n":  len(ingredients),
 			})
@@ -359,21 +360,21 @@ func (s *RecipeService) ListRecipeVersions(
 		// Ingredients aren't loaded by the list query — callers needing
 		// the full breakdown call GetRecipe for the current version.
 		v := sqlcgen.RecipeVersion{
-			ID:                      r.ID,
-			TenantID:                r.TenantID,
-			RecipeID:                r.RecipeID,
-			VersionNo:               r.VersionNo,
-			Notes:                   r.Notes,
-			MashEfficiencyPct:       r.MashEfficiencyPct,
-			FermentEfficiencyPct:    r.FermentEfficiencyPct,
-			DistillationRecoveryPct: r.DistillationRecoveryPct,
-			TargetWaterL:            r.TargetWaterL,
-			CreatedAt:               r.CreatedAt,
-			TastingNotes:            r.TastingNotes,
-			DistillationMethod:      r.DistillationMethod,
-			MacerationHours:         r.MacerationHours,
-			GinNgsInputL:            r.GinNgsInputL,
-			GinNgsInputAbvPct:       r.GinNgsInputAbvPct,
+			ID:                           r.ID,
+			TenantID:                     r.TenantID,
+			RecipeID:                     r.RecipeID,
+			VersionNo:                    r.VersionNo,
+			Notes:                        r.Notes,
+			MashEfficiencyFraction:       r.MashEfficiencyFraction,
+			FermentEfficiencyFraction:    r.FermentEfficiencyFraction,
+			DistillationRecoveryFraction: r.DistillationRecoveryFraction,
+			TargetWaterL:                 r.TargetWaterL,
+			CreatedAt:                    r.CreatedAt,
+			TastingNotes:                 r.TastingNotes,
+			DistillationMethod:           r.DistillationMethod,
+			MacerationHours:              r.MacerationHours,
+			GinNgsInputL:                 r.GinNgsInputL,
+			GinNgsInputAbvPct:            r.GinNgsInputAbvPct,
 		}
 		vp := recipeVersionToProto(v, nil)
 		if r.SensoryTastedAt.Valid {
@@ -536,19 +537,19 @@ func (s *RecipeService) DuplicateRecipe(
 			return e
 		}
 		newVersion, e := q.CreateRecipeVersion(ctx, sqlcgen.CreateRecipeVersionParams{
-			TenantID:                u.TenantID,
-			RecipeID:                newRecipe.ID,
-			VersionNo:               nextNo,
-			Notes:                   srcVersion.Notes,
-			MashEfficiencyPct:       srcVersion.MashEfficiencyPct,
-			FermentEfficiencyPct:    srcVersion.FermentEfficiencyPct,
-			DistillationRecoveryPct: srcVersion.DistillationRecoveryPct,
-			TargetWaterL:            srcVersion.TargetWaterL,
-			TastingNotes:            srcVersion.TastingNotes,
-			DistillationMethod:      srcVersion.DistillationMethod,
-			MacerationHours:         srcVersion.MacerationHours,
-			GinNgsInputL:            srcVersion.GinNgsInputL,
-			GinNgsInputAbvPct:       srcVersion.GinNgsInputAbvPct,
+			TenantID:                     u.TenantID,
+			RecipeID:                     newRecipe.ID,
+			VersionNo:                    nextNo,
+			Notes:                        srcVersion.Notes,
+			MashEfficiencyFraction:       srcVersion.MashEfficiencyFraction,
+			FermentEfficiencyFraction:    srcVersion.FermentEfficiencyFraction,
+			DistillationRecoveryFraction: srcVersion.DistillationRecoveryFraction,
+			TargetWaterL:                 srcVersion.TargetWaterL,
+			TastingNotes:                 srcVersion.TastingNotes,
+			DistillationMethod:           srcVersion.DistillationMethod,
+			MacerationHours:              srcVersion.MacerationHours,
+			GinNgsInputL:                 srcVersion.GinNgsInputL,
+			GinNgsInputAbvPct:            srcVersion.GinNgsInputAbvPct,
 		})
 		if e != nil {
 			return e
@@ -861,17 +862,17 @@ func recipeToProto(r sqlcgen.Recipe) *stillhousev1.Recipe {
 
 func recipeVersionToProto(v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRecipeIngredientsRow) *stillhousev1.RecipeVersion {
 	out := &stillhousev1.RecipeVersion{
-		Id:                      v.ID.String(),
-		TenantId:                v.TenantID.String(),
-		RecipeId:                v.RecipeID.String(),
-		VersionNo:               v.VersionNo,
-		Notes:                   v.Notes,
-		MashEfficiencyPct:       v.MashEfficiencyPct,
-		FermentEfficiencyPct:    v.FermentEfficiencyPct,
-		DistillationRecoveryPct: v.DistillationRecoveryPct,
-		CreatedAt:               timestamppb.New(v.CreatedAt.Time),
-		TastingNotes:            v.TastingNotes,
-		DistillationMethod:      distillationMethodToProto(v.DistillationMethod),
+		Id:                           v.ID.String(),
+		TenantId:                     v.TenantID.String(),
+		RecipeId:                     v.RecipeID.String(),
+		VersionNo:                    v.VersionNo,
+		Notes:                        v.Notes,
+		MashEfficiencyFraction:       v.MashEfficiencyFraction,
+		FermentEfficiencyFraction:    v.FermentEfficiencyFraction,
+		DistillationRecoveryFraction: v.DistillationRecoveryFraction,
+		CreatedAt:                    timestamppb.New(v.CreatedAt.Time),
+		TastingNotes:                 v.TastingNotes,
+		DistillationMethod:           distillationMethodToProto(v.DistillationMethod),
 	}
 	if v.TargetWaterL.Valid {
 		out.TargetWaterL = v.TargetWaterL.Float64
@@ -908,9 +909,9 @@ func recipeIngredientRowToProto(r sqlcgen.ListRecipeIngredientsRow) *stillhousev
 		SortOrder:       r.SortOrder,
 		BotanicalRole:   botanicalRoleToProto(r.BotanicalRole),
 	}
-	if r.MaterialExtractPct.Valid {
-		out.MaterialExtractPct = r.MaterialExtractPct.Float64
-		out.MaterialExtractPctSet = true
+	if r.MaterialExtractFraction.Valid {
+		out.MaterialExtractFraction = r.MaterialExtractFraction.Float64
+		out.MaterialExtractFractionSet = true
 	}
 	return out
 }
@@ -1017,7 +1018,7 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 	// botanicals) passes through as a zero-LAA line.
 	inputs := make([]distilling.Ingredient, 0, len(ingredients))
 	for _, ing := range ingredients {
-		if !ing.MaterialExtractPct.Valid {
+		if !ing.MaterialExtractFraction.Valid {
 			continue
 		}
 		// Only count grain/malt masses. uom 'kg' is assumed for fermentables.
@@ -1026,15 +1027,19 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 			continue
 		}
 		inputs = append(inputs, distilling.Ingredient{
-			Name:       ing.MaterialName,
-			MassKg:     ing.Quantity,
-			ExtractPct: ing.MaterialExtractPct.Float64,
+			Name:   ing.MaterialName,
+			MassKg: ing.Quantity,
+			// The database column is still called *_pct for now; the
+			// value in it has always been a fraction, which is the
+			// ambiguity K3 is about. Converting at the boundary makes
+			// the scale explicit at the one place it crosses.
+			Extract: units.Fraction(ing.MaterialExtractFraction.Float64),
 		})
 	}
 	eff := distilling.Efficiencies{
-		Mash:                 v.MashEfficiencyPct,
-		Ferment:              v.FermentEfficiencyPct,
-		DistillationRecovery: v.DistillationRecoveryPct,
+		Mash:                 units.Fraction(v.MashEfficiencyFraction),
+		Ferment:              units.Fraction(v.FermentEfficiencyFraction),
+		DistillationRecovery: units.Fraction(v.DistillationRecoveryFraction),
 	}
 	batch := distilling.ProjectBatch(inputs, eff)
 
@@ -1049,7 +1054,7 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 			Quantity:     ing.Quantity,
 			Uom:          ing.Uom,
 		}
-		if ing.MaterialExtractPct.Valid && ing.Uom == "kg" && idx < len(batch.PerIngredient) {
+		if ing.MaterialExtractFraction.Valid && ing.Uom == "kg" && idx < len(batch.PerIngredient) {
 			r := batch.PerIngredient[idx]
 			line.FermentableKg = r.FermentableKg
 			line.ExtractFreedKg = r.ExtractFreedKg
@@ -1084,7 +1089,7 @@ func yieldCheckToProto(y distilling.YieldCheck) *stillhousev1.YieldCheck {
 		Measurable:              true,
 		GrainKg:                 round2(y.GrainKg),
 		LPerTonne:               round2(y.LPerTonne),
-		WeightedExtractPct:      y.WeightedExtractPct,
+		WeightedExtractFraction: y.WeightedExtract.Float(),
 		TheoreticalMaxLPerTonne: round2(y.TheoreticalMaxLPerTonne),
 		AchievableLPerTonne:     round2(y.AchievableLPerTonne),
 	}
@@ -1127,7 +1132,7 @@ func projectGinRecipe(v sqlcgen.RecipeVersion, ingredients []sqlcgen.ListRecipeI
 	out := &stillhousev1.RecipeProjection{Lines: lines}
 	if v.GinNgsInputL.Valid && v.GinNgsInputAbvPct.Valid {
 		ngsLAA := v.GinNgsInputL.Float64 * v.GinNgsInputAbvPct.Float64 / 100
-		out.TotalProjectedLaa = ngsLAA * v.DistillationRecoveryPct
+		out.TotalProjectedLaa = ngsLAA * v.DistillationRecoveryFraction
 	}
 	return out
 }

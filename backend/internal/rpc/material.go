@@ -49,13 +49,13 @@ func (s *MaterialService) CreateMaterial(
 	// Unvalidated, 78 typed for 0.78 multiplied a recipe's projected yield
 	// by a hundred, and the yield check couldn't catch it because its own
 	// ceilings are computed from this same figure.
-	if in.GetExtractPctSet() {
-		if err := validateFraction("extract_pct", in.GetExtractPct()); err != nil {
+	if in.GetExtractFractionSet() {
+		if err := validateFraction("extract_fraction", in.GetExtractFraction()); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 	}
-	if in.GetMoisturePctSet() {
-		if err := validateFraction("moisture_pct", in.GetMoisturePct()); err != nil {
+	if in.GetMoistureFractionSet() {
+		if err := validateFraction("moisture_fraction", in.GetMoistureFraction()); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 	}
@@ -64,15 +64,15 @@ func (s *MaterialService) CreateMaterial(
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var dbErr error
 		created, dbErr = q.CreateMaterial(ctx, sqlcgen.CreateMaterialParams{
-			TenantID:    u.TenantID,
-			Name:        in.GetName(),
-			Kind:        kind,
-			Uom:         in.GetUom(),
-			Supplier:    in.GetSupplier(),
-			Notes:       in.GetNotes(),
-			ExtractPct:  optionalFloat(in.GetExtractPctSet(), in.GetExtractPct()),
-			MoisturePct: optionalFloat(in.GetMoisturePctSet(), in.GetMoisturePct()),
-			Cereal:      cerealToDB(in.GetCereal()),
+			TenantID:         u.TenantID,
+			Name:             in.GetName(),
+			Kind:             kind,
+			Uom:              in.GetUom(),
+			Supplier:         in.GetSupplier(),
+			Notes:            in.GetNotes(),
+			ExtractFraction:  optionalFloat(in.GetExtractFractionSet(), in.GetExtractFraction()),
+			MoistureFraction: optionalFloat(in.GetMoistureFractionSet(), in.GetMoistureFraction()),
+			Cereal:           cerealToDB(in.GetCereal()),
 		})
 		if dbErr != nil {
 			return dbErr
@@ -110,13 +110,13 @@ func (s *MaterialService) UpdateMaterial(
 	// Unvalidated, 78 typed for 0.78 multiplied a recipe's projected yield
 	// by a hundred, and the yield check couldn't catch it because its own
 	// ceilings are computed from this same figure.
-	if in.GetExtractPctSet() {
-		if err := validateFraction("extract_pct", in.GetExtractPct()); err != nil {
+	if in.GetExtractFractionSet() {
+		if err := validateFraction("extract_fraction", in.GetExtractFraction()); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 	}
-	if in.GetMoisturePctSet() {
-		if err := validateFraction("moisture_pct", in.GetMoisturePct()); err != nil {
+	if in.GetMoistureFractionSet() {
+		if err := validateFraction("moisture_fraction", in.GetMoistureFraction()); err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, err)
 		}
 	}
@@ -125,14 +125,14 @@ func (s *MaterialService) UpdateMaterial(
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var dbErr error
 		updated, dbErr = q.UpdateMaterial(ctx, sqlcgen.UpdateMaterialParams{
-			ID:          id,
-			Name:        in.GetName(),
-			Uom:         in.GetUom(),
-			Supplier:    in.GetSupplier(),
-			Notes:       in.GetNotes(),
-			ExtractPct:  optionalFloat(in.GetExtractPctSet(), in.GetExtractPct()),
-			MoisturePct: optionalFloat(in.GetMoisturePctSet(), in.GetMoisturePct()),
-			Cereal:      cerealToDB(in.GetCereal()),
+			ID:               id,
+			Name:             in.GetName(),
+			Uom:              in.GetUom(),
+			Supplier:         in.GetSupplier(),
+			Notes:            in.GetNotes(),
+			ExtractFraction:  optionalFloat(in.GetExtractFractionSet(), in.GetExtractFraction()),
+			MoistureFraction: optionalFloat(in.GetMoistureFractionSet(), in.GetMoistureFraction()),
+			Cereal:           cerealToDB(in.GetCereal()),
 		})
 		return dbErr
 	})
@@ -530,13 +530,13 @@ func materialToProto(m sqlcgen.Material) *stillhousev1.Material {
 		UpdatedAt: timestamppb.New(m.UpdatedAt.Time),
 		Cereal:    cerealToProto(m.Cereal),
 	}
-	if m.ExtractPct.Valid {
-		out.ExtractPct = m.ExtractPct.Float64
-		out.ExtractPctSet = true
+	if m.ExtractFraction.Valid {
+		out.ExtractFraction = m.ExtractFraction.Float64
+		out.ExtractFractionSet = true
 	}
-	if m.MoisturePct.Valid {
-		out.MoisturePct = m.MoisturePct.Float64
-		out.MoisturePctSet = true
+	if m.MoistureFraction.Valid {
+		out.MoistureFraction = m.MoistureFraction.Float64
+		out.MoistureFractionSet = true
 	}
 	return out
 }

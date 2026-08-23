@@ -204,7 +204,7 @@ const listMashIngredients = `-- name: ListMashIngredients :many
 SELECT miu.id, miu.tenant_id, miu.mash_run_id, miu.material_id, miu.quantity_used, miu.uom, miu.notes, miu.created_at, miu.material_lot_id,
        m.name AS material_name,
        m.kind AS material_kind,
-       m.extract_pct AS material_extract_pct,
+       m.extract_fraction AS material_extract_fraction,
        m.cereal AS material_cereal,
        ml.supplier_lot AS supplier_lot,
        ml.received_at  AS lot_received_at
@@ -216,21 +216,21 @@ ORDER BY m.name
 `
 
 type ListMashIngredientsRow struct {
-	ID                 uuid.UUID          `json:"id"`
-	TenantID           uuid.UUID          `json:"tenant_id"`
-	MashRunID          uuid.UUID          `json:"mash_run_id"`
-	MaterialID         uuid.UUID          `json:"material_id"`
-	QuantityUsed       float64            `json:"quantity_used"`
-	Uom                string             `json:"uom"`
-	Notes              string             `json:"notes"`
-	CreatedAt          pgtype.Timestamptz `json:"created_at"`
-	MaterialLotID      uuid.NullUUID      `json:"material_lot_id"`
-	MaterialName       string             `json:"material_name"`
-	MaterialKind       MaterialKind       `json:"material_kind"`
-	MaterialExtractPct pgtype.Float8      `json:"material_extract_pct"`
-	MaterialCereal     NullCereal         `json:"material_cereal"`
-	SupplierLot        pgtype.Text        `json:"supplier_lot"`
-	LotReceivedAt      pgtype.Timestamptz `json:"lot_received_at"`
+	ID                      uuid.UUID          `json:"id"`
+	TenantID                uuid.UUID          `json:"tenant_id"`
+	MashRunID               uuid.UUID          `json:"mash_run_id"`
+	MaterialID              uuid.UUID          `json:"material_id"`
+	QuantityUsed            float64            `json:"quantity_used"`
+	Uom                     string             `json:"uom"`
+	Notes                   string             `json:"notes"`
+	CreatedAt               pgtype.Timestamptz `json:"created_at"`
+	MaterialLotID           uuid.NullUUID      `json:"material_lot_id"`
+	MaterialName            string             `json:"material_name"`
+	MaterialKind            MaterialKind       `json:"material_kind"`
+	MaterialExtractFraction pgtype.Float8      `json:"material_extract_fraction"`
+	MaterialCereal          NullCereal         `json:"material_cereal"`
+	SupplierLot             pgtype.Text        `json:"supplier_lot"`
+	LotReceivedAt           pgtype.Timestamptz `json:"lot_received_at"`
 }
 
 func (q *Queries) ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) ([]ListMashIngredientsRow, error) {
@@ -254,7 +254,7 @@ func (q *Queries) ListMashIngredients(ctx context.Context, mashRunID uuid.UUID) 
 			&i.MaterialLotID,
 			&i.MaterialName,
 			&i.MaterialKind,
-			&i.MaterialExtractPct,
+			&i.MaterialExtractFraction,
 			&i.MaterialCereal,
 			&i.SupplierLot,
 			&i.LotReceivedAt,

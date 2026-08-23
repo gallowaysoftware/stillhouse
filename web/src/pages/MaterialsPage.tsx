@@ -51,8 +51,8 @@ export function MaterialsPage() {
     const kindVal = Number(fd.get("kind")) as MaterialKind;
     const isFermentable =
       kindVal === MaterialKind.GRAIN || kindVal === MaterialKind.MALT;
-    const extractPctRaw = fd.get("extract_pct")?.toString().trim() ?? "";
-    const moisturePctRaw = fd.get("moisture_pct")?.toString().trim() ?? "";
+    const extractFractionRaw = fd.get("extract_pct")?.toString().trim() ?? "";
+    const moistureFractionRaw = fd.get("moisture_pct")?.toString().trim() ?? "";
     // Cereal only means anything for a fermentable; it drives the mash
     // bench's gelatinisation guidance.
     const cerealRaw = fd.get("cereal")?.toString() ?? "";
@@ -66,10 +66,10 @@ export function MaterialsPage() {
       // sheet quotes it; stored as a fraction because that is what the
       // projection math takes. Asking the operator to divide by 100 was an
       // invitation to enter 78 and get a hundredfold yield projection.
-      extractPct: isFermentable && extractPctRaw ? Number(extractPctRaw) / 100 : 0,
-      extractPctSet: !!(isFermentable && extractPctRaw),
-      moisturePct: isFermentable && moisturePctRaw ? Number(moisturePctRaw) / 100 : 0,
-      moisturePctSet: !!(isFermentable && moisturePctRaw),
+      extractFraction: isFermentable && extractFractionRaw ? Number(extractFractionRaw) / 100 : 0,
+      extractFractionSet: !!(isFermentable && extractFractionRaw),
+      moistureFraction: isFermentable && moistureFractionRaw ? Number(moistureFractionRaw) / 100 : 0,
+      moistureFractionSet: !!(isFermentable && moistureFractionRaw),
       cereal: isFermentable && cerealRaw ? (Number(cerealRaw) as Cereal) : Cereal.UNSPECIFIED,
     });
     createMaterial.mutate(req);
@@ -206,7 +206,7 @@ export function MaterialsPage() {
                   )}
                 </td>
                 <td className="px-4 py-3 text-right text-fg-muted">
-                  {m.extractPctSet ? (m.extractPct * 100).toFixed(2) + "%" : "—"}
+                  {m.extractFractionSet ? (m.extractFraction * 100).toFixed(2) + "%" : "—"}
                 </td>
                 <td className="px-4 py-3 text-fg-muted">{m.supplier || "—"}</td>
               </tr>

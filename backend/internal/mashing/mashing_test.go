@@ -39,8 +39,8 @@ func TestGelatinisationCoverage(t *testing.T) {
 // maize gelatinises above the window where the amylases survive.
 func TestMaizeForcesCerealCook(t *testing.T) {
 	b := Assess([]GrainBillItem{
-		{Name: "Flaked maize", Cereal: CerealMaize, MassKg: 80, ExtractPct: 0.72},
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 20, ExtractPct: 0.78, Malted: true},
+		{Name: "Flaked maize", Cereal: CerealMaize, MassKg: 80, Extract: 0.72},
+		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 20, Extract: 0.78, Malted: true},
 	}, Readings{})
 
 	if !b.CerealCookRequired {
@@ -56,7 +56,7 @@ func TestMaizeForcesCerealCook(t *testing.T) {
 
 func TestAllBarleyMashesInOneRest(t *testing.T) {
 	b := Assess([]GrainBillItem{
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, ExtractPct: 0.78, Malted: true},
+		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, Extract: 0.78, Malted: true},
 	}, Readings{})
 	if b.CerealCookRequired {
 		t.Error("an all-barley bill gelatinises inside the conversion window")
@@ -68,8 +68,8 @@ func TestAllBarleyMashesInOneRest(t *testing.T) {
 
 func TestUnknownCerealIsReportedNotGuessed(t *testing.T) {
 	b := Assess([]GrainBillItem{
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 50, ExtractPct: 0.78},
-		{Name: "Naked oats", Cereal: CerealOat, MassKg: 50, ExtractPct: 0.60},
+		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 50, Extract: 0.78},
+		{Name: "Naked oats", Cereal: CerealOat, MassKg: 50, Extract: 0.60},
 	}, Readings{})
 	if b.GelatinisationKnown {
 		t.Error("a bill containing a cereal with no published figure is not fully known")
@@ -130,7 +130,7 @@ func TestPlatoFromSG(t *testing.T) {
 func TestEfficiencyFromGravity(t *testing.T) {
 	og, water := 1.055, 300.0
 	b := Assess([]GrainBillItem{
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, ExtractPct: 0.78},
+		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, Extract: 0.78},
 	}, Readings{OriginalGravity: &og, WaterVolumeL: &water})
 
 	if b.Efficiency == nil {
@@ -148,15 +148,15 @@ func TestEfficiencyFromGravity(t *testing.T) {
 	}
 	// Sanity: a 1.055 wash of 360 L holds roughly 50 kg of extract, so
 	// efficiency should land in a believable band rather than anywhere.
-	if b.Efficiency.Pct < 50 || b.Efficiency.Pct > 90 {
-		t.Errorf("efficiency %.1f %% is outside any believable range", b.Efficiency.Pct)
+	if b.Efficiency.Percent < 50 || b.Efficiency.Percent > 90 {
+		t.Errorf("efficiency %.1f %% is outside any believable range", b.Efficiency.Percent)
 	}
 }
 
 func TestEfficiencyOver100IsCalledOut(t *testing.T) {
 	og, wash := 1.090, 400.0
 	b := Assess([]GrainBillItem{
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 30, ExtractPct: 0.78},
+		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 30, Extract: 0.78},
 	}, Readings{OriginalGravity: &og, WashVolumeL: &wash})
 	if !hasCode(b.Findings, "efficiency_impossible") {
 		t.Error("an impossible efficiency should be reported as bad inputs, not celebrated")
@@ -207,7 +207,7 @@ func TestPlanStrikeFlagsDenaturingLiquor(t *testing.T) {
 
 func findingsFor(r Readings) []Finding {
 	return Assess([]GrainBillItem{
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, ExtractPct: 0.78},
+		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, Extract: 0.78},
 	}, r).Findings
 }
 

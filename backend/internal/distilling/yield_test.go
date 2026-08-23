@@ -8,7 +8,7 @@ import (
 // A 100 % malted barley bill at 78 % extract — the curriculum's reference
 // material.
 func maltBill(massKg float64) []Ingredient {
-	return []Ingredient{{Name: "Malted barley", MassKg: massKg, ExtractPct: 0.78}}
+	return []Ingredient{{Name: "Malted barley", MassKg: massKg, Extract: 0.78}}
 }
 
 func TestYieldBenchmarksForDistillingMalt(t *testing.T) {
@@ -126,13 +126,13 @@ func TestYieldScalesWithBatchSize(t *testing.T) {
 
 func TestMixedBillUsesWeightedExtract(t *testing.T) {
 	bill := []Ingredient{
-		{Name: "Maize", MassKg: 800, ExtractPct: 0.72},
-		{Name: "Malted barley", MassKg: 200, ExtractPct: 0.78},
+		{Name: "Maize", MassKg: 800, Extract: 0.72},
+		{Name: "Malted barley", MassKg: 200, Extract: 0.78},
 	}
 	y := CheckYield(bill, 400)
 	want := (800*0.72 + 200*0.78) / 1000
-	if math.Abs(y.WeightedExtractPct-want) > 1e-9 {
-		t.Errorf("weighted extract = %.5f, want %.5f", y.WeightedExtractPct, want)
+	if math.Abs(y.WeightedExtract.Float()-want) > 1e-9 {
+		t.Errorf("weighted extract = %.5f, want %.5f", y.WeightedExtract, want)
 	}
 }
 
@@ -160,8 +160,8 @@ func TestNoExtractDataIsNotMeasurable(t *testing.T) {
 // process claim, it's a broken number.
 func TestCheckYieldCatchesPercentAsFraction(t *testing.T) {
 	y := CheckYield([]Ingredient{
-		{Name: "Rye (unmalted)", MassKg: 340, ExtractPct: 78},
-		{Name: "Malted barley", MassKg: 60, ExtractPct: 80},
+		{Name: "Rye (unmalted)", MassKg: 340, Extract: 78},
+		{Name: "Malted barley", MassKg: 60, Extract: 80},
 	}, 14270.13)
 
 	if !y.Measurable {
@@ -169,7 +169,7 @@ func TestCheckYieldCatchesPercentAsFraction(t *testing.T) {
 	}
 	if !hasCode(y.Findings, "extract_out_of_range") {
 		t.Errorf("findings = %v, want extract_out_of_range — an extract of %.2f means more "+
-			"extract than grain", codes(y.Findings), y.WeightedExtractPct)
+			"extract than grain", codes(y.Findings), y.WeightedExtract)
 	}
 	for _, f := range y.Findings {
 		if f.Code == "extract_out_of_range" && f.Severity != SeverityProblem {
@@ -182,12 +182,12 @@ func TestCheckYieldCatchesPercentAsFraction(t *testing.T) {
 // without shouting at ordinary recipes.
 func TestCheckYieldQuietOnSaneBill(t *testing.T) {
 	y := CheckYield([]Ingredient{
-		{Name: "Rye (unmalted)", MassKg: 340, ExtractPct: 0.78},
-		{Name: "Malted barley", MassKg: 60, ExtractPct: 0.80},
+		{Name: "Rye (unmalted)", MassKg: 340, Extract: 0.78},
+		{Name: "Malted barley", MassKg: 60, Extract: 0.80},
 	}, 142.70)
 
 	if hasCode(y.Findings, "extract_out_of_range") {
-		t.Errorf("extract_out_of_range fired on a normal bill (extract %.3f)", y.WeightedExtractPct)
+		t.Errorf("extract_out_of_range fired on a normal bill (extract %.3f)", y.WeightedExtract)
 	}
 	if len(y.Findings) != 0 {
 		t.Errorf("findings = %v, want none for a 357 L/tonne projection", codes(y.Findings))

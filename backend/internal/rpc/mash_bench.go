@@ -9,6 +9,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/mashing"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
 )
 
 // buildMashBench turns a mash's actual grain bill and recorded metrics into
@@ -34,8 +35,11 @@ func buildMashBench(
 			MassKg: ing.QuantityUsed,
 			Malted: kind == stillhousev1.MaterialKind_MATERIAL_KIND_MALT,
 		}
-		if ing.MaterialExtractPct.Valid {
-			item.ExtractPct = ing.MaterialExtractPct.Float64
+		if ing.MaterialExtractFraction.Valid {
+			// The column is named *_pct and has always held a fraction —
+			// the ambiguity K3 names. Converting here makes the scale
+			// explicit at the boundary it crosses.
+			item.Extract = units.Fraction(ing.MaterialExtractFraction.Float64)
 		}
 		bill = append(bill, item)
 	}
@@ -83,7 +87,7 @@ func buildMashBench(
 			WashVolumeEstimated: b.Efficiency.WashVolumeEstimated,
 			ExtractMeasuredKg:   round2(b.Efficiency.ExtractMeasuredKg),
 			ExtractAvailableKg:  round2(b.Efficiency.ExtractAvailableKg),
-			Pct:                 round2(b.Efficiency.Pct),
+			Pct:                 round2(b.Efficiency.Percent.Float()),
 		}
 		out.EfficiencySet = true
 	}

@@ -18,7 +18,11 @@
 // actuals diverge unusually from expectations.
 package distilling
 
-import "math"
+import (
+	"math"
+
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
+)
 
 // Conversion constants.
 const (
@@ -38,23 +42,31 @@ type Ingredient struct {
 	Name string
 	// MassKg is the mass of this ingredient, in kilograms.
 	MassKg float64
-	// ExtractPct is the fraction (0..1) of MassKg that is fermentable
-	// extract. Typical values: corn ~0.72, malted barley ~0.78,
-	// unmalted rye ~0.65, wheat ~0.74.
-	ExtractPct float64
+	// Extract is the proportion of MassKg that is fermentable extract.
+	// Typical values: corn ~0.72, malted barley ~0.78, unmalted rye
+	// ~0.65, wheat ~0.74.
+	//
+	// Typed as a Fraction rather than a float, because the field next to
+	// it in every caller is a strength in percent, and the two are a
+	// hundredfold apart. See internal/units.
+	Extract units.Fraction
 }
 
-// Efficiencies are the per-stage process efficiencies, each a fraction (0..1).
+// Efficiencies are the per-stage process efficiencies.
+//
+// All three are fractions and are typed as such. A value of 78 here
+// instead of 0.78 would overstate a projection a hundredfold; the type
+// is what stops it being passed from a field that means percent.
 type Efficiencies struct {
-	// Mash is the fraction of extract actually freed into the wort during
-	// mashing. Typical small-scale: 0.75–0.90.
-	Mash float64
-	// Ferment is the fraction of the theoretical Gay-Lussac ethanol mass
-	// actually produced. Typical: 0.85–0.95.
-	Ferment float64
-	// DistillationRecovery is the fraction of the wash's ethanol that
+	// Mash is the proportion of extract actually freed into the wort
+	// during mashing. Typical small-scale: 0.75–0.90.
+	Mash units.Fraction
+	// Ferment is the proportion of the theoretical Gay-Lussac ethanol
+	// mass actually produced. Typical: 0.85–0.95.
+	Ferment units.Fraction
+	// DistillationRecovery is the proportion of the wash's ethanol that
 	// ends up in the hearts cut. Typical: 0.80–0.95.
-	DistillationRecovery float64
+	DistillationRecovery units.Fraction
 }
 
 // Projection is the result of projecting a recipe through one batch.
@@ -70,7 +82,7 @@ type Projection struct {
 type IngredientResult struct {
 	Name           string
 	MassKg         float64
-	FermentableKg  float64 // MassKg × ExtractPct
+	FermentableKg  float64 // MassKg × Extract
 	ExtractFreedKg float64 // FermentableKg × Mash
 	EthanolMassKg  float64 // ExtractFreedKg × 0.511 × Ferment
 	EthanolVolumeL float64 // EthanolMassKg ÷ 0.78934
@@ -116,7 +128,8 @@ func ProjectWash(ingredients []Ingredient, eff Efficiencies, waterAddedL float64
 	ethanolMassKg := 0.0
 	for _, in := range ingredients {
 		grainMassKg += in.MassKg
-		ethanolMassKg += in.MassKg * in.ExtractPct * eff.Mash * GayLussacRatio * eff.Ferment
+		ethanolMassKg += in.MassKg * in.Extract.Float() *
+			eff.Mash.Float() * GayLussacRatio * eff.Ferment.Float()
 	}
 	washVolumeL := waterAddedL + grainMassKg*0.6
 	ethanolVolumeL := ethanolMassKg / EthanolDensityKgPerL
@@ -132,14 +145,14 @@ func ProjectWash(ingredients []Ingredient, eff Efficiencies, waterAddedL float64
 
 func projectIngredient(in Ingredient, eff Efficiencies) IngredientResult {
 	r := IngredientResult{Name: in.Name, MassKg: in.MassKg}
-	if in.MassKg <= 0 || in.ExtractPct <= 0 {
+	if in.MassKg <= 0 || in.Extract <= 0 {
 		return r
 	}
-	r.FermentableKg = in.MassKg * in.ExtractPct
-	r.ExtractFreedKg = r.FermentableKg * eff.Mash
-	r.EthanolMassKg = r.ExtractFreedKg * GayLussacRatio * eff.Ferment
+	r.FermentableKg = in.MassKg * in.Extract.Float()
+	r.ExtractFreedKg = r.FermentableKg * eff.Mash.Float()
+	r.EthanolMassKg = r.ExtractFreedKg * GayLussacRatio * eff.Ferment.Float()
 	r.EthanolVolumeL = r.EthanolMassKg / EthanolDensityKgPerL
-	r.ProjectedLAA = round4(r.EthanolVolumeL * eff.DistillationRecovery)
+	r.ProjectedLAA = round4(r.EthanolVolumeL * eff.DistillationRecovery.Float())
 	return r
 }
 

@@ -724,23 +724,23 @@ func (x *MashRun) GetBench() *MashBench {
 }
 
 type MashIngredientUsage struct {
-	state                 protoimpl.MessageState `protogen:"open.v1"`
-	Id                    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	MashRunId             string                 `protobuf:"bytes,2,opt,name=mash_run_id,json=mashRunId,proto3" json:"mash_run_id,omitempty"`
-	MaterialId            string                 `protobuf:"bytes,3,opt,name=material_id,json=materialId,proto3" json:"material_id,omitempty"`
-	MaterialName          string                 `protobuf:"bytes,4,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"`
-	MaterialKind          MaterialKind           `protobuf:"varint,5,opt,name=material_kind,json=materialKind,proto3,enum=stillhouse.v1.MaterialKind" json:"material_kind,omitempty"`
-	MaterialExtractPct    float64                `protobuf:"fixed64,6,opt,name=material_extract_pct,json=materialExtractPct,proto3" json:"material_extract_pct,omitempty"`
-	MaterialExtractPctSet bool                   `protobuf:"varint,7,opt,name=material_extract_pct_set,json=materialExtractPctSet,proto3" json:"material_extract_pct_set,omitempty"`
-	QuantityUsed          float64                `protobuf:"fixed64,8,opt,name=quantity_used,json=quantityUsed,proto3" json:"quantity_used,omitempty"`
-	Uom                   string                 `protobuf:"bytes,9,opt,name=uom,proto3" json:"uom,omitempty"`
-	Notes                 string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
-	CreatedAt             *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	MaterialLotId         string                 `protobuf:"bytes,12,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"` // empty when not lot-linked
-	SupplierLot           string                 `protobuf:"bytes,13,opt,name=supplier_lot,json=supplierLot,proto3" json:"supplier_lot,omitempty"`         // denormalized from material_lots
-	LotReceivedAt         *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=lot_received_at,json=lotReceivedAt,proto3" json:"lot_received_at,omitempty"`
-	unknownFields         protoimpl.UnknownFields
-	sizeCache             protoimpl.SizeCache
+	state                      protoimpl.MessageState `protogen:"open.v1"`
+	Id                         string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	MashRunId                  string                 `protobuf:"bytes,2,opt,name=mash_run_id,json=mashRunId,proto3" json:"mash_run_id,omitempty"`
+	MaterialId                 string                 `protobuf:"bytes,3,opt,name=material_id,json=materialId,proto3" json:"material_id,omitempty"`
+	MaterialName               string                 `protobuf:"bytes,4,opt,name=material_name,json=materialName,proto3" json:"material_name,omitempty"`
+	MaterialKind               MaterialKind           `protobuf:"varint,5,opt,name=material_kind,json=materialKind,proto3,enum=stillhouse.v1.MaterialKind" json:"material_kind,omitempty"`
+	MaterialExtractFraction    float64                `protobuf:"fixed64,6,opt,name=material_extract_fraction,json=materialExtractFraction,proto3" json:"material_extract_fraction,omitempty"`
+	MaterialExtractFractionSet bool                   `protobuf:"varint,7,opt,name=material_extract_fraction_set,json=materialExtractFractionSet,proto3" json:"material_extract_fraction_set,omitempty"`
+	QuantityUsed               float64                `protobuf:"fixed64,8,opt,name=quantity_used,json=quantityUsed,proto3" json:"quantity_used,omitempty"`
+	Uom                        string                 `protobuf:"bytes,9,opt,name=uom,proto3" json:"uom,omitempty"`
+	Notes                      string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
+	CreatedAt                  *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	MaterialLotId              string                 `protobuf:"bytes,12,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"` // empty when not lot-linked
+	SupplierLot                string                 `protobuf:"bytes,13,opt,name=supplier_lot,json=supplierLot,proto3" json:"supplier_lot,omitempty"`         // denormalized from material_lots
+	LotReceivedAt              *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=lot_received_at,json=lotReceivedAt,proto3" json:"lot_received_at,omitempty"`
+	unknownFields              protoimpl.UnknownFields
+	sizeCache                  protoimpl.SizeCache
 }
 
 func (x *MashIngredientUsage) Reset() {
@@ -808,16 +808,16 @@ func (x *MashIngredientUsage) GetMaterialKind() MaterialKind {
 	return MaterialKind_MATERIAL_KIND_UNSPECIFIED
 }
 
-func (x *MashIngredientUsage) GetMaterialExtractPct() float64 {
+func (x *MashIngredientUsage) GetMaterialExtractFraction() float64 {
 	if x != nil {
-		return x.MaterialExtractPct
+		return x.MaterialExtractFraction
 	}
 	return 0
 }
 
-func (x *MashIngredientUsage) GetMaterialExtractPctSet() bool {
+func (x *MashIngredientUsage) GetMaterialExtractFractionSet() bool {
 	if x != nil {
-		return x.MaterialExtractPctSet
+		return x.MaterialExtractFractionSet
 	}
 	return false
 }
@@ -1789,16 +1789,16 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\ametrics\x18\r \x03(\v2\x19.stillhouse.v1.MashMetricR\ametrics\x12#\n" +
 	"\rprojected_laa\x18\x0e \x01(\x01R\fprojectedLaa\x12.\n" +
 	"\x13actual_captured_laa\x18\x0f \x01(\x01R\x11actualCapturedLaa\x12.\n" +
-	"\x05bench\x18\x10 \x01(\v2\x18.stillhouse.v1.MashBenchR\x05bench\"\xcf\x04\n" +
+	"\x05bench\x18\x10 \x01(\v2\x18.stillhouse.v1.MashBenchR\x05bench\"\xe3\x04\n" +
 	"\x13MashIngredientUsage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1e\n" +
 	"\vmash_run_id\x18\x02 \x01(\tR\tmashRunId\x12\x1f\n" +
 	"\vmaterial_id\x18\x03 \x01(\tR\n" +
 	"materialId\x12#\n" +
 	"\rmaterial_name\x18\x04 \x01(\tR\fmaterialName\x12@\n" +
-	"\rmaterial_kind\x18\x05 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\fmaterialKind\x120\n" +
-	"\x14material_extract_pct\x18\x06 \x01(\x01R\x12materialExtractPct\x127\n" +
-	"\x18material_extract_pct_set\x18\a \x01(\bR\x15materialExtractPctSet\x12#\n" +
+	"\rmaterial_kind\x18\x05 \x01(\x0e2\x1b.stillhouse.v1.MaterialKindR\fmaterialKind\x12:\n" +
+	"\x19material_extract_fraction\x18\x06 \x01(\x01R\x17materialExtractFraction\x12A\n" +
+	"\x1dmaterial_extract_fraction_set\x18\a \x01(\bR\x1amaterialExtractFractionSet\x12#\n" +
 	"\rquantity_used\x18\b \x01(\x01R\fquantityUsed\x12\x10\n" +
 	"\x03uom\x18\t \x01(\tR\x03uom\x12\x14\n" +
 	"\x05notes\x18\n" +

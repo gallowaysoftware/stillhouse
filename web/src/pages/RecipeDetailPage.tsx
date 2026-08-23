@@ -168,9 +168,9 @@ export function RecipeDetailPage() {
         recipeId: id!,
         notes: versionNotes,
         tastingNotes: tastingNotes,
-        mashEfficiencyPct: Number(mashEff || "1"),
-        fermentEfficiencyPct: Number(fermentEff || "1"),
-        distillationRecoveryPct: Number(distillEff || "0.9"),
+        mashEfficiencyFraction: Number(mashEff || "1"),
+        fermentEfficiencyFraction: Number(fermentEff || "1"),
+        distillationRecoveryFraction: Number(distillEff || "0.9"),
         targetWaterL: water ? Number(water) : 0,
         targetWaterLSet: !!water,
         distillationMethod,
@@ -188,9 +188,9 @@ export function RecipeDetailPage() {
   function openEditor() {
     if (!showEditor && recipe.data?.currentVersion) {
       const cv = recipe.data.currentVersion;
-      setMashEff(String(cv.mashEfficiencyPct));
-      setFermentEff(String(cv.fermentEfficiencyPct));
-      setDistillEff(String(cv.distillationRecoveryPct));
+      setMashEff(String(cv.mashEfficiencyFraction));
+      setFermentEff(String(cv.fermentEfficiencyFraction));
+      setDistillEff(String(cv.distillationRecoveryFraction));
       setWaterL(cv.targetWaterLSet ? String(cv.targetWaterL) : "");
       setVersionNotes("");
       setTastingNotes(cv.tastingNotes ?? "");
@@ -407,7 +407,7 @@ export function RecipeDetailPage() {
                         </DLRow>
                       )}
                       <DLRow label="Distillation recovery">
-                        {formatPct(recipe.data.currentVersion.distillationRecoveryPct)}
+                        {formatPct(recipe.data.currentVersion.distillationRecoveryFraction)}
                       </DLRow>
                       <DLRow label="Distillation method">
                         {distillationMethodLabel(recipe.data.currentVersion.distillationMethod)}
@@ -420,9 +420,9 @@ export function RecipeDetailPage() {
                     </>
                   ) : (
                     <>
-                      <DLRow label="Mash efficiency">{formatPct(recipe.data.currentVersion.mashEfficiencyPct)}</DLRow>
-                      <DLRow label="Ferment efficiency">{formatPct(recipe.data.currentVersion.fermentEfficiencyPct)}</DLRow>
-                      <DLRow label="Distillation recovery">{formatPct(recipe.data.currentVersion.distillationRecoveryPct)}</DLRow>
+                      <DLRow label="Mash efficiency">{formatPct(recipe.data.currentVersion.mashEfficiencyFraction)}</DLRow>
+                      <DLRow label="Ferment efficiency">{formatPct(recipe.data.currentVersion.fermentEfficiencyFraction)}</DLRow>
+                      <DLRow label="Distillation recovery">{formatPct(recipe.data.currentVersion.distillationRecoveryFraction)}</DLRow>
                       {recipe.data.currentVersion.targetWaterLSet && (
                         <DLRow label="Target water">
                           {formatQty(recipe.data.currentVersion.targetWaterL)} L
@@ -964,11 +964,11 @@ function VersionHistory({
                   </td>
                   {!isGin && (
                     <>
-                      <td className="px-4 py-2 text-right text-fg-muted">{(v.mashEfficiencyPct * 100).toFixed(1)}%</td>
-                      <td className="px-4 py-2 text-right text-fg-muted">{(v.fermentEfficiencyPct * 100).toFixed(1)}%</td>
+                      <td className="px-4 py-2 text-right text-fg-muted">{(v.mashEfficiencyFraction * 100).toFixed(1)}%</td>
+                      <td className="px-4 py-2 text-right text-fg-muted">{(v.fermentEfficiencyFraction * 100).toFixed(1)}%</td>
                     </>
                   )}
-                  <td className="px-4 py-2 text-right text-fg-muted">{(v.distillationRecoveryPct * 100).toFixed(1)}%</td>
+                  <td className="px-4 py-2 text-right text-fg-muted">{(v.distillationRecoveryFraction * 100).toFixed(1)}%</td>
                   {isGin && (
                     <td className="px-4 py-2 text-right text-fg-muted">{ngsLAA ?? "—"}</td>
                   )}
@@ -1041,11 +1041,11 @@ function CompareTwo({
                 </>
               ) : (
                 <>
-                  <CmpRow label="Mash" a={`${(a.mashEfficiencyPct * 100).toFixed(1)}%`} b={`${(b.mashEfficiencyPct * 100).toFixed(1)}%`} />
-                  <CmpRow label="Ferment" a={`${(a.fermentEfficiencyPct * 100).toFixed(1)}%`} b={`${(b.fermentEfficiencyPct * 100).toFixed(1)}%`} />
+                  <CmpRow label="Mash" a={`${(a.mashEfficiencyFraction * 100).toFixed(1)}%`} b={`${(b.mashEfficiencyFraction * 100).toFixed(1)}%`} />
+                  <CmpRow label="Ferment" a={`${(a.fermentEfficiencyFraction * 100).toFixed(1)}%`} b={`${(b.fermentEfficiencyFraction * 100).toFixed(1)}%`} />
                 </>
               )}
-              <CmpRow label="Recovery" a={`${(a.distillationRecoveryPct * 100).toFixed(1)}%`} b={`${(b.distillationRecoveryPct * 100).toFixed(1)}%`} />
+              <CmpRow label="Recovery" a={`${(a.distillationRecoveryFraction * 100).toFixed(1)}%`} b={`${(b.distillationRecoveryFraction * 100).toFixed(1)}%`} />
             </tbody>
           </table>
         </div>

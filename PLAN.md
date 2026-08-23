@@ -420,22 +420,6 @@ status, scheduling.
 
 Not features. The reasons to believe the numbers above are right.
 
-### K3 · `_pct` means two different scales — P2
-
-`abv_pct` is 0–100. `extract_pct`, `moisture_pct` and the three recipe
-efficiencies are fractions in [0,1]. Same suffix, same product, hundredfold
-apart — and `MashEfficiency.pct` (a percentage) sits beside
-`RecipeVersion.mash_efficiency_pct` (a fraction), the same concept at two
-scales.
-
-Range validators now catch the ×100 direction, because 78 is out of range for a
-fraction. They cannot catch the ÷100 direction, because 0.40 is a legal
-percentage — and that is the direction that understates duty. Renaming the
-fraction fields `_fraction` is a day's mechanical work and removes the
-ambiguity where it actually lives, which is the name a human reads. Named
-`Fraction`/`Percent` types in the domain packages would promote the existing
-doc comments to compile errors.
-
 ---
 
 ## Ordering

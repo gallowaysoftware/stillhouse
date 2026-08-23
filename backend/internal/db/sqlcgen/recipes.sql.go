@@ -98,29 +98,29 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 const createRecipeVersion = `-- name: CreateRecipeVersion :one
 INSERT INTO recipe_versions (
     tenant_id, recipe_id, version_no, notes,
-    mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct,
+    mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction,
     target_water_l,
     tasting_notes, distillation_method, maceration_hours,
     gin_ngs_input_l, gin_ngs_input_abv_pct
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
-) RETURNING id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct
+) RETURNING id, tenant_id, recipe_id, version_no, notes, mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct
 `
 
 type CreateRecipeVersionParams struct {
-	TenantID                uuid.UUID     `json:"tenant_id"`
-	RecipeID                uuid.UUID     `json:"recipe_id"`
-	VersionNo               int32         `json:"version_no"`
-	Notes                   string        `json:"notes"`
-	MashEfficiencyPct       float64       `json:"mash_efficiency_pct"`
-	FermentEfficiencyPct    float64       `json:"ferment_efficiency_pct"`
-	DistillationRecoveryPct float64       `json:"distillation_recovery_pct"`
-	TargetWaterL            pgtype.Float8 `json:"target_water_l"`
-	TastingNotes            string        `json:"tasting_notes"`
-	DistillationMethod      string        `json:"distillation_method"`
-	MacerationHours         pgtype.Float8 `json:"maceration_hours"`
-	GinNgsInputL            pgtype.Float8 `json:"gin_ngs_input_l"`
-	GinNgsInputAbvPct       pgtype.Float8 `json:"gin_ngs_input_abv_pct"`
+	TenantID                     uuid.UUID     `json:"tenant_id"`
+	RecipeID                     uuid.UUID     `json:"recipe_id"`
+	VersionNo                    int32         `json:"version_no"`
+	Notes                        string        `json:"notes"`
+	MashEfficiencyFraction       float64       `json:"mash_efficiency_fraction"`
+	FermentEfficiencyFraction    float64       `json:"ferment_efficiency_fraction"`
+	DistillationRecoveryFraction float64       `json:"distillation_recovery_fraction"`
+	TargetWaterL                 pgtype.Float8 `json:"target_water_l"`
+	TastingNotes                 string        `json:"tasting_notes"`
+	DistillationMethod           string        `json:"distillation_method"`
+	MacerationHours              pgtype.Float8 `json:"maceration_hours"`
+	GinNgsInputL                 pgtype.Float8 `json:"gin_ngs_input_l"`
+	GinNgsInputAbvPct            pgtype.Float8 `json:"gin_ngs_input_abv_pct"`
 }
 
 func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error) {
@@ -129,9 +129,9 @@ func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersi
 		arg.RecipeID,
 		arg.VersionNo,
 		arg.Notes,
-		arg.MashEfficiencyPct,
-		arg.FermentEfficiencyPct,
-		arg.DistillationRecoveryPct,
+		arg.MashEfficiencyFraction,
+		arg.FermentEfficiencyFraction,
+		arg.DistillationRecoveryFraction,
 		arg.TargetWaterL,
 		arg.TastingNotes,
 		arg.DistillationMethod,
@@ -146,9 +146,9 @@ func (q *Queries) CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersi
 		&i.RecipeID,
 		&i.VersionNo,
 		&i.Notes,
-		&i.MashEfficiencyPct,
-		&i.FermentEfficiencyPct,
-		&i.DistillationRecoveryPct,
+		&i.MashEfficiencyFraction,
+		&i.FermentEfficiencyFraction,
+		&i.DistillationRecoveryFraction,
 		&i.TargetWaterL,
 		&i.CreatedAt,
 		&i.TastingNotes,
@@ -182,7 +182,7 @@ func (q *Queries) GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error) {
 }
 
 const getRecipeVersion = `-- name: GetRecipeVersion :one
-SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_pct, ferment_efficiency_pct, distillation_recovery_pct, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct FROM recipe_versions WHERE id = $1
+SELECT id, tenant_id, recipe_id, version_no, notes, mash_efficiency_fraction, ferment_efficiency_fraction, distillation_recovery_fraction, target_water_l, created_at, tasting_notes, distillation_method, maceration_hours, gin_ngs_input_l, gin_ngs_input_abv_pct FROM recipe_versions WHERE id = $1
 `
 
 func (q *Queries) GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error) {
@@ -194,9 +194,9 @@ func (q *Queries) GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVer
 		&i.RecipeID,
 		&i.VersionNo,
 		&i.Notes,
-		&i.MashEfficiencyPct,
-		&i.FermentEfficiencyPct,
-		&i.DistillationRecoveryPct,
+		&i.MashEfficiencyFraction,
+		&i.FermentEfficiencyFraction,
+		&i.DistillationRecoveryFraction,
 		&i.TargetWaterL,
 		&i.CreatedAt,
 		&i.TastingNotes,
@@ -266,7 +266,7 @@ SELECT ri.id, ri.tenant_id, ri.recipe_version_id, ri.material_id, ri.quantity, r
        m.name AS material_name,
        m.kind AS material_kind,
        m.uom  AS material_uom,
-       m.extract_pct AS material_extract_pct
+       m.extract_fraction AS material_extract_fraction
 FROM recipe_ingredients ri
 JOIN materials m ON m.id = ri.material_id
 WHERE ri.recipe_version_id = $1
@@ -274,19 +274,19 @@ ORDER BY ri.sort_order, m.name
 `
 
 type ListRecipeIngredientsRow struct {
-	ID                 uuid.UUID     `json:"id"`
-	TenantID           uuid.UUID     `json:"tenant_id"`
-	RecipeVersionID    uuid.UUID     `json:"recipe_version_id"`
-	MaterialID         uuid.UUID     `json:"material_id"`
-	Quantity           float64       `json:"quantity"`
-	Uom                string        `json:"uom"`
-	Notes              string        `json:"notes"`
-	SortOrder          int32         `json:"sort_order"`
-	BotanicalRole      string        `json:"botanical_role"`
-	MaterialName       string        `json:"material_name"`
-	MaterialKind       MaterialKind  `json:"material_kind"`
-	MaterialUom        string        `json:"material_uom"`
-	MaterialExtractPct pgtype.Float8 `json:"material_extract_pct"`
+	ID                      uuid.UUID     `json:"id"`
+	TenantID                uuid.UUID     `json:"tenant_id"`
+	RecipeVersionID         uuid.UUID     `json:"recipe_version_id"`
+	MaterialID              uuid.UUID     `json:"material_id"`
+	Quantity                float64       `json:"quantity"`
+	Uom                     string        `json:"uom"`
+	Notes                   string        `json:"notes"`
+	SortOrder               int32         `json:"sort_order"`
+	BotanicalRole           string        `json:"botanical_role"`
+	MaterialName            string        `json:"material_name"`
+	MaterialKind            MaterialKind  `json:"material_kind"`
+	MaterialUom             string        `json:"material_uom"`
+	MaterialExtractFraction pgtype.Float8 `json:"material_extract_fraction"`
 }
 
 func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uuid.UUID) ([]ListRecipeIngredientsRow, error) {
@@ -311,7 +311,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uui
 			&i.MaterialName,
 			&i.MaterialKind,
 			&i.MaterialUom,
-			&i.MaterialExtractPct,
+			&i.MaterialExtractFraction,
 		); err != nil {
 			return nil, err
 		}
@@ -325,7 +325,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeVersionID uui
 
 const listRecipeVersions = `-- name: ListRecipeVersions :many
 SELECT
-    v.id, v.tenant_id, v.recipe_id, v.version_no, v.notes, v.mash_efficiency_pct, v.ferment_efficiency_pct, v.distillation_recovery_pct, v.target_water_l, v.created_at, v.tasting_notes, v.distillation_method, v.maceration_hours, v.gin_ngs_input_l, v.gin_ngs_input_abv_pct,
+    v.id, v.tenant_id, v.recipe_id, v.version_no, v.notes, v.mash_efficiency_fraction, v.ferment_efficiency_fraction, v.distillation_recovery_fraction, v.target_water_l, v.created_at, v.tasting_notes, v.distillation_method, v.maceration_hours, v.gin_ngs_input_l, v.gin_ngs_input_abv_pct,
     s.juniper       AS sensory_juniper,
     s.citrus        AS sensory_citrus,
     s.herbal        AS sensory_herbal,
@@ -359,46 +359,46 @@ ORDER BY v.version_no DESC
 `
 
 type ListRecipeVersionsRow struct {
-	ID                      uuid.UUID          `json:"id"`
-	TenantID                uuid.UUID          `json:"tenant_id"`
-	RecipeID                uuid.UUID          `json:"recipe_id"`
-	VersionNo               int32              `json:"version_no"`
-	Notes                   string             `json:"notes"`
-	MashEfficiencyPct       float64            `json:"mash_efficiency_pct"`
-	FermentEfficiencyPct    float64            `json:"ferment_efficiency_pct"`
-	DistillationRecoveryPct float64            `json:"distillation_recovery_pct"`
-	TargetWaterL            pgtype.Float8      `json:"target_water_l"`
-	CreatedAt               pgtype.Timestamptz `json:"created_at"`
-	TastingNotes            string             `json:"tasting_notes"`
-	DistillationMethod      string             `json:"distillation_method"`
-	MacerationHours         pgtype.Float8      `json:"maceration_hours"`
-	GinNgsInputL            pgtype.Float8      `json:"gin_ngs_input_l"`
-	GinNgsInputAbvPct       pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
-	SensoryJuniper          pgtype.Int2        `json:"sensory_juniper"`
-	SensoryCitrus           pgtype.Int2        `json:"sensory_citrus"`
-	SensoryHerbal           pgtype.Int2        `json:"sensory_herbal"`
-	SensorySpice            pgtype.Int2        `json:"sensory_spice"`
-	SensoryFloral           pgtype.Int2        `json:"sensory_floral"`
-	SensoryEarth            pgtype.Int2        `json:"sensory_earth"`
-	SensoryBody             pgtype.Int2        `json:"sensory_body"`
-	SensoryHeat             pgtype.Int2        `json:"sensory_heat"`
-	SensoryBalance          pgtype.Int2        `json:"sensory_balance"`
-	SensoryOverall          pgtype.Int2        `json:"sensory_overall"`
-	SensoryTastingPanel     pgtype.Text        `json:"sensory_tasting_panel"`
-	SensoryTastedAt         pgtype.Timestamptz `json:"sensory_tasted_at"`
-	WhiskyCereal            pgtype.Int2        `json:"whisky_cereal"`
-	WhiskyEstery            pgtype.Int2        `json:"whisky_estery"`
-	WhiskyFloral            pgtype.Int2        `json:"whisky_floral"`
-	WhiskyPeaty             pgtype.Int2        `json:"whisky_peaty"`
-	WhiskyFeinty            pgtype.Int2        `json:"whisky_feinty"`
-	WhiskySulphury          pgtype.Int2        `json:"whisky_sulphury"`
-	WhiskyWoody             pgtype.Int2        `json:"whisky_woody"`
-	WhiskyWiney             pgtype.Int2        `json:"whisky_winey"`
-	WhiskyBody              pgtype.Int2        `json:"whisky_body"`
-	WhiskyFinish            pgtype.Int2        `json:"whisky_finish"`
-	WhiskyOverall           pgtype.Int2        `json:"whisky_overall"`
-	WhiskyTastingPanel      pgtype.Text        `json:"whisky_tasting_panel"`
-	WhiskyTastedAt          pgtype.Timestamptz `json:"whisky_tasted_at"`
+	ID                           uuid.UUID          `json:"id"`
+	TenantID                     uuid.UUID          `json:"tenant_id"`
+	RecipeID                     uuid.UUID          `json:"recipe_id"`
+	VersionNo                    int32              `json:"version_no"`
+	Notes                        string             `json:"notes"`
+	MashEfficiencyFraction       float64            `json:"mash_efficiency_fraction"`
+	FermentEfficiencyFraction    float64            `json:"ferment_efficiency_fraction"`
+	DistillationRecoveryFraction float64            `json:"distillation_recovery_fraction"`
+	TargetWaterL                 pgtype.Float8      `json:"target_water_l"`
+	CreatedAt                    pgtype.Timestamptz `json:"created_at"`
+	TastingNotes                 string             `json:"tasting_notes"`
+	DistillationMethod           string             `json:"distillation_method"`
+	MacerationHours              pgtype.Float8      `json:"maceration_hours"`
+	GinNgsInputL                 pgtype.Float8      `json:"gin_ngs_input_l"`
+	GinNgsInputAbvPct            pgtype.Float8      `json:"gin_ngs_input_abv_pct"`
+	SensoryJuniper               pgtype.Int2        `json:"sensory_juniper"`
+	SensoryCitrus                pgtype.Int2        `json:"sensory_citrus"`
+	SensoryHerbal                pgtype.Int2        `json:"sensory_herbal"`
+	SensorySpice                 pgtype.Int2        `json:"sensory_spice"`
+	SensoryFloral                pgtype.Int2        `json:"sensory_floral"`
+	SensoryEarth                 pgtype.Int2        `json:"sensory_earth"`
+	SensoryBody                  pgtype.Int2        `json:"sensory_body"`
+	SensoryHeat                  pgtype.Int2        `json:"sensory_heat"`
+	SensoryBalance               pgtype.Int2        `json:"sensory_balance"`
+	SensoryOverall               pgtype.Int2        `json:"sensory_overall"`
+	SensoryTastingPanel          pgtype.Text        `json:"sensory_tasting_panel"`
+	SensoryTastedAt              pgtype.Timestamptz `json:"sensory_tasted_at"`
+	WhiskyCereal                 pgtype.Int2        `json:"whisky_cereal"`
+	WhiskyEstery                 pgtype.Int2        `json:"whisky_estery"`
+	WhiskyFloral                 pgtype.Int2        `json:"whisky_floral"`
+	WhiskyPeaty                  pgtype.Int2        `json:"whisky_peaty"`
+	WhiskyFeinty                 pgtype.Int2        `json:"whisky_feinty"`
+	WhiskySulphury               pgtype.Int2        `json:"whisky_sulphury"`
+	WhiskyWoody                  pgtype.Int2        `json:"whisky_woody"`
+	WhiskyWiney                  pgtype.Int2        `json:"whisky_winey"`
+	WhiskyBody                   pgtype.Int2        `json:"whisky_body"`
+	WhiskyFinish                 pgtype.Int2        `json:"whisky_finish"`
+	WhiskyOverall                pgtype.Int2        `json:"whisky_overall"`
+	WhiskyTastingPanel           pgtype.Text        `json:"whisky_tasting_panel"`
+	WhiskyTastedAt               pgtype.Timestamptz `json:"whisky_tasted_at"`
 }
 
 // LEFT JOIN both sensory tables so callers can iterate the version
@@ -422,9 +422,9 @@ func (q *Queries) ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([
 			&i.RecipeID,
 			&i.VersionNo,
 			&i.Notes,
-			&i.MashEfficiencyPct,
-			&i.FermentEfficiencyPct,
-			&i.DistillationRecoveryPct,
+			&i.MashEfficiencyFraction,
+			&i.FermentEfficiencyFraction,
+			&i.DistillationRecoveryFraction,
 			&i.TargetWaterL,
 			&i.CreatedAt,
 			&i.TastingNotes,
