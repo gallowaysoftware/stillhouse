@@ -49,6 +49,23 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// CustomerService. Reading the customer list is a viewer action —
+	// an operator recording a removal has to pick from it. Creating and
+	// editing a customer is not: the customer's kind decides whether a
+	// removal to them is duty-paid, non-duty-paid or an export, so
+	// getting it wrong misstates a filed return. That makes it a
+	// back-office decision, same reasoning as the filing calendar.
+	"/stillhouse.v1.CustomerService/ListCustomers":       roleViewer,
+	"/stillhouse.v1.CustomerService/GetCustomer":         roleViewer,
+	"/stillhouse.v1.CustomerService/CreateCustomer":      roleOwner,
+	"/stillhouse.v1.CustomerService/UpdateCustomer":      roleOwner,
+	"/stillhouse.v1.CustomerService/SetCustomerArchived": roleOwner,
+	// Price lists are commercial terms, not production data.
+	"/stillhouse.v1.CustomerService/ListPriceLists":    roleViewer,
+	"/stillhouse.v1.CustomerService/GetPriceList":      roleViewer,
+	"/stillhouse.v1.CustomerService/CreatePriceList":   roleOwner,
+	"/stillhouse.v1.CustomerService/SetPriceListEntry": roleOwner,
+
 	// BarrelService
 	"/stillhouse.v1.BarrelService/ListBarrels":     roleViewer,
 	"/stillhouse.v1.BarrelService/GetBarrel":       roleViewer,

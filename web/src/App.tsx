@@ -22,6 +22,7 @@ import { MashesPage } from "./pages/MashesPage";
 import { MaterialDetailPage } from "./pages/MaterialDetailPage";
 import { MaterialsPage } from "./pages/MaterialsPage";
 import { PricingPage } from "./pages/PricingPage";
+import { CustomersPage } from "./pages/CustomersPage";
 import { ProductsPage } from "./pages/ProductsPage";
 import { RecipeDetailPage } from "./pages/RecipeDetailPage";
 import { RecipesPage } from "./pages/RecipesPage";
@@ -66,6 +67,7 @@ export function App() {
       <Route path="/b266" element={<Guarded><B266Page /></Guarded>} />
       <Route path="/audit" element={<Guarded><AuditPage /></Guarded>} />
       <Route path="/pricing" element={<Guarded><PricingPage /></Guarded>} />
+      <Route path="/customers" element={<Guarded><CustomersPage /></Guarded>} />
       <Route path="/settings" element={<Guarded><SettingsPage /></Guarded>} />
     </Routes>
   );

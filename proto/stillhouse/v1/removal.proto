@@ -27,6 +27,12 @@ message PackagingRemoval {
   RemovalDestinationKind destination_kind = 10;
   string destination_name = 11;
   string reference = 12;
+  // The buyer, when the removal named one. Removals recorded before
+  // customers existed carry only destination_name, and are left that
+  // way — pointing them at customers who did not exist when the
+  // movement happened would be inventing records.
+  string customer_id = 24;
+  string customer_name = 25;
   int32  bottle_size_ml = 13;
   double bottle_abv_pct = 14;
   double total_litres = 15;
@@ -44,6 +50,11 @@ message CreateRemovalRequest {
   string packaged_inventory_id = 1;
   string removal_date = 2;             // ISO date; empty = today
   int32  bottles_removed = 3;
+  // Either name a customer, or type a destination. Naming a customer
+  // fills in the kind and the name from the customer record, so the
+  // classification that drives the B266 line cannot drift from the
+  // buyer it belongs to.
+  string customer_id = 8;
   RemovalDestinationKind destination_kind = 4;
   string destination_name = 5;
   string reference = 6;

@@ -44,23 +44,58 @@ func (s *RemovalService) CreateRemoval(
 	if in.GetBottlesRemoved() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("bottles_removed must be > 0"))
 	}
-	dest, err := removalDestinationKindToDB(in.GetDestinationKind())
-	if err != nil {
-		return nil, connect.NewError(connect.CodeInvalidArgument, err)
-	}
 	removalDate, err := parseDateOrToday(in.GetRemovalDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	var customerID uuid.NullUUID
+	if v := in.GetCustomerId(); v != "" {
+		id, err := uuid.Parse(v)
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid customer_id"))
+		}
+		customerID = uuid.NullUUID{UUID: id, Valid: true}
+	}
+	// The destination kind is only taken from the request when no
+	// customer was named. Naming one takes it from the customer instead:
+	// the classification that decides whether duty is charged belongs to
+	// the buyer, and letting the request override it would recreate the
+	// disagreement the customer record exists to end.
+	var dest sqlcgen.RemovalDestinationKind
+	if !customerID.Valid {
+		dest, err = removalDestinationKindToDB(in.GetDestinationKind())
+		if err != nil {
+			return nil, connect.NewError(connect.CodeInvalidArgument, err)
+		}
+	}
 
 	var (
-		removal sqlcgen.PackagingRemoval
-		product sqlcgen.Product
-		pkg     sqlcgen.PackagedInventory
+		removal      sqlcgen.PackagingRemoval
+		product      sqlcgen.Product
+		pkg          sqlcgen.PackagedInventory
+		customerName = in.GetDestinationName()
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		if e := assertDateNotInLockedPeriod(ctx, q, removalDate); e != nil {
 			return e
+		}
+		if customerID.Valid {
+			cust, e := q.GetCustomer(ctx, customerID.UUID)
+			if e != nil {
+				if errors.Is(e, pgx.ErrNoRows) {
+					return connect.NewError(connect.CodeNotFound, errors.New("customer not found"))
+				}
+				return e
+			}
+			if cust.ArchivedAt.Valid {
+				return connect.NewError(connect.CodeFailedPrecondition,
+					fmt.Errorf("%s is archived; un-archive them or name a destination", cust.Name))
+			}
+			dest = sqlcgen.RemovalDestinationKind(cust.DefaultDestinationKind)
+			// Copied, not joined, so the B266 and the audit trail read
+			// identically whether or not a removal named a customer, and
+			// no report has to know which era a row came from.
+			customerName = cust.Name
 		}
 		// Read the lot with the intent to change it. FOR UPDATE is what
 		// makes the stock check below mean anything: without it two
@@ -141,7 +176,8 @@ func (s *RemovalService) CreateRemoval(
 			RemovalDate:         removalDate,
 			BottlesRemoved:      in.GetBottlesRemoved(),
 			DestinationKind:     dest,
-			DestinationName:     in.GetDestinationName(),
+			DestinationName:     customerName,
+			CustomerID:          customerID,
 			Reference:           in.GetReference(),
 			BottleSizeMl:        product.BottleSizeMl,
 			BottleAbvPct:        product.TargetAbvPct,
@@ -181,6 +217,7 @@ func (s *RemovalService) CreateRemoval(
 				// not an omission — say which, so the trail explains it.
 				"dutied_at_packaging": dutiedAtPackaging,
 				"destination":         removal.DestinationName,
+				"customer_id":         nullUUIDString(removal.CustomerID),
 			})
 	})
 	if err != nil {
@@ -392,6 +429,11 @@ func packagingRemovalToProto(r sqlcgen.PackagingRemoval, p sqlcgen.Product, lotC
 		Notes:               r.Notes,
 		CreatedAt:           timestamppb.New(r.CreatedAt.Time),
 		VoidedReason:        r.VoidedReason,
+		CustomerId:          nullUUIDString(r.CustomerID),
+		// The customer's name as it was when the removal was recorded,
+		// carried on the row itself. A rename later does not restate what
+		// a filed return said the alcohol went to.
+		CustomerName: r.DestinationName,
 	}
 	if r.VoidedAt.Valid {
 		out.VoidedAt = timestamppb.New(r.VoidedAt.Time)

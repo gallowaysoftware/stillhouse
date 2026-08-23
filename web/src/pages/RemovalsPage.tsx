@@ -5,7 +5,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { LockedPeriodHint } from "@/components/LockedPeriodHint";
 import { Shell } from "@/components/Shell";
-import { bottlingClient, removalClient } from "@/lib/clients";
+import { bottlingClient, customerClient, removalClient } from "@/lib/clients";
 import {
   CreateRemovalRequestSchema,
   RemovalDestinationKind,
@@ -56,6 +56,15 @@ export function RemovalsPage() {
   const [bottles, setBottles] = useState("");
   const [dest, setDest] = useState<RemovalDestinationKind>(RemovalDestinationKind.DUTY_PAID_CUSTOMER);
   const [destName, setDestName] = useState("");
+  // Naming a customer is the ordinary path; the free-text destination
+  // stays for the one-off (a sample to a lab, a destruction) and for
+  // every removal recorded before customers existed.
+  const [customerID, setCustomerID] = useState("");
+  const customers = useQuery({
+    queryKey: ["listCustomers", false],
+    queryFn: () => customerClient.listCustomers({ includeArchived: false }),
+  });
+  const selectedCustomer = customers.data?.customers.find((c) => c.id === customerID);
   const [reference, setReference] = useState("");
   const [removalDate, setRemovalDate] = useState("");
 
@@ -68,6 +77,7 @@ export function RemovalsPage() {
       setShowForm(false);
       setBottles("");
       setDestName("");
+      setCustomerID("");
       setReference("");
     },
   });
@@ -104,6 +114,9 @@ export function RemovalsPage() {
       create(CreateRemovalRequestSchema, {
         packagedInventoryId: piID,
         bottlesRemoved: Number(bottles),
+        customerId: customerID,
+        // Ignored by the server when a customer is named: the excise
+        // classification belongs to the buyer, not to this form.
         destinationKind: dest,
         destinationName: destName,
         reference,
@@ -161,16 +174,39 @@ export function RemovalsPage() {
             <input type="date" value={removalDate} onChange={(e) => setRemovalDate(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
             <LockedPeriodHint date={removalDate} />
           </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-fg-muted">Destination kind</label>
-            <select value={dest} onChange={(e) => setDest(Number(e.target.value) as RemovalDestinationKind)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
-              {destOptions.map((d) => <option key={d} value={d}>{destLabel[d]}</option>)}
+          <div className="col-span-2">
+            <label className="mb-2 block text-sm font-medium text-fg-muted">Customer</label>
+            <select
+              value={customerID}
+              onChange={(e) => setCustomerID(e.target.value)}
+              className="w-full rounded border border-border-strong px-3 py-2 text-sm"
+            >
+              <option value="">— one-off destination, typed below —</option>
+              {customers.data?.customers.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
             </select>
+            {selectedCustomer && (
+              <p className="mt-1 text-xs text-fg-muted">
+                Recorded as <span className="text-fg">{destLabel[selectedCustomer.defaultDestinationKind]}</span>,
+                from this customer's record — not from the fields below.
+              </p>
+            )}
           </div>
-          <div>
-            <label className="mb-2 block text-sm font-medium text-fg-muted">Destination name</label>
-            <input value={destName} onChange={(e) => setDestName(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
-          </div>
+          {!customerID && (
+            <>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-fg-muted">Destination kind</label>
+                <select value={dest} onChange={(e) => setDest(Number(e.target.value) as RemovalDestinationKind)} className="w-full rounded border border-border-strong px-3 py-2 text-sm">
+                  {destOptions.map((d) => <option key={d} value={d}>{destLabel[d]}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium text-fg-muted">Destination name</label>
+                <input value={destName} onChange={(e) => setDestName(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />
+              </div>
+            </>
+          )}
           <div className="col-span-2">
             <label className="mb-2 block text-sm font-medium text-fg-muted">Reference (BOL / invoice)</label>
             <input value={reference} onChange={(e) => setReference(e.target.value)} className="w-full rounded border border-border-strong px-3 py-2 text-sm" />

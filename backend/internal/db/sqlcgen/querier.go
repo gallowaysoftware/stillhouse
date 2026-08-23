@@ -72,6 +72,7 @@ type Querier interface {
 	CreateBottlingRunStampUsage(ctx context.Context, arg CreateBottlingRunStampUsageParams) (BottlingRunStampUsage, error)
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
 	CreateCalibration(ctx context.Context, arg CreateCalibrationParams) (InstrumentCalibration, error)
+	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	CreateDistillationRun(ctx context.Context, arg CreateDistillationRunParams) (DistillationRun, error)
 	CreateFermentationRun(ctx context.Context, arg CreateFermentationRunParams) (FermentationRun, error)
 	CreateInstrument(ctx context.Context, arg CreateInstrumentParams) (Instrument, error)
@@ -81,6 +82,7 @@ type Querier interface {
 	CreateMaterial(ctx context.Context, arg CreateMaterialParams) (Material, error)
 	CreateMaterialLot(ctx context.Context, arg CreateMaterialLotParams) (MaterialLot, error)
 	CreatePasswordResetToken(ctx context.Context, arg CreatePasswordResetTokenParams) (PasswordResetToken, error)
+	CreatePriceList(ctx context.Context, arg CreatePriceListParams) (PriceList, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
 	// volume_l / abv_pct are the values AT 20 °C; observed_* preserve what the
 	// operator read off the instrument. See migration 000023.
@@ -92,6 +94,9 @@ type Querier interface {
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
 	CreateTenant(ctx context.Context, arg CreateTenantParams) (Tenant, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// What this buyer has actually taken. Voided removals are excluded —
+	// they were withdrawn, and counting them would overstate what left.
+	CustomerRemovalTotals(ctx context.Context, customerID uuid.NullUUID) (CustomerRemovalTotalsRow, error)
 	// Debit the on-hand quantity of a lot when a mash consumes from it. Returns
 	// the updated row so the caller can warn if the lot is now exhausted.
 	DebitMaterialLot(ctx context.Context, arg DebitMaterialLotParams) (MaterialLot, error)
@@ -106,6 +111,7 @@ type Querier interface {
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
+	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
 	// Hard delete — every FK to tenants is ON DELETE CASCADE so this wipes
 	// the entire tenant footprint (users, recipes, mashes, ferments,
 	// distillations, barrels, bulk, bottling, removals, B266 history,
@@ -149,6 +155,7 @@ type Querier interface {
 	// lockContainers — or two of them can deadlock holding each other's rows.
 	GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (BulkContainer, error)
 	GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUID) (BulkMovement, error)
+	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
@@ -167,6 +174,7 @@ type Querier interface {
 	// loser got an opaque error instead of a wrong number; the lock is what
 	// makes the check in front of it mean something.
 	GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUID) (PackagedInventory, error)
+	GetPriceList(ctx context.Context, id uuid.UUID) (PriceList, error)
 	GetProduct(ctx context.Context, id uuid.UUID) (Product, error)
 	GetProductionGaugeByRun(ctx context.Context, distillationRunID uuid.UUID) (ProductionGauge, error)
 	GetRecipe(ctx context.Context, id uuid.UUID) (Recipe, error)
@@ -218,6 +226,10 @@ type Querier interface {
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]BulkContainer, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListCalibrations(ctx context.Context, instrumentID uuid.UUID) ([]InstrumentCalibration, error)
+	// Archived customers are hidden by default but never deleted: a removal
+	// points at one, and the trail behind a filed return has to stay
+	// resolvable years later.
+	ListCustomers(ctx context.Context, arg ListCustomersParams) ([]ListCustomersRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
 	ListDistillationCuts(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationCut, error)
 	ListDistillationRuns(ctx context.Context, status NullDistillationStatus) ([]DistillationRun, error)
@@ -254,6 +266,9 @@ type Querier interface {
 	// back to the client for an aging calc. packaged_inventory.bottling_run_id
 	// is nullable to support backfill cases.
 	ListPackagedInventory(ctx context.Context, includeEmpty bool) ([]ListPackagedInventoryRow, error)
+	ListPriceListEntries(ctx context.Context, priceListID uuid.UUID) ([]ListPriceListEntriesRow, error)
+	// as_of empty means every list; otherwise only those in force that day.
+	ListPriceLists(ctx context.Context, asOf pgtype.Date) ([]PriceList, error)
 	ListProducts(ctx context.Context, includeArchived bool) ([]Product, error)
 	ListRecentBulkMovements(ctx context.Context) ([]ListRecentBulkMovementsRow, error)
 	ListRecipeIngredients(ctx context.Context, recipeVersionID uuid.UUID) ([]ListRecipeIngredientsRow, error)
@@ -328,6 +343,7 @@ type Querier interface {
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
+	SetCustomerArchived(ctx context.Context, arg SetCustomerArchivedParams) (Customer, error)
 	// Moves the cutover. Not exposed in the UI: the date is set once, when the
 	// tenant is created or when this migration ran, and moving it re-attributes
 	// duty across events that may already have been filed. Here so a support
@@ -456,6 +472,7 @@ type Querier interface {
 	UnarchiveMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	UpdateBulkContainer(ctx context.Context, arg UpdateBulkContainerParams) (BulkContainer, error)
 	UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulkContainerBalanceParams) (BulkContainer, error)
+	UpdateCustomer(ctx context.Context, arg UpdateCustomerParams) (Customer, error)
 	UpdateDistillationCut(ctx context.Context, arg UpdateDistillationCutParams) (DistillationCut, error)
 	UpdateDistillationStatus(ctx context.Context, arg UpdateDistillationStatusParams) (DistillationRun, error)
 	UpdateFermentationStatus(ctx context.Context, arg UpdateFermentationStatusParams) (FermentationRun, error)
@@ -484,6 +501,7 @@ type Querier interface {
 	// due. COALESCE keeps whatever the row already had.
 	UpsertB266PeriodDraft(ctx context.Context, arg UpsertB266PeriodDraftParams) (B266Period, error)
 	UpsertPackagedInventory(ctx context.Context, arg UpsertPackagedInventoryParams) (PackagedInventory, error)
+	UpsertPriceListEntry(ctx context.Context, arg UpsertPriceListEntryParams) (PriceListEntry, error)
 	// One row per recipe_version. Partial-update: an axis that's NULL in
 	// the request preserves the existing DB value via COALESCE; an axis
 	// with a value overwrites. This lets an MCP / phone caller send

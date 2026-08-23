@@ -6,9 +6,9 @@ INSERT INTO packaging_removals (
     tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed,
     destination_kind, destination_name, reference,
     bottle_size_ml, bottle_abv_pct, total_litres, total_laa,
-    duty_rate_per_laa, duty_amount_cad, notes
+    duty_rate_per_laa, duty_amount_cad, notes, customer_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
 ) RETURNING *;
 
 -- name: GetPackagedInventoryForUpdate :one
@@ -36,10 +36,12 @@ RETURNING *;
 SELECT pr.*,
        pi.lot_code        AS lot_code,
        pi.jurisdiction    AS jurisdiction,
-       p.name             AS product_name
+       p.name             AS product_name,
+       COALESCE(c.name, '') AS customer_name
 FROM packaging_removals pr
 JOIN packaged_inventory pi ON pi.id = pr.packaged_inventory_id
 JOIN products p             ON p.id = pi.product_id
+LEFT JOIN customers c       ON c.id = pr.customer_id
 WHERE (sqlc.narg('period_start')::date IS NULL OR pr.removal_date >= sqlc.narg('period_start')::date)
   AND (sqlc.narg('period_end')::date   IS NULL OR pr.removal_date <= sqlc.narg('period_end')::date)
 ORDER BY pr.removal_date DESC, pr.removal_no DESC

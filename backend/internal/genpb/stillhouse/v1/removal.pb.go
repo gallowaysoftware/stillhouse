@@ -97,19 +97,25 @@ type PackagingRemoval struct {
 	DestinationKind     RemovalDestinationKind `protobuf:"varint,10,opt,name=destination_kind,json=destinationKind,proto3,enum=stillhouse.v1.RemovalDestinationKind" json:"destination_kind,omitempty"`
 	DestinationName     string                 `protobuf:"bytes,11,opt,name=destination_name,json=destinationName,proto3" json:"destination_name,omitempty"`
 	Reference           string                 `protobuf:"bytes,12,opt,name=reference,proto3" json:"reference,omitempty"`
-	BottleSizeMl        int32                  `protobuf:"varint,13,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
-	BottleAbvPct        float64                `protobuf:"fixed64,14,opt,name=bottle_abv_pct,json=bottleAbvPct,proto3" json:"bottle_abv_pct,omitempty"`
-	TotalLitres         float64                `protobuf:"fixed64,15,opt,name=total_litres,json=totalLitres,proto3" json:"total_litres,omitempty"`
-	TotalLaa            float64                `protobuf:"fixed64,16,opt,name=total_laa,json=totalLaa,proto3" json:"total_laa,omitempty"`
-	DutyRatePerLaa      float64                `protobuf:"fixed64,17,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"`
-	DutyAmountCad       float64                `protobuf:"fixed64,18,opt,name=duty_amount_cad,json=dutyAmountCad,proto3" json:"duty_amount_cad,omitempty"`
-	Notes               string                 `protobuf:"bytes,19,opt,name=notes,proto3" json:"notes,omitempty"`
-	CreatedAt           *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	VoidedAt            *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
-	VoidedBy            string                 `protobuf:"bytes,22,opt,name=voided_by,json=voidedBy,proto3" json:"voided_by,omitempty"`
-	VoidedReason        string                 `protobuf:"bytes,23,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// The buyer, when the removal named one. Removals recorded before
+	// customers existed carry only destination_name, and are left that
+	// way — pointing them at customers who did not exist when the
+	// movement happened would be inventing records.
+	CustomerId     string                 `protobuf:"bytes,24,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName   string                 `protobuf:"bytes,25,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	BottleSizeMl   int32                  `protobuf:"varint,13,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
+	BottleAbvPct   float64                `protobuf:"fixed64,14,opt,name=bottle_abv_pct,json=bottleAbvPct,proto3" json:"bottle_abv_pct,omitempty"`
+	TotalLitres    float64                `protobuf:"fixed64,15,opt,name=total_litres,json=totalLitres,proto3" json:"total_litres,omitempty"`
+	TotalLaa       float64                `protobuf:"fixed64,16,opt,name=total_laa,json=totalLaa,proto3" json:"total_laa,omitempty"`
+	DutyRatePerLaa float64                `protobuf:"fixed64,17,opt,name=duty_rate_per_laa,json=dutyRatePerLaa,proto3" json:"duty_rate_per_laa,omitempty"`
+	DutyAmountCad  float64                `protobuf:"fixed64,18,opt,name=duty_amount_cad,json=dutyAmountCad,proto3" json:"duty_amount_cad,omitempty"`
+	Notes          string                 `protobuf:"bytes,19,opt,name=notes,proto3" json:"notes,omitempty"`
+	CreatedAt      *timestamppb.Timestamp `protobuf:"bytes,20,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	VoidedAt       *timestamppb.Timestamp `protobuf:"bytes,21,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
+	VoidedBy       string                 `protobuf:"bytes,22,opt,name=voided_by,json=voidedBy,proto3" json:"voided_by,omitempty"`
+	VoidedReason   string                 `protobuf:"bytes,23,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *PackagingRemoval) Reset() {
@@ -226,6 +232,20 @@ func (x *PackagingRemoval) GetReference() string {
 	return ""
 }
 
+func (x *PackagingRemoval) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *PackagingRemoval) GetCustomerName() string {
+	if x != nil {
+		return x.CustomerName
+	}
+	return ""
+}
+
 func (x *PackagingRemoval) GetBottleSizeMl() int32 {
 	if x != nil {
 		return x.BottleSizeMl
@@ -308,12 +328,17 @@ type CreateRemovalRequest struct {
 	PackagedInventoryId string                 `protobuf:"bytes,1,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
 	RemovalDate         string                 `protobuf:"bytes,2,opt,name=removal_date,json=removalDate,proto3" json:"removal_date,omitempty"` // ISO date; empty = today
 	BottlesRemoved      int32                  `protobuf:"varint,3,opt,name=bottles_removed,json=bottlesRemoved,proto3" json:"bottles_removed,omitempty"`
-	DestinationKind     RemovalDestinationKind `protobuf:"varint,4,opt,name=destination_kind,json=destinationKind,proto3,enum=stillhouse.v1.RemovalDestinationKind" json:"destination_kind,omitempty"`
-	DestinationName     string                 `protobuf:"bytes,5,opt,name=destination_name,json=destinationName,proto3" json:"destination_name,omitempty"`
-	Reference           string                 `protobuf:"bytes,6,opt,name=reference,proto3" json:"reference,omitempty"`
-	Notes               string                 `protobuf:"bytes,7,opt,name=notes,proto3" json:"notes,omitempty"`
-	unknownFields       protoimpl.UnknownFields
-	sizeCache           protoimpl.SizeCache
+	// Either name a customer, or type a destination. Naming a customer
+	// fills in the kind and the name from the customer record, so the
+	// classification that drives the B266 line cannot drift from the
+	// buyer it belongs to.
+	CustomerId      string                 `protobuf:"bytes,8,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	DestinationKind RemovalDestinationKind `protobuf:"varint,4,opt,name=destination_kind,json=destinationKind,proto3,enum=stillhouse.v1.RemovalDestinationKind" json:"destination_kind,omitempty"`
+	DestinationName string                 `protobuf:"bytes,5,opt,name=destination_name,json=destinationName,proto3" json:"destination_name,omitempty"`
+	Reference       string                 `protobuf:"bytes,6,opt,name=reference,proto3" json:"reference,omitempty"`
+	Notes           string                 `protobuf:"bytes,7,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *CreateRemovalRequest) Reset() {
@@ -365,6 +390,13 @@ func (x *CreateRemovalRequest) GetBottlesRemoved() int32 {
 		return x.BottlesRemoved
 	}
 	return 0
+}
+
+func (x *CreateRemovalRequest) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
 }
 
 func (x *CreateRemovalRequest) GetDestinationKind() RemovalDestinationKind {
@@ -659,7 +691,7 @@ var File_stillhouse_v1_removal_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\n" +
-	"\x1bstillhouse/v1/removal.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x86\a\n" +
+	"\x1bstillhouse/v1/removal.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xcc\a\n" +
 	"\x10PackagingRemoval\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x1d\n" +
@@ -674,7 +706,10 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x10destination_kind\x18\n" +
 	" \x01(\x0e2%.stillhouse.v1.RemovalDestinationKindR\x0fdestinationKind\x12)\n" +
 	"\x10destination_name\x18\v \x01(\tR\x0fdestinationName\x12\x1c\n" +
-	"\treference\x18\f \x01(\tR\treference\x12$\n" +
+	"\treference\x18\f \x01(\tR\treference\x12\x1f\n" +
+	"\vcustomer_id\x18\x18 \x01(\tR\n" +
+	"customerId\x12#\n" +
+	"\rcustomer_name\x18\x19 \x01(\tR\fcustomerName\x12$\n" +
 	"\x0ebottle_size_ml\x18\r \x01(\x05R\fbottleSizeMl\x12$\n" +
 	"\x0ebottle_abv_pct\x18\x0e \x01(\x01R\fbottleAbvPct\x12!\n" +
 	"\ftotal_litres\x18\x0f \x01(\x01R\vtotalLitres\x12\x1b\n" +
@@ -686,11 +721,13 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"created_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x127\n" +
 	"\tvoided_at\x18\x15 \x01(\v2\x1a.google.protobuf.TimestampR\bvoidedAt\x12\x1b\n" +
 	"\tvoided_by\x18\x16 \x01(\tR\bvoidedBy\x12#\n" +
-	"\rvoided_reason\x18\x17 \x01(\tR\fvoidedReason\"\xc7\x02\n" +
+	"\rvoided_reason\x18\x17 \x01(\tR\fvoidedReason\"\xe8\x02\n" +
 	"\x14CreateRemovalRequest\x122\n" +
 	"\x15packaged_inventory_id\x18\x01 \x01(\tR\x13packagedInventoryId\x12!\n" +
 	"\fremoval_date\x18\x02 \x01(\tR\vremovalDate\x12'\n" +
-	"\x0fbottles_removed\x18\x03 \x01(\x05R\x0ebottlesRemoved\x12P\n" +
+	"\x0fbottles_removed\x18\x03 \x01(\x05R\x0ebottlesRemoved\x12\x1f\n" +
+	"\vcustomer_id\x18\b \x01(\tR\n" +
+	"customerId\x12P\n" +
 	"\x10destination_kind\x18\x04 \x01(\x0e2%.stillhouse.v1.RemovalDestinationKindR\x0fdestinationKind\x12)\n" +
 	"\x10destination_name\x18\x05 \x01(\tR\x0fdestinationName\x12\x1c\n" +
 	"\treference\x18\x06 \x01(\tR\treference\x12\x14\n" +

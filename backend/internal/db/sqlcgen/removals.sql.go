@@ -36,10 +36,10 @@ INSERT INTO packaging_removals (
     tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed,
     destination_kind, destination_name, reference,
     bottle_size_ml, bottle_abv_pct, total_litres, total_laa,
-    duty_rate_per_laa, duty_amount_cad, notes
+    duty_rate_per_laa, duty_amount_cad, notes, customer_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15
-) RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+) RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id
 `
 
 type CreateRemovalParams struct {
@@ -58,6 +58,7 @@ type CreateRemovalParams struct {
 	DutyRatePerLaa      float64                `json:"duty_rate_per_laa"`
 	DutyAmountCad       float64                `json:"duty_amount_cad"`
 	Notes               string                 `json:"notes"`
+	CustomerID          uuid.NullUUID          `json:"customer_id"`
 }
 
 func (q *Queries) CreateRemoval(ctx context.Context, arg CreateRemovalParams) (PackagingRemoval, error) {
@@ -77,6 +78,7 @@ func (q *Queries) CreateRemoval(ctx context.Context, arg CreateRemovalParams) (P
 		arg.DutyRatePerLaa,
 		arg.DutyAmountCad,
 		arg.Notes,
+		arg.CustomerID,
 	)
 	var i PackagingRemoval
 	err := row.Scan(
@@ -100,6 +102,7 @@ func (q *Queries) CreateRemoval(ctx context.Context, arg CreateRemovalParams) (P
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.CustomerID,
 	)
 	return i, err
 }
@@ -171,7 +174,7 @@ func (q *Queries) GetPackagedInventoryForUpdate(ctx context.Context, id uuid.UUI
 }
 
 const getRemoval = `-- name: GetRemoval :one
-SELECT id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason FROM packaging_removals WHERE id = $1
+SELECT id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id FROM packaging_removals WHERE id = $1
 `
 
 func (q *Queries) GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error) {
@@ -198,6 +201,7 @@ func (q *Queries) GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemova
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.CustomerID,
 	)
 	return i, err
 }
@@ -235,13 +239,15 @@ func (q *Queries) IncrementPackagedOnHand(ctx context.Context, arg IncrementPack
 }
 
 const listRemovals = `-- name: ListRemovals :many
-SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_date, pr.bottles_removed, pr.destination_kind, pr.destination_name, pr.reference, pr.bottle_size_ml, pr.bottle_abv_pct, pr.total_litres, pr.total_laa, pr.duty_rate_per_laa, pr.duty_amount_cad, pr.notes, pr.created_at, pr.voided_at, pr.voided_by, pr.voided_reason,
+SELECT pr.id, pr.tenant_id, pr.removal_no, pr.packaged_inventory_id, pr.removal_date, pr.bottles_removed, pr.destination_kind, pr.destination_name, pr.reference, pr.bottle_size_ml, pr.bottle_abv_pct, pr.total_litres, pr.total_laa, pr.duty_rate_per_laa, pr.duty_amount_cad, pr.notes, pr.created_at, pr.voided_at, pr.voided_by, pr.voided_reason, pr.customer_id,
        pi.lot_code        AS lot_code,
        pi.jurisdiction    AS jurisdiction,
-       p.name             AS product_name
+       p.name             AS product_name,
+       COALESCE(c.name, '') AS customer_name
 FROM packaging_removals pr
 JOIN packaged_inventory pi ON pi.id = pr.packaged_inventory_id
 JOIN products p             ON p.id = pi.product_id
+LEFT JOIN customers c       ON c.id = pr.customer_id
 WHERE ($3::date IS NULL OR pr.removal_date >= $3::date)
   AND ($4::date   IS NULL OR pr.removal_date <= $4::date)
 ORDER BY pr.removal_date DESC, pr.removal_no DESC
@@ -276,9 +282,11 @@ type ListRemovalsRow struct {
 	VoidedAt            pgtype.Timestamptz     `json:"voided_at"`
 	VoidedBy            uuid.NullUUID          `json:"voided_by"`
 	VoidedReason        string                 `json:"voided_reason"`
+	CustomerID          uuid.NullUUID          `json:"customer_id"`
 	LotCode             string                 `json:"lot_code"`
 	Jurisdiction        string                 `json:"jurisdiction"`
 	ProductName         string                 `json:"product_name"`
+	CustomerName        string                 `json:"customer_name"`
 }
 
 func (q *Queries) ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error) {
@@ -316,9 +324,11 @@ func (q *Queries) ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]L
 			&i.VoidedAt,
 			&i.VoidedBy,
 			&i.VoidedReason,
+			&i.CustomerID,
 			&i.LotCode,
 			&i.Jurisdiction,
 			&i.ProductName,
+			&i.CustomerName,
 		); err != nil {
 			return nil, err
 		}
@@ -347,7 +357,7 @@ SET voided_at = NOW(),
     voided_by = $2,
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
-RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason
+RETURNING id, tenant_id, removal_no, packaged_inventory_id, removal_date, bottles_removed, destination_kind, destination_name, reference, bottle_size_ml, bottle_abv_pct, total_litres, total_laa, duty_rate_per_laa, duty_amount_cad, notes, created_at, voided_at, voided_by, voided_reason, customer_id
 `
 
 type VoidRemovalParams struct {
@@ -380,6 +390,7 @@ func (q *Queries) VoidRemoval(ctx context.Context, arg VoidRemovalParams) (Packa
 		&i.VoidedAt,
 		&i.VoidedBy,
 		&i.VoidedReason,
+		&i.CustomerID,
 	)
 	return i, err
 }

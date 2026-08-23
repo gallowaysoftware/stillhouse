@@ -162,3 +162,16 @@ var Jurisdictions = []Jurisdiction{
 		Notes: "On-site and offsite retail permits available.",
 	},
 }
+
+// Known reports whether code names a jurisdiction this package carries
+// rates for. Used to keep an unrecognised province out of a customer or
+// a price list at the point it is typed, rather than discovering it when
+// a pricing calculation quietly has nothing to work with.
+func Known(code string) bool {
+	for _, j := range Jurisdictions {
+		if j.Code == code {
+			return true
+		}
+	}
+	return false
+}

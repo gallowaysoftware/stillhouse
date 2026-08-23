@@ -1,0 +1,190 @@
+// Who the alcohol went to.
+//
+// Stillhouse had no customer concept: a removal named its destination in
+// free text, so the same provincial board appeared under three spellings
+// across three months of returns and nothing could be totalled by buyer.
+// Worse, the destination *kind* — which decides whether duty is charged
+// and which B266 line the movement lands on — was re-chosen by hand each
+// time, next to free text that did not have to agree with it.
+//
+// A customer fixes the classification where the decision belongs. The
+// LCBO is a provincial board and always will be; a removal to them
+// cannot be typed as an export by accident.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+import "stillhouse/v1/removal.proto";
+import "stillhouse/v1/pricing.proto";
+
+// The buyer's nature, which is not the same thing as the sales channel:
+// a licensee and a private store both buy at wholesale and report
+// differently.
+enum CustomerKind {
+  CUSTOMER_KIND_UNSPECIFIED = 0;
+  CUSTOMER_KIND_PROVINCIAL_BOARD = 1;  // LCBO, BCLDB, AGLC, SAQ, NSLC…
+  CUSTOMER_KIND_LICENSEE = 2;          // a bar or restaurant with a liquor licence
+  CUSTOMER_KIND_PRIVATE_RETAIL = 3;    // a private liquor store
+  CUSTOMER_KIND_SPIRITS_LICENSEE = 4;  // another excise licensee — non-duty-paid
+  CUSTOMER_KIND_EXPORT = 5;            // leaving Canada
+  CUSTOMER_KIND_ON_SITE_RETAIL = 6;    // the distillery's own shop
+  CUSTOMER_KIND_OTHER = 7;
+}
+
+message Customer {
+  string id = 1;
+  string name = 2;
+  CustomerKind kind = 3;
+  // Province or territory code (CA-ON, CA-BC…). Empty for an export
+  // customer outside Canada, where no provincial board is involved.
+  string jurisdiction = 4;
+  // What a removal to this customer is, for excise purposes. Same
+  // vocabulary the removal already uses, so choosing a customer fills
+  // the field in rather than adding a second one that can disagree.
+  RemovalDestinationKind default_destination_kind = 5;
+  // Their own excise licence, when they hold one. EDM10-1-7 page 3 names
+  // the counterparty on every movement between licensees.
+  string licence_number = 6;
+  // A board vendor number, a customer account code — whatever has to
+  // appear on the paperwork.
+  string account_reference = 7;
+  string contact_name = 8;
+  string email = 9;
+  string phone = 10;
+  string address = 11;
+  // Net terms in days. -1 means none recorded; 0 means due on receipt,
+  // which is a different statement.
+  int32 payment_terms_days = 12;
+  string notes = 13;
+  string price_list_id = 14;
+  string price_list_name = 15;
+  google.protobuf.Timestamp archived_at = 16;
+  google.protobuf.Timestamp created_at = 17;
+}
+
+message CreateCustomerRequest {
+  string name = 1;
+  CustomerKind kind = 2;
+  string jurisdiction = 3;
+  RemovalDestinationKind default_destination_kind = 4;
+  string licence_number = 5;
+  string account_reference = 6;
+  string contact_name = 7;
+  string email = 8;
+  string phone = 9;
+  string address = 10;
+  int32 payment_terms_days = 11;  // -1 for none recorded
+  string notes = 12;
+  string price_list_id = 13;
+}
+message CreateCustomerResponse { Customer customer = 1; }
+
+message UpdateCustomerRequest {
+  string id = 1;
+  string name = 2;
+  CustomerKind kind = 3;
+  string jurisdiction = 4;
+  RemovalDestinationKind default_destination_kind = 5;
+  string licence_number = 6;
+  string account_reference = 7;
+  string contact_name = 8;
+  string email = 9;
+  string phone = 10;
+  string address = 11;
+  int32 payment_terms_days = 12;
+  string notes = 13;
+  string price_list_id = 14;
+}
+message UpdateCustomerResponse { Customer customer = 1; }
+
+message ListCustomersRequest {
+  bool include_archived = 1;
+  CustomerKind kind = 2;  // unspecified = all
+}
+message ListCustomersResponse { repeated Customer customers = 1; }
+
+message GetCustomerRequest { string id = 1; }
+message GetCustomerResponse {
+  Customer customer = 1;
+  // What this buyer has actually taken. Totals across every removal
+  // pointing at them, which is the question the free-text field could
+  // never answer.
+  int32  removal_count = 2;
+  int32  bottles_removed = 3;
+  double total_laa = 4;
+  double duty_charged_cad = 5;
+}
+
+message SetCustomerArchivedRequest { string id = 1; bool archived = 2; }
+message SetCustomerArchivedResponse { Customer customer = 1; }
+
+// ----- price lists ---------------------------------------------------------
+
+message PriceListEntry {
+  string id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  int32  bottle_size_ml = 4;
+  // Per bottle, before sales tax, in the list's currency. A decimal
+  // string rather than a double: this is money somebody invoices, and
+  // an IEEE-754 cent is not a thing.
+  string unit_price = 5;
+  int32  case_size = 6;  // 0 = the list doesn't say
+}
+
+message PriceList {
+  string id = 1;
+  string name = 2;
+  // Matches SalesChannel in pricing.proto.
+  SalesChannel channel = 3;
+  string jurisdiction = 4;
+  string currency = 5;
+  string effective_from = 6;  // ISO date
+  string effective_to = 7;    // ISO date; empty = still in force
+  string notes = 8;
+  repeated PriceListEntry entries = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message CreatePriceListRequest {
+  string name = 1;
+  SalesChannel channel = 2;
+  string jurisdiction = 3;
+  string currency = 4;           // empty = CAD
+  string effective_from = 5;     // ISO date; empty = today
+  string effective_to = 6;
+  string notes = 7;
+}
+message CreatePriceListResponse { PriceList price_list = 1; }
+
+message ListPriceListsRequest {
+  // Only lists in force on this date. Empty = all of them.
+  string as_of = 1;
+}
+message ListPriceListsResponse { repeated PriceList price_lists = 1; }
+
+message GetPriceListRequest { string id = 1; }
+message GetPriceListResponse { PriceList price_list = 1; }
+
+// Upsert by (price_list_id, product_id). A price of "" removes the entry.
+message SetPriceListEntryRequest {
+  string price_list_id = 1;
+  string product_id = 2;
+  string unit_price = 3;
+  int32  case_size = 4;
+}
+message SetPriceListEntryResponse { PriceList price_list = 1; }
+
+service CustomerService {
+  rpc CreateCustomer(CreateCustomerRequest) returns (CreateCustomerResponse);
+  rpc UpdateCustomer(UpdateCustomerRequest) returns (UpdateCustomerResponse);
+  rpc ListCustomers(ListCustomersRequest) returns (ListCustomersResponse);
+  rpc GetCustomer(GetCustomerRequest) returns (GetCustomerResponse);
+  rpc SetCustomerArchived(SetCustomerArchivedRequest) returns (SetCustomerArchivedResponse);
+
+  rpc CreatePriceList(CreatePriceListRequest) returns (CreatePriceListResponse);
+  rpc ListPriceLists(ListPriceListsRequest) returns (ListPriceListsResponse);
+  rpc GetPriceList(GetPriceListRequest) returns (GetPriceListResponse);
+  rpc SetPriceListEntry(SetPriceListEntryRequest) returns (SetPriceListEntryResponse);
+}

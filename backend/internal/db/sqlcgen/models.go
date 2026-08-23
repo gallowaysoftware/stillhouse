@@ -304,6 +304,53 @@ func (ns NullCereal) Value() (driver.Value, error) {
 	return string(ns.Cereal), nil
 }
 
+type CustomerKind string
+
+const (
+	CustomerKindProvincialBoard CustomerKind = "provincial_board"
+	CustomerKindLicensee        CustomerKind = "licensee"
+	CustomerKindPrivateRetail   CustomerKind = "private_retail"
+	CustomerKindSpiritsLicensee CustomerKind = "spirits_licensee"
+	CustomerKindExport          CustomerKind = "export"
+	CustomerKindOnSiteRetail    CustomerKind = "on_site_retail"
+	CustomerKindOther           CustomerKind = "other"
+)
+
+func (e *CustomerKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = CustomerKind(s)
+	case string:
+		*e = CustomerKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for CustomerKind: %T", src)
+	}
+	return nil
+}
+
+type NullCustomerKind struct {
+	CustomerKind CustomerKind `json:"customer_kind"`
+	Valid        bool         `json:"valid"` // Valid is true if CustomerKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullCustomerKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.CustomerKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.CustomerKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullCustomerKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.CustomerKind), nil
+}
+
 type DistillationCutKind string
 
 const (
@@ -1279,6 +1326,27 @@ type BulkMovement struct {
 	LossClassifiedAt        pgtype.Timestamptz `json:"loss_classified_at"`
 }
 
+type Customer struct {
+	ID                     uuid.UUID          `json:"id"`
+	TenantID               uuid.UUID          `json:"tenant_id"`
+	Name                   string             `json:"name"`
+	Kind                   CustomerKind       `json:"kind"`
+	Jurisdiction           string             `json:"jurisdiction"`
+	DefaultDestinationKind string             `json:"default_destination_kind"`
+	LicenceNumber          string             `json:"licence_number"`
+	AccountReference       string             `json:"account_reference"`
+	ContactName            string             `json:"contact_name"`
+	Email                  string             `json:"email"`
+	Phone                  string             `json:"phone"`
+	Address                string             `json:"address"`
+	PaymentTermsDays       pgtype.Int4        `json:"payment_terms_days"`
+	Notes                  string             `json:"notes"`
+	ArchivedAt             pgtype.Timestamptz `json:"archived_at"`
+	CreatedAt              pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt              pgtype.Timestamptz `json:"updated_at"`
+	PriceListID            uuid.NullUUID      `json:"price_list_id"`
+}
+
 type DistillationCharge struct {
 	ID                uuid.UUID          `json:"id"`
 	TenantID          uuid.UUID          `json:"tenant_id"`
@@ -1540,6 +1608,7 @@ type PackagingRemoval struct {
 	VoidedAt            pgtype.Timestamptz     `json:"voided_at"`
 	VoidedBy            uuid.NullUUID          `json:"voided_by"`
 	VoidedReason        string                 `json:"voided_reason"`
+	CustomerID          uuid.NullUUID          `json:"customer_id"`
 }
 
 type PasswordResetToken struct {
@@ -1548,6 +1617,31 @@ type PasswordResetToken struct {
 	ExpiresAt pgtype.Timestamptz `json:"expires_at"`
 	UsedAt    pgtype.Timestamptz `json:"used_at"`
 	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type PriceList struct {
+	ID            uuid.UUID          `json:"id"`
+	TenantID      uuid.UUID          `json:"tenant_id"`
+	Name          string             `json:"name"`
+	Channel       string             `json:"channel"`
+	Jurisdiction  string             `json:"jurisdiction"`
+	Currency      string             `json:"currency"`
+	EffectiveFrom pgtype.Date        `json:"effective_from"`
+	EffectiveTo   pgtype.Date        `json:"effective_to"`
+	Notes         string             `json:"notes"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
+}
+
+type PriceListEntry struct {
+	ID          uuid.UUID          `json:"id"`
+	TenantID    uuid.UUID          `json:"tenant_id"`
+	PriceListID uuid.UUID          `json:"price_list_id"`
+	ProductID   uuid.UUID          `json:"product_id"`
+	UnitPrice   pgtype.Numeric     `json:"unit_price"`
+	CaseSize    pgtype.Int4        `json:"case_size"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Product struct {

@@ -175,13 +175,6 @@ Competitor parity. Purtrak, Whiskey Systems and Ekos all treat sales as the
 spine production hangs from; Stillhouse has no customer concept at all. `D1`
 and `D6` unblock provincial reporting (`I1`) and the POS loop (`G4`).
 
-### D1 · Customers and price lists — P1
-
-Customer records with type (provincial board, licensee, private, export,
-on-site retail), jurisdiction, tax treatment, and terms. Price lists per
-customer or channel. A removal points at a customer instead of a free-text
-`destination_name`. Smallest change that unblocks the most later work.
-
 ### D2 · Sales orders — P1
 
 Order header and lines against products, with status, reserved stock against
