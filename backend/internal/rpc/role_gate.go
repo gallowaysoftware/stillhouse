@@ -414,6 +414,11 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.EquipmentService/SaveEquipment":   roleOwner,
 	"/stillhouse.v1.EquipmentService/DeleteEquipment": roleOwner,
 
+	// SchedulingService. A read over things the caller can already see —
+	// orders, stock, plant — arranged as a plan. The person who has to
+	// make the whisky is exactly who should be looking at it.
+	"/stillhouse.v1.SchedulingService/ProductionPlan": roleViewer,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,

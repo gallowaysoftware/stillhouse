@@ -1,0 +1,102 @@
+// What needs making, and whether the plant can make it.
+//
+// Driven by actual demand — confirmed, unshipped order lines — rather
+// than by a forecast. Stillhouse has no forecast, and a plan built on an
+// invented one looks exactly as authoritative as a plan built on orders.
+// PLAN F7 is where a forecast would go; until it exists this says what it
+// is working from, on the page, every time.
+//
+// The other half of honesty here is the plant. A piece of equipment with
+// no recorded capacity or no recorded run time cannot be planned against,
+// and is returned with the reason rather than dropped — an empty schedule
+// and a schedule that silently omitted half the still house look
+// identical from the outside.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "stillhouse/v1/equipment.proto";
+
+message DemandLine {
+  string product_id = 1;
+  string product_name = 2;
+  int32  bottle_size_ml = 3;
+  double bottle_abv_pct = 4;
+  // Confirmed and unshipped. A real commitment, not a projection.
+  int32  bottles_owed = 5;
+  string earliest_required = 6;   // ISO date; empty if no order gave one
+  // Ours, here, released and not already picked onto an open shipment.
+  int32  bottles_on_hand = 7;
+  int32  bottles_picked = 8;
+  int32  bottles_available = 9;
+  // What is missing. Zero when stock covers the orders.
+  int32  shortfall = 10;
+  // The alcohol that shortfall would need, so it can be compared against
+  // what is actually in the tanks.
+  double shortfall_laa = 11;
+  // True when the earliest required date has already passed and the
+  // stock is not there.
+  bool   late = 12;
+}
+
+message PlannableEquipment {
+  string id = 1;
+  string name = 2;
+  EquipmentKind kind = 3;
+  EquipmentStatus status = 4;
+  double capacity_l = 5;
+  bool   capacity_l_set = 6;
+  // Observed from work orders that recorded a start and a finish; the
+  // median, so one run left going over a weekend does not move it.
+  double observed_median_hours = 7;
+  int32  observed_runs = 8;
+  double typical_run_hours = 9;
+  bool   typical_run_hours_set = 10;
+  // Whether this can be planned against at all, and why not.
+  bool   plannable = 11;
+  string why_not = 12;
+  // Work already on the board in the window.
+  repeated ScheduledWork scheduled = 13;
+  // Hours the scheduled work is expected to take, from the observed
+  // median where there is one and the recorded typical run otherwise.
+  double scheduled_hours = 14;
+}
+
+message ScheduledWork {
+  string work_order_id = 1;
+  int32  work_order_no = 2;
+  string title = 3;
+  string scheduled_for = 4;   // ISO date
+  string due_on = 5;
+  string status = 6;
+}
+
+message ProductionPlanRequest {
+  // The window the board covers. Empty defaults to the next four weeks.
+  string from = 1;            // ISO date
+  string to = 2;              // ISO date
+}
+message ProductionPlanResponse {
+  repeated DemandLine demand = 1;
+  repeated PlannableEquipment equipment = 2;
+  string from = 3;
+  string to = 4;
+
+  // Total alcohol the shortfalls need, and what is actually available to
+  // bottle: ours, here, and not in somebody else's cask.
+  double shortfall_laa = 5;
+  double available_laa = 6;
+  // True when the shortfalls need more alcohol than there is. The one
+  // number worth putting in front of somebody before they promise a date.
+  bool   short_of_alcohol = 7;
+
+  // What this plan is working from, said on the page. Never empty.
+  string basis = 8;
+  // Things the plan could not take into account — plant with no capacity
+  // recorded, orders with no required-by date. Named rather than dropped.
+  repeated string blind_spots = 9;
+}
+
+service SchedulingService {
+  rpc ProductionPlan(ProductionPlanRequest) returns (ProductionPlanResponse);
+}

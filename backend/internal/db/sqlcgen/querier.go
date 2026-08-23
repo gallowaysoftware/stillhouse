@@ -88,6 +88,10 @@ type Querier interface {
 	// goods during a period. Voided runs are excluded — their effect is
 	// reversed elsewhere and posting both sides would double the entry.
 	BottlingRunsInPeriodForWIP(ctx context.Context, arg BottlingRunsInPeriodForWIPParams) ([]BottlingRunsInPeriodForWIPRow, error)
+	// Alcohol that could actually be bottled: ours, here, and not in a cask
+	// somebody else owns. Barrels included, because a dumped cask is exactly
+	// what a bottling run draws from.
+	BulkAvailableForBottling(ctx context.Context) (float64, error)
 	// Last movement timestamp per container (either as source or destination).
 	// Returns one row per container that's ever moved alcohol; containers that
 	// have only existed never accept a row here. Caller falls back to
@@ -245,6 +249,16 @@ type Querier interface {
 	// audit_events, etc) in one go.
 	DeleteTenant(ctx context.Context, id uuid.UUID) error
 	DeleteUserTOTP(ctx context.Context, userID uuid.UUID) error
+	// What is actually owed, against what is actually here.
+	//
+	// Demand is confirmed, unshipped order lines — real commitments to real
+	// customers, not a statistical forecast. Stillhouse has no forecast and
+	// says so rather than producing one; see PLAN F7.
+	//
+	// Supply is bottles on hand less what is already picked onto open
+	// shipments, and less what other confirmed orders have spoken for, so two
+	// products competing for the same stock do not both look satisfiable.
+	DemandByProduct(ctx context.Context) ([]DemandByProductRow, error)
 	// Pull the distillation run + every charge → ferment → mash → recipe
 	// subtree behind a production_gauge bulk_movement. One row per charge
 	// so multi-charge blends are fully represented in trace + cost rollups.
@@ -629,6 +643,11 @@ type Querier interface {
 	// alert evaluator.
 	OverdueInvoices(ctx context.Context) ([]OverdueInvoicesRow, error)
 	PackagedInventoryByLot(ctx context.Context, arg PackagedInventoryByLotParams) (PackagedInventory, error)
+	// Plant that can actually be planned against: in service, with a
+	// capacity and a typical run time recorded. Everything else is returned
+	// too, with the reason it cannot, because an empty schedule and a
+	// schedule that silently dropped half the plant look identical.
+	PlannableEquipment(ctx context.Context) ([]PlannableEquipmentRow, error)
 	// Unfiled periods with a due date on or before a day, for the alert
 	// evaluator. A definition with no recorded due-days produces periods
 	// with a NULL due_on, which cannot be overdue and is not alerted on —
@@ -722,6 +741,12 @@ type Querier interface {
 	SaveProvincialRegistration(ctx context.Context, arg SaveProvincialRegistrationParams) (ProvincialRegistration, error)
 	SaveProvincialReportDefinition(ctx context.Context, arg SaveProvincialReportDefinitionParams) (ProvincialReportDefinition, error)
 	SaveTaxRate(ctx context.Context, arg SaveTaxRateParams) (TaxRate, error)
+	// What is already on the board, per piece of plant, in a window.
+	//
+	// Only work with a scheduled date and a piece of equipment named. Work
+	// with neither cannot be planned against a capacity, and counting it
+	// would overstate how full the week is.
+	ScheduledWorkByEquipment(ctx context.Context, arg ScheduledWorkByEquipmentParams) ([]ScheduledWorkByEquipmentRow, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)

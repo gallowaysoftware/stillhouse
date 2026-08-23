@@ -178,19 +178,13 @@ rather than a silent correction.
 
 ## Track F — planning and operations
 
-### F3 · Production scheduling — P1
-
-Bottling and distillation scheduled from forecast and actual shipments, with a
-combined view of inventory, people and equipment. Historical run durations
-inform the estimate. Purtrak's most-cited operational feature.
-
-`F2` shipped in stage 171, so there is a board with dates and owners on it and
-work orders record when they actually started and finished. `F4` shipped in
-stage 184, so equipment has a capacity where one is recorded and the observed
-median run duration is already computed from those work orders. What is left
-is the forecast and the scheduling view itself.
-
 ### F7 · Forecasting — P2
+
+Stage 185 built the production plan from *actual* demand — confirmed, unshipped
+order lines — and says so on the page every time, because a plan built on an
+invented forecast looks exactly as authoritative as one built on orders. A
+forecast would go here, alongside that rather than instead of it.
+
 
 Raw material, WIP and finished-goods forecasting. Ekos ships it; it is what
 makes `F3` more than a calendar.
