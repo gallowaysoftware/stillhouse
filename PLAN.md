@@ -295,8 +295,9 @@ than this item originally described:
 - Prose over the period that reads the blockers, the losses awaiting
   classification and the continuity break together, and says which one to
   do first. Today each speaks only for itself.
-- The same over the MCP surface, so the question can be asked at the still
-  rather than on the returns page.
+- ~~The same over the MCP surface~~ — shipped in stage 192 as
+  `review_filing`, though it orders the work deterministically rather than
+  narrating it.
 
 Deliberately still excluded: anything that puts a *number* on the return.
 A model may order the work and explain a discrepancy. It may not compute
@@ -316,9 +317,19 @@ bottling. Depends on `A7`.
 
 ### J4 · Expanded MCP surface — P2
 
-Back-office writes currently stay in the web UI because multi-row inputs don't
-translate to chat. Revisit for the flows that do — filing review, work-order
-status, scheduling.
+Filing review shipped in stage 192 as `review_filing`, read-only: it orders
+the outstanding work rather than doing any of it, and B266 generation stays
+in the web UI where it belongs.
+
+What is left of this item is the other two flows named here, and they are
+not the same shape as each other:
+
+- **Work-order status** — a status read and a status change. The read is
+  straightforward; the write is a single field, so it does translate to
+  chat and is the next one worth doing.
+- **Scheduling** — multi-row by nature. Probably stays in the web UI, and
+  the honest resolution may be to say so here rather than to keep the line
+  open indefinitely.
 
 ---
 

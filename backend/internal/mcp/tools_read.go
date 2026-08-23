@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"context"
+	"fmt"
 
 	"connectrpc.com/connect"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -29,6 +30,7 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addPlanStrike(s, d, user)
 	addPlanReduction(s, d, user)
 	addPlanBlend(s, d, user)
+	addReviewFiling(s, d, user)
 }
 
 // dashboardOutput is a compact rollup useful as the "what's the state
@@ -413,4 +415,227 @@ func addPlanBlend(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		}
 		return jsonResult(resp.Msg), nil, nil
 	})
+}
+
+// filingReviewOutput answers one question — "can I file yet, and if not,
+// what do I have to do first?" — from the records that already exist.
+//
+// Deliberately assembled from reads only. Generating a B266 writes a draft
+// period, and B266 generation is a back-office write that stays in the web
+// UI; a tool that quietly created periods as a side effect of being asked
+// a question would be the wrong shape regardless of how convenient it is.
+// So this reports on periods that exist and says so when the one being
+// asked about does not.
+type filingReviewOutput struct {
+	// The period the licensee's own fiscal calendar says is next, and how
+	// long is left on it.
+	SuggestedPeriodStart string `json:"suggested_period_start"`
+	SuggestedPeriodEnd   string `json:"suggested_period_end"`
+	DueOn                string `json:"due_on"`
+	DaysUntilDue         int32  `json:"days_until_due"`
+	// True once the due date has passed with nothing submitted.
+	Overdue bool `json:"overdue"`
+
+	// Whether a period covering the reviewed span has been generated, and
+	// what state it is in. Absent means nothing has been generated for it
+	// yet, which is not an error — it is the first thing to do.
+	PeriodExists bool   `json:"period_exists"`
+	PeriodID     string `json:"period_id,omitempty"`
+	PeriodStatus string `json:"period_status,omitempty"`
+
+	// Reasons the period cannot be filed as it stands, in the operator's
+	// words. Only present once the period has been generated, because they
+	// are computed as part of generating it.
+	FilingBlockers []string `json:"filing_blockers"`
+
+	// Whether the return continues the last one filed. The only check on a
+	// B266 that compares it against something outside its own ledger — see
+	// stage 191. Null when no period has been generated yet.
+	Continuity *filingContinuity `json:"continuity,omitempty"`
+
+	// Losses nobody has ruled on. A period with any of these is not ready
+	// to file: under EDM3-4-1 a relieved loss and one that cannot be
+	// accounted for are charged differently, and Stillhouse will not guess.
+	UnclassifiedLossCount int32   `json:"unclassified_loss_count"`
+	UnclassifiedLossLAA   float64 `json:"unclassified_loss_laa"`
+
+	// What to do next, ordered. Empty means nothing is outstanding — which
+	// is not a promise the figures are right, only that nothing is missing.
+	NextSteps []string `json:"next_steps"`
+	// Said plainly rather than left to be inferred from an empty list.
+	Note string `json:"note"`
+}
+
+type filingContinuity struct {
+	Checked                bool    `json:"checked"`
+	PriorPeriodStart       string  `json:"prior_period_start,omitempty"`
+	PriorPeriodEnd         string  `json:"prior_period_end,omitempty"`
+	PriorBulkClosingLAA    float64 `json:"prior_bulk_closing_laa"`
+	BulkOpeningLAA         float64 `json:"bulk_opening_laa"`
+	BulkDiscrepancyLAA     float64 `json:"bulk_discrepancy_laa"`
+	PackagedDiscrepancyLAA float64 `json:"packaged_discrepancy_laa"`
+	BackdatedEntryCount    int32   `json:"backdated_entry_count"`
+	BackdatedNetLAA        float64 `json:"backdated_net_laa"`
+	Gap                    bool    `json:"gap"`
+	GapNote                string  `json:"gap_note,omitempty"`
+}
+
+// addReviewFiling is the filing-review half of PLAN J4, and the half of J1
+// that belongs at the still rather than on the returns page: an operator
+// with wet hands asking whether the return is ready, and being told what
+// to do first rather than being handed a form.
+func addReviewFiling(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		On string `json:"on,omitempty" jsonschema:"review the period containing this ISO date (YYYY-MM-DD); empty means the period that is next due"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "review_filing",
+		Description: "Whether the current CRA B266 return is ready to file, and what has to be resolved first: " +
+			"outstanding filing blockers, losses awaiting a duty treatment, and whether the return continues " +
+			"the last one filed. Reads only — it does not generate or submit a return.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		// Every procedure this tool reaches is authorised on its own name
+		// rather than under one guard for the first of them. All four
+		// happen to require the same role today; that is a coincidence of
+		// the current table, and a tool that assumed it would silently
+		// stop checking the moment somebody raised one of them.
+		sugCtx, err := guard(ctx, user, "/stillhouse.v1.B266Service/SuggestB266Period")
+		if err != nil {
+			return nil, nil, err
+		}
+
+		sug, err := d.B266.SuggestB266Period(sugCtx, connect.NewRequest(&pb.SuggestB266PeriodRequest{On: args.On}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		out := filingReviewOutput{
+			SuggestedPeriodStart: sug.Msg.GetPeriodStart(),
+			SuggestedPeriodEnd:   sug.Msg.GetPeriodEnd(),
+			DueOn:                sug.Msg.GetDueOn(),
+			DaysUntilDue:         sug.Msg.GetDaysUntilDue(),
+			FilingBlockers:       []string{},
+			NextSteps:            []string{},
+		}
+
+		// Find the generated period for that span, if there is one. Listing
+		// rather than fetching by date keeps this to the read surface the
+		// MCP session already has.
+		listCtx, err := guard(ctx, user, "/stillhouse.v1.B266Service/ListB266Periods")
+		if err != nil {
+			return nil, nil, err
+		}
+		periods, err := d.B266.ListB266Periods(listCtx, connect.NewRequest(&pb.ListB266PeriodsRequest{}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		for _, p := range periods.Msg.GetPeriods() {
+			if p.GetPeriodStart() == out.SuggestedPeriodStart && p.GetPeriodEnd() == out.SuggestedPeriodEnd {
+				out.PeriodExists = true
+				out.PeriodID = p.GetId()
+				out.PeriodStatus = p.GetStatus().String()
+				break
+			}
+		}
+		out.Overdue = out.DaysUntilDue < 0 && out.PeriodStatus != pb.B266Status_B266_STATUS_SUBMITTED.String()
+
+		// The blockers and the continuity comparison are computed as part
+		// of generating the return, so they are only available once one has
+		// been generated. Reading them off the stored period rather than
+		// recomputing is what keeps this tool read-only.
+		if out.PeriodExists {
+			getCtx, e := guard(ctx, user, "/stillhouse.v1.B266Service/GetB266Period")
+			if e != nil {
+				return nil, nil, e
+			}
+			got, e := d.B266.GetB266Period(getCtx, connect.NewRequest(&pb.GetB266PeriodRequest{Id: out.PeriodID}))
+			if e != nil {
+				return errResult(e), nil, nil
+			}
+			if snap := got.Msg.GetSnapshot(); snap != nil {
+				out.FilingBlockers = snap.GetFilingBlockers()
+				if c := snap.GetContinuity(); c != nil {
+					out.Continuity = &filingContinuity{
+						Checked:                c.GetChecked(),
+						PriorPeriodStart:       c.GetPriorPeriodStart(),
+						PriorPeriodEnd:         c.GetPriorPeriodEnd(),
+						PriorBulkClosingLAA:    c.GetPriorBulkClosingLaa(),
+						BulkOpeningLAA:         c.GetBulkOpeningLaa(),
+						BulkDiscrepancyLAA:     c.GetBulkDiscrepancyLaa(),
+						PackagedDiscrepancyLAA: c.GetPackagedDiscrepancyLaa(),
+						BackdatedEntryCount:    int32(len(c.GetBackdated())) + c.GetBackdatedTruncated(),
+						BackdatedNetLAA:        c.GetBackdatedNetLaa(),
+						Gap:                    c.GetGap(),
+						GapNote:                c.GetGapNote(),
+					}
+				}
+			}
+		}
+
+		// Losses awaiting a ruling, over the reviewed span.
+		lossCtx, e := guard(ctx, user, "/stillhouse.v1.BulkService/ListLosses")
+		if e != nil {
+			return nil, nil, e
+		}
+		losses, e := d.Bulk.ListLosses(lossCtx, connect.NewRequest(&pb.ListLossesRequest{
+			PeriodStart:      out.SuggestedPeriodStart,
+			PeriodEnd:        out.SuggestedPeriodEnd,
+			UnclassifiedOnly: true,
+		}))
+		if e != nil {
+			return errResult(e), nil, nil
+		}
+		out.UnclassifiedLossCount = int32(len(losses.Msg.GetLosses()))
+		out.UnclassifiedLossLAA = losses.Msg.GetUnclassifiedLaa()
+
+		out.NextSteps, out.Note = filingNextSteps(&out)
+		return jsonResultRaw(out), nil, nil
+	})
+}
+
+// filingNextSteps orders the outstanding work. Ordering is the point: an
+// operator told five things at once does none of them, and the five are
+// not equally urgent or equally cheap.
+//
+// The order is deliberate. Losses come before generating, because
+// generating before they are ruled on produces a return that has to be
+// regenerated. Continuity comes last of the substantive steps because it
+// concerns a return already filed and is the one that may need an
+// amendment rather than an edit.
+func filingNextSteps(o *filingReviewOutput) (steps []string, note string) {
+	if o.UnclassifiedLossCount > 0 {
+		steps = append(steps, fmt.Sprintf(
+			"Rule on %d loss%s totalling %.4f LAA — each is either relieved or duty-payable (EDM3-4-1), and the return cannot be filed while any is unruled. Losses page in the web UI.",
+			o.UnclassifiedLossCount, lossPlural(o.UnclassifiedLossCount), o.UnclassifiedLossLAA))
+	}
+	if !o.PeriodExists {
+		steps = append(steps, fmt.Sprintf(
+			"Generate the return for %s to %s. Nothing has been generated for this period yet, so there are no figures to check.",
+			o.SuggestedPeriodStart, o.SuggestedPeriodEnd))
+	}
+	for _, b := range o.FilingBlockers {
+		steps = append(steps, b)
+	}
+	if o.Overdue {
+		steps = append(steps, fmt.Sprintf("This return was due %s and has not been submitted.", o.DueOn))
+	}
+
+	switch {
+	case len(steps) == 0 && o.PeriodStatus == pb.B266Status_B266_STATUS_SUBMITTED.String():
+		note = "Already submitted."
+	case len(steps) == 0:
+		note = "Nothing outstanding. That is not a promise the figures are right — only that nothing is missing. Check them against your own records before filing."
+	default:
+		note = "Stillhouse never files, and does not decide any of the above for you."
+	}
+	return steps, note
+}
+
+// lossPlural is the "es" ending that "loss" takes. Named for its ending
+// rather than for pluralising in general — QA found a shared helper that
+// only knew "es" appending it to "destruction", on a B266 filing blocker.
+func lossPlural(n int32) string {
+	if n == 1 {
+		return ""
+	}
+	return "es"
 }
