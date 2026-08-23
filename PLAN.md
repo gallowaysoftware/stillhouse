@@ -200,12 +200,21 @@ Either commit or scope Quebec out explicitly.
 
 ### H7 · Multi-entity — P2
 
-A group running a brewery and a distillery, or two licences, currently needs
-two tenants and two logins. Needs an entity switcher above the tenant.
+Stage 195 shipped the switcher: one email, accounts at several distilleries,
+and a move between them that keeps the browser where it is. It re-verifies
+against the target account rather than trusting the session, because a
+password that is right at one distillery need not be right at another.
 
-Half the prerequisite is done: stage 155 made email unique per tenant, so one
-person can hold an account at each, and login already asks which one they
-mean. What is missing is switching between them without signing out.
+What is left is the harder half of this item, and it is a different thing
+from switching:
+
+- **A group view.** Switching still shows one licensee at a time. A group
+  running two licences may want figures across both — which is a reporting
+  question with a real constraint attached, because a B266 is filed per
+  licence and a combined figure must never be mistakable for one.
+- **Shared reference data** (materials, suppliers, products) across
+  entities, which needs a home above the tenant that RLS can still reason
+  about. Not obviously worth it for two tenants.
 
 ### H9 · Billing and self-serve signup — P2
 

@@ -5,6 +5,47 @@ package stillhouse.v1;
 import "stillhouse/v1/tenant.proto";
 import "stillhouse/v1/user.proto";
 
+message ListMyDistilleriesRequest {}
+message ListMyDistilleriesResponse {
+  // Includes the one currently signed in to, flagged, so the switcher can
+  // show where you are as well as where you could go.
+  repeated MyDistillery distilleries = 1;
+}
+message MyDistillery {
+  string tenant_id = 1;
+  string tenant_name = 2;
+  bool   current = 3;
+  // The role held at THAT distillery, which need not be the role held
+  // here. Shown so a switch does not silently change what you can do.
+  string role = 4;
+}
+
+// Switching is a re-authentication, not a context change, and the reason
+// is in Login: an email address can hold accounts at several distilleries
+// and "one password may be right at one distillery and wrong at another".
+// A session at one therefore proves nothing about the others, so the
+// credentials are verified against the target account exactly as a fresh
+// login would. What is saved is signing out, not proving who you are.
+//
+// The second factor follows the same rule. If the target account has one
+// enrolled it is required, whether or not the current session needed one
+// — otherwise switching would be a way to reach an MFA-protected account
+// without satisfying its MFA.
+message SwitchDistilleryRequest {
+  string tenant_id = 1;
+  string password = 2;
+  string totp_code = 3;
+  string recovery_code = 4;
+}
+message SwitchDistilleryResponse {
+  User user = 1;
+  Tenant tenant = 2;
+  // Set when the target account has a second factor and no code was
+  // given. No switch has happened; the client asks for a code and comes
+  // back. Mirrors LoginResponse.mfa_required.
+  bool mfa_required = 3;
+}
+
 message LoginRequest {
   string email = 1;
   string password = 2;
@@ -99,6 +140,12 @@ message MFAStatusResponse {
 service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
+
+  // The distilleries this email holds an account at, for the switcher.
+  rpc ListMyDistilleries(ListMyDistilleriesRequest) returns (ListMyDistilleriesResponse);
+  // Move an existing session to another of them. Credentials are checked
+  // against the target account — see the message comment.
+  rpc SwitchDistillery(SwitchDistilleryRequest) returns (SwitchDistilleryResponse);
   rpc RequestPasswordReset(RequestPasswordResetRequest) returns (RequestPasswordResetResponse);
   rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
   rpc MFAStatus(MFAStatusRequest) returns (MFAStatusResponse);

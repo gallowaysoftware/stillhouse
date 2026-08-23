@@ -21,6 +21,300 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type ListMyDistilleriesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyDistilleriesRequest) Reset() {
+	*x = ListMyDistilleriesRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyDistilleriesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyDistilleriesRequest) ProtoMessage() {}
+
+func (x *ListMyDistilleriesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyDistilleriesRequest.ProtoReflect.Descriptor instead.
+func (*ListMyDistilleriesRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{0}
+}
+
+type ListMyDistilleriesResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Includes the one currently signed in to, flagged, so the switcher can
+	// show where you are as well as where you could go.
+	Distilleries  []*MyDistillery `protobuf:"bytes,1,rep,name=distilleries,proto3" json:"distilleries,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyDistilleriesResponse) Reset() {
+	*x = ListMyDistilleriesResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyDistilleriesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyDistilleriesResponse) ProtoMessage() {}
+
+func (x *ListMyDistilleriesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyDistilleriesResponse.ProtoReflect.Descriptor instead.
+func (*ListMyDistilleriesResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *ListMyDistilleriesResponse) GetDistilleries() []*MyDistillery {
+	if x != nil {
+		return x.Distilleries
+	}
+	return nil
+}
+
+type MyDistillery struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	TenantId   string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	TenantName string                 `protobuf:"bytes,2,opt,name=tenant_name,json=tenantName,proto3" json:"tenant_name,omitempty"`
+	Current    bool                   `protobuf:"varint,3,opt,name=current,proto3" json:"current,omitempty"`
+	// The role held at THAT distillery, which need not be the role held
+	// here. Shown so a switch does not silently change what you can do.
+	Role          string `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MyDistillery) Reset() {
+	*x = MyDistillery{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MyDistillery) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MyDistillery) ProtoMessage() {}
+
+func (x *MyDistillery) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MyDistillery.ProtoReflect.Descriptor instead.
+func (*MyDistillery) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *MyDistillery) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *MyDistillery) GetTenantName() string {
+	if x != nil {
+		return x.TenantName
+	}
+	return ""
+}
+
+func (x *MyDistillery) GetCurrent() bool {
+	if x != nil {
+		return x.Current
+	}
+	return false
+}
+
+func (x *MyDistillery) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+// Switching is a re-authentication, not a context change, and the reason
+// is in Login: an email address can hold accounts at several distilleries
+// and "one password may be right at one distillery and wrong at another".
+// A session at one therefore proves nothing about the others, so the
+// credentials are verified against the target account exactly as a fresh
+// login would. What is saved is signing out, not proving who you are.
+//
+// The second factor follows the same rule. If the target account has one
+// enrolled it is required, whether or not the current session needed one
+// — otherwise switching would be a way to reach an MFA-protected account
+// without satisfying its MFA.
+type SwitchDistilleryRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TenantId      string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	TotpCode      string                 `protobuf:"bytes,3,opt,name=totp_code,json=totpCode,proto3" json:"totp_code,omitempty"`
+	RecoveryCode  string                 `protobuf:"bytes,4,opt,name=recovery_code,json=recoveryCode,proto3" json:"recovery_code,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SwitchDistilleryRequest) Reset() {
+	*x = SwitchDistilleryRequest{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SwitchDistilleryRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SwitchDistilleryRequest) ProtoMessage() {}
+
+func (x *SwitchDistilleryRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SwitchDistilleryRequest.ProtoReflect.Descriptor instead.
+func (*SwitchDistilleryRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *SwitchDistilleryRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *SwitchDistilleryRequest) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *SwitchDistilleryRequest) GetTotpCode() string {
+	if x != nil {
+		return x.TotpCode
+	}
+	return ""
+}
+
+func (x *SwitchDistilleryRequest) GetRecoveryCode() string {
+	if x != nil {
+		return x.RecoveryCode
+	}
+	return ""
+}
+
+type SwitchDistilleryResponse struct {
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	User   *User                  `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
+	Tenant *Tenant                `protobuf:"bytes,2,opt,name=tenant,proto3" json:"tenant,omitempty"`
+	// Set when the target account has a second factor and no code was
+	// given. No switch has happened; the client asks for a code and comes
+	// back. Mirrors LoginResponse.mfa_required.
+	MfaRequired   bool `protobuf:"varint,3,opt,name=mfa_required,json=mfaRequired,proto3" json:"mfa_required,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SwitchDistilleryResponse) Reset() {
+	*x = SwitchDistilleryResponse{}
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SwitchDistilleryResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SwitchDistilleryResponse) ProtoMessage() {}
+
+func (x *SwitchDistilleryResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SwitchDistilleryResponse.ProtoReflect.Descriptor instead.
+func (*SwitchDistilleryResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *SwitchDistilleryResponse) GetUser() *User {
+	if x != nil {
+		return x.User
+	}
+	return nil
+}
+
+func (x *SwitchDistilleryResponse) GetTenant() *Tenant {
+	if x != nil {
+		return x.Tenant
+	}
+	return nil
+}
+
+func (x *SwitchDistilleryResponse) GetMfaRequired() bool {
+	if x != nil {
+		return x.MfaRequired
+	}
+	return false
+}
+
 type LoginRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	Email    string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
@@ -42,7 +336,7 @@ type LoginRequest struct {
 
 func (x *LoginRequest) Reset() {
 	*x = LoginRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -54,7 +348,7 @@ func (x *LoginRequest) String() string {
 func (*LoginRequest) ProtoMessage() {}
 
 func (x *LoginRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[0]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -67,7 +361,7 @@ func (x *LoginRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginRequest.ProtoReflect.Descriptor instead.
 func (*LoginRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{0}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *LoginRequest) GetEmail() string {
@@ -118,7 +412,7 @@ type TenantChoice struct {
 
 func (x *TenantChoice) Reset() {
 	*x = TenantChoice{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -130,7 +424,7 @@ func (x *TenantChoice) String() string {
 func (*TenantChoice) ProtoMessage() {}
 
 func (x *TenantChoice) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[1]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -143,7 +437,7 @@ func (x *TenantChoice) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TenantChoice.ProtoReflect.Descriptor instead.
 func (*TenantChoice) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *TenantChoice) GetTenantId() string {
@@ -178,7 +472,7 @@ type LoginResponse struct {
 
 func (x *LoginResponse) Reset() {
 	*x = LoginResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -190,7 +484,7 @@ func (x *LoginResponse) String() string {
 func (*LoginResponse) ProtoMessage() {}
 
 func (x *LoginResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -203,7 +497,7 @@ func (x *LoginResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LoginResponse.ProtoReflect.Descriptor instead.
 func (*LoginResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *LoginResponse) GetUser() *User {
@@ -242,7 +536,7 @@ type LogoutRequest struct {
 
 func (x *LogoutRequest) Reset() {
 	*x = LogoutRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -254,7 +548,7 @@ func (x *LogoutRequest) String() string {
 func (*LogoutRequest) ProtoMessage() {}
 
 func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -267,7 +561,7 @@ func (x *LogoutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutRequest.ProtoReflect.Descriptor instead.
 func (*LogoutRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{8}
 }
 
 type LogoutResponse struct {
@@ -278,7 +572,7 @@ type LogoutResponse struct {
 
 func (x *LogoutResponse) Reset() {
 	*x = LogoutResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -290,7 +584,7 @@ func (x *LogoutResponse) String() string {
 func (*LogoutResponse) ProtoMessage() {}
 
 func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -303,7 +597,7 @@ func (x *LogoutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogoutResponse.ProtoReflect.Descriptor instead.
 func (*LogoutResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{9}
 }
 
 // Public — always returns success. Backend silently skips if the email
@@ -317,7 +611,7 @@ type RequestPasswordResetRequest struct {
 
 func (x *RequestPasswordResetRequest) Reset() {
 	*x = RequestPasswordResetRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -329,7 +623,7 @@ func (x *RequestPasswordResetRequest) String() string {
 func (*RequestPasswordResetRequest) ProtoMessage() {}
 
 func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -342,7 +636,7 @@ func (x *RequestPasswordResetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestPasswordResetRequest.ProtoReflect.Descriptor instead.
 func (*RequestPasswordResetRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RequestPasswordResetRequest) GetEmail() string {
@@ -360,7 +654,7 @@ type RequestPasswordResetResponse struct {
 
 func (x *RequestPasswordResetResponse) Reset() {
 	*x = RequestPasswordResetResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -372,7 +666,7 @@ func (x *RequestPasswordResetResponse) String() string {
 func (*RequestPasswordResetResponse) ProtoMessage() {}
 
 func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -385,7 +679,7 @@ func (x *RequestPasswordResetResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RequestPasswordResetResponse.ProtoReflect.Descriptor instead.
 func (*RequestPasswordResetResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{11}
 }
 
 type ResetPasswordRequest struct {
@@ -398,7 +692,7 @@ type ResetPasswordRequest struct {
 
 func (x *ResetPasswordRequest) Reset() {
 	*x = ResetPasswordRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -410,7 +704,7 @@ func (x *ResetPasswordRequest) String() string {
 func (*ResetPasswordRequest) ProtoMessage() {}
 
 func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -423,7 +717,7 @@ func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
 func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ResetPasswordRequest) GetToken() string {
@@ -448,7 +742,7 @@ type ResetPasswordResponse struct {
 
 func (x *ResetPasswordResponse) Reset() {
 	*x = ResetPasswordResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -460,7 +754,7 @@ func (x *ResetPasswordResponse) String() string {
 func (*ResetPasswordResponse) ProtoMessage() {}
 
 func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -473,7 +767,7 @@ func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
 func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{13}
 }
 
 // Enrolment is two steps on purpose. BeginMFAEnrolment hands back a
@@ -488,7 +782,7 @@ type BeginMFAEnrolmentRequest struct {
 
 func (x *BeginMFAEnrolmentRequest) Reset() {
 	*x = BeginMFAEnrolmentRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -500,7 +794,7 @@ func (x *BeginMFAEnrolmentRequest) String() string {
 func (*BeginMFAEnrolmentRequest) ProtoMessage() {}
 
 func (x *BeginMFAEnrolmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -513,7 +807,7 @@ func (x *BeginMFAEnrolmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BeginMFAEnrolmentRequest.ProtoReflect.Descriptor instead.
 func (*BeginMFAEnrolmentRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{14}
 }
 
 type BeginMFAEnrolmentResponse struct {
@@ -529,7 +823,7 @@ type BeginMFAEnrolmentResponse struct {
 
 func (x *BeginMFAEnrolmentResponse) Reset() {
 	*x = BeginMFAEnrolmentResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -541,7 +835,7 @@ func (x *BeginMFAEnrolmentResponse) String() string {
 func (*BeginMFAEnrolmentResponse) ProtoMessage() {}
 
 func (x *BeginMFAEnrolmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -554,7 +848,7 @@ func (x *BeginMFAEnrolmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BeginMFAEnrolmentResponse.ProtoReflect.Descriptor instead.
 func (*BeginMFAEnrolmentResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *BeginMFAEnrolmentResponse) GetEnrolmentUri() string {
@@ -580,7 +874,7 @@ type ConfirmMFAEnrolmentRequest struct {
 
 func (x *ConfirmMFAEnrolmentRequest) Reset() {
 	*x = ConfirmMFAEnrolmentRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -592,7 +886,7 @@ func (x *ConfirmMFAEnrolmentRequest) String() string {
 func (*ConfirmMFAEnrolmentRequest) ProtoMessage() {}
 
 func (x *ConfirmMFAEnrolmentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -605,7 +899,7 @@ func (x *ConfirmMFAEnrolmentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmMFAEnrolmentRequest.ProtoReflect.Descriptor instead.
 func (*ConfirmMFAEnrolmentRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *ConfirmMFAEnrolmentRequest) GetCode() string {
@@ -626,7 +920,7 @@ type ConfirmMFAEnrolmentResponse struct {
 
 func (x *ConfirmMFAEnrolmentResponse) Reset() {
 	*x = ConfirmMFAEnrolmentResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -638,7 +932,7 @@ func (x *ConfirmMFAEnrolmentResponse) String() string {
 func (*ConfirmMFAEnrolmentResponse) ProtoMessage() {}
 
 func (x *ConfirmMFAEnrolmentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -651,7 +945,7 @@ func (x *ConfirmMFAEnrolmentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmMFAEnrolmentResponse.ProtoReflect.Descriptor instead.
 func (*ConfirmMFAEnrolmentResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{12}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *ConfirmMFAEnrolmentResponse) GetRecoveryCodes() []string {
@@ -672,7 +966,7 @@ type DisableMFARequest struct {
 
 func (x *DisableMFARequest) Reset() {
 	*x = DisableMFARequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -684,7 +978,7 @@ func (x *DisableMFARequest) String() string {
 func (*DisableMFARequest) ProtoMessage() {}
 
 func (x *DisableMFARequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -697,7 +991,7 @@ func (x *DisableMFARequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableMFARequest.ProtoReflect.Descriptor instead.
 func (*DisableMFARequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{13}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *DisableMFARequest) GetCurrentPassword() string {
@@ -715,7 +1009,7 @@ type DisableMFAResponse struct {
 
 func (x *DisableMFAResponse) Reset() {
 	*x = DisableMFAResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -727,7 +1021,7 @@ func (x *DisableMFAResponse) String() string {
 func (*DisableMFAResponse) ProtoMessage() {}
 
 func (x *DisableMFAResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -740,7 +1034,7 @@ func (x *DisableMFAResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DisableMFAResponse.ProtoReflect.Descriptor instead.
 func (*DisableMFAResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{14}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{19}
 }
 
 type MFAStatusRequest struct {
@@ -751,7 +1045,7 @@ type MFAStatusRequest struct {
 
 func (x *MFAStatusRequest) Reset() {
 	*x = MFAStatusRequest{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -763,7 +1057,7 @@ func (x *MFAStatusRequest) String() string {
 func (*MFAStatusRequest) ProtoMessage() {}
 
 func (x *MFAStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -776,7 +1070,7 @@ func (x *MFAStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MFAStatusRequest.ProtoReflect.Descriptor instead.
 func (*MFAStatusRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{15}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{20}
 }
 
 type MFAStatusResponse struct {
@@ -796,7 +1090,7 @@ type MFAStatusResponse struct {
 
 func (x *MFAStatusResponse) Reset() {
 	*x = MFAStatusResponse{}
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[16]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -808,7 +1102,7 @@ func (x *MFAStatusResponse) String() string {
 func (*MFAStatusResponse) ProtoMessage() {}
 
 func (x *MFAStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_auth_proto_msgTypes[16]
+	mi := &file_stillhouse_v1_auth_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -821,7 +1115,7 @@ func (x *MFAStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MFAStatusResponse.ProtoReflect.Descriptor instead.
 func (*MFAStatusResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{16}
+	return file_stillhouse_v1_auth_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *MFAStatusResponse) GetEnabled() bool {
@@ -863,7 +1157,25 @@ var File_stillhouse_v1_auth_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_auth_proto_rawDesc = "" +
 	"\n" +
-	"\x18stillhouse/v1/auth.proto\x12\rstillhouse.v1\x1a\x1astillhouse/v1/tenant.proto\x1a\x18stillhouse/v1/user.proto\"\x9f\x01\n" +
+	"\x18stillhouse/v1/auth.proto\x12\rstillhouse.v1\x1a\x1astillhouse/v1/tenant.proto\x1a\x18stillhouse/v1/user.proto\"\x1b\n" +
+	"\x19ListMyDistilleriesRequest\"]\n" +
+	"\x1aListMyDistilleriesResponse\x12?\n" +
+	"\fdistilleries\x18\x01 \x03(\v2\x1b.stillhouse.v1.MyDistilleryR\fdistilleries\"z\n" +
+	"\fMyDistillery\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1f\n" +
+	"\vtenant_name\x18\x02 \x01(\tR\n" +
+	"tenantName\x12\x18\n" +
+	"\acurrent\x18\x03 \x01(\bR\acurrent\x12\x12\n" +
+	"\x04role\x18\x04 \x01(\tR\x04role\"\x94\x01\n" +
+	"\x17SwitchDistilleryRequest\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1a\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1b\n" +
+	"\ttotp_code\x18\x03 \x01(\tR\btotpCode\x12#\n" +
+	"\rrecovery_code\x18\x04 \x01(\tR\frecoveryCode\"\x95\x01\n" +
+	"\x18SwitchDistilleryResponse\x12'\n" +
+	"\x04user\x18\x01 \x01(\v2\x13.stillhouse.v1.UserR\x04user\x12-\n" +
+	"\x06tenant\x18\x02 \x01(\v2\x15.stillhouse.v1.TenantR\x06tenant\x12!\n" +
+	"\fmfa_required\x18\x03 \x01(\bR\vmfaRequired\"\x9f\x01\n" +
 	"\fLoginRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x1b\n" +
@@ -905,10 +1217,12 @@ const file_stillhouse_v1_auth_proto_rawDesc = "" +
 	"\apending\x18\x02 \x01(\bR\apending\x128\n" +
 	"\x18recovery_codes_remaining\x18\x03 \x01(\x05R\x16recoveryCodesRemaining\x12\x1c\n" +
 	"\tavailable\x18\x04 \x01(\bR\tavailable\x12-\n" +
-	"\x12unavailable_reason\x18\x05 \x01(\tR\x11unavailableReason2\xde\x05\n" +
+	"\x12unavailable_reason\x18\x05 \x01(\tR\x11unavailableReason2\xae\a\n" +
 	"\vAuthService\x12B\n" +
 	"\x05Login\x12\x1b.stillhouse.v1.LoginRequest\x1a\x1c.stillhouse.v1.LoginResponse\x12E\n" +
-	"\x06Logout\x12\x1c.stillhouse.v1.LogoutRequest\x1a\x1d.stillhouse.v1.LogoutResponse\x12o\n" +
+	"\x06Logout\x12\x1c.stillhouse.v1.LogoutRequest\x1a\x1d.stillhouse.v1.LogoutResponse\x12i\n" +
+	"\x12ListMyDistilleries\x12(.stillhouse.v1.ListMyDistilleriesRequest\x1a).stillhouse.v1.ListMyDistilleriesResponse\x12c\n" +
+	"\x10SwitchDistillery\x12&.stillhouse.v1.SwitchDistilleryRequest\x1a'.stillhouse.v1.SwitchDistilleryResponse\x12o\n" +
 	"\x14RequestPasswordReset\x12*.stillhouse.v1.RequestPasswordResetRequest\x1a+.stillhouse.v1.RequestPasswordResetResponse\x12Z\n" +
 	"\rResetPassword\x12#.stillhouse.v1.ResetPasswordRequest\x1a$.stillhouse.v1.ResetPasswordResponse\x12N\n" +
 	"\tMFAStatus\x12\x1f.stillhouse.v1.MFAStatusRequest\x1a .stillhouse.v1.MFAStatusResponse\x12f\n" +
@@ -930,53 +1244,65 @@ func file_stillhouse_v1_auth_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_auth_proto_rawDescData
 }
 
-var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_stillhouse_v1_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
 var file_stillhouse_v1_auth_proto_goTypes = []any{
-	(*LoginRequest)(nil),                 // 0: stillhouse.v1.LoginRequest
-	(*TenantChoice)(nil),                 // 1: stillhouse.v1.TenantChoice
-	(*LoginResponse)(nil),                // 2: stillhouse.v1.LoginResponse
-	(*LogoutRequest)(nil),                // 3: stillhouse.v1.LogoutRequest
-	(*LogoutResponse)(nil),               // 4: stillhouse.v1.LogoutResponse
-	(*RequestPasswordResetRequest)(nil),  // 5: stillhouse.v1.RequestPasswordResetRequest
-	(*RequestPasswordResetResponse)(nil), // 6: stillhouse.v1.RequestPasswordResetResponse
-	(*ResetPasswordRequest)(nil),         // 7: stillhouse.v1.ResetPasswordRequest
-	(*ResetPasswordResponse)(nil),        // 8: stillhouse.v1.ResetPasswordResponse
-	(*BeginMFAEnrolmentRequest)(nil),     // 9: stillhouse.v1.BeginMFAEnrolmentRequest
-	(*BeginMFAEnrolmentResponse)(nil),    // 10: stillhouse.v1.BeginMFAEnrolmentResponse
-	(*ConfirmMFAEnrolmentRequest)(nil),   // 11: stillhouse.v1.ConfirmMFAEnrolmentRequest
-	(*ConfirmMFAEnrolmentResponse)(nil),  // 12: stillhouse.v1.ConfirmMFAEnrolmentResponse
-	(*DisableMFARequest)(nil),            // 13: stillhouse.v1.DisableMFARequest
-	(*DisableMFAResponse)(nil),           // 14: stillhouse.v1.DisableMFAResponse
-	(*MFAStatusRequest)(nil),             // 15: stillhouse.v1.MFAStatusRequest
-	(*MFAStatusResponse)(nil),            // 16: stillhouse.v1.MFAStatusResponse
-	(*User)(nil),                         // 17: stillhouse.v1.User
-	(*Tenant)(nil),                       // 18: stillhouse.v1.Tenant
+	(*ListMyDistilleriesRequest)(nil),    // 0: stillhouse.v1.ListMyDistilleriesRequest
+	(*ListMyDistilleriesResponse)(nil),   // 1: stillhouse.v1.ListMyDistilleriesResponse
+	(*MyDistillery)(nil),                 // 2: stillhouse.v1.MyDistillery
+	(*SwitchDistilleryRequest)(nil),      // 3: stillhouse.v1.SwitchDistilleryRequest
+	(*SwitchDistilleryResponse)(nil),     // 4: stillhouse.v1.SwitchDistilleryResponse
+	(*LoginRequest)(nil),                 // 5: stillhouse.v1.LoginRequest
+	(*TenantChoice)(nil),                 // 6: stillhouse.v1.TenantChoice
+	(*LoginResponse)(nil),                // 7: stillhouse.v1.LoginResponse
+	(*LogoutRequest)(nil),                // 8: stillhouse.v1.LogoutRequest
+	(*LogoutResponse)(nil),               // 9: stillhouse.v1.LogoutResponse
+	(*RequestPasswordResetRequest)(nil),  // 10: stillhouse.v1.RequestPasswordResetRequest
+	(*RequestPasswordResetResponse)(nil), // 11: stillhouse.v1.RequestPasswordResetResponse
+	(*ResetPasswordRequest)(nil),         // 12: stillhouse.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),        // 13: stillhouse.v1.ResetPasswordResponse
+	(*BeginMFAEnrolmentRequest)(nil),     // 14: stillhouse.v1.BeginMFAEnrolmentRequest
+	(*BeginMFAEnrolmentResponse)(nil),    // 15: stillhouse.v1.BeginMFAEnrolmentResponse
+	(*ConfirmMFAEnrolmentRequest)(nil),   // 16: stillhouse.v1.ConfirmMFAEnrolmentRequest
+	(*ConfirmMFAEnrolmentResponse)(nil),  // 17: stillhouse.v1.ConfirmMFAEnrolmentResponse
+	(*DisableMFARequest)(nil),            // 18: stillhouse.v1.DisableMFARequest
+	(*DisableMFAResponse)(nil),           // 19: stillhouse.v1.DisableMFAResponse
+	(*MFAStatusRequest)(nil),             // 20: stillhouse.v1.MFAStatusRequest
+	(*MFAStatusResponse)(nil),            // 21: stillhouse.v1.MFAStatusResponse
+	(*User)(nil),                         // 22: stillhouse.v1.User
+	(*Tenant)(nil),                       // 23: stillhouse.v1.Tenant
 }
 var file_stillhouse_v1_auth_proto_depIdxs = []int32{
-	17, // 0: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
-	18, // 1: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
-	1,  // 2: stillhouse.v1.LoginResponse.choices:type_name -> stillhouse.v1.TenantChoice
-	0,  // 3: stillhouse.v1.AuthService.Login:input_type -> stillhouse.v1.LoginRequest
-	3,  // 4: stillhouse.v1.AuthService.Logout:input_type -> stillhouse.v1.LogoutRequest
-	5,  // 5: stillhouse.v1.AuthService.RequestPasswordReset:input_type -> stillhouse.v1.RequestPasswordResetRequest
-	7,  // 6: stillhouse.v1.AuthService.ResetPassword:input_type -> stillhouse.v1.ResetPasswordRequest
-	15, // 7: stillhouse.v1.AuthService.MFAStatus:input_type -> stillhouse.v1.MFAStatusRequest
-	9,  // 8: stillhouse.v1.AuthService.BeginMFAEnrolment:input_type -> stillhouse.v1.BeginMFAEnrolmentRequest
-	11, // 9: stillhouse.v1.AuthService.ConfirmMFAEnrolment:input_type -> stillhouse.v1.ConfirmMFAEnrolmentRequest
-	13, // 10: stillhouse.v1.AuthService.DisableMFA:input_type -> stillhouse.v1.DisableMFARequest
-	2,  // 11: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
-	4,  // 12: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
-	6,  // 13: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
-	8,  // 14: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
-	16, // 15: stillhouse.v1.AuthService.MFAStatus:output_type -> stillhouse.v1.MFAStatusResponse
-	10, // 16: stillhouse.v1.AuthService.BeginMFAEnrolment:output_type -> stillhouse.v1.BeginMFAEnrolmentResponse
-	12, // 17: stillhouse.v1.AuthService.ConfirmMFAEnrolment:output_type -> stillhouse.v1.ConfirmMFAEnrolmentResponse
-	14, // 18: stillhouse.v1.AuthService.DisableMFA:output_type -> stillhouse.v1.DisableMFAResponse
-	11, // [11:19] is the sub-list for method output_type
-	3,  // [3:11] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	2,  // 0: stillhouse.v1.ListMyDistilleriesResponse.distilleries:type_name -> stillhouse.v1.MyDistillery
+	22, // 1: stillhouse.v1.SwitchDistilleryResponse.user:type_name -> stillhouse.v1.User
+	23, // 2: stillhouse.v1.SwitchDistilleryResponse.tenant:type_name -> stillhouse.v1.Tenant
+	22, // 3: stillhouse.v1.LoginResponse.user:type_name -> stillhouse.v1.User
+	23, // 4: stillhouse.v1.LoginResponse.tenant:type_name -> stillhouse.v1.Tenant
+	6,  // 5: stillhouse.v1.LoginResponse.choices:type_name -> stillhouse.v1.TenantChoice
+	5,  // 6: stillhouse.v1.AuthService.Login:input_type -> stillhouse.v1.LoginRequest
+	8,  // 7: stillhouse.v1.AuthService.Logout:input_type -> stillhouse.v1.LogoutRequest
+	0,  // 8: stillhouse.v1.AuthService.ListMyDistilleries:input_type -> stillhouse.v1.ListMyDistilleriesRequest
+	3,  // 9: stillhouse.v1.AuthService.SwitchDistillery:input_type -> stillhouse.v1.SwitchDistilleryRequest
+	10, // 10: stillhouse.v1.AuthService.RequestPasswordReset:input_type -> stillhouse.v1.RequestPasswordResetRequest
+	12, // 11: stillhouse.v1.AuthService.ResetPassword:input_type -> stillhouse.v1.ResetPasswordRequest
+	20, // 12: stillhouse.v1.AuthService.MFAStatus:input_type -> stillhouse.v1.MFAStatusRequest
+	14, // 13: stillhouse.v1.AuthService.BeginMFAEnrolment:input_type -> stillhouse.v1.BeginMFAEnrolmentRequest
+	16, // 14: stillhouse.v1.AuthService.ConfirmMFAEnrolment:input_type -> stillhouse.v1.ConfirmMFAEnrolmentRequest
+	18, // 15: stillhouse.v1.AuthService.DisableMFA:input_type -> stillhouse.v1.DisableMFARequest
+	7,  // 16: stillhouse.v1.AuthService.Login:output_type -> stillhouse.v1.LoginResponse
+	9,  // 17: stillhouse.v1.AuthService.Logout:output_type -> stillhouse.v1.LogoutResponse
+	1,  // 18: stillhouse.v1.AuthService.ListMyDistilleries:output_type -> stillhouse.v1.ListMyDistilleriesResponse
+	4,  // 19: stillhouse.v1.AuthService.SwitchDistillery:output_type -> stillhouse.v1.SwitchDistilleryResponse
+	11, // 20: stillhouse.v1.AuthService.RequestPasswordReset:output_type -> stillhouse.v1.RequestPasswordResetResponse
+	13, // 21: stillhouse.v1.AuthService.ResetPassword:output_type -> stillhouse.v1.ResetPasswordResponse
+	21, // 22: stillhouse.v1.AuthService.MFAStatus:output_type -> stillhouse.v1.MFAStatusResponse
+	15, // 23: stillhouse.v1.AuthService.BeginMFAEnrolment:output_type -> stillhouse.v1.BeginMFAEnrolmentResponse
+	17, // 24: stillhouse.v1.AuthService.ConfirmMFAEnrolment:output_type -> stillhouse.v1.ConfirmMFAEnrolmentResponse
+	19, // 25: stillhouse.v1.AuthService.DisableMFA:output_type -> stillhouse.v1.DisableMFAResponse
+	16, // [16:26] is the sub-list for method output_type
+	6,  // [6:16] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_auth_proto_init() }
@@ -992,7 +1318,7 @@ func file_stillhouse_v1_auth_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_auth_proto_rawDesc), len(file_stillhouse_v1_auth_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   22,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

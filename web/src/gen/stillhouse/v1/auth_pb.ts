@@ -14,7 +14,150 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/auth.proto.
  */
 export const file_stillhouse_v1_auth: GenFile = /*@__PURE__*/
-  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEibAoMTG9naW5SZXF1ZXN0Eg0KBWVtYWlsGAEgASgJEhAKCHBhc3N3b3JkGAIgASgJEhEKCXRvdHBfY29kZRgEIAEoCRIVCg1yZWNvdmVyeV9jb2RlGAUgASgJEhEKCXRlbmFudF9pZBgDIAEoCSI2CgxUZW5hbnRDaG9pY2USEQoJdGVuYW50X2lkGAEgASgJEhMKC3RlbmFudF9uYW1lGAIgASgJIp0BCg1Mb2dpblJlc3BvbnNlEiEKBHVzZXIYASABKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXISJQoGdGVuYW50GAIgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQSFAoMbWZhX3JlcXVpcmVkGAQgASgIEiwKB2Nob2ljZXMYAyADKAsyGy5zdGlsbGhvdXNlLnYxLlRlbmFudENob2ljZSIPCg1Mb2dvdXRSZXF1ZXN0IhAKDkxvZ291dFJlc3BvbnNlIiwKG1JlcXVlc3RQYXNzd29yZFJlc2V0UmVxdWVzdBINCgVlbWFpbBgBIAEoCSIeChxSZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlIjsKFFJlc2V0UGFzc3dvcmRSZXF1ZXN0Eg0KBXRva2VuGAEgASgJEhQKDG5ld19wYXNzd29yZBgCIAEoCSIXChVSZXNldFBhc3N3b3JkUmVzcG9uc2UiGgoYQmVnaW5NRkFFbnJvbG1lbnRSZXF1ZXN0IkIKGUJlZ2luTUZBRW5yb2xtZW50UmVzcG9uc2USFQoNZW5yb2xtZW50X3VyaRgBIAEoCRIOCgZzZWNyZXQYAiABKAkiKgoaQ29uZmlybU1GQUVucm9sbWVudFJlcXVlc3QSDAoEY29kZRgBIAEoCSI1ChtDb25maXJtTUZBRW5yb2xtZW50UmVzcG9uc2USFgoOcmVjb3ZlcnlfY29kZXMYASADKAkiLQoRRGlzYWJsZU1GQVJlcXVlc3QSGAoQY3VycmVudF9wYXNzd29yZBgBIAEoCSIUChJEaXNhYmxlTUZBUmVzcG9uc2UiEgoQTUZBU3RhdHVzUmVxdWVzdCKGAQoRTUZBU3RhdHVzUmVzcG9uc2USDwoHZW5hYmxlZBgBIAEoCBIPCgdwZW5kaW5nGAIgASgIEiAKGHJlY292ZXJ5X2NvZGVzX3JlbWFpbmluZxgDIAEoBRIRCglhdmFpbGFibGUYBCABKAgSGgoSdW5hdmFpbGFibGVfcmVhc29uGAUgASgJMt4FCgtBdXRoU2VydmljZRJCCgVMb2dpbhIbLnN0aWxsaG91c2UudjEuTG9naW5SZXF1ZXN0Ghwuc3RpbGxob3VzZS52MS5Mb2dpblJlc3BvbnNlEkUKBkxvZ291dBIcLnN0aWxsaG91c2UudjEuTG9nb3V0UmVxdWVzdBodLnN0aWxsaG91c2UudjEuTG9nb3V0UmVzcG9uc2USbwoUUmVxdWVzdFBhc3N3b3JkUmVzZXQSKi5zdGlsbGhvdXNlLnYxLlJlcXVlc3RQYXNzd29yZFJlc2V0UmVxdWVzdBorLnN0aWxsaG91c2UudjEuUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXNwb25zZRJaCg1SZXNldFBhc3N3b3JkEiMuc3RpbGxob3VzZS52MS5SZXNldFBhc3N3b3JkUmVxdWVzdBokLnN0aWxsaG91c2UudjEuUmVzZXRQYXNzd29yZFJlc3BvbnNlEk4KCU1GQVN0YXR1cxIfLnN0aWxsaG91c2UudjEuTUZBU3RhdHVzUmVxdWVzdBogLnN0aWxsaG91c2UudjEuTUZBU3RhdHVzUmVzcG9uc2USZgoRQmVnaW5NRkFFbnJvbG1lbnQSJy5zdGlsbGhvdXNlLnYxLkJlZ2luTUZBRW5yb2xtZW50UmVxdWVzdBooLnN0aWxsaG91c2UudjEuQmVnaW5NRkFFbnJvbG1lbnRSZXNwb25zZRJsChNDb25maXJtTUZBRW5yb2xtZW50Eikuc3RpbGxob3VzZS52MS5Db25maXJtTUZBRW5yb2xtZW50UmVxdWVzdBoqLnN0aWxsaG91c2UudjEuQ29uZmlybU1GQUVucm9sbWVudFJlc3BvbnNlElEKCkRpc2FibGVNRkESIC5zdGlsbGhvdXNlLnYxLkRpc2FibGVNRkFSZXF1ZXN0GiEuc3RpbGxob3VzZS52MS5EaXNhYmxlTUZBUmVzcG9uc2ViBnByb3RvMw", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
+  fileDesc("ChhzdGlsbGhvdXNlL3YxL2F1dGgucHJvdG8SDXN0aWxsaG91c2UudjEiGwoZTGlzdE15RGlzdGlsbGVyaWVzUmVxdWVzdCJPChpMaXN0TXlEaXN0aWxsZXJpZXNSZXNwb25zZRIxCgxkaXN0aWxsZXJpZXMYASADKAsyGy5zdGlsbGhvdXNlLnYxLk15RGlzdGlsbGVyeSJVCgxNeURpc3RpbGxlcnkSEQoJdGVuYW50X2lkGAEgASgJEhMKC3RlbmFudF9uYW1lGAIgASgJEg8KB2N1cnJlbnQYAyABKAgSDAoEcm9sZRgEIAEoCSJoChdTd2l0Y2hEaXN0aWxsZXJ5UmVxdWVzdBIRCgl0ZW5hbnRfaWQYASABKAkSEAoIcGFzc3dvcmQYAiABKAkSEQoJdG90cF9jb2RlGAMgASgJEhUKDXJlY292ZXJ5X2NvZGUYBCABKAkiegoYU3dpdGNoRGlzdGlsbGVyeVJlc3BvbnNlEiEKBHVzZXIYASABKAsyEy5zdGlsbGhvdXNlLnYxLlVzZXISJQoGdGVuYW50GAIgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQSFAoMbWZhX3JlcXVpcmVkGAMgASgIImwKDExvZ2luUmVxdWVzdBINCgVlbWFpbBgBIAEoCRIQCghwYXNzd29yZBgCIAEoCRIRCgl0b3RwX2NvZGUYBCABKAkSFQoNcmVjb3ZlcnlfY29kZRgFIAEoCRIRCgl0ZW5hbnRfaWQYAyABKAkiNgoMVGVuYW50Q2hvaWNlEhEKCXRlbmFudF9pZBgBIAEoCRITCgt0ZW5hbnRfbmFtZRgCIAEoCSKdAQoNTG9naW5SZXNwb25zZRIhCgR1c2VyGAEgASgLMhMuc3RpbGxob3VzZS52MS5Vc2VyEiUKBnRlbmFudBgCIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50EhQKDG1mYV9yZXF1aXJlZBgEIAEoCBIsCgdjaG9pY2VzGAMgAygLMhsuc3RpbGxob3VzZS52MS5UZW5hbnRDaG9pY2UiDwoNTG9nb3V0UmVxdWVzdCIQCg5Mb2dvdXRSZXNwb25zZSIsChtSZXF1ZXN0UGFzc3dvcmRSZXNldFJlcXVlc3QSDQoFZW1haWwYASABKAkiHgocUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXNwb25zZSI7ChRSZXNldFBhc3N3b3JkUmVxdWVzdBINCgV0b2tlbhgBIAEoCRIUCgxuZXdfcGFzc3dvcmQYAiABKAkiFwoVUmVzZXRQYXNzd29yZFJlc3BvbnNlIhoKGEJlZ2luTUZBRW5yb2xtZW50UmVxdWVzdCJCChlCZWdpbk1GQUVucm9sbWVudFJlc3BvbnNlEhUKDWVucm9sbWVudF91cmkYASABKAkSDgoGc2VjcmV0GAIgASgJIioKGkNvbmZpcm1NRkFFbnJvbG1lbnRSZXF1ZXN0EgwKBGNvZGUYASABKAkiNQobQ29uZmlybU1GQUVucm9sbWVudFJlc3BvbnNlEhYKDnJlY292ZXJ5X2NvZGVzGAEgAygJIi0KEURpc2FibGVNRkFSZXF1ZXN0EhgKEGN1cnJlbnRfcGFzc3dvcmQYASABKAkiFAoSRGlzYWJsZU1GQVJlc3BvbnNlIhIKEE1GQVN0YXR1c1JlcXVlc3QihgEKEU1GQVN0YXR1c1Jlc3BvbnNlEg8KB2VuYWJsZWQYASABKAgSDwoHcGVuZGluZxgCIAEoCBIgChhyZWNvdmVyeV9jb2Rlc19yZW1haW5pbmcYAyABKAUSEQoJYXZhaWxhYmxlGAQgASgIEhoKEnVuYXZhaWxhYmxlX3JlYXNvbhgFIAEoCTKuBwoLQXV0aFNlcnZpY2USQgoFTG9naW4SGy5zdGlsbGhvdXNlLnYxLkxvZ2luUmVxdWVzdBocLnN0aWxsaG91c2UudjEuTG9naW5SZXNwb25zZRJFCgZMb2dvdXQSHC5zdGlsbGhvdXNlLnYxLkxvZ291dFJlcXVlc3QaHS5zdGlsbGhvdXNlLnYxLkxvZ291dFJlc3BvbnNlEmkKEkxpc3RNeURpc3RpbGxlcmllcxIoLnN0aWxsaG91c2UudjEuTGlzdE15RGlzdGlsbGVyaWVzUmVxdWVzdBopLnN0aWxsaG91c2UudjEuTGlzdE15RGlzdGlsbGVyaWVzUmVzcG9uc2USYwoQU3dpdGNoRGlzdGlsbGVyeRImLnN0aWxsaG91c2UudjEuU3dpdGNoRGlzdGlsbGVyeVJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLlN3aXRjaERpc3RpbGxlcnlSZXNwb25zZRJvChRSZXF1ZXN0UGFzc3dvcmRSZXNldBIqLnN0aWxsaG91c2UudjEuUmVxdWVzdFBhc3N3b3JkUmVzZXRSZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5SZXF1ZXN0UGFzc3dvcmRSZXNldFJlc3BvbnNlEloKDVJlc2V0UGFzc3dvcmQSIy5zdGlsbGhvdXNlLnYxLlJlc2V0UGFzc3dvcmRSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5SZXNldFBhc3N3b3JkUmVzcG9uc2USTgoJTUZBU3RhdHVzEh8uc3RpbGxob3VzZS52MS5NRkFTdGF0dXNSZXF1ZXN0GiAuc3RpbGxob3VzZS52MS5NRkFTdGF0dXNSZXNwb25zZRJmChFCZWdpbk1GQUVucm9sbWVudBInLnN0aWxsaG91c2UudjEuQmVnaW5NRkFFbnJvbG1lbnRSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5CZWdpbk1GQUVucm9sbWVudFJlc3BvbnNlEmwKE0NvbmZpcm1NRkFFbnJvbG1lbnQSKS5zdGlsbGhvdXNlLnYxLkNvbmZpcm1NRkFFbnJvbG1lbnRSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5Db25maXJtTUZBRW5yb2xtZW50UmVzcG9uc2USUQoKRGlzYWJsZU1GQRIgLnN0aWxsaG91c2UudjEuRGlzYWJsZU1GQVJlcXVlc3QaIS5zdGlsbGhvdXNlLnYxLkRpc2FibGVNRkFSZXNwb25zZWIGcHJvdG8z", [file_stillhouse_v1_tenant, file_stillhouse_v1_user]);
+
+/**
+ * @generated from message stillhouse.v1.ListMyDistilleriesRequest
+ */
+export type ListMyDistilleriesRequest = Message<"stillhouse.v1.ListMyDistilleriesRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.ListMyDistilleriesRequest.
+ * Use `create(ListMyDistilleriesRequestSchema)` to create a new message.
+ */
+export const ListMyDistilleriesRequestSchema: GenMessage<ListMyDistilleriesRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 0);
+
+/**
+ * @generated from message stillhouse.v1.ListMyDistilleriesResponse
+ */
+export type ListMyDistilleriesResponse = Message<"stillhouse.v1.ListMyDistilleriesResponse"> & {
+  /**
+   * Includes the one currently signed in to, flagged, so the switcher can
+   * show where you are as well as where you could go.
+   *
+   * @generated from field: repeated stillhouse.v1.MyDistillery distilleries = 1;
+   */
+  distilleries: MyDistillery[];
+};
+
+/**
+ * Describes the message stillhouse.v1.ListMyDistilleriesResponse.
+ * Use `create(ListMyDistilleriesResponseSchema)` to create a new message.
+ */
+export const ListMyDistilleriesResponseSchema: GenMessage<ListMyDistilleriesResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 1);
+
+/**
+ * @generated from message stillhouse.v1.MyDistillery
+ */
+export type MyDistillery = Message<"stillhouse.v1.MyDistillery"> & {
+  /**
+   * @generated from field: string tenant_id = 1;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string tenant_name = 2;
+   */
+  tenantName: string;
+
+  /**
+   * @generated from field: bool current = 3;
+   */
+  current: boolean;
+
+  /**
+   * The role held at THAT distillery, which need not be the role held
+   * here. Shown so a switch does not silently change what you can do.
+   *
+   * @generated from field: string role = 4;
+   */
+  role: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.MyDistillery.
+ * Use `create(MyDistillerySchema)` to create a new message.
+ */
+export const MyDistillerySchema: GenMessage<MyDistillery> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 2);
+
+/**
+ * Switching is a re-authentication, not a context change, and the reason
+ * is in Login: an email address can hold accounts at several distilleries
+ * and "one password may be right at one distillery and wrong at another".
+ * A session at one therefore proves nothing about the others, so the
+ * credentials are verified against the target account exactly as a fresh
+ * login would. What is saved is signing out, not proving who you are.
+ *
+ * The second factor follows the same rule. If the target account has one
+ * enrolled it is required, whether or not the current session needed one
+ * — otherwise switching would be a way to reach an MFA-protected account
+ * without satisfying its MFA.
+ *
+ * @generated from message stillhouse.v1.SwitchDistilleryRequest
+ */
+export type SwitchDistilleryRequest = Message<"stillhouse.v1.SwitchDistilleryRequest"> & {
+  /**
+   * @generated from field: string tenant_id = 1;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string password = 2;
+   */
+  password: string;
+
+  /**
+   * @generated from field: string totp_code = 3;
+   */
+  totpCode: string;
+
+  /**
+   * @generated from field: string recovery_code = 4;
+   */
+  recoveryCode: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SwitchDistilleryRequest.
+ * Use `create(SwitchDistilleryRequestSchema)` to create a new message.
+ */
+export const SwitchDistilleryRequestSchema: GenMessage<SwitchDistilleryRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 3);
+
+/**
+ * @generated from message stillhouse.v1.SwitchDistilleryResponse
+ */
+export type SwitchDistilleryResponse = Message<"stillhouse.v1.SwitchDistilleryResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.User user = 1;
+   */
+  user?: User | undefined;
+
+  /**
+   * @generated from field: stillhouse.v1.Tenant tenant = 2;
+   */
+  tenant?: Tenant | undefined;
+
+  /**
+   * Set when the target account has a second factor and no code was
+   * given. No switch has happened; the client asks for a code and comes
+   * back. Mirrors LoginResponse.mfa_required.
+   *
+   * @generated from field: bool mfa_required = 3;
+   */
+  mfaRequired: boolean;
+};
+
+/**
+ * Describes the message stillhouse.v1.SwitchDistilleryResponse.
+ * Use `create(SwitchDistilleryResponseSchema)` to create a new message.
+ */
+export const SwitchDistilleryResponseSchema: GenMessage<SwitchDistilleryResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_auth, 4);
 
 /**
  * @generated from message stillhouse.v1.LoginRequest
@@ -62,7 +205,7 @@ export type LoginRequest = Message<"stillhouse.v1.LoginRequest"> & {
  * Use `create(LoginRequestSchema)` to create a new message.
  */
 export const LoginRequestSchema: GenMessage<LoginRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 0);
+  messageDesc(file_stillhouse_v1_auth, 5);
 
 /**
  * A distillery the credentials just presented are good for. Only ever
@@ -88,7 +231,7 @@ export type TenantChoice = Message<"stillhouse.v1.TenantChoice"> & {
  * Use `create(TenantChoiceSchema)` to create a new message.
  */
 export const TenantChoiceSchema: GenMessage<TenantChoice> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 1);
+  messageDesc(file_stillhouse_v1_auth, 6);
 
 /**
  * @generated from message stillhouse.v1.LoginResponse
@@ -128,7 +271,7 @@ export type LoginResponse = Message<"stillhouse.v1.LoginResponse"> & {
  * Use `create(LoginResponseSchema)` to create a new message.
  */
 export const LoginResponseSchema: GenMessage<LoginResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 2);
+  messageDesc(file_stillhouse_v1_auth, 7);
 
 /**
  * @generated from message stillhouse.v1.LogoutRequest
@@ -141,7 +284,7 @@ export type LogoutRequest = Message<"stillhouse.v1.LogoutRequest"> & {
  * Use `create(LogoutRequestSchema)` to create a new message.
  */
 export const LogoutRequestSchema: GenMessage<LogoutRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 3);
+  messageDesc(file_stillhouse_v1_auth, 8);
 
 /**
  * @generated from message stillhouse.v1.LogoutResponse
@@ -154,7 +297,7 @@ export type LogoutResponse = Message<"stillhouse.v1.LogoutResponse"> & {
  * Use `create(LogoutResponseSchema)` to create a new message.
  */
 export const LogoutResponseSchema: GenMessage<LogoutResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 4);
+  messageDesc(file_stillhouse_v1_auth, 9);
 
 /**
  * Public — always returns success. Backend silently skips if the email
@@ -174,7 +317,7 @@ export type RequestPasswordResetRequest = Message<"stillhouse.v1.RequestPassword
  * Use `create(RequestPasswordResetRequestSchema)` to create a new message.
  */
 export const RequestPasswordResetRequestSchema: GenMessage<RequestPasswordResetRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 5);
+  messageDesc(file_stillhouse_v1_auth, 10);
 
 /**
  * @generated from message stillhouse.v1.RequestPasswordResetResponse
@@ -187,7 +330,7 @@ export type RequestPasswordResetResponse = Message<"stillhouse.v1.RequestPasswor
  * Use `create(RequestPasswordResetResponseSchema)` to create a new message.
  */
 export const RequestPasswordResetResponseSchema: GenMessage<RequestPasswordResetResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 6);
+  messageDesc(file_stillhouse_v1_auth, 11);
 
 /**
  * @generated from message stillhouse.v1.ResetPasswordRequest
@@ -209,7 +352,7 @@ export type ResetPasswordRequest = Message<"stillhouse.v1.ResetPasswordRequest">
  * Use `create(ResetPasswordRequestSchema)` to create a new message.
  */
 export const ResetPasswordRequestSchema: GenMessage<ResetPasswordRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 7);
+  messageDesc(file_stillhouse_v1_auth, 12);
 
 /**
  * @generated from message stillhouse.v1.ResetPasswordResponse
@@ -222,7 +365,7 @@ export type ResetPasswordResponse = Message<"stillhouse.v1.ResetPasswordResponse
  * Use `create(ResetPasswordResponseSchema)` to create a new message.
  */
 export const ResetPasswordResponseSchema: GenMessage<ResetPasswordResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 8);
+  messageDesc(file_stillhouse_v1_auth, 13);
 
 /**
  * Enrolment is two steps on purpose. BeginMFAEnrolment hands back a
@@ -240,7 +383,7 @@ export type BeginMFAEnrolmentRequest = Message<"stillhouse.v1.BeginMFAEnrolmentR
  * Use `create(BeginMFAEnrolmentRequestSchema)` to create a new message.
  */
 export const BeginMFAEnrolmentRequestSchema: GenMessage<BeginMFAEnrolmentRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 9);
+  messageDesc(file_stillhouse_v1_auth, 14);
 
 /**
  * @generated from message stillhouse.v1.BeginMFAEnrolmentResponse
@@ -267,7 +410,7 @@ export type BeginMFAEnrolmentResponse = Message<"stillhouse.v1.BeginMFAEnrolment
  * Use `create(BeginMFAEnrolmentResponseSchema)` to create a new message.
  */
 export const BeginMFAEnrolmentResponseSchema: GenMessage<BeginMFAEnrolmentResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 10);
+  messageDesc(file_stillhouse_v1_auth, 15);
 
 /**
  * @generated from message stillhouse.v1.ConfirmMFAEnrolmentRequest
@@ -284,7 +427,7 @@ export type ConfirmMFAEnrolmentRequest = Message<"stillhouse.v1.ConfirmMFAEnrolm
  * Use `create(ConfirmMFAEnrolmentRequestSchema)` to create a new message.
  */
 export const ConfirmMFAEnrolmentRequestSchema: GenMessage<ConfirmMFAEnrolmentRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 11);
+  messageDesc(file_stillhouse_v1_auth, 16);
 
 /**
  * @generated from message stillhouse.v1.ConfirmMFAEnrolmentResponse
@@ -304,7 +447,7 @@ export type ConfirmMFAEnrolmentResponse = Message<"stillhouse.v1.ConfirmMFAEnrol
  * Use `create(ConfirmMFAEnrolmentResponseSchema)` to create a new message.
  */
 export const ConfirmMFAEnrolmentResponseSchema: GenMessage<ConfirmMFAEnrolmentResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 12);
+  messageDesc(file_stillhouse_v1_auth, 17);
 
 /**
  * Disabling requires the current password: a second factor that an
@@ -324,7 +467,7 @@ export type DisableMFARequest = Message<"stillhouse.v1.DisableMFARequest"> & {
  * Use `create(DisableMFARequestSchema)` to create a new message.
  */
 export const DisableMFARequestSchema: GenMessage<DisableMFARequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 13);
+  messageDesc(file_stillhouse_v1_auth, 18);
 
 /**
  * @generated from message stillhouse.v1.DisableMFAResponse
@@ -337,7 +480,7 @@ export type DisableMFAResponse = Message<"stillhouse.v1.DisableMFAResponse"> & {
  * Use `create(DisableMFAResponseSchema)` to create a new message.
  */
 export const DisableMFAResponseSchema: GenMessage<DisableMFAResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 14);
+  messageDesc(file_stillhouse_v1_auth, 19);
 
 /**
  * @generated from message stillhouse.v1.MFAStatusRequest
@@ -350,7 +493,7 @@ export type MFAStatusRequest = Message<"stillhouse.v1.MFAStatusRequest"> & {
  * Use `create(MFAStatusRequestSchema)` to create a new message.
  */
 export const MFAStatusRequestSchema: GenMessage<MFAStatusRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 15);
+  messageDesc(file_stillhouse_v1_auth, 20);
 
 /**
  * @generated from message stillhouse.v1.MFAStatusResponse
@@ -393,7 +536,7 @@ export type MFAStatusResponse = Message<"stillhouse.v1.MFAStatusResponse"> & {
  * Use `create(MFAStatusResponseSchema)` to create a new message.
  */
 export const MFAStatusResponseSchema: GenMessage<MFAStatusResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_auth, 16);
+  messageDesc(file_stillhouse_v1_auth, 21);
 
 /**
  * @generated from service stillhouse.v1.AuthService
@@ -414,6 +557,27 @@ export const AuthService: GenService<{
     methodKind: "unary";
     input: typeof LogoutRequestSchema;
     output: typeof LogoutResponseSchema;
+  },
+  /**
+   * The distilleries this email holds an account at, for the switcher.
+   *
+   * @generated from rpc stillhouse.v1.AuthService.ListMyDistilleries
+   */
+  listMyDistilleries: {
+    methodKind: "unary";
+    input: typeof ListMyDistilleriesRequestSchema;
+    output: typeof ListMyDistilleriesResponseSchema;
+  },
+  /**
+   * Move an existing session to another of them. Credentials are checked
+   * against the target account — see the message comment.
+   *
+   * @generated from rpc stillhouse.v1.AuthService.SwitchDistillery
+   */
+  switchDistillery: {
+    methodKind: "unary";
+    input: typeof SwitchDistilleryRequestSchema;
+    output: typeof SwitchDistilleryResponseSchema;
   },
   /**
    * @generated from rpc stillhouse.v1.AuthService.RequestPasswordReset

@@ -363,8 +363,13 @@ var procedureMinRole = map[string]minRole{
 	// Viewer-level on purpose: the person who needs to know what a bad
 	// lot reached is not always the person who can move stock.
 	"/stillhouse.v1.TraceabilityService/SimulateRecall": roleViewer,
-	"/stillhouse.v1.CostingService/GetWIPChargeBasis":   roleViewer,
-	"/stillhouse.v1.CostingService/SetWIPChargeBasis":   roleOwner,
+	// Both are about the caller's own accounts, so every signed-in role
+	// reaches them. Switching still re-verifies the target's password and
+	// second factor, so viewer-level here grants nothing.
+	"/stillhouse.v1.AuthService/ListMyDistilleries":   roleViewer,
+	"/stillhouse.v1.AuthService/SwitchDistillery":     roleViewer,
+	"/stillhouse.v1.CostingService/GetWIPChargeBasis": roleViewer,
+	"/stillhouse.v1.CostingService/SetWIPChargeBasis": roleOwner,
 
 	// ProvincialService. Registering with a board, and recording what it
 	// expects and when, is the same class of act as the licence register
@@ -575,6 +580,8 @@ var accountantAlso = map[string]bool{
 	"/stillhouse.v1.CostingService/SaveCostRates":       true,
 	"/stillhouse.v1.CostingService/WIPProduction":       true,
 	"/stillhouse.v1.TraceabilityService/SimulateRecall": true,
+	"/stillhouse.v1.AuthService/ListMyDistilleries":     true,
+	"/stillhouse.v1.AuthService/SwitchDistillery":       true,
 	"/stillhouse.v1.CostingService/GetWIPChargeBasis":   true,
 	"/stillhouse.v1.CostingService/SetWIPChargeBasis":   true,
 	"/stillhouse.v1.CostingService/DeleteCostRates":     true,

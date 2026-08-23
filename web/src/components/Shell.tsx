@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
+import { DistillerySwitcher } from "@/components/DistillerySwitcher";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -105,6 +106,8 @@ export function Shell({ children }: { children: ReactNode }) {
             {data.tenant.name}
           </p>
         )}
+        {/* Under the distillery name, because that is what it changes. */}
+        <DistillerySwitcher />
         {/* A scanner types and presses Enter, so this is where a scan
             lands from anywhere in the app. Press / to open it. */}
         <div className="mt-3">

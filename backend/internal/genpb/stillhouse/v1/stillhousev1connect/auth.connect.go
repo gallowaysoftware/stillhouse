@@ -37,6 +37,12 @@ const (
 	AuthServiceLoginProcedure = "/stillhouse.v1.AuthService/Login"
 	// AuthServiceLogoutProcedure is the fully-qualified name of the AuthService's Logout RPC.
 	AuthServiceLogoutProcedure = "/stillhouse.v1.AuthService/Logout"
+	// AuthServiceListMyDistilleriesProcedure is the fully-qualified name of the AuthService's
+	// ListMyDistilleries RPC.
+	AuthServiceListMyDistilleriesProcedure = "/stillhouse.v1.AuthService/ListMyDistilleries"
+	// AuthServiceSwitchDistilleryProcedure is the fully-qualified name of the AuthService's
+	// SwitchDistillery RPC.
+	AuthServiceSwitchDistilleryProcedure = "/stillhouse.v1.AuthService/SwitchDistillery"
 	// AuthServiceRequestPasswordResetProcedure is the fully-qualified name of the AuthService's
 	// RequestPasswordReset RPC.
 	AuthServiceRequestPasswordResetProcedure = "/stillhouse.v1.AuthService/RequestPasswordReset"
@@ -59,6 +65,11 @@ const (
 type AuthServiceClient interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
+	// The distilleries this email holds an account at, for the switcher.
+	ListMyDistilleries(context.Context, *connect.Request[v1.ListMyDistilleriesRequest]) (*connect.Response[v1.ListMyDistilleriesResponse], error)
+	// Move an existing session to another of them. Credentials are checked
+	// against the target account — see the message comment.
+	SwitchDistillery(context.Context, *connect.Request[v1.SwitchDistilleryRequest]) (*connect.Response[v1.SwitchDistilleryResponse], error)
 	RequestPasswordReset(context.Context, *connect.Request[v1.RequestPasswordResetRequest]) (*connect.Response[v1.RequestPasswordResetResponse], error)
 	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
 	MFAStatus(context.Context, *connect.Request[v1.MFAStatusRequest]) (*connect.Response[v1.MFAStatusResponse], error)
@@ -88,6 +99,18 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			httpClient,
 			baseURL+AuthServiceLogoutProcedure,
 			connect.WithSchema(authServiceMethods.ByName("Logout")),
+			connect.WithClientOptions(opts...),
+		),
+		listMyDistilleries: connect.NewClient[v1.ListMyDistilleriesRequest, v1.ListMyDistilleriesResponse](
+			httpClient,
+			baseURL+AuthServiceListMyDistilleriesProcedure,
+			connect.WithSchema(authServiceMethods.ByName("ListMyDistilleries")),
+			connect.WithClientOptions(opts...),
+		),
+		switchDistillery: connect.NewClient[v1.SwitchDistilleryRequest, v1.SwitchDistilleryResponse](
+			httpClient,
+			baseURL+AuthServiceSwitchDistilleryProcedure,
+			connect.WithSchema(authServiceMethods.ByName("SwitchDistillery")),
 			connect.WithClientOptions(opts...),
 		),
 		requestPasswordReset: connect.NewClient[v1.RequestPasswordResetRequest, v1.RequestPasswordResetResponse](
@@ -133,6 +156,8 @@ func NewAuthServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 type authServiceClient struct {
 	login                *connect.Client[v1.LoginRequest, v1.LoginResponse]
 	logout               *connect.Client[v1.LogoutRequest, v1.LogoutResponse]
+	listMyDistilleries   *connect.Client[v1.ListMyDistilleriesRequest, v1.ListMyDistilleriesResponse]
+	switchDistillery     *connect.Client[v1.SwitchDistilleryRequest, v1.SwitchDistilleryResponse]
 	requestPasswordReset *connect.Client[v1.RequestPasswordResetRequest, v1.RequestPasswordResetResponse]
 	resetPassword        *connect.Client[v1.ResetPasswordRequest, v1.ResetPasswordResponse]
 	mFAStatus            *connect.Client[v1.MFAStatusRequest, v1.MFAStatusResponse]
@@ -149,6 +174,16 @@ func (c *authServiceClient) Login(ctx context.Context, req *connect.Request[v1.L
 // Logout calls stillhouse.v1.AuthService.Logout.
 func (c *authServiceClient) Logout(ctx context.Context, req *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
 	return c.logout.CallUnary(ctx, req)
+}
+
+// ListMyDistilleries calls stillhouse.v1.AuthService.ListMyDistilleries.
+func (c *authServiceClient) ListMyDistilleries(ctx context.Context, req *connect.Request[v1.ListMyDistilleriesRequest]) (*connect.Response[v1.ListMyDistilleriesResponse], error) {
+	return c.listMyDistilleries.CallUnary(ctx, req)
+}
+
+// SwitchDistillery calls stillhouse.v1.AuthService.SwitchDistillery.
+func (c *authServiceClient) SwitchDistillery(ctx context.Context, req *connect.Request[v1.SwitchDistilleryRequest]) (*connect.Response[v1.SwitchDistilleryResponse], error) {
+	return c.switchDistillery.CallUnary(ctx, req)
 }
 
 // RequestPasswordReset calls stillhouse.v1.AuthService.RequestPasswordReset.
@@ -185,6 +220,11 @@ func (c *authServiceClient) DisableMFA(ctx context.Context, req *connect.Request
 type AuthServiceHandler interface {
 	Login(context.Context, *connect.Request[v1.LoginRequest]) (*connect.Response[v1.LoginResponse], error)
 	Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error)
+	// The distilleries this email holds an account at, for the switcher.
+	ListMyDistilleries(context.Context, *connect.Request[v1.ListMyDistilleriesRequest]) (*connect.Response[v1.ListMyDistilleriesResponse], error)
+	// Move an existing session to another of them. Credentials are checked
+	// against the target account — see the message comment.
+	SwitchDistillery(context.Context, *connect.Request[v1.SwitchDistilleryRequest]) (*connect.Response[v1.SwitchDistilleryResponse], error)
 	RequestPasswordReset(context.Context, *connect.Request[v1.RequestPasswordResetRequest]) (*connect.Response[v1.RequestPasswordResetResponse], error)
 	ResetPassword(context.Context, *connect.Request[v1.ResetPasswordRequest]) (*connect.Response[v1.ResetPasswordResponse], error)
 	MFAStatus(context.Context, *connect.Request[v1.MFAStatusRequest]) (*connect.Response[v1.MFAStatusResponse], error)
@@ -210,6 +250,18 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 		AuthServiceLogoutProcedure,
 		svc.Logout,
 		connect.WithSchema(authServiceMethods.ByName("Logout")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceListMyDistilleriesHandler := connect.NewUnaryHandler(
+		AuthServiceListMyDistilleriesProcedure,
+		svc.ListMyDistilleries,
+		connect.WithSchema(authServiceMethods.ByName("ListMyDistilleries")),
+		connect.WithHandlerOptions(opts...),
+	)
+	authServiceSwitchDistilleryHandler := connect.NewUnaryHandler(
+		AuthServiceSwitchDistilleryProcedure,
+		svc.SwitchDistillery,
+		connect.WithSchema(authServiceMethods.ByName("SwitchDistillery")),
 		connect.WithHandlerOptions(opts...),
 	)
 	authServiceRequestPasswordResetHandler := connect.NewUnaryHandler(
@@ -254,6 +306,10 @@ func NewAuthServiceHandler(svc AuthServiceHandler, opts ...connect.HandlerOption
 			authServiceLoginHandler.ServeHTTP(w, r)
 		case AuthServiceLogoutProcedure:
 			authServiceLogoutHandler.ServeHTTP(w, r)
+		case AuthServiceListMyDistilleriesProcedure:
+			authServiceListMyDistilleriesHandler.ServeHTTP(w, r)
+		case AuthServiceSwitchDistilleryProcedure:
+			authServiceSwitchDistilleryHandler.ServeHTTP(w, r)
 		case AuthServiceRequestPasswordResetProcedure:
 			authServiceRequestPasswordResetHandler.ServeHTTP(w, r)
 		case AuthServiceResetPasswordProcedure:
@@ -281,6 +337,14 @@ func (UnimplementedAuthServiceHandler) Login(context.Context, *connect.Request[v
 
 func (UnimplementedAuthServiceHandler) Logout(context.Context, *connect.Request[v1.LogoutRequest]) (*connect.Response[v1.LogoutResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.Logout is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) ListMyDistilleries(context.Context, *connect.Request[v1.ListMyDistilleriesRequest]) (*connect.Response[v1.ListMyDistilleriesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.ListMyDistilleries is not implemented"))
+}
+
+func (UnimplementedAuthServiceHandler) SwitchDistillery(context.Context, *connect.Request[v1.SwitchDistilleryRequest]) (*connect.Response[v1.SwitchDistilleryResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.AuthService.SwitchDistillery is not implemented"))
 }
 
 func (UnimplementedAuthServiceHandler) RequestPasswordReset(context.Context, *connect.Request[v1.RequestPasswordResetRequest]) (*connect.Response[v1.RequestPasswordResetResponse], error) {
