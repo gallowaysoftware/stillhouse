@@ -977,6 +977,7 @@ const (
 	JournalEventKindMaterialReceipt     JournalEventKind = "material_receipt"
 	JournalEventKindMaterialConsumption JournalEventKind = "material_consumption"
 	JournalEventKindCogsOnRemoval       JournalEventKind = "cogs_on_removal"
+	JournalEventKindWipToFinishedGoods  JournalEventKind = "wip_to_finished_goods"
 )
 
 func (e *JournalEventKind) Scan(src interface{}) error {
@@ -1238,6 +1239,49 @@ func (ns NullMaterialKind) Value() (driver.Value, error) {
 		return nil, nil
 	}
 	return string(ns.MaterialKind), nil
+}
+
+type OverheadBasis string
+
+const (
+	OverheadBasisPerMaterialDollar OverheadBasis = "per_material_dollar"
+	OverheadBasisPerLabourHour     OverheadBasis = "per_labour_hour"
+	OverheadBasisPerLaa            OverheadBasis = "per_laa"
+)
+
+func (e *OverheadBasis) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OverheadBasis(s)
+	case string:
+		*e = OverheadBasis(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OverheadBasis: %T", src)
+	}
+	return nil
+}
+
+type NullOverheadBasis struct {
+	OverheadBasis OverheadBasis `json:"overhead_basis"`
+	Valid         bool          `json:"valid"` // Valid is true if OverheadBasis is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOverheadBasis) Scan(value interface{}) error {
+	if value == nil {
+		ns.OverheadBasis, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OverheadBasis.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOverheadBasis) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.OverheadBasis), nil
 }
 
 type PurchaseOrderStatus string
@@ -1939,6 +1983,18 @@ type BulkMovement struct {
 	LossClassifiedAt        pgtype.Timestamptz `json:"loss_classified_at"`
 }
 
+type CostRate struct {
+	ID                   uuid.UUID          `json:"id"`
+	TenantID             uuid.UUID          `json:"tenant_id"`
+	EffectiveFrom        pgtype.Date        `json:"effective_from"`
+	LabourRateCadPerHour pgtype.Numeric     `json:"labour_rate_cad_per_hour"`
+	OverheadBasis        NullOverheadBasis  `json:"overhead_basis"`
+	OverheadRate         pgtype.Numeric     `json:"overhead_rate"`
+	Notes                string             `json:"notes"`
+	CreatedBy            uuid.UUID          `json:"created_by"`
+	CreatedAt            pgtype.Timestamptz `json:"created_at"`
+}
+
 type Customer struct {
 	ID                     uuid.UUID          `json:"id"`
 	TenantID               uuid.UUID          `json:"tenant_id"`
@@ -2185,6 +2241,23 @@ type LabResult struct {
 	RecordedBy        uuid.UUID          `json:"recorded_by"`
 	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt         pgtype.Timestamptz `json:"updated_at"`
+}
+
+type LabourEntry struct {
+	ID                uuid.UUID          `json:"id"`
+	TenantID          uuid.UUID          `json:"tenant_id"`
+	MashRunID         uuid.NullUUID      `json:"mash_run_id"`
+	DistillationRunID uuid.NullUUID      `json:"distillation_run_id"`
+	BottlingRunID     uuid.NullUUID      `json:"bottling_run_id"`
+	WorkOrderID       uuid.NullUUID      `json:"work_order_id"`
+	WorkedOn          pgtype.Date        `json:"worked_on"`
+	Hours             pgtype.Numeric     `json:"hours"`
+	WorkedBy          uuid.NullUUID      `json:"worked_by"`
+	WorkedByName      string             `json:"worked_by_name"`
+	RateCadPerHour    pgtype.Numeric     `json:"rate_cad_per_hour"`
+	Notes             string             `json:"notes"`
+	RecordedBy        uuid.UUID          `json:"recorded_by"`
+	CreatedAt         pgtype.Timestamptz `json:"created_at"`
 }
 
 type Location struct {

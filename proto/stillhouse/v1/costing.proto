@@ -1,0 +1,186 @@
+// What a batch cost, beyond the grain.
+//
+// BottlingRunCost has been direct materials only, and said so honestly on
+// every line. That is not a cost: a distillery whose cost of sales is the
+// price of barley believes its whisky costs eight dollars a bottle, and
+// prices it accordingly. Migration 000040 left two WIP journal kinds
+// unemitted rather than invent a valuation, and wrote down what was
+// needed first — labour, overhead absorption, and a WIP convention.
+//
+// The rates are the licensee's own policy. Nothing here has a default:
+// an unset rate makes its component unavailable and says so, rather than
+// absorbing zero and reporting a partial cost as a full one.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// How overhead is spread over what was made. There is no correct answer,
+// only a stated one.
+enum OverheadBasis {
+  OVERHEAD_BASIS_UNSPECIFIED = 0;
+  // A fraction of direct materials. Crude, and the easiest to keep
+  // current when nobody is tracking hours.
+  OVERHEAD_BASIS_PER_MATERIAL_DOLLAR = 1;
+  // CAD per labour hour recorded against the batch. The textbook one,
+  // and it needs hours to actually be recorded.
+  OVERHEAD_BASIS_PER_LABOUR_HOUR = 2;
+  // CAD per litre of absolute alcohol produced. Fits a distillery whose
+  // overhead is mostly the still: energy and water scale with what came
+  // off it, not with who was standing there.
+  OVERHEAD_BASIS_PER_LAA = 3;
+}
+
+message CostRates {
+  string id = 1;
+  string effective_from = 2;   // ISO date
+  // Decimal strings: these are money and a policy, not measurements.
+  // Empty means not set, which is different from zero.
+  string labour_rate_cad_per_hour = 3;
+  OverheadBasis overhead_basis = 4;
+  string overhead_rate = 5;
+  string notes = 6;
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message SaveCostRatesRequest {
+  // Effective-dated on purpose: a rate is a fact about a period, and
+  // changing one retroactively restates every batch already costed —
+  // including those an accountant has taken into a set of books.
+  string effective_from = 1;   // ISO date; empty = today
+  string labour_rate_cad_per_hour = 2;
+  OverheadBasis overhead_basis = 3;
+  string overhead_rate = 4;
+  string notes = 5;
+}
+message SaveCostRatesResponse { CostRates rates = 1; }
+
+message ListCostRatesRequest {}
+message ListCostRatesResponse { repeated CostRates rates = 1; }
+
+message DeleteCostRatesRequest { string id = 1; }
+message DeleteCostRatesResponse {}
+
+// ----- labour ---------------------------------------------------------------
+
+// What the hours were worked on. Exactly one is set.
+message LabourSubject {
+  string mash_run_id = 1;
+  string distillation_run_id = 2;
+  string bottling_run_id = 3;
+  string work_order_id = 4;
+}
+
+message LabourEntry {
+  string id = 1;
+  LabourSubject subject = 2;
+  string worked_on = 3;        // ISO date
+  double hours = 4;
+  string worked_by_user_id = 5;
+  string worked_by_name = 6;
+  // Empty uses the rate in force on worked_on.
+  string rate_cad_per_hour = 7;
+  string notes = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message RecordLabourRequest {
+  LabourSubject subject = 1;
+  string worked_on = 2;        // ISO date; empty = today
+  double hours = 3;
+  string worked_by_user_id = 4;
+  string worked_by_name = 5;
+  string rate_cad_per_hour = 6;
+  string notes = 7;
+}
+message RecordLabourResponse { LabourEntry entry = 1; }
+
+message DeleteLabourEntryRequest { string id = 1; }
+message DeleteLabourEntryResponse {}
+
+message ListLabourRequest { LabourSubject subject = 1; }
+message ListLabourResponse {
+  repeated LabourEntry entries = 1;
+  double total_hours = 2;
+}
+
+// ----- full cost ------------------------------------------------------------
+
+// One part of a cost, with the reason it is what it is. Basis is a field
+// rather than a footnote because a cost figure that does not say what is
+// in it is one somebody has to ask about.
+message CostComponent {
+  string name = 1;
+  double amount_cad = 2;
+  string basis = 3;
+  bool   available = 4;
+  // Why it could not be computed, when available is false. Never empty
+  // in that case.
+  string missing = 5;
+}
+
+message BottlingRunFullCostRequest { string bottling_run_id = 1; }
+message BottlingRunFullCostResponse {
+  string bottling_run_id = 1;
+  int32  bottle_count = 2;
+  CostComponent materials = 3;
+  CostComponent labour = 4;
+  CostComponent overhead = 5;
+  // The sum of whatever was available — never padded with zeros for the
+  // parts that were not.
+  double total_cad = 6;
+  double per_bottle_cad = 7;
+  // True only when every component was available. A cost missing its
+  // overhead is still worth showing; calling it a full cost is not.
+  bool   complete = 8;
+  double labour_hours = 9;
+  int32  unpriced_material_lines = 10;
+}
+
+// ----- inventory value ------------------------------------------------------
+
+message InventoryValueLine {
+  string name = 1;
+  string detail = 2;
+  double laa = 3;
+  int32  bottles = 4;
+  double unit_cad = 5;
+  double value_cad = 6;
+  bool   valued = 7;
+  // Why not, when valued is false.
+  string why = 8;
+}
+
+message InventoryBucket {
+  double value_cad = 1;
+  repeated InventoryValueLine lines = 2;
+  double total_laa = 3;
+  double valued_laa = 4;
+  int32  unvalued = 5;
+}
+
+message InventoryValueRequest {}
+message InventoryValueResponse {
+  // Made, not packaged. Casks included — a maturing cask is the largest
+  // work in progress a whisky distillery has.
+  InventoryBucket wip = 1;
+  // Packaged, not sold.
+  InventoryBucket finished_goods = 2;
+  double total_cad = 3;
+  // The sentence to put under the figure.
+  string basis = 4;
+}
+
+service CostingService {
+  rpc SaveCostRates(SaveCostRatesRequest) returns (SaveCostRatesResponse);
+  rpc ListCostRates(ListCostRatesRequest) returns (ListCostRatesResponse);
+  rpc DeleteCostRates(DeleteCostRatesRequest) returns (DeleteCostRatesResponse);
+
+  rpc RecordLabour(RecordLabourRequest) returns (RecordLabourResponse);
+  rpc DeleteLabourEntry(DeleteLabourEntryRequest) returns (DeleteLabourEntryResponse);
+  rpc ListLabour(ListLabourRequest) returns (ListLabourResponse);
+
+  rpc BottlingRunFullCost(BottlingRunFullCostRequest) returns (BottlingRunFullCostResponse);
+  rpc InventoryValue(InventoryValueRequest) returns (InventoryValueResponse);
+}

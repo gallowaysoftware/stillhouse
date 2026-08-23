@@ -108,6 +108,9 @@ func Build(
 	if err := j.addCOGS(ctx, q, mapping, startDate, endDate); err != nil {
 		return nil, err
 	}
+	if err := j.addWIPTransfer(ctx, q, mapping, startDate, endDate); err != nil {
+		return nil, err
+	}
 
 	// One warning per kind that produced lines but has no mapping, so the
 	// operator is told once rather than per row.
@@ -401,4 +404,78 @@ func plural(n int) string {
 		return ""
 	}
 	return "s"
+}
+
+// addWIPTransfer books the movement out of work in progress and into
+// finished goods when a run is bottled.
+//
+// Migration 000040 left this kind unemitted on purpose and wrote down
+// why: valuing it needs labour, overhead absorption and a WIP convention
+// Stillhouse did not have, and "an export that posted a made-up WIP
+// figure would reconcile, and nobody would look at it again." Stage 178
+// gave it the first two. The convention is the third, and it is stated
+// rather than assumed: WIP is carried at the full cost of the run that
+// drew it, so bottling moves exactly what that run cost — no more, and
+// nothing manufactured to make the two sides meet.
+//
+// A run whose cost is incomplete produces no line at all. A partial
+// figure posted as if it were whole is the failure 000040 was avoiding;
+// the warning says which runs and why.
+func (j *Journal) addWIPTransfer(
+	ctx context.Context, q *sqlcgen.Queries,
+	mapping map[sqlcgen.JournalEventKind]sqlcgen.JournalAccount,
+	start, end pgtype.Date,
+) error {
+	runs, err := q.BottlingRunsInPeriodForWIP(ctx, sqlcgen.BottlingRunsInPeriodForWIPParams{
+		PeriodStart: start, PeriodEnd: end,
+	})
+	if err != nil {
+		return fmt.Errorf("bottling runs: %w", err)
+	}
+	m := mapping[sqlcgen.JournalEventKindWipToFinishedGoods]
+
+	skipped := 0
+	var firstWhy string
+	for _, r := range runs {
+		cost, err := costing.BottlingRunFullCost(ctx, q, r.ID)
+		if err != nil {
+			return fmt.Errorf("cost run %s: %w", r.LotCode, err)
+		}
+		if cost.TotalCAD <= 0 {
+			skipped++
+			if firstWhy == "" {
+				firstWhy = "nothing about the run could be priced"
+			}
+			continue
+		}
+		basis := "direct materials only"
+		switch {
+		case cost.Labour.Available && cost.Overhead.Available:
+			basis = "direct materials, labour and absorbed overhead"
+		case cost.Labour.Available:
+			basis = "direct materials and labour; no overhead rate is set"
+		case cost.Overhead.Available:
+			basis = "direct materials and absorbed overhead; no hours were recorded"
+		}
+		j.add(Line{
+			Date:        r.BottlingDate.Time,
+			Kind:        sqlcgen.JournalEventKindWipToFinishedGoods,
+			Description: r.ProductName,
+			Reference:   r.LotCode,
+			AmountCAD:   round2(cost.TotalCAD),
+			Memo: fmt.Sprintf("%s: %d bottles from %.4f LAA",
+				r.LotCode, r.BottleCount, r.TankGaugeLaa),
+			Basis: basis,
+		}, m)
+	}
+	if skipped > 0 {
+		j.Warnings = append(j.Warnings, Warning{
+			Kind: string(sqlcgen.JournalEventKindWipToFinishedGoods),
+			Detail: fmt.Sprintf(
+				"%d bottling run%s produced no transfer out of work in progress — %s. "+
+					"Finished goods will be short by whatever those runs were worth.",
+				skipped, plural(skipped), firstWhy),
+		})
+	}
+	return nil
 }

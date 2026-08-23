@@ -341,6 +341,21 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.LabelService/ResolveLabel":     roleViewer,
 	"/stillhouse.v1.LabelService/ListLabelTargets": roleViewer,
 
+	// CostingService. Recording hours is what the person who worked them
+	// does, so it is an operator act. Setting the rates those hours are
+	// priced at is a policy decision about the licensee's own books, and
+	// so is what the inventory is worth — both sit with the owner, and
+	// both are squarely the outside bookkeeper's engagement, so the
+	// accountant reaches them through accountantAlso.
+	"/stillhouse.v1.CostingService/ListLabour":          roleViewer,
+	"/stillhouse.v1.CostingService/ListCostRates":       roleViewer,
+	"/stillhouse.v1.CostingService/BottlingRunFullCost": roleViewer,
+	"/stillhouse.v1.CostingService/RecordLabour":        roleOperator,
+	"/stillhouse.v1.CostingService/DeleteLabourEntry":   roleOperator,
+	"/stillhouse.v1.CostingService/SaveCostRates":       roleOwner,
+	"/stillhouse.v1.CostingService/DeleteCostRates":     roleOwner,
+	"/stillhouse.v1.CostingService/InventoryValue":      roleViewer,
+
 	"/stillhouse.v1.RemovalService/CreateRemoval": roleOperator,
 	"/stillhouse.v1.RemovalService/ListRemovals":  roleViewer,
 	"/stillhouse.v1.RemovalService/VoidRemoval":   roleOperator,
@@ -447,6 +462,11 @@ var accountantAlso = map[string]bool{
 	// Premises follow the licence, and the licence register is already
 	// on this list.
 	"/stillhouse.v1.LocationService/SaveLocation": true,
+	// Labour and overhead rates are a costing policy, and what the
+	// inventory is worth follows from them. Both are the engagement, not
+	// something to ask the owner to type on the bookkeeper's behalf.
+	"/stillhouse.v1.CostingService/SaveCostRates":   true,
+	"/stillhouse.v1.CostingService/DeleteCostRates": true,
 }
 
 // checkRole returns nil if the user role may invoke procedure, or a

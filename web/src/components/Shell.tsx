@@ -53,6 +53,7 @@ const navGroups: NavGroup[] = [
     fr: "Conformité",
     items: [
       { to: "/b266", en: "B266 returns", fr: "Déclarations B266" },
+      { to: "/costing", en: "Costing", fr: "Coût de revient" },
       { to: "/journal", en: "Accounting journal", fr: "Journal comptable" },
       { to: "/audit", en: "Audit log", fr: "Journal d'audit" },
       { to: "/settings", en: "Settings", fr: "Paramètres" },

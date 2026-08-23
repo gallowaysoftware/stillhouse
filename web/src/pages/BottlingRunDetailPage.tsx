@@ -3,7 +3,9 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { Shell } from "@/components/Shell";
-import { bottlingClient, materialClient, traceabilityClient } from "@/lib/clients";
+import { LabourPanel } from "@/components/LabourPanel";
+import { LabourSubject } from "@/gen/stillhouse/v1/costing_pb";
+import { bottlingClient, costingClient, materialClient, traceabilityClient } from "@/lib/clients";
 import { formatCAD, formatLAA, formatQty } from "@/lib/format";
 
 export function BottlingRunDetailPage() {
@@ -18,6 +20,11 @@ export function BottlingRunDetailPage() {
     queryKey: ["traceBottlingRun", id],
     queryFn: () => traceabilityClient.traceBottlingRun({ bottlingRunId: id! }),
     enabled: traceOpen && !!id,
+  });
+  const full = useQuery({
+    queryKey: ["bottlingRunFullCost", id],
+    queryFn: () => costingClient.bottlingRunFullCost({ bottlingRunId: id! }),
+    enabled: Boolean(id),
   });
   const cost = useQuery({
     queryKey: ["bottlingRunCost", id],
@@ -88,6 +95,45 @@ export function BottlingRunDetailPage() {
             the packaging loss never became packaged spirits. Removals of this
             lot carry no further duty.
           </p>
+        </section>
+      )}
+
+      <section className="mb-8">
+        <LabourPanel subject={{ bottlingRunId: r.id } as LabourSubject} what="run" />
+      </section>
+
+      {full.data && (
+        <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
+          <h2 className="mb-1 text-sm font-semibold text-fg-muted">Full cost</h2>
+          <p className="mb-3 text-xs text-fg-subtle">
+            {full.data.complete
+              ? "Direct materials, labour and absorbed overhead."
+              : "Incomplete — the components below say what is missing. A cost of " +
+                "sales built on this is short by whatever they would have added."}
+          </p>
+          <div className="mb-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <Stat label="Total" value={formatCAD(full.data.totalCad)} />
+            <Stat label="Per bottle" value={formatCAD(full.data.perBottleCad)} highlight />
+            <Stat label="Hours" value={full.data.labourHours.toFixed(2)} />
+          </div>
+          <ul className="space-y-1 text-sm">
+            {[full.data.materials, full.data.labour, full.data.overhead].map((c) =>
+              c ? (
+                <li key={c.name} className="flex items-baseline justify-between gap-3">
+                  <span className="text-fg-muted">
+                    {c.name}
+                    {c.basis && <span className="ml-2 text-xs text-fg-subtle">{c.basis}</span>}
+                    {!c.available && (
+                      <span className="ml-2 text-xs text-warning-fg">{c.missing}</span>
+                    )}
+                  </span>
+                  <span className="font-mono text-fg">
+                    {c.available ? formatCAD(c.amountCad) : "—"}
+                  </span>
+                </li>
+              ) : null,
+            )}
+          </ul>
         </section>
       )}
 

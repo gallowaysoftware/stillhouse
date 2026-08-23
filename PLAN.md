@@ -185,18 +185,13 @@ regime; spirits do not, but returns still happen.
 
 ## Track E — purchasing and cost
 
-### E4 · Full COGS — P1
+### E7 · Production into work in progress — P2
 
-`BottlingRunCost` and `ProductCostSummary` cover direct materials and honestly
-flag runs with missing prices. Missing: labour, overhead absorption, WIP
-valuation, and finished-goods inventory value for the balance sheet.
-
-Stage 161 pulled the chain walk into `internal/costing` so the cost screen and
-the accounting journal share one answer, and left the two WIP journal kinds
-unemitted rather than inventing a valuation. Stage 168 made the direct-material
-figure a *landed* one — freight, duty and handling now sit in the cost of the
-grain. What is left is labour, overhead absorption, WIP valuation and
-finished-goods inventory value for the balance sheet.
+Stage 178 emits the transfer *out* of WIP at bottling, at the full cost of the
+run that drew it. Its twin — spirit gauged into WIP at production — still has
+no line, because valuing it means walking forward from the mashes to each gauge
+and apportioning a mash that fed several of them. That apportionment is a
+convention Stillhouse does not have; 000040's argument stands until it does.
 
 ### E5 · Reorder points and low-stock alerts — P2
 

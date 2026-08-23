@@ -73,6 +73,10 @@ type Querier interface {
 	// when the source container is a blend tank or spirit receiver that
 	// collected from multiple barrels/distillations.
 	BottlingRunChainFeeds(ctx context.Context, arg BottlingRunChainFeedsParams) ([]BottlingRunChainFeedsRow, error)
+	// The runs that moved alcohol out of work in progress and into finished
+	// goods during a period. Voided runs are excluded — their effect is
+	// reversed elsewhere and posting both sides would double the entry.
+	BottlingRunsInPeriodForWIP(ctx context.Context, arg BottlingRunsInPeriodForWIPParams) ([]BottlingRunsInPeriodForWIPRow, error)
 	// Last movement timestamp per container (either as source or destination).
 	// Returns one row per container that's ever moved alcohol; containers that
 	// have only existed never accept a row here. Caller falls back to
@@ -108,6 +112,10 @@ type Querier interface {
 	// Single use, enforced in the UPDATE rather than in Go: two tabs
 	// submitting the same code must not both succeed.
 	ConsumeTOTPRecoveryCode(ctx context.Context, arg ConsumeTOTPRecoveryCodeParams) (UserTotpRecoveryCode, error)
+	// The rates that applied on a given day. Effective-dated so that costing
+	// a batch from March does not use April's rate — a rate change must not
+	// restate a period an accountant has already taken into a set of books.
+	CostRatesInForceOn(ctx context.Context, onDate pgtype.Date) (CostRate, error)
 	CountAuditEvents(ctx context.Context, arg CountAuditEventsParams) (int64, error)
 	CountBottlingRuns(ctx context.Context, arg CountBottlingRunsParams) (int32, error)
 	// Failing results attached to a bottling run, or to the container it
@@ -201,7 +209,9 @@ type Querier interface {
 	// turns that into "someone else took those bottles" instead of a 500.
 	DecrementPackagedOnHand(ctx context.Context, arg DecrementPackagedOnHandParams) (PackagedInventory, error)
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
+	DeleteCostRates(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
+	DeleteLabourEntry(ctx context.Context, id uuid.UUID) error
 	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
 	// Only reachable on a draft; the handler enforces that. A line that has
 	// been ordered against is history, not a typo.
@@ -355,6 +365,7 @@ type Querier interface {
 	// Packaged stock leaving, with the bottling run behind it so its material
 	// cost can be apportioned per bottle.
 	JournalRemovalsForCOGS(ctx context.Context, arg JournalRemovalsForCOGSParams) ([]JournalRemovalsForCOGSRow, error)
+	LabourHoursInPeriod(ctx context.Context, arg LabourHoursInPeriodParams) (LabourHoursInPeriodRow, error)
 	// The most recent PASSED calibration. A failed check is history worth
 	// keeping, but it is not the date the next one is counted from — an
 	// instrument that failed its check has not been calibrated.
@@ -400,6 +411,7 @@ type Querier interface {
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]ListBulkContainersRow, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListCalibrations(ctx context.Context, instrumentID uuid.UUID) ([]InstrumentCalibration, error)
+	ListCostRates(ctx context.Context) ([]CostRate, error)
 	// Archived customers are hidden by default but never deleted: a removal
 	// points at one, and the trail behind a filed return has to stay
 	// resolvable years later.
@@ -434,6 +446,7 @@ type Querier interface {
 	// Filtered by whichever subject the caller names; all of them NULL
 	// returns the tenant's whole lab history, newest first.
 	ListLabResults(ctx context.Context, arg ListLabResultsParams) ([]ListLabResultsRow, error)
+	ListLabourForSubject(ctx context.Context, arg ListLabourForSubjectParams) ([]ListLabourForSubjectRow, error)
 	// Live licences with a recorded expiry. The rule that reads this decides
 	// what counts as "soon"; the query's job is to exclude the ones that
 	// cannot expire on us — ceased, or with no expiry recorded at all.
@@ -558,6 +571,7 @@ type Querier interface {
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	RecordLabour(ctx context.Context, arg RecordLabourParams) (LabourEntry, error)
 	// Closes the loop. laa_produced and produced_on are set together — the
 	// CHECK enforces it — so a run can never be half-recorded, and loss_laa
 	// becomes computable at exactly the moment both halves are known.
@@ -614,6 +628,7 @@ type Querier interface {
 	RevokeAllAPITokensForUser(ctx context.Context, userID uuid.UUID) ([]ApiToken, error)
 	RevokeInviteCode(ctx context.Context, code string) (InviteCode, error)
 	SalesOrderOutstanding(ctx context.Context, salesOrderID uuid.UUID) (SalesOrderOutstandingRow, error)
+	SaveCostRates(ctx context.Context, arg SaveCostRatesParams) (CostRate, error)
 	SetBarrelDumpedClock(ctx context.Context, arg SetBarrelDumpedClockParams) error
 	SetBarrelFillDate(ctx context.Context, arg SetBarrelFillDateParams) error
 	SetBulkContainerArchived(ctx context.Context, arg SetBulkContainerArchivedParams) (BulkContainer, error)
@@ -779,6 +794,13 @@ type Querier interface {
 	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line
 	// showing only the net would say nothing happened.
 	SumInventoryAdjustmentsInPeriod(ctx context.Context, arg SumInventoryAdjustmentsInPeriodParams) (SumInventoryAdjustmentsInPeriodRow, error)
+	// Hours booked directly to the bottling run. Deliberately not the whole
+	// chain: hours on the mash and the distillation behind it are counted
+	// separately, because they are shared across everything that chain fed
+	// and a run that took a tenth of a tank should not carry all of it.
+	SumLabourForBottlingRun(ctx context.Context, bottlingRunID uuid.NullUUID) (SumLabourForBottlingRunRow, error)
+	SumLabourForDistillationRuns(ctx context.Context, ids []uuid.UUID) (float64, error)
+	SumLabourForMashRuns(ctx context.Context, ids []uuid.UUID) (float64, error)
 	// The three figures that must sum to bulk_losses_laa. Destructions are
 	// reported on their own line, so they are excluded here — a destruction is
 	// not part of the losses total, and counting it in both places would
@@ -877,6 +899,18 @@ type Querier interface {
 	// unauthenticated position is a lockout, and from an authenticated one
 	// it should be a deliberate disable-then-enrol.
 	UpsertUserTOTP(ctx context.Context, arg UpsertUserTOTPParams) (UserTotp, error)
+	// Everything still in bulk, which is what work in progress means for a
+	// distillery: alcohol made and not yet packaged. Barrels included — a
+	// cask maturing is the largest WIP a whisky distillery has.
+	//
+	// Owned stock only. Spirits held for a customer are on the B266 and not
+	// on the balance sheet (stage 176).
+	ValueBulkForWIP(ctx context.Context) ([]ValueBulkForWIPRow, error)
+	// Bottles on hand, with the run each came from so the cost that run
+	// carried can be applied. A lot with no run behind it (adopted stock)
+	// comes back with a NULL run and is reported as unvalued rather than
+	// valued at zero.
+	ValuePackagedForFinishedGoods(ctx context.Context) ([]ValuePackagedForFinishedGoodsRow, error)
 	VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)

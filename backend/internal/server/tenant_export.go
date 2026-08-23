@@ -104,6 +104,12 @@ var exportTables = []string{
 	"shipment_lines",
 	"b266_periods",
 	"journal_accounts",
+	// What the licensee's own costing policy was, and the hours it was
+	// applied to. Both are inputs to figures an accountant will be
+	// looking at; exporting the figures without them leaves a cost of
+	// sales nobody can reproduce.
+	"cost_rates",
+	"labour_entries",
 	"alerts",
 	"audit_events",
 }
