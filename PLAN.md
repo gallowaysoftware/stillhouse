@@ -70,13 +70,6 @@ a property of a bulk container today, so a contract distiller's B266 is wrong
 in both directions. Inert until the first contract fill or private cask sale,
 then immediately P0 — build it before that day, not during it.
 
-### A8 · Redistillation has no path — P1
-
-EDM3-1-1 ¶38–41. Bulk returned to production for redistilling, and packaged
-spirits unpackaged back to bulk, are both reportable movements with a specified
-cross-form handoff. Neither exists. Also needs the records showing quantity
-taken, quantity produced after, and losses incurred in the process.
-
 ### A9 · No refunds, drawback, or duty-paid returns — P1
 
 No B256 application, and no way to book spirits coming back from the duty-paid

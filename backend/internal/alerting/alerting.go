@@ -54,6 +54,13 @@ const (
 	// within living memory.
 	BarrelUnmeasuredAfter = 365 * 24 * time.Hour
 
+	// RedistillationOpenAfter is how long spirit may be in the still with
+	// no output recorded before it is worth saying so. A week covers a
+	// long run and a weekend; beyond it, alcohol has left stock and not
+	// come back on the books, which is the one shape of gap a period-end
+	// reconciliation cannot explain.
+	RedistillationOpenAfter = 7 * 24 * time.Hour
+
 	// LicenceRenewalWindow is how far ahead a licence expiry becomes a
 	// warning. CRA requires renewal 30 days before expiry (EDM2-1-1), so
 	// the alert opens at 60 — a month before the deadline to act on the
@@ -71,6 +78,11 @@ var Kinds = []string{
 	string(sqlcgen.AlertKindStampsLow),
 	string(sqlcgen.AlertKindFermentationStalled),
 	string(sqlcgen.AlertKindBarrelUnmeasured),
+	string(sqlcgen.AlertKindLicenceExpiring),
+	string(sqlcgen.AlertKindLicenceExpired),
+	string(sqlcgen.AlertKindLicenceSecurityExpiring),
+	string(sqlcgen.AlertKindWorkOrderOverdue),
+	string(sqlcgen.AlertKindRedistillationOpen),
 }
 
 // Alert is one condition found true, before it is written.
@@ -129,6 +141,46 @@ func Evaluate(
 	}
 	out = append(out, workAlerts...)
 
+	redistAlerts, err := evaluateRedistillations(ctx, q, now)
+	if err != nil {
+		return nil, fmt.Errorf("redistillations: %w", err)
+	}
+	out = append(out, redistAlerts...)
+
+	return out, nil
+}
+
+// evaluateRedistillations raises spirit that went into the still and has
+// no output recorded.
+//
+// This is the gap A8 was about. The withdrawal is on the return either
+// way — it is a reportable movement — so the alcohol has left stock. If
+// nothing records what came back, the difference is not a loss anybody
+// has classified, it is just a number that got smaller between two
+// periods.
+func evaluateRedistillations(ctx context.Context, q *sqlcgen.Queries, now time.Time) ([]Alert, error) {
+	rows, err := q.AlertOpenRedistillations(ctx, pgtype.Date{
+		Valid: true, Time: now.Add(-RedistillationOpenAfter),
+	})
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Alert, 0, len(rows))
+	for _, r := range rows {
+		days := int(now.Sub(r.TakenOn.Time).Hours() / 24)
+		out = append(out, Alert{
+			Kind:       sqlcgen.AlertKindRedistillationOpen,
+			Severity:   sqlcgen.AlertSeverityWarning,
+			SubjectKey: r.ID.String(),
+			Title: fmt.Sprintf("%.1f LAA from %s has been in the still %d days",
+				r.LaaTaken, r.SourceContainerName, days),
+			Detail: "It left stock as a reportable withdrawal and nothing records what " +
+				"came back. Until it does, the alcohol is off the books and the " +
+				"difference is not a loss anyone has ruled on.",
+			EntityType: "redistillation",
+			EntityID:   uuid.NullUUID{UUID: r.ID, Valid: true},
+		})
+	}
 	return out, nil
 }
 

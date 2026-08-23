@@ -49,6 +49,15 @@ var procedureMinRole = map[string]minRole{
 	// AuditService
 	"/stillhouse.v1.AuditService/ListAuditEvents": roleViewer,
 
+	// RedistillationService. Putting spirit back through the still moves
+	// alcohol out of stock onto a filed return, so it is an operator
+	// action like every other movement — the person at the still is who
+	// knows what went in and what came out.
+	"/stillhouse.v1.RedistillationService/ListRedistillations":        roleViewer,
+	"/stillhouse.v1.RedistillationService/RedistillationSummary":      roleViewer,
+	"/stillhouse.v1.RedistillationService/StartRedistillation":        roleOperator,
+	"/stillhouse.v1.RedistillationService/RecordRedistillationOutput": roleOperator,
+
 	// WorkOrderService. Raising and moving work is an operator action —
 	// the whole point is that the person doing the job can pick it up and
 	// mark it done without asking the owner. Reading the board is a

@@ -22,6 +22,10 @@ type Querier interface {
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
 	AddMashMetric(ctx context.Context, arg AddMashMetricParams) (MashMetric, error)
 	AddPurchaseOrderLine(ctx context.Context, arg AddPurchaseOrderLineParams) (PurchaseOrderLine, error)
+	// Spirit that left stock into the still and has no output recorded after
+	// long enough that it should have. Alcohol off the books is the one
+	// shape of gap a period-end reconciliation cannot explain.
+	AlertOpenRedistillations(ctx context.Context, cutoff pgtype.Date) ([]AlertOpenRedistillationsRow, error)
 	// Open work whose due date has passed. Deliberately not "scheduled for
 	// the past": a job scheduled Monday and done Tuesday is normal, and a
 	// system that shouts about it gets muted. A missed *due* date is a
@@ -146,6 +150,7 @@ type Querier interface {
 	CreateRecipe(ctx context.Context, arg CreateRecipeParams) (Recipe, error)
 	CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error)
 	CreateRecipeVersion(ctx context.Context, arg CreateRecipeVersionParams) (RecipeVersion, error)
+	CreateRedistillation(ctx context.Context, arg CreateRedistillationParams) (Redistillation, error)
 	CreateRemoval(ctx context.Context, arg CreateRemovalParams) (PackagingRemoval, error)
 	CreateStampDisposition(ctx context.Context, arg CreateStampDispositionParams) (ExciseStampDisposition, error)
 	CreateStampOrder(ctx context.Context, arg CreateStampOrderParams) (ExciseStampOrder, error)
@@ -255,6 +260,7 @@ type Querier interface {
 	GetRecipeVersion(ctx context.Context, id uuid.UUID) (RecipeVersion, error)
 	GetRecipeVersionSensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionSensory, error)
 	GetRecipeVersionWhiskySensory(ctx context.Context, recipeVersionID uuid.UUID) (RecipeVersionWhiskySensory, error)
+	GetRedistillation(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	GetRemoval(ctx context.Context, id uuid.UUID) (PackagingRemoval, error)
 	GetStampOrder(ctx context.Context, id uuid.UUID) (ExciseStampOrder, error)
 	GetSupplier(ctx context.Context, id uuid.UUID) (Supplier, error)
@@ -421,6 +427,7 @@ type Querier interface {
 	// rely on these columns being populated.
 	ListRecipeVersions(ctx context.Context, recipeID uuid.UUID) ([]ListRecipeVersionsRow, error)
 	ListRecipes(ctx context.Context, includeArchived bool) ([]Recipe, error)
+	ListRedistillations(ctx context.Context, arg ListRedistillationsParams) ([]ListRedistillationsRow, error)
 	ListRemovals(ctx context.Context, arg ListRemovalsParams) ([]ListRemovalsRow, error)
 	// Everything not applied to a bottle, most recent first. The losses and
 	// thefts are what CRA asks about; the spoilage is what makes the
@@ -474,6 +481,7 @@ type Querier interface {
 	LockDocumentSequence(ctx context.Context, counter string) error
 	MarkAlertNotified(ctx context.Context, id uuid.UUID) error
 	MarkMaterialLotInvoiced(ctx context.Context, arg MarkMaterialLotInvoicedParams) (MaterialLot, error)
+	MarkRedistillationLossClassified(ctx context.Context, id uuid.UUID) (Redistillation, error)
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
@@ -487,10 +495,17 @@ type Querier interface {
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
 	ReceiveStampOrder(ctx context.Context, arg ReceiveStampOrderParams) (ExciseStampOrder, error)
+	// Closes the loop. laa_produced and produced_on are set together — the
+	// CHECK enforces it — so a run can never be half-recorded, and loss_laa
+	// becomes computable at exactly the moment both halves are known.
+	RecordRedistillationOutput(ctx context.Context, arg RecordRedistillationOutputParams) (Redistillation, error)
 	// The replay guard. Refusing anything at or below the last accepted step
 	// is what stops a code being used twice inside its window.
 	RecordTOTPStep(ctx context.Context, arg RecordTOTPStepParams) error
 	RedeemInviteCode(ctx context.Context, arg RedeemInviteCodeParams) (InviteCode, error)
+	// What went back through the still in a period, and what it cost. The
+	// figures EDM3-1-1 para 41 asks to be kept.
+	RedistillationPeriodSummary(ctx context.Context, arg RedistillationPeriodSummaryParams) (RedistillationPeriodSummaryRow, error)
 	// Releasing clears any hold: a lot that has been looked at again and
 	// passed is released, not simultaneously held.
 	ReleasePackagedLot(ctx context.Context, arg ReleasePackagedLotParams) (PackagedInventory, error)

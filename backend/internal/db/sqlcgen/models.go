@@ -25,6 +25,7 @@ const (
 	AlertKindLicenceSecurityExpiring AlertKind = "licence_security_expiring"
 	AlertKindWorkOrderOverdue        AlertKind = "work_order_overdue"
 	AlertKindWorkOrderUnassigned     AlertKind = "work_order_unassigned"
+	AlertKindRedistillationOpen      AlertKind = "redistillation_open"
 )
 
 func (e *AlertKind) Scan(src interface{}) error {
@@ -1243,6 +1244,50 @@ func (ns NullPurchaseOrderStatus) Value() (driver.Value, error) {
 	return string(ns.PurchaseOrderStatus), nil
 }
 
+type RedistillationReason string
+
+const (
+	RedistillationReasonOffSpec        RedistillationReason = "off_spec"
+	RedistillationReasonFeintsRecovery RedistillationReason = "feints_recovery"
+	RedistillationReasonReprocessing   RedistillationReason = "reprocessing"
+	RedistillationReasonOther          RedistillationReason = "other"
+)
+
+func (e *RedistillationReason) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = RedistillationReason(s)
+	case string:
+		*e = RedistillationReason(s)
+	default:
+		return fmt.Errorf("unsupported scan type for RedistillationReason: %T", src)
+	}
+	return nil
+}
+
+type NullRedistillationReason struct {
+	RedistillationReason RedistillationReason `json:"redistillation_reason"`
+	Valid                bool                 `json:"valid"` // Valid is true if RedistillationReason is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullRedistillationReason) Scan(value interface{}) error {
+	if value == nil {
+		ns.RedistillationReason, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.RedistillationReason.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullRedistillationReason) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.RedistillationReason), nil
+}
+
 type RemovalDestinationKind string
 
 const (
@@ -2333,6 +2378,27 @@ type RecipeVersionWhiskySensory struct {
 	Overall         pgtype.Int2        `json:"overall"`
 	TastingPanel    string             `json:"tasting_panel"`
 	TastedAt        pgtype.Timestamptz `json:"tasted_at"`
+}
+
+type Redistillation struct {
+	ID                uuid.UUID            `json:"id"`
+	TenantID          uuid.UUID            `json:"tenant_id"`
+	SourceContainerID uuid.UUID            `json:"source_container_id"`
+	BulkMovementID    uuid.NullUUID        `json:"bulk_movement_id"`
+	Reason            RedistillationReason `json:"reason"`
+	TakenOn           pgtype.Date          `json:"taken_on"`
+	VolumeTakenL      float64              `json:"volume_taken_l"`
+	AbvTakenPct       float64              `json:"abv_taken_pct"`
+	LaaTaken          float64              `json:"laa_taken"`
+	DistillationRunID uuid.NullUUID        `json:"distillation_run_id"`
+	LaaProduced       pgtype.Float8        `json:"laa_produced"`
+	ProducedOn        pgtype.Date          `json:"produced_on"`
+	LossLaa           pgtype.Float8        `json:"loss_laa"`
+	LossClassifiedAt  pgtype.Timestamptz   `json:"loss_classified_at"`
+	Notes             string               `json:"notes"`
+	RecordedBy        uuid.UUID            `json:"recorded_by"`
+	CreatedAt         pgtype.Timestamptz   `json:"created_at"`
+	UpdatedAt         pgtype.Timestamptz   `json:"updated_at"`
 }
 
 type Session struct {

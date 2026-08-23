@@ -7,6 +7,7 @@ import { create } from "@bufbuild/protobuf";
 import { BlendPlanner } from "@/components/BlendPlanner";
 import { Button } from "@/components/Button";
 import { Shell } from "@/components/Shell";
+import { RedistillationPanel } from "@/components/RedistillationPanel";
 import { bulkClient } from "@/lib/clients";
 import { WriteOnly } from "@/lib/role";
 import {
@@ -243,6 +244,8 @@ export function BulkPage() {
           </tbody>
         </table>
       </div>
+      <RedistillationPanel />
+
     </Shell>
   );
 }

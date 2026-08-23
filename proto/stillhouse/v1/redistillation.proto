@@ -1,0 +1,118 @@
+// What went back into the still, and what came out.
+//
+// EDM3-1-1 ¶38–41. Stage 146 gave page 3 the reportable movement — bulk
+// returned to production — so the B266 line has been fillable since
+// then. What never existed is the record either side of it: the quantity
+// taken, the quantity produced after, and the losses incurred.
+//
+// That gap matters because a redistillation is the one operation where
+// alcohol legitimately disappears in bulk and nobody is obliged to
+// notice. Spirit leaves stock as a reportable withdrawal; weeks later a
+// run produces less than went in; and with nothing joining the two, the
+// difference is not a loss anybody has classified — it is just a smaller
+// number.
+syntax = "proto3";
+
+package stillhouse.v1;
+
+enum RedistillationReason {
+  REDISTILLATION_REASON_UNSPECIFIED = 0;
+  REDISTILLATION_REASON_OFF_SPEC = 1;         // it was not what it should have been
+  REDISTILLATION_REASON_FEINTS_RECOVERY = 2;  // heads and tails, for the alcohol in them
+  REDISTILLATION_REASON_REPROCESSING = 3;     // a deliberate second pass, e.g. gin from NGS
+  REDISTILLATION_REASON_OTHER = 4;
+}
+
+message Redistillation {
+  string id = 1;
+  string source_container_id = 2;
+  string source_container_name = 3;
+  RedistillationReason reason = 4;
+  string taken_on = 5;  // ISO date
+
+  // What went in, recorded at the moment of withdrawal — the figure that
+  // stops being observable once it is in the still.
+  double volume_taken_l = 6;
+  double abv_taken_pct = 7;
+  double laa_taken = 8;
+
+  // What came out. Unset until the run has been gauged, which is the
+  // ordinary state for days.
+  string distillation_run_id = 9;
+  int32  distillation_run_no = 10;
+  double laa_produced = 11;
+  bool   laa_produced_set = 12;
+  string produced_on = 13;
+
+  // taken − produced. Unset while the run is unfinished, rather than
+  // showing the whole charge as lost.
+  double loss_laa = 14;
+  bool   loss_laa_set = 15;
+  // Whether the loss has been ruled relieved or duty-payable through the
+  // normal loss path.
+  bool loss_classified = 16;
+
+  string notes = 17;
+  string recorded_by_name = 18;
+}
+
+// Takes spirit out of a container and back into production. Writes the
+// reportable bulk movement as well as the record, in one transaction, so
+// the B266 line and the redistillation account cannot disagree.
+message StartRedistillationRequest {
+  string source_container_id = 1;
+  RedistillationReason reason = 2;
+  double volume_l = 3;
+  // Strength of what is being taken. Where the container's own strength
+  // is right, pass it; a partial draw at a different strength is a
+  // different figure and has to be stated.
+  double abv_pct = 4;
+  string taken_on = 5;  // ISO date; empty = today
+  string notes = 6;
+}
+message StartRedistillationResponse { Redistillation redistillation = 1; }
+
+// Closes the loop once the run has been gauged.
+message RecordRedistillationOutputRequest {
+  string id = 1;
+  string distillation_run_id = 2;
+  double laa_produced = 3;
+  string produced_on = 4;  // ISO date; empty = today
+}
+message RecordRedistillationOutputResponse {
+  Redistillation redistillation = 1;
+  // Said out loud rather than left to be noticed: this much alcohol went
+  // in and did not come out, and it still needs ruling on.
+  double loss_laa = 2;
+  bool   needs_loss_classification = 3;
+}
+
+message ListRedistillationsRequest {
+  bool open_only = 1;
+  int32 limit = 2;  // 0 = 100
+}
+message ListRedistillationsResponse {
+  repeated Redistillation redistillations = 1;
+}
+
+message RedistillationSummaryRequest {
+  string period_start = 1;  // ISO date
+  string period_end = 2;
+}
+message RedistillationSummaryResponse {
+  int32  event_count = 1;
+  double laa_taken = 2;
+  double laa_produced = 3;
+  double loss_laa = 4;
+  // Events with no output recorded. Their charge is in laa_taken and not
+  // in laa_produced, so the loss figure overstates until they close —
+  // which is why the count travels with it.
+  int32 still_open = 5;
+}
+
+service RedistillationService {
+  rpc StartRedistillation(StartRedistillationRequest) returns (StartRedistillationResponse);
+  rpc RecordRedistillationOutput(RecordRedistillationOutputRequest) returns (RecordRedistillationOutputResponse);
+  rpc ListRedistillations(ListRedistillationsRequest) returns (ListRedistillationsResponse);
+  rpc RedistillationSummary(RedistillationSummaryRequest) returns (RedistillationSummaryResponse);
+}

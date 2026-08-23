@@ -44,6 +44,7 @@ const (
 	AlertKind_ALERT_KIND_LICENCE_SECURITY_EXPIRING AlertKind = 8  // the s.23 security behind it
 	AlertKind_ALERT_KIND_WORK_ORDER_OVERDUE        AlertKind = 9  // open work past its due date
 	AlertKind_ALERT_KIND_WORK_ORDER_UNASSIGNED     AlertKind = 10 // due soon and nobody owns it
+	AlertKind_ALERT_KIND_REDISTILLATION_OPEN       AlertKind = 11 // spirit into the still with no output recorded
 )
 
 // Enum value maps for AlertKind.
@@ -60,6 +61,7 @@ var (
 		8:  "ALERT_KIND_LICENCE_SECURITY_EXPIRING",
 		9:  "ALERT_KIND_WORK_ORDER_OVERDUE",
 		10: "ALERT_KIND_WORK_ORDER_UNASSIGNED",
+		11: "ALERT_KIND_REDISTILLATION_OPEN",
 	}
 	AlertKind_value = map[string]int32{
 		"ALERT_KIND_UNSPECIFIED":               0,
@@ -73,6 +75,7 @@ var (
 		"ALERT_KIND_LICENCE_SECURITY_EXPIRING": 8,
 		"ALERT_KIND_WORK_ORDER_OVERDUE":        9,
 		"ALERT_KIND_WORK_ORDER_UNASSIGNED":     10,
+		"ALERT_KIND_REDISTILLATION_OPEN":       11,
 	}
 )
 
@@ -703,7 +706,7 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"\x14SetAlertEmailRequest\x12\x18\n" +
 	"\aenabled\x18\x01 \x01(\bR\aenabled\"1\n" +
 	"\x15SetAlertEmailResponse\x12\x18\n" +
-	"\aenabled\x18\x01 \x01(\bR\aenabled*\xf7\x02\n" +
+	"\aenabled\x18\x01 \x01(\bR\aenabled*\x9b\x03\n" +
 	"\tAlertKind\x12\x1a\n" +
 	"\x16ALERT_KIND_UNSPECIFIED\x10\x00\x12\x19\n" +
 	"\x15ALERT_KIND_FILING_DUE\x10\x01\x12\x1d\n" +
@@ -716,7 +719,8 @@ const file_stillhouse_v1_alert_proto_rawDesc = "" +
 	"$ALERT_KIND_LICENCE_SECURITY_EXPIRING\x10\b\x12!\n" +
 	"\x1dALERT_KIND_WORK_ORDER_OVERDUE\x10\t\x12$\n" +
 	" ALERT_KIND_WORK_ORDER_UNASSIGNED\x10\n" +
-	"*\x81\x01\n" +
+	"\x12\"\n" +
+	"\x1eALERT_KIND_REDISTILLATION_OPEN\x10\v*\x81\x01\n" +
 	"\rAlertSeverity\x12\x1e\n" +
 	"\x1aALERT_SEVERITY_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13ALERT_SEVERITY_INFO\x10\x01\x12\x1a\n" +

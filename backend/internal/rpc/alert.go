@@ -246,6 +246,8 @@ func alertKindToProto(k sqlcgen.AlertKind) stillhousev1.AlertKind {
 		return stillhousev1.AlertKind_ALERT_KIND_WORK_ORDER_OVERDUE
 	case sqlcgen.AlertKindWorkOrderUnassigned:
 		return stillhousev1.AlertKind_ALERT_KIND_WORK_ORDER_UNASSIGNED
+	case sqlcgen.AlertKindRedistillationOpen:
+		return stillhousev1.AlertKind_ALERT_KIND_REDISTILLATION_OPEN
 	}
 	return stillhousev1.AlertKind_ALERT_KIND_UNSPECIFIED
 }
