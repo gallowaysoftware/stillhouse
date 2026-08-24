@@ -142,7 +142,20 @@ func TestBottlingRunCostFullChain(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create container: %v", err)
 	}
-	gaugeTime := time.Now()
+	// Fixed, and in UTC, rather than time.Now().
+	//
+	// This test failed for three hours a day and passed for the other
+	// twenty-one. bottling_date is a DATE, so it truncates in whatever
+	// zone the value arrives in, while the feed cutoff below is computed
+	// from that date in UTC and the movement's occurred_at is stored in
+	// UTC. Run in the evening at UTC-3, time.Now() falls on the next UTC
+	// day while the DATE keeps the local one, and the gauge lands minutes
+	// PAST its own cutoff — feeds comes back empty and the cost falls to
+	// zero, which is exactly the failure this test exists to detect.
+	//
+	// A fixture whose result depends on the hour it runs cannot tell you
+	// which of those it is.
+	gaugeTime := time.Date(2026, 5, 12, 12, 0, 0, 0, time.UTC)
 	mv, err := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 		TenantID:               tenant.ID,
 		SourceContainerID:      uuid.NullUUID{Valid: false},
