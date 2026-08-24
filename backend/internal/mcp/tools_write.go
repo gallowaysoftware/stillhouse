@@ -28,6 +28,7 @@ func registerWriteTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addAddMashReading(s, d, user)
 	addSaveRecipeVersionSensory(s, d, user)
 	addSaveRecipeVersionWhiskySensory(s, d, user)
+	addSetWorkOrderStatus(s, d, user)
 }
 
 func addFillBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
@@ -381,4 +382,65 @@ func derefFloat(p *float64) float64 {
 		return 0
 	}
 	return *p
+}
+
+// addSetWorkOrderStatus is the write half of PLAN J4's work-order flow.
+//
+// It is on this surface where SaveWorkOrder is not, and the difference is
+// the shape of the input rather than the risk. Raising a job means a
+// title, a kind, an assignee, a date and a location — five fields that a
+// form asks for at once and a chat asks for one at a time, badly. Moving
+// one along is a single field, and it is the half an operator does with
+// wet hands: started this, finished that.
+//
+// Cancelling is the exception and takes a reason, because a cancelled job
+// with no reason is indistinguishable next month from one nobody got to.
+func addSetWorkOrderStatus(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		WorkOrderID  string `json:"work_order_id" jsonschema:"UUID of the work order"`
+		Status       string `json:"status" jsonschema:"one of: planned, in_progress, done, cancelled"`
+		CancelReason string `json:"cancel_reason,omitempty" jsonschema:"why it was cancelled; required when status is cancelled"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "set_work_order_status",
+		Description: "Move a job along: planned, in_progress, done, or cancelled. " +
+			"Cancelling needs a reason — a cancelled job with none reads next month like one nobody got to.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.WorkOrderService/SetWorkOrderStatus")
+		if err != nil {
+			return nil, nil, err
+		}
+		status, err := workOrderStatusFromName(args.Status)
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		resp, err := d.WorkOrder.SetWorkOrderStatus(ctx, connect.NewRequest(&pb.SetWorkOrderStatusRequest{
+			Id:           args.WorkOrderID,
+			Status:       status,
+			CancelReason: args.CancelReason,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+// workOrderStatusFromName maps the words an operator would say.
+//
+// Deliberately no default: an unrecognised status must not quietly become
+// "planned", which would move a finished job backwards.
+func workOrderStatusFromName(s string) (pb.WorkOrderStatus, error) {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "planned":
+		return pb.WorkOrderStatus_WORK_ORDER_STATUS_PLANNED, nil
+	case "in_progress", "in progress", "started":
+		return pb.WorkOrderStatus_WORK_ORDER_STATUS_IN_PROGRESS, nil
+	case "done", "finished", "complete", "completed":
+		return pb.WorkOrderStatus_WORK_ORDER_STATUS_DONE, nil
+	case "cancelled", "canceled":
+		return pb.WorkOrderStatus_WORK_ORDER_STATUS_CANCELLED, nil
+	}
+	return pb.WorkOrderStatus_WORK_ORDER_STATUS_UNSPECIFIED,
+		fmt.Errorf("%q is not a work-order status; use planned, in_progress, done or cancelled", s)
 }

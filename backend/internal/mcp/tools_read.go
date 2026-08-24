@@ -31,6 +31,7 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addPlanReduction(s, d, user)
 	addPlanBlend(s, d, user)
 	addReviewFiling(s, d, user)
+	addListWorkOrders(s, d, user)
 }
 
 // dashboardOutput is a compact rollup useful as the "what's the state
@@ -638,4 +639,36 @@ func lossPlural(n int32) string {
 		return ""
 	}
 	return "es"
+}
+
+// addListWorkOrders puts the job board on the MCP surface. PLAN J4.
+//
+// The read half of the work-order flow. Multi-row inputs are why most
+// back-office writes stay in the web UI; a board is multi-row to READ,
+// which chat handles perfectly well, and the one write it needs is a
+// single field — see addSetWorkOrderStatus in tools_write.go.
+func addListWorkOrders(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		OpenOnly bool `json:"open_only,omitempty" jsonschema:"only jobs that are still planned or in progress"`
+		Mine     bool `json:"mine,omitempty" jsonschema:"only jobs assigned to you"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name: "list_work_orders",
+		Description: "The job board: what is planned, what is in progress, who it is for and when it is scheduled. " +
+			"Use open_only to see what is outstanding, mine to see your own.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.WorkOrderService/ListWorkOrders")
+		if err != nil {
+			return nil, nil, err
+		}
+		req := &pb.ListWorkOrdersRequest{OpenOnly: args.OpenOnly}
+		if args.Mine {
+			req.AssignedTo = "me"
+		}
+		resp, err := d.WorkOrder.ListWorkOrders(ctx, connect.NewRequest(req))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
 }

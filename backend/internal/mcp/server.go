@@ -41,6 +41,7 @@ type Deps struct {
 	Fermentation  *rpc.FermentationService
 	Mash          *rpc.MashService
 	B266          *rpc.B266Service
+	WorkOrder     *rpc.WorkOrderService
 	Alcoholometry *rpc.AlcoholometryService
 	Logger        *slog.Logger
 }

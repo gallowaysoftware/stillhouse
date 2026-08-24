@@ -147,3 +147,75 @@ func TestFilingNextSteps_BlockersReachTheList(t *testing.T) {
 		t.Errorf("filing blockers did not reach next_steps: %v", steps)
 	}
 }
+
+// PLAN J4's work-order flow. The status mapping is where a chat surface
+// can do real damage: an unrecognised word must not quietly become
+// "planned", which would move a finished job backwards on somebody's
+// board.
+func TestWorkOrderStatusFromName(t *testing.T) {
+	for _, tc := range []struct {
+		in   string
+		want pb.WorkOrderStatus
+	}{
+		{"planned", pb.WorkOrderStatus_WORK_ORDER_STATUS_PLANNED},
+		{"in_progress", pb.WorkOrderStatus_WORK_ORDER_STATUS_IN_PROGRESS},
+		{"in progress", pb.WorkOrderStatus_WORK_ORDER_STATUS_IN_PROGRESS},
+		{"started", pb.WorkOrderStatus_WORK_ORDER_STATUS_IN_PROGRESS},
+		{"  DONE ", pb.WorkOrderStatus_WORK_ORDER_STATUS_DONE},
+		{"finished", pb.WorkOrderStatus_WORK_ORDER_STATUS_DONE},
+		{"cancelled", pb.WorkOrderStatus_WORK_ORDER_STATUS_CANCELLED},
+		{"canceled", pb.WorkOrderStatus_WORK_ORDER_STATUS_CANCELLED},
+	} {
+		got, err := workOrderStatusFromName(tc.in)
+		if err != nil {
+			t.Errorf("%q: %v", tc.in, err)
+			continue
+		}
+		if got != tc.want {
+			t.Errorf("%q: got %v, want %v", tc.in, got, tc.want)
+		}
+	}
+
+	// Anything else is an error, not a default. A model that says
+	// "paused" must be told, not silently understood as planned.
+	for _, bad := range []string{"", "paused", "on hold", "PLANNE", "unspecified"} {
+		got, err := workOrderStatusFromName(bad)
+		if err == nil {
+			t.Errorf("%q was accepted as %v", bad, got)
+		}
+		if got != pb.WorkOrderStatus_WORK_ORDER_STATUS_UNSPECIFIED {
+			t.Errorf("%q returned %v alongside its error", bad, got)
+		}
+	}
+}
+
+// The board read is a read and the status change is a write, and the role
+// gate has to see them that way — a viewer must not be able to move
+// somebody's job.
+func TestWorkOrderToolsAreClassifiedCorrectly(t *testing.T) {
+	if err := rpc.AuthorizeProcedure(
+		"/stillhouse.v1.WorkOrderService/ListWorkOrders", sqlcgen.UserRoleViewer); err != nil {
+		t.Errorf("a viewer cannot read the board: %v", err)
+	}
+	if err := rpc.AuthorizeProcedure(
+		"/stillhouse.v1.WorkOrderService/SetWorkOrderStatus", sqlcgen.UserRoleViewer); err == nil {
+		t.Error("a viewer can move a job along — that is a write")
+	}
+	if err := rpc.AuthorizeProcedure(
+		"/stillhouse.v1.WorkOrderService/SetWorkOrderStatus", sqlcgen.UserRoleOperator); err != nil {
+		t.Errorf("an operator cannot move a job along: %v", err)
+	}
+	// Raising a job stays off this surface: five fields a form asks at
+	// once and a chat asks one at a time, badly.
+	b, err := os.ReadFile("tools_write.go")
+	if err != nil {
+		t.Fatalf("read: %v", err)
+	}
+	// The call, not the word: this file's own comments explain why
+	// SaveWorkOrder is absent, and a substring check reads those as the
+	// thing they are warning about.
+	if strings.Contains(string(b), "d.WorkOrder.SaveWorkOrder(") ||
+		strings.Contains(string(b), `guard(ctx, user, "/stillhouse.v1.WorkOrderService/SaveWorkOrder")`) {
+		t.Error("SaveWorkOrder reached the MCP surface — multi-field creation belongs in the web UI")
+	}
+}

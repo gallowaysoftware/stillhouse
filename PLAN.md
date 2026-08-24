@@ -410,12 +410,17 @@ in the web UI where it belongs.
 What is left of this item is the other two flows named here, and they are
 not the same shape as each other:
 
-- **Work-order status** — a status read and a status change. The read is
-  straightforward; the write is a single field, so it does translate to
-  chat and is the next one worth doing.
-- **Scheduling** — multi-row by nature. Probably stays in the web UI, and
-  the honest resolution may be to say so here rather than to keep the line
-  open indefinitely.
+- ~~Work-order status~~ — shipped in stage 206 as `list_work_orders` and
+  `set_work_order_status`. Raising a job stays in the web UI: five fields
+  a form asks at once and a chat asks one at a time, badly.
+- **Scheduling** — multi-row by nature, and the honest resolution is to
+  say so rather than keep the line open. Booking a week's work is a board
+  with drag targets, not a conversation. **Closing this bullet as
+  deliberately out of scope for the MCP surface**; if it ever belongs
+  anywhere it is as a read — "what is on the still on Thursday" — which
+  `list_work_orders` already answers.
+
+J4 is done.
 
 ---
 

@@ -231,6 +231,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		Fermentation:  fermentationSvc,
 		Mash:          mashSvc,
 		B266:          b266Svc,
+		WorkOrder:     workOrderSvc,
 		Alcoholometry: alcoholometrySvc,
 		Logger:        logger,
 	}))
