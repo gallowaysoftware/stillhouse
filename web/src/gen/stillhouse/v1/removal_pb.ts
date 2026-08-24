@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/removal.proto.
  */
 export const file_stillhouse_v1_removal: GenFile = /*@__PURE__*/
-  fileDesc("ChtzdGlsbGhvdXNlL3YxL3JlbW92YWwucHJvdG8SDXN0aWxsaG91c2UudjEikAUKEFBhY2thZ2luZ1JlbW92YWwSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhIKCnJlbW92YWxfbm8YAyABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRIQCghsb3RfY29kZRgGIAEoCRIUCgxqdXJpc2RpY3Rpb24YByABKAkSFAoMcmVtb3ZhbF9kYXRlGAggASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgJIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAogASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYCyABKAkSEQoJcmVmZXJlbmNlGAwgASgJEhMKC2N1c3RvbWVyX2lkGBggASgJEhUKDWN1c3RvbWVyX25hbWUYGSABKAkSFgoOYm90dGxlX3NpemVfbWwYDSABKAUSFgoOYm90dGxlX2Fidl9wY3QYDiABKAESFAoMdG90YWxfbGl0cmVzGA8gASgBEhEKCXRvdGFsX2xhYRgQIAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgRIAEoARIXCg9kdXR5X2Ftb3VudF9jYWQYEiABKAESDQoFbm90ZXMYEyABKAkSLgoKY3JlYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJdm9pZGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCgl2b2lkZWRfYnkYFiABKAkSFQoNdm9pZGVkX3JlYXNvbhgXIAEoCSL2AQoUQ3JlYXRlUmVtb3ZhbFJlcXVlc3QSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAEgASgJEhQKDHJlbW92YWxfZGF0ZRgCIAEoCRIXCg9ib3R0bGVzX3JlbW92ZWQYAyABKAUSEwoLY3VzdG9tZXJfaWQYCCABKAkSPwoQZGVzdGluYXRpb25fa2luZBgEIAEoDjIlLnN0aWxsaG91c2UudjEuUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIYChBkZXN0aW5hdGlvbl9uYW1lGAUgASgJEhEKCXJlZmVyZW5jZRgGIAEoCRINCgVub3RlcxgHIAEoCSJJChVDcmVhdGVSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCJeChNMaXN0UmVtb3ZhbHNSZXF1ZXN0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg0KBWxpbWl0GAMgASgFEg4KBm9mZnNldBgEIAEoBSJeChRMaXN0UmVtb3ZhbHNSZXNwb25zZRIxCghyZW1vdmFscxgBIAMoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbBITCgt0b3RhbF9jb3VudBgCIAEoBSIwChJWb2lkUmVtb3ZhbFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkcKE1ZvaWRSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCLXAwoOUGFja2FnZWRSZXR1cm4SCgoCaWQYASABKAkSEQoJcmV0dXJuX25vGAIgASgFEh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgDIAEoCRIQCghsb3RfY29kZRgEIAEoCRIUCgxwcm9kdWN0X25hbWUYBSABKAkSEwoLY3VzdG9tZXJfaWQYBiABKAkSFQoNY3VzdG9tZXJfbmFtZRgHIAEoCRISCgpyZW1vdmFsX2lkGAggASgJEg8KB2JvdHRsZXMYCSABKAUSOQoJY29uZGl0aW9uGAogASgOMiYuc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybkNvbmRpdGlvbhITCgtyZXR1cm5lZF9vbhgLIAEoCRIOCgZyZWFzb24YDCABKAkSGQoRY3JlZGl0X2Ftb3VudF9jYWQYDSABKAESGQoRY3JlZGl0X2Ftb3VudF9zZXQYDiABKAgSFgoOY3JlZGl0X25vdGVfbm8YDyABKAkSFQoNZHV0eV9wYWlkX2NhZBgQIAEoARIVCg1kdXR5X3BhaWRfc2V0GBEgASgIEg0KBW5vdGVzGBIgASgJEg4KBnZvaWRlZBgTIAEoCBITCgt2b2lkX3JlYXNvbhgUIAEoCSKzAgobUmVjb3JkUGFja2FnZWRSZXR1cm5SZXF1ZXN0Eh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgBIAEoCRITCgtjdXN0b21lcl9pZBgCIAEoCRISCgpyZW1vdmFsX2lkGAMgASgJEg8KB2JvdHRsZXMYBCABKAUSOQoJY29uZGl0aW9uGAUgASgOMiYuc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybkNvbmRpdGlvbhITCgtyZXR1cm5lZF9vbhgGIAEoCRIOCgZyZWFzb24YByABKAkSGQoRY3JlZGl0X2Ftb3VudF9jYWQYCCABKAESGQoRY3JlZGl0X2Ftb3VudF9zZXQYCSABKAgSFgoOY3JlZGl0X25vdGVfbm8YCiABKAkSDQoFbm90ZXMYCyABKAkiaQocUmVjb3JkUGFja2FnZWRSZXR1cm5SZXNwb25zZRI2Cg9wYWNrYWdlZF9yZXR1cm4YASABKAsyHS5zdGlsbGhvdXNlLnYxLlBhY2thZ2VkUmV0dXJuEhEKCWR1dHlfbm90ZRgCIAEoCSIrChpMaXN0UGFja2FnZWRSZXR1cm5zUmVxdWVzdBINCgVsaW1pdBgBIAEoBSJNChtMaXN0UGFja2FnZWRSZXR1cm5zUmVzcG9uc2USLgoHcmV0dXJucxgBIAMoCzIdLnN0aWxsaG91c2UudjEuUGFja2FnZWRSZXR1cm4iNwoZVm9pZFBhY2thZ2VkUmV0dXJuUmVxdWVzdBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkiVAoaVm9pZFBhY2thZ2VkUmV0dXJuUmVzcG9uc2USNgoPcGFja2FnZWRfcmV0dXJuGAEgASgLMh0uc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybiq8AgoWUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIoCiRSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIvCitSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfRFVUWV9QQUlEX0NVU1RPTUVSEAESIwofUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0VYUE9SVBACEiMKH1JFTU9WQUxfREVTVElOQVRJT05fS0lORF9TQU1QTEUQAxImCiJSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfREVTVFJPWUVEEAQSMQotUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX1RSQU5TRkVSX09VVF9JTl9CT05EEAUSIgoeUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX09USEVSEAYqlgEKF1BhY2thZ2VkUmV0dXJuQ29uZGl0aW9uEikKJVBBQ0tBR0VEX1JFVFVSTl9DT05ESVRJT05fVU5TUEVDSUZJRUQQABImCiJQQUNLQUdFRF9SRVRVUk5fQ09ORElUSU9OX1NBTEVBQkxFEAESKAokUEFDS0FHRURfUkVUVVJOX0NPTkRJVElPTl9VTlNBTEVBQkxFEAIy5QQKDlJlbW92YWxTZXJ2aWNlEloKDUNyZWF0ZVJlbW92YWwSIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVJlbW92YWxSZXF1ZXN0GiQuc3RpbGxob3VzZS52MS5DcmVhdGVSZW1vdmFsUmVzcG9uc2USVwoMTGlzdFJlbW92YWxzEiIuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5MaXN0UmVtb3ZhbHNSZXNwb25zZRJUCgtWb2lkUmVtb3ZhbBIhLnN0aWxsaG91c2UudjEuVm9pZFJlbW92YWxSZXF1ZXN0GiIuc3RpbGxob3VzZS52MS5Wb2lkUmVtb3ZhbFJlc3BvbnNlEm8KFFJlY29yZFBhY2thZ2VkUmV0dXJuEiouc3RpbGxob3VzZS52MS5SZWNvcmRQYWNrYWdlZFJldHVyblJlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLlJlY29yZFBhY2thZ2VkUmV0dXJuUmVzcG9uc2USbAoTTGlzdFBhY2thZ2VkUmV0dXJucxIpLnN0aWxsaG91c2UudjEuTGlzdFBhY2thZ2VkUmV0dXJuc1JlcXVlc3QaKi5zdGlsbGhvdXNlLnYxLkxpc3RQYWNrYWdlZFJldHVybnNSZXNwb25zZRJpChJWb2lkUGFja2FnZWRSZXR1cm4SKC5zdGlsbGhvdXNlLnYxLlZvaWRQYWNrYWdlZFJldHVyblJlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLlZvaWRQYWNrYWdlZFJldHVyblJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChtzdGlsbGhvdXNlL3YxL3JlbW92YWwucHJvdG8SDXN0aWxsaG91c2UudjEikAUKEFBhY2thZ2luZ1JlbW92YWwSCgoCaWQYASABKAkSEQoJdGVuYW50X2lkGAIgASgJEhIKCnJlbW92YWxfbm8YAyABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRIQCghsb3RfY29kZRgGIAEoCRIUCgxqdXJpc2RpY3Rpb24YByABKAkSFAoMcmVtb3ZhbF9kYXRlGAggASgJEhcKD2JvdHRsZXNfcmVtb3ZlZBgJIAEoBRI/ChBkZXN0aW5hdGlvbl9raW5kGAogASgOMiUuc3RpbGxob3VzZS52MS5SZW1vdmFsRGVzdGluYXRpb25LaW5kEhgKEGRlc3RpbmF0aW9uX25hbWUYCyABKAkSEQoJcmVmZXJlbmNlGAwgASgJEhMKC2N1c3RvbWVyX2lkGBggASgJEhUKDWN1c3RvbWVyX25hbWUYGSABKAkSFgoOYm90dGxlX3NpemVfbWwYDSABKAUSFgoOYm90dGxlX2Fidl9wY3QYDiABKAESFAoMdG90YWxfbGl0cmVzGA8gASgBEhEKCXRvdGFsX2xhYRgQIAEoARIZChFkdXR5X3JhdGVfcGVyX2xhYRgRIAEoARIXCg9kdXR5X2Ftb3VudF9jYWQYEiABKAESDQoFbm90ZXMYEyABKAkSLgoKY3JlYXRlZF9hdBgUIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLQoJdm9pZGVkX2F0GBUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIRCgl2b2lkZWRfYnkYFiABKAkSFQoNdm9pZGVkX3JlYXNvbhgXIAEoCSL2AQoUQ3JlYXRlUmVtb3ZhbFJlcXVlc3QSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAEgASgJEhQKDHJlbW92YWxfZGF0ZRgCIAEoCRIXCg9ib3R0bGVzX3JlbW92ZWQYAyABKAUSEwoLY3VzdG9tZXJfaWQYCCABKAkSPwoQZGVzdGluYXRpb25fa2luZBgEIAEoDjIlLnN0aWxsaG91c2UudjEuUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIYChBkZXN0aW5hdGlvbl9uYW1lGAUgASgJEhEKCXJlZmVyZW5jZRgGIAEoCRINCgVub3RlcxgHIAEoCSJJChVDcmVhdGVSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCJeChNMaXN0UmVtb3ZhbHNSZXF1ZXN0EhQKDHBlcmlvZF9zdGFydBgBIAEoCRISCgpwZXJpb2RfZW5kGAIgASgJEg0KBWxpbWl0GAMgASgFEg4KBm9mZnNldBgEIAEoBSJeChRMaXN0UmVtb3ZhbHNSZXNwb25zZRIxCghyZW1vdmFscxgBIAMoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbBITCgt0b3RhbF9jb3VudBgCIAEoBSIwChJWb2lkUmVtb3ZhbFJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkcKE1ZvaWRSZW1vdmFsUmVzcG9uc2USMAoHcmVtb3ZhbBgBIAEoCzIfLnN0aWxsaG91c2UudjEuUGFja2FnaW5nUmVtb3ZhbCLXAwoOUGFja2FnZWRSZXR1cm4SCgoCaWQYASABKAkSEQoJcmV0dXJuX25vGAIgASgFEh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgDIAEoCRIQCghsb3RfY29kZRgEIAEoCRIUCgxwcm9kdWN0X25hbWUYBSABKAkSEwoLY3VzdG9tZXJfaWQYBiABKAkSFQoNY3VzdG9tZXJfbmFtZRgHIAEoCRISCgpyZW1vdmFsX2lkGAggASgJEg8KB2JvdHRsZXMYCSABKAUSOQoJY29uZGl0aW9uGAogASgOMiYuc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybkNvbmRpdGlvbhITCgtyZXR1cm5lZF9vbhgLIAEoCRIOCgZyZWFzb24YDCABKAkSGQoRY3JlZGl0X2Ftb3VudF9jYWQYDSABKAESGQoRY3JlZGl0X2Ftb3VudF9zZXQYDiABKAgSFgoOY3JlZGl0X25vdGVfbm8YDyABKAkSFQoNZHV0eV9wYWlkX2NhZBgQIAEoARIVCg1kdXR5X3BhaWRfc2V0GBEgASgIEg0KBW5vdGVzGBIgASgJEg4KBnZvaWRlZBgTIAEoCBITCgt2b2lkX3JlYXNvbhgUIAEoCSKzAgobUmVjb3JkUGFja2FnZWRSZXR1cm5SZXF1ZXN0Eh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgBIAEoCRITCgtjdXN0b21lcl9pZBgCIAEoCRISCgpyZW1vdmFsX2lkGAMgASgJEg8KB2JvdHRsZXMYBCABKAUSOQoJY29uZGl0aW9uGAUgASgOMiYuc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybkNvbmRpdGlvbhITCgtyZXR1cm5lZF9vbhgGIAEoCRIOCgZyZWFzb24YByABKAkSGQoRY3JlZGl0X2Ftb3VudF9jYWQYCCABKAESGQoRY3JlZGl0X2Ftb3VudF9zZXQYCSABKAgSFgoOY3JlZGl0X25vdGVfbm8YCiABKAkSDQoFbm90ZXMYCyABKAkiaQocUmVjb3JkUGFja2FnZWRSZXR1cm5SZXNwb25zZRI2Cg9wYWNrYWdlZF9yZXR1cm4YASABKAsyHS5zdGlsbGhvdXNlLnYxLlBhY2thZ2VkUmV0dXJuEhEKCWR1dHlfbm90ZRgCIAEoCSIrChpMaXN0UGFja2FnZWRSZXR1cm5zUmVxdWVzdBINCgVsaW1pdBgBIAEoBSJNChtMaXN0UGFja2FnZWRSZXR1cm5zUmVzcG9uc2USLgoHcmV0dXJucxgBIAMoCzIdLnN0aWxsaG91c2UudjEuUGFja2FnZWRSZXR1cm4iNwoZVm9pZFBhY2thZ2VkUmV0dXJuUmVxdWVzdBIKCgJpZBgBIAEoCRIOCgZyZWFzb24YAiABKAkiVAoaVm9pZFBhY2thZ2VkUmV0dXJuUmVzcG9uc2USNgoPcGFja2FnZWRfcmV0dXJuGAEgASgLMh0uc3RpbGxob3VzZS52MS5QYWNrYWdlZFJldHVybiLjAgoLQ29uc2lnbm1lbnQSCgoCaWQYASABKAkSFgoOY29uc2lnbm1lbnRfbm8YAiABKAUSHQoVcGFja2FnZWRfaW52ZW50b3J5X2lkGAMgASgJEhAKCGxvdF9jb2RlGAQgASgJEhQKDHByb2R1Y3RfbmFtZRgFIAEoCRITCgtjdXN0b21lcl9pZBgGIAEoCRIVCg1jdXN0b21lcl9uYW1lGAcgASgJEg8KB2JvdHRsZXMYCCABKAUSFwoPYm90dGxlc19zZXR0bGVkGAkgASgFEhgKEGJvdHRsZXNfcmVjYWxsZWQYCiABKAUSEwoLYm90dGxlc19vdXQYCyABKAUSMAoGc3RhdHVzGAwgASgOMiAuc3RpbGxob3VzZS52MS5Db25zaWdubWVudFN0YXR1cxIPCgdzZW50X29uGA0gASgJEhIKCnNldHRsZWRfb24YDiABKAkSDQoFbm90ZXMYDyABKAkifwoYU2VuZE9uQ29uc2lnbm1lbnRSZXF1ZXN0Eh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgBIAEoCRITCgtjdXN0b21lcl9pZBgCIAEoCRIPCgdib3R0bGVzGAMgASgFEg8KB3NlbnRfb24YBCABKAkSDQoFbm90ZXMYBSABKAkiXwoZU2VuZE9uQ29uc2lnbm1lbnRSZXNwb25zZRIvCgtjb25zaWdubWVudBgBIAEoCzIaLnN0aWxsaG91c2UudjEuQ29uc2lnbm1lbnQSEQoJZHV0eV9ub3RlGAIgASgJImIKGFNldHRsZUNvbnNpZ25tZW50UmVxdWVzdBIKCgJpZBgBIAEoCRIUCgxib3R0bGVzX3NvbGQYAiABKAUSGAoQYm90dGxlc19yZWNhbGxlZBgDIAEoBRIKCgJvbhgEIAEoCSJMChlTZXR0bGVDb25zaWdubWVudFJlc3BvbnNlEi8KC2NvbnNpZ25tZW50GAEgASgLMhouc3RpbGxob3VzZS52MS5Db25zaWdubWVudCIoChdMaXN0Q29uc2lnbm1lbnRzUmVxdWVzdBINCgVsaW1pdBgBIAEoBSJ8ChhMaXN0Q29uc2lnbm1lbnRzUmVzcG9uc2USMAoMY29uc2lnbm1lbnRzGAEgAygLMhouc3RpbGxob3VzZS52MS5Db25zaWdubWVudBIZChFvcGVuX2NvbnNpZ25tZW50cxgCIAEoBRITCgtib3R0bGVzX291dBgDIAEoBSq8AgoWUmVtb3ZhbERlc3RpbmF0aW9uS2luZBIoCiRSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfVU5TUEVDSUZJRUQQABIvCitSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfRFVUWV9QQUlEX0NVU1RPTUVSEAESIwofUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX0VYUE9SVBACEiMKH1JFTU9WQUxfREVTVElOQVRJT05fS0lORF9TQU1QTEUQAxImCiJSRU1PVkFMX0RFU1RJTkFUSU9OX0tJTkRfREVTVFJPWUVEEAQSMQotUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX1RSQU5TRkVSX09VVF9JTl9CT05EEAUSIgoeUkVNT1ZBTF9ERVNUSU5BVElPTl9LSU5EX09USEVSEAYqlgEKF1BhY2thZ2VkUmV0dXJuQ29uZGl0aW9uEikKJVBBQ0tBR0VEX1JFVFVSTl9DT05ESVRJT05fVU5TUEVDSUZJRUQQABImCiJQQUNLQUdFRF9SRVRVUk5fQ09ORElUSU9OX1NBTEVBQkxFEAESKAokUEFDS0FHRURfUkVUVVJOX0NPTkRJVElPTl9VTlNBTEVBQkxFEAIqlAEKEUNvbnNpZ25tZW50U3RhdHVzEiIKHkNPTlNJR05NRU5UX1NUQVRVU19VTlNQRUNJRklFRBAAEhoKFkNPTlNJR05NRU5UX1NUQVRVU19PVVQQARIeChpDT05TSUdOTUVOVF9TVEFUVVNfU0VUVExFRBACEh8KG0NPTlNJR05NRU5UX1NUQVRVU19SRUNBTExFRBADMpoHCg5SZW1vdmFsU2VydmljZRJaCg1DcmVhdGVSZW1vdmFsEiMuc3RpbGxob3VzZS52MS5DcmVhdGVSZW1vdmFsUmVxdWVzdBokLnN0aWxsaG91c2UudjEuQ3JlYXRlUmVtb3ZhbFJlc3BvbnNlElcKDExpc3RSZW1vdmFscxIiLnN0aWxsaG91c2UudjEuTGlzdFJlbW92YWxzUmVxdWVzdBojLnN0aWxsaG91c2UudjEuTGlzdFJlbW92YWxzUmVzcG9uc2USVAoLVm9pZFJlbW92YWwSIS5zdGlsbGhvdXNlLnYxLlZvaWRSZW1vdmFsUmVxdWVzdBoiLnN0aWxsaG91c2UudjEuVm9pZFJlbW92YWxSZXNwb25zZRJvChRSZWNvcmRQYWNrYWdlZFJldHVybhIqLnN0aWxsaG91c2UudjEuUmVjb3JkUGFja2FnZWRSZXR1cm5SZXF1ZXN0Gisuc3RpbGxob3VzZS52MS5SZWNvcmRQYWNrYWdlZFJldHVyblJlc3BvbnNlEmwKE0xpc3RQYWNrYWdlZFJldHVybnMSKS5zdGlsbGhvdXNlLnYxLkxpc3RQYWNrYWdlZFJldHVybnNSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5MaXN0UGFja2FnZWRSZXR1cm5zUmVzcG9uc2USaQoSVm9pZFBhY2thZ2VkUmV0dXJuEiguc3RpbGxob3VzZS52MS5Wb2lkUGFja2FnZWRSZXR1cm5SZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5Wb2lkUGFja2FnZWRSZXR1cm5SZXNwb25zZRJmChFTZW5kT25Db25zaWdubWVudBInLnN0aWxsaG91c2UudjEuU2VuZE9uQ29uc2lnbm1lbnRSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5TZW5kT25Db25zaWdubWVudFJlc3BvbnNlEmYKEVNldHRsZUNvbnNpZ25tZW50Eicuc3RpbGxob3VzZS52MS5TZXR0bGVDb25zaWdubWVudFJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNldHRsZUNvbnNpZ25tZW50UmVzcG9uc2USYwoQTGlzdENvbnNpZ25tZW50cxImLnN0aWxsaG91c2UudjEuTGlzdENvbnNpZ25tZW50c1JlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLkxpc3RDb25zaWdubWVudHNSZXNwb25zZWIGcHJvdG8z", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.PackagingRemoval
@@ -606,6 +606,257 @@ export const VoidPackagedReturnResponseSchema: GenMessage<VoidPackagedReturnResp
   messageDesc(file_stillhouse_v1_removal, 13);
 
 /**
+ * @generated from message stillhouse.v1.Consignment
+ */
+export type Consignment = Message<"stillhouse.v1.Consignment"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: int32 consignment_no = 2;
+   */
+  consignmentNo: number;
+
+  /**
+   * @generated from field: string packaged_inventory_id = 3;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: string lot_code = 4;
+   */
+  lotCode: string;
+
+  /**
+   * @generated from field: string product_name = 5;
+   */
+  productName: string;
+
+  /**
+   * @generated from field: string customer_id = 6;
+   */
+  customerId: string;
+
+  /**
+   * @generated from field: string customer_name = 7;
+   */
+  customerName: string;
+
+  /**
+   * @generated from field: int32 bottles = 8;
+   */
+  bottles: number;
+
+  /**
+   * @generated from field: int32 bottles_settled = 9;
+   */
+  bottlesSettled: number;
+
+  /**
+   * @generated from field: int32 bottles_recalled = 10;
+   */
+  bottlesRecalled: number;
+
+  /**
+   * Still at the customer, unsold. The three always reconcile against
+   * bottles.
+   *
+   * @generated from field: int32 bottles_out = 11;
+   */
+  bottlesOut: number;
+
+  /**
+   * @generated from field: stillhouse.v1.ConsignmentStatus status = 12;
+   */
+  status: ConsignmentStatus;
+
+  /**
+   * @generated from field: string sent_on = 13;
+   */
+  sentOn: string;
+
+  /**
+   * @generated from field: string settled_on = 14;
+   */
+  settledOn: string;
+
+  /**
+   * @generated from field: string notes = 15;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.Consignment.
+ * Use `create(ConsignmentSchema)` to create a new message.
+ */
+export const ConsignmentSchema: GenMessage<Consignment> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 14);
+
+/**
+ * @generated from message stillhouse.v1.SendOnConsignmentRequest
+ */
+export type SendOnConsignmentRequest = Message<"stillhouse.v1.SendOnConsignmentRequest"> & {
+  /**
+   * @generated from field: string packaged_inventory_id = 1;
+   */
+  packagedInventoryId: string;
+
+  /**
+   * @generated from field: string customer_id = 2;
+   */
+  customerId: string;
+
+  /**
+   * @generated from field: int32 bottles = 3;
+   */
+  bottles: number;
+
+  /**
+   * @generated from field: string sent_on = 4;
+   */
+  sentOn: string;
+
+  /**
+   * @generated from field: string notes = 5;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SendOnConsignmentRequest.
+ * Use `create(SendOnConsignmentRequestSchema)` to create a new message.
+ */
+export const SendOnConsignmentRequestSchema: GenMessage<SendOnConsignmentRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 15);
+
+/**
+ * @generated from message stillhouse.v1.SendOnConsignmentResponse
+ */
+export type SendOnConsignmentResponse = Message<"stillhouse.v1.SendOnConsignmentResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.Consignment consignment = 1;
+   */
+  consignment?: Consignment | undefined;
+
+  /**
+   * Said on every response, because an operator sending stock out will
+   * otherwise assume it has been removed.
+   *
+   * @generated from field: string duty_note = 2;
+   */
+  dutyNote: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SendOnConsignmentResponse.
+ * Use `create(SendOnConsignmentResponseSchema)` to create a new message.
+ */
+export const SendOnConsignmentResponseSchema: GenMessage<SendOnConsignmentResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 16);
+
+/**
+ * @generated from message stillhouse.v1.SettleConsignmentRequest
+ */
+export type SettleConsignmentRequest = Message<"stillhouse.v1.SettleConsignmentRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * Sold through. A removal is recorded for these, which is the point at
+   * which they leave stock.
+   *
+   * @generated from field: int32 bottles_sold = 2;
+   */
+  bottlesSold: number;
+
+  /**
+   * Came back unsold. Not a return under stage 198 — a return is stock
+   * that was sold and came back; this never sold.
+   *
+   * @generated from field: int32 bottles_recalled = 3;
+   */
+  bottlesRecalled: number;
+
+  /**
+   * @generated from field: string on = 4;
+   */
+  on: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.SettleConsignmentRequest.
+ * Use `create(SettleConsignmentRequestSchema)` to create a new message.
+ */
+export const SettleConsignmentRequestSchema: GenMessage<SettleConsignmentRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 17);
+
+/**
+ * @generated from message stillhouse.v1.SettleConsignmentResponse
+ */
+export type SettleConsignmentResponse = Message<"stillhouse.v1.SettleConsignmentResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.Consignment consignment = 1;
+   */
+  consignment?: Consignment | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.SettleConsignmentResponse.
+ * Use `create(SettleConsignmentResponseSchema)` to create a new message.
+ */
+export const SettleConsignmentResponseSchema: GenMessage<SettleConsignmentResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 18);
+
+/**
+ * @generated from message stillhouse.v1.ListConsignmentsRequest
+ */
+export type ListConsignmentsRequest = Message<"stillhouse.v1.ListConsignmentsRequest"> & {
+  /**
+   * @generated from field: int32 limit = 1;
+   */
+  limit: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListConsignmentsRequest.
+ * Use `create(ListConsignmentsRequestSchema)` to create a new message.
+ */
+export const ListConsignmentsRequestSchema: GenMessage<ListConsignmentsRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 19);
+
+/**
+ * @generated from message stillhouse.v1.ListConsignmentsResponse
+ */
+export type ListConsignmentsResponse = Message<"stillhouse.v1.ListConsignmentsResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.Consignment consignments = 1;
+   */
+  consignments: Consignment[];
+
+  /**
+   * @generated from field: int32 open_consignments = 2;
+   */
+  openConsignments: number;
+
+  /**
+   * @generated from field: int32 bottles_out = 3;
+   */
+  bottlesOut: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.ListConsignmentsResponse.
+ * Use `create(ListConsignmentsResponseSchema)` to create a new message.
+ */
+export const ListConsignmentsResponseSchema: GenMessage<ListConsignmentsResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_removal, 20);
+
+/**
  * @generated from enum stillhouse.v1.RemovalDestinationKind
  */
 export enum RemovalDestinationKind {
@@ -697,6 +948,54 @@ export const PackagedReturnConditionSchema: GenEnum<PackagedReturnCondition> = /
   enumDesc(file_stillhouse_v1_removal, 1);
 
 /**
+ * Consignment: our stock, at somebody else's premises. PLAN D7.
+ *
+ * The excise question is the whole of it, and Stillhouse answers it
+ * explicitly rather than by omission: a consignment is NOT a removal. The
+ * stock stays on hand, marked as being at a customer, and a removal is
+ * recorded when it sells through.
+ *
+ * That is the ordinary accounting treatment and the safe one. At an
+ * at-packaging duty point duty crystallised already and consignment
+ * changes nothing; at an at-removal duty point, recording the removal
+ * later errs toward reporting duty late rather than never — and a return
+ * that reports duty a month late is a correctable mistake where one that
+ * never reports it is not.
+ *
+ * A licensee whose own arrangement treats the shipment itself as the
+ * removal records a removal when it ships and does not use this.
+ *
+ * @generated from enum stillhouse.v1.ConsignmentStatus
+ */
+export enum ConsignmentStatus {
+  /**
+   * @generated from enum value: CONSIGNMENT_STATUS_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: CONSIGNMENT_STATUS_OUT = 1;
+   */
+  OUT = 1,
+
+  /**
+   * @generated from enum value: CONSIGNMENT_STATUS_SETTLED = 2;
+   */
+  SETTLED = 2,
+
+  /**
+   * @generated from enum value: CONSIGNMENT_STATUS_RECALLED = 3;
+   */
+  RECALLED = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.ConsignmentStatus.
+ */
+export const ConsignmentStatusSchema: GenEnum<ConsignmentStatus> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_removal, 2);
+
+/**
  * @generated from service stillhouse.v1.RemovalService
  */
 export const RemovalService: GenService<{
@@ -750,6 +1049,33 @@ export const RemovalService: GenService<{
     methodKind: "unary";
     input: typeof VoidPackagedReturnRequestSchema;
     output: typeof VoidPackagedReturnResponseSchema;
+  },
+  /**
+   * Consignment: our stock at somebody else's premises. Not a removal —
+   * see ConsignmentStatus.
+   *
+   * @generated from rpc stillhouse.v1.RemovalService.SendOnConsignment
+   */
+  sendOnConsignment: {
+    methodKind: "unary";
+    input: typeof SendOnConsignmentRequestSchema;
+    output: typeof SendOnConsignmentResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.RemovalService.SettleConsignment
+   */
+  settleConsignment: {
+    methodKind: "unary";
+    input: typeof SettleConsignmentRequestSchema;
+    output: typeof SettleConsignmentResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.RemovalService.ListConsignments
+   */
+  listConsignments: {
+    methodKind: "unary";
+    input: typeof ListConsignmentsRequestSchema;
+    output: typeof ListConsignmentsResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_removal, 0);

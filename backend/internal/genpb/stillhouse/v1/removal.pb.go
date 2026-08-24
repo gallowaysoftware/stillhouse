@@ -148,6 +148,74 @@ func (PackagedReturnCondition) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{1}
 }
 
+// Consignment: our stock, at somebody else's premises. PLAN D7.
+//
+// The excise question is the whole of it, and Stillhouse answers it
+// explicitly rather than by omission: a consignment is NOT a removal. The
+// stock stays on hand, marked as being at a customer, and a removal is
+// recorded when it sells through.
+//
+// That is the ordinary accounting treatment and the safe one. At an
+// at-packaging duty point duty crystallised already and consignment
+// changes nothing; at an at-removal duty point, recording the removal
+// later errs toward reporting duty late rather than never — and a return
+// that reports duty a month late is a correctable mistake where one that
+// never reports it is not.
+//
+// A licensee whose own arrangement treats the shipment itself as the
+// removal records a removal when it ships and does not use this.
+type ConsignmentStatus int32
+
+const (
+	ConsignmentStatus_CONSIGNMENT_STATUS_UNSPECIFIED ConsignmentStatus = 0
+	ConsignmentStatus_CONSIGNMENT_STATUS_OUT         ConsignmentStatus = 1
+	ConsignmentStatus_CONSIGNMENT_STATUS_SETTLED     ConsignmentStatus = 2
+	ConsignmentStatus_CONSIGNMENT_STATUS_RECALLED    ConsignmentStatus = 3
+)
+
+// Enum value maps for ConsignmentStatus.
+var (
+	ConsignmentStatus_name = map[int32]string{
+		0: "CONSIGNMENT_STATUS_UNSPECIFIED",
+		1: "CONSIGNMENT_STATUS_OUT",
+		2: "CONSIGNMENT_STATUS_SETTLED",
+		3: "CONSIGNMENT_STATUS_RECALLED",
+	}
+	ConsignmentStatus_value = map[string]int32{
+		"CONSIGNMENT_STATUS_UNSPECIFIED": 0,
+		"CONSIGNMENT_STATUS_OUT":         1,
+		"CONSIGNMENT_STATUS_SETTLED":     2,
+		"CONSIGNMENT_STATUS_RECALLED":    3,
+	}
+)
+
+func (x ConsignmentStatus) Enum() *ConsignmentStatus {
+	p := new(ConsignmentStatus)
+	*p = x
+	return p
+}
+
+func (x ConsignmentStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ConsignmentStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_removal_proto_enumTypes[2].Descriptor()
+}
+
+func (ConsignmentStatus) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_removal_proto_enumTypes[2]
+}
+
+func (x ConsignmentStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ConsignmentStatus.Descriptor instead.
+func (ConsignmentStatus) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{2}
+}
+
 type PackagingRemoval struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -1311,6 +1379,514 @@ func (x *VoidPackagedReturnResponse) GetPackagedReturn() *PackagedReturn {
 	return nil
 }
 
+type Consignment struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Id                  string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ConsignmentNo       int32                  `protobuf:"varint,2,opt,name=consignment_no,json=consignmentNo,proto3" json:"consignment_no,omitempty"`
+	PackagedInventoryId string                 `protobuf:"bytes,3,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
+	LotCode             string                 `protobuf:"bytes,4,opt,name=lot_code,json=lotCode,proto3" json:"lot_code,omitempty"`
+	ProductName         string                 `protobuf:"bytes,5,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	CustomerId          string                 `protobuf:"bytes,6,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName        string                 `protobuf:"bytes,7,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	Bottles             int32                  `protobuf:"varint,8,opt,name=bottles,proto3" json:"bottles,omitempty"`
+	BottlesSettled      int32                  `protobuf:"varint,9,opt,name=bottles_settled,json=bottlesSettled,proto3" json:"bottles_settled,omitempty"`
+	BottlesRecalled     int32                  `protobuf:"varint,10,opt,name=bottles_recalled,json=bottlesRecalled,proto3" json:"bottles_recalled,omitempty"`
+	// Still at the customer, unsold. The three always reconcile against
+	// bottles.
+	BottlesOut    int32             `protobuf:"varint,11,opt,name=bottles_out,json=bottlesOut,proto3" json:"bottles_out,omitempty"`
+	Status        ConsignmentStatus `protobuf:"varint,12,opt,name=status,proto3,enum=stillhouse.v1.ConsignmentStatus" json:"status,omitempty"`
+	SentOn        string            `protobuf:"bytes,13,opt,name=sent_on,json=sentOn,proto3" json:"sent_on,omitempty"`
+	SettledOn     string            `protobuf:"bytes,14,opt,name=settled_on,json=settledOn,proto3" json:"settled_on,omitempty"`
+	Notes         string            `protobuf:"bytes,15,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Consignment) Reset() {
+	*x = Consignment{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Consignment) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Consignment) ProtoMessage() {}
+
+func (x *Consignment) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Consignment.ProtoReflect.Descriptor instead.
+func (*Consignment) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *Consignment) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *Consignment) GetConsignmentNo() int32 {
+	if x != nil {
+		return x.ConsignmentNo
+	}
+	return 0
+}
+
+func (x *Consignment) GetPackagedInventoryId() string {
+	if x != nil {
+		return x.PackagedInventoryId
+	}
+	return ""
+}
+
+func (x *Consignment) GetLotCode() string {
+	if x != nil {
+		return x.LotCode
+	}
+	return ""
+}
+
+func (x *Consignment) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *Consignment) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *Consignment) GetCustomerName() string {
+	if x != nil {
+		return x.CustomerName
+	}
+	return ""
+}
+
+func (x *Consignment) GetBottles() int32 {
+	if x != nil {
+		return x.Bottles
+	}
+	return 0
+}
+
+func (x *Consignment) GetBottlesSettled() int32 {
+	if x != nil {
+		return x.BottlesSettled
+	}
+	return 0
+}
+
+func (x *Consignment) GetBottlesRecalled() int32 {
+	if x != nil {
+		return x.BottlesRecalled
+	}
+	return 0
+}
+
+func (x *Consignment) GetBottlesOut() int32 {
+	if x != nil {
+		return x.BottlesOut
+	}
+	return 0
+}
+
+func (x *Consignment) GetStatus() ConsignmentStatus {
+	if x != nil {
+		return x.Status
+	}
+	return ConsignmentStatus_CONSIGNMENT_STATUS_UNSPECIFIED
+}
+
+func (x *Consignment) GetSentOn() string {
+	if x != nil {
+		return x.SentOn
+	}
+	return ""
+}
+
+func (x *Consignment) GetSettledOn() string {
+	if x != nil {
+		return x.SettledOn
+	}
+	return ""
+}
+
+func (x *Consignment) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+type SendOnConsignmentRequest struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	PackagedInventoryId string                 `protobuf:"bytes,1,opt,name=packaged_inventory_id,json=packagedInventoryId,proto3" json:"packaged_inventory_id,omitempty"`
+	CustomerId          string                 `protobuf:"bytes,2,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	Bottles             int32                  `protobuf:"varint,3,opt,name=bottles,proto3" json:"bottles,omitempty"`
+	SentOn              string                 `protobuf:"bytes,4,opt,name=sent_on,json=sentOn,proto3" json:"sent_on,omitempty"`
+	Notes               string                 `protobuf:"bytes,5,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
+}
+
+func (x *SendOnConsignmentRequest) Reset() {
+	*x = SendOnConsignmentRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendOnConsignmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendOnConsignmentRequest) ProtoMessage() {}
+
+func (x *SendOnConsignmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendOnConsignmentRequest.ProtoReflect.Descriptor instead.
+func (*SendOnConsignmentRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SendOnConsignmentRequest) GetPackagedInventoryId() string {
+	if x != nil {
+		return x.PackagedInventoryId
+	}
+	return ""
+}
+
+func (x *SendOnConsignmentRequest) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
+func (x *SendOnConsignmentRequest) GetBottles() int32 {
+	if x != nil {
+		return x.Bottles
+	}
+	return 0
+}
+
+func (x *SendOnConsignmentRequest) GetSentOn() string {
+	if x != nil {
+		return x.SentOn
+	}
+	return ""
+}
+
+func (x *SendOnConsignmentRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+type SendOnConsignmentResponse struct {
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Consignment *Consignment           `protobuf:"bytes,1,opt,name=consignment,proto3" json:"consignment,omitempty"`
+	// Said on every response, because an operator sending stock out will
+	// otherwise assume it has been removed.
+	DutyNote      string `protobuf:"bytes,2,opt,name=duty_note,json=dutyNote,proto3" json:"duty_note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendOnConsignmentResponse) Reset() {
+	*x = SendOnConsignmentResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendOnConsignmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendOnConsignmentResponse) ProtoMessage() {}
+
+func (x *SendOnConsignmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendOnConsignmentResponse.ProtoReflect.Descriptor instead.
+func (*SendOnConsignmentResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *SendOnConsignmentResponse) GetConsignment() *Consignment {
+	if x != nil {
+		return x.Consignment
+	}
+	return nil
+}
+
+func (x *SendOnConsignmentResponse) GetDutyNote() string {
+	if x != nil {
+		return x.DutyNote
+	}
+	return ""
+}
+
+type SettleConsignmentRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	// Sold through. A removal is recorded for these, which is the point at
+	// which they leave stock.
+	BottlesSold int32 `protobuf:"varint,2,opt,name=bottles_sold,json=bottlesSold,proto3" json:"bottles_sold,omitempty"`
+	// Came back unsold. Not a return under stage 198 — a return is stock
+	// that was sold and came back; this never sold.
+	BottlesRecalled int32  `protobuf:"varint,3,opt,name=bottles_recalled,json=bottlesRecalled,proto3" json:"bottles_recalled,omitempty"`
+	On              string `protobuf:"bytes,4,opt,name=on,proto3" json:"on,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *SettleConsignmentRequest) Reset() {
+	*x = SettleConsignmentRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SettleConsignmentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SettleConsignmentRequest) ProtoMessage() {}
+
+func (x *SettleConsignmentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SettleConsignmentRequest.ProtoReflect.Descriptor instead.
+func (*SettleConsignmentRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *SettleConsignmentRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *SettleConsignmentRequest) GetBottlesSold() int32 {
+	if x != nil {
+		return x.BottlesSold
+	}
+	return 0
+}
+
+func (x *SettleConsignmentRequest) GetBottlesRecalled() int32 {
+	if x != nil {
+		return x.BottlesRecalled
+	}
+	return 0
+}
+
+func (x *SettleConsignmentRequest) GetOn() string {
+	if x != nil {
+		return x.On
+	}
+	return ""
+}
+
+type SettleConsignmentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Consignment   *Consignment           `protobuf:"bytes,1,opt,name=consignment,proto3" json:"consignment,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SettleConsignmentResponse) Reset() {
+	*x = SettleConsignmentResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SettleConsignmentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SettleConsignmentResponse) ProtoMessage() {}
+
+func (x *SettleConsignmentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SettleConsignmentResponse.ProtoReflect.Descriptor instead.
+func (*SettleConsignmentResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *SettleConsignmentResponse) GetConsignment() *Consignment {
+	if x != nil {
+		return x.Consignment
+	}
+	return nil
+}
+
+type ListConsignmentsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListConsignmentsRequest) Reset() {
+	*x = ListConsignmentsRequest{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListConsignmentsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListConsignmentsRequest) ProtoMessage() {}
+
+func (x *ListConsignmentsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListConsignmentsRequest.ProtoReflect.Descriptor instead.
+func (*ListConsignmentsRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListConsignmentsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type ListConsignmentsResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Consignments     []*Consignment         `protobuf:"bytes,1,rep,name=consignments,proto3" json:"consignments,omitempty"`
+	OpenConsignments int32                  `protobuf:"varint,2,opt,name=open_consignments,json=openConsignments,proto3" json:"open_consignments,omitempty"`
+	BottlesOut       int32                  `protobuf:"varint,3,opt,name=bottles_out,json=bottlesOut,proto3" json:"bottles_out,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *ListConsignmentsResponse) Reset() {
+	*x = ListConsignmentsResponse{}
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListConsignmentsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListConsignmentsResponse) ProtoMessage() {}
+
+func (x *ListConsignmentsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_removal_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListConsignmentsResponse.ProtoReflect.Descriptor instead.
+func (*ListConsignmentsResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_removal_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListConsignmentsResponse) GetConsignments() []*Consignment {
+	if x != nil {
+		return x.Consignments
+	}
+	return nil
+}
+
+func (x *ListConsignmentsResponse) GetOpenConsignments() int32 {
+	if x != nil {
+		return x.OpenConsignments
+	}
+	return 0
+}
+
+func (x *ListConsignmentsResponse) GetBottlesOut() int32 {
+	if x != nil {
+		return x.BottlesOut
+	}
+	return 0
+}
+
 var File_stillhouse_v1_removal_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_removal_proto_rawDesc = "" +
@@ -1426,7 +2002,51 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
 	"\x06reason\x18\x02 \x01(\tR\x06reason\"d\n" +
 	"\x1aVoidPackagedReturnResponse\x12F\n" +
-	"\x0fpackaged_return\x18\x01 \x01(\v2\x1d.stillhouse.v1.PackagedReturnR\x0epackagedReturn*\xbc\x02\n" +
+	"\x0fpackaged_return\x18\x01 \x01(\v2\x1d.stillhouse.v1.PackagedReturnR\x0epackagedReturn\"\x93\x04\n" +
+	"\vConsignment\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12%\n" +
+	"\x0econsignment_no\x18\x02 \x01(\x05R\rconsignmentNo\x122\n" +
+	"\x15packaged_inventory_id\x18\x03 \x01(\tR\x13packagedInventoryId\x12\x19\n" +
+	"\blot_code\x18\x04 \x01(\tR\alotCode\x12!\n" +
+	"\fproduct_name\x18\x05 \x01(\tR\vproductName\x12\x1f\n" +
+	"\vcustomer_id\x18\x06 \x01(\tR\n" +
+	"customerId\x12#\n" +
+	"\rcustomer_name\x18\a \x01(\tR\fcustomerName\x12\x18\n" +
+	"\abottles\x18\b \x01(\x05R\abottles\x12'\n" +
+	"\x0fbottles_settled\x18\t \x01(\x05R\x0ebottlesSettled\x12)\n" +
+	"\x10bottles_recalled\x18\n" +
+	" \x01(\x05R\x0fbottlesRecalled\x12\x1f\n" +
+	"\vbottles_out\x18\v \x01(\x05R\n" +
+	"bottlesOut\x128\n" +
+	"\x06status\x18\f \x01(\x0e2 .stillhouse.v1.ConsignmentStatusR\x06status\x12\x17\n" +
+	"\asent_on\x18\r \x01(\tR\x06sentOn\x12\x1d\n" +
+	"\n" +
+	"settled_on\x18\x0e \x01(\tR\tsettledOn\x12\x14\n" +
+	"\x05notes\x18\x0f \x01(\tR\x05notes\"\xb8\x01\n" +
+	"\x18SendOnConsignmentRequest\x122\n" +
+	"\x15packaged_inventory_id\x18\x01 \x01(\tR\x13packagedInventoryId\x12\x1f\n" +
+	"\vcustomer_id\x18\x02 \x01(\tR\n" +
+	"customerId\x12\x18\n" +
+	"\abottles\x18\x03 \x01(\x05R\abottles\x12\x17\n" +
+	"\asent_on\x18\x04 \x01(\tR\x06sentOn\x12\x14\n" +
+	"\x05notes\x18\x05 \x01(\tR\x05notes\"v\n" +
+	"\x19SendOnConsignmentResponse\x12<\n" +
+	"\vconsignment\x18\x01 \x01(\v2\x1a.stillhouse.v1.ConsignmentR\vconsignment\x12\x1b\n" +
+	"\tduty_note\x18\x02 \x01(\tR\bdutyNote\"\x88\x01\n" +
+	"\x18SettleConsignmentRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
+	"\fbottles_sold\x18\x02 \x01(\x05R\vbottlesSold\x12)\n" +
+	"\x10bottles_recalled\x18\x03 \x01(\x05R\x0fbottlesRecalled\x12\x0e\n" +
+	"\x02on\x18\x04 \x01(\tR\x02on\"Y\n" +
+	"\x19SettleConsignmentResponse\x12<\n" +
+	"\vconsignment\x18\x01 \x01(\v2\x1a.stillhouse.v1.ConsignmentR\vconsignment\"/\n" +
+	"\x17ListConsignmentsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\"\xa8\x01\n" +
+	"\x18ListConsignmentsResponse\x12>\n" +
+	"\fconsignments\x18\x01 \x03(\v2\x1a.stillhouse.v1.ConsignmentR\fconsignments\x12+\n" +
+	"\x11open_consignments\x18\x02 \x01(\x05R\x10openConsignments\x12\x1f\n" +
+	"\vbottles_out\x18\x03 \x01(\x05R\n" +
+	"bottlesOut*\xbc\x02\n" +
 	"\x16RemovalDestinationKind\x12(\n" +
 	"$REMOVAL_DESTINATION_KIND_UNSPECIFIED\x10\x00\x12/\n" +
 	"+REMOVAL_DESTINATION_KIND_DUTY_PAID_CUSTOMER\x10\x01\x12#\n" +
@@ -1438,14 +2058,22 @@ const file_stillhouse_v1_removal_proto_rawDesc = "" +
 	"\x17PackagedReturnCondition\x12)\n" +
 	"%PACKAGED_RETURN_CONDITION_UNSPECIFIED\x10\x00\x12&\n" +
 	"\"PACKAGED_RETURN_CONDITION_SALEABLE\x10\x01\x12(\n" +
-	"$PACKAGED_RETURN_CONDITION_UNSALEABLE\x10\x022\xe5\x04\n" +
+	"$PACKAGED_RETURN_CONDITION_UNSALEABLE\x10\x02*\x94\x01\n" +
+	"\x11ConsignmentStatus\x12\"\n" +
+	"\x1eCONSIGNMENT_STATUS_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16CONSIGNMENT_STATUS_OUT\x10\x01\x12\x1e\n" +
+	"\x1aCONSIGNMENT_STATUS_SETTLED\x10\x02\x12\x1f\n" +
+	"\x1bCONSIGNMENT_STATUS_RECALLED\x10\x032\x9a\a\n" +
 	"\x0eRemovalService\x12Z\n" +
 	"\rCreateRemoval\x12#.stillhouse.v1.CreateRemovalRequest\x1a$.stillhouse.v1.CreateRemovalResponse\x12W\n" +
 	"\fListRemovals\x12\".stillhouse.v1.ListRemovalsRequest\x1a#.stillhouse.v1.ListRemovalsResponse\x12T\n" +
 	"\vVoidRemoval\x12!.stillhouse.v1.VoidRemovalRequest\x1a\".stillhouse.v1.VoidRemovalResponse\x12o\n" +
 	"\x14RecordPackagedReturn\x12*.stillhouse.v1.RecordPackagedReturnRequest\x1a+.stillhouse.v1.RecordPackagedReturnResponse\x12l\n" +
 	"\x13ListPackagedReturns\x12).stillhouse.v1.ListPackagedReturnsRequest\x1a*.stillhouse.v1.ListPackagedReturnsResponse\x12i\n" +
-	"\x12VoidPackagedReturn\x12(.stillhouse.v1.VoidPackagedReturnRequest\x1a).stillhouse.v1.VoidPackagedReturnResponseB\xd0\x01\n" +
+	"\x12VoidPackagedReturn\x12(.stillhouse.v1.VoidPackagedReturnRequest\x1a).stillhouse.v1.VoidPackagedReturnResponse\x12f\n" +
+	"\x11SendOnConsignment\x12'.stillhouse.v1.SendOnConsignmentRequest\x1a(.stillhouse.v1.SendOnConsignmentResponse\x12f\n" +
+	"\x11SettleConsignment\x12'.stillhouse.v1.SettleConsignmentRequest\x1a(.stillhouse.v1.SettleConsignmentResponse\x12c\n" +
+	"\x10ListConsignments\x12&.stillhouse.v1.ListConsignmentsRequest\x1a'.stillhouse.v1.ListConsignmentsResponseB\xd0\x01\n" +
 	"\x11com.stillhouse.v1B\fRemovalProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1460,57 +2088,75 @@ func file_stillhouse_v1_removal_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_removal_proto_rawDescData
 }
 
-var file_stillhouse_v1_removal_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_removal_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_stillhouse_v1_removal_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
+var file_stillhouse_v1_removal_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_stillhouse_v1_removal_proto_goTypes = []any{
 	(RemovalDestinationKind)(0),          // 0: stillhouse.v1.RemovalDestinationKind
 	(PackagedReturnCondition)(0),         // 1: stillhouse.v1.PackagedReturnCondition
-	(*PackagingRemoval)(nil),             // 2: stillhouse.v1.PackagingRemoval
-	(*CreateRemovalRequest)(nil),         // 3: stillhouse.v1.CreateRemovalRequest
-	(*CreateRemovalResponse)(nil),        // 4: stillhouse.v1.CreateRemovalResponse
-	(*ListRemovalsRequest)(nil),          // 5: stillhouse.v1.ListRemovalsRequest
-	(*ListRemovalsResponse)(nil),         // 6: stillhouse.v1.ListRemovalsResponse
-	(*VoidRemovalRequest)(nil),           // 7: stillhouse.v1.VoidRemovalRequest
-	(*VoidRemovalResponse)(nil),          // 8: stillhouse.v1.VoidRemovalResponse
-	(*PackagedReturn)(nil),               // 9: stillhouse.v1.PackagedReturn
-	(*RecordPackagedReturnRequest)(nil),  // 10: stillhouse.v1.RecordPackagedReturnRequest
-	(*RecordPackagedReturnResponse)(nil), // 11: stillhouse.v1.RecordPackagedReturnResponse
-	(*ListPackagedReturnsRequest)(nil),   // 12: stillhouse.v1.ListPackagedReturnsRequest
-	(*ListPackagedReturnsResponse)(nil),  // 13: stillhouse.v1.ListPackagedReturnsResponse
-	(*VoidPackagedReturnRequest)(nil),    // 14: stillhouse.v1.VoidPackagedReturnRequest
-	(*VoidPackagedReturnResponse)(nil),   // 15: stillhouse.v1.VoidPackagedReturnResponse
-	(*timestamppb.Timestamp)(nil),        // 16: google.protobuf.Timestamp
+	(ConsignmentStatus)(0),               // 2: stillhouse.v1.ConsignmentStatus
+	(*PackagingRemoval)(nil),             // 3: stillhouse.v1.PackagingRemoval
+	(*CreateRemovalRequest)(nil),         // 4: stillhouse.v1.CreateRemovalRequest
+	(*CreateRemovalResponse)(nil),        // 5: stillhouse.v1.CreateRemovalResponse
+	(*ListRemovalsRequest)(nil),          // 6: stillhouse.v1.ListRemovalsRequest
+	(*ListRemovalsResponse)(nil),         // 7: stillhouse.v1.ListRemovalsResponse
+	(*VoidRemovalRequest)(nil),           // 8: stillhouse.v1.VoidRemovalRequest
+	(*VoidRemovalResponse)(nil),          // 9: stillhouse.v1.VoidRemovalResponse
+	(*PackagedReturn)(nil),               // 10: stillhouse.v1.PackagedReturn
+	(*RecordPackagedReturnRequest)(nil),  // 11: stillhouse.v1.RecordPackagedReturnRequest
+	(*RecordPackagedReturnResponse)(nil), // 12: stillhouse.v1.RecordPackagedReturnResponse
+	(*ListPackagedReturnsRequest)(nil),   // 13: stillhouse.v1.ListPackagedReturnsRequest
+	(*ListPackagedReturnsResponse)(nil),  // 14: stillhouse.v1.ListPackagedReturnsResponse
+	(*VoidPackagedReturnRequest)(nil),    // 15: stillhouse.v1.VoidPackagedReturnRequest
+	(*VoidPackagedReturnResponse)(nil),   // 16: stillhouse.v1.VoidPackagedReturnResponse
+	(*Consignment)(nil),                  // 17: stillhouse.v1.Consignment
+	(*SendOnConsignmentRequest)(nil),     // 18: stillhouse.v1.SendOnConsignmentRequest
+	(*SendOnConsignmentResponse)(nil),    // 19: stillhouse.v1.SendOnConsignmentResponse
+	(*SettleConsignmentRequest)(nil),     // 20: stillhouse.v1.SettleConsignmentRequest
+	(*SettleConsignmentResponse)(nil),    // 21: stillhouse.v1.SettleConsignmentResponse
+	(*ListConsignmentsRequest)(nil),      // 22: stillhouse.v1.ListConsignmentsRequest
+	(*ListConsignmentsResponse)(nil),     // 23: stillhouse.v1.ListConsignmentsResponse
+	(*timestamppb.Timestamp)(nil),        // 24: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_removal_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.PackagingRemoval.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
-	16, // 1: stillhouse.v1.PackagingRemoval.created_at:type_name -> google.protobuf.Timestamp
-	16, // 2: stillhouse.v1.PackagingRemoval.voided_at:type_name -> google.protobuf.Timestamp
+	24, // 1: stillhouse.v1.PackagingRemoval.created_at:type_name -> google.protobuf.Timestamp
+	24, // 2: stillhouse.v1.PackagingRemoval.voided_at:type_name -> google.protobuf.Timestamp
 	0,  // 3: stillhouse.v1.CreateRemovalRequest.destination_kind:type_name -> stillhouse.v1.RemovalDestinationKind
-	2,  // 4: stillhouse.v1.CreateRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
-	2,  // 5: stillhouse.v1.ListRemovalsResponse.removals:type_name -> stillhouse.v1.PackagingRemoval
-	2,  // 6: stillhouse.v1.VoidRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
+	3,  // 4: stillhouse.v1.CreateRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
+	3,  // 5: stillhouse.v1.ListRemovalsResponse.removals:type_name -> stillhouse.v1.PackagingRemoval
+	3,  // 6: stillhouse.v1.VoidRemovalResponse.removal:type_name -> stillhouse.v1.PackagingRemoval
 	1,  // 7: stillhouse.v1.PackagedReturn.condition:type_name -> stillhouse.v1.PackagedReturnCondition
 	1,  // 8: stillhouse.v1.RecordPackagedReturnRequest.condition:type_name -> stillhouse.v1.PackagedReturnCondition
-	9,  // 9: stillhouse.v1.RecordPackagedReturnResponse.packaged_return:type_name -> stillhouse.v1.PackagedReturn
-	9,  // 10: stillhouse.v1.ListPackagedReturnsResponse.returns:type_name -> stillhouse.v1.PackagedReturn
-	9,  // 11: stillhouse.v1.VoidPackagedReturnResponse.packaged_return:type_name -> stillhouse.v1.PackagedReturn
-	3,  // 12: stillhouse.v1.RemovalService.CreateRemoval:input_type -> stillhouse.v1.CreateRemovalRequest
-	5,  // 13: stillhouse.v1.RemovalService.ListRemovals:input_type -> stillhouse.v1.ListRemovalsRequest
-	7,  // 14: stillhouse.v1.RemovalService.VoidRemoval:input_type -> stillhouse.v1.VoidRemovalRequest
-	10, // 15: stillhouse.v1.RemovalService.RecordPackagedReturn:input_type -> stillhouse.v1.RecordPackagedReturnRequest
-	12, // 16: stillhouse.v1.RemovalService.ListPackagedReturns:input_type -> stillhouse.v1.ListPackagedReturnsRequest
-	14, // 17: stillhouse.v1.RemovalService.VoidPackagedReturn:input_type -> stillhouse.v1.VoidPackagedReturnRequest
-	4,  // 18: stillhouse.v1.RemovalService.CreateRemoval:output_type -> stillhouse.v1.CreateRemovalResponse
-	6,  // 19: stillhouse.v1.RemovalService.ListRemovals:output_type -> stillhouse.v1.ListRemovalsResponse
-	8,  // 20: stillhouse.v1.RemovalService.VoidRemoval:output_type -> stillhouse.v1.VoidRemovalResponse
-	11, // 21: stillhouse.v1.RemovalService.RecordPackagedReturn:output_type -> stillhouse.v1.RecordPackagedReturnResponse
-	13, // 22: stillhouse.v1.RemovalService.ListPackagedReturns:output_type -> stillhouse.v1.ListPackagedReturnsResponse
-	15, // 23: stillhouse.v1.RemovalService.VoidPackagedReturn:output_type -> stillhouse.v1.VoidPackagedReturnResponse
-	18, // [18:24] is the sub-list for method output_type
-	12, // [12:18] is the sub-list for method input_type
-	12, // [12:12] is the sub-list for extension type_name
-	12, // [12:12] is the sub-list for extension extendee
-	0,  // [0:12] is the sub-list for field type_name
+	10, // 9: stillhouse.v1.RecordPackagedReturnResponse.packaged_return:type_name -> stillhouse.v1.PackagedReturn
+	10, // 10: stillhouse.v1.ListPackagedReturnsResponse.returns:type_name -> stillhouse.v1.PackagedReturn
+	10, // 11: stillhouse.v1.VoidPackagedReturnResponse.packaged_return:type_name -> stillhouse.v1.PackagedReturn
+	2,  // 12: stillhouse.v1.Consignment.status:type_name -> stillhouse.v1.ConsignmentStatus
+	17, // 13: stillhouse.v1.SendOnConsignmentResponse.consignment:type_name -> stillhouse.v1.Consignment
+	17, // 14: stillhouse.v1.SettleConsignmentResponse.consignment:type_name -> stillhouse.v1.Consignment
+	17, // 15: stillhouse.v1.ListConsignmentsResponse.consignments:type_name -> stillhouse.v1.Consignment
+	4,  // 16: stillhouse.v1.RemovalService.CreateRemoval:input_type -> stillhouse.v1.CreateRemovalRequest
+	6,  // 17: stillhouse.v1.RemovalService.ListRemovals:input_type -> stillhouse.v1.ListRemovalsRequest
+	8,  // 18: stillhouse.v1.RemovalService.VoidRemoval:input_type -> stillhouse.v1.VoidRemovalRequest
+	11, // 19: stillhouse.v1.RemovalService.RecordPackagedReturn:input_type -> stillhouse.v1.RecordPackagedReturnRequest
+	13, // 20: stillhouse.v1.RemovalService.ListPackagedReturns:input_type -> stillhouse.v1.ListPackagedReturnsRequest
+	15, // 21: stillhouse.v1.RemovalService.VoidPackagedReturn:input_type -> stillhouse.v1.VoidPackagedReturnRequest
+	18, // 22: stillhouse.v1.RemovalService.SendOnConsignment:input_type -> stillhouse.v1.SendOnConsignmentRequest
+	20, // 23: stillhouse.v1.RemovalService.SettleConsignment:input_type -> stillhouse.v1.SettleConsignmentRequest
+	22, // 24: stillhouse.v1.RemovalService.ListConsignments:input_type -> stillhouse.v1.ListConsignmentsRequest
+	5,  // 25: stillhouse.v1.RemovalService.CreateRemoval:output_type -> stillhouse.v1.CreateRemovalResponse
+	7,  // 26: stillhouse.v1.RemovalService.ListRemovals:output_type -> stillhouse.v1.ListRemovalsResponse
+	9,  // 27: stillhouse.v1.RemovalService.VoidRemoval:output_type -> stillhouse.v1.VoidRemovalResponse
+	12, // 28: stillhouse.v1.RemovalService.RecordPackagedReturn:output_type -> stillhouse.v1.RecordPackagedReturnResponse
+	14, // 29: stillhouse.v1.RemovalService.ListPackagedReturns:output_type -> stillhouse.v1.ListPackagedReturnsResponse
+	16, // 30: stillhouse.v1.RemovalService.VoidPackagedReturn:output_type -> stillhouse.v1.VoidPackagedReturnResponse
+	19, // 31: stillhouse.v1.RemovalService.SendOnConsignment:output_type -> stillhouse.v1.SendOnConsignmentResponse
+	21, // 32: stillhouse.v1.RemovalService.SettleConsignment:output_type -> stillhouse.v1.SettleConsignmentResponse
+	23, // 33: stillhouse.v1.RemovalService.ListConsignments:output_type -> stillhouse.v1.ListConsignmentsResponse
+	25, // [25:34] is the sub-list for method output_type
+	16, // [16:25] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_removal_proto_init() }
@@ -1523,8 +2169,8 @@ func file_stillhouse_v1_removal_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_removal_proto_rawDesc), len(file_stillhouse_v1_removal_proto_rawDesc)),
-			NumEnums:      2,
-			NumMessages:   14,
+			NumEnums:      3,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -120,6 +120,9 @@ var exportTables = []string{
 	"kegs",
 	"keg_events",
 	"packaging_removals",
+	// Stock at a customer's premises that is still ours. On hand and not
+	// here, which is a distinction a retention export should carry.
+	"consignments",
 	// Stock coming back from the duty-paid market. Exported rather than
 	// exempted: it is a movement of dutiable goods with a credit attached,
 	// which is exactly what s.206 retention asks to be able to see.

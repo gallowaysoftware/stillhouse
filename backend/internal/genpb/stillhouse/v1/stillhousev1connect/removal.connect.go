@@ -51,6 +51,15 @@ const (
 	// RemovalServiceVoidPackagedReturnProcedure is the fully-qualified name of the RemovalService's
 	// VoidPackagedReturn RPC.
 	RemovalServiceVoidPackagedReturnProcedure = "/stillhouse.v1.RemovalService/VoidPackagedReturn"
+	// RemovalServiceSendOnConsignmentProcedure is the fully-qualified name of the RemovalService's
+	// SendOnConsignment RPC.
+	RemovalServiceSendOnConsignmentProcedure = "/stillhouse.v1.RemovalService/SendOnConsignment"
+	// RemovalServiceSettleConsignmentProcedure is the fully-qualified name of the RemovalService's
+	// SettleConsignment RPC.
+	RemovalServiceSettleConsignmentProcedure = "/stillhouse.v1.RemovalService/SettleConsignment"
+	// RemovalServiceListConsignmentsProcedure is the fully-qualified name of the RemovalService's
+	// ListConsignments RPC.
+	RemovalServiceListConsignmentsProcedure = "/stillhouse.v1.RemovalService/ListConsignments"
 )
 
 // RemovalServiceClient is a client for the stillhouse.v1.RemovalService service.
@@ -63,6 +72,11 @@ type RemovalServiceClient interface {
 	RecordPackagedReturn(context.Context, *connect.Request[v1.RecordPackagedReturnRequest]) (*connect.Response[v1.RecordPackagedReturnResponse], error)
 	ListPackagedReturns(context.Context, *connect.Request[v1.ListPackagedReturnsRequest]) (*connect.Response[v1.ListPackagedReturnsResponse], error)
 	VoidPackagedReturn(context.Context, *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error)
+	// Consignment: our stock at somebody else's premises. Not a removal —
+	// see ConsignmentStatus.
+	SendOnConsignment(context.Context, *connect.Request[v1.SendOnConsignmentRequest]) (*connect.Response[v1.SendOnConsignmentResponse], error)
+	SettleConsignment(context.Context, *connect.Request[v1.SettleConsignmentRequest]) (*connect.Response[v1.SettleConsignmentResponse], error)
+	ListConsignments(context.Context, *connect.Request[v1.ListConsignmentsRequest]) (*connect.Response[v1.ListConsignmentsResponse], error)
 }
 
 // NewRemovalServiceClient constructs a client for the stillhouse.v1.RemovalService service. By
@@ -112,6 +126,24 @@ func NewRemovalServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(removalServiceMethods.ByName("VoidPackagedReturn")),
 			connect.WithClientOptions(opts...),
 		),
+		sendOnConsignment: connect.NewClient[v1.SendOnConsignmentRequest, v1.SendOnConsignmentResponse](
+			httpClient,
+			baseURL+RemovalServiceSendOnConsignmentProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("SendOnConsignment")),
+			connect.WithClientOptions(opts...),
+		),
+		settleConsignment: connect.NewClient[v1.SettleConsignmentRequest, v1.SettleConsignmentResponse](
+			httpClient,
+			baseURL+RemovalServiceSettleConsignmentProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("SettleConsignment")),
+			connect.WithClientOptions(opts...),
+		),
+		listConsignments: connect.NewClient[v1.ListConsignmentsRequest, v1.ListConsignmentsResponse](
+			httpClient,
+			baseURL+RemovalServiceListConsignmentsProcedure,
+			connect.WithSchema(removalServiceMethods.ByName("ListConsignments")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -123,6 +155,9 @@ type removalServiceClient struct {
 	recordPackagedReturn *connect.Client[v1.RecordPackagedReturnRequest, v1.RecordPackagedReturnResponse]
 	listPackagedReturns  *connect.Client[v1.ListPackagedReturnsRequest, v1.ListPackagedReturnsResponse]
 	voidPackagedReturn   *connect.Client[v1.VoidPackagedReturnRequest, v1.VoidPackagedReturnResponse]
+	sendOnConsignment    *connect.Client[v1.SendOnConsignmentRequest, v1.SendOnConsignmentResponse]
+	settleConsignment    *connect.Client[v1.SettleConsignmentRequest, v1.SettleConsignmentResponse]
+	listConsignments     *connect.Client[v1.ListConsignmentsRequest, v1.ListConsignmentsResponse]
 }
 
 // CreateRemoval calls stillhouse.v1.RemovalService.CreateRemoval.
@@ -155,6 +190,21 @@ func (c *removalServiceClient) VoidPackagedReturn(ctx context.Context, req *conn
 	return c.voidPackagedReturn.CallUnary(ctx, req)
 }
 
+// SendOnConsignment calls stillhouse.v1.RemovalService.SendOnConsignment.
+func (c *removalServiceClient) SendOnConsignment(ctx context.Context, req *connect.Request[v1.SendOnConsignmentRequest]) (*connect.Response[v1.SendOnConsignmentResponse], error) {
+	return c.sendOnConsignment.CallUnary(ctx, req)
+}
+
+// SettleConsignment calls stillhouse.v1.RemovalService.SettleConsignment.
+func (c *removalServiceClient) SettleConsignment(ctx context.Context, req *connect.Request[v1.SettleConsignmentRequest]) (*connect.Response[v1.SettleConsignmentResponse], error) {
+	return c.settleConsignment.CallUnary(ctx, req)
+}
+
+// ListConsignments calls stillhouse.v1.RemovalService.ListConsignments.
+func (c *removalServiceClient) ListConsignments(ctx context.Context, req *connect.Request[v1.ListConsignmentsRequest]) (*connect.Response[v1.ListConsignmentsResponse], error) {
+	return c.listConsignments.CallUnary(ctx, req)
+}
+
 // RemovalServiceHandler is an implementation of the stillhouse.v1.RemovalService service.
 type RemovalServiceHandler interface {
 	CreateRemoval(context.Context, *connect.Request[v1.CreateRemovalRequest]) (*connect.Response[v1.CreateRemovalResponse], error)
@@ -165,6 +215,11 @@ type RemovalServiceHandler interface {
 	RecordPackagedReturn(context.Context, *connect.Request[v1.RecordPackagedReturnRequest]) (*connect.Response[v1.RecordPackagedReturnResponse], error)
 	ListPackagedReturns(context.Context, *connect.Request[v1.ListPackagedReturnsRequest]) (*connect.Response[v1.ListPackagedReturnsResponse], error)
 	VoidPackagedReturn(context.Context, *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error)
+	// Consignment: our stock at somebody else's premises. Not a removal —
+	// see ConsignmentStatus.
+	SendOnConsignment(context.Context, *connect.Request[v1.SendOnConsignmentRequest]) (*connect.Response[v1.SendOnConsignmentResponse], error)
+	SettleConsignment(context.Context, *connect.Request[v1.SettleConsignmentRequest]) (*connect.Response[v1.SettleConsignmentResponse], error)
+	ListConsignments(context.Context, *connect.Request[v1.ListConsignmentsRequest]) (*connect.Response[v1.ListConsignmentsResponse], error)
 }
 
 // NewRemovalServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -210,6 +265,24 @@ func NewRemovalServiceHandler(svc RemovalServiceHandler, opts ...connect.Handler
 		connect.WithSchema(removalServiceMethods.ByName("VoidPackagedReturn")),
 		connect.WithHandlerOptions(opts...),
 	)
+	removalServiceSendOnConsignmentHandler := connect.NewUnaryHandler(
+		RemovalServiceSendOnConsignmentProcedure,
+		svc.SendOnConsignment,
+		connect.WithSchema(removalServiceMethods.ByName("SendOnConsignment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	removalServiceSettleConsignmentHandler := connect.NewUnaryHandler(
+		RemovalServiceSettleConsignmentProcedure,
+		svc.SettleConsignment,
+		connect.WithSchema(removalServiceMethods.ByName("SettleConsignment")),
+		connect.WithHandlerOptions(opts...),
+	)
+	removalServiceListConsignmentsHandler := connect.NewUnaryHandler(
+		RemovalServiceListConsignmentsProcedure,
+		svc.ListConsignments,
+		connect.WithSchema(removalServiceMethods.ByName("ListConsignments")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.RemovalService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case RemovalServiceCreateRemovalProcedure:
@@ -224,6 +297,12 @@ func NewRemovalServiceHandler(svc RemovalServiceHandler, opts ...connect.Handler
 			removalServiceListPackagedReturnsHandler.ServeHTTP(w, r)
 		case RemovalServiceVoidPackagedReturnProcedure:
 			removalServiceVoidPackagedReturnHandler.ServeHTTP(w, r)
+		case RemovalServiceSendOnConsignmentProcedure:
+			removalServiceSendOnConsignmentHandler.ServeHTTP(w, r)
+		case RemovalServiceSettleConsignmentProcedure:
+			removalServiceSettleConsignmentHandler.ServeHTTP(w, r)
+		case RemovalServiceListConsignmentsProcedure:
+			removalServiceListConsignmentsHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -255,4 +334,16 @@ func (UnimplementedRemovalServiceHandler) ListPackagedReturns(context.Context, *
 
 func (UnimplementedRemovalServiceHandler) VoidPackagedReturn(context.Context, *connect.Request[v1.VoidPackagedReturnRequest]) (*connect.Response[v1.VoidPackagedReturnResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.VoidPackagedReturn is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) SendOnConsignment(context.Context, *connect.Request[v1.SendOnConsignmentRequest]) (*connect.Response[v1.SendOnConsignmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.SendOnConsignment is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) SettleConsignment(context.Context, *connect.Request[v1.SettleConsignmentRequest]) (*connect.Response[v1.SettleConsignmentResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.SettleConsignment is not implemented"))
+}
+
+func (UnimplementedRemovalServiceHandler) ListConsignments(context.Context, *connect.Request[v1.ListConsignmentsRequest]) (*connect.Response[v1.ListConsignmentsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.RemovalService.ListConsignments is not implemented"))
 }

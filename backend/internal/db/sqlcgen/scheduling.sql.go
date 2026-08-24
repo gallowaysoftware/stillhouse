@@ -51,7 +51,19 @@ SELECT p.id AS product_id,
            JOIN shipments s          ON s.id = sl.shipment_id
            JOIN packaged_inventory q ON q.id = sl.packaged_inventory_id
            WHERE q.product_id = p.id AND s.status = 'picking'
-       ), 0)::int AS bottles_picked
+       ), 0)::int AS bottles_picked,
+       -- Stock that is ours and is at a customer's premises on
+       -- consignment. On hand, and not available: promising it to
+       -- somebody else is promising bottles a hundred kilometres away.
+       -- Same shape as bottles_picked beside it, and the same reason
+       -- bulk_possession exists for casks (stage 176), arriving for
+       -- bottles.
+       COALESCE((
+           SELECT SUM(c.bottles - c.bottles_settled - c.bottles_recalled)
+           FROM consignments c
+           JOIN packaged_inventory q ON q.id = c.packaged_inventory_id
+           WHERE q.product_id = p.id AND c.status = 'out'
+       ), 0)::int AS bottles_on_consignment
 FROM sales_order_lines l
 JOIN sales_orders so ON so.id = l.sales_order_id
 JOIN products p      ON p.id = l.product_id
@@ -62,14 +74,15 @@ ORDER BY MIN(so.required_by) NULLS LAST, p.name
 `
 
 type DemandByProductRow struct {
-	ProductID        uuid.UUID   `json:"product_id"`
-	ProductName      string      `json:"product_name"`
-	BottleSizeMl     int32       `json:"bottle_size_ml"`
-	TargetAbvPct     float64     `json:"target_abv_pct"`
-	BottlesOwed      int32       `json:"bottles_owed"`
-	EarliestRequired pgtype.Date `json:"earliest_required"`
-	BottlesOnHand    int32       `json:"bottles_on_hand"`
-	BottlesPicked    int32       `json:"bottles_picked"`
+	ProductID            uuid.UUID   `json:"product_id"`
+	ProductName          string      `json:"product_name"`
+	BottleSizeMl         int32       `json:"bottle_size_ml"`
+	TargetAbvPct         float64     `json:"target_abv_pct"`
+	BottlesOwed          int32       `json:"bottles_owed"`
+	EarliestRequired     pgtype.Date `json:"earliest_required"`
+	BottlesOnHand        int32       `json:"bottles_on_hand"`
+	BottlesPicked        int32       `json:"bottles_picked"`
+	BottlesOnConsignment int32       `json:"bottles_on_consignment"`
 }
 
 // What is actually owed, against what is actually here.
@@ -79,8 +92,10 @@ type DemandByProductRow struct {
 // says so rather than producing one; see PLAN F7.
 //
 // Supply is bottles on hand less what is already picked onto open
-// shipments, and less what other confirmed orders have spoken for, so two
-// products competing for the same stock do not both look satisfiable.
+// shipments, less what other confirmed orders have spoken for, and less
+// what is out on consignment — so two products competing for the same
+// stock do not both look satisfiable, and stock at a customer's premises
+// is not promised to a second customer.
 func (q *Queries) DemandByProduct(ctx context.Context) ([]DemandByProductRow, error) {
 	rows, err := q.db.Query(ctx, demandByProduct)
 	if err != nil {
@@ -99,6 +114,7 @@ func (q *Queries) DemandByProduct(ctx context.Context) ([]DemandByProductRow, er
 			&i.EarliestRequired,
 			&i.BottlesOnHand,
 			&i.BottlesPicked,
+			&i.BottlesOnConsignment,
 		); err != nil {
 			return nil, err
 		}

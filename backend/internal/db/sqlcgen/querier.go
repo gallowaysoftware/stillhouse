@@ -156,6 +156,7 @@ type Querier interface {
 	// means there is never a moment with no default at all.
 	ClearDefaultLocation(ctx context.Context) error
 	ConfirmUserTOTP(ctx context.Context, arg ConfirmUserTOTPParams) (UserTotp, error)
+	ConsignmentSummary(ctx context.Context) (ConsignmentSummaryRow, error)
 	// Single-use semantics: WHERE used_at IS NULL guarantees the same token
 	// can't be redeemed twice. Expiry check inline so we don't accidentally
 	// accept stale tokens.
@@ -208,6 +209,7 @@ type Querier interface {
 	CreateBottlingRunStampUsage(ctx context.Context, arg CreateBottlingRunStampUsageParams) (BottlingRunStampUsage, error)
 	CreateBulkContainer(ctx context.Context, arg CreateBulkContainerParams) (BulkContainer, error)
 	CreateCalibration(ctx context.Context, arg CreateCalibrationParams) (InstrumentCalibration, error)
+	CreateConsignment(ctx context.Context, arg CreateConsignmentParams) (Consignment, error)
 	CreateCustomer(ctx context.Context, arg CreateCustomerParams) (Customer, error)
 	// The first location for a new tenant, named from the tenant itself.
 	// Called wherever a tenant is created, after the tenant context is set —
@@ -314,8 +316,10 @@ type Querier interface {
 	// says so rather than producing one; see PLAN F7.
 	//
 	// Supply is bottles on hand less what is already picked onto open
-	// shipments, and less what other confirmed orders have spoken for, so two
-	// products competing for the same stock do not both look satisfiable.
+	// shipments, less what other confirmed orders have spoken for, and less
+	// what is out on consignment — so two products competing for the same
+	// stock do not both look satisfiable, and stock at a customer's premises
+	// is not promised to a second customer.
 	DemandByProduct(ctx context.Context) ([]DemandByProductRow, error)
 	// Pull the distillation run + every charge → ferment → mash → recipe
 	// subtree behind a production_gauge bulk_movement. One row per charge
@@ -409,6 +413,11 @@ type Querier interface {
 	// lockContainers — or two of them can deadlock holding each other's rows.
 	GetBulkContainerForUpdate(ctx context.Context, id uuid.UUID) (BulkContainer, error)
 	GetBulkMovementForBarrelEvent(ctx context.Context, id uuid.UUID) (BulkMovement, error)
+	GetConsignment(ctx context.Context, id uuid.UUID) (Consignment, error)
+	// Locked, because settling is a read-then-write: two people recording a
+	// sell-through at once would otherwise each add to the count they read
+	// and one of them would be lost.
+	GetConsignmentForUpdate(ctx context.Context, id uuid.UUID) (Consignment, error)
 	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	GetDefaultLocation(ctx context.Context) (Location, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
@@ -590,6 +599,7 @@ type Querier interface {
 	ListBulkContainers(ctx context.Context, includeArchived bool) ([]ListBulkContainersRow, error)
 	ListBulkMovementsByContainer(ctx context.Context, sourceContainerID uuid.NullUUID) ([]ListBulkMovementsByContainerRow, error)
 	ListCalibrations(ctx context.Context, instrumentID uuid.UUID) ([]InstrumentCalibration, error)
+	ListConsignments(ctx context.Context, rowLimit int32) ([]ListConsignmentsRow, error)
 	ListCostRates(ctx context.Context) ([]CostRate, error)
 	// Archived customers are hidden by default but never deleted: a removal
 	// points at one, and the trail behind a filed return has to stay
@@ -814,6 +824,7 @@ type Querier interface {
 	// cohort" compares like with like.
 	MyConversionInputs(ctx context.Context) ([]MyConversionInputsRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
+	NextConsignmentNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)
 	NextMarkedContainerNo(ctx context.Context) (int32, error)
@@ -1111,6 +1122,11 @@ type Querier interface {
 	// supplied, so "when did this actually start" is a fact rather than
 	// something somebody typed afterwards.
 	SetWorkOrderStatus(ctx context.Context, arg SetWorkOrderStatusParams) (WorkOrder, error)
+	// The new counts and the status the caller worked out. Kept dumb on
+	// purpose: the rule that a consignment closes when nothing is still out,
+	// and closes as settled rather than recalled if anything sold, is
+	// arithmetic worth testing without a database.
+	SettleConsignment(ctx context.Context, arg SettleConsignmentParams) (Consignment, error)
 	// What a shipment actually delivered, priced from the order line it
 	// satisfied where there is one. A pick with no order line behind it has
 	// no agreed price, and comes back with a null so the caller can say so

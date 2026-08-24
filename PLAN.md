@@ -141,10 +141,11 @@ the half that was always going to wait: **the refund itself**. A return
 records that duty was paid and remains paid; claiming it back is a B256
 under s.181/s.182 and is `A9`, blocked on sourcing that form's rules.
 
-Consignment proper — stock at a customer's premises that is still ours —
-is a separate question from a return and is not started. It interacts with
-possession (stage 176) rather than with duty, since the goods have not
-been removed.
+Consignment shipped in stage 210: stock at a customer's premises that is
+still ours, not treated as a removal, and excluded from what the plan
+considers available.
+
+D7 is done bar the refund, which waits on `A9`.
 
 ---
 

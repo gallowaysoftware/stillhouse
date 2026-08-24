@@ -414,6 +414,12 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.KegService/MoveKeg":                       roleOperator,
 	"/stillhouse.v1.KegService/CreateKeg":                     roleOwner,
 	"/stillhouse.v1.RemovalService/ListPackagedReturns":       roleViewer,
+	// Sending stock on consignment and settling it are operator actions,
+	// same as a removal — the person on the dock is who knows what went
+	// and what came back.
+	"/stillhouse.v1.RemovalService/ListConsignments":          roleViewer,
+	"/stillhouse.v1.RemovalService/SendOnConsignment":         roleOperator,
+	"/stillhouse.v1.RemovalService/SettleConsignment":         roleOperator,
 	"/stillhouse.v1.RemovalService/RecordPackagedReturn":      roleOperator,
 	"/stillhouse.v1.RemovalService/VoidPackagedReturn":        roleOwner,
 	"/stillhouse.v1.WebhookService/ListWebhookEndpoints":      roleViewer,

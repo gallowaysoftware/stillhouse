@@ -89,6 +89,12 @@ service RemovalService {
   rpc RecordPackagedReturn(RecordPackagedReturnRequest) returns (RecordPackagedReturnResponse);
   rpc ListPackagedReturns(ListPackagedReturnsRequest) returns (ListPackagedReturnsResponse);
   rpc VoidPackagedReturn(VoidPackagedReturnRequest) returns (VoidPackagedReturnResponse);
+
+  // Consignment: our stock at somebody else's premises. Not a removal —
+  // see ConsignmentStatus.
+  rpc SendOnConsignment(SendOnConsignmentRequest) returns (SendOnConsignmentResponse);
+  rpc SettleConsignment(SettleConsignmentRequest) returns (SettleConsignmentResponse);
+  rpc ListConsignments(ListConsignmentsRequest) returns (ListConsignmentsResponse);
 }
 
 // Product coming back from the duty-paid market. PLAN D7.
@@ -165,3 +171,79 @@ message VoidPackagedReturnRequest {
   string reason = 2;
 }
 message VoidPackagedReturnResponse { PackagedReturn packaged_return = 1; }
+
+// Consignment: our stock, at somebody else's premises. PLAN D7.
+//
+// The excise question is the whole of it, and Stillhouse answers it
+// explicitly rather than by omission: a consignment is NOT a removal. The
+// stock stays on hand, marked as being at a customer, and a removal is
+// recorded when it sells through.
+//
+// That is the ordinary accounting treatment and the safe one. At an
+// at-packaging duty point duty crystallised already and consignment
+// changes nothing; at an at-removal duty point, recording the removal
+// later errs toward reporting duty late rather than never — and a return
+// that reports duty a month late is a correctable mistake where one that
+// never reports it is not.
+//
+// A licensee whose own arrangement treats the shipment itself as the
+// removal records a removal when it ships and does not use this.
+enum ConsignmentStatus {
+  CONSIGNMENT_STATUS_UNSPECIFIED = 0;
+  CONSIGNMENT_STATUS_OUT = 1;
+  CONSIGNMENT_STATUS_SETTLED = 2;
+  CONSIGNMENT_STATUS_RECALLED = 3;
+}
+
+message Consignment {
+  string id = 1;
+  int32  consignment_no = 2;
+  string packaged_inventory_id = 3;
+  string lot_code = 4;
+  string product_name = 5;
+  string customer_id = 6;
+  string customer_name = 7;
+  int32  bottles = 8;
+  int32  bottles_settled = 9;
+  int32  bottles_recalled = 10;
+  // Still at the customer, unsold. The three always reconcile against
+  // bottles.
+  int32  bottles_out = 11;
+  ConsignmentStatus status = 12;
+  string sent_on = 13;
+  string settled_on = 14;
+  string notes = 15;
+}
+
+message SendOnConsignmentRequest {
+  string packaged_inventory_id = 1;
+  string customer_id = 2;
+  int32  bottles = 3;
+  string sent_on = 4;
+  string notes = 5;
+}
+message SendOnConsignmentResponse {
+  Consignment consignment = 1;
+  // Said on every response, because an operator sending stock out will
+  // otherwise assume it has been removed.
+  string duty_note = 2;
+}
+
+message SettleConsignmentRequest {
+  string id = 1;
+  // Sold through. A removal is recorded for these, which is the point at
+  // which they leave stock.
+  int32  bottles_sold = 2;
+  // Came back unsold. Not a return under stage 198 — a return is stock
+  // that was sold and came back; this never sold.
+  int32  bottles_recalled = 3;
+  string on = 4;
+}
+message SettleConsignmentResponse { Consignment consignment = 1; }
+
+message ListConsignmentsRequest { int32 limit = 1; }
+message ListConsignmentsResponse {
+  repeated Consignment consignments = 1;
+  int32 open_consignments = 2;
+  int32 bottles_out = 3;
+}

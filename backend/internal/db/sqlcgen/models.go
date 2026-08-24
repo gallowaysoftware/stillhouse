@@ -446,6 +446,49 @@ func (ns NullCereal) Value() (driver.Value, error) {
 	return string(ns.Cereal), nil
 }
 
+type ConsignmentStatus string
+
+const (
+	ConsignmentStatusOut      ConsignmentStatus = "out"
+	ConsignmentStatusSettled  ConsignmentStatus = "settled"
+	ConsignmentStatusRecalled ConsignmentStatus = "recalled"
+)
+
+func (e *ConsignmentStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ConsignmentStatus(s)
+	case string:
+		*e = ConsignmentStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ConsignmentStatus: %T", src)
+	}
+	return nil
+}
+
+type NullConsignmentStatus struct {
+	ConsignmentStatus ConsignmentStatus `json:"consignment_status"`
+	Valid             bool              `json:"valid"` // Valid is true if ConsignmentStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullConsignmentStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ConsignmentStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ConsignmentStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullConsignmentStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ConsignmentStatus), nil
+}
+
 type CustomerKind string
 
 const (
@@ -2743,6 +2786,24 @@ type BulkMovement struct {
 	LossTreatmentAuthority  string             `json:"loss_treatment_authority"`
 	LossClassifiedBy        uuid.NullUUID      `json:"loss_classified_by"`
 	LossClassifiedAt        pgtype.Timestamptz `json:"loss_classified_at"`
+}
+
+type Consignment struct {
+	ID                  uuid.UUID          `json:"id"`
+	TenantID            uuid.UUID          `json:"tenant_id"`
+	ConsignmentNo       int32              `json:"consignment_no"`
+	PackagedInventoryID uuid.UUID          `json:"packaged_inventory_id"`
+	CustomerID          uuid.UUID          `json:"customer_id"`
+	Bottles             int32              `json:"bottles"`
+	BottlesSettled      int32              `json:"bottles_settled"`
+	BottlesRecalled     int32              `json:"bottles_recalled"`
+	Status              ConsignmentStatus  `json:"status"`
+	SentOn              pgtype.Date        `json:"sent_on"`
+	SettledOn           pgtype.Date        `json:"settled_on"`
+	Notes               string             `json:"notes"`
+	CreatedBy           uuid.NullUUID      `json:"created_by"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
 }
 
 type CostRate struct {

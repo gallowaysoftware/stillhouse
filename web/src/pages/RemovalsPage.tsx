@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { ConsignmentPanel } from "@/components/ConsignmentPanel";
 import { ReturnsPanel } from "@/components/ReturnsPanel";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
@@ -295,6 +296,7 @@ export function RemovalsPage() {
         total={list.data?.totalCount ?? 0}
         onPage={setPage}
       />
+      <ConsignmentPanel />
       <ReturnsPanel />
     </Shell>
   );
