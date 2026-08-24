@@ -119,6 +119,7 @@ func (s *KegService) ListKegs(
 			return e
 		}
 		out.Total, out.Available, out.Filled = sum.Total, sum.Available, sum.Filled
+		out.NonKeg = sum.NonKeg
 		out.AtCustomer, out.ReturnedDirty = sum.AtCustomer, sum.ReturnedDirty
 		out.OutOfService, out.Lost = sum.OutOfService, sum.Lost
 
@@ -159,8 +160,13 @@ func (s *KegService) CreateKeg(
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("a keg needs its serial — the register is useless without one"))
 	}
-	if req.Msg.GetCapacityL() <= 0 {
-		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("capacity must be greater than zero"))
+	// Capacity is a keg's defining number — it decides which register its
+	// contents live in (EDM3-8-1's 100 L threshold, stage 199). A pallet
+	// has no meaningful capacity and is not asked for one.
+	kind := returnableKindFromProto(req.Msg.GetKind())
+	if kind == sqlcgen.ReturnableKindKeg && req.Msg.GetCapacityL() <= 0 {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("a keg's capacity decides whether its contents are a marked special container or packaged spirits, so it is required"))
 	}
 
 	var cost, deposit pgtype.Numeric
@@ -182,9 +188,11 @@ func (s *KegService) CreateKeg(
 	var row sqlcgen.Keg
 	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		r, e := q.CreateKeg(ctx, sqlcgen.CreateKegParams{
-			TenantID: u.TenantID, Serial: serial, CapacityL: req.Msg.GetCapacityL(),
-			Material: req.Msg.GetMaterial(), PurchaseCostCad: cost, DepositCad: deposit,
+			TenantID: u.TenantID, Serial: serial,
+			CapacityL: pgtype.Float8{Float64: req.Msg.GetCapacityL(), Valid: req.Msg.GetCapacityL() > 0},
+			Material:  req.Msg.GetMaterial(), PurchaseCostCad: cost, DepositCad: deposit,
 			PurchasedOn: purchased, Notes: req.Msg.GetNotes(),
+			Kind: returnableKindFromProto(req.Msg.GetKind()),
 		})
 		if e != nil {
 			return e
@@ -435,8 +443,8 @@ func kegRowToProto(r sqlcgen.ListKegsRow) *stillhousev1.Keg {
 		PurchaseCostCad: r.PurchaseCostCad, DepositCad: r.DepositCad,
 		PurchasedOn: r.PurchasedOn, Status: r.Status,
 		CurrentCustomerID: r.CurrentCustomerID, MarkedContainerID: r.MarkedContainerID,
-		PackagedInventoryID: r.PackagedInventoryID,
-		LastFilledOn:        r.LastFilledOn, LastReturnedOn: r.LastReturnedOn, Notes: r.Notes,
+		PackagedInventoryID: r.PackagedInventoryID, Kind: r.Kind,
+		LastFilledOn: r.LastFilledOn, LastReturnedOn: r.LastReturnedOn, Notes: r.Notes,
 	})
 	out.CustomerName = r.CustomerName
 	out.LocationName = r.LocationName
@@ -461,9 +469,10 @@ func kegToProto(r sqlcgen.Keg) *stillhousev1.Keg {
 	out := &stillhousev1.Keg{
 		Id:        r.ID.String(),
 		Serial:    r.Serial,
-		CapacityL: r.CapacityL,
+		CapacityL: r.CapacityL.Float64,
 		Material:  r.Material,
 		Status:    kegStatusToProto(r.Status),
+		Kind:      returnableKindToProto(r.Kind),
 		Notes:     r.Notes,
 	}
 	if r.PurchaseCostCad.Valid {
@@ -549,12 +558,16 @@ func kegEventKindToProto(k sqlcgen.KegEventKind) stillhousev1.KegEventKind {
 func kegContentsFor(keg sqlcgen.Keg, in *stillhousev1.MoveKegRequest) (marked, packaged uuid.NullUUID, err error) {
 	const specialContainerMinL = 100
 
-	if keg.CapacityL >= specialContainerMinL {
+	// A keg with no capacity cannot reach here: the schema requires one.
+	// The guard is on the value rather than on Valid so a non-keg — which
+	// cannot hold contents at all — never takes the marked-container
+	// branch by accident.
+	if keg.CapacityL.Float64 >= specialContainerMinL {
 		id, e := uuid.Parse(in.GetMarkedContainerId())
 		if e != nil {
 			return marked, packaged, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
 				"this keg is %.0f L, so its contents are a marked special container (EDM3-8-1, 100–1500 L) — "+
-					"give marked_container_id", keg.CapacityL))
+					"give marked_container_id", keg.CapacityL.Float64))
 		}
 		return uuid.NullUUID{UUID: id, Valid: true}, uuid.NullUUID{}, nil
 	}
@@ -562,7 +575,36 @@ func kegContentsFor(keg sqlcgen.Keg, in *stillhousev1.MoveKegRequest) (marked, p
 	if e != nil {
 		return marked, packaged, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
 			"this keg is %.0f L, which is under the 100 L a marked special container starts at — "+
-				"its contents are packaged spirits, so give packaged_inventory_id", keg.CapacityL))
+				"its contents are packaged spirits, so give packaged_inventory_id", keg.CapacityL.Float64))
 	}
 	return uuid.NullUUID{}, uuid.NullUUID{UUID: id, Valid: true}, nil
+}
+
+var returnableKinds = map[stillhousev1.ReturnableKind]sqlcgen.ReturnableKind{
+	stillhousev1.ReturnableKind_RETURNABLE_KIND_KEG:          sqlcgen.ReturnableKindKeg,
+	stillhousev1.ReturnableKind_RETURNABLE_KIND_PALLET:       sqlcgen.ReturnableKindPallet,
+	stillhousev1.ReturnableKind_RETURNABLE_KIND_CRATE:        sqlcgen.ReturnableKindCrate,
+	stillhousev1.ReturnableKind_RETURNABLE_KIND_GAS_CYLINDER: sqlcgen.ReturnableKindGasCylinder,
+	stillhousev1.ReturnableKind_RETURNABLE_KIND_OTHER:        sqlcgen.ReturnableKindOther,
+}
+
+// returnableKindFromProto defaults to keg, and that default is safe in a
+// way the other enums in this file are not: the register was a keg
+// register, every row in it is a keg, and a caller written before this
+// existed means keg. The schema still refuses a non-keg holding spirits,
+// so a wrong guess here cannot put alcohol in a crate.
+func returnableKindFromProto(k stillhousev1.ReturnableKind) sqlcgen.ReturnableKind {
+	if v, ok := returnableKinds[k]; ok {
+		return v
+	}
+	return sqlcgen.ReturnableKindKeg
+}
+
+func returnableKindToProto(k sqlcgen.ReturnableKind) stillhousev1.ReturnableKind {
+	for p, s := range returnableKinds {
+		if s == k {
+			return p
+		}
+	}
+	return stillhousev1.ReturnableKind_RETURNABLE_KIND_UNSPECIFIED
 }

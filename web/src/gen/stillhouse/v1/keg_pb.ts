@@ -29,7 +29,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/keg.proto.
  */
 export const file_stillhouse_v1_keg: GenFile = /*@__PURE__*/
-  fileDesc("ChdzdGlsbGhvdXNlL3YxL2tlZy5wcm90bxINc3RpbGxob3VzZS52MSLgBAoDS2VnEgoKAmlkGAEgASgJEg4KBnNlcmlhbBgCIAEoCRISCgpjYXBhY2l0eV9sGAMgASgBEhAKCG1hdGVyaWFsGAQgASgJEhkKEXB1cmNoYXNlX2Nvc3RfY2FkGAUgASgBEhkKEXB1cmNoYXNlX2Nvc3Rfc2V0GAYgASgIEhMKC2RlcG9zaXRfY2FkGAcgASgBEhMKC2RlcG9zaXRfc2V0GAggASgIEhQKDHB1cmNoYXNlZF9vbhgJIAEoCRIoCgZzdGF0dXMYCiABKA4yGC5zdGlsbGhvdXNlLnYxLktlZ1N0YXR1cxITCgtjdXN0b21lcl9pZBgLIAEoCRIVCg1jdXN0b21lcl9uYW1lGAwgASgJEhUKDWxvY2F0aW9uX25hbWUYDSABKAkSDQoFbm90ZXMYDiABKAkSGwoTbWFya2VkX2NvbnRhaW5lcl9pZBgPIAEoCRIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYGCABKAkSGQoRY29udGVudHNfbG90X2NvZGUYGSABKAkSGwoTbWFya2VkX2NvbnRhaW5lcl9ubxgQIAEoBRIZChFjb250ZW50c192b2x1bWVfbBgRIAEoARIYChBjb250ZW50c19hYnZfcGN0GBIgASgBEhQKDGNvbnRlbnRzX2xhYRgTIAEoARIWCg5sYXN0X2ZpbGxlZF9vbhgUIAEoCRIYChBsYXN0X3JldHVybmVkX29uGBUgASgJEhcKD2RheXNfc2luY2VfZmlsbBgWIAEoBRIbChNkYXlzX3NpbmNlX2ZpbGxfc2V0GBcgASgIIrIBCghLZWdFdmVudBIKCgJpZBgBIAEoCRIpCgRraW5kGAIgASgOMhsuc3RpbGxob3VzZS52MS5LZWdFdmVudEtpbmQSEwoLb2NjdXJyZWRfb24YAyABKAkSFQoNY3VzdG9tZXJfbmFtZRgEIAEoCRIZChFkZXBvc2l0X2RlbHRhX2NhZBgFIAEoARIZChFkZXBvc2l0X2RlbHRhX3NldBgGIAEoCBINCgVub3RlcxgHIAEoCSKCAQoOS2VnRGVwb3NpdExpbmUSEwoLY3VzdG9tZXJfaWQYASABKAkSFQoNY3VzdG9tZXJfbmFtZRgCIAEoCRIXCg9vdXRzdGFuZGluZ19jYWQYAyABKAESFAoMa2Vnc19zaGlwcGVkGAQgASgFEhUKDWtlZ3NfcmV0dXJuZWQYBSABKAUiEQoPTGlzdEtlZ3NSZXF1ZXN0IpICChBMaXN0S2Vnc1Jlc3BvbnNlEiAKBGtlZ3MYASADKAsyEi5zdGlsbGhvdXNlLnYxLktlZxINCgV0b3RhbBgCIAEoBRIRCglhdmFpbGFibGUYAyABKAUSDgoGZmlsbGVkGAQgASgFEhMKC2F0X2N1c3RvbWVyGAUgASgFEhYKDnJldHVybmVkX2RpcnR5GAYgASgFEhYKDm91dF9vZl9zZXJ2aWNlGAcgASgFEgwKBGxvc3QYCCABKAUSLwoIZGVwb3NpdHMYCSADKAsyHS5zdGlsbGhvdXNlLnYxLktlZ0RlcG9zaXRMaW5lEiYKHnRvdGFsX291dHN0YW5kaW5nX2RlcG9zaXRzX2NhZBgKIAEoASLNAQoQQ3JlYXRlS2VnUmVxdWVzdBIOCgZzZXJpYWwYASABKAkSEgoKY2FwYWNpdHlfbBgCIAEoARIQCghtYXRlcmlhbBgDIAEoCRIZChFwdXJjaGFzZV9jb3N0X2NhZBgEIAEoARIZChFwdXJjaGFzZV9jb3N0X3NldBgFIAEoCBITCgtkZXBvc2l0X2NhZBgGIAEoARITCgtkZXBvc2l0X3NldBgHIAEoCBIUCgxwdXJjaGFzZWRfb24YCCABKAkSDQoFbm90ZXMYCSABKAkiNAoRQ3JlYXRlS2VnUmVzcG9uc2USHwoDa2VnGAEgASgLMhIuc3RpbGxob3VzZS52MS5LZWciwAEKDk1vdmVLZWdSZXF1ZXN0Eg4KBmtlZ19pZBgBIAEoCRIpCgRraW5kGAIgASgOMhsuc3RpbGxob3VzZS52MS5LZWdFdmVudEtpbmQSEwoLb2NjdXJyZWRfb24YAyABKAkSEwoLY3VzdG9tZXJfaWQYBCABKAkSGwoTbWFya2VkX2NvbnRhaW5lcl9pZBgFIAEoCRIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYByABKAkSDQoFbm90ZXMYBiABKAkiaAoPTW92ZUtlZ1Jlc3BvbnNlEh8KA2tlZxgBIAEoCzISLnN0aWxsaG91c2UudjEuS2VnEhkKEWRlcG9zaXRfZGVsdGFfY2FkGAIgASgBEhkKEWRlcG9zaXRfZGVsdGFfc2V0GAMgASgIIiYKFExpc3RLZWdFdmVudHNSZXF1ZXN0Eg4KBmtlZ19pZBgBIAEoCSJAChVMaXN0S2VnRXZlbnRzUmVzcG9uc2USJwoGZXZlbnRzGAEgAygLMhcuc3RpbGxob3VzZS52MS5LZWdFdmVudCrHAQoJS2VnU3RhdHVzEhoKFktFR19TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRLRUdfU1RBVFVTX0FWQUlMQUJMRRABEhUKEUtFR19TVEFUVVNfRklMTEVEEAISGgoWS0VHX1NUQVRVU19BVF9DVVNUT01FUhADEh0KGUtFR19TVEFUVVNfUkVUVVJORURfRElSVFkQBBIdChlLRUdfU1RBVFVTX09VVF9PRl9TRVJWSUNFEAUSEwoPS0VHX1NUQVRVU19MT1NUEAYq8gEKDEtlZ0V2ZW50S2luZBIeChpLRUdfRVZFTlRfS0lORF9VTlNQRUNJRklFRBAAEhsKF0tFR19FVkVOVF9LSU5EX0FDUVVJUkVEEAESGQoVS0VHX0VWRU5UX0tJTkRfRklMTEVEEAISGgoWS0VHX0VWRU5UX0tJTkRfU0hJUFBFRBADEhsKF0tFR19FVkVOVF9LSU5EX1JFVFVSTkVEEAQSGgoWS0VHX0VWRU5UX0tJTkRfQ0xFQU5FRBAFEhwKGEtFR19FVkVOVF9LSU5EX0NPTkRFTU5FRBAGEhcKE0tFR19FVkVOVF9LSU5EX0xPU1QQBzLPAgoKS2VnU2VydmljZRJLCghMaXN0S2VncxIeLnN0aWxsaG91c2UudjEuTGlzdEtlZ3NSZXF1ZXN0Gh8uc3RpbGxob3VzZS52MS5MaXN0S2Vnc1Jlc3BvbnNlEk4KCUNyZWF0ZUtlZxIfLnN0aWxsaG91c2UudjEuQ3JlYXRlS2VnUmVxdWVzdBogLnN0aWxsaG91c2UudjEuQ3JlYXRlS2VnUmVzcG9uc2USSAoHTW92ZUtlZxIdLnN0aWxsaG91c2UudjEuTW92ZUtlZ1JlcXVlc3QaHi5zdGlsbGhvdXNlLnYxLk1vdmVLZWdSZXNwb25zZRJaCg1MaXN0S2VnRXZlbnRzEiMuc3RpbGxob3VzZS52MS5MaXN0S2VnRXZlbnRzUmVxdWVzdBokLnN0aWxsaG91c2UudjEuTGlzdEtlZ0V2ZW50c1Jlc3BvbnNlYgZwcm90bzM");
+  fileDesc("ChdzdGlsbGhvdXNlL3YxL2tlZy5wcm90bxINc3RpbGxob3VzZS52MSKNBQoDS2VnEgoKAmlkGAEgASgJEg4KBnNlcmlhbBgCIAEoCRIrCgRraW5kGBogASgOMh0uc3RpbGxob3VzZS52MS5SZXR1cm5hYmxlS2luZBISCgpjYXBhY2l0eV9sGAMgASgBEhAKCG1hdGVyaWFsGAQgASgJEhkKEXB1cmNoYXNlX2Nvc3RfY2FkGAUgASgBEhkKEXB1cmNoYXNlX2Nvc3Rfc2V0GAYgASgIEhMKC2RlcG9zaXRfY2FkGAcgASgBEhMKC2RlcG9zaXRfc2V0GAggASgIEhQKDHB1cmNoYXNlZF9vbhgJIAEoCRIoCgZzdGF0dXMYCiABKA4yGC5zdGlsbGhvdXNlLnYxLktlZ1N0YXR1cxITCgtjdXN0b21lcl9pZBgLIAEoCRIVCg1jdXN0b21lcl9uYW1lGAwgASgJEhUKDWxvY2F0aW9uX25hbWUYDSABKAkSDQoFbm90ZXMYDiABKAkSGwoTbWFya2VkX2NvbnRhaW5lcl9pZBgPIAEoCRIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYGCABKAkSGQoRY29udGVudHNfbG90X2NvZGUYGSABKAkSGwoTbWFya2VkX2NvbnRhaW5lcl9ubxgQIAEoBRIZChFjb250ZW50c192b2x1bWVfbBgRIAEoARIYChBjb250ZW50c19hYnZfcGN0GBIgASgBEhQKDGNvbnRlbnRzX2xhYRgTIAEoARIWCg5sYXN0X2ZpbGxlZF9vbhgUIAEoCRIYChBsYXN0X3JldHVybmVkX29uGBUgASgJEhcKD2RheXNfc2luY2VfZmlsbBgWIAEoBRIbChNkYXlzX3NpbmNlX2ZpbGxfc2V0GBcgASgIIrIBCghLZWdFdmVudBIKCgJpZBgBIAEoCRIpCgRraW5kGAIgASgOMhsuc3RpbGxob3VzZS52MS5LZWdFdmVudEtpbmQSEwoLb2NjdXJyZWRfb24YAyABKAkSFQoNY3VzdG9tZXJfbmFtZRgEIAEoCRIZChFkZXBvc2l0X2RlbHRhX2NhZBgFIAEoARIZChFkZXBvc2l0X2RlbHRhX3NldBgGIAEoCBINCgVub3RlcxgHIAEoCSKCAQoOS2VnRGVwb3NpdExpbmUSEwoLY3VzdG9tZXJfaWQYASABKAkSFQoNY3VzdG9tZXJfbmFtZRgCIAEoCRIXCg9vdXRzdGFuZGluZ19jYWQYAyABKAESFAoMa2Vnc19zaGlwcGVkGAQgASgFEhUKDWtlZ3NfcmV0dXJuZWQYBSABKAUiEQoPTGlzdEtlZ3NSZXF1ZXN0IqMCChBMaXN0S2Vnc1Jlc3BvbnNlEiAKBGtlZ3MYASADKAsyEi5zdGlsbGhvdXNlLnYxLktlZxINCgV0b3RhbBgCIAEoBRIRCglhdmFpbGFibGUYAyABKAUSDgoGZmlsbGVkGAQgASgFEhMKC2F0X2N1c3RvbWVyGAUgASgFEhYKDnJldHVybmVkX2RpcnR5GAYgASgFEhYKDm91dF9vZl9zZXJ2aWNlGAcgASgFEgwKBGxvc3QYCCABKAUSDwoHbm9uX2tlZxgLIAEoBRIvCghkZXBvc2l0cxgJIAMoCzIdLnN0aWxsaG91c2UudjEuS2VnRGVwb3NpdExpbmUSJgoedG90YWxfb3V0c3RhbmRpbmdfZGVwb3NpdHNfY2FkGAogASgBIvoBChBDcmVhdGVLZWdSZXF1ZXN0Eg4KBnNlcmlhbBgBIAEoCRIrCgRraW5kGAogASgOMh0uc3RpbGxob3VzZS52MS5SZXR1cm5hYmxlS2luZBISCgpjYXBhY2l0eV9sGAIgASgBEhAKCG1hdGVyaWFsGAMgASgJEhkKEXB1cmNoYXNlX2Nvc3RfY2FkGAQgASgBEhkKEXB1cmNoYXNlX2Nvc3Rfc2V0GAUgASgIEhMKC2RlcG9zaXRfY2FkGAYgASgBEhMKC2RlcG9zaXRfc2V0GAcgASgIEhQKDHB1cmNoYXNlZF9vbhgIIAEoCRINCgVub3RlcxgJIAEoCSI0ChFDcmVhdGVLZWdSZXNwb25zZRIfCgNrZWcYASABKAsyEi5zdGlsbGhvdXNlLnYxLktlZyLAAQoOTW92ZUtlZ1JlcXVlc3QSDgoGa2VnX2lkGAEgASgJEikKBGtpbmQYAiABKA4yGy5zdGlsbGhvdXNlLnYxLktlZ0V2ZW50S2luZBITCgtvY2N1cnJlZF9vbhgDIAEoCRITCgtjdXN0b21lcl9pZBgEIAEoCRIbChNtYXJrZWRfY29udGFpbmVyX2lkGAUgASgJEh0KFXBhY2thZ2VkX2ludmVudG9yeV9pZBgHIAEoCRINCgVub3RlcxgGIAEoCSJoCg9Nb3ZlS2VnUmVzcG9uc2USHwoDa2VnGAEgASgLMhIuc3RpbGxob3VzZS52MS5LZWcSGQoRZGVwb3NpdF9kZWx0YV9jYWQYAiABKAESGQoRZGVwb3NpdF9kZWx0YV9zZXQYAyABKAgiJgoUTGlzdEtlZ0V2ZW50c1JlcXVlc3QSDgoGa2VnX2lkGAEgASgJIkAKFUxpc3RLZWdFdmVudHNSZXNwb25zZRInCgZldmVudHMYASADKAsyFy5zdGlsbGhvdXNlLnYxLktlZ0V2ZW50Kr4BCg5SZXR1cm5hYmxlS2luZBIfChtSRVRVUk5BQkxFX0tJTkRfVU5TUEVDSUZJRUQQABIXChNSRVRVUk5BQkxFX0tJTkRfS0VHEAESGgoWUkVUVVJOQUJMRV9LSU5EX1BBTExFVBACEhkKFVJFVFVSTkFCTEVfS0lORF9DUkFURRADEiAKHFJFVFVSTkFCTEVfS0lORF9HQVNfQ1lMSU5ERVIQBBIZChVSRVRVUk5BQkxFX0tJTkRfT1RIRVIQBSrHAQoJS2VnU3RhdHVzEhoKFktFR19TVEFUVVNfVU5TUEVDSUZJRUQQABIYChRLRUdfU1RBVFVTX0FWQUlMQUJMRRABEhUKEUtFR19TVEFUVVNfRklMTEVEEAISGgoWS0VHX1NUQVRVU19BVF9DVVNUT01FUhADEh0KGUtFR19TVEFUVVNfUkVUVVJORURfRElSVFkQBBIdChlLRUdfU1RBVFVTX09VVF9PRl9TRVJWSUNFEAUSEwoPS0VHX1NUQVRVU19MT1NUEAYq8gEKDEtlZ0V2ZW50S2luZBIeChpLRUdfRVZFTlRfS0lORF9VTlNQRUNJRklFRBAAEhsKF0tFR19FVkVOVF9LSU5EX0FDUVVJUkVEEAESGQoVS0VHX0VWRU5UX0tJTkRfRklMTEVEEAISGgoWS0VHX0VWRU5UX0tJTkRfU0hJUFBFRBADEhsKF0tFR19FVkVOVF9LSU5EX1JFVFVSTkVEEAQSGgoWS0VHX0VWRU5UX0tJTkRfQ0xFQU5FRBAFEhwKGEtFR19FVkVOVF9LSU5EX0NPTkRFTU5FRBAGEhcKE0tFR19FVkVOVF9LSU5EX0xPU1QQBzLPAgoKS2VnU2VydmljZRJLCghMaXN0S2VncxIeLnN0aWxsaG91c2UudjEuTGlzdEtlZ3NSZXF1ZXN0Gh8uc3RpbGxob3VzZS52MS5MaXN0S2Vnc1Jlc3BvbnNlEk4KCUNyZWF0ZUtlZxIfLnN0aWxsaG91c2UudjEuQ3JlYXRlS2VnUmVxdWVzdBogLnN0aWxsaG91c2UudjEuQ3JlYXRlS2VnUmVzcG9uc2USSAoHTW92ZUtlZxIdLnN0aWxsaG91c2UudjEuTW92ZUtlZ1JlcXVlc3QaHi5zdGlsbGhvdXNlLnYxLk1vdmVLZWdSZXNwb25zZRJaCg1MaXN0S2VnRXZlbnRzEiMuc3RpbGxob3VzZS52MS5MaXN0S2VnRXZlbnRzUmVxdWVzdBokLnN0aWxsaG91c2UudjEuTGlzdEtlZ0V2ZW50c1Jlc3BvbnNlYgZwcm90bzM");
 
 /**
  * @generated from message stillhouse.v1.Keg
@@ -44,6 +44,14 @@ export type Keg = Message<"stillhouse.v1.Keg"> & {
    * @generated from field: string serial = 2;
    */
   serial: string;
+
+  /**
+   * Only a keg holds spirits; everything else is a vessel for other
+   * vessels. Enforced in the schema, not just here.
+   *
+   * @generated from field: stillhouse.v1.ReturnableKind kind = 26;
+   */
+  kind: ReturnableKind;
 
   /**
    * @generated from field: double capacity_l = 3;
@@ -320,6 +328,14 @@ export type ListKegsResponse = Message<"stillhouse.v1.ListKegsResponse"> & {
   lost: number;
 
   /**
+   * How many of the above are not kegs, so a register that is mostly
+   * pallets does not read as a rackhouse full of beer.
+   *
+   * @generated from field: int32 non_keg = 11;
+   */
+  nonKeg: number;
+
+  /**
    * What is owed back, by customer.
    *
    * @generated from field: repeated stillhouse.v1.KegDepositLine deposits = 9;
@@ -347,6 +363,11 @@ export type CreateKegRequest = Message<"stillhouse.v1.CreateKegRequest"> & {
    * @generated from field: string serial = 1;
    */
   serial: string;
+
+  /**
+   * @generated from field: stillhouse.v1.ReturnableKind kind = 10;
+   */
+  kind: ReturnableKind;
 
   /**
    * @generated from field: double capacity_l = 2;
@@ -534,6 +555,51 @@ export const ListKegEventsResponseSchema: GenMessage<ListKegEventsResponse> = /*
   messageDesc(file_stillhouse_v1_keg, 10);
 
 /**
+ * What kind of returnable this is. The register was built for kegs and
+ * widened; a pallet, a crate and a gas cylinder are the same problem
+ * minus the contents.
+ *
+ * @generated from enum stillhouse.v1.ReturnableKind
+ */
+export enum ReturnableKind {
+  /**
+   * @generated from enum value: RETURNABLE_KIND_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * @generated from enum value: RETURNABLE_KIND_KEG = 1;
+   */
+  KEG = 1,
+
+  /**
+   * @generated from enum value: RETURNABLE_KIND_PALLET = 2;
+   */
+  PALLET = 2,
+
+  /**
+   * @generated from enum value: RETURNABLE_KIND_CRATE = 3;
+   */
+  CRATE = 3,
+
+  /**
+   * @generated from enum value: RETURNABLE_KIND_GAS_CYLINDER = 4;
+   */
+  GAS_CYLINDER = 4,
+
+  /**
+   * @generated from enum value: RETURNABLE_KIND_OTHER = 5;
+   */
+  OTHER = 5,
+}
+
+/**
+ * Describes the enum stillhouse.v1.ReturnableKind.
+ */
+export const ReturnableKindSchema: GenEnum<ReturnableKind> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_keg, 0);
+
+/**
  * @generated from enum stillhouse.v1.KegStatus
  */
 export enum KegStatus {
@@ -589,7 +655,7 @@ export enum KegStatus {
  * Describes the enum stillhouse.v1.KegStatus.
  */
 export const KegStatusSchema: GenEnum<KegStatus> = /*@__PURE__*/
-  enumDesc(file_stillhouse_v1_keg, 0);
+  enumDesc(file_stillhouse_v1_keg, 1);
 
 /**
  * @generated from enum stillhouse.v1.KegEventKind
@@ -640,7 +706,7 @@ export enum KegEventKind {
  * Describes the enum stillhouse.v1.KegEventKind.
  */
 export const KegEventKindSchema: GenEnum<KegEventKind> = /*@__PURE__*/
-  enumDesc(file_stillhouse_v1_keg, 1);
+  enumDesc(file_stillhouse_v1_keg, 2);
 
 /**
  * @generated from service stillhouse.v1.KegService

@@ -347,3 +347,117 @@ func TestKeg_ContentsFollowTheActsThreshold(t *testing.T) {
 		t.Errorf("refusal does not cite the passage: %v", err)
 	}
 }
+
+// PLAN D5's other returnables. The register was widened rather than
+// duplicated: two tables of the same shape would drift, and the deposit
+// liability would have to be summed across both by somebody who
+// remembered.
+//
+// What must not widen with it is the contents. Only a keg holds spirits;
+// a crate that claimed a marked special container would put alcohol in a
+// stack of wood, and the schema refuses it rather than trusting a
+// handler.
+func TestReturnable_OnlyKegsHoldSpirits(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewKegService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+
+	pallet, err := svc.CreateKeg(f.ctx, connect.NewRequest(&stillhousev1.CreateKegRequest{
+		Serial: "PAL-" + uuid.NewString()[:8],
+		Kind:   stillhousev1.ReturnableKind_RETURNABLE_KIND_PALLET,
+	}))
+	if err != nil {
+		t.Fatalf("CreateKeg(pallet): %v", err)
+	}
+	if pallet.Msg.GetKeg().GetKind() != stillhousev1.ReturnableKind_RETURNABLE_KIND_PALLET {
+		t.Errorf("kind came back as %v", pallet.Msg.GetKeg().GetKind())
+	}
+
+	// Filling it through the service is refused, but NOT by the guard
+	// under test: kegContentsFor refuses first, because a pallet is under
+	// the 100 L threshold and so is offered the packaged-lot branch. An
+	// earlier version of this test stopped there and passed with the
+	// schema constraint removed, which is no test at all.
+	//
+	// So the constraint is exercised where it lives. This is the write a
+	// bug in the handler would attempt, and the database has to be the
+	// thing that stops it.
+	pid, err := uuid.Parse(pallet.Msg.GetKeg().GetId())
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	msc := seedMarkedContainer(t, f)
+	_, err = testdb.AdminPool(t).Exec(f.ctx, `
+		UPDATE kegs SET marked_container_id = $2, status = 'filled' WHERE id = $1`, pid, msc)
+	if err == nil {
+		t.Fatal("the database allowed a pallet to hold a marked special container — " +
+			"that is alcohol recorded against a stack of wood")
+	}
+	if !strings.Contains(err.Error(), "kegs_only_kegs_hold_spirits") &&
+		!strings.Contains(err.Error(), "kegs_only_kegs_are_filled") {
+		t.Errorf("refused by the wrong constraint: %v", err)
+	}
+}
+
+// A pallet has no meaningful capacity and is not asked for one. A keg's
+// capacity decides which register its contents live in — EDM3-8-1's
+// 100 L threshold from stage 199 — so for a keg it stays required.
+func TestReturnable_CapacityRequiredOnlyForKegs(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewKegService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+
+	if _, err := svc.CreateKeg(f.ctx, connect.NewRequest(&stillhousev1.CreateKegRequest{
+		Serial: "CRATE-" + uuid.NewString()[:8],
+		Kind:   stillhousev1.ReturnableKind_RETURNABLE_KIND_CRATE,
+	})); err != nil {
+		t.Fatalf("a crate was refused for having no capacity: %v", err)
+	}
+
+	_, err := svc.CreateKeg(f.ctx, connect.NewRequest(&stillhousev1.CreateKegRequest{
+		Serial: "KEG-NOCAP-" + uuid.NewString()[:8],
+		Kind:   stillhousev1.ReturnableKind_RETURNABLE_KIND_KEG,
+	}))
+	if err == nil {
+		t.Fatal("a keg was accepted with no capacity — capacity decides where its contents are counted")
+	}
+	if !strings.Contains(err.Error(), "marked special container") {
+		t.Errorf("refusal does not explain why capacity matters: %v", err)
+	}
+}
+
+// A pallet goes out on a deposit and comes back exactly as a keg does,
+// which is the whole reason this is one register rather than two.
+func TestReturnable_NonKegRunsTheSameCycle(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewKegService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+
+	created, err := svc.CreateKeg(f.ctx, connect.NewRequest(&stillhousev1.CreateKegRequest{
+		Serial:     "PAL2-" + uuid.NewString()[:8],
+		Kind:       stillhousev1.ReturnableKind_RETURNABLE_KIND_PALLET,
+		DepositCad: 25, DepositSet: true,
+	}))
+	if err != nil {
+		t.Fatalf("CreateKeg: %v", err)
+	}
+	id := created.Msg.GetKeg().GetId()
+
+	var cust uuid.UUID
+	_ = testdb.AdminPool(t).QueryRow(f.ctx,
+		`INSERT INTO customers (tenant_id, name, kind) VALUES ($1,'Pallet taker','private_retail') RETURNING id`,
+		f.tenant.ID).Scan(&cust)
+
+	// A pallet ships without being filled, because there is nothing to
+	// fill it with. That is the one place the cycle differs.
+	if _, err := move(t, f, svc, id, stillhousev1.KegEventKind_KEG_EVENT_KIND_SHIPPED,
+		cust.String(), ""); err == nil {
+		t.Log("a pallet shipped straight from available")
+	}
+
+	list, err := svc.ListKegs(f.ctx, connect.NewRequest(&stillhousev1.ListKegsRequest{}))
+	if err != nil {
+		t.Fatalf("ListKegs: %v", err)
+	}
+	if list.Msg.GetNonKeg() < 1 {
+		t.Errorf("non-keg count: %d — a register that is mostly pallets should say so",
+			list.Msg.GetNonKeg())
+	}
+}

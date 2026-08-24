@@ -2005,6 +2005,51 @@ func (ns NullRequirementProvenance) Value() (driver.Value, error) {
 	return string(ns.RequirementProvenance), nil
 }
 
+type ReturnableKind string
+
+const (
+	ReturnableKindKeg         ReturnableKind = "keg"
+	ReturnableKindPallet      ReturnableKind = "pallet"
+	ReturnableKindCrate       ReturnableKind = "crate"
+	ReturnableKindGasCylinder ReturnableKind = "gas_cylinder"
+	ReturnableKindOther       ReturnableKind = "other"
+)
+
+func (e *ReturnableKind) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReturnableKind(s)
+	case string:
+		*e = ReturnableKind(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReturnableKind: %T", src)
+	}
+	return nil
+}
+
+type NullReturnableKind struct {
+	ReturnableKind ReturnableKind `json:"returnable_kind"`
+	Valid          bool           `json:"valid"` // Valid is true if ReturnableKind is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReturnableKind) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReturnableKind, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReturnableKind.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReturnableKind) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReturnableKind), nil
+}
+
 type SalesOrderStatus string
 
 const (
@@ -3149,11 +3194,12 @@ type JournalAccount struct {
 	UpdatedAt     pgtype.Timestamptz `json:"updated_at"`
 }
 
+// Returnable assets: kegs, pallets, crates, gas cylinders. Named for the case it was built for; see the kind column.
 type Keg struct {
 	ID                  uuid.UUID          `json:"id"`
 	TenantID            uuid.UUID          `json:"tenant_id"`
 	Serial              string             `json:"serial"`
-	CapacityL           float64            `json:"capacity_l"`
+	CapacityL           pgtype.Float8      `json:"capacity_l"`
 	Material            string             `json:"material"`
 	PurchaseCostCad     pgtype.Numeric     `json:"purchase_cost_cad"`
 	DepositCad          pgtype.Numeric     `json:"deposit_cad"`
@@ -3168,6 +3214,7 @@ type Keg struct {
 	Notes               string             `json:"notes"`
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	Kind                ReturnableKind     `json:"kind"`
 }
 
 type KegEvent struct {

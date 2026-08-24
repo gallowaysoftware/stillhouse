@@ -47,8 +47,8 @@ SELECT * FROM kegs WHERE serial = $1;
 
 -- name: CreateKeg :one
 INSERT INTO kegs (tenant_id, serial, capacity_l, material, purchase_cost_cad,
-                  deposit_cad, purchased_on, notes)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+                  deposit_cad, purchased_on, notes, kind)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 RETURNING *;
 
 -- name: SetKegState :one
@@ -103,6 +103,7 @@ ORDER BY SUM(e.deposit_delta_cad) DESC;
 
 -- name: KegRegisterSummary :one
 SELECT COUNT(*)::int AS total,
+       COUNT(*) FILTER (WHERE kind <> 'keg')::int         AS non_keg,
        COUNT(*) FILTER (WHERE status = 'available')::int      AS available,
        COUNT(*) FILTER (WHERE status = 'filled')::int         AS filled,
        COUNT(*) FILTER (WHERE status = 'at_customer')::int    AS at_customer,

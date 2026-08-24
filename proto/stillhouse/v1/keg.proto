@@ -20,6 +20,18 @@ syntax = "proto3";
 
 package stillhouse.v1;
 
+// What kind of returnable this is. The register was built for kegs and
+// widened; a pallet, a crate and a gas cylinder are the same problem
+// minus the contents.
+enum ReturnableKind {
+  RETURNABLE_KIND_UNSPECIFIED = 0;
+  RETURNABLE_KIND_KEG = 1;
+  RETURNABLE_KIND_PALLET = 2;
+  RETURNABLE_KIND_CRATE = 3;
+  RETURNABLE_KIND_GAS_CYLINDER = 4;
+  RETURNABLE_KIND_OTHER = 5;
+}
+
 enum KegStatus {
   KEG_STATUS_UNSPECIFIED = 0;
   // Ours, empty, clean, ready to fill.
@@ -51,6 +63,9 @@ enum KegEventKind {
 message Keg {
   string id = 1;
   string serial = 2;
+  // Only a keg holds spirits; everything else is a vessel for other
+  // vessels. Enforced in the schema, not just here.
+  ReturnableKind kind = 26;
   double capacity_l = 3;
   string material = 4;
   double purchase_cost_cad = 5;
@@ -113,6 +128,9 @@ message ListKegsResponse {
   int32 returned_dirty = 6;
   int32 out_of_service = 7;
   int32 lost = 8;
+  // How many of the above are not kegs, so a register that is mostly
+  // pallets does not read as a rackhouse full of beer.
+  int32 non_keg = 11;
   // What is owed back, by customer.
   repeated KegDepositLine deposits = 9;
   double total_outstanding_deposits_cad = 10;
@@ -120,6 +138,7 @@ message ListKegsResponse {
 
 message CreateKegRequest {
   string serial = 1;
+  ReturnableKind kind = 10;
   double capacity_l = 2;
   string material = 3;
   double purchase_cost_cad = 4;

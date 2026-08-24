@@ -40,6 +40,67 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// What kind of returnable this is. The register was built for kegs and
+// widened; a pallet, a crate and a gas cylinder are the same problem
+// minus the contents.
+type ReturnableKind int32
+
+const (
+	ReturnableKind_RETURNABLE_KIND_UNSPECIFIED  ReturnableKind = 0
+	ReturnableKind_RETURNABLE_KIND_KEG          ReturnableKind = 1
+	ReturnableKind_RETURNABLE_KIND_PALLET       ReturnableKind = 2
+	ReturnableKind_RETURNABLE_KIND_CRATE        ReturnableKind = 3
+	ReturnableKind_RETURNABLE_KIND_GAS_CYLINDER ReturnableKind = 4
+	ReturnableKind_RETURNABLE_KIND_OTHER        ReturnableKind = 5
+)
+
+// Enum value maps for ReturnableKind.
+var (
+	ReturnableKind_name = map[int32]string{
+		0: "RETURNABLE_KIND_UNSPECIFIED",
+		1: "RETURNABLE_KIND_KEG",
+		2: "RETURNABLE_KIND_PALLET",
+		3: "RETURNABLE_KIND_CRATE",
+		4: "RETURNABLE_KIND_GAS_CYLINDER",
+		5: "RETURNABLE_KIND_OTHER",
+	}
+	ReturnableKind_value = map[string]int32{
+		"RETURNABLE_KIND_UNSPECIFIED":  0,
+		"RETURNABLE_KIND_KEG":          1,
+		"RETURNABLE_KIND_PALLET":       2,
+		"RETURNABLE_KIND_CRATE":        3,
+		"RETURNABLE_KIND_GAS_CYLINDER": 4,
+		"RETURNABLE_KIND_OTHER":        5,
+	}
+)
+
+func (x ReturnableKind) Enum() *ReturnableKind {
+	p := new(ReturnableKind)
+	*p = x
+	return p
+}
+
+func (x ReturnableKind) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (ReturnableKind) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_keg_proto_enumTypes[0].Descriptor()
+}
+
+func (ReturnableKind) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_keg_proto_enumTypes[0]
+}
+
+func (x ReturnableKind) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use ReturnableKind.Descriptor instead.
+func (ReturnableKind) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_keg_proto_rawDescGZIP(), []int{0}
+}
+
 type KegStatus int32
 
 const (
@@ -92,11 +153,11 @@ func (x KegStatus) String() string {
 }
 
 func (KegStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_stillhouse_v1_keg_proto_enumTypes[0].Descriptor()
+	return file_stillhouse_v1_keg_proto_enumTypes[1].Descriptor()
 }
 
 func (KegStatus) Type() protoreflect.EnumType {
-	return &file_stillhouse_v1_keg_proto_enumTypes[0]
+	return &file_stillhouse_v1_keg_proto_enumTypes[1]
 }
 
 func (x KegStatus) Number() protoreflect.EnumNumber {
@@ -105,7 +166,7 @@ func (x KegStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use KegStatus.Descriptor instead.
 func (KegStatus) EnumDescriptor() ([]byte, []int) {
-	return file_stillhouse_v1_keg_proto_rawDescGZIP(), []int{0}
+	return file_stillhouse_v1_keg_proto_rawDescGZIP(), []int{1}
 }
 
 type KegEventKind int32
@@ -156,11 +217,11 @@ func (x KegEventKind) String() string {
 }
 
 func (KegEventKind) Descriptor() protoreflect.EnumDescriptor {
-	return file_stillhouse_v1_keg_proto_enumTypes[1].Descriptor()
+	return file_stillhouse_v1_keg_proto_enumTypes[2].Descriptor()
 }
 
 func (KegEventKind) Type() protoreflect.EnumType {
-	return &file_stillhouse_v1_keg_proto_enumTypes[1]
+	return &file_stillhouse_v1_keg_proto_enumTypes[2]
 }
 
 func (x KegEventKind) Number() protoreflect.EnumNumber {
@@ -169,25 +230,28 @@ func (x KegEventKind) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use KegEventKind.Descriptor instead.
 func (KegEventKind) EnumDescriptor() ([]byte, []int) {
-	return file_stillhouse_v1_keg_proto_rawDescGZIP(), []int{1}
+	return file_stillhouse_v1_keg_proto_rawDescGZIP(), []int{2}
 }
 
 type Keg struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Serial          string                 `protobuf:"bytes,2,opt,name=serial,proto3" json:"serial,omitempty"`
-	CapacityL       float64                `protobuf:"fixed64,3,opt,name=capacity_l,json=capacityL,proto3" json:"capacity_l,omitempty"`
-	Material        string                 `protobuf:"bytes,4,opt,name=material,proto3" json:"material,omitempty"`
-	PurchaseCostCad float64                `protobuf:"fixed64,5,opt,name=purchase_cost_cad,json=purchaseCostCad,proto3" json:"purchase_cost_cad,omitempty"`
-	PurchaseCostSet bool                   `protobuf:"varint,6,opt,name=purchase_cost_set,json=purchaseCostSet,proto3" json:"purchase_cost_set,omitempty"`
-	DepositCad      float64                `protobuf:"fixed64,7,opt,name=deposit_cad,json=depositCad,proto3" json:"deposit_cad,omitempty"`
-	DepositSet      bool                   `protobuf:"varint,8,opt,name=deposit_set,json=depositSet,proto3" json:"deposit_set,omitempty"`
-	PurchasedOn     string                 `protobuf:"bytes,9,opt,name=purchased_on,json=purchasedOn,proto3" json:"purchased_on,omitempty"`
-	Status          KegStatus              `protobuf:"varint,10,opt,name=status,proto3,enum=stillhouse.v1.KegStatus" json:"status,omitempty"`
-	CustomerId      string                 `protobuf:"bytes,11,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
-	CustomerName    string                 `protobuf:"bytes,12,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
-	LocationName    string                 `protobuf:"bytes,13,opt,name=location_name,json=locationName,proto3" json:"location_name,omitempty"`
-	Notes           string                 `protobuf:"bytes,14,opt,name=notes,proto3" json:"notes,omitempty"`
+	state  protoimpl.MessageState `protogen:"open.v1"`
+	Id     string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Serial string                 `protobuf:"bytes,2,opt,name=serial,proto3" json:"serial,omitempty"`
+	// Only a keg holds spirits; everything else is a vessel for other
+	// vessels. Enforced in the schema, not just here.
+	Kind            ReturnableKind `protobuf:"varint,26,opt,name=kind,proto3,enum=stillhouse.v1.ReturnableKind" json:"kind,omitempty"`
+	CapacityL       float64        `protobuf:"fixed64,3,opt,name=capacity_l,json=capacityL,proto3" json:"capacity_l,omitempty"`
+	Material        string         `protobuf:"bytes,4,opt,name=material,proto3" json:"material,omitempty"`
+	PurchaseCostCad float64        `protobuf:"fixed64,5,opt,name=purchase_cost_cad,json=purchaseCostCad,proto3" json:"purchase_cost_cad,omitempty"`
+	PurchaseCostSet bool           `protobuf:"varint,6,opt,name=purchase_cost_set,json=purchaseCostSet,proto3" json:"purchase_cost_set,omitempty"`
+	DepositCad      float64        `protobuf:"fixed64,7,opt,name=deposit_cad,json=depositCad,proto3" json:"deposit_cad,omitempty"`
+	DepositSet      bool           `protobuf:"varint,8,opt,name=deposit_set,json=depositSet,proto3" json:"deposit_set,omitempty"`
+	PurchasedOn     string         `protobuf:"bytes,9,opt,name=purchased_on,json=purchasedOn,proto3" json:"purchased_on,omitempty"`
+	Status          KegStatus      `protobuf:"varint,10,opt,name=status,proto3,enum=stillhouse.v1.KegStatus" json:"status,omitempty"`
+	CustomerId      string         `protobuf:"bytes,11,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	CustomerName    string         `protobuf:"bytes,12,opt,name=customer_name,json=customerName,proto3" json:"customer_name,omitempty"`
+	LocationName    string         `protobuf:"bytes,13,opt,name=location_name,json=locationName,proto3" json:"location_name,omitempty"`
+	Notes           string         `protobuf:"bytes,14,opt,name=notes,proto3" json:"notes,omitempty"`
 	// The contents, read from the marked special container this keg points
 	// at. Reported for convenience and owned there — nothing on the B266
 	// reads these fields.
@@ -252,6 +316,13 @@ func (x *Keg) GetSerial() string {
 		return x.Serial
 	}
 	return ""
+}
+
+func (x *Keg) GetKind() ReturnableKind {
+	if x != nil {
+		return x.Kind
+	}
+	return ReturnableKind_RETURNABLE_KIND_UNSPECIFIED
 }
 
 func (x *Keg) GetCapacityL() float64 {
@@ -629,6 +700,9 @@ type ListKegsResponse struct {
 	ReturnedDirty int32                  `protobuf:"varint,6,opt,name=returned_dirty,json=returnedDirty,proto3" json:"returned_dirty,omitempty"`
 	OutOfService  int32                  `protobuf:"varint,7,opt,name=out_of_service,json=outOfService,proto3" json:"out_of_service,omitempty"`
 	Lost          int32                  `protobuf:"varint,8,opt,name=lost,proto3" json:"lost,omitempty"`
+	// How many of the above are not kegs, so a register that is mostly
+	// pallets does not read as a rackhouse full of beer.
+	NonKeg int32 `protobuf:"varint,11,opt,name=non_keg,json=nonKeg,proto3" json:"non_keg,omitempty"`
 	// What is owed back, by customer.
 	Deposits                    []*KegDepositLine `protobuf:"bytes,9,rep,name=deposits,proto3" json:"deposits,omitempty"`
 	TotalOutstandingDepositsCad float64           `protobuf:"fixed64,10,opt,name=total_outstanding_deposits_cad,json=totalOutstandingDepositsCad,proto3" json:"total_outstanding_deposits_cad,omitempty"`
@@ -722,6 +796,13 @@ func (x *ListKegsResponse) GetLost() int32 {
 	return 0
 }
 
+func (x *ListKegsResponse) GetNonKeg() int32 {
+	if x != nil {
+		return x.NonKeg
+	}
+	return 0
+}
+
 func (x *ListKegsResponse) GetDeposits() []*KegDepositLine {
 	if x != nil {
 		return x.Deposits
@@ -739,6 +820,7 @@ func (x *ListKegsResponse) GetTotalOutstandingDepositsCad() float64 {
 type CreateKegRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Serial          string                 `protobuf:"bytes,1,opt,name=serial,proto3" json:"serial,omitempty"`
+	Kind            ReturnableKind         `protobuf:"varint,10,opt,name=kind,proto3,enum=stillhouse.v1.ReturnableKind" json:"kind,omitempty"`
 	CapacityL       float64                `protobuf:"fixed64,2,opt,name=capacity_l,json=capacityL,proto3" json:"capacity_l,omitempty"`
 	Material        string                 `protobuf:"bytes,3,opt,name=material,proto3" json:"material,omitempty"`
 	PurchaseCostCad float64                `protobuf:"fixed64,4,opt,name=purchase_cost_cad,json=purchaseCostCad,proto3" json:"purchase_cost_cad,omitempty"`
@@ -786,6 +868,13 @@ func (x *CreateKegRequest) GetSerial() string {
 		return x.Serial
 	}
 	return ""
+}
+
+func (x *CreateKegRequest) GetKind() ReturnableKind {
+	if x != nil {
+		return x.Kind
+	}
+	return ReturnableKind_RETURNABLE_KIND_UNSPECIFIED
 }
 
 func (x *CreateKegRequest) GetCapacityL() float64 {
@@ -1140,10 +1229,11 @@ var File_stillhouse_v1_keg_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_keg_proto_rawDesc = "" +
 	"\n" +
-	"\x17stillhouse/v1/keg.proto\x12\rstillhouse.v1\"\xb8\a\n" +
+	"\x17stillhouse/v1/keg.proto\x12\rstillhouse.v1\"\xeb\a\n" +
 	"\x03Keg\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
-	"\x06serial\x18\x02 \x01(\tR\x06serial\x12\x1d\n" +
+	"\x06serial\x18\x02 \x01(\tR\x06serial\x121\n" +
+	"\x04kind\x18\x1a \x01(\x0e2\x1d.stillhouse.v1.ReturnableKindR\x04kind\x12\x1d\n" +
 	"\n" +
 	"capacity_l\x18\x03 \x01(\x01R\tcapacityL\x12\x1a\n" +
 	"\bmaterial\x18\x04 \x01(\tR\bmaterial\x12*\n" +
@@ -1188,7 +1278,7 @@ const file_stillhouse_v1_keg_proto_rawDesc = "" +
 	"\x0foutstanding_cad\x18\x03 \x01(\x01R\x0eoutstandingCad\x12!\n" +
 	"\fkegs_shipped\x18\x04 \x01(\x05R\vkegsShipped\x12#\n" +
 	"\rkegs_returned\x18\x05 \x01(\x05R\fkegsReturned\"\x11\n" +
-	"\x0fListKegsRequest\"\x88\x03\n" +
+	"\x0fListKegsRequest\"\xa1\x03\n" +
 	"\x10ListKegsResponse\x12&\n" +
 	"\x04kegs\x18\x01 \x03(\v2\x12.stillhouse.v1.KegR\x04kegs\x12\x14\n" +
 	"\x05total\x18\x02 \x01(\x05R\x05total\x12\x1c\n" +
@@ -1198,12 +1288,15 @@ const file_stillhouse_v1_keg_proto_rawDesc = "" +
 	"atCustomer\x12%\n" +
 	"\x0ereturned_dirty\x18\x06 \x01(\x05R\rreturnedDirty\x12$\n" +
 	"\x0eout_of_service\x18\a \x01(\x05R\foutOfService\x12\x12\n" +
-	"\x04lost\x18\b \x01(\x05R\x04lost\x129\n" +
+	"\x04lost\x18\b \x01(\x05R\x04lost\x12\x17\n" +
+	"\anon_keg\x18\v \x01(\x05R\x06nonKeg\x129\n" +
 	"\bdeposits\x18\t \x03(\v2\x1d.stillhouse.v1.KegDepositLineR\bdeposits\x12C\n" +
 	"\x1etotal_outstanding_deposits_cad\x18\n" +
-	" \x01(\x01R\x1btotalOutstandingDepositsCad\"\xb8\x02\n" +
+	" \x01(\x01R\x1btotalOutstandingDepositsCad\"\xeb\x02\n" +
 	"\x10CreateKegRequest\x12\x16\n" +
-	"\x06serial\x18\x01 \x01(\tR\x06serial\x12\x1d\n" +
+	"\x06serial\x18\x01 \x01(\tR\x06serial\x121\n" +
+	"\x04kind\x18\n" +
+	" \x01(\x0e2\x1d.stillhouse.v1.ReturnableKindR\x04kind\x12\x1d\n" +
 	"\n" +
 	"capacity_l\x18\x02 \x01(\x01R\tcapacityL\x12\x1a\n" +
 	"\bmaterial\x18\x03 \x01(\tR\bmaterial\x12*\n" +
@@ -1234,7 +1327,14 @@ const file_stillhouse_v1_keg_proto_rawDesc = "" +
 	"\x14ListKegEventsRequest\x12\x15\n" +
 	"\x06keg_id\x18\x01 \x01(\tR\x05kegId\"H\n" +
 	"\x15ListKegEventsResponse\x12/\n" +
-	"\x06events\x18\x01 \x03(\v2\x17.stillhouse.v1.KegEventR\x06events*\xc7\x01\n" +
+	"\x06events\x18\x01 \x03(\v2\x17.stillhouse.v1.KegEventR\x06events*\xbe\x01\n" +
+	"\x0eReturnableKind\x12\x1f\n" +
+	"\x1bRETURNABLE_KIND_UNSPECIFIED\x10\x00\x12\x17\n" +
+	"\x13RETURNABLE_KIND_KEG\x10\x01\x12\x1a\n" +
+	"\x16RETURNABLE_KIND_PALLET\x10\x02\x12\x19\n" +
+	"\x15RETURNABLE_KIND_CRATE\x10\x03\x12 \n" +
+	"\x1cRETURNABLE_KIND_GAS_CYLINDER\x10\x04\x12\x19\n" +
+	"\x15RETURNABLE_KIND_OTHER\x10\x05*\xc7\x01\n" +
 	"\tKegStatus\x12\x1a\n" +
 	"\x16KEG_STATUS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14KEG_STATUS_AVAILABLE\x10\x01\x12\x15\n" +
@@ -1272,45 +1372,48 @@ func file_stillhouse_v1_keg_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_keg_proto_rawDescData
 }
 
-var file_stillhouse_v1_keg_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_stillhouse_v1_keg_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
 var file_stillhouse_v1_keg_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_stillhouse_v1_keg_proto_goTypes = []any{
-	(KegStatus)(0),                // 0: stillhouse.v1.KegStatus
-	(KegEventKind)(0),             // 1: stillhouse.v1.KegEventKind
-	(*Keg)(nil),                   // 2: stillhouse.v1.Keg
-	(*KegEvent)(nil),              // 3: stillhouse.v1.KegEvent
-	(*KegDepositLine)(nil),        // 4: stillhouse.v1.KegDepositLine
-	(*ListKegsRequest)(nil),       // 5: stillhouse.v1.ListKegsRequest
-	(*ListKegsResponse)(nil),      // 6: stillhouse.v1.ListKegsResponse
-	(*CreateKegRequest)(nil),      // 7: stillhouse.v1.CreateKegRequest
-	(*CreateKegResponse)(nil),     // 8: stillhouse.v1.CreateKegResponse
-	(*MoveKegRequest)(nil),        // 9: stillhouse.v1.MoveKegRequest
-	(*MoveKegResponse)(nil),       // 10: stillhouse.v1.MoveKegResponse
-	(*ListKegEventsRequest)(nil),  // 11: stillhouse.v1.ListKegEventsRequest
-	(*ListKegEventsResponse)(nil), // 12: stillhouse.v1.ListKegEventsResponse
+	(ReturnableKind)(0),           // 0: stillhouse.v1.ReturnableKind
+	(KegStatus)(0),                // 1: stillhouse.v1.KegStatus
+	(KegEventKind)(0),             // 2: stillhouse.v1.KegEventKind
+	(*Keg)(nil),                   // 3: stillhouse.v1.Keg
+	(*KegEvent)(nil),              // 4: stillhouse.v1.KegEvent
+	(*KegDepositLine)(nil),        // 5: stillhouse.v1.KegDepositLine
+	(*ListKegsRequest)(nil),       // 6: stillhouse.v1.ListKegsRequest
+	(*ListKegsResponse)(nil),      // 7: stillhouse.v1.ListKegsResponse
+	(*CreateKegRequest)(nil),      // 8: stillhouse.v1.CreateKegRequest
+	(*CreateKegResponse)(nil),     // 9: stillhouse.v1.CreateKegResponse
+	(*MoveKegRequest)(nil),        // 10: stillhouse.v1.MoveKegRequest
+	(*MoveKegResponse)(nil),       // 11: stillhouse.v1.MoveKegResponse
+	(*ListKegEventsRequest)(nil),  // 12: stillhouse.v1.ListKegEventsRequest
+	(*ListKegEventsResponse)(nil), // 13: stillhouse.v1.ListKegEventsResponse
 }
 var file_stillhouse_v1_keg_proto_depIdxs = []int32{
-	0,  // 0: stillhouse.v1.Keg.status:type_name -> stillhouse.v1.KegStatus
-	1,  // 1: stillhouse.v1.KegEvent.kind:type_name -> stillhouse.v1.KegEventKind
-	2,  // 2: stillhouse.v1.ListKegsResponse.kegs:type_name -> stillhouse.v1.Keg
-	4,  // 3: stillhouse.v1.ListKegsResponse.deposits:type_name -> stillhouse.v1.KegDepositLine
-	2,  // 4: stillhouse.v1.CreateKegResponse.keg:type_name -> stillhouse.v1.Keg
-	1,  // 5: stillhouse.v1.MoveKegRequest.kind:type_name -> stillhouse.v1.KegEventKind
-	2,  // 6: stillhouse.v1.MoveKegResponse.keg:type_name -> stillhouse.v1.Keg
-	3,  // 7: stillhouse.v1.ListKegEventsResponse.events:type_name -> stillhouse.v1.KegEvent
-	5,  // 8: stillhouse.v1.KegService.ListKegs:input_type -> stillhouse.v1.ListKegsRequest
-	7,  // 9: stillhouse.v1.KegService.CreateKeg:input_type -> stillhouse.v1.CreateKegRequest
-	9,  // 10: stillhouse.v1.KegService.MoveKeg:input_type -> stillhouse.v1.MoveKegRequest
-	11, // 11: stillhouse.v1.KegService.ListKegEvents:input_type -> stillhouse.v1.ListKegEventsRequest
-	6,  // 12: stillhouse.v1.KegService.ListKegs:output_type -> stillhouse.v1.ListKegsResponse
-	8,  // 13: stillhouse.v1.KegService.CreateKeg:output_type -> stillhouse.v1.CreateKegResponse
-	10, // 14: stillhouse.v1.KegService.MoveKeg:output_type -> stillhouse.v1.MoveKegResponse
-	12, // 15: stillhouse.v1.KegService.ListKegEvents:output_type -> stillhouse.v1.ListKegEventsResponse
-	12, // [12:16] is the sub-list for method output_type
-	8,  // [8:12] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	0,  // 0: stillhouse.v1.Keg.kind:type_name -> stillhouse.v1.ReturnableKind
+	1,  // 1: stillhouse.v1.Keg.status:type_name -> stillhouse.v1.KegStatus
+	2,  // 2: stillhouse.v1.KegEvent.kind:type_name -> stillhouse.v1.KegEventKind
+	3,  // 3: stillhouse.v1.ListKegsResponse.kegs:type_name -> stillhouse.v1.Keg
+	5,  // 4: stillhouse.v1.ListKegsResponse.deposits:type_name -> stillhouse.v1.KegDepositLine
+	0,  // 5: stillhouse.v1.CreateKegRequest.kind:type_name -> stillhouse.v1.ReturnableKind
+	3,  // 6: stillhouse.v1.CreateKegResponse.keg:type_name -> stillhouse.v1.Keg
+	2,  // 7: stillhouse.v1.MoveKegRequest.kind:type_name -> stillhouse.v1.KegEventKind
+	3,  // 8: stillhouse.v1.MoveKegResponse.keg:type_name -> stillhouse.v1.Keg
+	4,  // 9: stillhouse.v1.ListKegEventsResponse.events:type_name -> stillhouse.v1.KegEvent
+	6,  // 10: stillhouse.v1.KegService.ListKegs:input_type -> stillhouse.v1.ListKegsRequest
+	8,  // 11: stillhouse.v1.KegService.CreateKeg:input_type -> stillhouse.v1.CreateKegRequest
+	10, // 12: stillhouse.v1.KegService.MoveKeg:input_type -> stillhouse.v1.MoveKegRequest
+	12, // 13: stillhouse.v1.KegService.ListKegEvents:input_type -> stillhouse.v1.ListKegEventsRequest
+	7,  // 14: stillhouse.v1.KegService.ListKegs:output_type -> stillhouse.v1.ListKegsResponse
+	9,  // 15: stillhouse.v1.KegService.CreateKeg:output_type -> stillhouse.v1.CreateKegResponse
+	11, // 16: stillhouse.v1.KegService.MoveKeg:output_type -> stillhouse.v1.MoveKegResponse
+	13, // 17: stillhouse.v1.KegService.ListKegEvents:output_type -> stillhouse.v1.ListKegEventsResponse
+	14, // [14:18] is the sub-list for method output_type
+	10, // [10:14] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_keg_proto_init() }
@@ -1323,7 +1426,7 @@ func file_stillhouse_v1_keg_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_keg_proto_rawDesc), len(file_stillhouse_v1_keg_proto_rawDesc)),
-			NumEnums:      2,
+			NumEnums:      3,
 			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   1,

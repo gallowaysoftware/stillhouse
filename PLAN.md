@@ -127,9 +127,9 @@ register points at whichever applies without copying any of its figures.
 
 What is left is smaller than the item made it sound:
 
-- Other returnable containers — pallets, crates, CO2 cylinders. Same
-  shape, no excise dimension at all, so it is the keg register with the
-  contents reference removed.
+- ~~Other returnable containers~~ — shipped in stage 212 by widening the
+  register rather than adding one, with a `kind` column and a schema
+  guard that only a keg may hold spirits.
 - Deposit accounting proper. The liability is reported; posting it to the
   licensee's chart of accounts needs a `journal_event_kind` and the
   mapping seam from 000040.

@@ -5,7 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { Callout } from "@/components/Callout";
 import { Shell } from "@/components/Shell";
 import { customerClient, kegClient } from "@/lib/clients";
-import { KegEventKind, KegStatus } from "@/gen/stillhouse/v1/keg_pb";
+import { KegEventKind, KegStatus, ReturnableKind } from "@/gen/stillhouse/v1/keg_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
 import { OwnerOnly, WriteOnly } from "@/lib/role";
 
@@ -23,6 +23,15 @@ import { OwnerOnly, WriteOnly } from "@/lib/role";
  * is, what deposit is outstanding on it, and how long its contents have
  * been sitting.
  */
+const kindLabel: Record<number, string> = {
+  [ReturnableKind.UNSPECIFIED]: "—",
+  [ReturnableKind.KEG]: "keg",
+  [ReturnableKind.PALLET]: "pallet",
+  [ReturnableKind.CRATE]: "crate",
+  [ReturnableKind.GAS_CYLINDER]: "gas cylinder",
+  [ReturnableKind.OTHER]: "other",
+};
+
 const statusLabel: Record<number, string> = {
   [KegStatus.UNSPECIFIED]: "—",
   [KegStatus.AVAILABLE]: "available",
@@ -95,12 +104,13 @@ export function KegsPage() {
   return (
     <Shell>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Kegs</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Returnables</h1>
         <p className="text-sm text-fg-muted">
-          Where each keg is, what deposit is outstanding on it, and how long its
-          contents have been sitting. The spirits themselves are counted on the
-          marked special container or the packaged lot the keg points at — never
-          here, so nothing is counted twice.
+          Where each returnable is — kegs, pallets, crates, gas cylinders — what
+          deposit is outstanding on it, and how long a keg's contents have been
+          sitting. Only a keg holds spirits, and those are counted on the marked
+          special container or the packaged lot it points at, never here, so
+          nothing is counted twice.
         </p>
       </div>
 
@@ -125,6 +135,7 @@ export function KegsPage() {
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
               <th className="px-4 py-2">Serial</th>
+              <th className="px-4 py-2">Kind</th>
               <th className="px-4 py-2 text-right">Capacity</th>
               <th className="px-4 py-2">Status</th>
               <th className="px-4 py-2">Where</th>
@@ -136,11 +147,12 @@ export function KegsPage() {
           </thead>
           <tbody className="divide-y divide-border">
             {(d?.kegs ?? []).length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-3 text-fg-muted">No kegs in the register.</td></tr>
+              <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">Nothing in the register.</td></tr>
             )}
             {d?.kegs.map((k) => (
               <tr key={k.id}>
                 <td className="px-4 py-2 font-medium">{k.serial}</td>
+                <td className="px-4 py-2 text-xs text-fg-muted">{kindLabel[k.kind]}</td>
                 <td className="px-4 py-2 text-right tabular-nums">{k.capacityL} L</td>
                 <td className="px-4 py-2">{statusLabel[k.status]}</td>
                 <td className="px-4 py-2">{k.customerName || k.locationName || "here"}</td>
@@ -236,6 +248,7 @@ function NewKegForm() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [serial, setSerial] = useState("");
+  const [kind, setKind] = useState<ReturnableKind>(ReturnableKind.KEG);
   const [capacity, setCapacity] = useState("50");
   const [deposit, setDeposit] = useState("");
   const [err, setErr] = useState<string | null>(null);
@@ -244,7 +257,8 @@ function NewKegForm() {
     mutationFn: () =>
       kegClient.createKeg({
         serial,
-        capacityL: Number(capacity),
+        kind,
+        capacityL: kind === ReturnableKind.KEG ? Number(capacity) : 0,
         depositCad: deposit ? Number(deposit) : 0,
         depositSet: deposit !== "",
       }),
@@ -270,19 +284,37 @@ function NewKegForm() {
           onClick={() => setOpen((v) => !v)}
           className="rounded border border-border-strong px-3 py-1 text-sm hover:bg-surface-3"
         >
-          {open ? "Cancel" : "Add a keg"}
+          {open ? "Cancel" : "Add a returnable"}
         </button>
         {open && (
-          <form onSubmit={submit} className="mt-3 grid gap-3 rounded-lg border border-border bg-surface-2 p-4 sm:grid-cols-4">
+          <form onSubmit={submit} className="mt-3 grid gap-3 rounded-lg border border-border bg-surface-2 p-4 sm:grid-cols-5">
             <label className="text-sm">
               <span className="mb-1 block text-fg-muted">Serial</span>
               <input value={serial} onChange={(e) => setSerial(e.target.value)}
                      className="w-full rounded border border-border-strong px-2 py-1" />
             </label>
             <label className="text-sm">
-              <span className="mb-1 block text-fg-muted">Capacity (L)</span>
-              <input type="number" min="1" value={capacity} onChange={(e) => setCapacity(e.target.value)}
-                     className="w-full rounded border border-border-strong px-2 py-1" />
+              <span className="mb-1 block text-fg-muted">Kind</span>
+              <select value={kind} onChange={(e) => setKind(Number(e.target.value) as ReturnableKind)}
+                      className="w-full rounded border border-border-strong px-2 py-1">
+                <option value={ReturnableKind.KEG}>Keg</option>
+                <option value={ReturnableKind.PALLET}>Pallet</option>
+                <option value={ReturnableKind.CRATE}>Crate</option>
+                <option value={ReturnableKind.GAS_CYLINDER}>Gas cylinder</option>
+                <option value={ReturnableKind.OTHER}>Other</option>
+              </select>
+            </label>
+            <label className="text-sm">
+              {/* Only a keg needs one, and it is not cosmetic: capacity
+                  decides whether its contents are a marked special
+                  container or packaged spirits. */}
+              <span className="mb-1 block text-fg-muted">
+                Capacity (L){kind !== ReturnableKind.KEG && " — not needed"}
+              </span>
+              <input type="number" min="1" value={capacity}
+                     disabled={kind !== ReturnableKind.KEG}
+                     onChange={(e) => setCapacity(e.target.value)}
+                     className="w-full rounded border border-border-strong px-2 py-1 disabled:opacity-50" />
             </label>
             <label className="text-sm">
               <span className="mb-1 block text-fg-muted">Deposit (CAD)</span>
@@ -295,7 +327,7 @@ function NewKegForm() {
                 {create.isPending ? "Adding…" : "Add"}
               </button>
             </div>
-            {err && <p className="col-span-4 text-sm text-danger-fg">{err}</p>}
+            {err && <p className="col-span-5 text-sm text-danger-fg">{err}</p>}
           </form>
         )}
       </div>

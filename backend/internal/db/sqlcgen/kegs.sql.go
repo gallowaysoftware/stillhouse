@@ -14,20 +14,21 @@ import (
 
 const createKeg = `-- name: CreateKeg :one
 INSERT INTO kegs (tenant_id, serial, capacity_l, material, purchase_cost_cad,
-                  deposit_cad, purchased_on, notes)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-RETURNING id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at
+                  deposit_cad, purchased_on, notes, kind)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+RETURNING id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at, kind
 `
 
 type CreateKegParams struct {
 	TenantID        uuid.UUID      `json:"tenant_id"`
 	Serial          string         `json:"serial"`
-	CapacityL       float64        `json:"capacity_l"`
+	CapacityL       pgtype.Float8  `json:"capacity_l"`
 	Material        string         `json:"material"`
 	PurchaseCostCad pgtype.Numeric `json:"purchase_cost_cad"`
 	DepositCad      pgtype.Numeric `json:"deposit_cad"`
 	PurchasedOn     pgtype.Date    `json:"purchased_on"`
 	Notes           string         `json:"notes"`
+	Kind            ReturnableKind `json:"kind"`
 }
 
 func (q *Queries) CreateKeg(ctx context.Context, arg CreateKegParams) (Keg, error) {
@@ -40,6 +41,7 @@ func (q *Queries) CreateKeg(ctx context.Context, arg CreateKegParams) (Keg, erro
 		arg.DepositCad,
 		arg.PurchasedOn,
 		arg.Notes,
+		arg.Kind,
 	)
 	var i Keg
 	err := row.Scan(
@@ -61,12 +63,13 @@ func (q *Queries) CreateKeg(ctx context.Context, arg CreateKegParams) (Keg, erro
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Kind,
 	)
 	return i, err
 }
 
 const getKeg = `-- name: GetKeg :one
-SELECT id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at FROM kegs WHERE id = $1
+SELECT id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at, kind FROM kegs WHERE id = $1
 `
 
 func (q *Queries) GetKeg(ctx context.Context, id uuid.UUID) (Keg, error) {
@@ -91,12 +94,13 @@ func (q *Queries) GetKeg(ctx context.Context, id uuid.UUID) (Keg, error) {
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Kind,
 	)
 	return i, err
 }
 
 const getKegBySerial = `-- name: GetKegBySerial :one
-SELECT id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at FROM kegs WHERE serial = $1
+SELECT id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at, kind FROM kegs WHERE serial = $1
 `
 
 func (q *Queries) GetKegBySerial(ctx context.Context, serial string) (Keg, error) {
@@ -121,6 +125,7 @@ func (q *Queries) GetKegBySerial(ctx context.Context, serial string) (Keg, error
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Kind,
 	)
 	return i, err
 }
@@ -181,6 +186,7 @@ func (q *Queries) KegDepositLiability(ctx context.Context) ([]KegDepositLiabilit
 
 const kegRegisterSummary = `-- name: KegRegisterSummary :one
 SELECT COUNT(*)::int AS total,
+       COUNT(*) FILTER (WHERE kind <> 'keg')::int         AS non_keg,
        COUNT(*) FILTER (WHERE status = 'available')::int      AS available,
        COUNT(*) FILTER (WHERE status = 'filled')::int         AS filled,
        COUNT(*) FILTER (WHERE status = 'at_customer')::int    AS at_customer,
@@ -192,6 +198,7 @@ FROM kegs
 
 type KegRegisterSummaryRow struct {
 	Total         int32 `json:"total"`
+	NonKeg        int32 `json:"non_keg"`
 	Available     int32 `json:"available"`
 	Filled        int32 `json:"filled"`
 	AtCustomer    int32 `json:"at_customer"`
@@ -205,6 +212,7 @@ func (q *Queries) KegRegisterSummary(ctx context.Context) (KegRegisterSummaryRow
 	var i KegRegisterSummaryRow
 	err := row.Scan(
 		&i.Total,
+		&i.NonKeg,
 		&i.Available,
 		&i.Filled,
 		&i.AtCustomer,
@@ -274,7 +282,7 @@ func (q *Queries) ListKegEvents(ctx context.Context, kegID uuid.UUID) ([]ListKeg
 }
 
 const listKegs = `-- name: ListKegs :many
-SELECT k.id, k.tenant_id, k.serial, k.capacity_l, k.material, k.purchase_cost_cad, k.deposit_cad, k.purchased_on, k.status, k.current_customer_id, k.current_location_id, k.marked_container_id, k.packaged_inventory_id, k.last_filled_on, k.last_returned_on, k.notes, k.created_at, k.updated_at,
+SELECT k.id, k.tenant_id, k.serial, k.capacity_l, k.material, k.purchase_cost_cad, k.deposit_cad, k.purchased_on, k.status, k.current_customer_id, k.current_location_id, k.marked_container_id, k.packaged_inventory_id, k.last_filled_on, k.last_returned_on, k.notes, k.created_at, k.updated_at, k.kind,
        COALESCE(c.name, '')::text AS customer_name,
        COALESCE(l.name, '')::text AS location_name,
        msc.container_no,
@@ -314,7 +322,7 @@ type ListKegsRow struct {
 	ID                  uuid.UUID          `json:"id"`
 	TenantID            uuid.UUID          `json:"tenant_id"`
 	Serial              string             `json:"serial"`
-	CapacityL           float64            `json:"capacity_l"`
+	CapacityL           pgtype.Float8      `json:"capacity_l"`
 	Material            string             `json:"material"`
 	PurchaseCostCad     pgtype.Numeric     `json:"purchase_cost_cad"`
 	DepositCad          pgtype.Numeric     `json:"deposit_cad"`
@@ -329,6 +337,7 @@ type ListKegsRow struct {
 	Notes               string             `json:"notes"`
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+	Kind                ReturnableKind     `json:"kind"`
 	CustomerName        string             `json:"customer_name"`
 	LocationName        string             `json:"location_name"`
 	ContainerNo         pgtype.Int4        `json:"container_no"`
@@ -373,6 +382,7 @@ func (q *Queries) ListKegs(ctx context.Context) ([]ListKegsRow, error) {
 			&i.Notes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Kind,
 			&i.CustomerName,
 			&i.LocationName,
 			&i.ContainerNo,
@@ -456,7 +466,7 @@ SET status              = $1,
     last_returned_on    = COALESCE($7, last_returned_on),
     updated_at          = NOW()
 WHERE id = $8
-RETURNING id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at
+RETURNING id, tenant_id, serial, capacity_l, material, purchase_cost_cad, deposit_cad, purchased_on, status, current_customer_id, current_location_id, marked_container_id, packaged_inventory_id, last_filled_on, last_returned_on, notes, created_at, updated_at, kind
 `
 
 type SetKegStateParams struct {
@@ -505,6 +515,7 @@ func (q *Queries) SetKegState(ctx context.Context, arg SetKegStateParams) (Keg, 
 		&i.Notes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Kind,
 	)
 	return i, err
 }
