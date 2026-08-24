@@ -277,8 +277,20 @@ H7 is done.
 
 ### H9 · Billing and self-serve signup — P2
 
-Deliberately low. Invite codes and an e-transfer handle a dozen tenants. Revisit
-if it stops being a dozen.
+Self-serve signup shipped in stage 215, off unless `STILLHOUSE_SELF_SERVE_SIGNUP=1`.
+The default is the decision: `CreateTenant` is public, and refusing once a
+tenant exists is what keeps an exposed self-host install from being taken
+over. A hosted service wants it open and a rackhouse box does not, and
+Stillhouse cannot tell which it is on.
+
+**Billing is what remains**, and it needs a payment processor: an account
+with Stripe or similar, its API keys, and a webhook endpoint for the
+lifecycle events. That is credentials rather than code — the webhook
+plumbing from stage 196 is the shape the inbound side would take.
+
+The original note still stands on its own terms: invite codes and an
+e-transfer handle a dozen tenants, and nothing about this makes billing
+urgent.
 
 ### H13 · Tailwind 4 and the browser floor — P2
 

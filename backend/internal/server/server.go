@@ -83,7 +83,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		baseURL = "http://localhost:8080"
 	}
 	authSvc := rpc.NewAuthService(queries, tdb, sm, logger, mailerImpl, baseURL+"/reset-password?token=", cfg.TrustProxyHeaders)
-	tenantSvc := rpc.NewTenantService(pool, queries, logger)
+	tenantSvc := rpc.NewTenantService(pool, queries, logger).
+		WithSelfServeSignup(cfg.SelfServeSignup, cfg.TrustProxyHeaders)
 	userSvc := rpc.NewUserService(queries, sm, logger)
 	materialSvc := rpc.NewMaterialService(tdb, logger)
 	recipeSvc := rpc.NewRecipeService(tdb, logger)

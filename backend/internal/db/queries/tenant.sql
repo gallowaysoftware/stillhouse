@@ -45,3 +45,13 @@ SELECT name FROM suppliers;
 INSERT INTO suppliers (tenant_id, name, account_reference, contact_name,
                        email, phone, address, payment_terms_days, country, notes)
 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);
+
+-- name: LicenceNumberInUse :one
+-- Whether a spirits licence number is already claimed on this install.
+--
+-- Only consulted on the self-serve path. Two tenants under one licence
+-- would each file a B266 that CRA reads as the same licensee's, and
+-- neither would reconcile against the other.
+SELECT EXISTS (
+    SELECT 1 FROM tenants WHERE lower(cra_spirits_licence_number) = lower($1)
+)::boolean;

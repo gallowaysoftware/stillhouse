@@ -554,6 +554,12 @@ type Querier interface {
 	// rather than a correlated subquery so listing the register is one query
 	// regardless of how many instruments a distillery holds.
 	LatestCalibrationsForInstruments(ctx context.Context) ([]InstrumentCalibration, error)
+	// Whether a spirits licence number is already claimed on this install.
+	//
+	// Only consulted on the self-serve path. Two tenants under one licence
+	// would each file a B266 that CRA reads as the same licensee's, and
+	// neither would reconcile against the other.
+	LicenceNumberInUse(ctx context.Context, lower string) (bool, error)
 	LinkShipmentLineRemoval(ctx context.Context, arg LinkShipmentLineRemovalParams) error
 	// Points a work order at what it produced. The link runs order → record,
 	// so the production tables know nothing about planning.

@@ -99,6 +99,24 @@ func (q *Queries) InsertCopiedSupplier(ctx context.Context, arg InsertCopiedSupp
 	return err
 }
 
+const licenceNumberInUse = `-- name: LicenceNumberInUse :one
+SELECT EXISTS (
+    SELECT 1 FROM tenants WHERE lower(cra_spirits_licence_number) = lower($1)
+)::boolean
+`
+
+// Whether a spirits licence number is already claimed on this install.
+//
+// Only consulted on the self-serve path. Two tenants under one licence
+// would each file a B266 that CRA reads as the same licensee's, and
+// neither would reconcile against the other.
+func (q *Queries) LicenceNumberInUse(ctx context.Context, lower string) (bool, error) {
+	row := q.db.QueryRow(ctx, licenceNumberInUse, lower)
+	var column_1 bool
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const listMaterialsForCopy = `-- name: ListMaterialsForCopy :many
 SELECT name, kind, uom, extract_fraction, moisture_fraction, cereal, notes
 FROM materials

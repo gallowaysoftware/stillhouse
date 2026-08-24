@@ -25,6 +25,18 @@ type Config struct {
 	// 000010 without an out-of-band psql step.
 	AppRolePassword string
 
+	// SelfServeSignup opens tenant creation to the public. OFF by
+	// default, and the default is the decision rather than a placeholder.
+	//
+	// CreateTenant is the bootstrap endpoint and refuses once one tenant
+	// exists, which is what makes a single-distillery install safe to
+	// expose. Turning this on removes that refusal, so an installation
+	// reachable from the internet becomes one where anybody can create a
+	// distillery. That is correct for a hosted service and wrong for the
+	// box in somebody's rackhouse, and Stillhouse cannot tell which it is
+	// running on — so the operator says.
+	SelfServeSignup bool
+
 	// BaseURL is the public origin where the app is reachable (no trailing
 	// slash). Used to build absolute URLs in emails — password-reset
 	// links etc. Defaults to http://localhost:8080 when empty so dev
@@ -66,6 +78,7 @@ func Load() (*Config, error) {
 		AlcoholometricTablesPath: getenv("STILLHOUSE_ALCOHOLOMETRIC_TABLES",
 			defaultAlcoholometricTablesPath),
 		TrustProxyHeaders: os.Getenv("STILLHOUSE_TRUST_PROXY_HEADERS") == "1",
+		SelfServeSignup:   os.Getenv("STILLHOUSE_SELF_SERVE_SIGNUP") == "1",
 	}
 	if c.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")
