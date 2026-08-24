@@ -107,6 +107,9 @@ var procedureMinRole = map[string]minRole{
 	// account at, and reads each as the account they hold there. Viewer
 	// is the floor because that is what it is: a read.
 	"/stillhouse.v1.TenantService/GroupView": roleViewer,
+	// Copying creates records here, so it is the destination's owner's
+	// call. Reading the source is bounded by holding an account there.
+	"/stillhouse.v1.TenantService/CopyReferenceData": roleOwner,
 
 	// ImportService. A bulk import creates casks, stock and customers in
 	// one action with no upstream production behind any of it — the same

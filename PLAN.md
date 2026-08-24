@@ -267,9 +267,13 @@ from switching:
 - ~~A group view~~ — shipped in stage 213. Rows per licence, never a
   combined return, and each read performed as the account the caller
   actually holds at that entity.
-- **Shared reference data** (materials, suppliers, products) across
-  entities, which needs a home above the tenant that RLS can still reason
-  about. Not obviously worth it for two tenants.
+- ~~Shared reference data~~ — shipped in stage 214, and the answer was
+  that it should not be shared. Copying needs no home above the tenant
+  and no change to RLS, and it is the correct semantics rather than the
+  cheap one: a licence has to own the definitions its own filed figures
+  were computed from.
+
+H7 is done.
 
 ### H9 · Billing and self-serve signup — P2
 

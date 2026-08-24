@@ -7,6 +7,9 @@ package sqlcgen
 
 import (
 	"context"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const groupPackagedAndCasks = `-- name: GroupPackagedAndCasks :one
@@ -30,6 +33,194 @@ func (q *Queries) GroupPackagedAndCasks(ctx context.Context) (GroupPackagedAndCa
 	return i, err
 }
 
+const insertCopiedMaterial = `-- name: InsertCopiedMaterial :exec
+INSERT INTO materials (tenant_id, name, kind, uom, extract_fraction,
+                       moisture_fraction, cereal, notes)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+`
+
+type InsertCopiedMaterialParams struct {
+	TenantID         uuid.UUID     `json:"tenant_id"`
+	Name             string        `json:"name"`
+	Kind             MaterialKind  `json:"kind"`
+	Uom              string        `json:"uom"`
+	ExtractFraction  pgtype.Float8 `json:"extract_fraction"`
+	MoistureFraction pgtype.Float8 `json:"moisture_fraction"`
+	Cereal           NullCereal    `json:"cereal"`
+	Notes            string        `json:"notes"`
+}
+
+func (q *Queries) InsertCopiedMaterial(ctx context.Context, arg InsertCopiedMaterialParams) error {
+	_, err := q.db.Exec(ctx, insertCopiedMaterial,
+		arg.TenantID,
+		arg.Name,
+		arg.Kind,
+		arg.Uom,
+		arg.ExtractFraction,
+		arg.MoistureFraction,
+		arg.Cereal,
+		arg.Notes,
+	)
+	return err
+}
+
+const insertCopiedSupplier = `-- name: InsertCopiedSupplier :exec
+INSERT INTO suppliers (tenant_id, name, account_reference, contact_name,
+                       email, phone, address, payment_terms_days, country, notes)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+`
+
+type InsertCopiedSupplierParams struct {
+	TenantID         uuid.UUID   `json:"tenant_id"`
+	Name             string      `json:"name"`
+	AccountReference string      `json:"account_reference"`
+	ContactName      string      `json:"contact_name"`
+	Email            string      `json:"email"`
+	Phone            string      `json:"phone"`
+	Address          string      `json:"address"`
+	PaymentTermsDays pgtype.Int4 `json:"payment_terms_days"`
+	Country          string      `json:"country"`
+	Notes            string      `json:"notes"`
+}
+
+func (q *Queries) InsertCopiedSupplier(ctx context.Context, arg InsertCopiedSupplierParams) error {
+	_, err := q.db.Exec(ctx, insertCopiedSupplier,
+		arg.TenantID,
+		arg.Name,
+		arg.AccountReference,
+		arg.ContactName,
+		arg.Email,
+		arg.Phone,
+		arg.Address,
+		arg.PaymentTermsDays,
+		arg.Country,
+		arg.Notes,
+	)
+	return err
+}
+
+const listMaterialsForCopy = `-- name: ListMaterialsForCopy :many
+SELECT name, kind, uom, extract_fraction, moisture_fraction, cereal, notes
+FROM materials
+WHERE NOT archived
+ORDER BY name
+`
+
+type ListMaterialsForCopyRow struct {
+	Name             string        `json:"name"`
+	Kind             MaterialKind  `json:"kind"`
+	Uom              string        `json:"uom"`
+	ExtractFraction  pgtype.Float8 `json:"extract_fraction"`
+	MoistureFraction pgtype.Float8 `json:"moisture_fraction"`
+	Cereal           NullCereal    `json:"cereal"`
+	Notes            string        `json:"notes"`
+}
+
+// Definitions worth carrying to another of the licensee's own
+// distilleries. Archived rows are left behind: copying something the
+// source has retired starts the destination with a mistake.
+func (q *Queries) ListMaterialsForCopy(ctx context.Context) ([]ListMaterialsForCopyRow, error) {
+	rows, err := q.db.Query(ctx, listMaterialsForCopy)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListMaterialsForCopyRow{}
+	for rows.Next() {
+		var i ListMaterialsForCopyRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.Kind,
+			&i.Uom,
+			&i.ExtractFraction,
+			&i.MoistureFraction,
+			&i.Cereal,
+			&i.Notes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSuppliersForCopy = `-- name: ListSuppliersForCopy :many
+SELECT name, account_reference, contact_name, email, phone, address,
+       payment_terms_days, country, notes
+FROM suppliers
+WHERE archived_at IS NULL
+ORDER BY name
+`
+
+type ListSuppliersForCopyRow struct {
+	Name             string      `json:"name"`
+	AccountReference string      `json:"account_reference"`
+	ContactName      string      `json:"contact_name"`
+	Email            string      `json:"email"`
+	Phone            string      `json:"phone"`
+	Address          string      `json:"address"`
+	PaymentTermsDays pgtype.Int4 `json:"payment_terms_days"`
+	Country          string      `json:"country"`
+	Notes            string      `json:"notes"`
+}
+
+func (q *Queries) ListSuppliersForCopy(ctx context.Context) ([]ListSuppliersForCopyRow, error) {
+	rows, err := q.db.Query(ctx, listSuppliersForCopy)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListSuppliersForCopyRow{}
+	for rows.Next() {
+		var i ListSuppliersForCopyRow
+		if err := rows.Scan(
+			&i.Name,
+			&i.AccountReference,
+			&i.ContactName,
+			&i.Email,
+			&i.Phone,
+			&i.Address,
+			&i.PaymentTermsDays,
+			&i.Country,
+			&i.Notes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const materialNamesInUse = `-- name: MaterialNamesInUse :many
+SELECT name FROM materials
+`
+
+func (q *Queries) MaterialNamesInUse(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, materialNamesInUse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setTenantContext = `-- name: SetTenantContext :exec
 SELECT set_config('app.current_tenant_id', $1, true)
 `
@@ -41,4 +232,28 @@ SELECT set_config('app.current_tenant_id', $1, true)
 func (q *Queries) SetTenantContext(ctx context.Context, setConfig string) error {
 	_, err := q.db.Exec(ctx, setTenantContext, setConfig)
 	return err
+}
+
+const supplierNamesInUse = `-- name: SupplierNamesInUse :many
+SELECT name FROM suppliers
+`
+
+func (q *Queries) SupplierNamesInUse(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, supplierNamesInUse)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }

@@ -251,6 +251,9 @@ service TenantService {
   // Figures across every licence the caller holds an account at. Never a
   // combined return — see GroupEntity.
   rpc GroupView(GroupViewRequest) returns (GroupViewResponse);
+  // Copy materials or suppliers from another distillery you hold an
+  // account at. Copies, never shares — see CopyableReference.
+  rpc CopyReferenceData(CopyReferenceDataRequest) returns (CopyReferenceDataResponse);
 }
 
 // A group view: figures across every licence the caller holds an account
@@ -307,4 +310,42 @@ message GroupViewResponse {
   // nothing submitted. The one thing a group owner actually needs from a
   // combined screen.
   int32 returns_due_soon = 5;
+}
+
+// Carrying reference data between distilleries the caller holds accounts
+// at. PLAN H7.
+//
+// This COPIES rather than shares, and the distinction is the design
+// rather than an implementation shortcut.
+//
+// Shared mutable reference data across licences would mean one
+// licensee's edit changing another's records — and a material's extract
+// fraction feeds a conversion efficiency, which feeds a yield, which is
+// the kind of figure that ends up defended to CRA. Two licences are two
+// filers; each has to own the definitions its own numbers were computed
+// from, including the right to have them be different.
+//
+// So the copy is a starting point that then diverges, which is what an
+// operator setting up a second distillery actually wants: the grain list
+// they already typed once, not a live link to somebody else's.
+enum CopyableReference {
+  COPYABLE_REFERENCE_UNSPECIFIED = 0;
+  COPYABLE_REFERENCE_MATERIALS = 1;
+  COPYABLE_REFERENCE_SUPPLIERS = 2;
+}
+
+message CopyReferenceDataRequest {
+  // The distillery to copy FROM. The caller must hold an account there
+  // too; this is not a way to read a licence you cannot already open.
+  string from_tenant_id = 1;
+  repeated CopyableReference what = 2;
+}
+message CopyReferenceDataResponse {
+  int32 materials_copied = 1;
+  int32 suppliers_copied = 2;
+  // Names already present here and therefore left alone. Reported rather
+  // than silently skipped or overwritten: an overwrite would replace a
+  // definition this licensee's own figures were computed from.
+  repeated string skipped = 3;
+  string note = 4;
 }

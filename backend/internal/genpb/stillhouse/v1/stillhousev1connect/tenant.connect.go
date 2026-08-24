@@ -64,6 +64,9 @@ const (
 	TenantServiceDeleteMyTenantProcedure = "/stillhouse.v1.TenantService/DeleteMyTenant"
 	// TenantServiceGroupViewProcedure is the fully-qualified name of the TenantService's GroupView RPC.
 	TenantServiceGroupViewProcedure = "/stillhouse.v1.TenantService/GroupView"
+	// TenantServiceCopyReferenceDataProcedure is the fully-qualified name of the TenantService's
+	// CopyReferenceData RPC.
+	TenantServiceCopyReferenceDataProcedure = "/stillhouse.v1.TenantService/CopyReferenceData"
 )
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
@@ -80,6 +83,9 @@ type TenantServiceClient interface {
 	// Figures across every licence the caller holds an account at. Never a
 	// combined return — see GroupEntity.
 	GroupView(context.Context, *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error)
+	// Copy materials or suppliers from another distillery you hold an
+	// account at. Copies, never shares — see CopyableReference.
+	CopyReferenceData(context.Context, *connect.Request[v1.CopyReferenceDataRequest]) (*connect.Response[v1.CopyReferenceDataResponse], error)
 }
 
 // NewTenantServiceClient constructs a client for the stillhouse.v1.TenantService service. By
@@ -153,6 +159,12 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(tenantServiceMethods.ByName("GroupView")),
 			connect.WithClientOptions(opts...),
 		),
+		copyReferenceData: connect.NewClient[v1.CopyReferenceDataRequest, v1.CopyReferenceDataResponse](
+			httpClient,
+			baseURL+TenantServiceCopyReferenceDataProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("CopyReferenceData")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -168,6 +180,7 @@ type tenantServiceClient struct {
 	updateTenant            *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
 	deleteMyTenant          *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
 	groupView               *connect.Client[v1.GroupViewRequest, v1.GroupViewResponse]
+	copyReferenceData       *connect.Client[v1.CopyReferenceDataRequest, v1.CopyReferenceDataResponse]
 }
 
 // SecuritySufficiency calls stillhouse.v1.TenantService.SecuritySufficiency.
@@ -220,6 +233,11 @@ func (c *tenantServiceClient) GroupView(ctx context.Context, req *connect.Reques
 	return c.groupView.CallUnary(ctx, req)
 }
 
+// CopyReferenceData calls stillhouse.v1.TenantService.CopyReferenceData.
+func (c *tenantServiceClient) CopyReferenceData(ctx context.Context, req *connect.Request[v1.CopyReferenceDataRequest]) (*connect.Response[v1.CopyReferenceDataResponse], error) {
+	return c.copyReferenceData.CallUnary(ctx, req)
+}
+
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
 	SecuritySufficiency(context.Context, *connect.Request[v1.SecuritySufficiencyRequest]) (*connect.Response[v1.SecuritySufficiencyResponse], error)
@@ -234,6 +252,9 @@ type TenantServiceHandler interface {
 	// Figures across every licence the caller holds an account at. Never a
 	// combined return — see GroupEntity.
 	GroupView(context.Context, *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error)
+	// Copy materials or suppliers from another distillery you hold an
+	// account at. Copies, never shares — see CopyableReference.
+	CopyReferenceData(context.Context, *connect.Request[v1.CopyReferenceDataRequest]) (*connect.Response[v1.CopyReferenceDataResponse], error)
 }
 
 // NewTenantServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -303,6 +324,12 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(tenantServiceMethods.ByName("GroupView")),
 		connect.WithHandlerOptions(opts...),
 	)
+	tenantServiceCopyReferenceDataHandler := connect.NewUnaryHandler(
+		TenantServiceCopyReferenceDataProcedure,
+		svc.CopyReferenceData,
+		connect.WithSchema(tenantServiceMethods.ByName("CopyReferenceData")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TenantServiceSecuritySufficiencyProcedure:
@@ -325,6 +352,8 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 			tenantServiceDeleteMyTenantHandler.ServeHTTP(w, r)
 		case TenantServiceGroupViewProcedure:
 			tenantServiceGroupViewHandler.ServeHTTP(w, r)
+		case TenantServiceCopyReferenceDataProcedure:
+			tenantServiceCopyReferenceDataHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -372,4 +401,8 @@ func (UnimplementedTenantServiceHandler) DeleteMyTenant(context.Context, *connec
 
 func (UnimplementedTenantServiceHandler) GroupView(context.Context, *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.GroupView is not implemented"))
+}
+
+func (UnimplementedTenantServiceHandler) CopyReferenceData(context.Context, *connect.Request[v1.CopyReferenceDataRequest]) (*connect.Response[v1.CopyReferenceDataResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.CopyReferenceData is not implemented"))
 }

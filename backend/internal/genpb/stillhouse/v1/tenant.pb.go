@@ -250,6 +250,71 @@ func (ExciseLicenceKind) EnumDescriptor() ([]byte, []int) {
 	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{3}
 }
 
+// Carrying reference data between distilleries the caller holds accounts
+// at. PLAN H7.
+//
+// This COPIES rather than shares, and the distinction is the design
+// rather than an implementation shortcut.
+//
+// Shared mutable reference data across licences would mean one
+// licensee's edit changing another's records — and a material's extract
+// fraction feeds a conversion efficiency, which feeds a yield, which is
+// the kind of figure that ends up defended to CRA. Two licences are two
+// filers; each has to own the definitions its own numbers were computed
+// from, including the right to have them be different.
+//
+// So the copy is a starting point that then diverges, which is what an
+// operator setting up a second distillery actually wants: the grain list
+// they already typed once, not a live link to somebody else's.
+type CopyableReference int32
+
+const (
+	CopyableReference_COPYABLE_REFERENCE_UNSPECIFIED CopyableReference = 0
+	CopyableReference_COPYABLE_REFERENCE_MATERIALS   CopyableReference = 1
+	CopyableReference_COPYABLE_REFERENCE_SUPPLIERS   CopyableReference = 2
+)
+
+// Enum value maps for CopyableReference.
+var (
+	CopyableReference_name = map[int32]string{
+		0: "COPYABLE_REFERENCE_UNSPECIFIED",
+		1: "COPYABLE_REFERENCE_MATERIALS",
+		2: "COPYABLE_REFERENCE_SUPPLIERS",
+	}
+	CopyableReference_value = map[string]int32{
+		"COPYABLE_REFERENCE_UNSPECIFIED": 0,
+		"COPYABLE_REFERENCE_MATERIALS":   1,
+		"COPYABLE_REFERENCE_SUPPLIERS":   2,
+	}
+)
+
+func (x CopyableReference) Enum() *CopyableReference {
+	p := new(CopyableReference)
+	*p = x
+	return p
+}
+
+func (x CopyableReference) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CopyableReference) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_tenant_proto_enumTypes[4].Descriptor()
+}
+
+func (CopyableReference) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_tenant_proto_enumTypes[4]
+}
+
+func (x CopyableReference) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CopyableReference.Descriptor instead.
+func (CopyableReference) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{4}
+}
+
 type Tenant struct {
 	state                        protoimpl.MessageState `protogen:"open.v1"`
 	Id                           string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // UUID
@@ -1959,6 +2024,131 @@ func (x *GroupViewResponse) GetReturnsDueSoon() int32 {
 	return 0
 }
 
+type CopyReferenceDataRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The distillery to copy FROM. The caller must hold an account there
+	// too; this is not a way to read a licence you cannot already open.
+	FromTenantId  string              `protobuf:"bytes,1,opt,name=from_tenant_id,json=fromTenantId,proto3" json:"from_tenant_id,omitempty"`
+	What          []CopyableReference `protobuf:"varint,2,rep,packed,name=what,proto3,enum=stillhouse.v1.CopyableReference" json:"what,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CopyReferenceDataRequest) Reset() {
+	*x = CopyReferenceDataRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CopyReferenceDataRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CopyReferenceDataRequest) ProtoMessage() {}
+
+func (x *CopyReferenceDataRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CopyReferenceDataRequest.ProtoReflect.Descriptor instead.
+func (*CopyReferenceDataRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *CopyReferenceDataRequest) GetFromTenantId() string {
+	if x != nil {
+		return x.FromTenantId
+	}
+	return ""
+}
+
+func (x *CopyReferenceDataRequest) GetWhat() []CopyableReference {
+	if x != nil {
+		return x.What
+	}
+	return nil
+}
+
+type CopyReferenceDataResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	MaterialsCopied int32                  `protobuf:"varint,1,opt,name=materials_copied,json=materialsCopied,proto3" json:"materials_copied,omitempty"`
+	SuppliersCopied int32                  `protobuf:"varint,2,opt,name=suppliers_copied,json=suppliersCopied,proto3" json:"suppliers_copied,omitempty"`
+	// Names already present here and therefore left alone. Reported rather
+	// than silently skipped or overwritten: an overwrite would replace a
+	// definition this licensee's own figures were computed from.
+	Skipped       []string `protobuf:"bytes,3,rep,name=skipped,proto3" json:"skipped,omitempty"`
+	Note          string   `protobuf:"bytes,4,opt,name=note,proto3" json:"note,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CopyReferenceDataResponse) Reset() {
+	*x = CopyReferenceDataResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CopyReferenceDataResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CopyReferenceDataResponse) ProtoMessage() {}
+
+func (x *CopyReferenceDataResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CopyReferenceDataResponse.ProtoReflect.Descriptor instead.
+func (*CopyReferenceDataResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *CopyReferenceDataResponse) GetMaterialsCopied() int32 {
+	if x != nil {
+		return x.MaterialsCopied
+	}
+	return 0
+}
+
+func (x *CopyReferenceDataResponse) GetSuppliersCopied() int32 {
+	if x != nil {
+		return x.SuppliersCopied
+	}
+	return 0
+}
+
+func (x *CopyReferenceDataResponse) GetSkipped() []string {
+	if x != nil {
+		return x.Skipped
+	}
+	return nil
+}
+
+func (x *CopyReferenceDataResponse) GetNote() string {
+	if x != nil {
+		return x.Note
+	}
+	return ""
+}
+
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
@@ -2096,7 +2286,15 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\x0etotal_bulk_laa\x18\x02 \x01(\x01R\ftotalBulkLaa\x124\n" +
 	"\x16total_packaged_bottles\x18\x03 \x01(\x05R\x14totalPackagedBottles\x12\x18\n" +
 	"\acaution\x18\x04 \x01(\tR\acaution\x12(\n" +
-	"\x10returns_due_soon\x18\x05 \x01(\x05R\x0ereturnsDueSoon*_\n" +
+	"\x10returns_due_soon\x18\x05 \x01(\x05R\x0ereturnsDueSoon\"v\n" +
+	"\x18CopyReferenceDataRequest\x12$\n" +
+	"\x0efrom_tenant_id\x18\x01 \x01(\tR\ffromTenantId\x124\n" +
+	"\x04what\x18\x02 \x03(\x0e2 .stillhouse.v1.CopyableReferenceR\x04what\"\x9f\x01\n" +
+	"\x19CopyReferenceDataResponse\x12)\n" +
+	"\x10materials_copied\x18\x01 \x01(\x05R\x0fmaterialsCopied\x12)\n" +
+	"\x10suppliers_copied\x18\x02 \x01(\x05R\x0fsuppliersCopied\x12\x18\n" +
+	"\askipped\x18\x03 \x03(\tR\askipped\x12\x12\n" +
+	"\x04note\x18\x04 \x01(\tR\x04note*_\n" +
 	"\tDutyPoint\x12\x1a\n" +
 	"\x16DUTY_POINT_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17DUTY_POINT_AT_PACKAGING\x10\x01\x12\x19\n" +
@@ -2115,7 +2313,11 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"$EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE\x10\x02\x12\x1d\n" +
 	"\x19EXCISE_LICENCE_KIND_USERS\x10\x03\x12\x1c\n" +
 	"\x18EXCISE_LICENCE_KIND_WINE\x10\x04\x12\x1d\n" +
-	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\xec\a\n" +
+	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x05*{\n" +
+	"\x11CopyableReference\x12\"\n" +
+	"\x1eCOPYABLE_REFERENCE_UNSPECIFIED\x10\x00\x12 \n" +
+	"\x1cCOPYABLE_REFERENCE_MATERIALS\x10\x01\x12 \n" +
+	"\x1cCOPYABLE_REFERENCE_SUPPLIERS\x10\x022\xd4\b\n" +
 	"\rTenantService\x12l\n" +
 	"\x13SecuritySufficiency\x12).stillhouse.v1.SecuritySufficiencyRequest\x1a*.stillhouse.v1.SecuritySufficiencyResponse\x12x\n" +
 	"\x17SetBatchReleaseRequired\x12-.stillhouse.v1.SetBatchReleaseRequiredRequest\x1a..stillhouse.v1.SetBatchReleaseRequiredResponse\x12i\n" +
@@ -2126,7 +2328,8 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
 	"\fUpdateTenant\x12\".stillhouse.v1.UpdateTenantRequest\x1a#.stillhouse.v1.UpdateTenantResponse\x12]\n" +
 	"\x0eDeleteMyTenant\x12$.stillhouse.v1.DeleteMyTenantRequest\x1a%.stillhouse.v1.DeleteMyTenantResponse\x12N\n" +
-	"\tGroupView\x12\x1f.stillhouse.v1.GroupViewRequest\x1a .stillhouse.v1.GroupViewResponseB\xcf\x01\n" +
+	"\tGroupView\x12\x1f.stillhouse.v1.GroupViewRequest\x1a .stillhouse.v1.GroupViewResponse\x12f\n" +
+	"\x11CopyReferenceData\x12'.stillhouse.v1.CopyReferenceDataRequest\x1a(.stillhouse.v1.CopyReferenceDataResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vTenantProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -2141,82 +2344,88 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_tenant_proto_rawDescData
 }
 
-var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(DutyPoint)(0),                          // 0: stillhouse.v1.DutyPoint
 	(FilingFrequency)(0),                    // 1: stillhouse.v1.FilingFrequency
 	(FiscalMonthBasis)(0),                   // 2: stillhouse.v1.FiscalMonthBasis
 	(ExciseLicenceKind)(0),                  // 3: stillhouse.v1.ExciseLicenceKind
-	(*Tenant)(nil),                          // 4: stillhouse.v1.Tenant
-	(*CreateTenantRequest)(nil),             // 5: stillhouse.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),            // 6: stillhouse.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),                // 7: stillhouse.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),               // 8: stillhouse.v1.GetTenantResponse
-	(*UpdateFilingCalendarRequest)(nil),     // 9: stillhouse.v1.UpdateFilingCalendarRequest
-	(*UpdateFilingCalendarResponse)(nil),    // 10: stillhouse.v1.UpdateFilingCalendarResponse
-	(*UpdateTenantRequest)(nil),             // 11: stillhouse.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),            // 12: stillhouse.v1.UpdateTenantResponse
-	(*DeleteMyTenantRequest)(nil),           // 13: stillhouse.v1.DeleteMyTenantRequest
-	(*DeleteMyTenantResponse)(nil),          // 14: stillhouse.v1.DeleteMyTenantResponse
-	(*SetBatchReleaseRequiredRequest)(nil),  // 15: stillhouse.v1.SetBatchReleaseRequiredRequest
-	(*SetBatchReleaseRequiredResponse)(nil), // 16: stillhouse.v1.SetBatchReleaseRequiredResponse
-	(*ExciseLicence)(nil),                   // 17: stillhouse.v1.ExciseLicence
-	(*ListExciseLicencesRequest)(nil),       // 18: stillhouse.v1.ListExciseLicencesRequest
-	(*ListExciseLicencesResponse)(nil),      // 19: stillhouse.v1.ListExciseLicencesResponse
-	(*SaveExciseLicenceRequest)(nil),        // 20: stillhouse.v1.SaveExciseLicenceRequest
-	(*SaveExciseLicenceResponse)(nil),       // 21: stillhouse.v1.SaveExciseLicenceResponse
-	(*SecuritySufficiency)(nil),             // 22: stillhouse.v1.SecuritySufficiency
-	(*SecuritySufficiencyRequest)(nil),      // 23: stillhouse.v1.SecuritySufficiencyRequest
-	(*SecuritySufficiencyResponse)(nil),     // 24: stillhouse.v1.SecuritySufficiencyResponse
-	(*GroupEntity)(nil),                     // 25: stillhouse.v1.GroupEntity
-	(*GroupViewRequest)(nil),                // 26: stillhouse.v1.GroupViewRequest
-	(*GroupViewResponse)(nil),               // 27: stillhouse.v1.GroupViewResponse
-	(*timestamppb.Timestamp)(nil),           // 28: google.protobuf.Timestamp
+	(CopyableReference)(0),                  // 4: stillhouse.v1.CopyableReference
+	(*Tenant)(nil),                          // 5: stillhouse.v1.Tenant
+	(*CreateTenantRequest)(nil),             // 6: stillhouse.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),            // 7: stillhouse.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),                // 8: stillhouse.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),               // 9: stillhouse.v1.GetTenantResponse
+	(*UpdateFilingCalendarRequest)(nil),     // 10: stillhouse.v1.UpdateFilingCalendarRequest
+	(*UpdateFilingCalendarResponse)(nil),    // 11: stillhouse.v1.UpdateFilingCalendarResponse
+	(*UpdateTenantRequest)(nil),             // 12: stillhouse.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),            // 13: stillhouse.v1.UpdateTenantResponse
+	(*DeleteMyTenantRequest)(nil),           // 14: stillhouse.v1.DeleteMyTenantRequest
+	(*DeleteMyTenantResponse)(nil),          // 15: stillhouse.v1.DeleteMyTenantResponse
+	(*SetBatchReleaseRequiredRequest)(nil),  // 16: stillhouse.v1.SetBatchReleaseRequiredRequest
+	(*SetBatchReleaseRequiredResponse)(nil), // 17: stillhouse.v1.SetBatchReleaseRequiredResponse
+	(*ExciseLicence)(nil),                   // 18: stillhouse.v1.ExciseLicence
+	(*ListExciseLicencesRequest)(nil),       // 19: stillhouse.v1.ListExciseLicencesRequest
+	(*ListExciseLicencesResponse)(nil),      // 20: stillhouse.v1.ListExciseLicencesResponse
+	(*SaveExciseLicenceRequest)(nil),        // 21: stillhouse.v1.SaveExciseLicenceRequest
+	(*SaveExciseLicenceResponse)(nil),       // 22: stillhouse.v1.SaveExciseLicenceResponse
+	(*SecuritySufficiency)(nil),             // 23: stillhouse.v1.SecuritySufficiency
+	(*SecuritySufficiencyRequest)(nil),      // 24: stillhouse.v1.SecuritySufficiencyRequest
+	(*SecuritySufficiencyResponse)(nil),     // 25: stillhouse.v1.SecuritySufficiencyResponse
+	(*GroupEntity)(nil),                     // 26: stillhouse.v1.GroupEntity
+	(*GroupViewRequest)(nil),                // 27: stillhouse.v1.GroupViewRequest
+	(*GroupViewResponse)(nil),               // 28: stillhouse.v1.GroupViewResponse
+	(*CopyReferenceDataRequest)(nil),        // 29: stillhouse.v1.CopyReferenceDataRequest
+	(*CopyReferenceDataResponse)(nil),       // 30: stillhouse.v1.CopyReferenceDataResponse
+	(*timestamppb.Timestamp)(nil),           // 31: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	28, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	28, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	31, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	31, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
 	1,  // 3: stillhouse.v1.Tenant.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 4: stillhouse.v1.Tenant.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
-	4,  // 5: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
-	4,  // 6: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	5,  // 5: stillhouse.v1.CreateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	5,  // 6: stillhouse.v1.GetTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	1,  // 7: stillhouse.v1.UpdateFilingCalendarRequest.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 8: stillhouse.v1.UpdateFilingCalendarRequest.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
-	4,  // 9: stillhouse.v1.UpdateFilingCalendarResponse.tenant:type_name -> stillhouse.v1.Tenant
-	4,  // 10: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
+	5,  // 9: stillhouse.v1.UpdateFilingCalendarResponse.tenant:type_name -> stillhouse.v1.Tenant
+	5,  // 10: stillhouse.v1.UpdateTenantResponse.tenant:type_name -> stillhouse.v1.Tenant
 	3,  // 11: stillhouse.v1.ExciseLicence.kind:type_name -> stillhouse.v1.ExciseLicenceKind
-	17, // 12: stillhouse.v1.ListExciseLicencesResponse.licences:type_name -> stillhouse.v1.ExciseLicence
+	18, // 12: stillhouse.v1.ListExciseLicencesResponse.licences:type_name -> stillhouse.v1.ExciseLicence
 	3,  // 13: stillhouse.v1.SaveExciseLicenceRequest.kind:type_name -> stillhouse.v1.ExciseLicenceKind
-	17, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
-	22, // 15: stillhouse.v1.SecuritySufficiencyResponse.licences:type_name -> stillhouse.v1.SecuritySufficiency
-	25, // 16: stillhouse.v1.GroupViewResponse.entities:type_name -> stillhouse.v1.GroupEntity
-	23, // 17: stillhouse.v1.TenantService.SecuritySufficiency:input_type -> stillhouse.v1.SecuritySufficiencyRequest
-	15, // 18: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
-	18, // 19: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
-	20, // 20: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
-	9,  // 21: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
-	5,  // 22: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	7,  // 23: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	11, // 24: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	13, // 25: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	26, // 26: stillhouse.v1.TenantService.GroupView:input_type -> stillhouse.v1.GroupViewRequest
-	24, // 27: stillhouse.v1.TenantService.SecuritySufficiency:output_type -> stillhouse.v1.SecuritySufficiencyResponse
-	16, // 28: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
-	19, // 29: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
-	21, // 30: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
-	10, // 31: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
-	6,  // 32: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	8,  // 33: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	12, // 34: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	14, // 35: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	27, // 36: stillhouse.v1.TenantService.GroupView:output_type -> stillhouse.v1.GroupViewResponse
-	27, // [27:37] is the sub-list for method output_type
-	17, // [17:27] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	18, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
+	23, // 15: stillhouse.v1.SecuritySufficiencyResponse.licences:type_name -> stillhouse.v1.SecuritySufficiency
+	26, // 16: stillhouse.v1.GroupViewResponse.entities:type_name -> stillhouse.v1.GroupEntity
+	4,  // 17: stillhouse.v1.CopyReferenceDataRequest.what:type_name -> stillhouse.v1.CopyableReference
+	24, // 18: stillhouse.v1.TenantService.SecuritySufficiency:input_type -> stillhouse.v1.SecuritySufficiencyRequest
+	16, // 19: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
+	19, // 20: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
+	21, // 21: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
+	10, // 22: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
+	6,  // 23: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	8,  // 24: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	12, // 25: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	14, // 26: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	27, // 27: stillhouse.v1.TenantService.GroupView:input_type -> stillhouse.v1.GroupViewRequest
+	29, // 28: stillhouse.v1.TenantService.CopyReferenceData:input_type -> stillhouse.v1.CopyReferenceDataRequest
+	25, // 29: stillhouse.v1.TenantService.SecuritySufficiency:output_type -> stillhouse.v1.SecuritySufficiencyResponse
+	17, // 30: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
+	20, // 31: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
+	22, // 32: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
+	11, // 33: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
+	7,  // 34: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	9,  // 35: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	13, // 36: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	15, // 37: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	28, // 38: stillhouse.v1.TenantService.GroupView:output_type -> stillhouse.v1.GroupViewResponse
+	30, // 39: stillhouse.v1.TenantService.CopyReferenceData:output_type -> stillhouse.v1.CopyReferenceDataResponse
+	29, // [29:40] is the sub-list for method output_type
+	18, // [18:29] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -2229,8 +2438,8 @@ func file_stillhouse_v1_tenant_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
-			NumEnums:      4,
-			NumMessages:   24,
+			NumEnums:      5,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

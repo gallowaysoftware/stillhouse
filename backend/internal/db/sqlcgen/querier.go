@@ -504,6 +504,8 @@ type Querier interface {
 	// the operator read off the instrument. See migration 000023.
 	InsertBarrelEvent(ctx context.Context, arg InsertBarrelEventParams) (BarrelEvent, error)
 	InsertBulkMovement(ctx context.Context, arg InsertBulkMovementParams) (BulkMovement, error)
+	InsertCopiedMaterial(ctx context.Context, arg InsertCopiedMaterialParams) error
+	InsertCopiedSupplier(ctx context.Context, arg InsertCopiedSupplierParams) error
 	// A movement recorded directly by an operator rather than as a side effect
 	// of another action: spirits arriving on or leaving the premises. Carries
 	// the counterparty, the document, the determination and the author, none of
@@ -682,6 +684,10 @@ type Querier interface {
 	ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]ListMashRunsRow, error)
 	ListMaterialLots(ctx context.Context, arg ListMaterialLotsParams) ([]MaterialLot, error)
 	ListMaterials(ctx context.Context, arg ListMaterialsParams) ([]Material, error)
+	// Definitions worth carrying to another of the licensee's own
+	// distilleries. Archived rows are left behind: copying something the
+	// source has retired starts the destination with a mistake.
+	ListMaterialsForCopy(ctx context.Context) ([]ListMaterialsForCopyRow, error)
 	ListOpenAlerts(ctx context.Context) ([]ListOpenAlertsRow, error)
 	ListPOSProductMap(ctx context.Context) ([]ListPOSProductMapRow, error)
 	ListPOSSales(ctx context.Context, arg ListPOSSalesParams) ([]ListPOSSalesRow, error)
@@ -732,6 +738,7 @@ type Querier interface {
 	ListStockCountLines(ctx context.Context, stockCountID uuid.UUID) ([]ListStockCountLinesRow, error)
 	ListStockCounts(ctx context.Context) ([]ListStockCountsRow, error)
 	ListSuppliers(ctx context.Context, includeArchived bool) ([]Supplier, error)
+	ListSuppliersForCopy(ctx context.Context) ([]ListSuppliersForCopyRow, error)
 	ListTaxRates(ctx context.Context) ([]TaxRate, error)
 	// Everything that is not simply ours-and-here, which is the list an
 	// operator needs before they sign a return or value their inventory.
@@ -810,6 +817,7 @@ type Querier interface {
 	// Deliberately generalises what the stamp panel already does for excise
 	// stamps: bottles a day over the last thirty, divided into what is left.
 	MaterialCover(ctx context.Context, windowDays int32) ([]MaterialCoverRow, error)
+	MaterialNamesInUse(ctx context.Context) ([]string, error)
 	// For the alert evaluator. Only materials with a reorder point recorded:
 	// one Stillhouse guessed would fire at a level nobody chose, and an alert
 	// people did not choose is an alert they learn to dismiss.
@@ -1345,6 +1353,7 @@ type Querier interface {
 	// two bands for exactly this reason.
 	SumRemovalsInPeriod(ctx context.Context, arg SumRemovalsInPeriodParams) (SumRemovalsInPeriodRow, error)
 	SumStampInventory(ctx context.Context) ([]SumStampInventoryRow, error)
+	SupplierNamesInUse(ctx context.Context) ([]string, error)
 	// Every tax applying to a jurisdiction on a date: the ones recorded for
 	// that jurisdiction and the ones recorded for everywhere. Only the most
 	// recent of each name is returned, so superseding a rate means adding a

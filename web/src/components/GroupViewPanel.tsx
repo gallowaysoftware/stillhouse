@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
 import { tenantClient } from "@/lib/clients";
+import { CopyableReference } from "@/gen/stillhouse/v1/tenant_pb";
 import { formatLAA } from "@/lib/format";
 
 /**
@@ -122,8 +124,73 @@ export function GroupViewPanel() {
           </table>
 
           <p className="mt-2 text-[11px] text-fg-muted">{d.caution}</p>
+
+          {/* Copying, not linking. A material's extract fraction feeds a
+              conversion efficiency which feeds a yield, so each licence
+              has to own the definitions its own figures came from. */}
+          <CopyFrom entities={d.entities} />
         </>
       )}
     </section>
+  );
+}
+
+function CopyFrom({ entities }: { entities: { tenantId: string; tenantName: string }[] }) {
+  const qc = useQueryClient();
+  const [from, setFrom] = useState("");
+  const [result, setResult] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const copy = useMutation({
+    mutationFn: () =>
+      tenantClient.copyReferenceData({
+        fromTenantId: from,
+        what: [
+          CopyableReference.MATERIALS,
+          CopyableReference.SUPPLIERS,
+        ],
+      }),
+    onSuccess: (r) => {
+      setErr(null);
+      setResult(
+        `${r.materialsCopied} material(s) and ${r.suppliersCopied} supplier(s) copied` +
+          (r.skipped.length ? `; already here: ${r.skipped.join(", ")}` : ""),
+      );
+      void qc.invalidateQueries();
+    },
+    onError: (e) => setErr(e instanceof ConnectError ? e.rawMessage : String(e)),
+  });
+
+  if (entities.length < 2) return null;
+
+  return (
+    <div className="mt-3 border-t border-border pt-2">
+      <p className="mb-1 text-[11px] text-fg-muted">
+        Copy materials and suppliers from another of your distilleries. They
+        become this one&apos;s own definitions — editing them here changes
+        nothing there.
+      </p>
+      <div className="flex flex-wrap items-center gap-2">
+        <select
+          value={from}
+          onChange={(e) => setFrom(e.target.value)}
+          className="rounded border border-border-strong px-2 py-1 text-xs"
+        >
+          <option value="">Copy from…</option>
+          {entities.map((e) => (
+            <option key={e.tenantId} value={e.tenantId}>{e.tenantName}</option>
+          ))}
+        </select>
+        <button
+          onClick={() => copy.mutate()}
+          disabled={copy.isPending || !from}
+          className="rounded border border-border-strong px-2 py-1 text-xs hover:bg-surface-3 disabled:opacity-50"
+        >
+          {copy.isPending ? "Copying…" : "Copy"}
+        </button>
+      </div>
+      {result && <p className="mt-1 text-[11px] text-fg-muted">{result}</p>}
+      {err && <p className="mt-1 text-[11px] text-danger-fg">{err}</p>}
+    </div>
   );
 }

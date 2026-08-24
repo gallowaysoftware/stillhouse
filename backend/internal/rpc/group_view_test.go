@@ -25,9 +25,19 @@ import (
 //
 // Needs STILLHOUSE_INTEGRATION_TEST_ADMIN_DSN.
 
+// newTenantSvc builds the service on the RLS-ENFORCED pool, which is what
+// production gives it (server.go passes the stillhouse_app connection).
+//
+// An earlier version passed the admin pool and the copy tests failed in a
+// way that looked like a bug in the code: the destination appeared to
+// already hold the source's materials, because a superuser connection
+// bypasses row-level security and `SELECT name FROM materials` returned
+// every tenant's. The fixture, not the handler. Worth the comment because
+// a test harness that quietly disables the boundary under test is the
+// most expensive kind of green.
 func newTenantSvc(t *testing.T, f *ledgerFixture) *TenantService {
 	t.Helper()
-	return NewTenantService(testdb.AdminPool(t), f.q,
+	return NewTenantService(testdb.AppPool(t), f.q,
 		slog.New(slog.NewTextHandler(os.Stderr, nil)))
 }
 
@@ -170,4 +180,191 @@ func accountFor(t *testing.T, f *ledgerFixture, email string, tenantID uuid.UUID
 	}
 	t.Fatalf("no account for %s at %s", email, tenantID)
 	return sqlcgen.User{}
+}
+
+// PLAN H7's shared reference data, which turned out to be a copy rather
+// than a share — and the difference is the design.
+//
+// Shared mutable reference data across licences means one licensee's edit
+// changing another's records, and a material's extract fraction feeds a
+// conversion efficiency which feeds a yield. Each licence owns what its
+// own figures were computed from.
+
+func seedMaterial(t *testing.T, f *ledgerFixture, name string) {
+	t.Helper()
+	if _, err := testdb.AdminPool(t).Exec(f.ctx,
+		`INSERT INTO materials (tenant_id, name, kind, uom) VALUES ($1,$2,'grain','kg')`,
+		f.tenant.ID, name); err != nil {
+		t.Fatalf("seed material %s: %v", name, err)
+	}
+}
+
+func materialNames(t *testing.T, f *ledgerFixture) map[string]bool {
+	t.Helper()
+	rows, err := testdb.AdminPool(t).Query(f.ctx,
+		`SELECT name FROM materials WHERE tenant_id = $1`, f.tenant.ID)
+	if err != nil {
+		t.Fatalf("names: %v", err)
+	}
+	defer rows.Close()
+	out := map[string]bool{}
+	for rows.Next() {
+		var n string
+		if err := rows.Scan(&n); err != nil {
+			t.Fatalf("scan: %v", err)
+		}
+		out[n] = true
+	}
+	return out
+}
+
+func twoAccounts(t *testing.T, a, b *ledgerFixture) (string, sqlcgen.User) {
+	t.Helper()
+	email := "copier-" + uuid.NewString() + "@example.com"
+	hash, err := auth.HashPassword("a-long-enough-password")
+	if err != nil {
+		t.Fatalf("hash: %v", err)
+	}
+	for _, f := range []*ledgerFixture{a, b} {
+		if _, err := f.q.CreateUser(f.ctx, sqlcgen.CreateUserParams{
+			TenantID: f.tenant.ID, Email: email, PasswordHash: hash,
+			DisplayName: "Copier", Role: sqlcgen.UserRoleOwner,
+		}); err != nil {
+			t.Fatalf("create account: %v", err)
+		}
+	}
+	return email, accountFor(t, a, email, a.tenant.ID)
+}
+
+func TestCopyReferenceData_CopiesAndDoesNotLink(t *testing.T) {
+	src := newLedgerFixture(t)
+	dst := newLedgerFixture(t)
+	seedMaterial(t, src, "Copied Rye")
+	_, me := twoAccounts(t, dst, src) // account at the destination
+
+	svc := newTenantSvc(t, dst)
+	resp, err := svc.CopyReferenceData(WithUser(dst.ctx, me),
+		connect.NewRequest(&stillhousev1.CopyReferenceDataRequest{
+			FromTenantId: src.tenant.ID.String(),
+			What: []stillhousev1.CopyableReference{
+				stillhousev1.CopyableReference_COPYABLE_REFERENCE_MATERIALS,
+			},
+		}))
+	if err != nil {
+		t.Fatalf("CopyReferenceData: %v", err)
+	}
+	if resp.Msg.GetMaterialsCopied() < 1 {
+		t.Fatalf("nothing copied: %+v", resp.Msg)
+	}
+	if !materialNames(t, dst)["Copied Rye"] {
+		t.Error("the material did not arrive at the destination")
+	}
+	if !strings.Contains(resp.Msg.GetNote(), "Copied, not linked") {
+		t.Errorf("note does not state the distinction: %q", resp.Msg.GetNote())
+	}
+
+	// Editing here must not touch there. That is the whole reason this
+	// copies rather than shares.
+	if _, err := testdb.AdminPool(t).Exec(dst.ctx,
+		`UPDATE materials SET extract_fraction = 0.99 WHERE tenant_id = $1 AND name = 'Copied Rye'`,
+		dst.tenant.ID); err != nil {
+		t.Fatalf("edit: %v", err)
+	}
+	var srcFraction *float64
+	if err := testdb.AdminPool(t).QueryRow(src.ctx,
+		`SELECT extract_fraction FROM materials WHERE tenant_id = $1 AND name = 'Copied Rye'`,
+		src.tenant.ID).Scan(&srcFraction); err != nil {
+		t.Fatalf("read source: %v", err)
+	}
+	if srcFraction != nil && *srcFraction == 0.99 {
+		t.Error("editing the copy changed the original — these are supposed to be separate records")
+	}
+}
+
+// A name already here is left alone and reported. Overwriting would
+// replace a definition this licensee's own figures were computed from.
+func TestCopyReferenceData_DoesNotOverwriteWhatIsAlreadyHere(t *testing.T) {
+	src := newLedgerFixture(t)
+	dst := newLedgerFixture(t)
+	seedMaterial(t, src, "Shared Name")
+	seedMaterial(t, dst, "shared name") // same grain, different case
+	_, me := twoAccounts(t, dst, src)
+
+	svc := newTenantSvc(t, dst)
+	resp, err := svc.CopyReferenceData(WithUser(dst.ctx, me),
+		connect.NewRequest(&stillhousev1.CopyReferenceDataRequest{
+			FromTenantId: src.tenant.ID.String(),
+			What: []stillhousev1.CopyableReference{
+				stillhousev1.CopyableReference_COPYABLE_REFERENCE_MATERIALS,
+			},
+		}))
+	if err != nil {
+		t.Fatalf("CopyReferenceData: %v", err)
+	}
+	var reported bool
+	for _, s := range resp.Msg.GetSkipped() {
+		if strings.EqualFold(s, "Shared Name") {
+			reported = true
+		}
+	}
+	if !reported {
+		t.Errorf("a name already here was not reported as skipped: %+v", resp.Msg.GetSkipped())
+	}
+	// And only one of them exists, not two spellings of one grain.
+	names := materialNames(t, dst)
+	if names["Shared Name"] && names["shared name"] {
+		t.Error("both spellings exist — a materials list has become two lists")
+	}
+}
+
+// The security property. Copying reads the source's material list, so it
+// must refuse a licence the caller holds no account at — and refuse it
+// the same way as one that does not exist.
+func TestCopyReferenceData_RefusesALicenceYouDoNotHold(t *testing.T) {
+	dst := newLedgerFixture(t)
+	stranger := newLedgerFixture(t)
+	seedMaterial(t, stranger, "Not Yours")
+
+	email := "lonely-" + uuid.NewString() + "@example.com"
+	hash, _ := auth.HashPassword("a-long-enough-password")
+	if _, err := dst.q.CreateUser(dst.ctx, sqlcgen.CreateUserParams{
+		TenantID: dst.tenant.ID, Email: email, PasswordHash: hash,
+		DisplayName: "Lonely", Role: sqlcgen.UserRoleOwner,
+	}); err != nil {
+		t.Fatalf("account: %v", err)
+	}
+	me := accountFor(t, dst, email, dst.tenant.ID)
+	svc := newTenantSvc(t, dst)
+
+	_, errHeld := svc.CopyReferenceData(WithUser(dst.ctx, me),
+		connect.NewRequest(&stillhousev1.CopyReferenceDataRequest{
+			FromTenantId: stranger.tenant.ID.String(),
+			What: []stillhousev1.CopyableReference{
+				stillhousev1.CopyableReference_COPYABLE_REFERENCE_MATERIALS,
+			},
+		}))
+	if errHeld == nil {
+		t.Fatal("read another licensee's materials on the strength of knowing a tenant id")
+	}
+	if materialNames(t, dst)["Not Yours"] {
+		t.Fatal("and copied them")
+	}
+
+	// A tenant that does not exist must answer identically, or this
+	// distinguishes real licences from invented ones for anybody with a
+	// session.
+	_, errUnknown := svc.CopyReferenceData(WithUser(dst.ctx, me),
+		connect.NewRequest(&stillhousev1.CopyReferenceDataRequest{
+			FromTenantId: uuid.NewString(),
+			What: []stillhousev1.CopyableReference{
+				stillhousev1.CopyableReference_COPYABLE_REFERENCE_MATERIALS,
+			},
+		}))
+	if errUnknown == nil {
+		t.Fatal("accepted a tenant id that does not exist")
+	}
+	if connect.CodeOf(errHeld) != connect.CodeOf(errUnknown) ||
+		errHeld.Error() != errUnknown.Error() {
+		t.Errorf("distinguishable: not-yours=%v unknown=%v", errHeld, errUnknown)
+	}
 }
