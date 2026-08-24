@@ -90,10 +90,34 @@ message RecallRemoval {
   bool   voided = 8;
 }
 
+// Where a recall starts. The exact/possible-contact boundary is in a
+// different place for each, which is the reason they are not one field.
+enum RecallOrigin {
+  RECALL_ORIGIN_UNSPECIFIED = 0;
+  // A material lot: exact to the production gauge, possible contact
+  // after it. The food-safety case.
+  RECALL_ORIGIN_MATERIAL_LOT = 1;
+  // A packaged lot: EXACT throughout. The lot code is the thing being
+  // recalled, so nothing is inferred — which is why a consumer complaint
+  // naming a lot code is the easiest recall to answer.
+  RECALL_ORIGIN_PACKAGED_LOT = 2;
+  // A cask or tank: possible contact from the moment anything was in it,
+  // following the movement graph forward.
+  RECALL_ORIGIN_CONTAINER = 3;
+}
+
 message SimulateRecallRequest {
-  // The material lot believed to be at fault. Other origins can be added;
-  // this is the one a food-safety recall actually starts from.
+  // Kept for callers written before other origins existed; equivalent to
+  // origin MATERIAL_LOT with this id.
   string material_lot_id = 1;
+
+  RecallOrigin origin = 2;
+  string origin_id = 3;
+  // For a container origin: only spirit moved on or after this date is
+  // followed. Empty follows everything, which over-recalls — a container
+  // that has been in service for years fed a great deal that has nothing
+  // to do with the problem.
+  string since = 4;
 }
 message SimulateRecallResponse {
   // One up: where the implicated material came from.
@@ -125,6 +149,28 @@ message SimulateRecallResponse {
   // Set when the chain cannot be walked at all — an unknown lot, or one
   // that never reached a mash.
   string note = 13;
+
+  RecallOrigin origin = 14;
+  // True when everything below is exact rather than possible contact,
+  // which is the case only for a packaged-lot origin. Reported so a
+  // reader knows whether they are looking at a list to act on or a list
+  // to judge.
+  bool exact_throughout = 15;
+  // Containers the affected spirit reached, for a container origin, and
+  // how many moves were followed to find them. Reported because an
+  // operator told "followed 3 moves" can judge whether that is the whole
+  // story and one told nothing cannot.
+  repeated RecallContainer containers = 16;
+  int32 moves_followed = 17;
+  // True when the walk hit its depth cap, so the answer may be short.
+  bool  walk_truncated = 18;
+}
+
+message RecallContainer {
+  string id = 1;
+  string name = 2;
+  // How many moves from the origin. 1 is directly fed by it.
+  int32  moves = 3;
 }
 
 service TraceabilityService {

@@ -257,6 +257,74 @@ func (q *Queries) DistillationChainFromGauge(ctx context.Context, bulkMovementID
 	return items, nil
 }
 
+const recallContainersFedBy = `-- name: RecallContainersFedBy :many
+WITH RECURSIVE reached AS (
+    SELECT m.destination_container_id AS container_id, 1 AS depth
+    FROM bulk_movements m
+    WHERE m.source_container_id = $1
+      AND m.destination_container_id IS NOT NULL
+      AND m.occurred_at >= $2::timestamptz
+    UNION
+    SELECT m.destination_container_id, r.depth + 1
+    FROM bulk_movements m
+    JOIN reached r ON r.container_id = m.source_container_id
+    WHERE m.destination_container_id IS NOT NULL
+      AND m.occurred_at >= $2::timestamptz
+      AND r.depth < 10
+)
+SELECT r.container_id::uuid AS container_id,
+       MIN(r.depth)::int AS depth,
+       COALESCE(c.name, '')::text AS container_name
+FROM reached r
+LEFT JOIN bulk_containers c ON c.id = r.container_id
+GROUP BY r.container_id, c.name
+ORDER BY MIN(r.depth), c.name
+`
+
+type RecallContainersFedByParams struct {
+	ContainerID uuid.NullUUID      `json:"container_id"`
+	Since       pgtype.Timestamptz `json:"since"`
+}
+
+type RecallContainersFedByRow struct {
+	ContainerID   uuid.UUID `json:"container_id"`
+	Depth         int32     `json:"depth"`
+	ContainerName string    `json:"container_name"`
+}
+
+// Every container the given one reached, following the movement graph
+// forward. PLAN I5.
+//
+// Recursive because spirit does not move once. A cask is dumped into a
+// vatting tank, the vatting tank feeds a bottling tank, and a walk that
+// followed one hop would under-recall — which is the failure that leaves
+// affected stock on a shelf. An unbounded walk over-recalls, so it is
+// capped and the depth reached is reported: an operator told "followed 3
+// moves" can judge whether that is the whole story, and one told nothing
+// cannot.
+//
+// Only movements at or after the origin date count. Spirit that left a
+// tank before the affected spirit arrived did not carry it.
+func (q *Queries) RecallContainersFedBy(ctx context.Context, arg RecallContainersFedByParams) ([]RecallContainersFedByRow, error) {
+	rows, err := q.db.Query(ctx, recallContainersFedBy, arg.ContainerID, arg.Since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecallContainersFedByRow{}
+	for rows.Next() {
+		var i RecallContainersFedByRow
+		if err := rows.Scan(&i.ContainerID, &i.Depth, &i.ContainerName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const recallExactChainFromMaterialLot = `-- name: RecallExactChainFromMaterialLot :many
 SELECT ml.id            AS material_lot_id,
        ml.supplier_lot,
@@ -354,6 +422,145 @@ func (q *Queries) RecallExactChainFromMaterialLot(ctx context.Context, materialL
 			&i.GaugeLaa,
 			&i.DestinationContainerID,
 			&i.ContainerName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const recallPackagedLotOneDown = `-- name: RecallPackagedLotOneDown :many
+SELECT r.id, r.removal_date, r.bottles_removed, r.destination_name,
+       r.voided_at,
+       COALESCE(c.name, '')::text AS customer_name,
+       COALESCE(c.id::text, '')::text AS customer_id,
+       pi.lot_code, pi.id AS packaged_inventory_id,
+       pi.bottles_on_hand
+FROM packaging_removals r
+JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+LEFT JOIN customers c      ON c.id = r.customer_id
+WHERE pi.id = $1
+ORDER BY r.removal_date, r.id
+`
+
+type RecallPackagedLotOneDownRow struct {
+	ID                  uuid.UUID          `json:"id"`
+	RemovalDate         pgtype.Date        `json:"removal_date"`
+	BottlesRemoved      int32              `json:"bottles_removed"`
+	DestinationName     string             `json:"destination_name"`
+	VoidedAt            pgtype.Timestamptz `json:"voided_at"`
+	CustomerName        string             `json:"customer_name"`
+	CustomerID          string             `json:"customer_id"`
+	LotCode             string             `json:"lot_code"`
+	PackagedInventoryID uuid.UUID          `json:"packaged_inventory_id"`
+	BottlesOnHand       int32              `json:"bottles_on_hand"`
+}
+
+// Who received a specific packaged lot. Exact, not possible contact: the
+// lot code IS the thing being recalled, so there is no inference here at
+// all — which is why a consumer complaint naming a lot code is the
+// easiest recall to answer and the most common one to get.
+func (q *Queries) RecallPackagedLotOneDown(ctx context.Context, packagedInventoryID uuid.UUID) ([]RecallPackagedLotOneDownRow, error) {
+	rows, err := q.db.Query(ctx, recallPackagedLotOneDown, packagedInventoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecallPackagedLotOneDownRow{}
+	for rows.Next() {
+		var i RecallPackagedLotOneDownRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.RemovalDate,
+			&i.BottlesRemoved,
+			&i.DestinationName,
+			&i.VoidedAt,
+			&i.CustomerName,
+			&i.CustomerID,
+			&i.LotCode,
+			&i.PackagedInventoryID,
+			&i.BottlesOnHand,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const recallPackagedLotsFromContainerSet = `-- name: RecallPackagedLotsFromContainerSet :many
+SELECT br.id            AS bottling_run_id,
+       br.bottling_date AS bottled_on,
+       br.bottle_count,
+       br.voided_at     AS bottling_voided_at,
+       br.source_container_id,
+       bc.name          AS container_name,
+       pi.id            AS packaged_inventory_id,
+       pi.lot_code,
+       pi.bottles_packaged,
+       pi.bottles_on_hand,
+       pi.bottles_removed,
+       p.name           AS product_name
+FROM bottling_runs br
+JOIN bulk_containers bc        ON bc.id = br.source_container_id
+LEFT JOIN packaged_inventory pi ON pi.bottling_run_id = br.id
+LEFT JOIN products p           ON p.id = pi.product_id
+WHERE br.source_container_id = ANY($1::uuid[])
+  AND br.bottling_date >= $2::date
+ORDER BY br.bottling_date, br.id
+`
+
+type RecallPackagedLotsFromContainerSetParams struct {
+	ContainerIds []uuid.UUID `json:"container_ids"`
+	Earliest     pgtype.Date `json:"earliest"`
+}
+
+type RecallPackagedLotsFromContainerSetRow struct {
+	BottlingRunID       uuid.UUID          `json:"bottling_run_id"`
+	BottledOn           pgtype.Date        `json:"bottled_on"`
+	BottleCount         int32              `json:"bottle_count"`
+	BottlingVoidedAt    pgtype.Timestamptz `json:"bottling_voided_at"`
+	SourceContainerID   uuid.UUID          `json:"source_container_id"`
+	ContainerName       string             `json:"container_name"`
+	PackagedInventoryID uuid.NullUUID      `json:"packaged_inventory_id"`
+	LotCode             pgtype.Text        `json:"lot_code"`
+	BottlesPackaged     pgtype.Int4        `json:"bottles_packaged"`
+	BottlesOnHand       pgtype.Int4        `json:"bottles_on_hand"`
+	BottlesRemoved      pgtype.Int4        `json:"bottles_removed"`
+	ProductName         pgtype.Text        `json:"product_name"`
+}
+
+// Bottling runs drawing from any of a set of containers, on or after the
+// date affected spirit could have been in them.
+func (q *Queries) RecallPackagedLotsFromContainerSet(ctx context.Context, arg RecallPackagedLotsFromContainerSetParams) ([]RecallPackagedLotsFromContainerSetRow, error) {
+	rows, err := q.db.Query(ctx, recallPackagedLotsFromContainerSet, arg.ContainerIds, arg.Earliest)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []RecallPackagedLotsFromContainerSetRow{}
+	for rows.Next() {
+		var i RecallPackagedLotsFromContainerSetRow
+		if err := rows.Scan(
+			&i.BottlingRunID,
+			&i.BottledOn,
+			&i.BottleCount,
+			&i.BottlingVoidedAt,
+			&i.SourceContainerID,
+			&i.ContainerName,
+			&i.PackagedInventoryID,
+			&i.LotCode,
+			&i.BottlesPackaged,
+			&i.BottlesOnHand,
+			&i.BottlesRemoved,
+			&i.ProductName,
 		); err != nil {
 			return nil, err
 		}

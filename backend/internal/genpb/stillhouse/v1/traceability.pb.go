@@ -27,6 +27,67 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// Where a recall starts. The exact/possible-contact boundary is in a
+// different place for each, which is the reason they are not one field.
+type RecallOrigin int32
+
+const (
+	RecallOrigin_RECALL_ORIGIN_UNSPECIFIED RecallOrigin = 0
+	// A material lot: exact to the production gauge, possible contact
+	// after it. The food-safety case.
+	RecallOrigin_RECALL_ORIGIN_MATERIAL_LOT RecallOrigin = 1
+	// A packaged lot: EXACT throughout. The lot code is the thing being
+	// recalled, so nothing is inferred — which is why a consumer complaint
+	// naming a lot code is the easiest recall to answer.
+	RecallOrigin_RECALL_ORIGIN_PACKAGED_LOT RecallOrigin = 2
+	// A cask or tank: possible contact from the moment anything was in it,
+	// following the movement graph forward.
+	RecallOrigin_RECALL_ORIGIN_CONTAINER RecallOrigin = 3
+)
+
+// Enum value maps for RecallOrigin.
+var (
+	RecallOrigin_name = map[int32]string{
+		0: "RECALL_ORIGIN_UNSPECIFIED",
+		1: "RECALL_ORIGIN_MATERIAL_LOT",
+		2: "RECALL_ORIGIN_PACKAGED_LOT",
+		3: "RECALL_ORIGIN_CONTAINER",
+	}
+	RecallOrigin_value = map[string]int32{
+		"RECALL_ORIGIN_UNSPECIFIED":  0,
+		"RECALL_ORIGIN_MATERIAL_LOT": 1,
+		"RECALL_ORIGIN_PACKAGED_LOT": 2,
+		"RECALL_ORIGIN_CONTAINER":    3,
+	}
+)
+
+func (x RecallOrigin) Enum() *RecallOrigin {
+	p := new(RecallOrigin)
+	*p = x
+	return p
+}
+
+func (x RecallOrigin) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (RecallOrigin) Descriptor() protoreflect.EnumDescriptor {
+	return file_stillhouse_v1_traceability_proto_enumTypes[0].Descriptor()
+}
+
+func (RecallOrigin) Type() protoreflect.EnumType {
+	return &file_stillhouse_v1_traceability_proto_enumTypes[0]
+}
+
+func (x RecallOrigin) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use RecallOrigin.Descriptor instead.
+func (RecallOrigin) EnumDescriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{0}
+}
+
 type TraceabilityNode struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Free-form kind so the tree can be rendered generically.
@@ -611,9 +672,16 @@ func (x *RecallRemoval) GetVoided() bool {
 
 type SimulateRecallRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// The material lot believed to be at fault. Other origins can be added;
-	// this is the one a food-safety recall actually starts from.
-	MaterialLotId string `protobuf:"bytes,1,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"`
+	// Kept for callers written before other origins existed; equivalent to
+	// origin MATERIAL_LOT with this id.
+	MaterialLotId string       `protobuf:"bytes,1,opt,name=material_lot_id,json=materialLotId,proto3" json:"material_lot_id,omitempty"`
+	Origin        RecallOrigin `protobuf:"varint,2,opt,name=origin,proto3,enum=stillhouse.v1.RecallOrigin" json:"origin,omitempty"`
+	OriginId      string       `protobuf:"bytes,3,opt,name=origin_id,json=originId,proto3" json:"origin_id,omitempty"`
+	// For a container origin: only spirit moved on or after this date is
+	// followed. Empty follows everything, which over-recalls — a container
+	// that has been in service for years fed a great deal that has nothing
+	// to do with the problem.
+	Since         string `protobuf:"bytes,4,opt,name=since,proto3" json:"since,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -655,6 +723,27 @@ func (x *SimulateRecallRequest) GetMaterialLotId() string {
 	return ""
 }
 
+func (x *SimulateRecallRequest) GetOrigin() RecallOrigin {
+	if x != nil {
+		return x.Origin
+	}
+	return RecallOrigin_RECALL_ORIGIN_UNSPECIFIED
+}
+
+func (x *SimulateRecallRequest) GetOriginId() string {
+	if x != nil {
+		return x.OriginId
+	}
+	return ""
+}
+
+func (x *SimulateRecallRequest) GetSince() string {
+	if x != nil {
+		return x.Since
+	}
+	return ""
+}
+
 type SimulateRecallResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// One up: where the implicated material came from.
@@ -681,7 +770,21 @@ type SimulateRecallResponse struct {
 	ExactnessNote string `protobuf:"bytes,12,opt,name=exactness_note,json=exactnessNote,proto3" json:"exactness_note,omitempty"`
 	// Set when the chain cannot be walked at all — an unknown lot, or one
 	// that never reached a mash.
-	Note          string `protobuf:"bytes,13,opt,name=note,proto3" json:"note,omitempty"`
+	Note   string       `protobuf:"bytes,13,opt,name=note,proto3" json:"note,omitempty"`
+	Origin RecallOrigin `protobuf:"varint,14,opt,name=origin,proto3,enum=stillhouse.v1.RecallOrigin" json:"origin,omitempty"`
+	// True when everything below is exact rather than possible contact,
+	// which is the case only for a packaged-lot origin. Reported so a
+	// reader knows whether they are looking at a list to act on or a list
+	// to judge.
+	ExactThroughout bool `protobuf:"varint,15,opt,name=exact_throughout,json=exactThroughout,proto3" json:"exact_throughout,omitempty"`
+	// Containers the affected spirit reached, for a container origin, and
+	// how many moves were followed to find them. Reported because an
+	// operator told "followed 3 moves" can judge whether that is the whole
+	// story and one told nothing cannot.
+	Containers    []*RecallContainer `protobuf:"bytes,16,rep,name=containers,proto3" json:"containers,omitempty"`
+	MovesFollowed int32              `protobuf:"varint,17,opt,name=moves_followed,json=movesFollowed,proto3" json:"moves_followed,omitempty"`
+	// True when the walk hit its depth cap, so the answer may be short.
+	WalkTruncated bool `protobuf:"varint,18,opt,name=walk_truncated,json=walkTruncated,proto3" json:"walk_truncated,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -807,6 +910,102 @@ func (x *SimulateRecallResponse) GetNote() string {
 	return ""
 }
 
+func (x *SimulateRecallResponse) GetOrigin() RecallOrigin {
+	if x != nil {
+		return x.Origin
+	}
+	return RecallOrigin_RECALL_ORIGIN_UNSPECIFIED
+}
+
+func (x *SimulateRecallResponse) GetExactThroughout() bool {
+	if x != nil {
+		return x.ExactThroughout
+	}
+	return false
+}
+
+func (x *SimulateRecallResponse) GetContainers() []*RecallContainer {
+	if x != nil {
+		return x.Containers
+	}
+	return nil
+}
+
+func (x *SimulateRecallResponse) GetMovesFollowed() int32 {
+	if x != nil {
+		return x.MovesFollowed
+	}
+	return 0
+}
+
+func (x *SimulateRecallResponse) GetWalkTruncated() bool {
+	if x != nil {
+		return x.WalkTruncated
+	}
+	return false
+}
+
+type RecallContainer struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name  string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	// How many moves from the origin. 1 is directly fed by it.
+	Moves         int32 `protobuf:"varint,3,opt,name=moves,proto3" json:"moves,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecallContainer) Reset() {
+	*x = RecallContainer{}
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecallContainer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecallContainer) ProtoMessage() {}
+
+func (x *RecallContainer) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_traceability_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecallContainer.ProtoReflect.Descriptor instead.
+func (*RecallContainer) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_traceability_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *RecallContainer) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *RecallContainer) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *RecallContainer) GetMoves() int32 {
+	if x != nil {
+		return x.Moves
+	}
+	return 0
+}
+
 var File_stillhouse_v1_traceability_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_traceability_proto_rawDesc = "" +
@@ -860,9 +1059,12 @@ const file_stillhouse_v1_traceability_proto_rawDesc = "" +
 	"customerId\x12#\n" +
 	"\rcustomer_name\x18\x06 \x01(\tR\fcustomerName\x12)\n" +
 	"\x10destination_name\x18\a \x01(\tR\x0fdestinationName\x12\x16\n" +
-	"\x06voided\x18\b \x01(\bR\x06voided\"?\n" +
+	"\x06voided\x18\b \x01(\bR\x06voided\"\xa7\x01\n" +
 	"\x15SimulateRecallRequest\x12&\n" +
-	"\x0fmaterial_lot_id\x18\x01 \x01(\tR\rmaterialLotId\"\xd5\x04\n" +
+	"\x0fmaterial_lot_id\x18\x01 \x01(\tR\rmaterialLotId\x123\n" +
+	"\x06origin\x18\x02 \x01(\x0e2\x1b.stillhouse.v1.RecallOriginR\x06origin\x12\x1b\n" +
+	"\torigin_id\x18\x03 \x01(\tR\boriginId\x12\x14\n" +
+	"\x05since\x18\x04 \x01(\tR\x05since\"\xc3\x06\n" +
 	"\x16SimulateRecallResponse\x12#\n" +
 	"\rmaterial_name\x18\x01 \x01(\tR\fmaterialName\x12#\n" +
 	"\rsupplier_name\x18\x02 \x01(\tR\fsupplierName\x12!\n" +
@@ -877,7 +1079,23 @@ const file_stillhouse_v1_traceability_proto_rawDesc = "" +
 	" \x01(\x05R\x0ebottlesRemoved\x12'\n" +
 	"\x0fvoided_removals\x18\v \x01(\x05R\x0evoidedRemovals\x12%\n" +
 	"\x0eexactness_note\x18\f \x01(\tR\rexactnessNote\x12\x12\n" +
-	"\x04note\x18\r \x01(\tR\x04note2\xd9\x01\n" +
+	"\x04note\x18\r \x01(\tR\x04note\x123\n" +
+	"\x06origin\x18\x0e \x01(\x0e2\x1b.stillhouse.v1.RecallOriginR\x06origin\x12)\n" +
+	"\x10exact_throughout\x18\x0f \x01(\bR\x0fexactThroughout\x12>\n" +
+	"\n" +
+	"containers\x18\x10 \x03(\v2\x1e.stillhouse.v1.RecallContainerR\n" +
+	"containers\x12%\n" +
+	"\x0emoves_followed\x18\x11 \x01(\x05R\rmovesFollowed\x12%\n" +
+	"\x0ewalk_truncated\x18\x12 \x01(\bR\rwalkTruncated\"K\n" +
+	"\x0fRecallContainer\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05moves\x18\x03 \x01(\x05R\x05moves*\x8a\x01\n" +
+	"\fRecallOrigin\x12\x1d\n" +
+	"\x19RECALL_ORIGIN_UNSPECIFIED\x10\x00\x12\x1e\n" +
+	"\x1aRECALL_ORIGIN_MATERIAL_LOT\x10\x01\x12\x1e\n" +
+	"\x1aRECALL_ORIGIN_PACKAGED_LOT\x10\x02\x12\x1b\n" +
+	"\x17RECALL_ORIGIN_CONTAINER\x10\x032\xd9\x01\n" +
 	"\x13TraceabilityService\x12c\n" +
 	"\x10TraceBottlingRun\x12&.stillhouse.v1.TraceBottlingRunRequest\x1a'.stillhouse.v1.TraceBottlingRunResponse\x12]\n" +
 	"\x0eSimulateRecall\x12$.stillhouse.v1.SimulateRecallRequest\x1a%.stillhouse.v1.SimulateRecallResponseB\xd5\x01\n" +
@@ -895,35 +1113,41 @@ func file_stillhouse_v1_traceability_proto_rawDescGZIP() []byte {
 	return file_stillhouse_v1_traceability_proto_rawDescData
 }
 
-var file_stillhouse_v1_traceability_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_stillhouse_v1_traceability_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_stillhouse_v1_traceability_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_stillhouse_v1_traceability_proto_goTypes = []any{
-	(*TraceabilityNode)(nil),         // 0: stillhouse.v1.TraceabilityNode
-	(*TraceBottlingRunRequest)(nil),  // 1: stillhouse.v1.TraceBottlingRunRequest
-	(*TraceBottlingRunResponse)(nil), // 2: stillhouse.v1.TraceBottlingRunResponse
-	(*RecallMashLink)(nil),           // 3: stillhouse.v1.RecallMashLink
-	(*RecallGaugeLink)(nil),          // 4: stillhouse.v1.RecallGaugeLink
-	(*RecallPackagedLot)(nil),        // 5: stillhouse.v1.RecallPackagedLot
-	(*RecallRemoval)(nil),            // 6: stillhouse.v1.RecallRemoval
-	(*SimulateRecallRequest)(nil),    // 7: stillhouse.v1.SimulateRecallRequest
-	(*SimulateRecallResponse)(nil),   // 8: stillhouse.v1.SimulateRecallResponse
-	(*timestamppb.Timestamp)(nil),    // 9: google.protobuf.Timestamp
+	(RecallOrigin)(0),                // 0: stillhouse.v1.RecallOrigin
+	(*TraceabilityNode)(nil),         // 1: stillhouse.v1.TraceabilityNode
+	(*TraceBottlingRunRequest)(nil),  // 2: stillhouse.v1.TraceBottlingRunRequest
+	(*TraceBottlingRunResponse)(nil), // 3: stillhouse.v1.TraceBottlingRunResponse
+	(*RecallMashLink)(nil),           // 4: stillhouse.v1.RecallMashLink
+	(*RecallGaugeLink)(nil),          // 5: stillhouse.v1.RecallGaugeLink
+	(*RecallPackagedLot)(nil),        // 6: stillhouse.v1.RecallPackagedLot
+	(*RecallRemoval)(nil),            // 7: stillhouse.v1.RecallRemoval
+	(*SimulateRecallRequest)(nil),    // 8: stillhouse.v1.SimulateRecallRequest
+	(*SimulateRecallResponse)(nil),   // 9: stillhouse.v1.SimulateRecallResponse
+	(*RecallContainer)(nil),          // 10: stillhouse.v1.RecallContainer
+	(*timestamppb.Timestamp)(nil),    // 11: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_traceability_proto_depIdxs = []int32{
-	9, // 0: stillhouse.v1.TraceabilityNode.occurred_at:type_name -> google.protobuf.Timestamp
-	0, // 1: stillhouse.v1.TraceBottlingRunResponse.nodes:type_name -> stillhouse.v1.TraceabilityNode
-	3, // 2: stillhouse.v1.SimulateRecallResponse.mashes:type_name -> stillhouse.v1.RecallMashLink
-	4, // 3: stillhouse.v1.SimulateRecallResponse.gauges:type_name -> stillhouse.v1.RecallGaugeLink
-	5, // 4: stillhouse.v1.SimulateRecallResponse.packaged_lots:type_name -> stillhouse.v1.RecallPackagedLot
-	6, // 5: stillhouse.v1.SimulateRecallResponse.removals:type_name -> stillhouse.v1.RecallRemoval
-	1, // 6: stillhouse.v1.TraceabilityService.TraceBottlingRun:input_type -> stillhouse.v1.TraceBottlingRunRequest
-	7, // 7: stillhouse.v1.TraceabilityService.SimulateRecall:input_type -> stillhouse.v1.SimulateRecallRequest
-	2, // 8: stillhouse.v1.TraceabilityService.TraceBottlingRun:output_type -> stillhouse.v1.TraceBottlingRunResponse
-	8, // 9: stillhouse.v1.TraceabilityService.SimulateRecall:output_type -> stillhouse.v1.SimulateRecallResponse
-	8, // [8:10] is the sub-list for method output_type
-	6, // [6:8] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	11, // 0: stillhouse.v1.TraceabilityNode.occurred_at:type_name -> google.protobuf.Timestamp
+	1,  // 1: stillhouse.v1.TraceBottlingRunResponse.nodes:type_name -> stillhouse.v1.TraceabilityNode
+	0,  // 2: stillhouse.v1.SimulateRecallRequest.origin:type_name -> stillhouse.v1.RecallOrigin
+	4,  // 3: stillhouse.v1.SimulateRecallResponse.mashes:type_name -> stillhouse.v1.RecallMashLink
+	5,  // 4: stillhouse.v1.SimulateRecallResponse.gauges:type_name -> stillhouse.v1.RecallGaugeLink
+	6,  // 5: stillhouse.v1.SimulateRecallResponse.packaged_lots:type_name -> stillhouse.v1.RecallPackagedLot
+	7,  // 6: stillhouse.v1.SimulateRecallResponse.removals:type_name -> stillhouse.v1.RecallRemoval
+	0,  // 7: stillhouse.v1.SimulateRecallResponse.origin:type_name -> stillhouse.v1.RecallOrigin
+	10, // 8: stillhouse.v1.SimulateRecallResponse.containers:type_name -> stillhouse.v1.RecallContainer
+	2,  // 9: stillhouse.v1.TraceabilityService.TraceBottlingRun:input_type -> stillhouse.v1.TraceBottlingRunRequest
+	8,  // 10: stillhouse.v1.TraceabilityService.SimulateRecall:input_type -> stillhouse.v1.SimulateRecallRequest
+	3,  // 11: stillhouse.v1.TraceabilityService.TraceBottlingRun:output_type -> stillhouse.v1.TraceBottlingRunResponse
+	9,  // 12: stillhouse.v1.TraceabilityService.SimulateRecall:output_type -> stillhouse.v1.SimulateRecallResponse
+	11, // [11:13] is the sub-list for method output_type
+	9,  // [9:11] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_traceability_proto_init() }
@@ -936,13 +1160,14 @@ func file_stillhouse_v1_traceability_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_traceability_proto_rawDesc), len(file_stillhouse_v1_traceability_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   9,
+			NumEnums:      1,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_stillhouse_v1_traceability_proto_goTypes,
 		DependencyIndexes: file_stillhouse_v1_traceability_proto_depIdxs,
+		EnumInfos:         file_stillhouse_v1_traceability_proto_enumTypes,
 		MessageInfos:      file_stillhouse_v1_traceability_proto_msgTypes,
 	}.Build()
 	File_stillhouse_v1_traceability_proto = out.File

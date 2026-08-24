@@ -922,6 +922,20 @@ type Querier interface {
 	// Whether anything is still owed on this order, so the status can follow
 	// the lines rather than being set by hand.
 	PurchaseOrderOutstanding(ctx context.Context, purchaseOrderID uuid.UUID) (PurchaseOrderOutstandingRow, error)
+	// Every container the given one reached, following the movement graph
+	// forward. PLAN I5.
+	//
+	// Recursive because spirit does not move once. A cask is dumped into a
+	// vatting tank, the vatting tank feeds a bottling tank, and a walk that
+	// followed one hop would under-recall — which is the failure that leaves
+	// affected stock on a shelf. An unbounded walk over-recalls, so it is
+	// capped and the depth reached is reported: an operator told "followed 3
+	// moves" can judge whether that is the whole story, and one told nothing
+	// cannot.
+	//
+	// Only movements at or after the origin date count. Spirit that left a
+	// tank before the affected spirit arrived did not carry it.
+	RecallContainersFedBy(ctx context.Context, arg RecallContainersFedByParams) ([]RecallContainersFedByRow, error)
 	// Forward from a material lot to every production gauge it reached.
 	//
 	// This half of a recall is exact. A material lot goes into named mashes,
@@ -935,6 +949,14 @@ type Querier interface {
 	// holds. Everything past the gauge is possible contact, not certainty,
 	// and is asked for separately so the two never get added together.
 	RecallExactChainFromMaterialLot(ctx context.Context, materialLotID uuid.UUID) ([]RecallExactChainFromMaterialLotRow, error)
+	// Who received a specific packaged lot. Exact, not possible contact: the
+	// lot code IS the thing being recalled, so there is no inference here at
+	// all — which is why a consumer complaint naming a lot code is the
+	// easiest recall to answer and the most common one to get.
+	RecallPackagedLotOneDown(ctx context.Context, packagedInventoryID uuid.UUID) ([]RecallPackagedLotOneDownRow, error)
+	// Bottling runs drawing from any of a set of containers, on or after the
+	// date affected spirit could have been in them.
+	RecallPackagedLotsFromContainerSet(ctx context.Context, arg RecallPackagedLotsFromContainerSetParams) ([]RecallPackagedLotsFromContainerSetRow, error)
 	// Bottling runs that drew from a container after affected spirit entered
 	// it, and the packaged lots they produced.
 	//

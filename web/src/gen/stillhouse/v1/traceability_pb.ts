@@ -7,8 +7,8 @@
 // @generated from file stillhouse/v1/traceability.proto (package stillhouse.v1, syntax proto3)
 /* eslint-disable */
 
-import type { GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
-import { fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
+import type { GenEnum, GenFile, GenMessage, GenService } from "@bufbuild/protobuf/codegenv2";
+import { enumDesc, fileDesc, messageDesc, serviceDesc } from "@bufbuild/protobuf/codegenv2";
 import type { Timestamp } from "@bufbuild/protobuf/wkt";
 import { file_google_protobuf_timestamp } from "@bufbuild/protobuf/wkt";
 import type { Message } from "@bufbuild/protobuf";
@@ -17,7 +17,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/traceability.proto.
  */
 export const file_stillhouse_v1_traceability: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdGlsbGhvdXNlL3YxL3RyYWNlYWJpbGl0eS5wcm90bxINc3RpbGxob3VzZS52MSJ/ChBUcmFjZWFiaWxpdHlOb2RlEgwKBGtpbmQYASABKAkSCgoCaWQYAiABKAkSEAoIaGVhZGxpbmUYAyABKAkSDgoGZGV0YWlsGAQgASgJEi8KC29jY3VycmVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIyChdUcmFjZUJvdHRsaW5nUnVuUmVxdWVzdBIXCg9ib3R0bGluZ19ydW5faWQYASABKAkidQoYVHJhY2VCb3R0bGluZ1J1blJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIQCghsb3RfY29kZRgCIAEoCRIuCgVub2RlcxgDIAMoCzIfLnN0aWxsaG91c2UudjEuVHJhY2VhYmlsaXR5Tm9kZSJtCg5SZWNhbGxNYXNoTGluaxITCgttYXNoX3J1bl9pZBgBIAEoCRIPCgdtYXNoX25vGAIgASgFEhEKCW1hc2hfZGF0ZRgDIAEoCRIVCg1xdWFudGl0eV91c2VkGAQgASgBEgsKA3VvbRgFIAEoCSKqAQoPUmVjYWxsR2F1Z2VMaW5rEhsKE3Byb2R1Y3Rpb25fZ2F1Z2VfaWQYASABKAkSEgoKZ2F1Z2VfZGF0ZRgCIAEoCRILCgNsYWEYAyABKAESFAoMY29udGFpbmVyX2lkGAQgASgJEhYKDmNvbnRhaW5lcl9uYW1lGAUgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5fbm8YBiABKAUSDgoGdm9pZGVkGAcgASgIIuIBChFSZWNhbGxQYWNrYWdlZExvdBIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYASABKAkSEAoIbG90X2NvZGUYAiABKAkSFAoMcHJvZHVjdF9uYW1lGAMgASgJEhIKCmJvdHRsZWRfb24YBCABKAkSFgoOY29udGFpbmVyX25hbWUYBSABKAkSGAoQYm90dGxlc19wYWNrYWdlZBgGIAEoBRIXCg9ib3R0bGVzX29uX2hhbmQYByABKAUSFwoPYm90dGxlc19yZW1vdmVkGAggASgFEg4KBnZvaWRlZBgJIAEoCCKqAQoNUmVjYWxsUmVtb3ZhbBIKCgJpZBgBIAEoCRIUCgxyZW1vdmFsX2RhdGUYAiABKAkSDwoHYm90dGxlcxgDIAEoBRIQCghsb3RfY29kZRgEIAEoCRITCgtjdXN0b21lcl9pZBgFIAEoCRIVCg1jdXN0b21lcl9uYW1lGAYgASgJEhgKEGRlc3RpbmF0aW9uX25hbWUYByABKAkSDgoGdm9pZGVkGAggASgIIjAKFVNpbXVsYXRlUmVjYWxsUmVxdWVzdBIXCg9tYXRlcmlhbF9sb3RfaWQYASABKAkirwMKFlNpbXVsYXRlUmVjYWxsUmVzcG9uc2USFQoNbWF0ZXJpYWxfbmFtZRgBIAEoCRIVCg1zdXBwbGllcl9uYW1lGAIgASgJEhQKDHN1cHBsaWVyX2xvdBgDIAEoCRItCgZtYXNoZXMYBCADKAsyHS5zdGlsbGhvdXNlLnYxLlJlY2FsbE1hc2hMaW5rEi4KBmdhdWdlcxgFIAMoCzIeLnN0aWxsaG91c2UudjEuUmVjYWxsR2F1Z2VMaW5rEjcKDXBhY2thZ2VkX2xvdHMYBiADKAsyIC5zdGlsbGhvdXNlLnYxLlJlY2FsbFBhY2thZ2VkTG90Ei4KCHJlbW92YWxzGAcgAygLMhwuc3RpbGxob3VzZS52MS5SZWNhbGxSZW1vdmFsEhgKEGJvdHRsZXNfcGFja2FnZWQYCCABKAUSFwoPYm90dGxlc19vbl9oYW5kGAkgASgFEhcKD2JvdHRsZXNfcmVtb3ZlZBgKIAEoBRIXCg92b2lkZWRfcmVtb3ZhbHMYCyABKAUSFgoOZXhhY3RuZXNzX25vdGUYDCABKAkSDAoEbm90ZRgNIAEoCTLZAQoTVHJhY2VhYmlsaXR5U2VydmljZRJjChBUcmFjZUJvdHRsaW5nUnVuEiYuc3RpbGxob3VzZS52MS5UcmFjZUJvdHRsaW5nUnVuUmVxdWVzdBonLnN0aWxsaG91c2UudjEuVHJhY2VCb3R0bGluZ1J1blJlc3BvbnNlEl0KDlNpbXVsYXRlUmVjYWxsEiQuc3RpbGxob3VzZS52MS5TaW11bGF0ZVJlY2FsbFJlcXVlc3QaJS5zdGlsbGhvdXNlLnYxLlNpbXVsYXRlUmVjYWxsUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp]);
+  fileDesc("CiBzdGlsbGhvdXNlL3YxL3RyYWNlYWJpbGl0eS5wcm90bxINc3RpbGxob3VzZS52MSJ/ChBUcmFjZWFiaWxpdHlOb2RlEgwKBGtpbmQYASABKAkSCgoCaWQYAiABKAkSEAoIaGVhZGxpbmUYAyABKAkSDgoGZGV0YWlsGAQgASgJEi8KC29jY3VycmVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCIyChdUcmFjZUJvdHRsaW5nUnVuUmVxdWVzdBIXCg9ib3R0bGluZ19ydW5faWQYASABKAkidQoYVHJhY2VCb3R0bGluZ1J1blJlc3BvbnNlEhcKD2JvdHRsaW5nX3J1bl9pZBgBIAEoCRIQCghsb3RfY29kZRgCIAEoCRIuCgVub2RlcxgDIAMoCzIfLnN0aWxsaG91c2UudjEuVHJhY2VhYmlsaXR5Tm9kZSJtCg5SZWNhbGxNYXNoTGluaxITCgttYXNoX3J1bl9pZBgBIAEoCRIPCgdtYXNoX25vGAIgASgFEhEKCW1hc2hfZGF0ZRgDIAEoCRIVCg1xdWFudGl0eV91c2VkGAQgASgBEgsKA3VvbRgFIAEoCSKqAQoPUmVjYWxsR2F1Z2VMaW5rEhsKE3Byb2R1Y3Rpb25fZ2F1Z2VfaWQYASABKAkSEgoKZ2F1Z2VfZGF0ZRgCIAEoCRILCgNsYWEYAyABKAESFAoMY29udGFpbmVyX2lkGAQgASgJEhYKDmNvbnRhaW5lcl9uYW1lGAUgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5fbm8YBiABKAUSDgoGdm9pZGVkGAcgASgIIuIBChFSZWNhbGxQYWNrYWdlZExvdBIdChVwYWNrYWdlZF9pbnZlbnRvcnlfaWQYASABKAkSEAoIbG90X2NvZGUYAiABKAkSFAoMcHJvZHVjdF9uYW1lGAMgASgJEhIKCmJvdHRsZWRfb24YBCABKAkSFgoOY29udGFpbmVyX25hbWUYBSABKAkSGAoQYm90dGxlc19wYWNrYWdlZBgGIAEoBRIXCg9ib3R0bGVzX29uX2hhbmQYByABKAUSFwoPYm90dGxlc19yZW1vdmVkGAggASgFEg4KBnZvaWRlZBgJIAEoCCKqAQoNUmVjYWxsUmVtb3ZhbBIKCgJpZBgBIAEoCRIUCgxyZW1vdmFsX2RhdGUYAiABKAkSDwoHYm90dGxlcxgDIAEoBRIQCghsb3RfY29kZRgEIAEoCRITCgtjdXN0b21lcl9pZBgFIAEoCRIVCg1jdXN0b21lcl9uYW1lGAYgASgJEhgKEGRlc3RpbmF0aW9uX25hbWUYByABKAkSDgoGdm9pZGVkGAggASgIIn8KFVNpbXVsYXRlUmVjYWxsUmVxdWVzdBIXCg9tYXRlcmlhbF9sb3RfaWQYASABKAkSKwoGb3JpZ2luGAIgASgOMhsuc3RpbGxob3VzZS52MS5SZWNhbGxPcmlnaW4SEQoJb3JpZ2luX2lkGAMgASgJEg0KBXNpbmNlGAQgASgJItoEChZTaW11bGF0ZVJlY2FsbFJlc3BvbnNlEhUKDW1hdGVyaWFsX25hbWUYASABKAkSFQoNc3VwcGxpZXJfbmFtZRgCIAEoCRIUCgxzdXBwbGllcl9sb3QYAyABKAkSLQoGbWFzaGVzGAQgAygLMh0uc3RpbGxob3VzZS52MS5SZWNhbGxNYXNoTGluaxIuCgZnYXVnZXMYBSADKAsyHi5zdGlsbGhvdXNlLnYxLlJlY2FsbEdhdWdlTGluaxI3Cg1wYWNrYWdlZF9sb3RzGAYgAygLMiAuc3RpbGxob3VzZS52MS5SZWNhbGxQYWNrYWdlZExvdBIuCghyZW1vdmFscxgHIAMoCzIcLnN0aWxsaG91c2UudjEuUmVjYWxsUmVtb3ZhbBIYChBib3R0bGVzX3BhY2thZ2VkGAggASgFEhcKD2JvdHRsZXNfb25faGFuZBgJIAEoBRIXCg9ib3R0bGVzX3JlbW92ZWQYCiABKAUSFwoPdm9pZGVkX3JlbW92YWxzGAsgASgFEhYKDmV4YWN0bmVzc19ub3RlGAwgASgJEgwKBG5vdGUYDSABKAkSKwoGb3JpZ2luGA4gASgOMhsuc3RpbGxob3VzZS52MS5SZWNhbGxPcmlnaW4SGAoQZXhhY3RfdGhyb3VnaG91dBgPIAEoCBIyCgpjb250YWluZXJzGBAgAygLMh4uc3RpbGxob3VzZS52MS5SZWNhbGxDb250YWluZXISFgoObW92ZXNfZm9sbG93ZWQYESABKAUSFgoOd2Fsa190cnVuY2F0ZWQYEiABKAgiOgoPUmVjYWxsQ29udGFpbmVyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDQoFbW92ZXMYAyABKAUqigEKDFJlY2FsbE9yaWdpbhIdChlSRUNBTExfT1JJR0lOX1VOU1BFQ0lGSUVEEAASHgoaUkVDQUxMX09SSUdJTl9NQVRFUklBTF9MT1QQARIeChpSRUNBTExfT1JJR0lOX1BBQ0tBR0VEX0xPVBACEhsKF1JFQ0FMTF9PUklHSU5fQ09OVEFJTkVSEAMy2QEKE1RyYWNlYWJpbGl0eVNlcnZpY2USYwoQVHJhY2VCb3R0bGluZ1J1bhImLnN0aWxsaG91c2UudjEuVHJhY2VCb3R0bGluZ1J1blJlcXVlc3QaJy5zdGlsbGhvdXNlLnYxLlRyYWNlQm90dGxpbmdSdW5SZXNwb25zZRJdCg5TaW11bGF0ZVJlY2FsbBIkLnN0aWxsaG91c2UudjEuU2ltdWxhdGVSZWNhbGxSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5TaW11bGF0ZVJlY2FsbFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.TraceabilityNode
@@ -331,12 +331,32 @@ export const RecallRemovalSchema: GenMessage<RecallRemoval> = /*@__PURE__*/
  */
 export type SimulateRecallRequest = Message<"stillhouse.v1.SimulateRecallRequest"> & {
   /**
-   * The material lot believed to be at fault. Other origins can be added;
-   * this is the one a food-safety recall actually starts from.
+   * Kept for callers written before other origins existed; equivalent to
+   * origin MATERIAL_LOT with this id.
    *
    * @generated from field: string material_lot_id = 1;
    */
   materialLotId: string;
+
+  /**
+   * @generated from field: stillhouse.v1.RecallOrigin origin = 2;
+   */
+  origin: RecallOrigin;
+
+  /**
+   * @generated from field: string origin_id = 3;
+   */
+  originId: string;
+
+  /**
+   * For a container origin: only spirit moved on or after this date is
+   * followed. Empty follows everything, which over-recalls — a container
+   * that has been in service for years fed a great deal that has nothing
+   * to do with the problem.
+   *
+   * @generated from field: string since = 4;
+   */
+  since: string;
 };
 
 /**
@@ -433,6 +453,43 @@ export type SimulateRecallResponse = Message<"stillhouse.v1.SimulateRecallRespon
    * @generated from field: string note = 13;
    */
   note: string;
+
+  /**
+   * @generated from field: stillhouse.v1.RecallOrigin origin = 14;
+   */
+  origin: RecallOrigin;
+
+  /**
+   * True when everything below is exact rather than possible contact,
+   * which is the case only for a packaged-lot origin. Reported so a
+   * reader knows whether they are looking at a list to act on or a list
+   * to judge.
+   *
+   * @generated from field: bool exact_throughout = 15;
+   */
+  exactThroughout: boolean;
+
+  /**
+   * Containers the affected spirit reached, for a container origin, and
+   * how many moves were followed to find them. Reported because an
+   * operator told "followed 3 moves" can judge whether that is the whole
+   * story and one told nothing cannot.
+   *
+   * @generated from field: repeated stillhouse.v1.RecallContainer containers = 16;
+   */
+  containers: RecallContainer[];
+
+  /**
+   * @generated from field: int32 moves_followed = 17;
+   */
+  movesFollowed: number;
+
+  /**
+   * True when the walk hit its depth cap, so the answer may be short.
+   *
+   * @generated from field: bool walk_truncated = 18;
+   */
+  walkTruncated: boolean;
 };
 
 /**
@@ -441,6 +498,79 @@ export type SimulateRecallResponse = Message<"stillhouse.v1.SimulateRecallRespon
  */
 export const SimulateRecallResponseSchema: GenMessage<SimulateRecallResponse> = /*@__PURE__*/
   messageDesc(file_stillhouse_v1_traceability, 8);
+
+/**
+ * @generated from message stillhouse.v1.RecallContainer
+ */
+export type RecallContainer = Message<"stillhouse.v1.RecallContainer"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string name = 2;
+   */
+  name: string;
+
+  /**
+   * How many moves from the origin. 1 is directly fed by it.
+   *
+   * @generated from field: int32 moves = 3;
+   */
+  moves: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.RecallContainer.
+ * Use `create(RecallContainerSchema)` to create a new message.
+ */
+export const RecallContainerSchema: GenMessage<RecallContainer> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_traceability, 9);
+
+/**
+ * Where a recall starts. The exact/possible-contact boundary is in a
+ * different place for each, which is the reason they are not one field.
+ *
+ * @generated from enum stillhouse.v1.RecallOrigin
+ */
+export enum RecallOrigin {
+  /**
+   * @generated from enum value: RECALL_ORIGIN_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+
+  /**
+   * A material lot: exact to the production gauge, possible contact
+   * after it. The food-safety case.
+   *
+   * @generated from enum value: RECALL_ORIGIN_MATERIAL_LOT = 1;
+   */
+  MATERIAL_LOT = 1,
+
+  /**
+   * A packaged lot: EXACT throughout. The lot code is the thing being
+   * recalled, so nothing is inferred — which is why a consumer complaint
+   * naming a lot code is the easiest recall to answer.
+   *
+   * @generated from enum value: RECALL_ORIGIN_PACKAGED_LOT = 2;
+   */
+  PACKAGED_LOT = 2,
+
+  /**
+   * A cask or tank: possible contact from the moment anything was in it,
+   * following the movement graph forward.
+   *
+   * @generated from enum value: RECALL_ORIGIN_CONTAINER = 3;
+   */
+  CONTAINER = 3,
+}
+
+/**
+ * Describes the enum stillhouse.v1.RecallOrigin.
+ */
+export const RecallOriginSchema: GenEnum<RecallOrigin> = /*@__PURE__*/
+  enumDesc(file_stillhouse_v1_traceability, 0);
 
 /**
  * @generated from service stillhouse.v1.TraceabilityService

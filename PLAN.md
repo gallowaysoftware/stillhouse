@@ -344,9 +344,10 @@ reached, with the exact half and the possible-contact half reported apart.
 
 What is left is narrower:
 
-- **Other origins.** The walk starts from a material lot, which is the
-  food-safety case. Starting from a cask, a tank or a packaged lot is the
-  same walk from a different node and is mostly plumbing.
+- ~~Other origins~~ — shipped in stage 211. Not "mostly plumbing" as
+  this line guessed: the exact/possible-contact boundary sits in a
+  different place for each origin, and the container walk has to be
+  recursive because spirit does not move once.
 - **A preventive control plan** where SFCR requires one. That is a document
   with a required structure, not a query, and it needs the regulation's own
   wording rather than a paraphrase — same discipline as the excise notices.

@@ -318,3 +318,172 @@ func TestSimulateRecall_VoidedRunDoesNotWidenTheSearch(t *testing.T) {
 		t.Errorf("the voided gauge should still be listed and flagged: %+v", after.Msg.GetGauges())
 	}
 }
+
+// PLAN I5's other origins. The exact/possible-contact boundary sits in a
+// different place for each, which is the whole reason they are separate
+// paths rather than one.
+
+// A packaged lot is EXACT throughout: the lot code is the thing being
+// recalled, so nothing is inferred. That has to be reported, because it
+// is the difference between a list to act on and a list to judge.
+func TestSimulateRecall_FromPackagedLotIsExact(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewTraceabilityService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	gaugeAt := time.Date(2026, 5, 10, 12, 0, 0, 0, time.UTC)
+	seed := seedRecallChain(t, f, gaugeAt)
+	pi := bottle(t, f, seed.container, gaugeAt.AddDate(0, 0, 3), "LOT-EXACT", 200)
+
+	pool := testdb.AdminPool(t)
+	var cust uuid.UUID
+	if err := pool.QueryRow(f.ctx, `
+		INSERT INTO customers (tenant_id, name, kind) VALUES ($1,'Exact Shop','private_retail') RETURNING id`,
+		f.tenant.ID).Scan(&cust); err != nil {
+		t.Fatalf("customer: %v", err)
+	}
+	if _, err := pool.Exec(f.ctx, `
+		INSERT INTO packaging_removals (tenant_id, removal_no, packaged_inventory_id, customer_id,
+		                                destination_name, bottles_removed, removal_date,
+		                                bottle_size_ml, bottle_abv_pct, total_litres, total_laa,
+		                                duty_rate_per_laa, duty_amount_cad)
+		VALUES ($1, floor(random()*100000)::int, $2,$3,'Exact Shop',25,$4,750,40,18.75,7.5,13.864,103.98)`,
+		f.tenant.ID, pi, cust, gaugeAt.AddDate(0, 0, 5)); err != nil {
+		t.Fatalf("removal: %v", err)
+	}
+
+	resp, err := svc.SimulateRecall(f.ctx, connect.NewRequest(&stillhousev1.SimulateRecallRequest{
+		Origin: stillhousev1.RecallOrigin_RECALL_ORIGIN_PACKAGED_LOT, OriginId: pi.String(),
+	}))
+	if err != nil {
+		t.Fatalf("SimulateRecall: %v", err)
+	}
+	m := resp.Msg
+	if !m.GetExactThroughout() {
+		t.Error("a packaged-lot recall was reported as possible contact — the lot code IS the thing")
+	}
+	if !strings.Contains(m.GetExactnessNote(), "nothing here is inferred") {
+		t.Errorf("note does not state exactness: %q", m.GetExactnessNote())
+	}
+	if len(m.GetRemovals()) != 1 || m.GetRemovals()[0].GetCustomerName() != "Exact Shop" {
+		t.Errorf("removals: %+v", m.GetRemovals())
+	}
+	if m.GetBottlesRemoved() != 25 {
+		t.Errorf("bottles removed: got %d, want 25", m.GetBottlesRemoved())
+	}
+}
+
+// A lot with no removals is different from a lot that does not exist, and
+// the caller has to be able to tell — concluding "none of it has left"
+// about a mistyped id is how a recall misses everything.
+func TestSimulateRecall_PackagedLotWithNoRemovalsSaysWhy(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewTraceabilityService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	resp, err := svc.SimulateRecall(f.ctx, connect.NewRequest(&stillhousev1.SimulateRecallRequest{
+		Origin: stillhousev1.RecallOrigin_RECALL_ORIGIN_PACKAGED_LOT, OriginId: uuid.NewString(),
+	}))
+	if err != nil {
+		t.Fatalf("SimulateRecall: %v", err)
+	}
+	if !strings.Contains(resp.Msg.GetNote(), "lot id is wrong") {
+		t.Errorf("note does not raise the possibility of a wrong id: %q", resp.Msg.GetNote())
+	}
+}
+
+// Spirit does not move once. A cask into a vatting tank into a bottling
+// tank must be followed all the way — one hop under-recalls, which is the
+// failure that leaves affected stock on a shelf.
+func TestSimulateRecall_FromContainerFollowsTheChain(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewTraceabilityService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	pool := testdb.AdminPool(t)
+
+	cask := f.tank(t, "Origin cask", 200, 60)
+	vat := f.tank(t, "Vatting tank", 0, 0)
+	bottling := f.tank(t, "Bottling tank", 0, 0)
+	when := time.Now().UTC().AddDate(0, 0, -10)
+
+	// cask → vat → bottling tank.
+	for _, mv := range []struct{ from, to uuid.UUID }{{cask.ID, vat.ID}, {vat.ID, bottling.ID}} {
+		if _, err := pool.Exec(f.ctx, `
+			INSERT INTO bulk_movements (tenant_id, source_container_id, destination_container_id,
+			                            volume_l, abv_pct, laa, reason, occurred_at)
+			VALUES ($1,$2,$3,100,60,60,'inter_tank_transfer',$4)`,
+			f.tenant.ID, mv.from, mv.to, when); err != nil {
+			t.Fatalf("movement: %v", err)
+		}
+	}
+	// And a bottling run off the far end.
+	bottle(t, f, bottling.ID, time.Now().UTC().AddDate(0, 0, -1), "LOT-FAR-END", 120)
+
+	resp, err := svc.SimulateRecall(f.ctx, connect.NewRequest(&stillhousev1.SimulateRecallRequest{
+		Origin: stillhousev1.RecallOrigin_RECALL_ORIGIN_CONTAINER, OriginId: cask.ID.String(),
+		Since: when.Format("2006-01-02"),
+	}))
+	if err != nil {
+		t.Fatalf("SimulateRecall: %v", err)
+	}
+	m := resp.Msg
+
+	if m.GetExactThroughout() {
+		t.Error("a container recall claimed exactness — a container has no lot identity")
+	}
+	names := map[string]int32{}
+	for _, c := range m.GetContainers() {
+		names[c.GetName()] = c.GetMoves()
+	}
+	if names["Vatting tank"] != 1 {
+		t.Errorf("vatting tank at %d moves, want 1: %+v", names["Vatting tank"], m.GetContainers())
+	}
+	if names["Bottling tank"] != 2 {
+		t.Errorf("bottling tank at %d moves, want 2 — a single hop would have missed it",
+			names["Bottling tank"])
+	}
+	if m.GetMovesFollowed() < 2 {
+		t.Errorf("moves followed: %d", m.GetMovesFollowed())
+	}
+	// And the lot bottled at the far end is implicated.
+	var found bool
+	for _, l := range m.GetPackagedLots() {
+		if l.GetLotCode() == "LOT-FAR-END" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("the lot bottled two moves downstream was missed: %+v", m.GetPackagedLots())
+	}
+}
+
+// Without a start date the walk follows everything, which is almost
+// always wider than the problem — so it says so rather than presenting an
+// over-wide answer as if it were the right one.
+func TestSimulateRecall_ContainerWithoutADateSaysItIsWide(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewTraceabilityService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	tank := f.tank(t, "Undated tank", 100, 60)
+
+	resp, err := svc.SimulateRecall(f.ctx, connect.NewRequest(&stillhousev1.SimulateRecallRequest{
+		Origin: stillhousev1.RecallOrigin_RECALL_ORIGIN_CONTAINER, OriginId: tank.ID.String(),
+	}))
+	if err != nil {
+		t.Fatalf("SimulateRecall: %v", err)
+	}
+	if !strings.Contains(resp.Msg.GetNote(), "wider than the problem") {
+		t.Errorf("note does not warn that the walk is over-wide: %q", resp.Msg.GetNote())
+	}
+}
+
+// An origin nobody named is a refusal, not a default. Guessing
+// material-lot would walk a completely different graph from the one the
+// caller meant.
+func TestSimulateRecall_OriginIsRequired(t *testing.T) {
+	f := newDutyFixture(t)
+	svc := NewTraceabilityService(f.db, slog.New(slog.NewTextHandler(os.Stderr, nil)))
+	_, err := svc.SimulateRecall(f.ctx, connect.NewRequest(&stillhousev1.SimulateRecallRequest{
+		OriginId: uuid.NewString(),
+	}))
+	if err == nil {
+		t.Fatal("accepted a recall with no origin named")
+	}
+	if connect.CodeOf(err) != connect.CodeInvalidArgument {
+		t.Errorf("code: %v", connect.CodeOf(err))
+	}
+}

@@ -151,3 +151,79 @@ JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
 LEFT JOIN customers c      ON c.id = r.customer_id
 WHERE r.packaged_inventory_id = ANY(@packaged_inventory_ids::uuid[])
 ORDER BY r.removal_date, r.id;
+
+-- name: RecallContainersFedBy :many
+-- Every container the given one reached, following the movement graph
+-- forward. PLAN I5.
+--
+-- Recursive because spirit does not move once. A cask is dumped into a
+-- vatting tank, the vatting tank feeds a bottling tank, and a walk that
+-- followed one hop would under-recall — which is the failure that leaves
+-- affected stock on a shelf. An unbounded walk over-recalls, so it is
+-- capped and the depth reached is reported: an operator told "followed 3
+-- moves" can judge whether that is the whole story, and one told nothing
+-- cannot.
+--
+-- Only movements at or after the origin date count. Spirit that left a
+-- tank before the affected spirit arrived did not carry it.
+WITH RECURSIVE reached AS (
+    SELECT m.destination_container_id AS container_id, 1 AS depth
+    FROM bulk_movements m
+    WHERE m.source_container_id = @container_id
+      AND m.destination_container_id IS NOT NULL
+      AND m.occurred_at >= @since::timestamptz
+    UNION
+    SELECT m.destination_container_id, r.depth + 1
+    FROM bulk_movements m
+    JOIN reached r ON r.container_id = m.source_container_id
+    WHERE m.destination_container_id IS NOT NULL
+      AND m.occurred_at >= @since::timestamptz
+      AND r.depth < 10
+)
+SELECT r.container_id::uuid AS container_id,
+       MIN(r.depth)::int AS depth,
+       COALESCE(c.name, '')::text AS container_name
+FROM reached r
+LEFT JOIN bulk_containers c ON c.id = r.container_id
+GROUP BY r.container_id, c.name
+ORDER BY MIN(r.depth), c.name;
+
+-- name: RecallPackagedLotOneDown :many
+-- Who received a specific packaged lot. Exact, not possible contact: the
+-- lot code IS the thing being recalled, so there is no inference here at
+-- all — which is why a consumer complaint naming a lot code is the
+-- easiest recall to answer and the most common one to get.
+SELECT r.id, r.removal_date, r.bottles_removed, r.destination_name,
+       r.voided_at,
+       COALESCE(c.name, '')::text AS customer_name,
+       COALESCE(c.id::text, '')::text AS customer_id,
+       pi.lot_code, pi.id AS packaged_inventory_id,
+       pi.bottles_on_hand
+FROM packaging_removals r
+JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+LEFT JOIN customers c      ON c.id = r.customer_id
+WHERE pi.id = @packaged_inventory_id
+ORDER BY r.removal_date, r.id;
+
+-- name: RecallPackagedLotsFromContainerSet :many
+-- Bottling runs drawing from any of a set of containers, on or after the
+-- date affected spirit could have been in them.
+SELECT br.id            AS bottling_run_id,
+       br.bottling_date AS bottled_on,
+       br.bottle_count,
+       br.voided_at     AS bottling_voided_at,
+       br.source_container_id,
+       bc.name          AS container_name,
+       pi.id            AS packaged_inventory_id,
+       pi.lot_code,
+       pi.bottles_packaged,
+       pi.bottles_on_hand,
+       pi.bottles_removed,
+       p.name           AS product_name
+FROM bottling_runs br
+JOIN bulk_containers bc        ON bc.id = br.source_container_id
+LEFT JOIN packaged_inventory pi ON pi.bottling_run_id = br.id
+LEFT JOIN products p           ON p.id = pi.product_id
+WHERE br.source_container_id = ANY(@container_ids::uuid[])
+  AND br.bottling_date >= @earliest::date
+ORDER BY br.bottling_date, br.id;

@@ -4,6 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
 import { traceabilityClient } from "@/lib/clients";
+import { RecallOrigin } from "@/gen/stillhouse/v1/traceability_pb";
 
 /**
  * RecallPanel — forward from a material lot to everything that might
@@ -26,7 +27,11 @@ export function RecallPanel({ lotId, lotLabel }: { lotId: string; lotLabel: stri
   const [open, setOpen] = useState(false);
   const r = useQuery({
     queryKey: ["simulateRecall", lotId],
-    queryFn: () => traceabilityClient.simulateRecall({ materialLotId: lotId }),
+    queryFn: () =>
+      traceabilityClient.simulateRecall({
+        origin: RecallOrigin.MATERIAL_LOT,
+        originId: lotId,
+      }),
     enabled: open,
   });
 
