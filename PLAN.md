@@ -294,16 +294,23 @@ urgent.
 
 ### H13 · Tailwind 4 and the browser floor — P2
 
-The only upgrade left after stage 137, and deliberately deferred. Tailwind 4
-claims the `--color-*` custom-property namespace that this app's semantic tokens
-are defined in, so the official codemod produces a build that succeeds with exit
-code 0 and renders unstyled. The fix is mechanical — rename the raw channel
-variables out of the reserved namespace and map `@theme` at them — but it needs
-a human looking at the screen, not a green build.
+The namespace collision is gone as of stage 216. The tokens are `--sh-*`
+now, renamed while still on Tailwind 3, verified by the generated
+stylesheet being byte-identical once the prefix is normalised, and held
+there by a lint check that refuses both `--color-*` and a token the
+config references but nothing defines. So the upgrade no longer has the
+trap in it.
 
-It also raises the floor to Safari 16.4 / Chrome 111. For a tool used on
-shop-floor phones that is a product decision, and it is the reason this sits
-here rather than in a chore commit.
+What remains is the upgrade itself, and the reason is the second half of
+the original note rather than the first:
+
+- It raises the floor to **Safari 16.4 / Chrome 111**. For a tool used on
+  shop-floor phones that is a decision about which handsets stop working,
+  and it is not one to make from a terminal.
+- `@theme` still has to be mapped at the renamed variables, and the
+  result still wants eyes on it — but it is now a rendering *check*
+  rather than a rendering *risk*, because a token resolving to nothing
+  shows up in the stylesheet diff before it shows up as a blank page.
 
 ---
 

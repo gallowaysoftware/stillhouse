@@ -17,7 +17,7 @@ import { useState } from "react";
  *
  * Design notes, per the house data-viz rules:
  *   - Two series maximum. Colors are the validated categorical slots 1
- *     and 2 (see --color-series-* in index.css); do not substitute a
+ *     and 2 (see --sh-series-* in index.css); do not substitute a
  *     semantic state color, which would read as a status.
  *   - Hairline grid one shade off the surface, no dashes.
  *   - Thin 2px marks, low-opacity fills so overlap stays readable, and a

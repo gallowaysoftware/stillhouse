@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "lint": "tsc --noEmit",
+    "lint": "node scripts/check-token-namespace.mjs && tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"
   },

@@ -3,68 +3,80 @@
 @tailwind utilities;
 
 /* Color tokens. Dark is the default — light overrides only kick in when
-   <html class="light"> is set explicitly, which nothing does today. */
+   <html class="light"> is set explicitly, which nothing does today.
+   
+   Named --sh-* rather than --color-*, and the prefix is load-bearing.
+   Tailwind 4 claims the --color-* custom-property namespace for its own
+   theme, and these hold raw space-separated RGB channels ("9 9 11")
+   rather than colours — so under Tailwind 4 the two meanings collide,
+   the official codemod produces a build that exits 0, and the app
+   renders unstyled. See PLAN H13.
+   
+   Renaming them here, while still on Tailwind 3, takes that collision
+   off the table without committing to Tailwind 4 — which raises the
+   browser floor to Safari 16.4 / Chrome 111 and is a product decision
+   about shop-floor phones rather than a chore. */
 @layer base {
   :root {
     /* Dark palette: warm copper accent on a zinc-leaning neutral. */
-    --color-surface: 9 9 11;            /* zinc-950 */
-    --color-surface-2: 24 24 27;        /* zinc-900 */
-    --color-surface-3: 39 39 42;        /* zinc-800 */
-    --color-fg: 250 250 250;            /* zinc-50 */
-    --color-fg-muted: 161 161 170;      /* zinc-400 */
-    --color-fg-subtle: 113 113 122;     /* zinc-500 */
-    --color-border: 39 39 42;           /* zinc-800 */
-    --color-border-strong: 63 63 70;    /* zinc-700 */
+    --sh-surface: 9 9 11;            /* zinc-950 */
+    --sh-surface-2: 24 24 27;        /* zinc-900 */
+    --sh-surface-3: 39 39 42;        /* zinc-800 */
+    --sh-fg: 250 250 250;            /* zinc-50 */
+    --sh-fg-muted: 161 161 170;      /* zinc-400 */
+    --sh-fg-subtle: 113 113 122;     /* zinc-500 */
+    --sh-border: 39 39 42;           /* zinc-800 */
+    --sh-border-strong: 63 63 70;    /* zinc-700 */
     /* Amber-500 sits in copper territory; -400 hover for brighter feedback. */
-    --color-accent: 245 158 11;         /* amber-500 */
-    --color-accent-hover: 251 191 36;   /* amber-400 */
-    --color-accent-fg: 24 24 27;        /* dark text on amber */
+    --sh-accent: 245 158 11;         /* amber-500 */
+    --sh-accent-hover: 251 191 36;   /* amber-400 */
+    --sh-accent-fg: 24 24 27;        /* dark text on amber */
     /* Semantic state colors, dark-mode tuned. -400 sits comfortably on a
        zinc-900 surface; the fg variant goes brighter so chip text reads
        even when the background is at 10% opacity. */
-    --color-success: 16 185 129;        /* emerald-500 */
-    --color-success-fg: 110 231 183;    /* emerald-300 */
-    --color-warning: 217 119 6;         /* amber-600 — darker than accent so they don't blur */
-    --color-warning-fg: 252 211 77;     /* amber-300 */
-    --color-danger: 239 68 68;          /* red-500 */
-    --color-danger-fg: 252 165 165;     /* red-300 */
-    --color-info: 56 189 248;           /* sky-400 */
-    --color-info-fg: 186 230 253;       /* sky-200 */
+    --sh-success: 16 185 129;        /* emerald-500 */
+    --sh-success-fg: 110 231 183;    /* emerald-300 */
+    --sh-warning: 217 119 6;         /* amber-600 — darker than accent so they don't blur */
+    --sh-warning-fg: 252 211 77;     /* amber-300 */
+    --sh-danger: 239 68 68;          /* red-500 */
+    --sh-danger-fg: 252 165 165;     /* red-300 */
+    --sh-info: 56 189 248;           /* sky-400 */
+    --sh-info-fg: 186 230 253;       /* sky-200 */
     /* Categorical series colors for charts. Kept apart from the semantic
        state colors above so a series is never mistaken for a status.
        Stepped for the dark surface and validated as a pair against
        surface-2 (#18181b): CVD ΔE 26.8, normal-vision ΔE 31.8, both marks
        over 3:1 contrast. Don't hand-tweak these — revalidate if changed. */
-    --color-series-1: 57 135 229;       /* #3987e5 */
-    --color-series-2: 217 89 38;        /* #d95926 */
+    --sh-series-1: 57 135 229;       /* #3987e5 */
+    --sh-series-2: 217 89 38;        /* #d95926 */
   }
 
   /* Light overrides — kept warm + paper-like. Toggle by setting class="light"
      on <html>; default is dark. */
   html.light {
-    --color-surface: 250 250 249;       /* stone-50 */
-    --color-surface-2: 255 255 255;     /* white */
-    --color-surface-3: 245 245 244;     /* stone-100 */
-    --color-fg: 28 25 23;               /* stone-900 */
-    --color-fg-muted: 87 83 78;         /* stone-600 */
-    --color-fg-subtle: 120 113 108;     /* stone-500 */
-    --color-border: 231 229 228;        /* stone-200 */
-    --color-border-strong: 214 211 209; /* stone-300 */
-    --color-accent: 180 83 9;           /* amber-700 — darker on light bg */
-    --color-accent-hover: 217 119 6;    /* amber-600 */
-    --color-accent-fg: 255 255 255;
-    --color-success: 5 150 105;         /* emerald-600 */
-    --color-success-fg: 6 95 70;        /* emerald-800 */
-    --color-warning: 217 119 6;         /* amber-600 */
-    --color-warning-fg: 146 64 14;      /* amber-800 */
-    --color-danger: 220 38 38;          /* red-600 */
-    --color-danger-fg: 153 27 27;       /* red-800 */
-    --color-info: 2 132 199;            /* sky-600 */
-    --color-info-fg: 7 89 133;          /* sky-800 */
+    --sh-surface: 250 250 249;       /* stone-50 */
+    --sh-surface-2: 255 255 255;     /* white */
+    --sh-surface-3: 245 245 244;     /* stone-100 */
+    --sh-fg: 28 25 23;               /* stone-900 */
+    --sh-fg-muted: 87 83 78;         /* stone-600 */
+    --sh-fg-subtle: 120 113 108;     /* stone-500 */
+    --sh-border: 231 229 228;        /* stone-200 */
+    --sh-border-strong: 214 211 209; /* stone-300 */
+    --sh-accent: 180 83 9;           /* amber-700 — darker on light bg */
+    --sh-accent-hover: 217 119 6;    /* amber-600 */
+    --sh-accent-fg: 255 255 255;
+    --sh-success: 5 150 105;         /* emerald-600 */
+    --sh-success-fg: 6 95 70;        /* emerald-800 */
+    --sh-warning: 217 119 6;         /* amber-600 */
+    --sh-warning-fg: 146 64 14;      /* amber-800 */
+    --sh-danger: 220 38 38;          /* red-600 */
+    --sh-danger-fg: 153 27 27;       /* red-800 */
+    --sh-info: 2 132 199;            /* sky-600 */
+    --sh-info-fg: 7 89 133;          /* sky-800 */
     /* Same two hues, stepped for the light surface and validated against
        white: CVD ΔE 24.7, normal-vision ΔE 33.6. */
-    --color-series-1: 42 120 214;       /* #2a78d6 */
-    --color-series-2: 235 104 52;       /* #eb6834 */
+    --sh-series-1: 42 120 214;       /* #2a78d6 */
+    --sh-series-2: 235 104 52;       /* #eb6834 */
   }
 
   body {
