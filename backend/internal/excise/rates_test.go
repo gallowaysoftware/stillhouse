@@ -205,3 +205,91 @@ func TestBandTableIsContiguousAndOrdered(t *testing.T) {
 		}
 	}
 }
+
+// TestHistoricalRatesArePinned. The four earlier bands exist so that an
+// amended or reopened prior period computes rather than refusing, which
+// means they are figures that reach a filed return — and a wrong one
+// there is indistinguishable from a right one without the source.
+//
+// Pinned in the same way and for the same reason as the current band:
+// otherwise the suite would assert only that the table is contiguous,
+// which it would be with any numbers at all.
+//
+// Source: CRA, "Excise duty rates", which publishes the current rate and
+// the four preceding years, read 2026-08-24.
+func TestHistoricalRatesArePinned(t *testing.T) {
+	for _, tc := range []struct {
+		on       time.Time
+		perLAA   float64
+		perLitre float64
+		what     string
+	}{
+		{time.Date(2022, 6, 1, 0, 0, 0, 0, time.UTC), 13.042, 0.330, "2022-04-01 to 2023-03-31"},
+		{time.Date(2023, 6, 1, 0, 0, 0, 0, time.UTC), 13.303, 0.337, "2023-04-01 to 2024-03-31"},
+		{time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC), 13.569, 0.344, "2024-04-01 to 2025-03-31"},
+		{time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC), 13.840, 0.351, "2025-04-01 to 2026-03-31"},
+	} {
+		b, err := RateOn(tc.on)
+		if err != nil {
+			t.Errorf("%s: RateOn: %v", tc.what, err)
+			continue
+		}
+		if b.PerLAAOver7Pct != tc.perLAA {
+			t.Errorf("%s: %v per LAA, want %v", tc.what, b.PerLAAOver7Pct, tc.perLAA)
+		}
+		if b.PerLitreAtOrUnder7 != tc.perLitre {
+			t.Errorf("%s: %v per litre, want %v", tc.what, b.PerLitreAtOrUnder7, tc.perLitre)
+		}
+		if b.Source == "" {
+			t.Errorf("%s: no source cited", tc.what)
+		}
+	}
+
+	// The boundary between two bands is where a wrong answer is most
+	// likely and least visible: 31 March and 1 April are different rates.
+	mar31, err := RateOn(time.Date(2025, 3, 31, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("2025-03-31: %v", err)
+	}
+	apr1, err := RateOn(time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatalf("2025-04-01: %v", err)
+	}
+	if mar31.PerLAAOver7Pct != 13.569 {
+		t.Errorf("31 March 2025 got %v, want the 2024 band's 13.569", mar31.PerLAAOver7Pct)
+	}
+	if apr1.PerLAAOver7Pct != 13.840 {
+		t.Errorf("1 April 2025 got %v, want the 2025 band's 13.840", apr1.PerLAAOver7Pct)
+	}
+
+	// And a date before the table still refuses. Adding history must not
+	// turn "I cannot cite this" into an extrapolation.
+	if _, err := RateOn(time.Date(2021, 6, 1, 0, 0, 0, 0, time.UTC)); err == nil {
+		t.Error("a date before the earliest band returned a rate")
+	}
+}
+
+// The Schedule 5 special duty on spirits delivered to a licensed user.
+// Flat since 2003 and the one figure the table was missing entirely —
+// PLAN A2 named it, and B266 page 1 line 6 needs it.
+func TestSpecialDuty(t *testing.T) {
+	if SpecialDutyPerLAA != 0.12 {
+		t.Errorf("special duty: %v per LAA, want 0.12 (Schedule 5)", SpecialDutyPerLAA)
+	}
+	if SpecialDutySource == "" {
+		t.Error("no source cited for the special duty")
+	}
+	// 100 LAA delivered to a licensed user is $12.00.
+	if got := SpecialDutyOnLAA(100); math.Abs(got-12.00) > 1e-9 {
+		t.Errorf("special duty on 100 LAA: $%v, want $12.00", got)
+	}
+	// It is a different rate from the ordinary one, which is the whole
+	// reason it exists as a separate figure.
+	b, err := RateOn(inBand)
+	if err != nil {
+		t.Fatalf("RateOn: %v", err)
+	}
+	if SpecialDutyPerLAA == b.PerLAAOver7Pct {
+		t.Error("the special duty equals the ordinary rate — one of them is wrong")
+	}
+}

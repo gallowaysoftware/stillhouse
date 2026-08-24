@@ -31,16 +31,18 @@ Stage 142 made rates date-effective and made the lookup refuse outside what
 it can cite, which is the half that stops a wrong number reaching a return.
 What remains is data:
 
-- Earlier bands from the EDN notice series (EDN104 and predecessors), so a
-  reopened or amended pre-2026 period computes rather than refusing. Until
-  then any duty event before 2026-04-01 is refused with a message naming
-  the covered span.
-- The 2027-04-01 indexation, before it arrives. The current band is marked
-  known until that date and Stillhouse stops computing duty on it — loudly,
-  which is the intent, but it is a date to put in a calendar.
-- The special duty on imported spirits delivered to licensed users
-  (Schedule 5, $0.12/LAA), which pairs with page 1 line 6 in `A3` and is
-  absent entirely.
+- ~~Earlier bands~~ — added in stage 217, back to 2022-04-01, from CRA's
+  consolidated rates page (which publishes the current year and the four
+  before it). A reopened or amended period from 2022 onward now computes
+  at its own year's rate.
+- **The 2027-04-01 indexation, before it arrives.** Still the live item
+  here. The current band is known until that date and Stillhouse then
+  stops computing duty — loudly, which is the intent, but it is a date to
+  put in a calendar. CRA publishes the new rate in an EDN notice around
+  1 April; adding it is one struct literal.
+- ~~The special duty~~ — added in stage 217 as `excise.SpecialDutyPerLAA`,
+  $0.12/LAA, flat since 2003. `A3`'s page 1 line 6 now has a rate to use;
+  what it still lacks is a movement kind that records such a delivery.
 
 Each is a struct literal in `internal/excise/rates.go`; the table test
 enforces that bands abut exactly and that every band cites a notice.

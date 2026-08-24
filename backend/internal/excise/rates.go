@@ -17,6 +17,7 @@ package excise
 
 import (
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -55,6 +56,44 @@ type Band struct {
 // EffectiveFrom, and give the new one a KnownUntil of the following
 // 1 April. The table test enforces both.
 var bands = []Band{
+	// The four bands below were read from CRA's consolidated rates page,
+	// which publishes the current rate and the four preceding years. They
+	// are cited to that page rather than to individual EDN numbers,
+	// because that page is what was actually read — guessing which notice
+	// carried which year would be inventing a citation, which is the same
+	// failure as inventing a rate and harder to spot.
+	//
+	// The 2026 band was already on file from EDN104 and agrees with the
+	// page exactly, which is the only corroboration available without a
+	// second source.
+	{
+		EffectiveFrom:      time.Date(2022, 4, 1, 0, 0, 0, 0, time.UTC),
+		KnownUntil:         time.Date(2023, 4, 1, 0, 0, 0, 0, time.UTC),
+		Source:             ratesPageSource,
+		PerLAAOver7Pct:     13.042,
+		PerLitreAtOrUnder7: 0.330,
+	},
+	{
+		EffectiveFrom:      time.Date(2023, 4, 1, 0, 0, 0, 0, time.UTC),
+		KnownUntil:         time.Date(2024, 4, 1, 0, 0, 0, 0, time.UTC),
+		Source:             ratesPageSource,
+		PerLAAOver7Pct:     13.303,
+		PerLitreAtOrUnder7: 0.337,
+	},
+	{
+		EffectiveFrom:      time.Date(2024, 4, 1, 0, 0, 0, 0, time.UTC),
+		KnownUntil:         time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC),
+		Source:             ratesPageSource,
+		PerLAAOver7Pct:     13.569,
+		PerLitreAtOrUnder7: 0.344,
+	},
+	{
+		EffectiveFrom:      time.Date(2025, 4, 1, 0, 0, 0, 0, time.UTC),
+		KnownUntil:         time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC),
+		Source:             ratesPageSource,
+		PerLAAOver7Pct:     13.840,
+		PerLitreAtOrUnder7: 0.351,
+	},
 	{
 		EffectiveFrom:      time.Date(2026, 4, 1, 0, 0, 0, 0, time.UTC),
 		KnownUntil:         time.Date(2027, 4, 1, 0, 0, 0, 0, time.UTC),
@@ -62,6 +101,35 @@ var bands = []Band{
 		PerLAAOver7Pct:     14.117,
 		PerLitreAtOrUnder7: 0.358,
 	},
+}
+
+// ratesPageSource is CRA's consolidated rate page, with the date it was
+// read. Both halves matter: the page states the current rate and the four
+// preceding years, and it is revised in place every April, so a citation
+// without a date points at something that will have changed.
+const ratesPageSource = "CRA, Excise duty rates (canada.ca/en/revenue-agency/services/tax/technical-information/excise-duty/rates.html), read 2026-08-24"
+
+// SpecialDutyPerLAA is the special duty under Schedule 5 on spirits
+// delivered to, or imported by, a licensed user.
+//
+// Flat since 1 July 2003 and not indexed, which is why it is a constant
+// rather than a band: there is no rate history to walk. It pairs with
+// page 1 line 6 of the B266 (PLAN A3) and was the one figure the rate
+// table was missing entirely.
+const SpecialDutyPerLAA = 0.12
+
+// SpecialDutySource cites it, on the same terms as the bands.
+const SpecialDutySource = "Schedule 5, Excise Act, 2001; rate in effect since 2003-07-01, per CRA's excise duty rates page read 2026-08-24"
+
+// SpecialDutyOnLAA is the Schedule 5 duty on a quantity of absolute
+// alcohol delivered to a licensed user.
+//
+// No date argument, deliberately. Every other duty figure in this package
+// takes one because the rate moves; this one has not moved since 2003 and
+// taking a date would imply Stillhouse knows something about its history
+// that it does not.
+func SpecialDutyOnLAA(laa float64) float64 {
+	return math.Round(laa*SpecialDutyPerLAA*100) / 100
 }
 
 // UnknownRateError is returned when no band covers the date asked for —
