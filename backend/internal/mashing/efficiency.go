@@ -87,9 +87,7 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 
 	sg := *r.OriginalGravity
 	plato := PlatoFromSG(sg)
-	// Wort mass ≈ volume × SG (SG is relative to water at ~1 kg/L), and
-	// Plato is extract as a mass percentage of that.
-	measured := volume * sg * plato / 100
+	measured := ExtractInSolutionKg(sg, volume)
 
 	eff := &Efficiency{
 		OriginalGravity:     sg,
@@ -138,4 +136,32 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 			Detail:   "There is extract left in the tun. Small-scale mashes commonly sit at 75–90 %.",
 		})
 	}
+}
+
+// ExtractInSolutionKg is the extract actually dissolved in a wash, from
+// its gravity and volume.
+//
+//	wort mass ≈ volume × SG   (SG is relative to water at ~1 kg/L)
+//	extract   = wort mass × Plato / 100
+//
+// Exported so that everything computing a conversion efficiency does it
+// with this arithmetic rather than its own. The cross-tenant benchmarks
+// (stage 209) are the reason that matters beyond tidiness: a cohort is
+// only comparable if every tenant's figure came out of the same code, and
+// a second copy of this in SQL would have been the first thing to drift.
+func ExtractInSolutionKg(originalGravity, washVolumeL float64) float64 {
+	return washVolumeL * originalGravity * PlatoFromSG(originalGravity) / 100
+}
+
+// ConversionPercent is extract in solution as a share of what the grain
+// bill could have given up.
+//
+// Returns ok=false where the inputs cannot support a figure, rather than
+// a zero: a mash with no gravity reading and a mash that converted
+// nothing are different claims.
+func ConversionPercent(extractAvailableKg, originalGravity, washVolumeL float64) (float64, bool) {
+	if extractAvailableKg <= 0 || originalGravity <= 1.0 || washVolumeL <= 0 {
+		return 0, false
+	}
+	return ExtractInSolutionKg(originalGravity, washVolumeL) / extractAvailableKg * 100, true
 }

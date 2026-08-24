@@ -47,6 +47,52 @@ func (q *Queries) BenchmarkAngelsShare(ctx context.Context) ([]BenchmarkAngelsSh
 	return items, nil
 }
 
+const benchmarkConversionInputs = `-- name: BenchmarkConversionInputs :many
+SELECT b.tenant_id::uuid AS tenant_id,
+       b.extract_available_kg::double precision AS extract_available_kg,
+       b.original_gravity::double precision AS original_gravity,
+       b.wash_volume_l::double precision AS wash_volume_l,
+       b.grain_kg::double precision AS grain_kg
+FROM bench_conversion_inputs() b
+`
+
+type BenchmarkConversionInputsRow struct {
+	TenantID           uuid.UUID `json:"tenant_id"`
+	ExtractAvailableKg float64   `json:"extract_available_kg"`
+	OriginalGravity    float64   `json:"original_gravity"`
+	WashVolumeL        float64   `json:"wash_volume_l"`
+	GrainKg            float64   `json:"grain_kg"`
+}
+
+// Inputs, not answers: internal/mashing owns the arithmetic that turns
+// these into a conversion efficiency, and a second copy of it here would
+// drift from the CIBD-cited original. See 000070.
+func (q *Queries) BenchmarkConversionInputs(ctx context.Context) ([]BenchmarkConversionInputsRow, error) {
+	rows, err := q.db.Query(ctx, benchmarkConversionInputs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BenchmarkConversionInputsRow{}
+	for rows.Next() {
+		var i BenchmarkConversionInputsRow
+		if err := rows.Scan(
+			&i.TenantID,
+			&i.ExtractAvailableKg,
+			&i.OriginalGravity,
+			&i.WashVolumeL,
+			&i.GrainKg,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const benchmarkCutRatio = `-- name: BenchmarkCutRatio :many
 SELECT b.tenant_id::uuid AS tenant_id,
        b.hearts_pct::double precision AS hearts_pct
@@ -68,6 +114,37 @@ func (q *Queries) BenchmarkCutRatio(ctx context.Context) ([]BenchmarkCutRatioRow
 	for rows.Next() {
 		var i BenchmarkCutRatioRow
 		if err := rows.Scan(&i.TenantID, &i.HeartsPct); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const benchmarkYieldPerTonne = `-- name: BenchmarkYieldPerTonne :many
+SELECT b.tenant_id::uuid AS tenant_id,
+       b.laa_per_tonne::double precision AS laa_per_tonne
+FROM bench_yield_per_tonne() b
+`
+
+type BenchmarkYieldPerTonneRow struct {
+	TenantID    uuid.UUID `json:"tenant_id"`
+	LaaPerTonne float64   `json:"laa_per_tonne"`
+}
+
+func (q *Queries) BenchmarkYieldPerTonne(ctx context.Context) ([]BenchmarkYieldPerTonneRow, error) {
+	rows, err := q.db.Query(ctx, benchmarkYieldPerTonne)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []BenchmarkYieldPerTonneRow{}
+	for rows.Next() {
+		var i BenchmarkYieldPerTonneRow
+		if err := rows.Scan(&i.TenantID, &i.LaaPerTonne); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -126,6 +203,69 @@ func (q *Queries) MyAngelsShare(ctx context.Context) (MyAngelsShareRow, error) {
 	var i MyAngelsShareRow
 	err := row.Scan(&i.PctPerYear, &i.Casks)
 	return i, err
+}
+
+const myConversionInputs = `-- name: MyConversionInputs :many
+SELECT mr.id,
+       SUM(mu.quantity_used * m.extract_fraction) FILTER (WHERE m.extract_fraction IS NOT NULL)::double precision AS extract_available_kg,
+       MAX(og.value)::double precision AS original_gravity,
+       MAX(COALESCE(wash.value, water.value))::double precision AS wash_volume_l
+FROM mash_runs mr
+JOIN mash_ingredient_usage mu ON mu.mash_run_id = mr.id
+JOIN materials m ON m.id = mu.material_id
+LEFT JOIN LATERAL (
+    SELECT mm.value FROM mash_metrics mm
+    WHERE mm.mash_run_id = mr.id AND mm.kind = 'original_gravity'
+    ORDER BY mm.observed_at DESC LIMIT 1
+) og ON TRUE
+LEFT JOIN LATERAL (
+    SELECT mm.value FROM mash_metrics mm
+    WHERE mm.mash_run_id = mr.id AND mm.kind = 'wash_volume_l'
+    ORDER BY mm.observed_at DESC LIMIT 1
+) wash ON TRUE
+LEFT JOIN LATERAL (
+    SELECT mm.value FROM mash_metrics mm
+    WHERE mm.mash_run_id = mr.id AND mm.kind = 'water_volume_l'
+    ORDER BY mm.observed_at DESC LIMIT 1
+) water ON TRUE
+GROUP BY mr.id
+HAVING SUM(mu.quantity_used * m.extract_fraction) > 0
+   AND MAX(og.value) > 1.0
+   AND MAX(COALESCE(wash.value, water.value)) > 0
+`
+
+type MyConversionInputsRow struct {
+	ID                 uuid.UUID `json:"id"`
+	ExtractAvailableKg float64   `json:"extract_available_kg"`
+	OriginalGravity    float64   `json:"original_gravity"`
+	WashVolumeL        float64   `json:"wash_volume_l"`
+}
+
+// The caller's own, computed from the same columns so "you against the
+// cohort" compares like with like.
+func (q *Queries) MyConversionInputs(ctx context.Context) ([]MyConversionInputsRow, error) {
+	rows, err := q.db.Query(ctx, myConversionInputs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []MyConversionInputsRow{}
+	for rows.Next() {
+		var i MyConversionInputsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.ExtractAvailableKg,
+			&i.OriginalGravity,
+			&i.WashVolumeL,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const setBenchmarkOptIn = `-- name: SetBenchmarkOptIn :one

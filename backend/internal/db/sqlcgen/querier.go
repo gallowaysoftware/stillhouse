@@ -95,7 +95,12 @@ type Querier interface {
 	// Through the keyhole; see 000067. Opted-in tenants only, enforced in the
 	// function rather than here.
 	BenchmarkAngelsShare(ctx context.Context) ([]BenchmarkAngelsShareRow, error)
+	// Inputs, not answers: internal/mashing owns the arithmetic that turns
+	// these into a conversion efficiency, and a second copy of it here would
+	// drift from the CIBD-cited original. See 000070.
+	BenchmarkConversionInputs(ctx context.Context) ([]BenchmarkConversionInputsRow, error)
 	BenchmarkCutRatio(ctx context.Context) ([]BenchmarkCutRatioRow, error)
+	BenchmarkYieldPerTonne(ctx context.Context) ([]BenchmarkYieldPerTonneRow, error)
 	// Bottles spoken for on shipments that are still being picked. Picking
 	// does not decrement the lot — stock leaves once, at the shipment — so
 	// this is what stands between two pickers promising the same bottles.
@@ -805,6 +810,9 @@ type Querier interface {
 	// The caller's own figure, computed the same way, so "you against the
 	// cohort" is a comparison rather than two different measurements.
 	MyAngelsShare(ctx context.Context) (MyAngelsShareRow, error)
+	// The caller's own, computed from the same columns so "you against the
+	// cohort" compares like with like.
+	MyConversionInputs(ctx context.Context) ([]MyConversionInputsRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextDistillationRunNo(ctx context.Context) (int32, error)
 	NextInvoiceNo(ctx context.Context, kind InvoiceKind) (int32, error)

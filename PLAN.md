@@ -387,19 +387,21 @@ opt-in, reciprocity, a k-floor counted in licensees, dominance
 suppression, and quartiles rather than extremes. Angel's share and the
 hearts cut are live.
 
-The remaining metrics the item named are each a query against the same
-`Summarise`, and are cheap now the rules exist:
+Yield per tonne and conversion efficiency followed in stage 209, which
+also pulled `ConversionPercent` out of the mash bench so the cohort and
+the bench are one arithmetic.
 
-- **Yield per tonne** — mash grain weight against the LAA the gauge
-  produced. Wants the WIP walk from stage 193 to attribute a gauge to its
-  mashes, which now exists.
-- **Conversion efficiency** — `internal/mashing` computes it per mash
-  already; it needs exposing through the keyhole.
-- **Angel's share by shelf height** — the data is on
-  `barrel_attributes` (`level_position`), but splitting a cohort by
-  position multiplies the number of cohorts and each needs its own k
-  floor. Worth doing only once there are enough participants that the
-  splits survive it.
+One metric the item named is deliberately not built:
+
+- **Angel's share by shelf height.** The data is on `barrel_attributes`
+  (`level_position`), and splitting a cohort by position multiplies the
+  number of cohorts while each still needs its own k floor of five
+  distinct licensees. With the participant numbers a new network has, the
+  splits would all refuse — and a screen of refusals teaches an operator
+  the feature is broken rather than that it is careful. Worth doing when
+  there are enough participants that the splits survive, and not before.
+
+J2 is otherwise done.
 
 ### J3 · Cask ownership programmes — P2
 

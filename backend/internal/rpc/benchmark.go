@@ -11,6 +11,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/benchmark"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/mashing"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
@@ -91,6 +92,69 @@ func (s *BenchmarkService) Benchmarks(
 		for _, c := range cuts {
 			cobs = append(cobs, benchmark.Observation{TenantID: c.TenantID.String(), Value: c.HeartsPct})
 		}
+		// Conversion efficiency. The keyhole returns inputs and this
+		// computes the figure through internal/mashing, so every tenant's
+		// number came out of the same CIBD-cited arithmetic — which is
+		// the only thing that makes a cohort comparable rather than a
+		// collection of differently-computed numbers.
+		conv, e := q.BenchmarkConversionInputs(ctx)
+		if e != nil {
+			return e
+		}
+		cvobs := make([]benchmark.Observation, 0, len(conv))
+		for _, c := range conv {
+			pct, ok := mashing.ConversionPercent(c.ExtractAvailableKg, c.OriginalGravity, c.WashVolumeL)
+			if !ok {
+				continue
+			}
+			cvobs = append(cvobs, benchmark.Observation{TenantID: c.TenantID.String(), Value: pct})
+		}
+		mineConv, e := q.MyConversionInputs(ctx)
+		if e != nil {
+			return e
+		}
+		var mySum float64
+		var myN int32
+		for _, c := range mineConv {
+			if pct, ok := mashing.ConversionPercent(c.ExtractAvailableKg, c.OriginalGravity, c.WashVolumeL); ok {
+				mySum += pct
+				myN++
+			}
+		}
+		convMetric := &stillhousev1.BenchmarkMetric{
+			Key:  "conversion_efficiency",
+			Name: "Conversion efficiency",
+			Unit: "% of available extract in solution",
+			Basis: "Per mash: extract dissolved in the wash, from its gravity and volume, as a share of what the grain bill could have given up. " +
+				"Mashes with no gravity reading, no volume, or no extract figures on their materials are not counted — computed through internal/mashing, the same arithmetic the mash bench shows.",
+			Cohort:           cohortToProto(benchmark.Summarise(cvobs)),
+			YourObservations: myN,
+		}
+		if myN > 0 {
+			convMetric.You = round4(mySum / float64(myN))
+			convMetric.YouSet = true
+		}
+		out.Metrics = append(out.Metrics, convMetric)
+
+		// Yield per tonne, only where one mash is behind the gauge.
+		yield, e := q.BenchmarkYieldPerTonne(ctx)
+		if e != nil {
+			return e
+		}
+		yobs := make([]benchmark.Observation, 0, len(yield))
+		for _, y := range yield {
+			yobs = append(yobs, benchmark.Observation{TenantID: y.TenantID.String(), Value: y.LaaPerTonne})
+		}
+		out.Metrics = append(out.Metrics, &stillhousev1.BenchmarkMetric{
+			Key:  "yield_per_tonne",
+			Name: "Yield per tonne",
+			Unit: "LAA per tonne of fermentable grain",
+			Basis: "Per production gauge, counting only gauges whose whole chain traces to a SINGLE mash. " +
+				"A run charged from several mashes has no unambiguous grain weight behind it — apportioning one needs a convention, distilleries may state different ones, " +
+				"and a cohort mixing conventions compares different things while looking like it does not. Fewer runs qualify; every one of them means the same.",
+			Cohort: cohortToProto(benchmark.Summarise(yobs)),
+		})
+
 		out.Metrics = append(out.Metrics, &stillhousev1.BenchmarkMetric{
 			Key:  "cut_ratio",
 			Name: "Hearts cut",
