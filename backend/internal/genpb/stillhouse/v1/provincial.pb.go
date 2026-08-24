@@ -1776,8 +1776,20 @@ type ContainerDepositLine struct {
 	// rate is not on file.
 	AmountAvailable bool   `protobuf:"varint,12,opt,name=amount_available,json=amountAvailable,proto3" json:"amount_available,omitempty"`
 	AmountMissing   string `protobuf:"bytes,13,opt,name=amount_missing,json=amountMissing,proto3" json:"amount_missing,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	// The stewardship fee, which is a different obligation to a different
+	// body and is never refunded to anybody. Reported beside the deposit
+	// because that is where the programmes publish it, and kept out of the
+	// deposit total because remitting one to the other is a real mistake.
+	RecyclingFeePerContainerCad float64 `protobuf:"fixed64,14,opt,name=recycling_fee_per_container_cad,json=recyclingFeePerContainerCad,proto3" json:"recycling_fee_per_container_cad,omitempty"`
+	RecyclingFeeTotalCad        float64 `protobuf:"fixed64,15,opt,name=recycling_fee_total_cad,json=recyclingFeeTotalCad,proto3" json:"recycling_fee_total_cad,omitempty"`
+	RecyclingFeeProvenance      string  `protobuf:"bytes,16,opt,name=recycling_fee_provenance,json=recyclingFeeProvenance,proto3" json:"recycling_fee_provenance,omitempty"`
+	RecyclingFeeSource          string  `protobuf:"bytes,17,opt,name=recycling_fee_source,json=recyclingFeeSource,proto3" json:"recycling_fee_source,omitempty"`
+	RecyclingFeeAsOf            string  `protobuf:"bytes,18,opt,name=recycling_fee_as_of,json=recyclingFeeAsOf,proto3" json:"recycling_fee_as_of,omitempty"`
+	RecyclingFeeNote            string  `protobuf:"bytes,19,opt,name=recycling_fee_note,json=recyclingFeeNote,proto3" json:"recycling_fee_note,omitempty"`
+	RecyclingFeeAvailable       bool    `protobuf:"varint,20,opt,name=recycling_fee_available,json=recyclingFeeAvailable,proto3" json:"recycling_fee_available,omitempty"`
+	RecyclingFeeMissing         string  `protobuf:"bytes,21,opt,name=recycling_fee_missing,json=recyclingFeeMissing,proto3" json:"recycling_fee_missing,omitempty"`
+	unknownFields               protoimpl.UnknownFields
+	sizeCache                   protoimpl.SizeCache
 }
 
 func (x *ContainerDepositLine) Reset() {
@@ -1901,6 +1913,62 @@ func (x *ContainerDepositLine) GetAmountMissing() string {
 	return ""
 }
 
+func (x *ContainerDepositLine) GetRecyclingFeePerContainerCad() float64 {
+	if x != nil {
+		return x.RecyclingFeePerContainerCad
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeTotalCad() float64 {
+	if x != nil {
+		return x.RecyclingFeeTotalCad
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeProvenance() string {
+	if x != nil {
+		return x.RecyclingFeeProvenance
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeSource() string {
+	if x != nil {
+		return x.RecyclingFeeSource
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeAsOf() string {
+	if x != nil {
+		return x.RecyclingFeeAsOf
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeNote() string {
+	if x != nil {
+		return x.RecyclingFeeNote
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeAvailable() bool {
+	if x != nil {
+		return x.RecyclingFeeAvailable
+	}
+	return false
+}
+
+func (x *ContainerDepositLine) GetRecyclingFeeMissing() string {
+	if x != nil {
+		return x.RecyclingFeeMissing
+	}
+	return ""
+}
+
 type ContainerDepositReportRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	PeriodStart   string                 `protobuf:"bytes,1,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
@@ -1967,8 +2035,12 @@ type ContainerDepositReportResponse struct {
 	// The jurisdictions standing between this report and a remittance.
 	NeedsASourcedRate []string `protobuf:"bytes,5,rep,name=needs_a_sourced_rate,json=needsASourcedRate,proto3" json:"needs_a_sourced_rate,omitempty"`
 	Caution           string   `protobuf:"bytes,6,opt,name=caution,proto3" json:"caution,omitempty"`
-	unknownFields     protoimpl.UnknownFields
-	sizeCache         protoimpl.SizeCache
+	// What the stewardship programmes charge over the same containers.
+	// A cost, not a remittance to the deposit programme, and summed only
+	// over the lines where a fee rate is on file.
+	TotalRecyclingFeeCad float64 `protobuf:"fixed64,7,opt,name=total_recycling_fee_cad,json=totalRecyclingFeeCad,proto3" json:"total_recycling_fee_cad,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *ContainerDepositReportResponse) Reset() {
@@ -2041,6 +2113,13 @@ func (x *ContainerDepositReportResponse) GetCaution() string {
 		return x.Caution
 	}
 	return ""
+}
+
+func (x *ContainerDepositReportResponse) GetTotalRecyclingFeeCad() float64 {
+	if x != nil {
+		return x.TotalRecyclingFeeCad
+	}
+	return 0
 }
 
 var File_stillhouse_v1_provincial_proto protoreflect.FileDescriptor
@@ -2186,7 +2265,7 @@ const file_stillhouse_v1_provincial_proto_rawDesc = "" +
 	"\x10unattributed_laa\x18\n" +
 	" \x01(\x01R\x0funattributedLaa\x123\n" +
 	"\x15unattributed_removals\x18\v \x01(\x05R\x14unattributedRemovals\x12\x14\n" +
-	"\x05basis\x18\f \x01(\tR\x05basis\"\x9d\x04\n" +
+	"\x05basis\x18\f \x01(\tR\x05basis\"\xcf\a\n" +
 	"\x14ContainerDepositLine\x12\"\n" +
 	"\fjurisdiction\x18\x01 \x01(\tR\fjurisdiction\x12$\n" +
 	"\x0ebottle_size_ml\x18\x02 \x01(\x05R\fbottleSizeMl\x12%\n" +
@@ -2203,11 +2282,19 @@ const file_stillhouse_v1_provincial_proto_rawDesc = "" +
 	" \x01(\tR\brateAsOf\x12\x1b\n" +
 	"\trate_note\x18\v \x01(\tR\brateNote\x12)\n" +
 	"\x10amount_available\x18\f \x01(\bR\x0famountAvailable\x12%\n" +
-	"\x0eamount_missing\x18\r \x01(\tR\ramountMissing\"a\n" +
+	"\x0eamount_missing\x18\r \x01(\tR\ramountMissing\x12D\n" +
+	"\x1frecycling_fee_per_container_cad\x18\x0e \x01(\x01R\x1brecyclingFeePerContainerCad\x125\n" +
+	"\x17recycling_fee_total_cad\x18\x0f \x01(\x01R\x14recyclingFeeTotalCad\x128\n" +
+	"\x18recycling_fee_provenance\x18\x10 \x01(\tR\x16recyclingFeeProvenance\x120\n" +
+	"\x14recycling_fee_source\x18\x11 \x01(\tR\x12recyclingFeeSource\x12-\n" +
+	"\x13recycling_fee_as_of\x18\x12 \x01(\tR\x10recyclingFeeAsOf\x12,\n" +
+	"\x12recycling_fee_note\x18\x13 \x01(\tR\x10recyclingFeeNote\x126\n" +
+	"\x17recycling_fee_available\x18\x14 \x01(\bR\x15recyclingFeeAvailable\x122\n" +
+	"\x15recycling_fee_missing\x18\x15 \x01(\tR\x13recyclingFeeMissing\"a\n" +
 	"\x1dContainerDepositReportRequest\x12!\n" +
 	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
 	"\n" +
-	"period_end\x18\x02 \x01(\tR\tperiodEnd\"\xa4\x02\n" +
+	"period_end\x18\x02 \x01(\tR\tperiodEnd\"\xdb\x02\n" +
 	"\x1eContainerDepositReportResponse\x129\n" +
 	"\x05lines\x18\x01 \x03(\v2#.stillhouse.v1.ContainerDepositLineR\x05lines\x120\n" +
 	"\x14total_containers_net\x18\x02 \x01(\x05R\x12totalContainersNet\x12*\n" +
@@ -2216,7 +2303,8 @@ const file_stillhouse_v1_provincial_proto_rawDesc = "" +
 	"remittable\x18\x04 \x01(\bR\n" +
 	"remittable\x12/\n" +
 	"\x14needs_a_sourced_rate\x18\x05 \x03(\tR\x11needsASourcedRate\x12\x18\n" +
-	"\acaution\x18\x06 \x01(\tR\acaution*\xf7\x01\n" +
+	"\acaution\x18\x06 \x01(\tR\acaution\x125\n" +
+	"\x17total_recycling_fee_cad\x18\a \x01(\x01R\x14totalRecyclingFeeCad*\xf7\x01\n" +
 	"\x10ReportingCadence\x12!\n" +
 	"\x1dREPORTING_CADENCE_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19REPORTING_CADENCE_MONTHLY\x10\x01\x12\x1f\n" +

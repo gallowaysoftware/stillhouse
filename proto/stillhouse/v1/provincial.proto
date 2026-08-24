@@ -262,6 +262,19 @@ message ContainerDepositLine {
   // rate is not on file.
   bool   amount_available = 12;
   string amount_missing = 13;
+
+  // The stewardship fee, which is a different obligation to a different
+  // body and is never refunded to anybody. Reported beside the deposit
+  // because that is where the programmes publish it, and kept out of the
+  // deposit total because remitting one to the other is a real mistake.
+  double recycling_fee_per_container_cad = 14;
+  double recycling_fee_total_cad = 15;
+  string recycling_fee_provenance = 16;
+  string recycling_fee_source = 17;
+  string recycling_fee_as_of = 18;
+  string recycling_fee_note = 19;
+  bool   recycling_fee_available = 20;
+  string recycling_fee_missing = 21;
 }
 
 message ContainerDepositReportRequest {
@@ -281,4 +294,8 @@ message ContainerDepositReportResponse {
   // The jurisdictions standing between this report and a remittance.
   repeated string needs_a_sourced_rate = 5;
   string caution = 6;
+  // What the stewardship programmes charge over the same containers.
+  // A cost, not a remittance to the deposit programme, and summed only
+  // over the lines where a fee rate is on file.
+  double total_recycling_fee_cad = 7;
 }

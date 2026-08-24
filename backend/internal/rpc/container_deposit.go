@@ -17,7 +17,7 @@ import (
 // depositCaution is on every response. A deposit report looks like an
 // invoice and will be treated as one, so what it is has to travel with
 // it rather than sit in a help page.
-const depositCaution = "Container counts come from removals and are as reliable as those are. The rates are not ours: each carries where it came from, and a rate marked indicative is a planning figure rather than a remittance. Quoting an aggregator's number to a stewardship programme is the same kind of mistake as quoting an uncited excise rate to CRA — the amounts are smaller and the mistake is not."
+const depositCaution = "Container counts come from removals and are as reliable as those are. The rates are not ours: each carries where it came from, and a rate marked indicative is a planning figure rather than a remittance. Quoting an aggregator's number to a stewardship programme is the same kind of mistake as quoting an uncited excise rate to CRA — the amounts are smaller and the mistake is not. Stewardship fees are reported beside the deposits and are not part of the deposit remittance: they are a separate obligation to a separate body, and unlike a deposit they are never refunded."
 
 // ContainerDepositReport counts containers into each market and applies
 // the deposit rate on file. PLAN I4.
@@ -100,6 +100,9 @@ func (s *ProvincialService) ContainerDepositReport(
 			if line.AmountAvailable {
 				out.TotalDepositCad += line.DepositTotalCad
 			}
+			if line.RecyclingFeeAvailable {
+				out.TotalRecyclingFeeCad += line.RecyclingFeeTotalCad
+			}
 			out.Lines = append(out.Lines, line)
 		}
 		return nil
@@ -109,6 +112,7 @@ func (s *ProvincialService) ContainerDepositReport(
 	}
 
 	out.TotalDepositCad = round2cents(out.TotalDepositCad)
+	out.TotalRecyclingFeeCad = round2cents(out.TotalRecyclingFeeCad)
 	for j := range needs {
 		out.NeedsASourcedRate = append(out.NeedsASourcedRate, j)
 	}
@@ -137,11 +141,16 @@ func applyDepositRate(line *stillhousev1.ContainerDepositLine, needs map[string]
 		needs[line.Jurisdiction] = true
 		return
 	}
-	r := j.ContainerDepositCAD
+	// By size, not by province. Programmes band their deposits and the
+	// boundary is a provincial choice — Alberta's is 1 L, Ontario's is
+	// 630 mL — so the line's bottle size picks the rate.
+	r := j.ContainerDeposit.For(line.BottleSizeMl)
 	line.RateProvenance = r.Provenance.String()
 	line.RateSource = r.Source
 	line.RateAsOf = r.AsOf
 	line.RateNote = r.Note
+
+	applyRecyclingFee(line, j)
 
 	if r.Provenance == pricing.Unknown {
 		line.AmountMissing = fmt.Sprintf(
@@ -155,4 +164,29 @@ func applyDepositRate(line *stillhousev1.ContainerDepositLine, needs map[string]
 	if r.Provenance != pricing.Sourced {
 		needs[line.Jurisdiction] = true
 	}
+}
+
+// applyRecyclingFee reports the stewardship fee beside the deposit.
+//
+// Deliberately not folded into the deposit total, and deliberately not
+// allowed to affect Remittable. They are separate obligations to
+// separate bodies: the deposit is collected on behalf of the return
+// programme and comes back to whoever brings the bottle in, while the
+// stewardship fee is what the producer pays to have the system exist and
+// is never refunded. Paying one to the other is a real mistake and the
+// report should not make it easy.
+func applyRecyclingFee(line *stillhousev1.ContainerDepositLine, j *pricing.Jurisdiction) {
+	f := j.ContainerRecyclingFeeCAD
+	line.RecyclingFeeProvenance = f.Provenance.String()
+	line.RecyclingFeeSource = f.Source
+	line.RecyclingFeeAsOf = f.AsOf
+	line.RecyclingFeeNote = f.Note
+	if f.Provenance == pricing.Unknown {
+		line.RecyclingFeeMissing = fmt.Sprintf(
+			"no stewardship fee is on file for %s. %s", line.Jurisdiction, f.Note)
+		return
+	}
+	line.RecyclingFeePerContainerCad = f.Value
+	line.RecyclingFeeTotalCad = round2cents(f.Value * float64(line.ContainersNet))
+	line.RecyclingFeeAvailable = true
 }

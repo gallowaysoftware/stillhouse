@@ -20,6 +20,13 @@ import { formatCAD } from "@/lib/format";
  * So the total is shown with what it is, and one indicative line is
  * enough to make the whole thing a plan: a total nobody decomposes is
  * only as good as its worst line.
+ *
+ * The stewardship fee sits in its own column rather than being added to
+ * the deposit. They are collected over the same bottles and are not the
+ * same obligation: the deposit is held for whoever brings the container
+ * back, while the fee is what the producer pays to have the programme
+ * exist and never returns to anyone. Summing them would produce a number
+ * that is owed to nobody.
  */
 export function DepositReportPanel() {
   const now = new Date();
@@ -86,12 +93,13 @@ export function DepositReportPanel() {
                   <th className="px-4 py-2 text-right">Net</th>
                   <th className="px-4 py-2 text-right">Rate</th>
                   <th className="px-4 py-2 text-right">Deposit</th>
+                  <th className="px-4 py-2 text-right">Stewardship fee</th>
                   <th className="px-4 py-2">Rate came from</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {d.lines.length === 0 && (
-                  <tr><td colSpan={8} className="px-4 py-3 text-fg-muted">
+                  <tr><td colSpan={9} className="px-4 py-3 text-fg-muted">
                     Nothing entered a market in this period.
                   </td></tr>
                 )}
@@ -108,6 +116,15 @@ export function DepositReportPanel() {
                     <td className="px-4 py-2 text-right tabular-nums">
                       {l.amountAvailable ? formatCAD(l.depositTotalCad) : "—"}
                     </td>
+                    <td className="px-4 py-2 text-right tabular-nums">
+                      {l.recyclingFeeAvailable ? (
+                        <span title={`${formatCAD(l.recyclingFeePerContainerCad)} a container`}>
+                          {formatCAD(l.recyclingFeeTotalCad)}
+                        </span>
+                      ) : (
+                        <span className="text-fg-muted">—</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2 text-xs text-fg-muted">
                       {l.amountAvailable ? (
                         <>
@@ -120,12 +137,34 @@ export function DepositReportPanel() {
                       ) : (
                         l.amountMissing
                       )}
+                      {l.recyclingFeeAvailable ? (
+                        <span className="mt-1 block">
+                          Fee: {l.recyclingFeeSource}
+                          {l.recyclingFeeNote && (
+                            <span className="block">{l.recyclingFeeNote}</span>
+                          )}
+                        </span>
+                      ) : (
+                        l.recyclingFeeMissing && (
+                          <span className="mt-1 block">{l.recyclingFeeMissing}</span>
+                        )
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {d.totalRecyclingFeeCad > 0 && (
+            <p className="mt-2 text-xs text-fg-muted">
+              Stewardship fees over the same containers:{" "}
+              <span className="font-medium">{formatCAD(d.totalRecyclingFeeCad)}</span>. Not
+              part of the deposit remittance — a separate obligation to a separate body,
+              and unlike a deposit it is never refunded. Lines showing &ldquo;—&rdquo; have
+              no fee rate on file, which is not the same as having no fee.
+            </p>
+          )}
         </>
       )}
     </section>

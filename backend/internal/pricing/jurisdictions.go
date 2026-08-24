@@ -37,12 +37,25 @@ var Jurisdictions = []Jurisdiction{
 			"Ontario's spirits basic tax is set by the Liquor Tax Act 2019, a separate statute " +
 				"from the Liquor Licence and Control Act 2019 (which sets no rates and is not " +
 				"yet in force)."),
-		ContainerDepositCAD: Rate{
-			Value: 0.20, Provenance: Indicative,
-			Source: "Ontario Deposit Return Program, standard rate for containers over 630 mL",
-			AsOf:   "2026-08-20",
-			Note:   "Confirm the rate for your bottle size; smaller containers differ.",
+		// Banded at 630 mL, which sits just under the 750 mL bottle most
+		// distilleries fill: a standard bottle is in the upper band.
+		ContainerDeposit: DepositSchedule{
+			{MaxML: 630, Rate: Rate{
+				Value: 0.10, Provenance: Sourced,
+				Source: "Ontario Deposit Return Program (The Beer Store), spirits containers 630 mL and under",
+				AsOf:   "2026-08-24",
+			}},
+			{Rate: Rate{
+				Value: 0.20, Provenance: Sourced,
+				Source: "Ontario Deposit Return Program (The Beer Store), spirits containers 631 mL and over",
+				AsOf:   "2026-08-24",
+			}},
 		},
+		ContainerRecyclingFeeCAD: unknownRate(
+			"Ontario runs deposit return and producer stewardship as separate programmes: the " +
+				"deposit is ODRP, while the recycling fee is a Circular Materials obligation " +
+				"under the Blue Box regulation and is billed on reported supply rather than at a " +
+				"published per-container rate. Get yours from your Circular Materials account."),
 		SalesTaxPct: Rate{
 			Value: 0.13, Provenance: Sourced,
 			Source: "Ontario HST", AsOf: "2026-08-20",
@@ -70,10 +83,16 @@ var Jurisdictions = []Jurisdiction{
 				"Liquor Control Act Regulations s.89 delegates pricing to Commission price " +
 				"lists. Ask PEILCC directly."),
 		COSDPerLitreCAD: unknownRate("PEILCC applies a cost-of-service charge to imported product."),
-		ContainerDepositCAD: Rate{
+		ContainerDeposit: flatDeposit(Rate{
 			Value: 0.10, Provenance: Indicative,
 			Source: "PEI beverage container deposit", AsOf: "2026-08-20",
-		},
+			Note: "Not confirmed against PEI's own schedule; the province charges a " +
+				"non-refundable environment fee beside the deposit that this figure does not include.",
+		}),
+		ContainerRecyclingFeeCAD: unknownRate(
+			"PEI charges a non-refundable environmental fee per container in addition to the " +
+				"refundable deposit. Confirm the current amount with the PEI Department of " +
+				"Environment before pricing a listing there."),
 		SalesTaxPct: Rate{
 			Value: 0.15, Provenance: Sourced, Source: "PEI HST", AsOf: "2026-08-20",
 		},
@@ -104,7 +123,26 @@ var Jurisdictions = []Jurisdiction{
 			AsOf:   "unknown",
 			Note:   "SAQ spirits mark-up commonly exceeds 100% of supplier price. Verify before use.",
 		},
-		ContainerDepositCAD: Rate{Value: 0.20, Provenance: Indicative, Source: "QC deposit", AsOf: "2026-08-20"},
+		// Quebec is the reason this file grades its rates. The 20¢ carried
+		// here before was wrong in the amount and wrong in the direction:
+		// glass spirits bottles are not under deposit in Quebec at all
+		// yet. The expansion that would have covered them on 2025-03-01
+		// was postponed to 2027, while the plastic half went ahead — so
+		// the answer depends on what the bottle is made of, which
+		// Stillhouse does not record. It refuses rather than guessing,
+		// because both possible answers are defensible and one of them is
+		// a deposit the distillery never owed.
+		ContainerDeposit: flatDeposit(unknownRate(
+			"Quebec's answer depends on the container material, which Stillhouse does not " +
+				"record. Glass spirits bottles are NOT under deposit: the expansion covering " +
+				"them was postponed from 2025-03-01 to 2027 (Consignaction, " +
+				"consignaction.ca/en/consignaction-prend-acte-de-la-decision-du-gouvernement-de-reporter-partiellement-lelargissement-de-la-consigne/, " +
+				"read 2026-08-24). Plastic spirits containers from 100 mL to 2 L have been " +
+				"under deposit at 10¢ since 2025-03-01. If you bottle in glass, your Quebec " +
+				"deposit liability today is nil; if in plastic, it is 10¢ a container.")),
+		ContainerRecyclingFeeCAD: unknownRate(
+			"Quebec's producer obligation runs through Éco Entreprises Québec on reported " +
+				"tonnage, not a published per-container rate."),
 		SalesTaxPct: Rate{
 			Value: 0.14975, Provenance: Sourced, Source: "GST 5% + QST 9.975%", AsOf: "2026-08-20",
 		},
@@ -122,7 +160,24 @@ var Jurisdictions = []Jurisdiction{
 			Note: "BC Craft Distillery designation gets graduated mark-up relief on the first " +
 				"100k L if 100% BC inputs — this flat figure does not model that.",
 		},
-		ContainerDepositCAD: Rate{Value: 0.10, Provenance: Indicative, Source: "BC deposit", AsOf: "2026-08-20"},
+		// One deposit, every size, since 2020-10-12 — BC abolished its
+		// bands, so the schedule genuinely has one entry rather than
+		// having been left unfinished.
+		ContainerDeposit: flatDeposit(Rate{
+			Value: 0.10, Provenance: Sourced,
+			Source: "Encorp Pacific, return-it.ca/beverage/products/ — \"Liquor Glass, All Sizes\"",
+			AsOf:   "2026-08-24",
+			Note: "Liquor plastic is also 10¢. Refillable beer bottles and some aluminum " +
+				"alcohol containers are BRCCC's rather than Encorp's and are not this rate.",
+		}),
+		ContainerRecyclingFeeCAD: Rate{
+			Value: 0.13, Provenance: Sourced,
+			Source: "Encorp Pacific, return-it.ca/beverage/products/ — Container Recycling Fee, Liquor Glass, all sizes",
+			AsOf:   "2026-08-24",
+			Note: "The glass rate. Liquor plastic is 7¢ and alcohol bag-in-box over 1 L is 30¢; " +
+				"Stillhouse does not record container material, so this assumes glass. " +
+				"The CRF is not refundable — unlike the deposit it is a real cost per bottle.",
+		},
 		SalesTaxPct: Rate{
 			Value: 0.12, Provenance: Sourced, Source: "GST 5% + PST 7%", AsOf: "2026-08-20",
 			Note: "BC applies a 10% PST rate to liquor in some channels; confirm which applies.",
@@ -140,8 +195,26 @@ var Jurisdictions = []Jurisdiction{
 			AsOf:   "unknown",
 			Note:   "Approximate weighted average for spirits 22-60% ABV. AGLC publishes a real schedule.",
 		},
-		ContainerDepositCAD: Rate{Value: 0.25, Provenance: Indicative, Source: "AB deposit", AsOf: "2026-08-20"},
-		SalesTaxPct:         Rate{Value: 0.05, Provenance: Sourced, Source: "GST only; no PST", AsOf: "2026-08-20"},
+		// Banded at 1 L. The flat 25¢ carried here before was the
+		// over-1-L rate applied to every size, so a 750 mL bottle — the
+		// commonest thing a distillery fills — was reported at two and a
+		// half times its actual deposit.
+		ContainerDeposit: DepositSchedule{
+			{MaxML: 1000, Rate: Rate{
+				Value: 0.10, Provenance: Sourced,
+				Source: "Beverage Container Management Board, bcmb.ab.ca — regulated minimum refund, containers 1 L and under",
+				AsOf:   "2026-08-24",
+			}},
+			{Rate: Rate{
+				Value: 0.25, Provenance: Sourced,
+				Source: "Beverage Container Management Board, bcmb.ab.ca — regulated minimum refund, containers over 1 L",
+				AsOf:   "2026-08-24",
+			}},
+		},
+		ContainerRecyclingFeeCAD: unknownRate(
+			"Alberta charges a Container Recycling Fee set per container type by the ABCRC. " +
+				"It is not the deposit and is not refunded. Get your rate from abcrc.com."),
+		SalesTaxPct: Rate{Value: 0.05, Provenance: Sourced, Source: "GST only; no PST", AsOf: "2026-08-20"},
 		OnSite: OnSiteRules{Permitted: true, Kind: RemittanceUnrecorded,
 			Rate: unknownRate("Confirm with AGLC.")},
 		Notes: "Alberta uses a flat per-litre mark-up, not a percentage, so its wholesale " +
@@ -155,8 +228,16 @@ var Jurisdictions = []Jurisdiction{
 			Source: "carried in this file since the feature was written; no published schedule located",
 			AsOf:   "unknown",
 		},
-		ContainerDepositCAD: Rate{Value: 0.10, Provenance: Indicative, Source: "NS deposit", AsOf: "2026-08-20"},
-		SalesTaxPct:         Rate{Value: 0.15, Provenance: Sourced, Source: "NS HST", AsOf: "2026-08-20"},
+		ContainerDeposit: flatDeposit(Rate{
+			Value: 0.10, Provenance: Indicative,
+			Source: "NS beverage container deposit", AsOf: "2026-08-20",
+			Note: "Not confirmed against Divert NS's own schedule. Nova Scotia runs a " +
+				"half-back system — the consumer is refunded half what was paid — so the " +
+				"deposit collected and the deposit refunded are not the same number.",
+		}),
+		ContainerRecyclingFeeCAD: unknownRate(
+			"Confirm Divert NS's producer obligation; not modelled."),
+		SalesTaxPct: Rate{Value: 0.15, Provenance: Sourced, Source: "NS HST", AsOf: "2026-08-20"},
 		OnSite: OnSiteRules{Permitted: true, Kind: RemittanceUnrecorded,
 			Rate: unknownRate("Confirm with NSLC.")},
 		Notes: "On-site and offsite retail permits available.",

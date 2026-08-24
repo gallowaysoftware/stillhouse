@@ -60,7 +60,12 @@ type ChannelResult struct {
 	ProvincialTaxCAD    float64
 	FederalExciseCAD    float64
 	ContainerDepositCAD float64
-	SalesTaxCAD         float64
+	// ContainerRecyclingFeeCAD is the stewardship fee, which the deposit
+	// is often confused with and is not: the deposit comes back to
+	// whoever returns the bottle, while this is spent. It is netted out
+	// of DistilleryNetCAD below for that reason.
+	ContainerRecyclingFeeCAD float64
+	SalesTaxCAD              float64
 	// PriceToBuyerCAD is what the customer pays at the end of this
 	// channel — the board's wholesale price, or the shop shelf price.
 	PriceToBuyerCAD float64
@@ -177,9 +182,14 @@ func computeWholesale(in Input, j Jurisdiction) ChannelResult {
 	if j.ProvincialSpiritsTaxPct.Known() {
 		r.ProvincialTaxCAD = in.FOBCAD * w.use("provincial spirits tax", j.ProvincialSpiritsTaxPct)
 	}
-	r.ContainerDepositCAD = j.ContainerDepositCAD.Or(0)
-	if j.ContainerDepositCAD.Known() {
-		w.use("container deposit", j.ContainerDepositCAD)
+	dep := j.ContainerDeposit.For(in.BottleSizeML)
+	r.ContainerDepositCAD = dep.Or(0)
+	if dep.Known() {
+		w.use("container deposit", dep)
+	}
+	r.ContainerRecyclingFeeCAD = j.ContainerRecyclingFeeCAD.Or(0)
+	if j.ContainerRecyclingFeeCAD.Known() {
+		w.use("container recycling fee", j.ContainerRecyclingFeeCAD)
 	}
 
 	beforeTax := r.LandedCostCAD + r.MarkupCAD + r.COSDCAD + r.ProvincialTaxCAD + r.ContainerDepositCAD
@@ -188,8 +198,11 @@ func computeWholesale(in Input, j Jurisdiction) ChannelResult {
 	}
 	r.PriceToBuyerCAD = beforeTax + r.SalesTaxCAD
 	// The distillery sold at its quote; everything above the quote belongs
-	// to the board, the carrier or the Crown.
-	r.DistilleryNetCAD = in.FOBCAD
+	// to the board, the carrier or the Crown. The stewardship fee is the
+	// one piece that comes back out of the quote rather than sitting on
+	// top of it — the producer owes it whether or not the bottle is ever
+	// returned.
+	r.DistilleryNetCAD = in.FOBCAD - r.ContainerRecyclingFeeCAD
 	r.Computable = true
 	r.LowestProvenance = w.p
 	r.Citations = w.citations
@@ -224,9 +237,14 @@ func computeOnSite(in Input, j Jurisdiction) ChannelResult {
 
 	r.PriceToBuyerCAD = in.OnSiteRetailPriceCAD
 	r.FederalExciseCAD = in.FederalExciseCAD()
-	r.ContainerDepositCAD = j.ContainerDepositCAD.Or(0)
-	if j.ContainerDepositCAD.Known() {
-		w.use("container deposit", j.ContainerDepositCAD)
+	dep := j.ContainerDeposit.For(in.BottleSizeML)
+	r.ContainerDepositCAD = dep.Or(0)
+	if dep.Known() {
+		w.use("container deposit", dep)
+	}
+	r.ContainerRecyclingFeeCAD = j.ContainerRecyclingFeeCAD.Or(0)
+	if j.ContainerRecyclingFeeCAD.Known() {
+		w.use("container recycling fee", j.ContainerRecyclingFeeCAD)
 	}
 	// Sales tax is computed on the pre-tax portion of a tax-inclusive
 	// shelf price, which is how a shop actually prices.
@@ -260,7 +278,7 @@ func computeOnSite(in Input, j Jurisdiction) ChannelResult {
 	}
 
 	r.DistilleryNetCAD = r.PriceToBuyerCAD - r.FederalExciseCAD - r.SalesTaxCAD -
-		r.ContainerDepositCAD - r.MarkupCAD
+		r.ContainerDepositCAD - r.MarkupCAD - r.ContainerRecyclingFeeCAD
 	r.Computable = true
 	r.LowestProvenance = w.p
 	r.Citations = w.citations

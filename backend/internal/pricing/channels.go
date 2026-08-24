@@ -94,7 +94,19 @@ type Jurisdiction struct {
 	// ProvincialSpiritsTaxPct is a provincial tax distinct from the
 	// board's mark-up, where one exists.
 	ProvincialSpiritsTaxPct Rate
-	ContainerDepositCAD     Rate
+	// ContainerDeposit is the refundable deposit, banded by container
+	// size. Refundable is the operative word: the distillery collects it
+	// on the way out and the programme returns it to whoever brings the
+	// bottle back, so it passes through the price rather than being a
+	// cost of doing business.
+	ContainerDeposit DepositSchedule
+	// ContainerRecyclingFeeCAD is the stewardship fee — what the
+	// programme charges the producer to run the recycling system. Unlike
+	// the deposit it is never refunded to anybody, so it is a real per
+	// bottle cost and belongs in a landed price. Programmes publish it
+	// beside the deposit and by container material, which Stillhouse
+	// does not record; see each jurisdiction's Note.
+	ContainerRecyclingFeeCAD Rate
 	// SalesTaxPct is HST, or GST plus PST combined.
 	SalesTaxPct Rate
 
