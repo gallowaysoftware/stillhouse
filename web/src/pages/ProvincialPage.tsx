@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DepositReportPanel } from "@/components/DepositReportPanel";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
@@ -67,6 +68,7 @@ export function ProvincialPage() {
       {tab === "due" && <DueTab />}
       {tab === "figures" && <FiguresTab />}
       {tab === "setup" && <SetupTab />}
+      <DepositReportPanel />
     </Shell>
   );
 }

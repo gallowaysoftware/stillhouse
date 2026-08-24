@@ -75,6 +75,9 @@ const (
 	// ProvincialServiceProvincialSalesReportProcedure is the fully-qualified name of the
 	// ProvincialService's ProvincialSalesReport RPC.
 	ProvincialServiceProvincialSalesReportProcedure = "/stillhouse.v1.ProvincialService/ProvincialSalesReport"
+	// ProvincialServiceContainerDepositReportProcedure is the fully-qualified name of the
+	// ProvincialService's ContainerDepositReport RPC.
+	ProvincialServiceContainerDepositReportProcedure = "/stillhouse.v1.ProvincialService/ContainerDepositReport"
 )
 
 // ProvincialServiceClient is a client for the stillhouse.v1.ProvincialService service.
@@ -88,6 +91,8 @@ type ProvincialServiceClient interface {
 	ListProvincialReportPeriods(context.Context, *connect.Request[v1.ListProvincialReportPeriodsRequest]) (*connect.Response[v1.ListProvincialReportPeriodsResponse], error)
 	MarkProvincialReportFiled(context.Context, *connect.Request[v1.MarkProvincialReportFiledRequest]) (*connect.Response[v1.MarkProvincialReportFiledResponse], error)
 	ProvincialSalesReport(context.Context, *connect.Request[v1.ProvincialSalesReportRequest]) (*connect.Response[v1.ProvincialSalesReportResponse], error)
+	// Containers into each market, and the deposit they imply. PLAN I4.
+	ContainerDepositReport(context.Context, *connect.Request[v1.ContainerDepositReportRequest]) (*connect.Response[v1.ContainerDepositReportResponse], error)
 }
 
 // NewProvincialServiceClient constructs a client for the stillhouse.v1.ProvincialService service.
@@ -155,6 +160,12 @@ func NewProvincialServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(provincialServiceMethods.ByName("ProvincialSalesReport")),
 			connect.WithClientOptions(opts...),
 		),
+		containerDepositReport: connect.NewClient[v1.ContainerDepositReportRequest, v1.ContainerDepositReportResponse](
+			httpClient,
+			baseURL+ProvincialServiceContainerDepositReportProcedure,
+			connect.WithSchema(provincialServiceMethods.ByName("ContainerDepositReport")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -169,6 +180,7 @@ type provincialServiceClient struct {
 	listProvincialReportPeriods     *connect.Client[v1.ListProvincialReportPeriodsRequest, v1.ListProvincialReportPeriodsResponse]
 	markProvincialReportFiled       *connect.Client[v1.MarkProvincialReportFiledRequest, v1.MarkProvincialReportFiledResponse]
 	provincialSalesReport           *connect.Client[v1.ProvincialSalesReportRequest, v1.ProvincialSalesReportResponse]
+	containerDepositReport          *connect.Client[v1.ContainerDepositReportRequest, v1.ContainerDepositReportResponse]
 }
 
 // SaveProvincialRegistration calls stillhouse.v1.ProvincialService.SaveProvincialRegistration.
@@ -218,6 +230,11 @@ func (c *provincialServiceClient) ProvincialSalesReport(ctx context.Context, req
 	return c.provincialSalesReport.CallUnary(ctx, req)
 }
 
+// ContainerDepositReport calls stillhouse.v1.ProvincialService.ContainerDepositReport.
+func (c *provincialServiceClient) ContainerDepositReport(ctx context.Context, req *connect.Request[v1.ContainerDepositReportRequest]) (*connect.Response[v1.ContainerDepositReportResponse], error) {
+	return c.containerDepositReport.CallUnary(ctx, req)
+}
+
 // ProvincialServiceHandler is an implementation of the stillhouse.v1.ProvincialService service.
 type ProvincialServiceHandler interface {
 	SaveProvincialRegistration(context.Context, *connect.Request[v1.SaveProvincialRegistrationRequest]) (*connect.Response[v1.SaveProvincialRegistrationResponse], error)
@@ -229,6 +246,8 @@ type ProvincialServiceHandler interface {
 	ListProvincialReportPeriods(context.Context, *connect.Request[v1.ListProvincialReportPeriodsRequest]) (*connect.Response[v1.ListProvincialReportPeriodsResponse], error)
 	MarkProvincialReportFiled(context.Context, *connect.Request[v1.MarkProvincialReportFiledRequest]) (*connect.Response[v1.MarkProvincialReportFiledResponse], error)
 	ProvincialSalesReport(context.Context, *connect.Request[v1.ProvincialSalesReportRequest]) (*connect.Response[v1.ProvincialSalesReportResponse], error)
+	// Containers into each market, and the deposit they imply. PLAN I4.
+	ContainerDepositReport(context.Context, *connect.Request[v1.ContainerDepositReportRequest]) (*connect.Response[v1.ContainerDepositReportResponse], error)
 }
 
 // NewProvincialServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -292,6 +311,12 @@ func NewProvincialServiceHandler(svc ProvincialServiceHandler, opts ...connect.H
 		connect.WithSchema(provincialServiceMethods.ByName("ProvincialSalesReport")),
 		connect.WithHandlerOptions(opts...),
 	)
+	provincialServiceContainerDepositReportHandler := connect.NewUnaryHandler(
+		ProvincialServiceContainerDepositReportProcedure,
+		svc.ContainerDepositReport,
+		connect.WithSchema(provincialServiceMethods.ByName("ContainerDepositReport")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.ProvincialService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ProvincialServiceSaveProvincialRegistrationProcedure:
@@ -312,6 +337,8 @@ func NewProvincialServiceHandler(svc ProvincialServiceHandler, opts ...connect.H
 			provincialServiceMarkProvincialReportFiledHandler.ServeHTTP(w, r)
 		case ProvincialServiceProvincialSalesReportProcedure:
 			provincialServiceProvincialSalesReportHandler.ServeHTTP(w, r)
+		case ProvincialServiceContainerDepositReportProcedure:
+			provincialServiceContainerDepositReportHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -355,4 +382,8 @@ func (UnimplementedProvincialServiceHandler) MarkProvincialReportFiled(context.C
 
 func (UnimplementedProvincialServiceHandler) ProvincialSalesReport(context.Context, *connect.Request[v1.ProvincialSalesReportRequest]) (*connect.Response[v1.ProvincialSalesReportResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ProvincialService.ProvincialSalesReport is not implemented"))
+}
+
+func (UnimplementedProvincialServiceHandler) ContainerDepositReport(context.Context, *connect.Request[v1.ContainerDepositReportRequest]) (*connect.Response[v1.ContainerDepositReportResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.ProvincialService.ContainerDepositReport is not implemented"))
 }

@@ -175,3 +175,19 @@ func Known(code string) bool {
 	}
 	return false
 }
+
+// Find returns the jurisdiction for a code, or nil.
+//
+// A pointer rather than a value-and-bool because the caller's next move
+// on nil is always to report that it has no rates rather than to
+// substitute defaults, and a zero Jurisdiction would look like one whose
+// every rate is Unknown — which is nearly the same thing but reads as a
+// jurisdiction we carry.
+func Find(code string) *Jurisdiction {
+	for i := range Jurisdictions {
+		if Jurisdictions[i].Code == code {
+			return &Jurisdictions[i]
+		}
+	}
+	return nil
+}

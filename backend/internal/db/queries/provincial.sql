@@ -150,3 +150,38 @@ WHERE pr.voided_at IS NULL
   AND pr.customer_id IS NULL
   AND pr.removal_date >= sqlc.arg(period_start)::date
   AND pr.removal_date <= sqlc.arg(period_end)::date;
+
+-- name: ContainersRemovedByJurisdiction :many
+-- Containers that went into each market during the period, with the size
+-- band a deposit programme charges by.
+--
+-- Counted from removals rather than from bottling: a deposit is owed when
+-- a container enters the market, not when it is filled. Voided removals
+-- are excluded — the stock did not leave, so no deposit arose.
+--
+-- Only duty-paid removals to customers. An export leaves the country and
+-- a transfer in bond goes to another licensee's premises; neither puts a
+-- container in front of a consumer, which is what a deposit programme
+-- charges for.
+SELECT COALESCE(NULLIF(pi.jurisdiction, ''), 'unstated')::text AS jurisdiction,
+       p.bottle_size_ml,
+       SUM(r.bottles_removed)::int AS containers,
+       -- Returns come back off, because a container that came back is one
+       -- the programme is not owed for twice. Stage 198.
+       COALESCE((
+           SELECT SUM(pr.bottles)
+           FROM packaged_returns pr
+           WHERE pr.packaged_inventory_id = r.packaged_inventory_id
+             AND pr.voided_at IS NULL
+             AND pr.returned_on >= @period_start::date
+             AND pr.returned_on <= @period_end::date
+       ), 0)::int AS returned
+FROM packaging_removals r
+JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+JOIN products p            ON p.id = pi.product_id
+WHERE r.voided_at IS NULL
+  AND r.destination_kind = 'duty_paid_customer'
+  AND r.removal_date >= @period_start::date
+  AND r.removal_date <= @period_end::date
+GROUP BY pi.jurisdiction, p.bottle_size_ml, r.packaged_inventory_id
+ORDER BY jurisdiction, p.bottle_size_ml;

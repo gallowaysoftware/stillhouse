@@ -430,7 +430,9 @@ var procedureMinRole = map[string]minRole{
 	// — a fact about the licensee's obligations — so it sits with the
 	// owner and is on the accountant's surface. Reading the figures and
 	// marking a report filed are the engagement itself.
-	"/stillhouse.v1.ProvincialService/ListProvincialRegistrations":     roleViewer,
+	"/stillhouse.v1.ProvincialService/ListProvincialRegistrations": roleViewer,
+	// A deposit report is a read over removals already visible to a viewer.
+	"/stillhouse.v1.ProvincialService/ContainerDepositReport":          roleViewer,
 	"/stillhouse.v1.ProvincialService/ListProvincialReportDefinitions": roleViewer,
 	"/stillhouse.v1.ProvincialService/ListProvincialReportPeriods":     roleViewer,
 	"/stillhouse.v1.ProvincialService/ProvincialSalesReport":           roleViewer,

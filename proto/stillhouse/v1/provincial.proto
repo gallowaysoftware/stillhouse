@@ -222,4 +222,63 @@ service ProvincialService {
   rpc MarkProvincialReportFiled(MarkProvincialReportFiledRequest) returns (MarkProvincialReportFiledResponse);
 
   rpc ProvincialSalesReport(ProvincialSalesReportRequest) returns (ProvincialSalesReportResponse);
+
+  // Containers into each market, and the deposit they imply. PLAN I4.
+  rpc ContainerDepositReport(ContainerDepositReportRequest) returns (ContainerDepositReportResponse);
+}
+
+// Container deposits and stewardship. PLAN I4.
+//
+// A deposit is owed when a container enters the market, and it is money
+// paid to a programme — Encorp BC, BCMB Alberta, Ontario's ODRP, Quebec's
+// expanded deposit — rather than to CRA. The counting is exact; the rates
+// are not ours.
+//
+// Which is the whole shape of this report. Container counts come from
+// removals and are as reliable as the removals are. The rate applied to
+// them carries its own provenance, and a rate that is only INDICATIVE is
+// reported as a planning figure and explicitly not as a remittance —
+// quoting an aggregator's number to a stewardship programme is the same
+// error as quoting an uncited excise rate to CRA, and the fact that the
+// amounts are smaller does not change what kind of mistake it is.
+message ContainerDepositLine {
+  string jurisdiction = 1;
+  int32  bottle_size_ml = 2;
+  int32  containers_out = 3;
+  // Containers that came back, netted off: a returned container is not
+  // one the programme is owed for twice.
+  int32  containers_returned = 4;
+  int32  containers_net = 5;
+
+  double deposit_per_container_cad = 6;
+  double deposit_total_cad = 7;
+  // "sourced", "indicative" or "unknown". Travels with the money.
+  string rate_provenance = 8;
+  string rate_source = 9;
+  string rate_as_of = 10;
+  string rate_note = 11;
+  // False where the rate is unknown; the container count is still
+  // reported, because knowing how many went out is useful even when the
+  // rate is not on file.
+  bool   amount_available = 12;
+  string amount_missing = 13;
+}
+
+message ContainerDepositReportRequest {
+  string period_start = 1;
+  string period_end = 2;
+}
+message ContainerDepositReportResponse {
+  repeated ContainerDepositLine lines = 1;
+  int32  total_containers_net = 2;
+  // The sum over lines whose rate is available. Never a remittance figure
+  // on its own — see remittable and the caution.
+  double total_deposit_cad = 3;
+  // True only when EVERY line's rate is sourced. One indicative rate
+  // makes the whole total a planning figure, because a total nobody can
+  // decompose is only as good as its worst line.
+  bool   remittable = 4;
+  // The jurisdictions standing between this report and a remittance.
+  repeated string needs_a_sourced_rate = 5;
+  string caution = 6;
 }

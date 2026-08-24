@@ -317,9 +317,23 @@ SAQ, NSLC, and the remaining boards. Quebec depends on `H6`.
 
 ### I4 · Container deposit and stewardship — P2
 
-Encorp BC, BCMB Alberta, Ontario's programme, Quebec's expanded deposit.
-Per-container fees, periodic reporting, and remittance. `pricing.proto` already
-has `container_deposit_cad` as a line — nothing reports it.
+The periodic report shipped in stage 208: containers into each market,
+netted against returns, with each deposit rate's provenance carried
+beside the money and anything short of *sourced* excluded from a
+remittable total.
+
+What is left is data and one more fee, and the first is the reason the
+second waits:
+
+- **Sourced rates.** Every deposit rate in `internal/pricing` is
+  `Indicative` today, so no report is remittable yet. Each is one page on
+  a programme's own site — Encorp BC, BCMB, ODRP, Consignaction — and the
+  report already names which jurisdictions are standing between it and a
+  remittance.
+- **Stewardship fees**, which are a separate charge from the refundable
+  deposit and are not modelled at all. Worth adding as its own `Rate`
+  beside `ContainerDepositCAD` when the first sourced deposit rate lands,
+  since the two arrive from the same page.
 
 ### I5 · Food safety and traceability — P2
 

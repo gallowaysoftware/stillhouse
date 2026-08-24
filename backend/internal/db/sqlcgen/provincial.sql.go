@@ -12,6 +12,79 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const containersRemovedByJurisdiction = `-- name: ContainersRemovedByJurisdiction :many
+SELECT COALESCE(NULLIF(pi.jurisdiction, ''), 'unstated')::text AS jurisdiction,
+       p.bottle_size_ml,
+       SUM(r.bottles_removed)::int AS containers,
+       -- Returns come back off, because a container that came back is one
+       -- the programme is not owed for twice. Stage 198.
+       COALESCE((
+           SELECT SUM(pr.bottles)
+           FROM packaged_returns pr
+           WHERE pr.packaged_inventory_id = r.packaged_inventory_id
+             AND pr.voided_at IS NULL
+             AND pr.returned_on >= $1::date
+             AND pr.returned_on <= $2::date
+       ), 0)::int AS returned
+FROM packaging_removals r
+JOIN packaged_inventory pi ON pi.id = r.packaged_inventory_id
+JOIN products p            ON p.id = pi.product_id
+WHERE r.voided_at IS NULL
+  AND r.destination_kind = 'duty_paid_customer'
+  AND r.removal_date >= $1::date
+  AND r.removal_date <= $2::date
+GROUP BY pi.jurisdiction, p.bottle_size_ml, r.packaged_inventory_id
+ORDER BY jurisdiction, p.bottle_size_ml
+`
+
+type ContainersRemovedByJurisdictionParams struct {
+	PeriodStart pgtype.Date `json:"period_start"`
+	PeriodEnd   pgtype.Date `json:"period_end"`
+}
+
+type ContainersRemovedByJurisdictionRow struct {
+	Jurisdiction string `json:"jurisdiction"`
+	BottleSizeMl int32  `json:"bottle_size_ml"`
+	Containers   int32  `json:"containers"`
+	Returned     int32  `json:"returned"`
+}
+
+// Containers that went into each market during the period, with the size
+// band a deposit programme charges by.
+//
+// Counted from removals rather than from bottling: a deposit is owed when
+// a container enters the market, not when it is filled. Voided removals
+// are excluded — the stock did not leave, so no deposit arose.
+//
+// Only duty-paid removals to customers. An export leaves the country and
+// a transfer in bond goes to another licensee's premises; neither puts a
+// container in front of a consumer, which is what a deposit programme
+// charges for.
+func (q *Queries) ContainersRemovedByJurisdiction(ctx context.Context, arg ContainersRemovedByJurisdictionParams) ([]ContainersRemovedByJurisdictionRow, error) {
+	rows, err := q.db.Query(ctx, containersRemovedByJurisdiction, arg.PeriodStart, arg.PeriodEnd)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ContainersRemovedByJurisdictionRow{}
+	for rows.Next() {
+		var i ContainersRemovedByJurisdictionRow
+		if err := rows.Scan(
+			&i.Jurisdiction,
+			&i.BottleSizeMl,
+			&i.Containers,
+			&i.Returned,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const deleteProvincialRegistration = `-- name: DeleteProvincialRegistration :exec
 DELETE FROM provincial_registrations WHERE id = $1
 `

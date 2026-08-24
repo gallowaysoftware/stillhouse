@@ -1741,6 +1741,308 @@ func (x *ProvincialSalesReportResponse) GetBasis() string {
 	return ""
 }
 
+// Container deposits and stewardship. PLAN I4.
+//
+// A deposit is owed when a container enters the market, and it is money
+// paid to a programme — Encorp BC, BCMB Alberta, Ontario's ODRP, Quebec's
+// expanded deposit — rather than to CRA. The counting is exact; the rates
+// are not ours.
+//
+// Which is the whole shape of this report. Container counts come from
+// removals and are as reliable as the removals are. The rate applied to
+// them carries its own provenance, and a rate that is only INDICATIVE is
+// reported as a planning figure and explicitly not as a remittance —
+// quoting an aggregator's number to a stewardship programme is the same
+// error as quoting an uncited excise rate to CRA, and the fact that the
+// amounts are smaller does not change what kind of mistake it is.
+type ContainerDepositLine struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Jurisdiction  string                 `protobuf:"bytes,1,opt,name=jurisdiction,proto3" json:"jurisdiction,omitempty"`
+	BottleSizeMl  int32                  `protobuf:"varint,2,opt,name=bottle_size_ml,json=bottleSizeMl,proto3" json:"bottle_size_ml,omitempty"`
+	ContainersOut int32                  `protobuf:"varint,3,opt,name=containers_out,json=containersOut,proto3" json:"containers_out,omitempty"`
+	// Containers that came back, netted off: a returned container is not
+	// one the programme is owed for twice.
+	ContainersReturned     int32   `protobuf:"varint,4,opt,name=containers_returned,json=containersReturned,proto3" json:"containers_returned,omitempty"`
+	ContainersNet          int32   `protobuf:"varint,5,opt,name=containers_net,json=containersNet,proto3" json:"containers_net,omitempty"`
+	DepositPerContainerCad float64 `protobuf:"fixed64,6,opt,name=deposit_per_container_cad,json=depositPerContainerCad,proto3" json:"deposit_per_container_cad,omitempty"`
+	DepositTotalCad        float64 `protobuf:"fixed64,7,opt,name=deposit_total_cad,json=depositTotalCad,proto3" json:"deposit_total_cad,omitempty"`
+	// "sourced", "indicative" or "unknown". Travels with the money.
+	RateProvenance string `protobuf:"bytes,8,opt,name=rate_provenance,json=rateProvenance,proto3" json:"rate_provenance,omitempty"`
+	RateSource     string `protobuf:"bytes,9,opt,name=rate_source,json=rateSource,proto3" json:"rate_source,omitempty"`
+	RateAsOf       string `protobuf:"bytes,10,opt,name=rate_as_of,json=rateAsOf,proto3" json:"rate_as_of,omitempty"`
+	RateNote       string `protobuf:"bytes,11,opt,name=rate_note,json=rateNote,proto3" json:"rate_note,omitempty"`
+	// False where the rate is unknown; the container count is still
+	// reported, because knowing how many went out is useful even when the
+	// rate is not on file.
+	AmountAvailable bool   `protobuf:"varint,12,opt,name=amount_available,json=amountAvailable,proto3" json:"amount_available,omitempty"`
+	AmountMissing   string `protobuf:"bytes,13,opt,name=amount_missing,json=amountMissing,proto3" json:"amount_missing,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ContainerDepositLine) Reset() {
+	*x = ContainerDepositLine{}
+	mi := &file_stillhouse_v1_provincial_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContainerDepositLine) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerDepositLine) ProtoMessage() {}
+
+func (x *ContainerDepositLine) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_provincial_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerDepositLine.ProtoReflect.Descriptor instead.
+func (*ContainerDepositLine) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_provincial_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ContainerDepositLine) GetJurisdiction() string {
+	if x != nil {
+		return x.Jurisdiction
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetBottleSizeMl() int32 {
+	if x != nil {
+		return x.BottleSizeMl
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetContainersOut() int32 {
+	if x != nil {
+		return x.ContainersOut
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetContainersReturned() int32 {
+	if x != nil {
+		return x.ContainersReturned
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetContainersNet() int32 {
+	if x != nil {
+		return x.ContainersNet
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetDepositPerContainerCad() float64 {
+	if x != nil {
+		return x.DepositPerContainerCad
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetDepositTotalCad() float64 {
+	if x != nil {
+		return x.DepositTotalCad
+	}
+	return 0
+}
+
+func (x *ContainerDepositLine) GetRateProvenance() string {
+	if x != nil {
+		return x.RateProvenance
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRateSource() string {
+	if x != nil {
+		return x.RateSource
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRateAsOf() string {
+	if x != nil {
+		return x.RateAsOf
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetRateNote() string {
+	if x != nil {
+		return x.RateNote
+	}
+	return ""
+}
+
+func (x *ContainerDepositLine) GetAmountAvailable() bool {
+	if x != nil {
+		return x.AmountAvailable
+	}
+	return false
+}
+
+func (x *ContainerDepositLine) GetAmountMissing() string {
+	if x != nil {
+		return x.AmountMissing
+	}
+	return ""
+}
+
+type ContainerDepositReportRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PeriodStart   string                 `protobuf:"bytes,1,opt,name=period_start,json=periodStart,proto3" json:"period_start,omitempty"`
+	PeriodEnd     string                 `protobuf:"bytes,2,opt,name=period_end,json=periodEnd,proto3" json:"period_end,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ContainerDepositReportRequest) Reset() {
+	*x = ContainerDepositReportRequest{}
+	mi := &file_stillhouse_v1_provincial_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContainerDepositReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerDepositReportRequest) ProtoMessage() {}
+
+func (x *ContainerDepositReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_provincial_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerDepositReportRequest.ProtoReflect.Descriptor instead.
+func (*ContainerDepositReportRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_provincial_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *ContainerDepositReportRequest) GetPeriodStart() string {
+	if x != nil {
+		return x.PeriodStart
+	}
+	return ""
+}
+
+func (x *ContainerDepositReportRequest) GetPeriodEnd() string {
+	if x != nil {
+		return x.PeriodEnd
+	}
+	return ""
+}
+
+type ContainerDepositReportResponse struct {
+	state              protoimpl.MessageState  `protogen:"open.v1"`
+	Lines              []*ContainerDepositLine `protobuf:"bytes,1,rep,name=lines,proto3" json:"lines,omitempty"`
+	TotalContainersNet int32                   `protobuf:"varint,2,opt,name=total_containers_net,json=totalContainersNet,proto3" json:"total_containers_net,omitempty"`
+	// The sum over lines whose rate is available. Never a remittance figure
+	// on its own — see remittable and the caution.
+	TotalDepositCad float64 `protobuf:"fixed64,3,opt,name=total_deposit_cad,json=totalDepositCad,proto3" json:"total_deposit_cad,omitempty"`
+	// True only when EVERY line's rate is sourced. One indicative rate
+	// makes the whole total a planning figure, because a total nobody can
+	// decompose is only as good as its worst line.
+	Remittable bool `protobuf:"varint,4,opt,name=remittable,proto3" json:"remittable,omitempty"`
+	// The jurisdictions standing between this report and a remittance.
+	NeedsASourcedRate []string `protobuf:"bytes,5,rep,name=needs_a_sourced_rate,json=needsASourcedRate,proto3" json:"needs_a_sourced_rate,omitempty"`
+	Caution           string   `protobuf:"bytes,6,opt,name=caution,proto3" json:"caution,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *ContainerDepositReportResponse) Reset() {
+	*x = ContainerDepositReportResponse{}
+	mi := &file_stillhouse_v1_provincial_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ContainerDepositReportResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ContainerDepositReportResponse) ProtoMessage() {}
+
+func (x *ContainerDepositReportResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_provincial_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ContainerDepositReportResponse.ProtoReflect.Descriptor instead.
+func (*ContainerDepositReportResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_provincial_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ContainerDepositReportResponse) GetLines() []*ContainerDepositLine {
+	if x != nil {
+		return x.Lines
+	}
+	return nil
+}
+
+func (x *ContainerDepositReportResponse) GetTotalContainersNet() int32 {
+	if x != nil {
+		return x.TotalContainersNet
+	}
+	return 0
+}
+
+func (x *ContainerDepositReportResponse) GetTotalDepositCad() float64 {
+	if x != nil {
+		return x.TotalDepositCad
+	}
+	return 0
+}
+
+func (x *ContainerDepositReportResponse) GetRemittable() bool {
+	if x != nil {
+		return x.Remittable
+	}
+	return false
+}
+
+func (x *ContainerDepositReportResponse) GetNeedsASourcedRate() []string {
+	if x != nil {
+		return x.NeedsASourcedRate
+	}
+	return nil
+}
+
+func (x *ContainerDepositReportResponse) GetCaution() string {
+	if x != nil {
+		return x.Caution
+	}
+	return ""
+}
+
 var File_stillhouse_v1_provincial_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_provincial_proto_rawDesc = "" +
@@ -1884,7 +2186,37 @@ const file_stillhouse_v1_provincial_proto_rawDesc = "" +
 	"\x10unattributed_laa\x18\n" +
 	" \x01(\x01R\x0funattributedLaa\x123\n" +
 	"\x15unattributed_removals\x18\v \x01(\x05R\x14unattributedRemovals\x12\x14\n" +
-	"\x05basis\x18\f \x01(\tR\x05basis*\xf7\x01\n" +
+	"\x05basis\x18\f \x01(\tR\x05basis\"\x9d\x04\n" +
+	"\x14ContainerDepositLine\x12\"\n" +
+	"\fjurisdiction\x18\x01 \x01(\tR\fjurisdiction\x12$\n" +
+	"\x0ebottle_size_ml\x18\x02 \x01(\x05R\fbottleSizeMl\x12%\n" +
+	"\x0econtainers_out\x18\x03 \x01(\x05R\rcontainersOut\x12/\n" +
+	"\x13containers_returned\x18\x04 \x01(\x05R\x12containersReturned\x12%\n" +
+	"\x0econtainers_net\x18\x05 \x01(\x05R\rcontainersNet\x129\n" +
+	"\x19deposit_per_container_cad\x18\x06 \x01(\x01R\x16depositPerContainerCad\x12*\n" +
+	"\x11deposit_total_cad\x18\a \x01(\x01R\x0fdepositTotalCad\x12'\n" +
+	"\x0frate_provenance\x18\b \x01(\tR\x0erateProvenance\x12\x1f\n" +
+	"\vrate_source\x18\t \x01(\tR\n" +
+	"rateSource\x12\x1c\n" +
+	"\n" +
+	"rate_as_of\x18\n" +
+	" \x01(\tR\brateAsOf\x12\x1b\n" +
+	"\trate_note\x18\v \x01(\tR\brateNote\x12)\n" +
+	"\x10amount_available\x18\f \x01(\bR\x0famountAvailable\x12%\n" +
+	"\x0eamount_missing\x18\r \x01(\tR\ramountMissing\"a\n" +
+	"\x1dContainerDepositReportRequest\x12!\n" +
+	"\fperiod_start\x18\x01 \x01(\tR\vperiodStart\x12\x1d\n" +
+	"\n" +
+	"period_end\x18\x02 \x01(\tR\tperiodEnd\"\xa4\x02\n" +
+	"\x1eContainerDepositReportResponse\x129\n" +
+	"\x05lines\x18\x01 \x03(\v2#.stillhouse.v1.ContainerDepositLineR\x05lines\x120\n" +
+	"\x14total_containers_net\x18\x02 \x01(\x05R\x12totalContainersNet\x12*\n" +
+	"\x11total_deposit_cad\x18\x03 \x01(\x01R\x0ftotalDepositCad\x12\x1e\n" +
+	"\n" +
+	"remittable\x18\x04 \x01(\bR\n" +
+	"remittable\x12/\n" +
+	"\x14needs_a_sourced_rate\x18\x05 \x03(\tR\x11needsASourcedRate\x12\x18\n" +
+	"\acaution\x18\x06 \x01(\tR\acaution*\xf7\x01\n" +
 	"\x10ReportingCadence\x12!\n" +
 	"\x1dREPORTING_CADENCE_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19REPORTING_CADENCE_MONTHLY\x10\x01\x12\x1f\n" +
@@ -1897,7 +2229,8 @@ const file_stillhouse_v1_provincial_proto_rawDesc = "" +
 	"\"REQUIREMENT_PROVENANCE_UNSPECIFIED\x10\x00\x12\"\n" +
 	"\x1eREQUIREMENT_PROVENANCE_UNKNOWN\x10\x01\x12%\n" +
 	"!REQUIREMENT_PROVENANCE_INDICATIVE\x10\x02\x12\"\n" +
-	"\x1eREQUIREMENT_PROVENANCE_SOURCED\x10\x032\xc6\t\n" +
+	"\x1eREQUIREMENT_PROVENANCE_SOURCED\x10\x032\xbd\n" +
+	"\n" +
 	"\x11ProvincialService\x12\x81\x01\n" +
 	"\x1aSaveProvincialRegistration\x120.stillhouse.v1.SaveProvincialRegistrationRequest\x1a1.stillhouse.v1.SaveProvincialRegistrationResponse\x12\x84\x01\n" +
 	"\x1bListProvincialRegistrations\x121.stillhouse.v1.ListProvincialRegistrationsRequest\x1a2.stillhouse.v1.ListProvincialRegistrationsResponse\x12\x87\x01\n" +
@@ -1907,7 +2240,8 @@ const file_stillhouse_v1_provincial_proto_rawDesc = "" +
 	"\x19GenerateProvincialPeriods\x12/.stillhouse.v1.GenerateProvincialPeriodsRequest\x1a0.stillhouse.v1.GenerateProvincialPeriodsResponse\x12\x84\x01\n" +
 	"\x1bListProvincialReportPeriods\x121.stillhouse.v1.ListProvincialReportPeriodsRequest\x1a2.stillhouse.v1.ListProvincialReportPeriodsResponse\x12~\n" +
 	"\x19MarkProvincialReportFiled\x12/.stillhouse.v1.MarkProvincialReportFiledRequest\x1a0.stillhouse.v1.MarkProvincialReportFiledResponse\x12r\n" +
-	"\x15ProvincialSalesReport\x12+.stillhouse.v1.ProvincialSalesReportRequest\x1a,.stillhouse.v1.ProvincialSalesReportResponseB\xd3\x01\n" +
+	"\x15ProvincialSalesReport\x12+.stillhouse.v1.ProvincialSalesReportRequest\x1a,.stillhouse.v1.ProvincialSalesReportResponse\x12u\n" +
+	"\x16ContainerDepositReport\x12,.stillhouse.v1.ContainerDepositReportRequest\x1a-.stillhouse.v1.ContainerDepositReportResponseB\xd3\x01\n" +
 	"\x11com.stillhouse.v1B\x0fProvincialProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1923,7 +2257,7 @@ func file_stillhouse_v1_provincial_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_provincial_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_stillhouse_v1_provincial_proto_msgTypes = make([]protoimpl.MessageInfo, 22)
+var file_stillhouse_v1_provincial_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_stillhouse_v1_provincial_proto_goTypes = []any{
 	(ReportingCadence)(0),                           // 0: stillhouse.v1.ReportingCadence
 	(RequirementProvenance)(0),                      // 1: stillhouse.v1.RequirementProvenance
@@ -1949,7 +2283,10 @@ var file_stillhouse_v1_provincial_proto_goTypes = []any{
 	(*ProvincialSalesLine)(nil),                     // 21: stillhouse.v1.ProvincialSalesLine
 	(*ProvincialSalesReportRequest)(nil),            // 22: stillhouse.v1.ProvincialSalesReportRequest
 	(*ProvincialSalesReportResponse)(nil),           // 23: stillhouse.v1.ProvincialSalesReportResponse
-	(*timestamppb.Timestamp)(nil),                   // 24: google.protobuf.Timestamp
+	(*ContainerDepositLine)(nil),                    // 24: stillhouse.v1.ContainerDepositLine
+	(*ContainerDepositReportRequest)(nil),           // 25: stillhouse.v1.ContainerDepositReportRequest
+	(*ContainerDepositReportResponse)(nil),          // 26: stillhouse.v1.ContainerDepositReportResponse
+	(*timestamppb.Timestamp)(nil),                   // 27: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_provincial_proto_depIdxs = []int32{
 	2,  // 0: stillhouse.v1.SaveProvincialRegistrationResponse.registration:type_name -> stillhouse.v1.ProvincialRegistration
@@ -1960,34 +2297,37 @@ var file_stillhouse_v1_provincial_proto_depIdxs = []int32{
 	1,  // 5: stillhouse.v1.SaveProvincialReportDefinitionRequest.provenance:type_name -> stillhouse.v1.RequirementProvenance
 	9,  // 6: stillhouse.v1.SaveProvincialReportDefinitionResponse.definition:type_name -> stillhouse.v1.ProvincialReportDefinition
 	9,  // 7: stillhouse.v1.ListProvincialReportDefinitionsResponse.definitions:type_name -> stillhouse.v1.ProvincialReportDefinition
-	24, // 8: stillhouse.v1.ProvincialReportPeriod.filed_at:type_name -> google.protobuf.Timestamp
+	27, // 8: stillhouse.v1.ProvincialReportPeriod.filed_at:type_name -> google.protobuf.Timestamp
 	14, // 9: stillhouse.v1.GenerateProvincialPeriodsResponse.periods:type_name -> stillhouse.v1.ProvincialReportPeriod
 	14, // 10: stillhouse.v1.ListProvincialReportPeriodsResponse.periods:type_name -> stillhouse.v1.ProvincialReportPeriod
 	14, // 11: stillhouse.v1.MarkProvincialReportFiledResponse.period:type_name -> stillhouse.v1.ProvincialReportPeriod
 	21, // 12: stillhouse.v1.ProvincialSalesReportResponse.lines:type_name -> stillhouse.v1.ProvincialSalesLine
-	3,  // 13: stillhouse.v1.ProvincialService.SaveProvincialRegistration:input_type -> stillhouse.v1.SaveProvincialRegistrationRequest
-	5,  // 14: stillhouse.v1.ProvincialService.ListProvincialRegistrations:input_type -> stillhouse.v1.ListProvincialRegistrationsRequest
-	7,  // 15: stillhouse.v1.ProvincialService.DeleteProvincialRegistration:input_type -> stillhouse.v1.DeleteProvincialRegistrationRequest
-	10, // 16: stillhouse.v1.ProvincialService.SaveProvincialReportDefinition:input_type -> stillhouse.v1.SaveProvincialReportDefinitionRequest
-	12, // 17: stillhouse.v1.ProvincialService.ListProvincialReportDefinitions:input_type -> stillhouse.v1.ListProvincialReportDefinitionsRequest
-	15, // 18: stillhouse.v1.ProvincialService.GenerateProvincialPeriods:input_type -> stillhouse.v1.GenerateProvincialPeriodsRequest
-	17, // 19: stillhouse.v1.ProvincialService.ListProvincialReportPeriods:input_type -> stillhouse.v1.ListProvincialReportPeriodsRequest
-	19, // 20: stillhouse.v1.ProvincialService.MarkProvincialReportFiled:input_type -> stillhouse.v1.MarkProvincialReportFiledRequest
-	22, // 21: stillhouse.v1.ProvincialService.ProvincialSalesReport:input_type -> stillhouse.v1.ProvincialSalesReportRequest
-	4,  // 22: stillhouse.v1.ProvincialService.SaveProvincialRegistration:output_type -> stillhouse.v1.SaveProvincialRegistrationResponse
-	6,  // 23: stillhouse.v1.ProvincialService.ListProvincialRegistrations:output_type -> stillhouse.v1.ListProvincialRegistrationsResponse
-	8,  // 24: stillhouse.v1.ProvincialService.DeleteProvincialRegistration:output_type -> stillhouse.v1.DeleteProvincialRegistrationResponse
-	11, // 25: stillhouse.v1.ProvincialService.SaveProvincialReportDefinition:output_type -> stillhouse.v1.SaveProvincialReportDefinitionResponse
-	13, // 26: stillhouse.v1.ProvincialService.ListProvincialReportDefinitions:output_type -> stillhouse.v1.ListProvincialReportDefinitionsResponse
-	16, // 27: stillhouse.v1.ProvincialService.GenerateProvincialPeriods:output_type -> stillhouse.v1.GenerateProvincialPeriodsResponse
-	18, // 28: stillhouse.v1.ProvincialService.ListProvincialReportPeriods:output_type -> stillhouse.v1.ListProvincialReportPeriodsResponse
-	20, // 29: stillhouse.v1.ProvincialService.MarkProvincialReportFiled:output_type -> stillhouse.v1.MarkProvincialReportFiledResponse
-	23, // 30: stillhouse.v1.ProvincialService.ProvincialSalesReport:output_type -> stillhouse.v1.ProvincialSalesReportResponse
-	22, // [22:31] is the sub-list for method output_type
-	13, // [13:22] is the sub-list for method input_type
-	13, // [13:13] is the sub-list for extension type_name
-	13, // [13:13] is the sub-list for extension extendee
-	0,  // [0:13] is the sub-list for field type_name
+	24, // 13: stillhouse.v1.ContainerDepositReportResponse.lines:type_name -> stillhouse.v1.ContainerDepositLine
+	3,  // 14: stillhouse.v1.ProvincialService.SaveProvincialRegistration:input_type -> stillhouse.v1.SaveProvincialRegistrationRequest
+	5,  // 15: stillhouse.v1.ProvincialService.ListProvincialRegistrations:input_type -> stillhouse.v1.ListProvincialRegistrationsRequest
+	7,  // 16: stillhouse.v1.ProvincialService.DeleteProvincialRegistration:input_type -> stillhouse.v1.DeleteProvincialRegistrationRequest
+	10, // 17: stillhouse.v1.ProvincialService.SaveProvincialReportDefinition:input_type -> stillhouse.v1.SaveProvincialReportDefinitionRequest
+	12, // 18: stillhouse.v1.ProvincialService.ListProvincialReportDefinitions:input_type -> stillhouse.v1.ListProvincialReportDefinitionsRequest
+	15, // 19: stillhouse.v1.ProvincialService.GenerateProvincialPeriods:input_type -> stillhouse.v1.GenerateProvincialPeriodsRequest
+	17, // 20: stillhouse.v1.ProvincialService.ListProvincialReportPeriods:input_type -> stillhouse.v1.ListProvincialReportPeriodsRequest
+	19, // 21: stillhouse.v1.ProvincialService.MarkProvincialReportFiled:input_type -> stillhouse.v1.MarkProvincialReportFiledRequest
+	22, // 22: stillhouse.v1.ProvincialService.ProvincialSalesReport:input_type -> stillhouse.v1.ProvincialSalesReportRequest
+	25, // 23: stillhouse.v1.ProvincialService.ContainerDepositReport:input_type -> stillhouse.v1.ContainerDepositReportRequest
+	4,  // 24: stillhouse.v1.ProvincialService.SaveProvincialRegistration:output_type -> stillhouse.v1.SaveProvincialRegistrationResponse
+	6,  // 25: stillhouse.v1.ProvincialService.ListProvincialRegistrations:output_type -> stillhouse.v1.ListProvincialRegistrationsResponse
+	8,  // 26: stillhouse.v1.ProvincialService.DeleteProvincialRegistration:output_type -> stillhouse.v1.DeleteProvincialRegistrationResponse
+	11, // 27: stillhouse.v1.ProvincialService.SaveProvincialReportDefinition:output_type -> stillhouse.v1.SaveProvincialReportDefinitionResponse
+	13, // 28: stillhouse.v1.ProvincialService.ListProvincialReportDefinitions:output_type -> stillhouse.v1.ListProvincialReportDefinitionsResponse
+	16, // 29: stillhouse.v1.ProvincialService.GenerateProvincialPeriods:output_type -> stillhouse.v1.GenerateProvincialPeriodsResponse
+	18, // 30: stillhouse.v1.ProvincialService.ListProvincialReportPeriods:output_type -> stillhouse.v1.ListProvincialReportPeriodsResponse
+	20, // 31: stillhouse.v1.ProvincialService.MarkProvincialReportFiled:output_type -> stillhouse.v1.MarkProvincialReportFiledResponse
+	23, // 32: stillhouse.v1.ProvincialService.ProvincialSalesReport:output_type -> stillhouse.v1.ProvincialSalesReportResponse
+	26, // 33: stillhouse.v1.ProvincialService.ContainerDepositReport:output_type -> stillhouse.v1.ContainerDepositReportResponse
+	24, // [24:34] is the sub-list for method output_type
+	14, // [14:24] is the sub-list for method input_type
+	14, // [14:14] is the sub-list for extension type_name
+	14, // [14:14] is the sub-list for extension extendee
+	0,  // [0:14] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_provincial_proto_init() }
@@ -2001,7 +2341,7 @@ func file_stillhouse_v1_provincial_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_provincial_proto_rawDesc), len(file_stillhouse_v1_provincial_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   22,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -158,6 +158,18 @@ type Querier interface {
 	// Single use, enforced in the UPDATE rather than in Go: two tabs
 	// submitting the same code must not both succeed.
 	ConsumeTOTPRecoveryCode(ctx context.Context, arg ConsumeTOTPRecoveryCodeParams) (UserTotpRecoveryCode, error)
+	// Containers that went into each market during the period, with the size
+	// band a deposit programme charges by.
+	//
+	// Counted from removals rather than from bottling: a deposit is owed when
+	// a container enters the market, not when it is filled. Voided removals
+	// are excluded — the stock did not leave, so no deposit arose.
+	//
+	// Only duty-paid removals to customers. An export leaves the country and
+	// a transfer in bond goes to another licensee's premises; neither puts a
+	// container in front of a consumer, which is what a deposit programme
+	// charges for.
+	ContainersRemovedByJurisdiction(ctx context.Context, arg ContainersRemovedByJurisdictionParams) ([]ContainersRemovedByJurisdictionRow, error)
 	// The rates that applied on a given day. Effective-dated so that costing
 	// a batch from March does not use April's rate — a rate change must not
 	// restate a period an accountant has already taken into a set of books.
