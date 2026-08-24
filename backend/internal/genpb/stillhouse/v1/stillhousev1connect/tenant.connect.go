@@ -62,6 +62,8 @@ const (
 	// TenantServiceDeleteMyTenantProcedure is the fully-qualified name of the TenantService's
 	// DeleteMyTenant RPC.
 	TenantServiceDeleteMyTenantProcedure = "/stillhouse.v1.TenantService/DeleteMyTenant"
+	// TenantServiceGroupViewProcedure is the fully-qualified name of the TenantService's GroupView RPC.
+	TenantServiceGroupViewProcedure = "/stillhouse.v1.TenantService/GroupView"
 )
 
 // TenantServiceClient is a client for the stillhouse.v1.TenantService service.
@@ -75,6 +77,9 @@ type TenantServiceClient interface {
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
 	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
 	DeleteMyTenant(context.Context, *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error)
+	// Figures across every licence the caller holds an account at. Never a
+	// combined return — see GroupEntity.
+	GroupView(context.Context, *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error)
 }
 
 // NewTenantServiceClient constructs a client for the stillhouse.v1.TenantService service. By
@@ -142,6 +147,12 @@ func NewTenantServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(tenantServiceMethods.ByName("DeleteMyTenant")),
 			connect.WithClientOptions(opts...),
 		),
+		groupView: connect.NewClient[v1.GroupViewRequest, v1.GroupViewResponse](
+			httpClient,
+			baseURL+TenantServiceGroupViewProcedure,
+			connect.WithSchema(tenantServiceMethods.ByName("GroupView")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -156,6 +167,7 @@ type tenantServiceClient struct {
 	getTenant               *connect.Client[v1.GetTenantRequest, v1.GetTenantResponse]
 	updateTenant            *connect.Client[v1.UpdateTenantRequest, v1.UpdateTenantResponse]
 	deleteMyTenant          *connect.Client[v1.DeleteMyTenantRequest, v1.DeleteMyTenantResponse]
+	groupView               *connect.Client[v1.GroupViewRequest, v1.GroupViewResponse]
 }
 
 // SecuritySufficiency calls stillhouse.v1.TenantService.SecuritySufficiency.
@@ -203,6 +215,11 @@ func (c *tenantServiceClient) DeleteMyTenant(ctx context.Context, req *connect.R
 	return c.deleteMyTenant.CallUnary(ctx, req)
 }
 
+// GroupView calls stillhouse.v1.TenantService.GroupView.
+func (c *tenantServiceClient) GroupView(ctx context.Context, req *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error) {
+	return c.groupView.CallUnary(ctx, req)
+}
+
 // TenantServiceHandler is an implementation of the stillhouse.v1.TenantService service.
 type TenantServiceHandler interface {
 	SecuritySufficiency(context.Context, *connect.Request[v1.SecuritySufficiencyRequest]) (*connect.Response[v1.SecuritySufficiencyResponse], error)
@@ -214,6 +231,9 @@ type TenantServiceHandler interface {
 	GetTenant(context.Context, *connect.Request[v1.GetTenantRequest]) (*connect.Response[v1.GetTenantResponse], error)
 	UpdateTenant(context.Context, *connect.Request[v1.UpdateTenantRequest]) (*connect.Response[v1.UpdateTenantResponse], error)
 	DeleteMyTenant(context.Context, *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error)
+	// Figures across every licence the caller holds an account at. Never a
+	// combined return — see GroupEntity.
+	GroupView(context.Context, *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error)
 }
 
 // NewTenantServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -277,6 +297,12 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(tenantServiceMethods.ByName("DeleteMyTenant")),
 		connect.WithHandlerOptions(opts...),
 	)
+	tenantServiceGroupViewHandler := connect.NewUnaryHandler(
+		TenantServiceGroupViewProcedure,
+		svc.GroupView,
+		connect.WithSchema(tenantServiceMethods.ByName("GroupView")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.TenantService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case TenantServiceSecuritySufficiencyProcedure:
@@ -297,6 +323,8 @@ func NewTenantServiceHandler(svc TenantServiceHandler, opts ...connect.HandlerOp
 			tenantServiceUpdateTenantHandler.ServeHTTP(w, r)
 		case TenantServiceDeleteMyTenantProcedure:
 			tenantServiceDeleteMyTenantHandler.ServeHTTP(w, r)
+		case TenantServiceGroupViewProcedure:
+			tenantServiceGroupViewHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -340,4 +368,8 @@ func (UnimplementedTenantServiceHandler) UpdateTenant(context.Context, *connect.
 
 func (UnimplementedTenantServiceHandler) DeleteMyTenant(context.Context, *connect.Request[v1.DeleteMyTenantRequest]) (*connect.Response[v1.DeleteMyTenantResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.DeleteMyTenant is not implemented"))
+}
+
+func (UnimplementedTenantServiceHandler) GroupView(context.Context, *connect.Request[v1.GroupViewRequest]) (*connect.Response[v1.GroupViewResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.TenantService.GroupView is not implemented"))
 }

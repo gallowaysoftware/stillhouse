@@ -103,6 +103,10 @@ var procedureMinRole = map[string]minRole{
 	// Whether release is required at all is a decision about how the
 	// distillery works.
 	"/stillhouse.v1.TenantService/SetBatchReleaseRequired": roleOwner,
+	// A group view shows only licences the caller already holds an
+	// account at, and reads each as the account they hold there. Viewer
+	// is the floor because that is what it is: a read.
+	"/stillhouse.v1.TenantService/GroupView": roleViewer,
 
 	// ImportService. A bulk import creates casks, stock and customers in
 	// one action with no upstream production behind any of it — the same

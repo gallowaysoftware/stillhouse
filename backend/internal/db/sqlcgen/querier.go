@@ -486,6 +486,10 @@ type Querier interface {
 	GetWIPChargeBasis(ctx context.Context, id uuid.UUID) (NullWipChargeBasis, error)
 	GetWebhookEndpoint(ctx context.Context, id uuid.UUID) (GetWebhookEndpointRow, error)
 	GetWorkOrder(ctx context.Context, id uuid.UUID) (WorkOrder, error)
+	// The two counts a group view shows beside bulk LAA. Scoped by RLS like
+	// everything else, so it can only ever answer for the tenant whose
+	// context is set.
+	GroupPackagedAndCasks(ctx context.Context) (GroupPackagedAndCasksRow, error)
 	// Holding does NOT clear the release. A lot held after release is a
 	// recall in its early form, and erasing the fact that somebody released
 	// it would remove the most important part of that record.

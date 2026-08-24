@@ -247,4 +247,64 @@ service TenantService {
   rpc GetTenant(GetTenantRequest) returns (GetTenantResponse);
   rpc UpdateTenant(UpdateTenantRequest) returns (UpdateTenantResponse);
   rpc DeleteMyTenant(DeleteMyTenantRequest) returns (DeleteMyTenantResponse);
+
+  // Figures across every licence the caller holds an account at. Never a
+  // combined return — see GroupEntity.
+  rpc GroupView(GroupViewRequest) returns (GroupViewResponse);
+}
+
+// A group view: figures across every licence the caller holds an account
+// at. PLAN H7.
+//
+// The constraint that shapes this: a B266 is filed PER LICENCE. Two
+// distilleries under one owner file two returns, and a figure spanning
+// both is not a line on either. So there is no combined return here and
+// there never will be — the view is per-licence rows, side by side, each
+// carrying its own licence number, and any total is labelled as spanning
+// separate returns rather than being one.
+//
+// The second constraint is quieter and matters as much: what a person may
+// see at each licence is what their account THERE may see. Holding an
+// owner's account at one distillery does not make somebody an owner at
+// another, and a group view that pooled the reads would be a way to read
+// past a role.
+message GroupEntity {
+  string tenant_id = 1;
+  string tenant_name = 2;
+  // The licence this entity files under. On every row, because it is what
+  // makes the rows separate returns rather than departments.
+  string cra_spirits_licence_number = 3;
+  // The caller's role at THIS entity. Reads are performed as that role.
+  string your_role = 4;
+
+  double bulk_laa = 5;
+  int32  packaged_bottles = 6;
+  int32  cask_count = 7;
+
+  // Where this licence stands with its own return.
+  string next_period_start = 8;
+  string next_period_end = 9;
+  string next_due_on = 10;
+  int32  days_until_due = 11;
+  bool   period_generated = 12;
+  bool   period_submitted = 13;
+  // Set when this entity's figures could not be read — usually because
+  // the caller's account there was removed between listing and reading.
+  string unavailable = 14;
+}
+
+message GroupViewRequest {}
+message GroupViewResponse {
+  repeated GroupEntity entities = 1;
+  // Sums across the rows above, for operational planning only. Labelled
+  // rather than presented bare, because the whole risk of this screen is
+  // somebody reading one of these onto a return.
+  double total_bulk_laa = 2;
+  int32  total_packaged_bottles = 3;
+  // Said on the response, not in the documentation.
+  string caution = 4;
+  // How many of the licences above have a return due within the week and
+  // nothing submitted. The one thing a group owner actually needs from a
+  // combined screen.
+  int32 returns_due_soon = 5;
 }

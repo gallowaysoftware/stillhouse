@@ -1671,6 +1671,294 @@ func (x *SecuritySufficiencyResponse) GetLicences() []*SecuritySufficiency {
 	return nil
 }
 
+// A group view: figures across every licence the caller holds an account
+// at. PLAN H7.
+//
+// The constraint that shapes this: a B266 is filed PER LICENCE. Two
+// distilleries under one owner file two returns, and a figure spanning
+// both is not a line on either. So there is no combined return here and
+// there never will be — the view is per-licence rows, side by side, each
+// carrying its own licence number, and any total is labelled as spanning
+// separate returns rather than being one.
+//
+// The second constraint is quieter and matters as much: what a person may
+// see at each licence is what their account THERE may see. Holding an
+// owner's account at one distillery does not make somebody an owner at
+// another, and a group view that pooled the reads would be a way to read
+// past a role.
+type GroupEntity struct {
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	TenantId   string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	TenantName string                 `protobuf:"bytes,2,opt,name=tenant_name,json=tenantName,proto3" json:"tenant_name,omitempty"`
+	// The licence this entity files under. On every row, because it is what
+	// makes the rows separate returns rather than departments.
+	CraSpiritsLicenceNumber string `protobuf:"bytes,3,opt,name=cra_spirits_licence_number,json=craSpiritsLicenceNumber,proto3" json:"cra_spirits_licence_number,omitempty"`
+	// The caller's role at THIS entity. Reads are performed as that role.
+	YourRole        string  `protobuf:"bytes,4,opt,name=your_role,json=yourRole,proto3" json:"your_role,omitempty"`
+	BulkLaa         float64 `protobuf:"fixed64,5,opt,name=bulk_laa,json=bulkLaa,proto3" json:"bulk_laa,omitempty"`
+	PackagedBottles int32   `protobuf:"varint,6,opt,name=packaged_bottles,json=packagedBottles,proto3" json:"packaged_bottles,omitempty"`
+	CaskCount       int32   `protobuf:"varint,7,opt,name=cask_count,json=caskCount,proto3" json:"cask_count,omitempty"`
+	// Where this licence stands with its own return.
+	NextPeriodStart string `protobuf:"bytes,8,opt,name=next_period_start,json=nextPeriodStart,proto3" json:"next_period_start,omitempty"`
+	NextPeriodEnd   string `protobuf:"bytes,9,opt,name=next_period_end,json=nextPeriodEnd,proto3" json:"next_period_end,omitempty"`
+	NextDueOn       string `protobuf:"bytes,10,opt,name=next_due_on,json=nextDueOn,proto3" json:"next_due_on,omitempty"`
+	DaysUntilDue    int32  `protobuf:"varint,11,opt,name=days_until_due,json=daysUntilDue,proto3" json:"days_until_due,omitempty"`
+	PeriodGenerated bool   `protobuf:"varint,12,opt,name=period_generated,json=periodGenerated,proto3" json:"period_generated,omitempty"`
+	PeriodSubmitted bool   `protobuf:"varint,13,opt,name=period_submitted,json=periodSubmitted,proto3" json:"period_submitted,omitempty"`
+	// Set when this entity's figures could not be read — usually because
+	// the caller's account there was removed between listing and reading.
+	Unavailable   string `protobuf:"bytes,14,opt,name=unavailable,proto3" json:"unavailable,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GroupEntity) Reset() {
+	*x = GroupEntity{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GroupEntity) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GroupEntity) ProtoMessage() {}
+
+func (x *GroupEntity) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GroupEntity.ProtoReflect.Descriptor instead.
+func (*GroupEntity) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *GroupEntity) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetTenantName() string {
+	if x != nil {
+		return x.TenantName
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetCraSpiritsLicenceNumber() string {
+	if x != nil {
+		return x.CraSpiritsLicenceNumber
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetYourRole() string {
+	if x != nil {
+		return x.YourRole
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetBulkLaa() float64 {
+	if x != nil {
+		return x.BulkLaa
+	}
+	return 0
+}
+
+func (x *GroupEntity) GetPackagedBottles() int32 {
+	if x != nil {
+		return x.PackagedBottles
+	}
+	return 0
+}
+
+func (x *GroupEntity) GetCaskCount() int32 {
+	if x != nil {
+		return x.CaskCount
+	}
+	return 0
+}
+
+func (x *GroupEntity) GetNextPeriodStart() string {
+	if x != nil {
+		return x.NextPeriodStart
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetNextPeriodEnd() string {
+	if x != nil {
+		return x.NextPeriodEnd
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetNextDueOn() string {
+	if x != nil {
+		return x.NextDueOn
+	}
+	return ""
+}
+
+func (x *GroupEntity) GetDaysUntilDue() int32 {
+	if x != nil {
+		return x.DaysUntilDue
+	}
+	return 0
+}
+
+func (x *GroupEntity) GetPeriodGenerated() bool {
+	if x != nil {
+		return x.PeriodGenerated
+	}
+	return false
+}
+
+func (x *GroupEntity) GetPeriodSubmitted() bool {
+	if x != nil {
+		return x.PeriodSubmitted
+	}
+	return false
+}
+
+func (x *GroupEntity) GetUnavailable() string {
+	if x != nil {
+		return x.Unavailable
+	}
+	return ""
+}
+
+type GroupViewRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GroupViewRequest) Reset() {
+	*x = GroupViewRequest{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GroupViewRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GroupViewRequest) ProtoMessage() {}
+
+func (x *GroupViewRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GroupViewRequest.ProtoReflect.Descriptor instead.
+func (*GroupViewRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{22}
+}
+
+type GroupViewResponse struct {
+	state    protoimpl.MessageState `protogen:"open.v1"`
+	Entities []*GroupEntity         `protobuf:"bytes,1,rep,name=entities,proto3" json:"entities,omitempty"`
+	// Sums across the rows above, for operational planning only. Labelled
+	// rather than presented bare, because the whole risk of this screen is
+	// somebody reading one of these onto a return.
+	TotalBulkLaa         float64 `protobuf:"fixed64,2,opt,name=total_bulk_laa,json=totalBulkLaa,proto3" json:"total_bulk_laa,omitempty"`
+	TotalPackagedBottles int32   `protobuf:"varint,3,opt,name=total_packaged_bottles,json=totalPackagedBottles,proto3" json:"total_packaged_bottles,omitempty"`
+	// Said on the response, not in the documentation.
+	Caution string `protobuf:"bytes,4,opt,name=caution,proto3" json:"caution,omitempty"`
+	// How many of the licences above have a return due within the week and
+	// nothing submitted. The one thing a group owner actually needs from a
+	// combined screen.
+	ReturnsDueSoon int32 `protobuf:"varint,5,opt,name=returns_due_soon,json=returnsDueSoon,proto3" json:"returns_due_soon,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GroupViewResponse) Reset() {
+	*x = GroupViewResponse{}
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GroupViewResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GroupViewResponse) ProtoMessage() {}
+
+func (x *GroupViewResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_tenant_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GroupViewResponse.ProtoReflect.Descriptor instead.
+func (*GroupViewResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_tenant_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *GroupViewResponse) GetEntities() []*GroupEntity {
+	if x != nil {
+		return x.Entities
+	}
+	return nil
+}
+
+func (x *GroupViewResponse) GetTotalBulkLaa() float64 {
+	if x != nil {
+		return x.TotalBulkLaa
+	}
+	return 0
+}
+
+func (x *GroupViewResponse) GetTotalPackagedBottles() int32 {
+	if x != nil {
+		return x.TotalPackagedBottles
+	}
+	return 0
+}
+
+func (x *GroupViewResponse) GetCaution() string {
+	if x != nil {
+		return x.Caution
+	}
+	return ""
+}
+
+func (x *GroupViewResponse) GetReturnsDueSoon() int32 {
+	if x != nil {
+		return x.ReturnsDueSoon
+	}
+	return 0
+}
+
 var File_stillhouse_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_tenant_proto_rawDesc = "" +
@@ -1783,7 +2071,32 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\acaveats\x18\x0f \x03(\tR\acaveats\"\x1c\n" +
 	"\x1aSecuritySufficiencyRequest\"]\n" +
 	"\x1bSecuritySufficiencyResponse\x12>\n" +
-	"\blicences\x18\x01 \x03(\v2\".stillhouse.v1.SecuritySufficiencyR\blicences*_\n" +
+	"\blicences\x18\x01 \x03(\v2\".stillhouse.v1.SecuritySufficiencyR\blicences\"\x9c\x04\n" +
+	"\vGroupEntity\x12\x1b\n" +
+	"\ttenant_id\x18\x01 \x01(\tR\btenantId\x12\x1f\n" +
+	"\vtenant_name\x18\x02 \x01(\tR\n" +
+	"tenantName\x12;\n" +
+	"\x1acra_spirits_licence_number\x18\x03 \x01(\tR\x17craSpiritsLicenceNumber\x12\x1b\n" +
+	"\tyour_role\x18\x04 \x01(\tR\byourRole\x12\x19\n" +
+	"\bbulk_laa\x18\x05 \x01(\x01R\abulkLaa\x12)\n" +
+	"\x10packaged_bottles\x18\x06 \x01(\x05R\x0fpackagedBottles\x12\x1d\n" +
+	"\n" +
+	"cask_count\x18\a \x01(\x05R\tcaskCount\x12*\n" +
+	"\x11next_period_start\x18\b \x01(\tR\x0fnextPeriodStart\x12&\n" +
+	"\x0fnext_period_end\x18\t \x01(\tR\rnextPeriodEnd\x12\x1e\n" +
+	"\vnext_due_on\x18\n" +
+	" \x01(\tR\tnextDueOn\x12$\n" +
+	"\x0edays_until_due\x18\v \x01(\x05R\fdaysUntilDue\x12)\n" +
+	"\x10period_generated\x18\f \x01(\bR\x0fperiodGenerated\x12)\n" +
+	"\x10period_submitted\x18\r \x01(\bR\x0fperiodSubmitted\x12 \n" +
+	"\vunavailable\x18\x0e \x01(\tR\vunavailable\"\x12\n" +
+	"\x10GroupViewRequest\"\xeb\x01\n" +
+	"\x11GroupViewResponse\x126\n" +
+	"\bentities\x18\x01 \x03(\v2\x1a.stillhouse.v1.GroupEntityR\bentities\x12$\n" +
+	"\x0etotal_bulk_laa\x18\x02 \x01(\x01R\ftotalBulkLaa\x124\n" +
+	"\x16total_packaged_bottles\x18\x03 \x01(\x05R\x14totalPackagedBottles\x12\x18\n" +
+	"\acaution\x18\x04 \x01(\tR\acaution\x12(\n" +
+	"\x10returns_due_soon\x18\x05 \x01(\x05R\x0ereturnsDueSoon*_\n" +
 	"\tDutyPoint\x12\x1a\n" +
 	"\x16DUTY_POINT_UNSPECIFIED\x10\x00\x12\x1b\n" +
 	"\x17DUTY_POINT_AT_PACKAGING\x10\x01\x12\x19\n" +
@@ -1802,7 +2115,7 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"$EXCISE_LICENCE_KIND_EXCISE_WAREHOUSE\x10\x02\x12\x1d\n" +
 	"\x19EXCISE_LICENCE_KIND_USERS\x10\x03\x12\x1c\n" +
 	"\x18EXCISE_LICENCE_KIND_WINE\x10\x04\x12\x1d\n" +
-	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\x9c\a\n" +
+	"\x19EXCISE_LICENCE_KIND_OTHER\x10\x052\xec\a\n" +
 	"\rTenantService\x12l\n" +
 	"\x13SecuritySufficiency\x12).stillhouse.v1.SecuritySufficiencyRequest\x1a*.stillhouse.v1.SecuritySufficiencyResponse\x12x\n" +
 	"\x17SetBatchReleaseRequired\x12-.stillhouse.v1.SetBatchReleaseRequiredRequest\x1a..stillhouse.v1.SetBatchReleaseRequiredResponse\x12i\n" +
@@ -1812,7 +2125,8 @@ const file_stillhouse_v1_tenant_proto_rawDesc = "" +
 	"\fCreateTenant\x12\".stillhouse.v1.CreateTenantRequest\x1a#.stillhouse.v1.CreateTenantResponse\x12N\n" +
 	"\tGetTenant\x12\x1f.stillhouse.v1.GetTenantRequest\x1a .stillhouse.v1.GetTenantResponse\x12W\n" +
 	"\fUpdateTenant\x12\".stillhouse.v1.UpdateTenantRequest\x1a#.stillhouse.v1.UpdateTenantResponse\x12]\n" +
-	"\x0eDeleteMyTenant\x12$.stillhouse.v1.DeleteMyTenantRequest\x1a%.stillhouse.v1.DeleteMyTenantResponseB\xcf\x01\n" +
+	"\x0eDeleteMyTenant\x12$.stillhouse.v1.DeleteMyTenantRequest\x1a%.stillhouse.v1.DeleteMyTenantResponse\x12N\n" +
+	"\tGroupView\x12\x1f.stillhouse.v1.GroupViewRequest\x1a .stillhouse.v1.GroupViewResponseB\xcf\x01\n" +
 	"\x11com.stillhouse.v1B\vTenantProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1828,7 +2142,7 @@ func file_stillhouse_v1_tenant_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_stillhouse_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(DutyPoint)(0),                          // 0: stillhouse.v1.DutyPoint
 	(FilingFrequency)(0),                    // 1: stillhouse.v1.FilingFrequency
@@ -1855,11 +2169,14 @@ var file_stillhouse_v1_tenant_proto_goTypes = []any{
 	(*SecuritySufficiency)(nil),             // 22: stillhouse.v1.SecuritySufficiency
 	(*SecuritySufficiencyRequest)(nil),      // 23: stillhouse.v1.SecuritySufficiencyRequest
 	(*SecuritySufficiencyResponse)(nil),     // 24: stillhouse.v1.SecuritySufficiencyResponse
-	(*timestamppb.Timestamp)(nil),           // 25: google.protobuf.Timestamp
+	(*GroupEntity)(nil),                     // 25: stillhouse.v1.GroupEntity
+	(*GroupViewRequest)(nil),                // 26: stillhouse.v1.GroupViewRequest
+	(*GroupViewResponse)(nil),               // 27: stillhouse.v1.GroupViewResponse
+	(*timestamppb.Timestamp)(nil),           // 28: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
-	25, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
-	25, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 0: stillhouse.v1.Tenant.created_at:type_name -> google.protobuf.Timestamp
+	28, // 1: stillhouse.v1.Tenant.updated_at:type_name -> google.protobuf.Timestamp
 	0,  // 2: stillhouse.v1.Tenant.duty_point:type_name -> stillhouse.v1.DutyPoint
 	1,  // 3: stillhouse.v1.Tenant.filing_frequency:type_name -> stillhouse.v1.FilingFrequency
 	2,  // 4: stillhouse.v1.Tenant.fiscal_month_basis:type_name -> stillhouse.v1.FiscalMonthBasis
@@ -1874,29 +2191,32 @@ var file_stillhouse_v1_tenant_proto_depIdxs = []int32{
 	3,  // 13: stillhouse.v1.SaveExciseLicenceRequest.kind:type_name -> stillhouse.v1.ExciseLicenceKind
 	17, // 14: stillhouse.v1.SaveExciseLicenceResponse.licence:type_name -> stillhouse.v1.ExciseLicence
 	22, // 15: stillhouse.v1.SecuritySufficiencyResponse.licences:type_name -> stillhouse.v1.SecuritySufficiency
-	23, // 16: stillhouse.v1.TenantService.SecuritySufficiency:input_type -> stillhouse.v1.SecuritySufficiencyRequest
-	15, // 17: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
-	18, // 18: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
-	20, // 19: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
-	9,  // 20: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
-	5,  // 21: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
-	7,  // 22: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
-	11, // 23: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
-	13, // 24: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
-	24, // 25: stillhouse.v1.TenantService.SecuritySufficiency:output_type -> stillhouse.v1.SecuritySufficiencyResponse
-	16, // 26: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
-	19, // 27: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
-	21, // 28: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
-	10, // 29: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
-	6,  // 30: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
-	8,  // 31: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
-	12, // 32: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
-	14, // 33: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
-	25, // [25:34] is the sub-list for method output_type
-	16, // [16:25] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	25, // 16: stillhouse.v1.GroupViewResponse.entities:type_name -> stillhouse.v1.GroupEntity
+	23, // 17: stillhouse.v1.TenantService.SecuritySufficiency:input_type -> stillhouse.v1.SecuritySufficiencyRequest
+	15, // 18: stillhouse.v1.TenantService.SetBatchReleaseRequired:input_type -> stillhouse.v1.SetBatchReleaseRequiredRequest
+	18, // 19: stillhouse.v1.TenantService.ListExciseLicences:input_type -> stillhouse.v1.ListExciseLicencesRequest
+	20, // 20: stillhouse.v1.TenantService.SaveExciseLicence:input_type -> stillhouse.v1.SaveExciseLicenceRequest
+	9,  // 21: stillhouse.v1.TenantService.UpdateFilingCalendar:input_type -> stillhouse.v1.UpdateFilingCalendarRequest
+	5,  // 22: stillhouse.v1.TenantService.CreateTenant:input_type -> stillhouse.v1.CreateTenantRequest
+	7,  // 23: stillhouse.v1.TenantService.GetTenant:input_type -> stillhouse.v1.GetTenantRequest
+	11, // 24: stillhouse.v1.TenantService.UpdateTenant:input_type -> stillhouse.v1.UpdateTenantRequest
+	13, // 25: stillhouse.v1.TenantService.DeleteMyTenant:input_type -> stillhouse.v1.DeleteMyTenantRequest
+	26, // 26: stillhouse.v1.TenantService.GroupView:input_type -> stillhouse.v1.GroupViewRequest
+	24, // 27: stillhouse.v1.TenantService.SecuritySufficiency:output_type -> stillhouse.v1.SecuritySufficiencyResponse
+	16, // 28: stillhouse.v1.TenantService.SetBatchReleaseRequired:output_type -> stillhouse.v1.SetBatchReleaseRequiredResponse
+	19, // 29: stillhouse.v1.TenantService.ListExciseLicences:output_type -> stillhouse.v1.ListExciseLicencesResponse
+	21, // 30: stillhouse.v1.TenantService.SaveExciseLicence:output_type -> stillhouse.v1.SaveExciseLicenceResponse
+	10, // 31: stillhouse.v1.TenantService.UpdateFilingCalendar:output_type -> stillhouse.v1.UpdateFilingCalendarResponse
+	6,  // 32: stillhouse.v1.TenantService.CreateTenant:output_type -> stillhouse.v1.CreateTenantResponse
+	8,  // 33: stillhouse.v1.TenantService.GetTenant:output_type -> stillhouse.v1.GetTenantResponse
+	12, // 34: stillhouse.v1.TenantService.UpdateTenant:output_type -> stillhouse.v1.UpdateTenantResponse
+	14, // 35: stillhouse.v1.TenantService.DeleteMyTenant:output_type -> stillhouse.v1.DeleteMyTenantResponse
+	27, // 36: stillhouse.v1.TenantService.GroupView:output_type -> stillhouse.v1.GroupViewResponse
+	27, // [27:37] is the sub-list for method output_type
+	17, // [17:27] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_tenant_proto_init() }
@@ -1910,7 +2230,7 @@ func file_stillhouse_v1_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_tenant_proto_rawDesc), len(file_stillhouse_v1_tenant_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   21,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

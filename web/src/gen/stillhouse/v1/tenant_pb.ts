@@ -15,7 +15,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/tenant.proto.
  */
 export const file_stillhouse_v1_tenant: GenFile = /*@__PURE__*/
-  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLFBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkSHQoVcmVxdWlyZV9iYXRjaF9yZWxlYXNlGA8gASgIIq4BChNDcmVhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YAyABKAkSEwoLb3duZXJfZW1haWwYBCABKAkSFgoOb3duZXJfcGFzc3dvcmQYBSABKAkSGgoSb3duZXJfZGlzcGxheV9uYW1lGAYgASgJIj0KFENyZWF0ZVRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50IhIKEEdldFRlbmFudFJlcXVlc3QiOgoRR2V0VGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQihQIKG1VwZGF0ZUZpbGluZ0NhbGVuZGFyUmVxdWVzdBI4ChBmaWxpbmdfZnJlcXVlbmN5GAEgASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAIgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAMgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGAQgASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYBSABKAkiRQocVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKOAQoTVXBkYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEicKH2V4Y2lzZV93YXJlaG91c2VfbGljZW5jZV9udW1iZXIYAyABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YBCABKAkiPQoUVXBkYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiLQoVRGVsZXRlTXlUZW5hbnRSZXF1ZXN0EhQKDGNvbmZpcm1fbmFtZRgBIAEoCSIYChZEZWxldGVNeVRlbmFudFJlc3BvbnNlIjIKHlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVxdWVzdBIQCghyZXF1aXJlZBgBIAEoCCIzCh9TZXRCYXRjaFJlbGVhc2VSZXF1aXJlZFJlc3BvbnNlEhAKCHJlcXVpcmVkGAEgASgIIv0BCg1FeGNpc2VMaWNlbmNlEgoKAmlkGAEgASgJEi4KBGtpbmQYAiABKA4yIC5zdGlsbGhvdXNlLnYxLkV4Y2lzZUxpY2VuY2VLaW5kEhYKDmxpY2VuY2VfbnVtYmVyGAMgASgJEhYKDmVmZmVjdGl2ZV9mcm9tGAQgASgJEhIKCmV4cGlyZXNfb24YBSABKAkSEAoIcHJlbWlzZXMYBiABKAkSGwoTc2VjdXJpdHlfYW1vdW50X2NhZBgHIAEoCRIbChNzZWN1cml0eV9leHBpcmVzX29uGAggASgJEg0KBW5vdGVzGAkgASgJEhEKCWNlYXNlZF9vbhgKIAEoCSIbChlMaXN0RXhjaXNlTGljZW5jZXNSZXF1ZXN0ImoKGkxpc3RFeGNpc2VMaWNlbmNlc1Jlc3BvbnNlEi4KCGxpY2VuY2VzGAEgAygLMhwuc3RpbGxob3VzZS52MS5FeGNpc2VMaWNlbmNlEhwKFG1pc3NpbmdfZXhwaXJ5X2NvdW50GAIgASgFIogCChhTYXZlRXhjaXNlTGljZW5jZVJlcXVlc3QSCgoCaWQYASABKAkSLgoEa2luZBgCIAEoDjIgLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZUtpbmQSFgoObGljZW5jZV9udW1iZXIYAyABKAkSFgoOZWZmZWN0aXZlX2Zyb20YBCABKAkSEgoKZXhwaXJlc19vbhgFIAEoCRIQCghwcmVtaXNlcxgGIAEoCRIbChNzZWN1cml0eV9hbW91bnRfY2FkGAcgASgJEhsKE3NlY3VyaXR5X2V4cGlyZXNfb24YCCABKAkSDQoFbm90ZXMYCSABKAkSEQoJY2Vhc2VkX29uGAogASgJIkoKGVNhdmVFeGNpc2VMaWNlbmNlUmVzcG9uc2USLQoHbGljZW5jZRgBIAEoCzIcLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZSKEAwoTU2VjdXJpdHlTdWZmaWNpZW5jeRISCgpsaWNlbmNlX2lkGAEgASgJEhYKDmxpY2VuY2VfbnVtYmVyGAIgASgJEhsKE3NlY3VyaXR5X2Ftb3VudF9jYWQYAyABKAkSGwoTc2VjdXJpdHlfYW1vdW50X3NldBgEIAEoCBIbChNzZWN1cml0eV9leHBpcmVzX29uGAUgASgJEhYKDmZpbGVkX2R1dHlfY2FkGAYgASgBEhgKEHVuZmlsZWRfZHV0eV9jYWQYByABKAESFgoOY29udGluZ2VudF9sYWEYCCABKAESGwoTY29udGluZ2VudF9kdXR5X2NhZBgJIAEoARIZChFjb250aW5nZW50X3ByaWNlZBgKIAEoCBIaChJ0b3RhbF9leHBvc3VyZV9jYWQYCyABKAESFAoMaGVhZHJvb21fY2FkGAwgASgBEhYKDmhlYWRyb29tX2tub3duGA0gASgIEg0KBWJhc2lzGA4gASgJEg8KB2NhdmVhdHMYDyADKAkiHAoaU2VjdXJpdHlTdWZmaWNpZW5jeVJlcXVlc3QiUwobU2VjdXJpdHlTdWZmaWNpZW5jeVJlc3BvbnNlEjQKCGxpY2VuY2VzGAEgAygLMiIuc3RpbGxob3VzZS52MS5TZWN1cml0eVN1ZmZpY2llbmN5Kl8KCUR1dHlQb2ludBIaChZEVVRZX1BPSU5UX1VOU1BFQ0lGSUVEEAASGwoXRFVUWV9QT0lOVF9BVF9QQUNLQUdJTkcQARIZChVEVVRZX1BPSU5UX0FUX1JFTU9WQUwQAipzCg9GaWxpbmdGcmVxdWVuY3kSIAocRklMSU5HX0ZSRVFVRU5DWV9VTlNQRUNJRklFRBAAEhwKGEZJTElOR19GUkVRVUVOQ1lfTU9OVEhMWRABEiAKHEZJTElOR19GUkVRVUVOQ1lfU0VNSV9BTk5VQUwQAiqIAQoQRmlzY2FsTW9udGhCYXNpcxIiCh5GSVNDQUxfTU9OVEhfQkFTSVNfVU5TUEVDSUZJRUQQABIlCiFGSVNDQUxfTU9OVEhfQkFTSVNfQ0FMRU5EQVJfTU9OVEgQARIpCiVGSVNDQUxfTU9OVEhfQkFTSVNfRklYRURfREFZX09GX01PTlRIEAIq3wEKEUV4Y2lzZUxpY2VuY2VLaW5kEiMKH0VYQ0lTRV9MSUNFTkNFX0tJTkRfVU5TUEVDSUZJRUQQABIfChtFWENJU0VfTElDRU5DRV9LSU5EX1NQSVJJVFMQARIoCiRFWENJU0VfTElDRU5DRV9LSU5EX0VYQ0lTRV9XQVJFSE9VU0UQAhIdChlFWENJU0VfTElDRU5DRV9LSU5EX1VTRVJTEAMSHAoYRVhDSVNFX0xJQ0VOQ0VfS0lORF9XSU5FEAQSHQoZRVhDSVNFX0xJQ0VOQ0VfS0lORF9PVEhFUhAFMpwHCg1UZW5hbnRTZXJ2aWNlEmwKE1NlY3VyaXR5U3VmZmljaWVuY3kSKS5zdGlsbGhvdXNlLnYxLlNlY3VyaXR5U3VmZmljaWVuY3lSZXF1ZXN0Giouc3RpbGxob3VzZS52MS5TZWN1cml0eVN1ZmZpY2llbmN5UmVzcG9uc2USeAoXU2V0QmF0Y2hSZWxlYXNlUmVxdWlyZWQSLS5zdGlsbGhvdXNlLnYxLlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVxdWVzdBouLnN0aWxsaG91c2UudjEuU2V0QmF0Y2hSZWxlYXNlUmVxdWlyZWRSZXNwb25zZRJpChJMaXN0RXhjaXNlTGljZW5jZXMSKC5zdGlsbGhvdXNlLnYxLkxpc3RFeGNpc2VMaWNlbmNlc1JlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLkxpc3RFeGNpc2VMaWNlbmNlc1Jlc3BvbnNlEmYKEVNhdmVFeGNpc2VMaWNlbmNlEicuc3RpbGxob3VzZS52MS5TYXZlRXhjaXNlTGljZW5jZVJlcXVlc3QaKC5zdGlsbGhvdXNlLnYxLlNhdmVFeGNpc2VMaWNlbmNlUmVzcG9uc2USbwoUVXBkYXRlRmlsaW5nQ2FsZW5kYXISKi5zdGlsbGhvdXNlLnYxLlVwZGF0ZUZpbGluZ0NhbGVuZGFyUmVxdWVzdBorLnN0aWxsaG91c2UudjEuVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXNwb25zZRJXCgxDcmVhdGVUZW5hbnQSIi5zdGlsbGhvdXNlLnYxLkNyZWF0ZVRlbmFudFJlcXVlc3QaIy5zdGlsbGhvdXNlLnYxLkNyZWF0ZVRlbmFudFJlc3BvbnNlEk4KCUdldFRlbmFudBIfLnN0aWxsaG91c2UudjEuR2V0VGVuYW50UmVxdWVzdBogLnN0aWxsaG91c2UudjEuR2V0VGVuYW50UmVzcG9uc2USVwoMVXBkYXRlVGVuYW50EiIuc3RpbGxob3VzZS52MS5VcGRhdGVUZW5hbnRSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5VcGRhdGVUZW5hbnRSZXNwb25zZRJdCg5EZWxldGVNeVRlbmFudBIkLnN0aWxsaG91c2UudjEuRGVsZXRlTXlUZW5hbnRSZXF1ZXN0GiUuc3RpbGxob3VzZS52MS5EZWxldGVNeVRlbmFudFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
+  fileDesc("ChpzdGlsbGhvdXNlL3YxL3RlbmFudC5wcm90bxINc3RpbGxob3VzZS52MSLFBAoGVGVuYW50EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSJwofZXhjaXNlX3dhcmVob3VzZV9saWNlbmNlX251bWJlchgEIAEoCRIcChRkZWZhdWx0X2p1cmlzZGljdGlvbhgFIAEoCRIuCgpjcmVhdGVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAcgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIsCgpkdXR5X3BvaW50GAggASgOMhguc3RpbGxob3VzZS52MS5EdXR5UG9pbnQSIQoZZHV0eV9wb2ludF9lZmZlY3RpdmVfZnJvbRgJIAEoCRI4ChBmaWxpbmdfZnJlcXVlbmN5GAogASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAsgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAwgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGA0gASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYDiABKAkSHQoVcmVxdWlyZV9iYXRjaF9yZWxlYXNlGA8gASgIIq4BChNDcmVhdGVUZW5hbnRSZXF1ZXN0EgwKBG5hbWUYASABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAiABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YAyABKAkSEwoLb3duZXJfZW1haWwYBCABKAkSFgoOb3duZXJfcGFzc3dvcmQYBSABKAkSGgoSb3duZXJfZGlzcGxheV9uYW1lGAYgASgJIj0KFENyZWF0ZVRlbmFudFJlc3BvbnNlEiUKBnRlbmFudBgBIAEoCzIVLnN0aWxsaG91c2UudjEuVGVuYW50IhIKEEdldFRlbmFudFJlcXVlc3QiOgoRR2V0VGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQihQIKG1VwZGF0ZUZpbGluZ0NhbGVuZGFyUmVxdWVzdBI4ChBmaWxpbmdfZnJlcXVlbmN5GAEgASgOMh4uc3RpbGxob3VzZS52MS5GaWxpbmdGcmVxdWVuY3kSOwoSZmlzY2FsX21vbnRoX2Jhc2lzGAIgASgOMh8uc3RpbGxob3VzZS52MS5GaXNjYWxNb250aEJhc2lzEhwKFGZpc2NhbF9tb250aF9lbmRfZGF5GAMgASgFEiUKHWZpc2NhbF9tb250aF9ub3RpZmljYXRpb25fcmVmGAQgASgJEioKImZpbGluZ19mcmVxdWVuY3lfYXV0aG9yaXphdGlvbl9yZWYYBSABKAkiRQocVXBkYXRlRmlsaW5nQ2FsZW5kYXJSZXNwb25zZRIlCgZ0ZW5hbnQYASABKAsyFS5zdGlsbGhvdXNlLnYxLlRlbmFudCKOAQoTVXBkYXRlVGVuYW50UmVxdWVzdBIMCgRuYW1lGAEgASgJEiIKGmNyYV9zcGlyaXRzX2xpY2VuY2VfbnVtYmVyGAIgASgJEicKH2V4Y2lzZV93YXJlaG91c2VfbGljZW5jZV9udW1iZXIYAyABKAkSHAoUZGVmYXVsdF9qdXJpc2RpY3Rpb24YBCABKAkiPQoUVXBkYXRlVGVuYW50UmVzcG9uc2USJQoGdGVuYW50GAEgASgLMhUuc3RpbGxob3VzZS52MS5UZW5hbnQiLQoVRGVsZXRlTXlUZW5hbnRSZXF1ZXN0EhQKDGNvbmZpcm1fbmFtZRgBIAEoCSIYChZEZWxldGVNeVRlbmFudFJlc3BvbnNlIjIKHlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVxdWVzdBIQCghyZXF1aXJlZBgBIAEoCCIzCh9TZXRCYXRjaFJlbGVhc2VSZXF1aXJlZFJlc3BvbnNlEhAKCHJlcXVpcmVkGAEgASgIIv0BCg1FeGNpc2VMaWNlbmNlEgoKAmlkGAEgASgJEi4KBGtpbmQYAiABKA4yIC5zdGlsbGhvdXNlLnYxLkV4Y2lzZUxpY2VuY2VLaW5kEhYKDmxpY2VuY2VfbnVtYmVyGAMgASgJEhYKDmVmZmVjdGl2ZV9mcm9tGAQgASgJEhIKCmV4cGlyZXNfb24YBSABKAkSEAoIcHJlbWlzZXMYBiABKAkSGwoTc2VjdXJpdHlfYW1vdW50X2NhZBgHIAEoCRIbChNzZWN1cml0eV9leHBpcmVzX29uGAggASgJEg0KBW5vdGVzGAkgASgJEhEKCWNlYXNlZF9vbhgKIAEoCSIbChlMaXN0RXhjaXNlTGljZW5jZXNSZXF1ZXN0ImoKGkxpc3RFeGNpc2VMaWNlbmNlc1Jlc3BvbnNlEi4KCGxpY2VuY2VzGAEgAygLMhwuc3RpbGxob3VzZS52MS5FeGNpc2VMaWNlbmNlEhwKFG1pc3NpbmdfZXhwaXJ5X2NvdW50GAIgASgFIogCChhTYXZlRXhjaXNlTGljZW5jZVJlcXVlc3QSCgoCaWQYASABKAkSLgoEa2luZBgCIAEoDjIgLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZUtpbmQSFgoObGljZW5jZV9udW1iZXIYAyABKAkSFgoOZWZmZWN0aXZlX2Zyb20YBCABKAkSEgoKZXhwaXJlc19vbhgFIAEoCRIQCghwcmVtaXNlcxgGIAEoCRIbChNzZWN1cml0eV9hbW91bnRfY2FkGAcgASgJEhsKE3NlY3VyaXR5X2V4cGlyZXNfb24YCCABKAkSDQoFbm90ZXMYCSABKAkSEQoJY2Vhc2VkX29uGAogASgJIkoKGVNhdmVFeGNpc2VMaWNlbmNlUmVzcG9uc2USLQoHbGljZW5jZRgBIAEoCzIcLnN0aWxsaG91c2UudjEuRXhjaXNlTGljZW5jZSKEAwoTU2VjdXJpdHlTdWZmaWNpZW5jeRISCgpsaWNlbmNlX2lkGAEgASgJEhYKDmxpY2VuY2VfbnVtYmVyGAIgASgJEhsKE3NlY3VyaXR5X2Ftb3VudF9jYWQYAyABKAkSGwoTc2VjdXJpdHlfYW1vdW50X3NldBgEIAEoCBIbChNzZWN1cml0eV9leHBpcmVzX29uGAUgASgJEhYKDmZpbGVkX2R1dHlfY2FkGAYgASgBEhgKEHVuZmlsZWRfZHV0eV9jYWQYByABKAESFgoOY29udGluZ2VudF9sYWEYCCABKAESGwoTY29udGluZ2VudF9kdXR5X2NhZBgJIAEoARIZChFjb250aW5nZW50X3ByaWNlZBgKIAEoCBIaChJ0b3RhbF9leHBvc3VyZV9jYWQYCyABKAESFAoMaGVhZHJvb21fY2FkGAwgASgBEhYKDmhlYWRyb29tX2tub3duGA0gASgIEg0KBWJhc2lzGA4gASgJEg8KB2NhdmVhdHMYDyADKAkiHAoaU2VjdXJpdHlTdWZmaWNpZW5jeVJlcXVlc3QiUwobU2VjdXJpdHlTdWZmaWNpZW5jeVJlc3BvbnNlEjQKCGxpY2VuY2VzGAEgAygLMiIuc3RpbGxob3VzZS52MS5TZWN1cml0eVN1ZmZpY2llbmN5ItYCCgtHcm91cEVudGl0eRIRCgl0ZW5hbnRfaWQYASABKAkSEwoLdGVuYW50X25hbWUYAiABKAkSIgoaY3JhX3NwaXJpdHNfbGljZW5jZV9udW1iZXIYAyABKAkSEQoJeW91cl9yb2xlGAQgASgJEhAKCGJ1bGtfbGFhGAUgASgBEhgKEHBhY2thZ2VkX2JvdHRsZXMYBiABKAUSEgoKY2Fza19jb3VudBgHIAEoBRIZChFuZXh0X3BlcmlvZF9zdGFydBgIIAEoCRIXCg9uZXh0X3BlcmlvZF9lbmQYCSABKAkSEwoLbmV4dF9kdWVfb24YCiABKAkSFgoOZGF5c191bnRpbF9kdWUYCyABKAUSGAoQcGVyaW9kX2dlbmVyYXRlZBgMIAEoCBIYChBwZXJpb2Rfc3VibWl0dGVkGA0gASgIEhMKC3VuYXZhaWxhYmxlGA4gASgJIhIKEEdyb3VwVmlld1JlcXVlc3QipAEKEUdyb3VwVmlld1Jlc3BvbnNlEiwKCGVudGl0aWVzGAEgAygLMhouc3RpbGxob3VzZS52MS5Hcm91cEVudGl0eRIWCg50b3RhbF9idWxrX2xhYRgCIAEoARIeChZ0b3RhbF9wYWNrYWdlZF9ib3R0bGVzGAMgASgFEg8KB2NhdXRpb24YBCABKAkSGAoQcmV0dXJuc19kdWVfc29vbhgFIAEoBSpfCglEdXR5UG9pbnQSGgoWRFVUWV9QT0lOVF9VTlNQRUNJRklFRBAAEhsKF0RVVFlfUE9JTlRfQVRfUEFDS0FHSU5HEAESGQoVRFVUWV9QT0lOVF9BVF9SRU1PVkFMEAIqcwoPRmlsaW5nRnJlcXVlbmN5EiAKHEZJTElOR19GUkVRVUVOQ1lfVU5TUEVDSUZJRUQQABIcChhGSUxJTkdfRlJFUVVFTkNZX01PTlRITFkQARIgChxGSUxJTkdfRlJFUVVFTkNZX1NFTUlfQU5OVUFMEAIqiAEKEEZpc2NhbE1vbnRoQmFzaXMSIgoeRklTQ0FMX01PTlRIX0JBU0lTX1VOU1BFQ0lGSUVEEAASJQohRklTQ0FMX01PTlRIX0JBU0lTX0NBTEVOREFSX01PTlRIEAESKQolRklTQ0FMX01PTlRIX0JBU0lTX0ZJWEVEX0RBWV9PRl9NT05USBACKt8BChFFeGNpc2VMaWNlbmNlS2luZBIjCh9FWENJU0VfTElDRU5DRV9LSU5EX1VOU1BFQ0lGSUVEEAASHwobRVhDSVNFX0xJQ0VOQ0VfS0lORF9TUElSSVRTEAESKAokRVhDSVNFX0xJQ0VOQ0VfS0lORF9FWENJU0VfV0FSRUhPVVNFEAISHQoZRVhDSVNFX0xJQ0VOQ0VfS0lORF9VU0VSUxADEhwKGEVYQ0lTRV9MSUNFTkNFX0tJTkRfV0lORRAEEh0KGUVYQ0lTRV9MSUNFTkNFX0tJTkRfT1RIRVIQBTLsBwoNVGVuYW50U2VydmljZRJsChNTZWN1cml0eVN1ZmZpY2llbmN5Eikuc3RpbGxob3VzZS52MS5TZWN1cml0eVN1ZmZpY2llbmN5UmVxdWVzdBoqLnN0aWxsaG91c2UudjEuU2VjdXJpdHlTdWZmaWNpZW5jeVJlc3BvbnNlEngKF1NldEJhdGNoUmVsZWFzZVJlcXVpcmVkEi0uc3RpbGxob3VzZS52MS5TZXRCYXRjaFJlbGVhc2VSZXF1aXJlZFJlcXVlc3QaLi5zdGlsbGhvdXNlLnYxLlNldEJhdGNoUmVsZWFzZVJlcXVpcmVkUmVzcG9uc2USaQoSTGlzdEV4Y2lzZUxpY2VuY2VzEiguc3RpbGxob3VzZS52MS5MaXN0RXhjaXNlTGljZW5jZXNSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5MaXN0RXhjaXNlTGljZW5jZXNSZXNwb25zZRJmChFTYXZlRXhjaXNlTGljZW5jZRInLnN0aWxsaG91c2UudjEuU2F2ZUV4Y2lzZUxpY2VuY2VSZXF1ZXN0Giguc3RpbGxob3VzZS52MS5TYXZlRXhjaXNlTGljZW5jZVJlc3BvbnNlEm8KFFVwZGF0ZUZpbGluZ0NhbGVuZGFyEiouc3RpbGxob3VzZS52MS5VcGRhdGVGaWxpbmdDYWxlbmRhclJlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLlVwZGF0ZUZpbGluZ0NhbGVuZGFyUmVzcG9uc2USVwoMQ3JlYXRlVGVuYW50EiIuc3RpbGxob3VzZS52MS5DcmVhdGVUZW5hbnRSZXF1ZXN0GiMuc3RpbGxob3VzZS52MS5DcmVhdGVUZW5hbnRSZXNwb25zZRJOCglHZXRUZW5hbnQSHy5zdGlsbGhvdXNlLnYxLkdldFRlbmFudFJlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLkdldFRlbmFudFJlc3BvbnNlElcKDFVwZGF0ZVRlbmFudBIiLnN0aWxsaG91c2UudjEuVXBkYXRlVGVuYW50UmVxdWVzdBojLnN0aWxsaG91c2UudjEuVXBkYXRlVGVuYW50UmVzcG9uc2USXQoORGVsZXRlTXlUZW5hbnQSJC5zdGlsbGhvdXNlLnYxLkRlbGV0ZU15VGVuYW50UmVxdWVzdBolLnN0aWxsaG91c2UudjEuRGVsZXRlTXlUZW5hbnRSZXNwb25zZRJOCglHcm91cFZpZXcSHy5zdGlsbGhvdXNlLnYxLkdyb3VwVmlld1JlcXVlc3QaIC5zdGlsbGhvdXNlLnYxLkdyb3VwVmlld1Jlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp]);
 
 /**
  * @generated from message stillhouse.v1.Tenant
@@ -743,6 +743,174 @@ export const SecuritySufficiencyResponseSchema: GenMessage<SecuritySufficiencyRe
   messageDesc(file_stillhouse_v1_tenant, 20);
 
 /**
+ * A group view: figures across every licence the caller holds an account
+ * at. PLAN H7.
+ *
+ * The constraint that shapes this: a B266 is filed PER LICENCE. Two
+ * distilleries under one owner file two returns, and a figure spanning
+ * both is not a line on either. So there is no combined return here and
+ * there never will be — the view is per-licence rows, side by side, each
+ * carrying its own licence number, and any total is labelled as spanning
+ * separate returns rather than being one.
+ *
+ * The second constraint is quieter and matters as much: what a person may
+ * see at each licence is what their account THERE may see. Holding an
+ * owner's account at one distillery does not make somebody an owner at
+ * another, and a group view that pooled the reads would be a way to read
+ * past a role.
+ *
+ * @generated from message stillhouse.v1.GroupEntity
+ */
+export type GroupEntity = Message<"stillhouse.v1.GroupEntity"> & {
+  /**
+   * @generated from field: string tenant_id = 1;
+   */
+  tenantId: string;
+
+  /**
+   * @generated from field: string tenant_name = 2;
+   */
+  tenantName: string;
+
+  /**
+   * The licence this entity files under. On every row, because it is what
+   * makes the rows separate returns rather than departments.
+   *
+   * @generated from field: string cra_spirits_licence_number = 3;
+   */
+  craSpiritsLicenceNumber: string;
+
+  /**
+   * The caller's role at THIS entity. Reads are performed as that role.
+   *
+   * @generated from field: string your_role = 4;
+   */
+  yourRole: string;
+
+  /**
+   * @generated from field: double bulk_laa = 5;
+   */
+  bulkLaa: number;
+
+  /**
+   * @generated from field: int32 packaged_bottles = 6;
+   */
+  packagedBottles: number;
+
+  /**
+   * @generated from field: int32 cask_count = 7;
+   */
+  caskCount: number;
+
+  /**
+   * Where this licence stands with its own return.
+   *
+   * @generated from field: string next_period_start = 8;
+   */
+  nextPeriodStart: string;
+
+  /**
+   * @generated from field: string next_period_end = 9;
+   */
+  nextPeriodEnd: string;
+
+  /**
+   * @generated from field: string next_due_on = 10;
+   */
+  nextDueOn: string;
+
+  /**
+   * @generated from field: int32 days_until_due = 11;
+   */
+  daysUntilDue: number;
+
+  /**
+   * @generated from field: bool period_generated = 12;
+   */
+  periodGenerated: boolean;
+
+  /**
+   * @generated from field: bool period_submitted = 13;
+   */
+  periodSubmitted: boolean;
+
+  /**
+   * Set when this entity's figures could not be read — usually because
+   * the caller's account there was removed between listing and reading.
+   *
+   * @generated from field: string unavailable = 14;
+   */
+  unavailable: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.GroupEntity.
+ * Use `create(GroupEntitySchema)` to create a new message.
+ */
+export const GroupEntitySchema: GenMessage<GroupEntity> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 21);
+
+/**
+ * @generated from message stillhouse.v1.GroupViewRequest
+ */
+export type GroupViewRequest = Message<"stillhouse.v1.GroupViewRequest"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.GroupViewRequest.
+ * Use `create(GroupViewRequestSchema)` to create a new message.
+ */
+export const GroupViewRequestSchema: GenMessage<GroupViewRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 22);
+
+/**
+ * @generated from message stillhouse.v1.GroupViewResponse
+ */
+export type GroupViewResponse = Message<"stillhouse.v1.GroupViewResponse"> & {
+  /**
+   * @generated from field: repeated stillhouse.v1.GroupEntity entities = 1;
+   */
+  entities: GroupEntity[];
+
+  /**
+   * Sums across the rows above, for operational planning only. Labelled
+   * rather than presented bare, because the whole risk of this screen is
+   * somebody reading one of these onto a return.
+   *
+   * @generated from field: double total_bulk_laa = 2;
+   */
+  totalBulkLaa: number;
+
+  /**
+   * @generated from field: int32 total_packaged_bottles = 3;
+   */
+  totalPackagedBottles: number;
+
+  /**
+   * Said on the response, not in the documentation.
+   *
+   * @generated from field: string caution = 4;
+   */
+  caution: string;
+
+  /**
+   * How many of the licences above have a return due within the week and
+   * nothing submitted. The one thing a group owner actually needs from a
+   * combined screen.
+   *
+   * @generated from field: int32 returns_due_soon = 5;
+   */
+  returnsDueSoon: number;
+};
+
+/**
+ * Describes the message stillhouse.v1.GroupViewResponse.
+ * Use `create(GroupViewResponseSchema)` to create a new message.
+ */
+export const GroupViewResponseSchema: GenMessage<GroupViewResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_tenant, 23);
+
+/**
  * DutyPoint is the event at which excise duty becomes payable.
  *
  * It is derived from whether the tenant holds an excise warehouse licence,
@@ -969,6 +1137,17 @@ export const TenantService: GenService<{
     methodKind: "unary";
     input: typeof DeleteMyTenantRequestSchema;
     output: typeof DeleteMyTenantResponseSchema;
+  },
+  /**
+   * Figures across every licence the caller holds an account at. Never a
+   * combined return — see GroupEntity.
+   *
+   * @generated from rpc stillhouse.v1.TenantService.GroupView
+   */
+  groupView: {
+    methodKind: "unary";
+    input: typeof GroupViewRequestSchema;
+    output: typeof GroupViewResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_tenant, 0);

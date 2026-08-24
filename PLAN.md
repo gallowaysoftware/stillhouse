@@ -264,10 +264,9 @@ password that is right at one distillery need not be right at another.
 What is left is the harder half of this item, and it is a different thing
 from switching:
 
-- **A group view.** Switching still shows one licensee at a time. A group
-  running two licences may want figures across both — which is a reporting
-  question with a real constraint attached, because a B266 is filed per
-  licence and a combined figure must never be mistakable for one.
+- ~~A group view~~ — shipped in stage 213. Rows per licence, never a
+  combined return, and each read performed as the account the caller
+  actually holds at that entity.
 - **Shared reference data** (materials, suppliers, products) across
   entities, which needs a home above the tenant that RLS can still reason
   about. Not obviously worth it for two tenants.

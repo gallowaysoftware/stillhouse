@@ -9,6 +9,27 @@ import (
 	"context"
 )
 
+const groupPackagedAndCasks = `-- name: GroupPackagedAndCasks :one
+SELECT COALESCE((SELECT SUM(bottles_on_hand) FROM packaged_inventory), 0)::int AS bottles,
+       COALESCE((SELECT COUNT(*) FROM bulk_containers
+                 WHERE kind = 'barrel' AND NOT archived AND current_laa > 0), 0)::int AS casks
+`
+
+type GroupPackagedAndCasksRow struct {
+	Bottles int32 `json:"bottles"`
+	Casks   int32 `json:"casks"`
+}
+
+// The two counts a group view shows beside bulk LAA. Scoped by RLS like
+// everything else, so it can only ever answer for the tenant whose
+// context is set.
+func (q *Queries) GroupPackagedAndCasks(ctx context.Context) (GroupPackagedAndCasksRow, error) {
+	row := q.db.QueryRow(ctx, groupPackagedAndCasks)
+	var i GroupPackagedAndCasksRow
+	err := row.Scan(&i.Bottles, &i.Casks)
+	return i, err
+}
+
 const setTenantContext = `-- name: SetTenantContext :exec
 SELECT set_config('app.current_tenant_id', $1, true)
 `
