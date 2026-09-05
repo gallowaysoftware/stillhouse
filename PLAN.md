@@ -469,6 +469,47 @@ J4 is done.
 
 ---
 
+## Track L — engineering
+
+The flow chart of the distillery, with a model behind each node. Design:
+[`docs/engineering.md`](docs/engineering.md). Kyle, 2026-09-05: "when I think
+of planning a distillery I think of it as a flow chart of inputs and outputs
+with connections to the various points in the process."
+
+### L2 · Run readings — P2
+
+`AddDistillationReading` on a run: time, distillate strength and
+temperature at the parrot, element or steam setting, pot temperature. On
+the run page and over MCP at the still, as fermentation readings are. The
+calibration data for L4; useful on its own as the run's log.
+
+### L3 · The run planner — P2
+
+`PlanRun` on a still: charge from a fermentation or typed, a heat setting,
+pot or column, the strengths to cut at; the curves and the envelope on the
+still's page and on the distillation page as planned against actual.
+Uncalibrated says so on the curve.
+
+### L4 · Calibration — P2
+
+`CalibrateStill` fits effective stages, losses and condenser adequacy from
+the still's logged runs; records the runs and the date; refuses when the fit
+does not converge and says why.
+
+### L5 · The chart — P2
+
+`/engineering`: nodes from equipment with engineering specs, edges as
+streams, positions saved. A batch pushed through shows every edge's figure;
+per week, throughput against capacity as counts.
+
+### L6 · The other nodes — P3
+
+Mash tun and fermenter on `internal/mashing` and `internal/fermenting`;
+barrels on `internal/maturation` with a readiness date and a predicted next
+regauge; reduction and bottling on `internal/alcoholometry`.
+
+---
+
 ## Track K — confidence
 
 Not features. The reasons to believe the numbers above are right.
