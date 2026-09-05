@@ -216,16 +216,18 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.BulkService/CreateBlend":                roleOperator,
 
 	// DistillationService
-	"/stillhouse.v1.DistillationService/CreateDistillationRun":    roleOperator,
-	"/stillhouse.v1.DistillationService/GetDistillationRun":       roleViewer,
-	"/stillhouse.v1.DistillationService/ListDistillationRuns":     roleViewer,
-	"/stillhouse.v1.DistillationService/UpdateDistillationStatus": roleOperator,
-	"/stillhouse.v1.DistillationService/AddDistillationCharge":    roleOperator,
-	"/stillhouse.v1.DistillationService/AddDistillationCut":       roleOperator,
-	"/stillhouse.v1.DistillationService/UpdateDistillationCut":    roleOperator,
-	"/stillhouse.v1.DistillationService/DeleteDistillationCut":    roleOperator,
-	"/stillhouse.v1.DistillationService/RecordProductionGauge":    roleOperator,
-	"/stillhouse.v1.DistillationService/VoidDistillationRun":      roleOperator,
+	"/stillhouse.v1.DistillationService/CreateDistillationRun":     roleOperator,
+	"/stillhouse.v1.DistillationService/GetDistillationRun":        roleViewer,
+	"/stillhouse.v1.DistillationService/ListDistillationRuns":      roleViewer,
+	"/stillhouse.v1.DistillationService/UpdateDistillationStatus":  roleOperator,
+	"/stillhouse.v1.DistillationService/AddDistillationCharge":     roleOperator,
+	"/stillhouse.v1.DistillationService/AddDistillationCut":        roleOperator,
+	"/stillhouse.v1.DistillationService/UpdateDistillationCut":     roleOperator,
+	"/stillhouse.v1.DistillationService/DeleteDistillationCut":     roleOperator,
+	"/stillhouse.v1.DistillationService/AddDistillationReading":    roleOperator,
+	"/stillhouse.v1.DistillationService/DeleteDistillationReading": roleOperator,
+	"/stillhouse.v1.DistillationService/RecordProductionGauge":     roleOperator,
+	"/stillhouse.v1.DistillationService/VoidDistillationRun":       roleOperator,
 
 	// ExciseStampService
 	"/stillhouse.v1.ExciseStampService/CreateStampOrder":  roleOperator,

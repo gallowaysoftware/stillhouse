@@ -25,6 +25,7 @@ func registerWriteTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addRegaugeBarrel(s, d, user)
 	addDumpBarrel(s, d, user)
 	addAddFermentationReading(s, d, user)
+	addAddDistillationReading(s, d, user)
 	addAddMashReading(s, d, user)
 	addSaveRecipeVersionSensory(s, d, user)
 	addSaveRecipeVersionWhiskySensory(s, d, user)
@@ -443,4 +444,51 @@ func workOrderStatusFromName(s string) (pb.WorkOrderStatus, error) {
 	}
 	return pb.WorkOrderStatus_WORK_ORDER_STATUS_UNSPECIFIED,
 		fmt.Errorf("%q is not a work-order status; use planned, in_progress, done or cancelled", s)
+}
+
+func addAddDistillationReading(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	// Pointer fields for the same reason as the fermentation reading: a
+	// literal 0 is a measurement, an absent field is one not taken.
+	type in struct {
+		DistillationRunID      string   `json:"distillation_run_id" jsonschema:"UUID of the distillation run in progress"`
+		DistillateAbvPct       *float64 `json:"distillate_abv_pct,omitempty" jsonschema:"strength at the parrot as read, percent (0-100), at whatever temperature the parrot is at — not corrected to 20 °C"`
+		DistillateTemperatureC *float64 `json:"distillate_temperature_c,omitempty" jsonschema:"temperature of the spirit at the parrot, °C"`
+		HeatSettingPct         *float64 `json:"heat_setting_pct,omitempty" jsonschema:"the element dial or jacket valve as a percentage of full (0-100)"`
+		PotTemperatureC        *float64 `json:"pot_temperature_c,omitempty" jsonschema:"pot thermometer, °C"`
+		VapourTemperatureC     *float64 `json:"vapour_temperature_c,omitempty" jsonschema:"vapour (head or neck) thermometer, °C"`
+		Notes                  string   `json:"notes,omitempty" jsonschema:"optional free-text notes — what the glass says, a cut taken"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name:        "add_distillation_reading",
+		Description: "Log a point-in-time reading during a distillation run: strength at the parrot as read, its temperature, the heat setting, pot and vapour temperatures, notes. Any field can be omitted if not measured; a literal 0 is a measurement. These readings are the run's log and what calibrates the still's planner.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.DistillationService/AddDistillationReading")
+		if err != nil {
+			return nil, nil, err
+		}
+		req := &pb.AddDistillationReadingRequest{
+			DistillationRunId: args.DistillationRunID,
+			Notes:             args.Notes,
+		}
+		if args.DistillateAbvPct != nil {
+			req.DistillateAbvPct, req.DistillateAbvPctSet = *args.DistillateAbvPct, true
+		}
+		if args.DistillateTemperatureC != nil {
+			req.DistillateTemperatureC, req.DistillateTemperatureCSet = *args.DistillateTemperatureC, true
+		}
+		if args.HeatSettingPct != nil {
+			req.HeatSettingPct, req.HeatSettingPctSet = *args.HeatSettingPct, true
+		}
+		if args.PotTemperatureC != nil {
+			req.PotTemperatureC, req.PotTemperatureCSet = *args.PotTemperatureC, true
+		}
+		if args.VapourTemperatureC != nil {
+			req.VapourTemperatureC, req.VapourTemperatureCSet = *args.VapourTemperatureC, true
+		}
+		resp, err := d.Distillation.AddDistillationReading(ctx, connect.NewRequest(req))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
 }

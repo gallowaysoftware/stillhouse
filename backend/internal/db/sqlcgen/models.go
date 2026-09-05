@@ -2922,6 +2922,19 @@ type DistillationCut struct {
 	Notes             string              `json:"notes"`
 }
 
+type DistillationReading struct {
+	ID                     uuid.UUID          `json:"id"`
+	TenantID               uuid.UUID          `json:"tenant_id"`
+	DistillationRunID      uuid.UUID          `json:"distillation_run_id"`
+	ObservedAt             pgtype.Timestamptz `json:"observed_at"`
+	DistillateAbvPct       pgtype.Float8      `json:"distillate_abv_pct"`
+	DistillateTemperatureC pgtype.Float8      `json:"distillate_temperature_c"`
+	HeatSettingPct         pgtype.Float8      `json:"heat_setting_pct"`
+	PotTemperatureC        pgtype.Float8      `json:"pot_temperature_c"`
+	VapourTemperatureC     pgtype.Float8      `json:"vapour_temperature_c"`
+	Notes                  string             `json:"notes"`
+}
+
 type DistillationRun struct {
 	ID           uuid.UUID          `json:"id"`
 	TenantID     uuid.UUID          `json:"tenant_id"`

@@ -39,6 +39,7 @@ type Deps struct {
 	Recipe        *rpc.RecipeService
 	Product       *rpc.ProductService
 	Fermentation  *rpc.FermentationService
+	Distillation  *rpc.DistillationService
 	Mash          *rpc.MashService
 	B266          *rpc.B266Service
 	WorkOrder     *rpc.WorkOrderService

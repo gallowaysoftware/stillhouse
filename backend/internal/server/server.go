@@ -230,6 +230,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		Recipe:        recipeSvc,
 		Product:       productSvc,
 		Fermentation:  fermentationSvc,
+		Distillation:  distillationSvc,
 		Mash:          mashSvc,
 		B266:          b266Svc,
 		WorkOrder:     workOrderSvc,

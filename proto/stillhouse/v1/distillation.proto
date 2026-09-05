@@ -42,6 +42,7 @@ message DistillationRun {
   ProductionGauge gauge = 12;       // unset until RecordProductionGauge runs
   double total_cut_laa = 13;        // computed sum from cuts
   CutAnalysis cut_analysis = 17;    // populated by GetDistillationRun
+  repeated DistillationReading readings = 18;  // populated by GetDistillationRun
 
   google.protobuf.Timestamp voided_at = 14;
   string voided_by = 15;
@@ -59,6 +60,32 @@ message DistillationCharge {
   double laa = 8;                  // computed in service
   int32  charge_order = 9;
   string notes = 10;
+}
+
+// A reading taken during a run: what the instruments at the still said at a
+// moment. Distillate strength is what the parrot's hydrometer read, at the
+// temperature it read it — uncorrected, because that is the number in front
+// of the operator; the temperature beside it is what lets it be corrected.
+// Heat setting is the element dial or the jacket valve as a percentage of
+// full. Any field not measured is left unset; a literal 0 is a measurement.
+//
+// These are the run's log, and the data a still is calibrated from
+// (docs/engineering.md).
+message DistillationReading {
+  string id = 1;
+  string distillation_run_id = 2;
+  google.protobuf.Timestamp observed_at = 3;
+  double distillate_abv_pct = 4;
+  bool   distillate_abv_pct_set = 5;
+  double distillate_temperature_c = 6;
+  bool   distillate_temperature_c_set = 7;
+  double heat_setting_pct = 8;
+  bool   heat_setting_pct_set = 9;
+  double pot_temperature_c = 10;
+  bool   pot_temperature_c_set = 11;
+  double vapour_temperature_c = 12;
+  bool   vapour_temperature_c_set = 13;
+  string notes = 14;
 }
 
 message DistillationCut {
@@ -177,6 +204,26 @@ message AddDistillationChargeRequest {
 }
 message AddDistillationChargeResponse { DistillationCharge charge = 1; }
 
+message AddDistillationReadingRequest {
+  string distillation_run_id = 1;
+  google.protobuf.Timestamp observed_at = 2;   // unset = now
+  double distillate_abv_pct = 3;
+  bool   distillate_abv_pct_set = 4;
+  double distillate_temperature_c = 5;
+  bool   distillate_temperature_c_set = 6;
+  double heat_setting_pct = 7;
+  bool   heat_setting_pct_set = 8;
+  double pot_temperature_c = 9;
+  bool   pot_temperature_c_set = 10;
+  double vapour_temperature_c = 11;
+  bool   vapour_temperature_c_set = 12;
+  string notes = 13;
+}
+message AddDistillationReadingResponse { DistillationReading reading = 1; }
+
+message DeleteDistillationReadingRequest { string id = 1; }
+message DeleteDistillationReadingResponse {}
+
 message AddDistillationCutRequest {
   string distillation_run_id = 1;
   DistillationCutKind kind = 2;
@@ -250,4 +297,6 @@ service DistillationService {
   rpc VoidDistillationRun(VoidDistillationRunRequest) returns (VoidDistillationRunResponse);
   rpc UpdateDistillationCut(UpdateDistillationCutRequest) returns (UpdateDistillationCutResponse);
   rpc DeleteDistillationCut(DeleteDistillationCutRequest) returns (DeleteDistillationCutResponse);
+  rpc AddDistillationReading(AddDistillationReadingRequest) returns (AddDistillationReadingResponse);
+  rpc DeleteDistillationReading(DeleteDistillationReadingRequest) returns (DeleteDistillationReadingResponse);
 }

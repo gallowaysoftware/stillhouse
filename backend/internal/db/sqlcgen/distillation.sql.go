@@ -102,6 +102,56 @@ func (q *Queries) AddDistillationCut(ctx context.Context, arg AddDistillationCut
 	return i, err
 }
 
+const addDistillationReading = `-- name: AddDistillationReading :one
+INSERT INTO distillation_readings (
+    tenant_id, distillation_run_id, observed_at,
+    distillate_abv_pct, distillate_temperature_c, heat_setting_pct,
+    pot_temperature_c, vapour_temperature_c, notes
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING id, tenant_id, distillation_run_id, observed_at, distillate_abv_pct, distillate_temperature_c, heat_setting_pct, pot_temperature_c, vapour_temperature_c, notes
+`
+
+type AddDistillationReadingParams struct {
+	TenantID               uuid.UUID          `json:"tenant_id"`
+	DistillationRunID      uuid.UUID          `json:"distillation_run_id"`
+	ObservedAt             pgtype.Timestamptz `json:"observed_at"`
+	DistillateAbvPct       pgtype.Float8      `json:"distillate_abv_pct"`
+	DistillateTemperatureC pgtype.Float8      `json:"distillate_temperature_c"`
+	HeatSettingPct         pgtype.Float8      `json:"heat_setting_pct"`
+	PotTemperatureC        pgtype.Float8      `json:"pot_temperature_c"`
+	VapourTemperatureC     pgtype.Float8      `json:"vapour_temperature_c"`
+	Notes                  string             `json:"notes"`
+}
+
+func (q *Queries) AddDistillationReading(ctx context.Context, arg AddDistillationReadingParams) (DistillationReading, error) {
+	row := q.db.QueryRow(ctx, addDistillationReading,
+		arg.TenantID,
+		arg.DistillationRunID,
+		arg.ObservedAt,
+		arg.DistillateAbvPct,
+		arg.DistillateTemperatureC,
+		arg.HeatSettingPct,
+		arg.PotTemperatureC,
+		arg.VapourTemperatureC,
+		arg.Notes,
+	)
+	var i DistillationReading
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.DistillationRunID,
+		&i.ObservedAt,
+		&i.DistillateAbvPct,
+		&i.DistillateTemperatureC,
+		&i.HeatSettingPct,
+		&i.PotTemperatureC,
+		&i.VapourTemperatureC,
+		&i.Notes,
+	)
+	return i, err
+}
+
 const createDistillationRun = `-- name: CreateDistillationRun :one
 INSERT INTO distillation_runs (
     tenant_id, run_no, still_label, run_date, status, notes
@@ -237,6 +287,15 @@ func (q *Queries) DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
 	return err
 }
 
+const deleteDistillationReading = `-- name: DeleteDistillationReading :exec
+DELETE FROM distillation_readings WHERE id = $1
+`
+
+func (q *Queries) DeleteDistillationReading(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteDistillationReading, id)
+	return err
+}
+
 const getDistillationCut = `-- name: GetDistillationCut :one
 SELECT id, tenant_id, distillation_run_id, kind, volume_l, abv_pct, laa, cut_order, observed_at, notes FROM distillation_cuts WHERE id = $1
 `
@@ -254,6 +313,28 @@ func (q *Queries) GetDistillationCut(ctx context.Context, id uuid.UUID) (Distill
 		&i.Laa,
 		&i.CutOrder,
 		&i.ObservedAt,
+		&i.Notes,
+	)
+	return i, err
+}
+
+const getDistillationReading = `-- name: GetDistillationReading :one
+SELECT id, tenant_id, distillation_run_id, observed_at, distillate_abv_pct, distillate_temperature_c, heat_setting_pct, pot_temperature_c, vapour_temperature_c, notes FROM distillation_readings WHERE id = $1
+`
+
+func (q *Queries) GetDistillationReading(ctx context.Context, id uuid.UUID) (DistillationReading, error) {
+	row := q.db.QueryRow(ctx, getDistillationReading, id)
+	var i DistillationReading
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.DistillationRunID,
+		&i.ObservedAt,
+		&i.DistillateAbvPct,
+		&i.DistillateTemperatureC,
+		&i.HeatSettingPct,
+		&i.PotTemperatureC,
+		&i.VapourTemperatureC,
 		&i.Notes,
 	)
 	return i, err
@@ -398,6 +479,43 @@ func (q *Queries) ListDistillationCuts(ctx context.Context, distillationRunID uu
 			&i.Laa,
 			&i.CutOrder,
 			&i.ObservedAt,
+			&i.Notes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listDistillationReadings = `-- name: ListDistillationReadings :many
+SELECT id, tenant_id, distillation_run_id, observed_at, distillate_abv_pct, distillate_temperature_c, heat_setting_pct, pot_temperature_c, vapour_temperature_c, notes FROM distillation_readings
+WHERE distillation_run_id = $1
+ORDER BY observed_at
+`
+
+func (q *Queries) ListDistillationReadings(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationReading, error) {
+	rows, err := q.db.Query(ctx, listDistillationReadings, distillationRunID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []DistillationReading{}
+	for rows.Next() {
+		var i DistillationReading
+		if err := rows.Scan(
+			&i.ID,
+			&i.TenantID,
+			&i.DistillationRunID,
+			&i.ObservedAt,
+			&i.DistillateAbvPct,
+			&i.DistillateTemperatureC,
+			&i.HeatSettingPct,
+			&i.PotTemperatureC,
+			&i.VapourTemperatureC,
 			&i.Notes,
 		); err != nil {
 			return nil, err

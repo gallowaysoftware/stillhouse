@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -87,6 +88,7 @@ func (s *DistillationService) GetDistillationRun(
 		r                sqlcgen.DistillationRun
 		charges          []sqlcgen.ListDistillationChargesRow
 		cuts             []sqlcgen.DistillationCut
+		readings         []sqlcgen.DistillationReading
 		gauge            *sqlcgen.ProductionGauge
 		destName         string
 		gaugeInstruments *stillhousev1.DeterminationInstruments
@@ -102,6 +104,10 @@ func (s *DistillationService) GetDistillationRun(
 			return e
 		}
 		cuts, e = q.ListDistillationCuts(ctx, id)
+		if e != nil {
+			return e
+		}
+		readings, e = q.ListDistillationReadings(ctx, id)
 		if e != nil {
 			return e
 		}
@@ -132,9 +138,11 @@ func (s *DistillationService) GetDistillationRun(
 		gaugeProto = productionGaugeToProto(*gauge, destName)
 		gaugeProto.Instruments = gaugeInstruments
 	}
-	return connect.NewResponse(&stillhousev1.GetDistillationRunResponse{
-		Run: distillationRunToProto(r, charges, cuts, gaugeProto),
-	}), nil
+	run := distillationRunToProto(r, charges, cuts, gaugeProto)
+	for _, rd := range readings {
+		run.Readings = append(run.Readings, distillationReadingToProto(rd))
+	}
+	return connect.NewResponse(&stillhousev1.GetDistillationRunResponse{Run: run}), nil
 }
 
 func (s *DistillationService) ListDistillationRuns(
@@ -952,4 +960,133 @@ func distillationCutKindToProto(k sqlcgen.DistillationCutKind) stillhousev1.Dist
 		return stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_FEINTS_SAVED
 	}
 	return stillhousev1.DistillationCutKind_DISTILLATION_CUT_KIND_UNSPECIFIED
+}
+
+// AddDistillationReading logs what the instruments at the still said at a
+// moment: the run's log, and the data a still is calibrated from.
+func (s *DistillationService) AddDistillationReading(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.AddDistillationReadingRequest],
+) (*connect.Response[stillhousev1.AddDistillationReadingResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	runID, err := uuid.Parse(req.Msg.GetDistillationRunId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid distillation_run_id"))
+	}
+	in := req.Msg
+	if !in.GetDistillateAbvPctSet() && !in.GetDistillateTemperatureCSet() && !in.GetHeatSettingPctSet() &&
+		!in.GetPotTemperatureCSet() && !in.GetVapourTemperatureCSet() && strings.TrimSpace(in.GetNotes()) == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument,
+			errors.New("a reading records something: a strength, a temperature, a heat setting, or a note"))
+	}
+	if in.GetDistillateAbvPctSet() && (in.GetDistillateAbvPct() < 0 || in.GetDistillateAbvPct() > 100) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("distillate strength is a percentage, 0 to 100"))
+	}
+	if in.GetHeatSettingPctSet() && (in.GetHeatSettingPct() < 0 || in.GetHeatSettingPct() > 100) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("the heat setting is a percentage of full, 0 to 100"))
+	}
+	observed := timestampOrNow(in.GetObservedAt())
+
+	var inserted sqlcgen.DistillationReading
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		var e error
+		inserted, e = q.AddDistillationReading(ctx, sqlcgen.AddDistillationReadingParams{
+			TenantID:               u.TenantID,
+			DistillationRunID:      runID,
+			ObservedAt:             observed,
+			DistillateAbvPct:       optionalFloat(in.GetDistillateAbvPctSet(), in.GetDistillateAbvPct()),
+			DistillateTemperatureC: optionalFloat(in.GetDistillateTemperatureCSet(), in.GetDistillateTemperatureC()),
+			HeatSettingPct:         optionalFloat(in.GetHeatSettingPctSet(), in.GetHeatSettingPct()),
+			PotTemperatureC:        optionalFloat(in.GetPotTemperatureCSet(), in.GetPotTemperatureC()),
+			VapourTemperatureC:     optionalFloat(in.GetVapourTemperatureCSet(), in.GetVapourTemperatureC()),
+			Notes:                  in.GetNotes(),
+		})
+		if e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_reading", inserted.ID.String(),
+			sqlcgen.AuditActionCreate, map[string]any{
+				"distillation_run_id":      runID.String(),
+				"distillate_abv_pct":       in.GetDistillateAbvPct(),
+				"distillate_temperature_c": in.GetDistillateTemperatureC(),
+				"heat_setting_pct":         in.GetHeatSettingPct(),
+				"pot_temperature_c":        in.GetPotTemperatureC(),
+				"vapour_temperature_c":     in.GetVapourTemperatureC(),
+			})
+	})
+	if err != nil {
+		if ce := classifyWriteErr(err, "distillation run not found"); ce != nil {
+			return nil, ce
+		}
+		s.logger.Error("AddDistillationReading", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.AddDistillationReadingResponse{Reading: distillationReadingToProto(inserted)}), nil
+}
+
+func (s *DistillationService) DeleteDistillationReading(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteDistillationReadingRequest],
+) (*connect.Response[stillhousev1.DeleteDistillationReadingResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		// Load before delete so the audit payload has the values that vanished.
+		rd, e := q.GetDistillationReading(ctx, id)
+		if e != nil {
+			return e
+		}
+		if e := q.DeleteDistillationReading(ctx, id); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_reading", id.String(),
+			sqlcgen.AuditActionDelete, map[string]any{
+				"distillation_run_id": rd.DistillationRunID.String(),
+				"observed_at":         rd.ObservedAt.Time,
+				"distillate_abv_pct":  rd.DistillateAbvPct.Float64,
+				"heat_setting_pct":    rd.HeatSettingPct.Float64,
+			})
+	})
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("reading not found"))
+		}
+		s.logger.Error("DeleteDistillationReading", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DeleteDistillationReadingResponse{}), nil
+}
+
+func distillationReadingToProto(r sqlcgen.DistillationReading) *stillhousev1.DistillationReading {
+	out := &stillhousev1.DistillationReading{
+		Id:                r.ID.String(),
+		DistillationRunId: r.DistillationRunID.String(),
+		ObservedAt:        timestamppb.New(r.ObservedAt.Time),
+		Notes:             r.Notes,
+	}
+	if r.DistillateAbvPct.Valid {
+		out.DistillateAbvPct, out.DistillateAbvPctSet = r.DistillateAbvPct.Float64, true
+	}
+	if r.DistillateTemperatureC.Valid {
+		out.DistillateTemperatureC, out.DistillateTemperatureCSet = r.DistillateTemperatureC.Float64, true
+	}
+	if r.HeatSettingPct.Valid {
+		out.HeatSettingPct, out.HeatSettingPctSet = r.HeatSettingPct.Float64, true
+	}
+	if r.PotTemperatureC.Valid {
+		out.PotTemperatureC, out.PotTemperatureCSet = r.PotTemperatureC.Float64, true
+	}
+	if r.VapourTemperatureC.Valid {
+		out.VapourTemperatureC, out.VapourTemperatureCSet = r.VapourTemperatureC.Float64, true
+	}
+	return out
 }

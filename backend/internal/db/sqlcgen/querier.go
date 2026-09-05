@@ -28,6 +28,7 @@ type Querier interface {
 	AcknowledgeAlert(ctx context.Context, arg AcknowledgeAlertParams) (Alert, error)
 	AddDistillationCharge(ctx context.Context, arg AddDistillationChargeParams) (DistillationCharge, error)
 	AddDistillationCut(ctx context.Context, arg AddDistillationCutParams) (DistillationCut, error)
+	AddDistillationReading(ctx context.Context, arg AddDistillationReadingParams) (DistillationReading, error)
 	AddFermentationLog(ctx context.Context, arg AddFermentationLogParams) (FermentationLog, error)
 	AddInvoiceLine(ctx context.Context, arg AddInvoiceLineParams) (InvoiceLine, error)
 	AddMashIngredient(ctx context.Context, arg AddMashIngredientParams) (MashIngredientUsage, error)
@@ -288,6 +289,7 @@ type Querier interface {
 	DeleteCostRates(ctx context.Context, id uuid.UUID) error
 	DeleteDemandForecast(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
+	DeleteDistillationReading(ctx context.Context, id uuid.UUID) error
 	DeleteEquipment(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLine(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLines(ctx context.Context, invoiceID uuid.UUID) error
@@ -421,6 +423,7 @@ type Querier interface {
 	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	GetDefaultLocation(ctx context.Context) (Location, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
+	GetDistillationReading(ctx context.Context, id uuid.UUID) (DistillationReading, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetEquipment(ctx context.Context, id uuid.UUID) (GetEquipmentRow, error)
 	GetExciseLicence(ctx context.Context, id uuid.UUID) (ExciseLicence, error)
@@ -620,6 +623,7 @@ type Querier interface {
 	ListDemandForecastsForPeriod(ctx context.Context, arg ListDemandForecastsForPeriodParams) ([]ListDemandForecastsForPeriodRow, error)
 	ListDistillationCharges(ctx context.Context, distillationRunID uuid.UUID) ([]ListDistillationChargesRow, error)
 	ListDistillationCuts(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationCut, error)
+	ListDistillationReadings(ctx context.Context, distillationRunID uuid.UUID) ([]DistillationReading, error)
 	ListDistillationRuns(ctx context.Context, status NullDistillationStatus) ([]DistillationRun, error)
 	// Each dutiable loss with the day it happened, so it can be charged at the
 	// rate in force then rather than at the period's. A semi-annual period

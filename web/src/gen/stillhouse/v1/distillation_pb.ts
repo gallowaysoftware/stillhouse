@@ -18,7 +18,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file stillhouse/v1/distillation.proto.
  */
 export const file_stillhouse_v1_distillation: GenFile = /*@__PURE__*/
-  fileDesc("CiBzdGlsbGhvdXNlL3YxL2Rpc3RpbGxhdGlvbi5wcm90bxINc3RpbGxob3VzZS52MSK8BAoPRGlzdGlsbGF0aW9uUnVuEgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIOCgZydW5fbm8YAyABKAUSEwoLc3RpbGxfbGFiZWwYBCABKAkSEAoIcnVuX2RhdGUYBSABKAkSMQoGc3RhdHVzGAYgASgOMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25TdGF0dXMSDQoFbm90ZXMYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASMgoHY2hhcmdlcxgKIAMoCzIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uQ2hhcmdlEiwKBGN1dHMYCyADKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvbkN1dBItCgVnYXVnZRgMIAEoCzIeLnN0aWxsaG91c2UudjEuUHJvZHVjdGlvbkdhdWdlEhUKDXRvdGFsX2N1dF9sYWEYDSABKAESMAoMY3V0X2FuYWx5c2lzGBEgASgLMhouc3RpbGxob3VzZS52MS5DdXRBbmFseXNpcxItCgl2b2lkZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCXZvaWRlZF9ieRgPIAEoCRIVCg12b2lkZWRfcmVhc29uGBAgASgJIuEBChJEaXN0aWxsYXRpb25DaGFyZ2USCgoCaWQYASABKAkSGwoTZGlzdGlsbGF0aW9uX3J1bl9pZBgCIAEoCRIbChNmZXJtZW50YXRpb25fcnVuX2lkGAMgASgJEhcKD2Zlcm1lbnRlcl9sYWJlbBgEIAEoCRIPCgdtYXNoX25vGAUgASgFEhgKEHZvbHVtZV9jaGFyZ2VkX2wYBiABKAESDwoHYWJ2X3BjdBgHIAEoARILCgNsYWEYCCABKAESFAoMY2hhcmdlX29yZGVyGAkgASgFEg0KBW5vdGVzGAogASgJIu8BCg9EaXN0aWxsYXRpb25DdXQSCgoCaWQYASABKAkSGwoTZGlzdGlsbGF0aW9uX3J1bl9pZBgCIAEoCRIwCgRraW5kGAMgASgOMiIuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25DdXRLaW5kEhAKCHZvbHVtZV9sGAQgASgBEg8KB2Fidl9wY3QYBSABKAESCwoDbGFhGAYgASgBEhEKCWN1dF9vcmRlchgHIAEoBRIvCgtvYnNlcnZlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYCSABKAkibgoKQ3V0RmluZGluZxIzCghzZXZlcml0eRgBIAEoDjIhLnN0aWxsaG91c2UudjEuQ3V0RmluZGluZ1NldmVyaXR5EgwKBGNvZGUYAiABKAkSDQoFdGl0bGUYAyABKAkSDgoGZGV0YWlsGAQgASgJIuoBCgtDdXRBbmFseXNpcxISCgpjaGFyZ2VfbGFhGAEgASgBEg8KB2N1dF9sYWEYAiABKAESFQoNYWNjb3VudGVkX3BjdBgDIAEoARISCgpoZWFydHNfbGFhGAQgASgBEhgKEGhlYXJ0c19zaGFyZV9wY3QYBSABKAESGAoQaGVhcnRzX3N0YXJ0X2FidhgGIAEoARIWCg5oZWFydHNfZW5kX2FidhgHIAEoARISCgpoZWFydHNfc2V0GAggASgIEisKCGZpbmRpbmdzGAkgAygLMhkuc3RpbGxob3VzZS52MS5DdXRGaW5kaW5nIsEECg9Qcm9kdWN0aW9uR2F1Z2USCgoCaWQYASABKAkSGwoTZGlzdGlsbGF0aW9uX3J1bl9pZBgCIAEoCRIgChhkZXN0aW5hdGlvbl9jb250YWluZXJfaWQYAyABKAkSIgoaZGVzdGluYXRpb25fY29udGFpbmVyX25hbWUYBCABKAkSGAoQYnVsa19tb3ZlbWVudF9pZBgFIAEoCRIuCgpnYXVnZV9kYXRlGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIQCgh2b2x1bWVfbBgHIAEoARIPCgdhYnZfcGN0GAggASgBEhUKDXRlbXBlcmF0dXJlX2MYCSABKAESGQoRdGVtcGVyYXR1cmVfY19zZXQYCiABKAgSCwoDbGFhGAsgASgBEhYKDmdhdWdlcl91c2VyX2lkGAwgASgJEg0KBW5vdGVzGA0gASgJEhkKEW9ic2VydmVkX3ZvbHVtZV9sGA4gASgBEh4KFm9ic2VydmVkX2RlbnNpdHlfa2dfbTMYDyABKAESIgoab2JzZXJ2ZWRfZGVuc2l0eV9rZ19tM19zZXQYECABKAgSFwoPdm9sdW1lX2ZhY3Rvcl9jGBEgASgBEjYKD3N0cmVuZ3RoX3NvdXJjZRgSIAEoDjIdLnN0aWxsaG91c2UudjEuU3RyZW5ndGhTb3VyY2USPAoLaW5zdHJ1bWVudHMYEyABKAsyJy5zdGlsbGhvdXNlLnYxLkRldGVybWluYXRpb25JbnN0cnVtZW50cyJUChxDcmVhdGVEaXN0aWxsYXRpb25SdW5SZXF1ZXN0EhMKC3N0aWxsX2xhYmVsGAEgASgJEhAKCHJ1bl9kYXRlGAIgASgJEg0KBW5vdGVzGAMgASgJIkwKHUNyZWF0ZURpc3RpbGxhdGlvblJ1blJlc3BvbnNlEisKA3J1bhgBIAEoCzIeLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uUnVuIicKGUdldERpc3RpbGxhdGlvblJ1blJlcXVlc3QSCgoCaWQYASABKAkiSQoaR2V0RGlzdGlsbGF0aW9uUnVuUmVzcG9uc2USKwoDcnVuGAEgASgLMh4uc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25SdW4iUAobTGlzdERpc3RpbGxhdGlvblJ1bnNSZXF1ZXN0EjEKBnN0YXR1cxgBIAEoDjIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uU3RhdHVzIkwKHExpc3REaXN0aWxsYXRpb25SdW5zUmVzcG9uc2USLAoEcnVucxgBIAMoCzIeLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uUnVuImAKH1VwZGF0ZURpc3RpbGxhdGlvblN0YXR1c1JlcXVlc3QSCgoCaWQYASABKAkSMQoGc3RhdHVzGAIgASgOMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25TdGF0dXMiTwogVXBkYXRlRGlzdGlsbGF0aW9uU3RhdHVzUmVzcG9uc2USKwoDcnVuGAEgASgLMh4uc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25SdW4iqAEKHEFkZERpc3RpbGxhdGlvbkNoYXJnZVJlcXVlc3QSGwoTZGlzdGlsbGF0aW9uX3J1bl9pZBgBIAEoCRIbChNmZXJtZW50YXRpb25fcnVuX2lkGAIgASgJEhgKEHZvbHVtZV9jaGFyZ2VkX2wYAyABKAESDwoHYWJ2X3BjdBgEIAEoARIUCgxjaGFyZ2Vfb3JkZXIYBSABKAUSDQoFbm90ZXMYBiABKAkiUgodQWRkRGlzdGlsbGF0aW9uQ2hhcmdlUmVzcG9uc2USMQoGY2hhcmdlGAEgASgLMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25DaGFyZ2Ui4AEKGUFkZERpc3RpbGxhdGlvbkN1dFJlcXVlc3QSGwoTZGlzdGlsbGF0aW9uX3J1bl9pZBgBIAEoCRIwCgRraW5kGAIgASgOMiIuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25DdXRLaW5kEhAKCHZvbHVtZV9sGAMgASgBEg8KB2Fidl9wY3QYBCABKAESEQoJY3V0X29yZGVyGAUgASgFEi8KC29ic2VydmVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgHIAEoCSJJChpBZGREaXN0aWxsYXRpb25DdXRSZXNwb25zZRIrCgNjdXQYASABKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvbkN1dCLSAQocVXBkYXRlRGlzdGlsbGF0aW9uQ3V0UmVxdWVzdBIKCgJpZBgBIAEoCRIwCgRraW5kGAIgASgOMiIuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25DdXRLaW5kEhAKCHZvbHVtZV9sGAMgASgBEg8KB2Fidl9wY3QYBCABKAESEQoJY3V0X29yZGVyGAUgASgFEi8KC29ic2VydmVkX2F0GAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVub3RlcxgHIAEoCSJMCh1VcGRhdGVEaXN0aWxsYXRpb25DdXRSZXNwb25zZRIrCgNjdXQYASABKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvbkN1dCIqChxEZWxldGVEaXN0aWxsYXRpb25DdXRSZXF1ZXN0EgoKAmlkGAEgASgJIh8KHURlbGV0ZURpc3RpbGxhdGlvbkN1dFJlc3BvbnNlItcCChxSZWNvcmRQcm9kdWN0aW9uR2F1Z2VSZXF1ZXN0EhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYASABKAkSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAIgASgJEi4KCmdhdWdlX2RhdGUYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhAKCHZvbHVtZV9sGAQgASgBEg8KB2Fidl9wY3QYBSABKAESFQoNdGVtcGVyYXR1cmVfYxgGIAEoARIZChF0ZW1wZXJhdHVyZV9jX3NldBgHIAEoCBINCgVub3RlcxgIIAEoCRIVCg1kZW5zaXR5X2tnX20zGAkgASgBEhkKEWRlbnNpdHlfa2dfbTNfc2V0GAogASgIEjIKC2luc3RydW1lbnRzGAsgASgLMh0uc3RpbGxob3VzZS52MS5JbnN0cnVtZW50UmVmcyKdAQodUmVjb3JkUHJvZHVjdGlvbkdhdWdlUmVzcG9uc2USLQoFZ2F1Z2UYASABKAsyHi5zdGlsbGhvdXNlLnYxLlByb2R1Y3Rpb25HYXVnZRI7ChVkZXN0aW5hdGlvbl9jb250YWluZXIYAiABKAsyHC5zdGlsbGhvdXNlLnYxLkJ1bGtDb250YWluZXISEAoId2FybmluZ3MYAyADKAkiOAoaVm9pZERpc3RpbGxhdGlvblJ1blJlcXVlc3QSCgoCaWQYASABKAkSDgoGcmVhc29uGAIgASgJIkoKG1ZvaWREaXN0aWxsYXRpb25SdW5SZXNwb25zZRIrCgNydW4YASABKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvblJ1birjAQoSRGlzdGlsbGF0aW9uU3RhdHVzEiMKH0RJU1RJTExBVElPTl9TVEFUVVNfVU5TUEVDSUZJRUQQABIfChtESVNUSUxMQVRJT05fU1RBVFVTX1BMQU5ORUQQARIgChxESVNUSUxMQVRJT05fU1RBVFVTX0NIQVJHSU5HEAISIgoeRElTVElMTEFUSU9OX1NUQVRVU19ESVNUSUxMSU5HEAMSHgoaRElTVElMTEFUSU9OX1NUQVRVU19HQVVHRUQQBBIhCh1ESVNUSUxMQVRJT05fU1RBVFVTX0NBTkNFTExFRBAFKu0BChNEaXN0aWxsYXRpb25DdXRLaW5kEiUKIURJU1RJTExBVElPTl9DVVRfS0lORF9VTlNQRUNJRklFRBAAEiMKH0RJU1RJTExBVElPTl9DVVRfS0lORF9GT1JFU0hPVFMQARIfChtESVNUSUxMQVRJT05fQ1VUX0tJTkRfSEVBRFMQAhIgChxESVNUSUxMQVRJT05fQ1VUX0tJTkRfSEVBUlRTEAMSHwobRElTVElMTEFUSU9OX0NVVF9LSU5EX1RBSUxTEAQSJgoiRElTVElMTEFUSU9OX0NVVF9LSU5EX0ZFSU5UU19TQVZFRBAFKp0BChJDdXRGaW5kaW5nU2V2ZXJpdHkSJAogQ1VUX0ZJTkRJTkdfU0VWRVJJVFlfVU5TUEVDSUZJRUQQABIdChlDVVRfRklORElOR19TRVZFUklUWV9JTkZPEAESIAocQ1VUX0ZJTkRJTkdfU0VWRVJJVFlfV0FSTklORxACEiAKHENVVF9GSU5ESU5HX1NFVkVSSVRZX1BST0JMRU0QAzKLCQoTRGlzdGlsbGF0aW9uU2VydmljZRJyChVDcmVhdGVEaXN0aWxsYXRpb25SdW4SKy5zdGlsbGhvdXNlLnYxLkNyZWF0ZURpc3RpbGxhdGlvblJ1blJlcXVlc3QaLC5zdGlsbGhvdXNlLnYxLkNyZWF0ZURpc3RpbGxhdGlvblJ1blJlc3BvbnNlEmkKEkdldERpc3RpbGxhdGlvblJ1bhIoLnN0aWxsaG91c2UudjEuR2V0RGlzdGlsbGF0aW9uUnVuUmVxdWVzdBopLnN0aWxsaG91c2UudjEuR2V0RGlzdGlsbGF0aW9uUnVuUmVzcG9uc2USbwoUTGlzdERpc3RpbGxhdGlvblJ1bnMSKi5zdGlsbGhvdXNlLnYxLkxpc3REaXN0aWxsYXRpb25SdW5zUmVxdWVzdBorLnN0aWxsaG91c2UudjEuTGlzdERpc3RpbGxhdGlvblJ1bnNSZXNwb25zZRJ7ChhVcGRhdGVEaXN0aWxsYXRpb25TdGF0dXMSLi5zdGlsbGhvdXNlLnYxLlVwZGF0ZURpc3RpbGxhdGlvblN0YXR1c1JlcXVlc3QaLy5zdGlsbGhvdXNlLnYxLlVwZGF0ZURpc3RpbGxhdGlvblN0YXR1c1Jlc3BvbnNlEnIKFUFkZERpc3RpbGxhdGlvbkNoYXJnZRIrLnN0aWxsaG91c2UudjEuQWRkRGlzdGlsbGF0aW9uQ2hhcmdlUmVxdWVzdBosLnN0aWxsaG91c2UudjEuQWRkRGlzdGlsbGF0aW9uQ2hhcmdlUmVzcG9uc2USaQoSQWRkRGlzdGlsbGF0aW9uQ3V0Eiguc3RpbGxob3VzZS52MS5BZGREaXN0aWxsYXRpb25DdXRSZXF1ZXN0Gikuc3RpbGxob3VzZS52MS5BZGREaXN0aWxsYXRpb25DdXRSZXNwb25zZRJyChVSZWNvcmRQcm9kdWN0aW9uR2F1Z2USKy5zdGlsbGhvdXNlLnYxLlJlY29yZFByb2R1Y3Rpb25HYXVnZVJlcXVlc3QaLC5zdGlsbGhvdXNlLnYxLlJlY29yZFByb2R1Y3Rpb25HYXVnZVJlc3BvbnNlEmwKE1ZvaWREaXN0aWxsYXRpb25SdW4SKS5zdGlsbGhvdXNlLnYxLlZvaWREaXN0aWxsYXRpb25SdW5SZXF1ZXN0Giouc3RpbGxob3VzZS52MS5Wb2lkRGlzdGlsbGF0aW9uUnVuUmVzcG9uc2UScgoVVXBkYXRlRGlzdGlsbGF0aW9uQ3V0Eisuc3RpbGxob3VzZS52MS5VcGRhdGVEaXN0aWxsYXRpb25DdXRSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5VcGRhdGVEaXN0aWxsYXRpb25DdXRSZXNwb25zZRJyChVEZWxldGVEaXN0aWxsYXRpb25DdXQSKy5zdGlsbGhvdXNlLnYxLkRlbGV0ZURpc3RpbGxhdGlvbkN1dFJlcXVlc3QaLC5zdGlsbGhvdXNlLnYxLkRlbGV0ZURpc3RpbGxhdGlvbkN1dFJlc3BvbnNlYgZwcm90bzM", [file_google_protobuf_timestamp, file_stillhouse_v1_instrument, file_stillhouse_v1_alcoholometry, file_stillhouse_v1_bulk]);
+  fileDesc("CiBzdGlsbGhvdXNlL3YxL2Rpc3RpbGxhdGlvbi5wcm90bxINc3RpbGxob3VzZS52MSLyBAoPRGlzdGlsbGF0aW9uUnVuEgoKAmlkGAEgASgJEhEKCXRlbmFudF9pZBgCIAEoCRIOCgZydW5fbm8YAyABKAUSEwoLc3RpbGxfbGFiZWwYBCABKAkSEAoIcnVuX2RhdGUYBSABKAkSMQoGc3RhdHVzGAYgASgOMiEuc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25TdGF0dXMSDQoFbm90ZXMYByABKAkSLgoKY3JlYXRlZF9hdBgIIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASMgoHY2hhcmdlcxgKIAMoCzIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uQ2hhcmdlEiwKBGN1dHMYCyADKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvbkN1dBItCgVnYXVnZRgMIAEoCzIeLnN0aWxsaG91c2UudjEuUHJvZHVjdGlvbkdhdWdlEhUKDXRvdGFsX2N1dF9sYWEYDSABKAESMAoMY3V0X2FuYWx5c2lzGBEgASgLMhouc3RpbGxob3VzZS52MS5DdXRBbmFseXNpcxI0CghyZWFkaW5ncxgSIAMoCzIiLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uUmVhZGluZxItCgl2b2lkZWRfYXQYDiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhEKCXZvaWRlZF9ieRgPIAEoCRIVCg12b2lkZWRfcmVhc29uGBAgASgJIuEBChJEaXN0aWxsYXRpb25DaGFyZ2USCgoCaWQYASABKAkSGwoTZGlzdGlsbGF0aW9uX3J1bl9pZBgCIAEoCRIbChNmZXJtZW50YXRpb25fcnVuX2lkGAMgASgJEhcKD2Zlcm1lbnRlcl9sYWJlbBgEIAEoCRIPCgdtYXNoX25vGAUgASgFEhgKEHZvbHVtZV9jaGFyZ2VkX2wYBiABKAESDwoHYWJ2X3BjdBgHIAEoARILCgNsYWEYCCABKAESFAoMY2hhcmdlX29yZGVyGAkgASgFEg0KBW5vdGVzGAogASgJIrQDChNEaXN0aWxsYXRpb25SZWFkaW5nEgoKAmlkGAEgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYAiABKAkSLwoLb2JzZXJ2ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEhoKEmRpc3RpbGxhdGVfYWJ2X3BjdBgEIAEoARIeChZkaXN0aWxsYXRlX2Fidl9wY3Rfc2V0GAUgASgIEiAKGGRpc3RpbGxhdGVfdGVtcGVyYXR1cmVfYxgGIAEoARIkChxkaXN0aWxsYXRlX3RlbXBlcmF0dXJlX2Nfc2V0GAcgASgIEhgKEGhlYXRfc2V0dGluZ19wY3QYCCABKAESHAoUaGVhdF9zZXR0aW5nX3BjdF9zZXQYCSABKAgSGQoRcG90X3RlbXBlcmF0dXJlX2MYCiABKAESHQoVcG90X3RlbXBlcmF0dXJlX2Nfc2V0GAsgASgIEhwKFHZhcG91cl90ZW1wZXJhdHVyZV9jGAwgASgBEiAKGHZhcG91cl90ZW1wZXJhdHVyZV9jX3NldBgNIAEoCBINCgVub3RlcxgOIAEoCSLvAQoPRGlzdGlsbGF0aW9uQ3V0EgoKAmlkGAEgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYAiABKAkSMAoEa2luZBgDIAEoDjIiLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uQ3V0S2luZBIQCgh2b2x1bWVfbBgEIAEoARIPCgdhYnZfcGN0GAUgASgBEgsKA2xhYRgGIAEoARIRCgljdXRfb3JkZXIYByABKAUSLwoLb2JzZXJ2ZWRfYXQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEg0KBW5vdGVzGAkgASgJIm4KCkN1dEZpbmRpbmcSMwoIc2V2ZXJpdHkYASABKA4yIS5zdGlsbGhvdXNlLnYxLkN1dEZpbmRpbmdTZXZlcml0eRIMCgRjb2RlGAIgASgJEg0KBXRpdGxlGAMgASgJEg4KBmRldGFpbBgEIAEoCSLqAQoLQ3V0QW5hbHlzaXMSEgoKY2hhcmdlX2xhYRgBIAEoARIPCgdjdXRfbGFhGAIgASgBEhUKDWFjY291bnRlZF9wY3QYAyABKAESEgoKaGVhcnRzX2xhYRgEIAEoARIYChBoZWFydHNfc2hhcmVfcGN0GAUgASgBEhgKEGhlYXJ0c19zdGFydF9hYnYYBiABKAESFgoOaGVhcnRzX2VuZF9hYnYYByABKAESEgoKaGVhcnRzX3NldBgIIAEoCBIrCghmaW5kaW5ncxgJIAMoCzIZLnN0aWxsaG91c2UudjEuQ3V0RmluZGluZyLBBAoPUHJvZHVjdGlvbkdhdWdlEgoKAmlkGAEgASgJEhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYAiABKAkSIAoYZGVzdGluYXRpb25fY29udGFpbmVyX2lkGAMgASgJEiIKGmRlc3RpbmF0aW9uX2NvbnRhaW5lcl9uYW1lGAQgASgJEhgKEGJ1bGtfbW92ZW1lbnRfaWQYBSABKAkSLgoKZ2F1Z2VfZGF0ZRgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASEAoIdm9sdW1lX2wYByABKAESDwoHYWJ2X3BjdBgIIAEoARIVCg10ZW1wZXJhdHVyZV9jGAkgASgBEhkKEXRlbXBlcmF0dXJlX2Nfc2V0GAogASgIEgsKA2xhYRgLIAEoARIWCg5nYXVnZXJfdXNlcl9pZBgMIAEoCRINCgVub3RlcxgNIAEoCRIZChFvYnNlcnZlZF92b2x1bWVfbBgOIAEoARIeChZvYnNlcnZlZF9kZW5zaXR5X2tnX20zGA8gASgBEiIKGm9ic2VydmVkX2RlbnNpdHlfa2dfbTNfc2V0GBAgASgIEhcKD3ZvbHVtZV9mYWN0b3JfYxgRIAEoARI2Cg9zdHJlbmd0aF9zb3VyY2UYEiABKA4yHS5zdGlsbGhvdXNlLnYxLlN0cmVuZ3RoU291cmNlEjwKC2luc3RydW1lbnRzGBMgASgLMicuc3RpbGxob3VzZS52MS5EZXRlcm1pbmF0aW9uSW5zdHJ1bWVudHMiVAocQ3JlYXRlRGlzdGlsbGF0aW9uUnVuUmVxdWVzdBITCgtzdGlsbF9sYWJlbBgBIAEoCRIQCghydW5fZGF0ZRgCIAEoCRINCgVub3RlcxgDIAEoCSJMCh1DcmVhdGVEaXN0aWxsYXRpb25SdW5SZXNwb25zZRIrCgNydW4YASABKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvblJ1biInChlHZXREaXN0aWxsYXRpb25SdW5SZXF1ZXN0EgoKAmlkGAEgASgJIkkKGkdldERpc3RpbGxhdGlvblJ1blJlc3BvbnNlEisKA3J1bhgBIAEoCzIeLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uUnVuIlAKG0xpc3REaXN0aWxsYXRpb25SdW5zUmVxdWVzdBIxCgZzdGF0dXMYASABKA4yIS5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvblN0YXR1cyJMChxMaXN0RGlzdGlsbGF0aW9uUnVuc1Jlc3BvbnNlEiwKBHJ1bnMYASADKAsyHi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvblJ1biJgCh9VcGRhdGVEaXN0aWxsYXRpb25TdGF0dXNSZXF1ZXN0EgoKAmlkGAEgASgJEjEKBnN0YXR1cxgCIAEoDjIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uU3RhdHVzIk8KIFVwZGF0ZURpc3RpbGxhdGlvblN0YXR1c1Jlc3BvbnNlEisKA3J1bhgBIAEoCzIeLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uUnVuIqgBChxBZGREaXN0aWxsYXRpb25DaGFyZ2VSZXF1ZXN0EhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYASABKAkSGwoTZmVybWVudGF0aW9uX3J1bl9pZBgCIAEoCRIYChB2b2x1bWVfY2hhcmdlZF9sGAMgASgBEg8KB2Fidl9wY3QYBCABKAESFAoMY2hhcmdlX29yZGVyGAUgASgFEg0KBW5vdGVzGAYgASgJIlIKHUFkZERpc3RpbGxhdGlvbkNoYXJnZVJlc3BvbnNlEjEKBmNoYXJnZRgBIAEoCzIhLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uQ2hhcmdlIrIDCh1BZGREaXN0aWxsYXRpb25SZWFkaW5nUmVxdWVzdBIbChNkaXN0aWxsYXRpb25fcnVuX2lkGAEgASgJEi8KC29ic2VydmVkX2F0GAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIaChJkaXN0aWxsYXRlX2Fidl9wY3QYAyABKAESHgoWZGlzdGlsbGF0ZV9hYnZfcGN0X3NldBgEIAEoCBIgChhkaXN0aWxsYXRlX3RlbXBlcmF0dXJlX2MYBSABKAESJAocZGlzdGlsbGF0ZV90ZW1wZXJhdHVyZV9jX3NldBgGIAEoCBIYChBoZWF0X3NldHRpbmdfcGN0GAcgASgBEhwKFGhlYXRfc2V0dGluZ19wY3Rfc2V0GAggASgIEhkKEXBvdF90ZW1wZXJhdHVyZV9jGAkgASgBEh0KFXBvdF90ZW1wZXJhdHVyZV9jX3NldBgKIAEoCBIcChR2YXBvdXJfdGVtcGVyYXR1cmVfYxgLIAEoARIgChh2YXBvdXJfdGVtcGVyYXR1cmVfY19zZXQYDCABKAgSDQoFbm90ZXMYDSABKAkiVQoeQWRkRGlzdGlsbGF0aW9uUmVhZGluZ1Jlc3BvbnNlEjMKB3JlYWRpbmcYASABKAsyIi5zdGlsbGhvdXNlLnYxLkRpc3RpbGxhdGlvblJlYWRpbmciLgogRGVsZXRlRGlzdGlsbGF0aW9uUmVhZGluZ1JlcXVlc3QSCgoCaWQYASABKAkiIwohRGVsZXRlRGlzdGlsbGF0aW9uUmVhZGluZ1Jlc3BvbnNlIuABChlBZGREaXN0aWxsYXRpb25DdXRSZXF1ZXN0EhsKE2Rpc3RpbGxhdGlvbl9ydW5faWQYASABKAkSMAoEa2luZBgCIAEoDjIiLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uQ3V0S2luZBIQCgh2b2x1bWVfbBgDIAEoARIPCgdhYnZfcGN0GAQgASgBEhEKCWN1dF9vcmRlchgFIAEoBRIvCgtvYnNlcnZlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYByABKAkiSQoaQWRkRGlzdGlsbGF0aW9uQ3V0UmVzcG9uc2USKwoDY3V0GAEgASgLMh4uc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25DdXQi0gEKHFVwZGF0ZURpc3RpbGxhdGlvbkN1dFJlcXVlc3QSCgoCaWQYASABKAkSMAoEa2luZBgCIAEoDjIiLnN0aWxsaG91c2UudjEuRGlzdGlsbGF0aW9uQ3V0S2luZBIQCgh2b2x1bWVfbBgDIAEoARIPCgdhYnZfcGN0GAQgASgBEhEKCWN1dF9vcmRlchgFIAEoBRIvCgtvYnNlcnZlZF9hdBgGIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDQoFbm90ZXMYByABKAkiTAodVXBkYXRlRGlzdGlsbGF0aW9uQ3V0UmVzcG9uc2USKwoDY3V0GAEgASgLMh4uc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25DdXQiKgocRGVsZXRlRGlzdGlsbGF0aW9uQ3V0UmVxdWVzdBIKCgJpZBgBIAEoCSIfCh1EZWxldGVEaXN0aWxsYXRpb25DdXRSZXNwb25zZSLXAgocUmVjb3JkUHJvZHVjdGlvbkdhdWdlUmVxdWVzdBIbChNkaXN0aWxsYXRpb25fcnVuX2lkGAEgASgJEiAKGGRlc3RpbmF0aW9uX2NvbnRhaW5lcl9pZBgCIAEoCRIuCgpnYXVnZV9kYXRlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIQCgh2b2x1bWVfbBgEIAEoARIPCgdhYnZfcGN0GAUgASgBEhUKDXRlbXBlcmF0dXJlX2MYBiABKAESGQoRdGVtcGVyYXR1cmVfY19zZXQYByABKAgSDQoFbm90ZXMYCCABKAkSFQoNZGVuc2l0eV9rZ19tMxgJIAEoARIZChFkZW5zaXR5X2tnX20zX3NldBgKIAEoCBIyCgtpbnN0cnVtZW50cxgLIAEoCzIdLnN0aWxsaG91c2UudjEuSW5zdHJ1bWVudFJlZnMinQEKHVJlY29yZFByb2R1Y3Rpb25HYXVnZVJlc3BvbnNlEi0KBWdhdWdlGAEgASgLMh4uc3RpbGxob3VzZS52MS5Qcm9kdWN0aW9uR2F1Z2USOwoVZGVzdGluYXRpb25fY29udGFpbmVyGAIgASgLMhwuc3RpbGxob3VzZS52MS5CdWxrQ29udGFpbmVyEhAKCHdhcm5pbmdzGAMgAygJIjgKGlZvaWREaXN0aWxsYXRpb25SdW5SZXF1ZXN0EgoKAmlkGAEgASgJEg4KBnJlYXNvbhgCIAEoCSJKChtWb2lkRGlzdGlsbGF0aW9uUnVuUmVzcG9uc2USKwoDcnVuGAEgASgLMh4uc3RpbGxob3VzZS52MS5EaXN0aWxsYXRpb25SdW4q4wEKEkRpc3RpbGxhdGlvblN0YXR1cxIjCh9ESVNUSUxMQVRJT05fU1RBVFVTX1VOU1BFQ0lGSUVEEAASHwobRElTVElMTEFUSU9OX1NUQVRVU19QTEFOTkVEEAESIAocRElTVElMTEFUSU9OX1NUQVRVU19DSEFSR0lORxACEiIKHkRJU1RJTExBVElPTl9TVEFUVVNfRElTVElMTElORxADEh4KGkRJU1RJTExBVElPTl9TVEFUVVNfR0FVR0VEEAQSIQodRElTVElMTEFUSU9OX1NUQVRVU19DQU5DRUxMRUQQBSrtAQoTRGlzdGlsbGF0aW9uQ3V0S2luZBIlCiFESVNUSUxMQVRJT05fQ1VUX0tJTkRfVU5TUEVDSUZJRUQQABIjCh9ESVNUSUxMQVRJT05fQ1VUX0tJTkRfRk9SRVNIT1RTEAESHwobRElTVElMTEFUSU9OX0NVVF9LSU5EX0hFQURTEAISIAocRElTVElMTEFUSU9OX0NVVF9LSU5EX0hFQVJUUxADEh8KG0RJU1RJTExBVElPTl9DVVRfS0lORF9UQUlMUxAEEiYKIkRJU1RJTExBVElPTl9DVVRfS0lORF9GRUlOVFNfU0FWRUQQBSqdAQoSQ3V0RmluZGluZ1NldmVyaXR5EiQKIENVVF9GSU5ESU5HX1NFVkVSSVRZX1VOU1BFQ0lGSUVEEAASHQoZQ1VUX0ZJTkRJTkdfU0VWRVJJVFlfSU5GTxABEiAKHENVVF9GSU5ESU5HX1NFVkVSSVRZX1dBUk5JTkcQAhIgChxDVVRfRklORElOR19TRVZFUklUWV9QUk9CTEVNEAMyggsKE0Rpc3RpbGxhdGlvblNlcnZpY2UScgoVQ3JlYXRlRGlzdGlsbGF0aW9uUnVuEisuc3RpbGxob3VzZS52MS5DcmVhdGVEaXN0aWxsYXRpb25SdW5SZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5DcmVhdGVEaXN0aWxsYXRpb25SdW5SZXNwb25zZRJpChJHZXREaXN0aWxsYXRpb25SdW4SKC5zdGlsbGhvdXNlLnYxLkdldERpc3RpbGxhdGlvblJ1blJlcXVlc3QaKS5zdGlsbGhvdXNlLnYxLkdldERpc3RpbGxhdGlvblJ1blJlc3BvbnNlEm8KFExpc3REaXN0aWxsYXRpb25SdW5zEiouc3RpbGxob3VzZS52MS5MaXN0RGlzdGlsbGF0aW9uUnVuc1JlcXVlc3QaKy5zdGlsbGhvdXNlLnYxLkxpc3REaXN0aWxsYXRpb25SdW5zUmVzcG9uc2USewoYVXBkYXRlRGlzdGlsbGF0aW9uU3RhdHVzEi4uc3RpbGxob3VzZS52MS5VcGRhdGVEaXN0aWxsYXRpb25TdGF0dXNSZXF1ZXN0Gi8uc3RpbGxob3VzZS52MS5VcGRhdGVEaXN0aWxsYXRpb25TdGF0dXNSZXNwb25zZRJyChVBZGREaXN0aWxsYXRpb25DaGFyZ2USKy5zdGlsbGhvdXNlLnYxLkFkZERpc3RpbGxhdGlvbkNoYXJnZVJlcXVlc3QaLC5zdGlsbGhvdXNlLnYxLkFkZERpc3RpbGxhdGlvbkNoYXJnZVJlc3BvbnNlEmkKEkFkZERpc3RpbGxhdGlvbkN1dBIoLnN0aWxsaG91c2UudjEuQWRkRGlzdGlsbGF0aW9uQ3V0UmVxdWVzdBopLnN0aWxsaG91c2UudjEuQWRkRGlzdGlsbGF0aW9uQ3V0UmVzcG9uc2UScgoVUmVjb3JkUHJvZHVjdGlvbkdhdWdlEisuc3RpbGxob3VzZS52MS5SZWNvcmRQcm9kdWN0aW9uR2F1Z2VSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5SZWNvcmRQcm9kdWN0aW9uR2F1Z2VSZXNwb25zZRJsChNWb2lkRGlzdGlsbGF0aW9uUnVuEikuc3RpbGxob3VzZS52MS5Wb2lkRGlzdGlsbGF0aW9uUnVuUmVxdWVzdBoqLnN0aWxsaG91c2UudjEuVm9pZERpc3RpbGxhdGlvblJ1blJlc3BvbnNlEnIKFVVwZGF0ZURpc3RpbGxhdGlvbkN1dBIrLnN0aWxsaG91c2UudjEuVXBkYXRlRGlzdGlsbGF0aW9uQ3V0UmVxdWVzdBosLnN0aWxsaG91c2UudjEuVXBkYXRlRGlzdGlsbGF0aW9uQ3V0UmVzcG9uc2UScgoVRGVsZXRlRGlzdGlsbGF0aW9uQ3V0Eisuc3RpbGxob3VzZS52MS5EZWxldGVEaXN0aWxsYXRpb25DdXRSZXF1ZXN0Giwuc3RpbGxob3VzZS52MS5EZWxldGVEaXN0aWxsYXRpb25DdXRSZXNwb25zZRJ1ChZBZGREaXN0aWxsYXRpb25SZWFkaW5nEiwuc3RpbGxob3VzZS52MS5BZGREaXN0aWxsYXRpb25SZWFkaW5nUmVxdWVzdBotLnN0aWxsaG91c2UudjEuQWRkRGlzdGlsbGF0aW9uUmVhZGluZ1Jlc3BvbnNlEn4KGURlbGV0ZURpc3RpbGxhdGlvblJlYWRpbmcSLy5zdGlsbGhvdXNlLnYxLkRlbGV0ZURpc3RpbGxhdGlvblJlYWRpbmdSZXF1ZXN0GjAuc3RpbGxob3VzZS52MS5EZWxldGVEaXN0aWxsYXRpb25SZWFkaW5nUmVzcG9uc2ViBnByb3RvMw", [file_google_protobuf_timestamp, file_stillhouse_v1_instrument, file_stillhouse_v1_alcoholometry, file_stillhouse_v1_bulk]);
 
 /**
  * @generated from message stillhouse.v1.DistillationRun
@@ -103,6 +103,13 @@ export type DistillationRun = Message<"stillhouse.v1.DistillationRun"> & {
    * @generated from field: stillhouse.v1.CutAnalysis cut_analysis = 17;
    */
   cutAnalysis?: CutAnalysis | undefined;
+
+  /**
+   * populated by GetDistillationRun
+   *
+   * @generated from field: repeated stillhouse.v1.DistillationReading readings = 18;
+   */
+  readings: DistillationReading[];
 
   /**
    * @generated from field: google.protobuf.Timestamp voided_at = 14;
@@ -192,6 +199,98 @@ export const DistillationChargeSchema: GenMessage<DistillationCharge> = /*@__PUR
   messageDesc(file_stillhouse_v1_distillation, 1);
 
 /**
+ * A reading taken during a run: what the instruments at the still said at a
+ * moment. Distillate strength is what the parrot's hydrometer read, at the
+ * temperature it read it — uncorrected, because that is the number in front
+ * of the operator; the temperature beside it is what lets it be corrected.
+ * Heat setting is the element dial or the jacket valve as a percentage of
+ * full. Any field not measured is left unset; a literal 0 is a measurement.
+ *
+ * These are the run's log, and the data a still is calibrated from
+ * (docs/engineering.md).
+ *
+ * @generated from message stillhouse.v1.DistillationReading
+ */
+export type DistillationReading = Message<"stillhouse.v1.DistillationReading"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+
+  /**
+   * @generated from field: string distillation_run_id = 2;
+   */
+  distillationRunId: string;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp observed_at = 3;
+   */
+  observedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: double distillate_abv_pct = 4;
+   */
+  distillateAbvPct: number;
+
+  /**
+   * @generated from field: bool distillate_abv_pct_set = 5;
+   */
+  distillateAbvPctSet: boolean;
+
+  /**
+   * @generated from field: double distillate_temperature_c = 6;
+   */
+  distillateTemperatureC: number;
+
+  /**
+   * @generated from field: bool distillate_temperature_c_set = 7;
+   */
+  distillateTemperatureCSet: boolean;
+
+  /**
+   * @generated from field: double heat_setting_pct = 8;
+   */
+  heatSettingPct: number;
+
+  /**
+   * @generated from field: bool heat_setting_pct_set = 9;
+   */
+  heatSettingPctSet: boolean;
+
+  /**
+   * @generated from field: double pot_temperature_c = 10;
+   */
+  potTemperatureC: number;
+
+  /**
+   * @generated from field: bool pot_temperature_c_set = 11;
+   */
+  potTemperatureCSet: boolean;
+
+  /**
+   * @generated from field: double vapour_temperature_c = 12;
+   */
+  vapourTemperatureC: number;
+
+  /**
+   * @generated from field: bool vapour_temperature_c_set = 13;
+   */
+  vapourTemperatureCSet: boolean;
+
+  /**
+   * @generated from field: string notes = 14;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.DistillationReading.
+ * Use `create(DistillationReadingSchema)` to create a new message.
+ */
+export const DistillationReadingSchema: GenMessage<DistillationReading> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_distillation, 2);
+
+/**
  * @generated from message stillhouse.v1.DistillationCut
  */
 export type DistillationCut = Message<"stillhouse.v1.DistillationCut"> & {
@@ -246,7 +345,7 @@ export type DistillationCut = Message<"stillhouse.v1.DistillationCut"> & {
  * Use `create(DistillationCutSchema)` to create a new message.
  */
 export const DistillationCutSchema: GenMessage<DistillationCut> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 2);
+  messageDesc(file_stillhouse_v1_distillation, 3);
 
 /**
  * @generated from message stillhouse.v1.CutFinding
@@ -278,7 +377,7 @@ export type CutFinding = Message<"stillhouse.v1.CutFinding"> & {
  * Use `create(CutFindingSchema)` to create a new message.
  */
 export const CutFindingSchema: GenMessage<CutFinding> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 3);
+  messageDesc(file_stillhouse_v1_distillation, 4);
 
 /**
  * CutAnalysis is what a run's cuts add up to.
@@ -352,7 +451,7 @@ export type CutAnalysis = Message<"stillhouse.v1.CutAnalysis"> & {
  * Use `create(CutAnalysisSchema)` to create a new message.
  */
 export const CutAnalysisSchema: GenMessage<CutAnalysis> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 4);
+  messageDesc(file_stillhouse_v1_distillation, 5);
 
 /**
  * @generated from message stillhouse.v1.ProductionGauge
@@ -473,7 +572,7 @@ export type ProductionGauge = Message<"stillhouse.v1.ProductionGauge"> & {
  * Use `create(ProductionGaugeSchema)` to create a new message.
  */
 export const ProductionGaugeSchema: GenMessage<ProductionGauge> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 5);
+  messageDesc(file_stillhouse_v1_distillation, 6);
 
 /**
  * @generated from message stillhouse.v1.CreateDistillationRunRequest
@@ -502,7 +601,7 @@ export type CreateDistillationRunRequest = Message<"stillhouse.v1.CreateDistilla
  * Use `create(CreateDistillationRunRequestSchema)` to create a new message.
  */
 export const CreateDistillationRunRequestSchema: GenMessage<CreateDistillationRunRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 6);
+  messageDesc(file_stillhouse_v1_distillation, 7);
 
 /**
  * @generated from message stillhouse.v1.CreateDistillationRunResponse
@@ -519,7 +618,7 @@ export type CreateDistillationRunResponse = Message<"stillhouse.v1.CreateDistill
  * Use `create(CreateDistillationRunResponseSchema)` to create a new message.
  */
 export const CreateDistillationRunResponseSchema: GenMessage<CreateDistillationRunResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 7);
+  messageDesc(file_stillhouse_v1_distillation, 8);
 
 /**
  * @generated from message stillhouse.v1.GetDistillationRunRequest
@@ -536,7 +635,7 @@ export type GetDistillationRunRequest = Message<"stillhouse.v1.GetDistillationRu
  * Use `create(GetDistillationRunRequestSchema)` to create a new message.
  */
 export const GetDistillationRunRequestSchema: GenMessage<GetDistillationRunRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 8);
+  messageDesc(file_stillhouse_v1_distillation, 9);
 
 /**
  * @generated from message stillhouse.v1.GetDistillationRunResponse
@@ -553,7 +652,7 @@ export type GetDistillationRunResponse = Message<"stillhouse.v1.GetDistillationR
  * Use `create(GetDistillationRunResponseSchema)` to create a new message.
  */
 export const GetDistillationRunResponseSchema: GenMessage<GetDistillationRunResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 9);
+  messageDesc(file_stillhouse_v1_distillation, 10);
 
 /**
  * @generated from message stillhouse.v1.ListDistillationRunsRequest
@@ -570,7 +669,7 @@ export type ListDistillationRunsRequest = Message<"stillhouse.v1.ListDistillatio
  * Use `create(ListDistillationRunsRequestSchema)` to create a new message.
  */
 export const ListDistillationRunsRequestSchema: GenMessage<ListDistillationRunsRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 10);
+  messageDesc(file_stillhouse_v1_distillation, 11);
 
 /**
  * @generated from message stillhouse.v1.ListDistillationRunsResponse
@@ -587,7 +686,7 @@ export type ListDistillationRunsResponse = Message<"stillhouse.v1.ListDistillati
  * Use `create(ListDistillationRunsResponseSchema)` to create a new message.
  */
 export const ListDistillationRunsResponseSchema: GenMessage<ListDistillationRunsResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 11);
+  messageDesc(file_stillhouse_v1_distillation, 12);
 
 /**
  * @generated from message stillhouse.v1.UpdateDistillationStatusRequest
@@ -609,7 +708,7 @@ export type UpdateDistillationStatusRequest = Message<"stillhouse.v1.UpdateDisti
  * Use `create(UpdateDistillationStatusRequestSchema)` to create a new message.
  */
 export const UpdateDistillationStatusRequestSchema: GenMessage<UpdateDistillationStatusRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 12);
+  messageDesc(file_stillhouse_v1_distillation, 13);
 
 /**
  * @generated from message stillhouse.v1.UpdateDistillationStatusResponse
@@ -626,7 +725,7 @@ export type UpdateDistillationStatusResponse = Message<"stillhouse.v1.UpdateDist
  * Use `create(UpdateDistillationStatusResponseSchema)` to create a new message.
  */
 export const UpdateDistillationStatusResponseSchema: GenMessage<UpdateDistillationStatusResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 13);
+  messageDesc(file_stillhouse_v1_distillation, 14);
 
 /**
  * @generated from message stillhouse.v1.AddDistillationChargeRequest
@@ -668,7 +767,7 @@ export type AddDistillationChargeRequest = Message<"stillhouse.v1.AddDistillatio
  * Use `create(AddDistillationChargeRequestSchema)` to create a new message.
  */
 export const AddDistillationChargeRequestSchema: GenMessage<AddDistillationChargeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 14);
+  messageDesc(file_stillhouse_v1_distillation, 15);
 
 /**
  * @generated from message stillhouse.v1.AddDistillationChargeResponse
@@ -685,7 +784,133 @@ export type AddDistillationChargeResponse = Message<"stillhouse.v1.AddDistillati
  * Use `create(AddDistillationChargeResponseSchema)` to create a new message.
  */
 export const AddDistillationChargeResponseSchema: GenMessage<AddDistillationChargeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 15);
+  messageDesc(file_stillhouse_v1_distillation, 16);
+
+/**
+ * @generated from message stillhouse.v1.AddDistillationReadingRequest
+ */
+export type AddDistillationReadingRequest = Message<"stillhouse.v1.AddDistillationReadingRequest"> & {
+  /**
+   * @generated from field: string distillation_run_id = 1;
+   */
+  distillationRunId: string;
+
+  /**
+   * unset = now
+   *
+   * @generated from field: google.protobuf.Timestamp observed_at = 2;
+   */
+  observedAt?: Timestamp | undefined;
+
+  /**
+   * @generated from field: double distillate_abv_pct = 3;
+   */
+  distillateAbvPct: number;
+
+  /**
+   * @generated from field: bool distillate_abv_pct_set = 4;
+   */
+  distillateAbvPctSet: boolean;
+
+  /**
+   * @generated from field: double distillate_temperature_c = 5;
+   */
+  distillateTemperatureC: number;
+
+  /**
+   * @generated from field: bool distillate_temperature_c_set = 6;
+   */
+  distillateTemperatureCSet: boolean;
+
+  /**
+   * @generated from field: double heat_setting_pct = 7;
+   */
+  heatSettingPct: number;
+
+  /**
+   * @generated from field: bool heat_setting_pct_set = 8;
+   */
+  heatSettingPctSet: boolean;
+
+  /**
+   * @generated from field: double pot_temperature_c = 9;
+   */
+  potTemperatureC: number;
+
+  /**
+   * @generated from field: bool pot_temperature_c_set = 10;
+   */
+  potTemperatureCSet: boolean;
+
+  /**
+   * @generated from field: double vapour_temperature_c = 11;
+   */
+  vapourTemperatureC: number;
+
+  /**
+   * @generated from field: bool vapour_temperature_c_set = 12;
+   */
+  vapourTemperatureCSet: boolean;
+
+  /**
+   * @generated from field: string notes = 13;
+   */
+  notes: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.AddDistillationReadingRequest.
+ * Use `create(AddDistillationReadingRequestSchema)` to create a new message.
+ */
+export const AddDistillationReadingRequestSchema: GenMessage<AddDistillationReadingRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_distillation, 17);
+
+/**
+ * @generated from message stillhouse.v1.AddDistillationReadingResponse
+ */
+export type AddDistillationReadingResponse = Message<"stillhouse.v1.AddDistillationReadingResponse"> & {
+  /**
+   * @generated from field: stillhouse.v1.DistillationReading reading = 1;
+   */
+  reading?: DistillationReading | undefined;
+};
+
+/**
+ * Describes the message stillhouse.v1.AddDistillationReadingResponse.
+ * Use `create(AddDistillationReadingResponseSchema)` to create a new message.
+ */
+export const AddDistillationReadingResponseSchema: GenMessage<AddDistillationReadingResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_distillation, 18);
+
+/**
+ * @generated from message stillhouse.v1.DeleteDistillationReadingRequest
+ */
+export type DeleteDistillationReadingRequest = Message<"stillhouse.v1.DeleteDistillationReadingRequest"> & {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id: string;
+};
+
+/**
+ * Describes the message stillhouse.v1.DeleteDistillationReadingRequest.
+ * Use `create(DeleteDistillationReadingRequestSchema)` to create a new message.
+ */
+export const DeleteDistillationReadingRequestSchema: GenMessage<DeleteDistillationReadingRequest> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_distillation, 19);
+
+/**
+ * @generated from message stillhouse.v1.DeleteDistillationReadingResponse
+ */
+export type DeleteDistillationReadingResponse = Message<"stillhouse.v1.DeleteDistillationReadingResponse"> & {
+};
+
+/**
+ * Describes the message stillhouse.v1.DeleteDistillationReadingResponse.
+ * Use `create(DeleteDistillationReadingResponseSchema)` to create a new message.
+ */
+export const DeleteDistillationReadingResponseSchema: GenMessage<DeleteDistillationReadingResponse> = /*@__PURE__*/
+  messageDesc(file_stillhouse_v1_distillation, 20);
 
 /**
  * @generated from message stillhouse.v1.AddDistillationCutRequest
@@ -732,7 +957,7 @@ export type AddDistillationCutRequest = Message<"stillhouse.v1.AddDistillationCu
  * Use `create(AddDistillationCutRequestSchema)` to create a new message.
  */
 export const AddDistillationCutRequestSchema: GenMessage<AddDistillationCutRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 16);
+  messageDesc(file_stillhouse_v1_distillation, 21);
 
 /**
  * @generated from message stillhouse.v1.AddDistillationCutResponse
@@ -749,7 +974,7 @@ export type AddDistillationCutResponse = Message<"stillhouse.v1.AddDistillationC
  * Use `create(AddDistillationCutResponseSchema)` to create a new message.
  */
 export const AddDistillationCutResponseSchema: GenMessage<AddDistillationCutResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 17);
+  messageDesc(file_stillhouse_v1_distillation, 22);
 
 /**
  * @generated from message stillhouse.v1.UpdateDistillationCutRequest
@@ -796,7 +1021,7 @@ export type UpdateDistillationCutRequest = Message<"stillhouse.v1.UpdateDistilla
  * Use `create(UpdateDistillationCutRequestSchema)` to create a new message.
  */
 export const UpdateDistillationCutRequestSchema: GenMessage<UpdateDistillationCutRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 18);
+  messageDesc(file_stillhouse_v1_distillation, 23);
 
 /**
  * @generated from message stillhouse.v1.UpdateDistillationCutResponse
@@ -813,7 +1038,7 @@ export type UpdateDistillationCutResponse = Message<"stillhouse.v1.UpdateDistill
  * Use `create(UpdateDistillationCutResponseSchema)` to create a new message.
  */
 export const UpdateDistillationCutResponseSchema: GenMessage<UpdateDistillationCutResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 19);
+  messageDesc(file_stillhouse_v1_distillation, 24);
 
 /**
  * @generated from message stillhouse.v1.DeleteDistillationCutRequest
@@ -830,7 +1055,7 @@ export type DeleteDistillationCutRequest = Message<"stillhouse.v1.DeleteDistilla
  * Use `create(DeleteDistillationCutRequestSchema)` to create a new message.
  */
 export const DeleteDistillationCutRequestSchema: GenMessage<DeleteDistillationCutRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 20);
+  messageDesc(file_stillhouse_v1_distillation, 25);
 
 /**
  * @generated from message stillhouse.v1.DeleteDistillationCutResponse
@@ -843,7 +1068,7 @@ export type DeleteDistillationCutResponse = Message<"stillhouse.v1.DeleteDistill
  * Use `create(DeleteDistillationCutResponseSchema)` to create a new message.
  */
 export const DeleteDistillationCutResponseSchema: GenMessage<DeleteDistillationCutResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 21);
+  messageDesc(file_stillhouse_v1_distillation, 26);
 
 /**
  * @generated from message stillhouse.v1.RecordProductionGaugeRequest
@@ -923,7 +1148,7 @@ export type RecordProductionGaugeRequest = Message<"stillhouse.v1.RecordProducti
  * Use `create(RecordProductionGaugeRequestSchema)` to create a new message.
  */
 export const RecordProductionGaugeRequestSchema: GenMessage<RecordProductionGaugeRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 22);
+  messageDesc(file_stillhouse_v1_distillation, 27);
 
 /**
  * @generated from message stillhouse.v1.RecordProductionGaugeResponse
@@ -954,7 +1179,7 @@ export type RecordProductionGaugeResponse = Message<"stillhouse.v1.RecordProduct
  * Use `create(RecordProductionGaugeResponseSchema)` to create a new message.
  */
 export const RecordProductionGaugeResponseSchema: GenMessage<RecordProductionGaugeResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 23);
+  messageDesc(file_stillhouse_v1_distillation, 28);
 
 /**
  * @generated from message stillhouse.v1.VoidDistillationRunRequest
@@ -976,7 +1201,7 @@ export type VoidDistillationRunRequest = Message<"stillhouse.v1.VoidDistillation
  * Use `create(VoidDistillationRunRequestSchema)` to create a new message.
  */
 export const VoidDistillationRunRequestSchema: GenMessage<VoidDistillationRunRequest> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 24);
+  messageDesc(file_stillhouse_v1_distillation, 29);
 
 /**
  * @generated from message stillhouse.v1.VoidDistillationRunResponse
@@ -993,7 +1218,7 @@ export type VoidDistillationRunResponse = Message<"stillhouse.v1.VoidDistillatio
  * Use `create(VoidDistillationRunResponseSchema)` to create a new message.
  */
 export const VoidDistillationRunResponseSchema: GenMessage<VoidDistillationRunResponse> = /*@__PURE__*/
-  messageDesc(file_stillhouse_v1_distillation, 25);
+  messageDesc(file_stillhouse_v1_distillation, 30);
 
 /**
  * @generated from enum stillhouse.v1.DistillationStatus
@@ -1191,6 +1416,22 @@ export const DistillationService: GenService<{
     methodKind: "unary";
     input: typeof DeleteDistillationCutRequestSchema;
     output: typeof DeleteDistillationCutResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.DistillationService.AddDistillationReading
+   */
+  addDistillationReading: {
+    methodKind: "unary";
+    input: typeof AddDistillationReadingRequestSchema;
+    output: typeof AddDistillationReadingResponseSchema;
+  },
+  /**
+   * @generated from rpc stillhouse.v1.DistillationService.DeleteDistillationReading
+   */
+  deleteDistillationReading: {
+    methodKind: "unary";
+    input: typeof DeleteDistillationReadingRequestSchema;
+    output: typeof DeleteDistillationReadingResponseSchema;
   },
 }> = /*@__PURE__*/
   serviceDesc(file_stillhouse_v1_distillation, 0);

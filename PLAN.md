@@ -476,13 +476,6 @@ The flow chart of the distillery, with a model behind each node. Design:
 of planning a distillery I think of it as a flow chart of inputs and outputs
 with connections to the various points in the process."
 
-### L2 · Run readings — P2
-
-`AddDistillationReading` on a run: time, distillate strength and
-temperature at the parrot, element or steam setting, pot temperature. On
-the run page and over MCP at the still, as fermentation readings are. The
-calibration data for L4; useful on its own as the run's log.
-
 ### L3 · The run planner — P2
 
 `PlanRun` on a still: charge from a fermentation or typed, a heat setting,

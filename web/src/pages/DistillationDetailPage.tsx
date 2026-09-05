@@ -7,6 +7,7 @@ import { create } from "@bufbuild/protobuf";
 import { Button } from "@/components/Button";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { CutProfile } from "@/components/CutProfile";
+import { RunCurve } from "@/components/RunCurve";
 import {
   emptyReading,
   readingToRequest,
@@ -20,7 +21,9 @@ import { bulkClient, distillationClient, fermentationClient } from "@/lib/client
 import {
   AddDistillationChargeRequestSchema,
   AddDistillationCutRequestSchema,
+  AddDistillationReadingRequestSchema,
   DeleteDistillationCutRequestSchema,
+  DeleteDistillationReadingRequestSchema,
   DistillationCutKind,
   RecordProductionGaugeRequestSchema,
   UpdateDistillationCutRequestSchema,
@@ -31,6 +34,7 @@ import {
   formatLAA,
   formatQty,
 } from "@/lib/format";
+import type { DistillationReading } from "@/gen/stillhouse/v1/distillation_pb";
 
 const cutKindOptions = [
   { v: DistillationCutKind.FORESHOTS, label: "Foreshots" },
@@ -74,6 +78,16 @@ export function DistillationDetailPage() {
   const addCut = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof AddDistillationCutRequestSchema>>) =>
       distillationClient.addDistillationCut(msg),
+    onSuccess: refresh,
+  });
+  const addReading = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof AddDistillationReadingRequestSchema>>) =>
+      distillationClient.addDistillationReading(msg),
+    onSuccess: refresh,
+  });
+  const deleteReading = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof DeleteDistillationReadingRequestSchema>>) =>
+      distillationClient.deleteDistillationReading(msg),
     onSuccess: refresh,
   });
   const deleteCut = useMutation({
@@ -145,6 +159,16 @@ export function DistillationDetailPage() {
       </section>
 
       {r.cutAnalysis && <CutProfile analysis={r.cutAnalysis} cuts={r.cuts} />}
+
+      <RunCurve readings={r.readings} />
+      <ReadingsPanel
+        runId={r.id}
+        readings={r.readings}
+        onAdd={(m) => addReading.mutate(m)}
+        adding={addReading.isPending}
+        addError={addReading.error}
+        onDelete={(readingId) => deleteReading.mutate(create(DeleteDistillationReadingRequestSchema, { id: readingId }))}
+      />
 
       <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChargesPanel
@@ -624,4 +648,145 @@ function useDistillationRun(): DistillationRunData {
   // Phantom helper to give the inner panel components a precise type
   // for the `run` prop. Not used at runtime.
   throw new Error("type-only helper");
+}
+
+/**
+ * ReadingsPanel — the run's log: what the instruments said, when. Strength
+ * is recorded as read at the parrot, at the parrot's temperature, because
+ * that is the figure the cut was made on; the temperature beside it is what
+ * lets it be corrected later. Every field is optional: a reading records
+ * what was taken.
+ */
+function ReadingsPanel({
+  runId,
+  readings,
+  onAdd,
+  adding,
+  addError,
+  onDelete,
+}: {
+  runId: string;
+  readings: DistillationReading[];
+  onAdd: (m: ReturnType<typeof create<typeof AddDistillationReadingRequestSchema>>) => void;
+  adding: boolean;
+  addError: unknown;
+  onDelete: (id: string) => void;
+}) {
+  const [abv, setAbv] = useState("");
+  const [spiritTemp, setSpiritTemp] = useState("");
+  const [heat, setHeat] = useState("");
+  const [potTemp, setPotTemp] = useState("");
+  const [vapourTemp, setVapourTemp] = useState("");
+  const [notes, setNotes] = useState("");
+  const confirm = useConfirm();
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    const num = (v: string) => (v.trim() === "" ? undefined : Number(v));
+    const a = num(abv), st = num(spiritTemp), h = num(heat), pt = num(potTemp), vt = num(vapourTemp);
+    onAdd(
+      create(AddDistillationReadingRequestSchema, {
+        distillationRunId: runId,
+        distillateAbvPct: a ?? 0, distillateAbvPctSet: a !== undefined,
+        distillateTemperatureC: st ?? 0, distillateTemperatureCSet: st !== undefined,
+        heatSettingPct: h ?? 0, heatSettingPctSet: h !== undefined,
+        potTemperatureC: pt ?? 0, potTemperatureCSet: pt !== undefined,
+        vapourTemperatureC: vt ?? 0, vapourTemperatureCSet: vt !== undefined,
+        notes,
+      }),
+    );
+    setAbv(""); setSpiritTemp(""); setHeat(""); setPotTemp(""); setVapourTemp(""); setNotes("");
+  };
+
+  const ordered = [...readings].sort((a, b) => Number(a.observedAt?.seconds ?? 0) - Number(b.observedAt?.seconds ?? 0));
+
+  return (
+    <section className="mb-8 rounded-lg border border-border bg-surface-2 shadow-sm">
+      <header className="border-b border-border bg-surface-3 px-4 py-3">
+        <h2 className="text-sm font-semibold text-fg-muted">Readings at the still</h2>
+        <p className="text-xs text-fg-subtle">
+          Strength as read at the parrot, at its own temperature. The run's log, and what calibrates the planner.
+        </p>
+      </header>
+      <form onSubmit={submit} className="flex flex-wrap items-end gap-3 px-4 py-4">
+        <ReadingField label="Parrot %" value={abv} onChange={setAbv} step="0.1" placeholder="72.5" />
+        <ReadingField label="Spirit °C" value={spiritTemp} onChange={setSpiritTemp} step="0.1" />
+        <ReadingField label="Heat %" value={heat} onChange={setHeat} step="1" placeholder="60" />
+        <ReadingField label="Pot °C" value={potTemp} onChange={setPotTemp} step="0.1" />
+        <ReadingField label="Vapour °C" value={vapourTemp} onChange={setVapourTemp} step="0.1" />
+        <div className="min-w-[180px] flex-1">
+          <label className="mb-1 block text-xs text-fg-muted">Notes</label>
+          <input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="the glass, a cut"
+                 className="w-full rounded border border-border-strong px-2 py-1.5 text-sm" />
+        </div>
+        <Button type="submit" disabled={adding}>{adding ? "Saving…" : "Add reading"}</Button>
+        {addError ? (
+          <span className="text-sm text-danger-fg">
+            {addError instanceof ConnectError ? addError.rawMessage : String(addError)}
+          </span>
+        ) : null}
+      </form>
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-border text-sm">
+          <thead className="bg-surface-3 text-left text-xs text-fg-muted">
+            <tr>
+              <th className="px-4 py-2">When</th>
+              <th className="px-4 py-2 text-right">Parrot %</th>
+              <th className="px-4 py-2 text-right">Spirit °C</th>
+              <th className="px-4 py-2 text-right">Heat %</th>
+              <th className="px-4 py-2 text-right">Pot °C</th>
+              <th className="px-4 py-2 text-right">Vapour °C</th>
+              <th className="px-4 py-2">Notes</th>
+              <th className="px-4 py-2" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {ordered.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-3 text-fg-muted">No readings yet — the first one is usually the first drop.</td>
+              </tr>
+            )}
+            {ordered.map((rd) => (
+              <tr key={rd.id}>
+                <td className="px-4 py-2 text-fg-muted">
+                  {rd.observedAt ? new Date(Number(rd.observedAt.seconds) * 1000).toLocaleString() : ""}
+                </td>
+                <td className="px-4 py-2 text-right">{rd.distillateAbvPctSet ? rd.distillateAbvPct.toFixed(1) : "—"}</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{rd.distillateTemperatureCSet ? rd.distillateTemperatureC.toFixed(1) : "—"}</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{rd.heatSettingPctSet ? rd.heatSettingPct.toFixed(0) : "—"}</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{rd.potTemperatureCSet ? rd.potTemperatureC.toFixed(1) : "—"}</td>
+                <td className="px-4 py-2 text-right text-fg-muted">{rd.vapourTemperatureCSet ? rd.vapourTemperatureC.toFixed(1) : "—"}</td>
+                <td className="px-4 py-2 text-fg-muted">{rd.notes}</td>
+                <td className="px-4 py-2 text-right">
+                  <button
+                    type="button"
+                    className="text-xs text-fg-subtle hover:text-danger-fg"
+                    onClick={async () => {
+                      if (await confirm({ title: "Delete this reading?", body: "It leaves the run's log and the audit trail keeps what it said." })) {
+                        onDelete(rd.id);
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function ReadingField({
+  label, value, onChange, step, placeholder,
+}: { label: string; value: string; onChange: (v: string) => void; step: string; placeholder?: string }) {
+  return (
+    <div className="w-24">
+      <label className="mb-1 block text-xs text-fg-muted">{label}</label>
+      <input type="number" step={step} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
+             className="w-full rounded border border-border-strong px-2 py-1.5 text-sm" />
+    </div>
+  );
 }

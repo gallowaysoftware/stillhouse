@@ -207,6 +207,7 @@ type DistillationRun struct {
 	Gauge         *ProductionGauge       `protobuf:"bytes,12,opt,name=gauge,proto3" json:"gauge,omitempty"`                                    // unset until RecordProductionGauge runs
 	TotalCutLaa   float64                `protobuf:"fixed64,13,opt,name=total_cut_laa,json=totalCutLaa,proto3" json:"total_cut_laa,omitempty"` // computed sum from cuts
 	CutAnalysis   *CutAnalysis           `protobuf:"bytes,17,opt,name=cut_analysis,json=cutAnalysis,proto3" json:"cut_analysis,omitempty"`     // populated by GetDistillationRun
+	Readings      []*DistillationReading `protobuf:"bytes,18,rep,name=readings,proto3" json:"readings,omitempty"`                              // populated by GetDistillationRun
 	VoidedAt      *timestamppb.Timestamp `protobuf:"bytes,14,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
 	VoidedBy      string                 `protobuf:"bytes,15,opt,name=voided_by,json=voidedBy,proto3" json:"voided_by,omitempty"`
 	VoidedReason  string                 `protobuf:"bytes,16,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
@@ -338,6 +339,13 @@ func (x *DistillationRun) GetTotalCutLaa() float64 {
 func (x *DistillationRun) GetCutAnalysis() *CutAnalysis {
 	if x != nil {
 		return x.CutAnalysis
+	}
+	return nil
+}
+
+func (x *DistillationRun) GetReadings() []*DistillationReading {
+	if x != nil {
+		return x.Readings
 	}
 	return nil
 }
@@ -479,6 +487,163 @@ func (x *DistillationCharge) GetNotes() string {
 	return ""
 }
 
+// A reading taken during a run: what the instruments at the still said at a
+// moment. Distillate strength is what the parrot's hydrometer read, at the
+// temperature it read it — uncorrected, because that is the number in front
+// of the operator; the temperature beside it is what lets it be corrected.
+// Heat setting is the element dial or the jacket valve as a percentage of
+// full. Any field not measured is left unset; a literal 0 is a measurement.
+//
+// These are the run's log, and the data a still is calibrated from
+// (docs/engineering.md).
+type DistillationReading struct {
+	state                     protoimpl.MessageState `protogen:"open.v1"`
+	Id                        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	DistillationRunId         string                 `protobuf:"bytes,2,opt,name=distillation_run_id,json=distillationRunId,proto3" json:"distillation_run_id,omitempty"`
+	ObservedAt                *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=observed_at,json=observedAt,proto3" json:"observed_at,omitempty"`
+	DistillateAbvPct          float64                `protobuf:"fixed64,4,opt,name=distillate_abv_pct,json=distillateAbvPct,proto3" json:"distillate_abv_pct,omitempty"`
+	DistillateAbvPctSet       bool                   `protobuf:"varint,5,opt,name=distillate_abv_pct_set,json=distillateAbvPctSet,proto3" json:"distillate_abv_pct_set,omitempty"`
+	DistillateTemperatureC    float64                `protobuf:"fixed64,6,opt,name=distillate_temperature_c,json=distillateTemperatureC,proto3" json:"distillate_temperature_c,omitempty"`
+	DistillateTemperatureCSet bool                   `protobuf:"varint,7,opt,name=distillate_temperature_c_set,json=distillateTemperatureCSet,proto3" json:"distillate_temperature_c_set,omitempty"`
+	HeatSettingPct            float64                `protobuf:"fixed64,8,opt,name=heat_setting_pct,json=heatSettingPct,proto3" json:"heat_setting_pct,omitempty"`
+	HeatSettingPctSet         bool                   `protobuf:"varint,9,opt,name=heat_setting_pct_set,json=heatSettingPctSet,proto3" json:"heat_setting_pct_set,omitempty"`
+	PotTemperatureC           float64                `protobuf:"fixed64,10,opt,name=pot_temperature_c,json=potTemperatureC,proto3" json:"pot_temperature_c,omitempty"`
+	PotTemperatureCSet        bool                   `protobuf:"varint,11,opt,name=pot_temperature_c_set,json=potTemperatureCSet,proto3" json:"pot_temperature_c_set,omitempty"`
+	VapourTemperatureC        float64                `protobuf:"fixed64,12,opt,name=vapour_temperature_c,json=vapourTemperatureC,proto3" json:"vapour_temperature_c,omitempty"`
+	VapourTemperatureCSet     bool                   `protobuf:"varint,13,opt,name=vapour_temperature_c_set,json=vapourTemperatureCSet,proto3" json:"vapour_temperature_c_set,omitempty"`
+	Notes                     string                 `protobuf:"bytes,14,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields             protoimpl.UnknownFields
+	sizeCache                 protoimpl.SizeCache
+}
+
+func (x *DistillationReading) Reset() {
+	*x = DistillationReading{}
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DistillationReading) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DistillationReading) ProtoMessage() {}
+
+func (x *DistillationReading) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DistillationReading.ProtoReflect.Descriptor instead.
+func (*DistillationReading) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *DistillationReading) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *DistillationReading) GetDistillationRunId() string {
+	if x != nil {
+		return x.DistillationRunId
+	}
+	return ""
+}
+
+func (x *DistillationReading) GetObservedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ObservedAt
+	}
+	return nil
+}
+
+func (x *DistillationReading) GetDistillateAbvPct() float64 {
+	if x != nil {
+		return x.DistillateAbvPct
+	}
+	return 0
+}
+
+func (x *DistillationReading) GetDistillateAbvPctSet() bool {
+	if x != nil {
+		return x.DistillateAbvPctSet
+	}
+	return false
+}
+
+func (x *DistillationReading) GetDistillateTemperatureC() float64 {
+	if x != nil {
+		return x.DistillateTemperatureC
+	}
+	return 0
+}
+
+func (x *DistillationReading) GetDistillateTemperatureCSet() bool {
+	if x != nil {
+		return x.DistillateTemperatureCSet
+	}
+	return false
+}
+
+func (x *DistillationReading) GetHeatSettingPct() float64 {
+	if x != nil {
+		return x.HeatSettingPct
+	}
+	return 0
+}
+
+func (x *DistillationReading) GetHeatSettingPctSet() bool {
+	if x != nil {
+		return x.HeatSettingPctSet
+	}
+	return false
+}
+
+func (x *DistillationReading) GetPotTemperatureC() float64 {
+	if x != nil {
+		return x.PotTemperatureC
+	}
+	return 0
+}
+
+func (x *DistillationReading) GetPotTemperatureCSet() bool {
+	if x != nil {
+		return x.PotTemperatureCSet
+	}
+	return false
+}
+
+func (x *DistillationReading) GetVapourTemperatureC() float64 {
+	if x != nil {
+		return x.VapourTemperatureC
+	}
+	return 0
+}
+
+func (x *DistillationReading) GetVapourTemperatureCSet() bool {
+	if x != nil {
+		return x.VapourTemperatureCSet
+	}
+	return false
+}
+
+func (x *DistillationReading) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
 type DistillationCut struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	Id                string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -496,7 +661,7 @@ type DistillationCut struct {
 
 func (x *DistillationCut) Reset() {
 	*x = DistillationCut{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -508,7 +673,7 @@ func (x *DistillationCut) String() string {
 func (*DistillationCut) ProtoMessage() {}
 
 func (x *DistillationCut) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[2]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -521,7 +686,7 @@ func (x *DistillationCut) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DistillationCut.ProtoReflect.Descriptor instead.
 func (*DistillationCut) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{2}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DistillationCut) GetId() string {
@@ -599,7 +764,7 @@ type CutFinding struct {
 
 func (x *CutFinding) Reset() {
 	*x = CutFinding{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -611,7 +776,7 @@ func (x *CutFinding) String() string {
 func (*CutFinding) ProtoMessage() {}
 
 func (x *CutFinding) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[3]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -624,7 +789,7 @@ func (x *CutFinding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CutFinding.ProtoReflect.Descriptor instead.
 func (*CutFinding) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{3}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *CutFinding) GetSeverity() CutFindingSeverity {
@@ -686,7 +851,7 @@ type CutAnalysis struct {
 
 func (x *CutAnalysis) Reset() {
 	*x = CutAnalysis{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -698,7 +863,7 @@ func (x *CutAnalysis) String() string {
 func (*CutAnalysis) ProtoMessage() {}
 
 func (x *CutAnalysis) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[4]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -711,7 +876,7 @@ func (x *CutAnalysis) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CutAnalysis.ProtoReflect.Descriptor instead.
 func (*CutAnalysis) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{4}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *CutAnalysis) GetChargeLaa() float64 {
@@ -814,7 +979,7 @@ type ProductionGauge struct {
 
 func (x *ProductionGauge) Reset() {
 	*x = ProductionGauge{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -826,7 +991,7 @@ func (x *ProductionGauge) String() string {
 func (*ProductionGauge) ProtoMessage() {}
 
 func (x *ProductionGauge) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[5]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -839,7 +1004,7 @@ func (x *ProductionGauge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ProductionGauge.ProtoReflect.Descriptor instead.
 func (*ProductionGauge) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{5}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *ProductionGauge) GetId() string {
@@ -986,7 +1151,7 @@ type CreateDistillationRunRequest struct {
 
 func (x *CreateDistillationRunRequest) Reset() {
 	*x = CreateDistillationRunRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -998,7 +1163,7 @@ func (x *CreateDistillationRunRequest) String() string {
 func (*CreateDistillationRunRequest) ProtoMessage() {}
 
 func (x *CreateDistillationRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[6]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1011,7 +1176,7 @@ func (x *CreateDistillationRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDistillationRunRequest.ProtoReflect.Descriptor instead.
 func (*CreateDistillationRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{6}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *CreateDistillationRunRequest) GetStillLabel() string {
@@ -1044,7 +1209,7 @@ type CreateDistillationRunResponse struct {
 
 func (x *CreateDistillationRunResponse) Reset() {
 	*x = CreateDistillationRunResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1056,7 +1221,7 @@ func (x *CreateDistillationRunResponse) String() string {
 func (*CreateDistillationRunResponse) ProtoMessage() {}
 
 func (x *CreateDistillationRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[7]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1069,7 +1234,7 @@ func (x *CreateDistillationRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateDistillationRunResponse.ProtoReflect.Descriptor instead.
 func (*CreateDistillationRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{7}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *CreateDistillationRunResponse) GetRun() *DistillationRun {
@@ -1088,7 +1253,7 @@ type GetDistillationRunRequest struct {
 
 func (x *GetDistillationRunRequest) Reset() {
 	*x = GetDistillationRunRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1100,7 +1265,7 @@ func (x *GetDistillationRunRequest) String() string {
 func (*GetDistillationRunRequest) ProtoMessage() {}
 
 func (x *GetDistillationRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[8]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1113,7 +1278,7 @@ func (x *GetDistillationRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDistillationRunRequest.ProtoReflect.Descriptor instead.
 func (*GetDistillationRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{8}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *GetDistillationRunRequest) GetId() string {
@@ -1132,7 +1297,7 @@ type GetDistillationRunResponse struct {
 
 func (x *GetDistillationRunResponse) Reset() {
 	*x = GetDistillationRunResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1144,7 +1309,7 @@ func (x *GetDistillationRunResponse) String() string {
 func (*GetDistillationRunResponse) ProtoMessage() {}
 
 func (x *GetDistillationRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[9]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1157,7 +1322,7 @@ func (x *GetDistillationRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDistillationRunResponse.ProtoReflect.Descriptor instead.
 func (*GetDistillationRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{9}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *GetDistillationRunResponse) GetRun() *DistillationRun {
@@ -1176,7 +1341,7 @@ type ListDistillationRunsRequest struct {
 
 func (x *ListDistillationRunsRequest) Reset() {
 	*x = ListDistillationRunsRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1188,7 +1353,7 @@ func (x *ListDistillationRunsRequest) String() string {
 func (*ListDistillationRunsRequest) ProtoMessage() {}
 
 func (x *ListDistillationRunsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[10]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1201,7 +1366,7 @@ func (x *ListDistillationRunsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDistillationRunsRequest.ProtoReflect.Descriptor instead.
 func (*ListDistillationRunsRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{10}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *ListDistillationRunsRequest) GetStatus() DistillationStatus {
@@ -1220,7 +1385,7 @@ type ListDistillationRunsResponse struct {
 
 func (x *ListDistillationRunsResponse) Reset() {
 	*x = ListDistillationRunsResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1232,7 +1397,7 @@ func (x *ListDistillationRunsResponse) String() string {
 func (*ListDistillationRunsResponse) ProtoMessage() {}
 
 func (x *ListDistillationRunsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[11]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1245,7 +1410,7 @@ func (x *ListDistillationRunsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDistillationRunsResponse.ProtoReflect.Descriptor instead.
 func (*ListDistillationRunsResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{11}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListDistillationRunsResponse) GetRuns() []*DistillationRun {
@@ -1265,7 +1430,7 @@ type UpdateDistillationStatusRequest struct {
 
 func (x *UpdateDistillationStatusRequest) Reset() {
 	*x = UpdateDistillationStatusRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1277,7 +1442,7 @@ func (x *UpdateDistillationStatusRequest) String() string {
 func (*UpdateDistillationStatusRequest) ProtoMessage() {}
 
 func (x *UpdateDistillationStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[12]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1290,7 +1455,7 @@ func (x *UpdateDistillationStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDistillationStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDistillationStatusRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{12}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *UpdateDistillationStatusRequest) GetId() string {
@@ -1316,7 +1481,7 @@ type UpdateDistillationStatusResponse struct {
 
 func (x *UpdateDistillationStatusResponse) Reset() {
 	*x = UpdateDistillationStatusResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1328,7 +1493,7 @@ func (x *UpdateDistillationStatusResponse) String() string {
 func (*UpdateDistillationStatusResponse) ProtoMessage() {}
 
 func (x *UpdateDistillationStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[13]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1341,7 +1506,7 @@ func (x *UpdateDistillationStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDistillationStatusResponse.ProtoReflect.Descriptor instead.
 func (*UpdateDistillationStatusResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{13}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateDistillationStatusResponse) GetRun() *DistillationRun {
@@ -1365,7 +1530,7 @@ type AddDistillationChargeRequest struct {
 
 func (x *AddDistillationChargeRequest) Reset() {
 	*x = AddDistillationChargeRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1377,7 +1542,7 @@ func (x *AddDistillationChargeRequest) String() string {
 func (*AddDistillationChargeRequest) ProtoMessage() {}
 
 func (x *AddDistillationChargeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[14]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1390,7 +1555,7 @@ func (x *AddDistillationChargeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddDistillationChargeRequest.ProtoReflect.Descriptor instead.
 func (*AddDistillationChargeRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{14}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *AddDistillationChargeRequest) GetDistillationRunId() string {
@@ -1444,7 +1609,7 @@ type AddDistillationChargeResponse struct {
 
 func (x *AddDistillationChargeResponse) Reset() {
 	*x = AddDistillationChargeResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1456,7 +1621,7 @@ func (x *AddDistillationChargeResponse) String() string {
 func (*AddDistillationChargeResponse) ProtoMessage() {}
 
 func (x *AddDistillationChargeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[15]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1469,7 +1634,7 @@ func (x *AddDistillationChargeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddDistillationChargeResponse.ProtoReflect.Descriptor instead.
 func (*AddDistillationChargeResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{15}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *AddDistillationChargeResponse) GetCharge() *DistillationCharge {
@@ -1477,6 +1642,270 @@ func (x *AddDistillationChargeResponse) GetCharge() *DistillationCharge {
 		return x.Charge
 	}
 	return nil
+}
+
+type AddDistillationReadingRequest struct {
+	state                     protoimpl.MessageState `protogen:"open.v1"`
+	DistillationRunId         string                 `protobuf:"bytes,1,opt,name=distillation_run_id,json=distillationRunId,proto3" json:"distillation_run_id,omitempty"`
+	ObservedAt                *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=observed_at,json=observedAt,proto3" json:"observed_at,omitempty"` // unset = now
+	DistillateAbvPct          float64                `protobuf:"fixed64,3,opt,name=distillate_abv_pct,json=distillateAbvPct,proto3" json:"distillate_abv_pct,omitempty"`
+	DistillateAbvPctSet       bool                   `protobuf:"varint,4,opt,name=distillate_abv_pct_set,json=distillateAbvPctSet,proto3" json:"distillate_abv_pct_set,omitempty"`
+	DistillateTemperatureC    float64                `protobuf:"fixed64,5,opt,name=distillate_temperature_c,json=distillateTemperatureC,proto3" json:"distillate_temperature_c,omitempty"`
+	DistillateTemperatureCSet bool                   `protobuf:"varint,6,opt,name=distillate_temperature_c_set,json=distillateTemperatureCSet,proto3" json:"distillate_temperature_c_set,omitempty"`
+	HeatSettingPct            float64                `protobuf:"fixed64,7,opt,name=heat_setting_pct,json=heatSettingPct,proto3" json:"heat_setting_pct,omitempty"`
+	HeatSettingPctSet         bool                   `protobuf:"varint,8,opt,name=heat_setting_pct_set,json=heatSettingPctSet,proto3" json:"heat_setting_pct_set,omitempty"`
+	PotTemperatureC           float64                `protobuf:"fixed64,9,opt,name=pot_temperature_c,json=potTemperatureC,proto3" json:"pot_temperature_c,omitempty"`
+	PotTemperatureCSet        bool                   `protobuf:"varint,10,opt,name=pot_temperature_c_set,json=potTemperatureCSet,proto3" json:"pot_temperature_c_set,omitempty"`
+	VapourTemperatureC        float64                `protobuf:"fixed64,11,opt,name=vapour_temperature_c,json=vapourTemperatureC,proto3" json:"vapour_temperature_c,omitempty"`
+	VapourTemperatureCSet     bool                   `protobuf:"varint,12,opt,name=vapour_temperature_c_set,json=vapourTemperatureCSet,proto3" json:"vapour_temperature_c_set,omitempty"`
+	Notes                     string                 `protobuf:"bytes,13,opt,name=notes,proto3" json:"notes,omitempty"`
+	unknownFields             protoimpl.UnknownFields
+	sizeCache                 protoimpl.SizeCache
+}
+
+func (x *AddDistillationReadingRequest) Reset() {
+	*x = AddDistillationReadingRequest{}
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddDistillationReadingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddDistillationReadingRequest) ProtoMessage() {}
+
+func (x *AddDistillationReadingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddDistillationReadingRequest.ProtoReflect.Descriptor instead.
+func (*AddDistillationReadingRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *AddDistillationReadingRequest) GetDistillationRunId() string {
+	if x != nil {
+		return x.DistillationRunId
+	}
+	return ""
+}
+
+func (x *AddDistillationReadingRequest) GetObservedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ObservedAt
+	}
+	return nil
+}
+
+func (x *AddDistillationReadingRequest) GetDistillateAbvPct() float64 {
+	if x != nil {
+		return x.DistillateAbvPct
+	}
+	return 0
+}
+
+func (x *AddDistillationReadingRequest) GetDistillateAbvPctSet() bool {
+	if x != nil {
+		return x.DistillateAbvPctSet
+	}
+	return false
+}
+
+func (x *AddDistillationReadingRequest) GetDistillateTemperatureC() float64 {
+	if x != nil {
+		return x.DistillateTemperatureC
+	}
+	return 0
+}
+
+func (x *AddDistillationReadingRequest) GetDistillateTemperatureCSet() bool {
+	if x != nil {
+		return x.DistillateTemperatureCSet
+	}
+	return false
+}
+
+func (x *AddDistillationReadingRequest) GetHeatSettingPct() float64 {
+	if x != nil {
+		return x.HeatSettingPct
+	}
+	return 0
+}
+
+func (x *AddDistillationReadingRequest) GetHeatSettingPctSet() bool {
+	if x != nil {
+		return x.HeatSettingPctSet
+	}
+	return false
+}
+
+func (x *AddDistillationReadingRequest) GetPotTemperatureC() float64 {
+	if x != nil {
+		return x.PotTemperatureC
+	}
+	return 0
+}
+
+func (x *AddDistillationReadingRequest) GetPotTemperatureCSet() bool {
+	if x != nil {
+		return x.PotTemperatureCSet
+	}
+	return false
+}
+
+func (x *AddDistillationReadingRequest) GetVapourTemperatureC() float64 {
+	if x != nil {
+		return x.VapourTemperatureC
+	}
+	return 0
+}
+
+func (x *AddDistillationReadingRequest) GetVapourTemperatureCSet() bool {
+	if x != nil {
+		return x.VapourTemperatureCSet
+	}
+	return false
+}
+
+func (x *AddDistillationReadingRequest) GetNotes() string {
+	if x != nil {
+		return x.Notes
+	}
+	return ""
+}
+
+type AddDistillationReadingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Reading       *DistillationReading   `protobuf:"bytes,1,opt,name=reading,proto3" json:"reading,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddDistillationReadingResponse) Reset() {
+	*x = AddDistillationReadingResponse{}
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddDistillationReadingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddDistillationReadingResponse) ProtoMessage() {}
+
+func (x *AddDistillationReadingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddDistillationReadingResponse.ProtoReflect.Descriptor instead.
+func (*AddDistillationReadingResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *AddDistillationReadingResponse) GetReading() *DistillationReading {
+	if x != nil {
+		return x.Reading
+	}
+	return nil
+}
+
+type DeleteDistillationReadingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteDistillationReadingRequest) Reset() {
+	*x = DeleteDistillationReadingRequest{}
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteDistillationReadingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDistillationReadingRequest) ProtoMessage() {}
+
+func (x *DeleteDistillationReadingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDistillationReadingRequest.ProtoReflect.Descriptor instead.
+func (*DeleteDistillationReadingRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *DeleteDistillationReadingRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteDistillationReadingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteDistillationReadingResponse) Reset() {
+	*x = DeleteDistillationReadingResponse{}
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteDistillationReadingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteDistillationReadingResponse) ProtoMessage() {}
+
+func (x *DeleteDistillationReadingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteDistillationReadingResponse.ProtoReflect.Descriptor instead.
+func (*DeleteDistillationReadingResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{20}
 }
 
 type AddDistillationCutRequest struct {
@@ -1494,7 +1923,7 @@ type AddDistillationCutRequest struct {
 
 func (x *AddDistillationCutRequest) Reset() {
 	*x = AddDistillationCutRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[16]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1506,7 +1935,7 @@ func (x *AddDistillationCutRequest) String() string {
 func (*AddDistillationCutRequest) ProtoMessage() {}
 
 func (x *AddDistillationCutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[16]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1519,7 +1948,7 @@ func (x *AddDistillationCutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddDistillationCutRequest.ProtoReflect.Descriptor instead.
 func (*AddDistillationCutRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{16}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *AddDistillationCutRequest) GetDistillationRunId() string {
@@ -1580,7 +2009,7 @@ type AddDistillationCutResponse struct {
 
 func (x *AddDistillationCutResponse) Reset() {
 	*x = AddDistillationCutResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[17]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1592,7 +2021,7 @@ func (x *AddDistillationCutResponse) String() string {
 func (*AddDistillationCutResponse) ProtoMessage() {}
 
 func (x *AddDistillationCutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[17]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1605,7 +2034,7 @@ func (x *AddDistillationCutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddDistillationCutResponse.ProtoReflect.Descriptor instead.
 func (*AddDistillationCutResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{17}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *AddDistillationCutResponse) GetCut() *DistillationCut {
@@ -1630,7 +2059,7 @@ type UpdateDistillationCutRequest struct {
 
 func (x *UpdateDistillationCutRequest) Reset() {
 	*x = UpdateDistillationCutRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[18]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1642,7 +2071,7 @@ func (x *UpdateDistillationCutRequest) String() string {
 func (*UpdateDistillationCutRequest) ProtoMessage() {}
 
 func (x *UpdateDistillationCutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[18]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1655,7 +2084,7 @@ func (x *UpdateDistillationCutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDistillationCutRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDistillationCutRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{18}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *UpdateDistillationCutRequest) GetId() string {
@@ -1716,7 +2145,7 @@ type UpdateDistillationCutResponse struct {
 
 func (x *UpdateDistillationCutResponse) Reset() {
 	*x = UpdateDistillationCutResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[19]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1728,7 +2157,7 @@ func (x *UpdateDistillationCutResponse) String() string {
 func (*UpdateDistillationCutResponse) ProtoMessage() {}
 
 func (x *UpdateDistillationCutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[19]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1741,7 +2170,7 @@ func (x *UpdateDistillationCutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDistillationCutResponse.ProtoReflect.Descriptor instead.
 func (*UpdateDistillationCutResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{19}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *UpdateDistillationCutResponse) GetCut() *DistillationCut {
@@ -1760,7 +2189,7 @@ type DeleteDistillationCutRequest struct {
 
 func (x *DeleteDistillationCutRequest) Reset() {
 	*x = DeleteDistillationCutRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[20]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1772,7 +2201,7 @@ func (x *DeleteDistillationCutRequest) String() string {
 func (*DeleteDistillationCutRequest) ProtoMessage() {}
 
 func (x *DeleteDistillationCutRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[20]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1785,7 +2214,7 @@ func (x *DeleteDistillationCutRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDistillationCutRequest.ProtoReflect.Descriptor instead.
 func (*DeleteDistillationCutRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{20}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *DeleteDistillationCutRequest) GetId() string {
@@ -1803,7 +2232,7 @@ type DeleteDistillationCutResponse struct {
 
 func (x *DeleteDistillationCutResponse) Reset() {
 	*x = DeleteDistillationCutResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[21]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1815,7 +2244,7 @@ func (x *DeleteDistillationCutResponse) String() string {
 func (*DeleteDistillationCutResponse) ProtoMessage() {}
 
 func (x *DeleteDistillationCutResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[21]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1828,7 +2257,7 @@ func (x *DeleteDistillationCutResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteDistillationCutResponse.ProtoReflect.Descriptor instead.
 func (*DeleteDistillationCutResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{21}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{26}
 }
 
 type RecordProductionGaugeRequest struct {
@@ -1859,7 +2288,7 @@ type RecordProductionGaugeRequest struct {
 
 func (x *RecordProductionGaugeRequest) Reset() {
 	*x = RecordProductionGaugeRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[22]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1871,7 +2300,7 @@ func (x *RecordProductionGaugeRequest) String() string {
 func (*RecordProductionGaugeRequest) ProtoMessage() {}
 
 func (x *RecordProductionGaugeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[22]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1884,7 +2313,7 @@ func (x *RecordProductionGaugeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordProductionGaugeRequest.ProtoReflect.Descriptor instead.
 func (*RecordProductionGaugeRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{22}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *RecordProductionGaugeRequest) GetDistillationRunId() string {
@@ -1978,7 +2407,7 @@ type RecordProductionGaugeResponse struct {
 
 func (x *RecordProductionGaugeResponse) Reset() {
 	*x = RecordProductionGaugeResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[23]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1990,7 +2419,7 @@ func (x *RecordProductionGaugeResponse) String() string {
 func (*RecordProductionGaugeResponse) ProtoMessage() {}
 
 func (x *RecordProductionGaugeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[23]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2003,7 +2432,7 @@ func (x *RecordProductionGaugeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordProductionGaugeResponse.ProtoReflect.Descriptor instead.
 func (*RecordProductionGaugeResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{23}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *RecordProductionGaugeResponse) GetGauge() *ProductionGauge {
@@ -2037,7 +2466,7 @@ type VoidDistillationRunRequest struct {
 
 func (x *VoidDistillationRunRequest) Reset() {
 	*x = VoidDistillationRunRequest{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[24]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2049,7 +2478,7 @@ func (x *VoidDistillationRunRequest) String() string {
 func (*VoidDistillationRunRequest) ProtoMessage() {}
 
 func (x *VoidDistillationRunRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[24]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2062,7 +2491,7 @@ func (x *VoidDistillationRunRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoidDistillationRunRequest.ProtoReflect.Descriptor instead.
 func (*VoidDistillationRunRequest) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{24}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *VoidDistillationRunRequest) GetId() string {
@@ -2088,7 +2517,7 @@ type VoidDistillationRunResponse struct {
 
 func (x *VoidDistillationRunResponse) Reset() {
 	*x = VoidDistillationRunResponse{}
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[25]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2100,7 +2529,7 @@ func (x *VoidDistillationRunResponse) String() string {
 func (*VoidDistillationRunResponse) ProtoMessage() {}
 
 func (x *VoidDistillationRunResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_stillhouse_v1_distillation_proto_msgTypes[25]
+	mi := &file_stillhouse_v1_distillation_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2113,7 +2542,7 @@ func (x *VoidDistillationRunResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VoidDistillationRunResponse.ProtoReflect.Descriptor instead.
 func (*VoidDistillationRunResponse) Descriptor() ([]byte, []int) {
-	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{25}
+	return file_stillhouse_v1_distillation_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *VoidDistillationRunResponse) GetRun() *DistillationRun {
@@ -2127,7 +2556,7 @@ var File_stillhouse_v1_distillation_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\n" +
-	" stillhouse/v1/distillation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1estillhouse/v1/instrument.proto\x1a!stillhouse/v1/alcoholometry.proto\x1a\x18stillhouse/v1/bulk.proto\"\xdd\x05\n" +
+	" stillhouse/v1/distillation.proto\x12\rstillhouse.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1estillhouse/v1/instrument.proto\x1a!stillhouse/v1/alcoholometry.proto\x1a\x18stillhouse/v1/bulk.proto\"\x9d\x06\n" +
 	"\x0fDistillationRun\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x15\n" +
@@ -2146,7 +2575,8 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x04cuts\x18\v \x03(\v2\x1e.stillhouse.v1.DistillationCutR\x04cuts\x124\n" +
 	"\x05gauge\x18\f \x01(\v2\x1e.stillhouse.v1.ProductionGaugeR\x05gauge\x12\"\n" +
 	"\rtotal_cut_laa\x18\r \x01(\x01R\vtotalCutLaa\x12=\n" +
-	"\fcut_analysis\x18\x11 \x01(\v2\x1a.stillhouse.v1.CutAnalysisR\vcutAnalysis\x127\n" +
+	"\fcut_analysis\x18\x11 \x01(\v2\x1a.stillhouse.v1.CutAnalysisR\vcutAnalysis\x12>\n" +
+	"\breadings\x18\x12 \x03(\v2\".stillhouse.v1.DistillationReadingR\breadings\x127\n" +
 	"\tvoided_at\x18\x0e \x01(\v2\x1a.google.protobuf.TimestampR\bvoidedAt\x12\x1b\n" +
 	"\tvoided_by\x18\x0f \x01(\tR\bvoidedBy\x12#\n" +
 	"\rvoided_reason\x18\x10 \x01(\tR\fvoidedReason\"\xd4\x02\n" +
@@ -2161,7 +2591,24 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x03laa\x18\b \x01(\x01R\x03laa\x12!\n" +
 	"\fcharge_order\x18\t \x01(\x05R\vchargeOrder\x12\x14\n" +
 	"\x05notes\x18\n" +
-	" \x01(\tR\x05notes\"\xbf\x02\n" +
+	" \x01(\tR\x05notes\"\xab\x05\n" +
+	"\x13DistillationReading\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
+	"\x13distillation_run_id\x18\x02 \x01(\tR\x11distillationRunId\x12;\n" +
+	"\vobserved_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"observedAt\x12,\n" +
+	"\x12distillate_abv_pct\x18\x04 \x01(\x01R\x10distillateAbvPct\x123\n" +
+	"\x16distillate_abv_pct_set\x18\x05 \x01(\bR\x13distillateAbvPctSet\x128\n" +
+	"\x18distillate_temperature_c\x18\x06 \x01(\x01R\x16distillateTemperatureC\x12?\n" +
+	"\x1cdistillate_temperature_c_set\x18\a \x01(\bR\x19distillateTemperatureCSet\x12(\n" +
+	"\x10heat_setting_pct\x18\b \x01(\x01R\x0eheatSettingPct\x12/\n" +
+	"\x14heat_setting_pct_set\x18\t \x01(\bR\x11heatSettingPctSet\x12*\n" +
+	"\x11pot_temperature_c\x18\n" +
+	" \x01(\x01R\x0fpotTemperatureC\x121\n" +
+	"\x15pot_temperature_c_set\x18\v \x01(\bR\x12potTemperatureCSet\x120\n" +
+	"\x14vapour_temperature_c\x18\f \x01(\x01R\x12vapourTemperatureC\x127\n" +
+	"\x18vapour_temperature_c_set\x18\r \x01(\bR\x15vapourTemperatureCSet\x12\x14\n" +
+	"\x05notes\x18\x0e \x01(\tR\x05notes\"\xbf\x02\n" +
 	"\x0fDistillationCut\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x13distillation_run_id\x18\x02 \x01(\tR\x11distillationRunId\x126\n" +
@@ -2242,7 +2689,28 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\fcharge_order\x18\x05 \x01(\x05R\vchargeOrder\x12\x14\n" +
 	"\x05notes\x18\x06 \x01(\tR\x05notes\"Z\n" +
 	"\x1dAddDistillationChargeResponse\x129\n" +
-	"\x06charge\x18\x01 \x01(\v2!.stillhouse.v1.DistillationChargeR\x06charge\"\xa7\x02\n" +
+	"\x06charge\x18\x01 \x01(\v2!.stillhouse.v1.DistillationChargeR\x06charge\"\xa5\x05\n" +
+	"\x1dAddDistillationReadingRequest\x12.\n" +
+	"\x13distillation_run_id\x18\x01 \x01(\tR\x11distillationRunId\x12;\n" +
+	"\vobserved_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"observedAt\x12,\n" +
+	"\x12distillate_abv_pct\x18\x03 \x01(\x01R\x10distillateAbvPct\x123\n" +
+	"\x16distillate_abv_pct_set\x18\x04 \x01(\bR\x13distillateAbvPctSet\x128\n" +
+	"\x18distillate_temperature_c\x18\x05 \x01(\x01R\x16distillateTemperatureC\x12?\n" +
+	"\x1cdistillate_temperature_c_set\x18\x06 \x01(\bR\x19distillateTemperatureCSet\x12(\n" +
+	"\x10heat_setting_pct\x18\a \x01(\x01R\x0eheatSettingPct\x12/\n" +
+	"\x14heat_setting_pct_set\x18\b \x01(\bR\x11heatSettingPctSet\x12*\n" +
+	"\x11pot_temperature_c\x18\t \x01(\x01R\x0fpotTemperatureC\x121\n" +
+	"\x15pot_temperature_c_set\x18\n" +
+	" \x01(\bR\x12potTemperatureCSet\x120\n" +
+	"\x14vapour_temperature_c\x18\v \x01(\x01R\x12vapourTemperatureC\x127\n" +
+	"\x18vapour_temperature_c_set\x18\f \x01(\bR\x15vapourTemperatureCSet\x12\x14\n" +
+	"\x05notes\x18\r \x01(\tR\x05notes\"^\n" +
+	"\x1eAddDistillationReadingResponse\x12<\n" +
+	"\areading\x18\x01 \x01(\v2\".stillhouse.v1.DistillationReadingR\areading\"2\n" +
+	" DeleteDistillationReadingRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"#\n" +
+	"!DeleteDistillationReadingResponse\"\xa7\x02\n" +
 	"\x19AddDistillationCutRequest\x12.\n" +
 	"\x13distillation_run_id\x18\x01 \x01(\tR\x11distillationRunId\x126\n" +
 	"\x04kind\x18\x02 \x01(\x0e2\".stillhouse.v1.DistillationCutKindR\x04kind\x12\x19\n" +
@@ -2309,7 +2777,7 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	" CUT_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12\x1d\n" +
 	"\x19CUT_FINDING_SEVERITY_INFO\x10\x01\x12 \n" +
 	"\x1cCUT_FINDING_SEVERITY_WARNING\x10\x02\x12 \n" +
-	"\x1cCUT_FINDING_SEVERITY_PROBLEM\x10\x032\x8b\t\n" +
+	"\x1cCUT_FINDING_SEVERITY_PROBLEM\x10\x032\x82\v\n" +
 	"\x13DistillationService\x12r\n" +
 	"\x15CreateDistillationRun\x12+.stillhouse.v1.CreateDistillationRunRequest\x1a,.stillhouse.v1.CreateDistillationRunResponse\x12i\n" +
 	"\x12GetDistillationRun\x12(.stillhouse.v1.GetDistillationRunRequest\x1a).stillhouse.v1.GetDistillationRunResponse\x12o\n" +
@@ -2320,7 +2788,9 @@ const file_stillhouse_v1_distillation_proto_rawDesc = "" +
 	"\x15RecordProductionGauge\x12+.stillhouse.v1.RecordProductionGaugeRequest\x1a,.stillhouse.v1.RecordProductionGaugeResponse\x12l\n" +
 	"\x13VoidDistillationRun\x12).stillhouse.v1.VoidDistillationRunRequest\x1a*.stillhouse.v1.VoidDistillationRunResponse\x12r\n" +
 	"\x15UpdateDistillationCut\x12+.stillhouse.v1.UpdateDistillationCutRequest\x1a,.stillhouse.v1.UpdateDistillationCutResponse\x12r\n" +
-	"\x15DeleteDistillationCut\x12+.stillhouse.v1.DeleteDistillationCutRequest\x1a,.stillhouse.v1.DeleteDistillationCutResponseB\xd5\x01\n" +
+	"\x15DeleteDistillationCut\x12+.stillhouse.v1.DeleteDistillationCutRequest\x1a,.stillhouse.v1.DeleteDistillationCutResponse\x12u\n" +
+	"\x16AddDistillationReading\x12,.stillhouse.v1.AddDistillationReadingRequest\x1a-.stillhouse.v1.AddDistillationReadingResponse\x12~\n" +
+	"\x19DeleteDistillationReading\x12/.stillhouse.v1.DeleteDistillationReadingRequest\x1a0.stillhouse.v1.DeleteDistillationReadingResponseB\xd5\x01\n" +
 	"\x11com.stillhouse.v1B\x11DistillationProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -2336,102 +2806,115 @@ func file_stillhouse_v1_distillation_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_distillation_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_stillhouse_v1_distillation_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
+var file_stillhouse_v1_distillation_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_stillhouse_v1_distillation_proto_goTypes = []any{
-	(DistillationStatus)(0),                  // 0: stillhouse.v1.DistillationStatus
-	(DistillationCutKind)(0),                 // 1: stillhouse.v1.DistillationCutKind
-	(CutFindingSeverity)(0),                  // 2: stillhouse.v1.CutFindingSeverity
-	(*DistillationRun)(nil),                  // 3: stillhouse.v1.DistillationRun
-	(*DistillationCharge)(nil),               // 4: stillhouse.v1.DistillationCharge
-	(*DistillationCut)(nil),                  // 5: stillhouse.v1.DistillationCut
-	(*CutFinding)(nil),                       // 6: stillhouse.v1.CutFinding
-	(*CutAnalysis)(nil),                      // 7: stillhouse.v1.CutAnalysis
-	(*ProductionGauge)(nil),                  // 8: stillhouse.v1.ProductionGauge
-	(*CreateDistillationRunRequest)(nil),     // 9: stillhouse.v1.CreateDistillationRunRequest
-	(*CreateDistillationRunResponse)(nil),    // 10: stillhouse.v1.CreateDistillationRunResponse
-	(*GetDistillationRunRequest)(nil),        // 11: stillhouse.v1.GetDistillationRunRequest
-	(*GetDistillationRunResponse)(nil),       // 12: stillhouse.v1.GetDistillationRunResponse
-	(*ListDistillationRunsRequest)(nil),      // 13: stillhouse.v1.ListDistillationRunsRequest
-	(*ListDistillationRunsResponse)(nil),     // 14: stillhouse.v1.ListDistillationRunsResponse
-	(*UpdateDistillationStatusRequest)(nil),  // 15: stillhouse.v1.UpdateDistillationStatusRequest
-	(*UpdateDistillationStatusResponse)(nil), // 16: stillhouse.v1.UpdateDistillationStatusResponse
-	(*AddDistillationChargeRequest)(nil),     // 17: stillhouse.v1.AddDistillationChargeRequest
-	(*AddDistillationChargeResponse)(nil),    // 18: stillhouse.v1.AddDistillationChargeResponse
-	(*AddDistillationCutRequest)(nil),        // 19: stillhouse.v1.AddDistillationCutRequest
-	(*AddDistillationCutResponse)(nil),       // 20: stillhouse.v1.AddDistillationCutResponse
-	(*UpdateDistillationCutRequest)(nil),     // 21: stillhouse.v1.UpdateDistillationCutRequest
-	(*UpdateDistillationCutResponse)(nil),    // 22: stillhouse.v1.UpdateDistillationCutResponse
-	(*DeleteDistillationCutRequest)(nil),     // 23: stillhouse.v1.DeleteDistillationCutRequest
-	(*DeleteDistillationCutResponse)(nil),    // 24: stillhouse.v1.DeleteDistillationCutResponse
-	(*RecordProductionGaugeRequest)(nil),     // 25: stillhouse.v1.RecordProductionGaugeRequest
-	(*RecordProductionGaugeResponse)(nil),    // 26: stillhouse.v1.RecordProductionGaugeResponse
-	(*VoidDistillationRunRequest)(nil),       // 27: stillhouse.v1.VoidDistillationRunRequest
-	(*VoidDistillationRunResponse)(nil),      // 28: stillhouse.v1.VoidDistillationRunResponse
-	(*timestamppb.Timestamp)(nil),            // 29: google.protobuf.Timestamp
-	(StrengthSource)(0),                      // 30: stillhouse.v1.StrengthSource
-	(*DeterminationInstruments)(nil),         // 31: stillhouse.v1.DeterminationInstruments
-	(*InstrumentRefs)(nil),                   // 32: stillhouse.v1.InstrumentRefs
-	(*BulkContainer)(nil),                    // 33: stillhouse.v1.BulkContainer
+	(DistillationStatus)(0),                   // 0: stillhouse.v1.DistillationStatus
+	(DistillationCutKind)(0),                  // 1: stillhouse.v1.DistillationCutKind
+	(CutFindingSeverity)(0),                   // 2: stillhouse.v1.CutFindingSeverity
+	(*DistillationRun)(nil),                   // 3: stillhouse.v1.DistillationRun
+	(*DistillationCharge)(nil),                // 4: stillhouse.v1.DistillationCharge
+	(*DistillationReading)(nil),               // 5: stillhouse.v1.DistillationReading
+	(*DistillationCut)(nil),                   // 6: stillhouse.v1.DistillationCut
+	(*CutFinding)(nil),                        // 7: stillhouse.v1.CutFinding
+	(*CutAnalysis)(nil),                       // 8: stillhouse.v1.CutAnalysis
+	(*ProductionGauge)(nil),                   // 9: stillhouse.v1.ProductionGauge
+	(*CreateDistillationRunRequest)(nil),      // 10: stillhouse.v1.CreateDistillationRunRequest
+	(*CreateDistillationRunResponse)(nil),     // 11: stillhouse.v1.CreateDistillationRunResponse
+	(*GetDistillationRunRequest)(nil),         // 12: stillhouse.v1.GetDistillationRunRequest
+	(*GetDistillationRunResponse)(nil),        // 13: stillhouse.v1.GetDistillationRunResponse
+	(*ListDistillationRunsRequest)(nil),       // 14: stillhouse.v1.ListDistillationRunsRequest
+	(*ListDistillationRunsResponse)(nil),      // 15: stillhouse.v1.ListDistillationRunsResponse
+	(*UpdateDistillationStatusRequest)(nil),   // 16: stillhouse.v1.UpdateDistillationStatusRequest
+	(*UpdateDistillationStatusResponse)(nil),  // 17: stillhouse.v1.UpdateDistillationStatusResponse
+	(*AddDistillationChargeRequest)(nil),      // 18: stillhouse.v1.AddDistillationChargeRequest
+	(*AddDistillationChargeResponse)(nil),     // 19: stillhouse.v1.AddDistillationChargeResponse
+	(*AddDistillationReadingRequest)(nil),     // 20: stillhouse.v1.AddDistillationReadingRequest
+	(*AddDistillationReadingResponse)(nil),    // 21: stillhouse.v1.AddDistillationReadingResponse
+	(*DeleteDistillationReadingRequest)(nil),  // 22: stillhouse.v1.DeleteDistillationReadingRequest
+	(*DeleteDistillationReadingResponse)(nil), // 23: stillhouse.v1.DeleteDistillationReadingResponse
+	(*AddDistillationCutRequest)(nil),         // 24: stillhouse.v1.AddDistillationCutRequest
+	(*AddDistillationCutResponse)(nil),        // 25: stillhouse.v1.AddDistillationCutResponse
+	(*UpdateDistillationCutRequest)(nil),      // 26: stillhouse.v1.UpdateDistillationCutRequest
+	(*UpdateDistillationCutResponse)(nil),     // 27: stillhouse.v1.UpdateDistillationCutResponse
+	(*DeleteDistillationCutRequest)(nil),      // 28: stillhouse.v1.DeleteDistillationCutRequest
+	(*DeleteDistillationCutResponse)(nil),     // 29: stillhouse.v1.DeleteDistillationCutResponse
+	(*RecordProductionGaugeRequest)(nil),      // 30: stillhouse.v1.RecordProductionGaugeRequest
+	(*RecordProductionGaugeResponse)(nil),     // 31: stillhouse.v1.RecordProductionGaugeResponse
+	(*VoidDistillationRunRequest)(nil),        // 32: stillhouse.v1.VoidDistillationRunRequest
+	(*VoidDistillationRunResponse)(nil),       // 33: stillhouse.v1.VoidDistillationRunResponse
+	(*timestamppb.Timestamp)(nil),             // 34: google.protobuf.Timestamp
+	(StrengthSource)(0),                       // 35: stillhouse.v1.StrengthSource
+	(*DeterminationInstruments)(nil),          // 36: stillhouse.v1.DeterminationInstruments
+	(*InstrumentRefs)(nil),                    // 37: stillhouse.v1.InstrumentRefs
+	(*BulkContainer)(nil),                     // 38: stillhouse.v1.BulkContainer
 }
 var file_stillhouse_v1_distillation_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.DistillationRun.status:type_name -> stillhouse.v1.DistillationStatus
-	29, // 1: stillhouse.v1.DistillationRun.created_at:type_name -> google.protobuf.Timestamp
-	29, // 2: stillhouse.v1.DistillationRun.updated_at:type_name -> google.protobuf.Timestamp
+	34, // 1: stillhouse.v1.DistillationRun.created_at:type_name -> google.protobuf.Timestamp
+	34, // 2: stillhouse.v1.DistillationRun.updated_at:type_name -> google.protobuf.Timestamp
 	4,  // 3: stillhouse.v1.DistillationRun.charges:type_name -> stillhouse.v1.DistillationCharge
-	5,  // 4: stillhouse.v1.DistillationRun.cuts:type_name -> stillhouse.v1.DistillationCut
-	8,  // 5: stillhouse.v1.DistillationRun.gauge:type_name -> stillhouse.v1.ProductionGauge
-	7,  // 6: stillhouse.v1.DistillationRun.cut_analysis:type_name -> stillhouse.v1.CutAnalysis
-	29, // 7: stillhouse.v1.DistillationRun.voided_at:type_name -> google.protobuf.Timestamp
-	1,  // 8: stillhouse.v1.DistillationCut.kind:type_name -> stillhouse.v1.DistillationCutKind
-	29, // 9: stillhouse.v1.DistillationCut.observed_at:type_name -> google.protobuf.Timestamp
-	2,  // 10: stillhouse.v1.CutFinding.severity:type_name -> stillhouse.v1.CutFindingSeverity
-	6,  // 11: stillhouse.v1.CutAnalysis.findings:type_name -> stillhouse.v1.CutFinding
-	29, // 12: stillhouse.v1.ProductionGauge.gauge_date:type_name -> google.protobuf.Timestamp
-	30, // 13: stillhouse.v1.ProductionGauge.strength_source:type_name -> stillhouse.v1.StrengthSource
-	31, // 14: stillhouse.v1.ProductionGauge.instruments:type_name -> stillhouse.v1.DeterminationInstruments
-	3,  // 15: stillhouse.v1.CreateDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
-	3,  // 16: stillhouse.v1.GetDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
-	0,  // 17: stillhouse.v1.ListDistillationRunsRequest.status:type_name -> stillhouse.v1.DistillationStatus
-	3,  // 18: stillhouse.v1.ListDistillationRunsResponse.runs:type_name -> stillhouse.v1.DistillationRun
-	0,  // 19: stillhouse.v1.UpdateDistillationStatusRequest.status:type_name -> stillhouse.v1.DistillationStatus
-	3,  // 20: stillhouse.v1.UpdateDistillationStatusResponse.run:type_name -> stillhouse.v1.DistillationRun
-	4,  // 21: stillhouse.v1.AddDistillationChargeResponse.charge:type_name -> stillhouse.v1.DistillationCharge
-	1,  // 22: stillhouse.v1.AddDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
-	29, // 23: stillhouse.v1.AddDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
-	5,  // 24: stillhouse.v1.AddDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
-	1,  // 25: stillhouse.v1.UpdateDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
-	29, // 26: stillhouse.v1.UpdateDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
-	5,  // 27: stillhouse.v1.UpdateDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
-	29, // 28: stillhouse.v1.RecordProductionGaugeRequest.gauge_date:type_name -> google.protobuf.Timestamp
-	32, // 29: stillhouse.v1.RecordProductionGaugeRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	8,  // 30: stillhouse.v1.RecordProductionGaugeResponse.gauge:type_name -> stillhouse.v1.ProductionGauge
-	33, // 31: stillhouse.v1.RecordProductionGaugeResponse.destination_container:type_name -> stillhouse.v1.BulkContainer
-	3,  // 32: stillhouse.v1.VoidDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
-	9,  // 33: stillhouse.v1.DistillationService.CreateDistillationRun:input_type -> stillhouse.v1.CreateDistillationRunRequest
-	11, // 34: stillhouse.v1.DistillationService.GetDistillationRun:input_type -> stillhouse.v1.GetDistillationRunRequest
-	13, // 35: stillhouse.v1.DistillationService.ListDistillationRuns:input_type -> stillhouse.v1.ListDistillationRunsRequest
-	15, // 36: stillhouse.v1.DistillationService.UpdateDistillationStatus:input_type -> stillhouse.v1.UpdateDistillationStatusRequest
-	17, // 37: stillhouse.v1.DistillationService.AddDistillationCharge:input_type -> stillhouse.v1.AddDistillationChargeRequest
-	19, // 38: stillhouse.v1.DistillationService.AddDistillationCut:input_type -> stillhouse.v1.AddDistillationCutRequest
-	25, // 39: stillhouse.v1.DistillationService.RecordProductionGauge:input_type -> stillhouse.v1.RecordProductionGaugeRequest
-	27, // 40: stillhouse.v1.DistillationService.VoidDistillationRun:input_type -> stillhouse.v1.VoidDistillationRunRequest
-	21, // 41: stillhouse.v1.DistillationService.UpdateDistillationCut:input_type -> stillhouse.v1.UpdateDistillationCutRequest
-	23, // 42: stillhouse.v1.DistillationService.DeleteDistillationCut:input_type -> stillhouse.v1.DeleteDistillationCutRequest
-	10, // 43: stillhouse.v1.DistillationService.CreateDistillationRun:output_type -> stillhouse.v1.CreateDistillationRunResponse
-	12, // 44: stillhouse.v1.DistillationService.GetDistillationRun:output_type -> stillhouse.v1.GetDistillationRunResponse
-	14, // 45: stillhouse.v1.DistillationService.ListDistillationRuns:output_type -> stillhouse.v1.ListDistillationRunsResponse
-	16, // 46: stillhouse.v1.DistillationService.UpdateDistillationStatus:output_type -> stillhouse.v1.UpdateDistillationStatusResponse
-	18, // 47: stillhouse.v1.DistillationService.AddDistillationCharge:output_type -> stillhouse.v1.AddDistillationChargeResponse
-	20, // 48: stillhouse.v1.DistillationService.AddDistillationCut:output_type -> stillhouse.v1.AddDistillationCutResponse
-	26, // 49: stillhouse.v1.DistillationService.RecordProductionGauge:output_type -> stillhouse.v1.RecordProductionGaugeResponse
-	28, // 50: stillhouse.v1.DistillationService.VoidDistillationRun:output_type -> stillhouse.v1.VoidDistillationRunResponse
-	22, // 51: stillhouse.v1.DistillationService.UpdateDistillationCut:output_type -> stillhouse.v1.UpdateDistillationCutResponse
-	24, // 52: stillhouse.v1.DistillationService.DeleteDistillationCut:output_type -> stillhouse.v1.DeleteDistillationCutResponse
-	43, // [43:53] is the sub-list for method output_type
-	33, // [33:43] is the sub-list for method input_type
-	33, // [33:33] is the sub-list for extension type_name
-	33, // [33:33] is the sub-list for extension extendee
-	0,  // [0:33] is the sub-list for field type_name
+	6,  // 4: stillhouse.v1.DistillationRun.cuts:type_name -> stillhouse.v1.DistillationCut
+	9,  // 5: stillhouse.v1.DistillationRun.gauge:type_name -> stillhouse.v1.ProductionGauge
+	8,  // 6: stillhouse.v1.DistillationRun.cut_analysis:type_name -> stillhouse.v1.CutAnalysis
+	5,  // 7: stillhouse.v1.DistillationRun.readings:type_name -> stillhouse.v1.DistillationReading
+	34, // 8: stillhouse.v1.DistillationRun.voided_at:type_name -> google.protobuf.Timestamp
+	34, // 9: stillhouse.v1.DistillationReading.observed_at:type_name -> google.protobuf.Timestamp
+	1,  // 10: stillhouse.v1.DistillationCut.kind:type_name -> stillhouse.v1.DistillationCutKind
+	34, // 11: stillhouse.v1.DistillationCut.observed_at:type_name -> google.protobuf.Timestamp
+	2,  // 12: stillhouse.v1.CutFinding.severity:type_name -> stillhouse.v1.CutFindingSeverity
+	7,  // 13: stillhouse.v1.CutAnalysis.findings:type_name -> stillhouse.v1.CutFinding
+	34, // 14: stillhouse.v1.ProductionGauge.gauge_date:type_name -> google.protobuf.Timestamp
+	35, // 15: stillhouse.v1.ProductionGauge.strength_source:type_name -> stillhouse.v1.StrengthSource
+	36, // 16: stillhouse.v1.ProductionGauge.instruments:type_name -> stillhouse.v1.DeterminationInstruments
+	3,  // 17: stillhouse.v1.CreateDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
+	3,  // 18: stillhouse.v1.GetDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
+	0,  // 19: stillhouse.v1.ListDistillationRunsRequest.status:type_name -> stillhouse.v1.DistillationStatus
+	3,  // 20: stillhouse.v1.ListDistillationRunsResponse.runs:type_name -> stillhouse.v1.DistillationRun
+	0,  // 21: stillhouse.v1.UpdateDistillationStatusRequest.status:type_name -> stillhouse.v1.DistillationStatus
+	3,  // 22: stillhouse.v1.UpdateDistillationStatusResponse.run:type_name -> stillhouse.v1.DistillationRun
+	4,  // 23: stillhouse.v1.AddDistillationChargeResponse.charge:type_name -> stillhouse.v1.DistillationCharge
+	34, // 24: stillhouse.v1.AddDistillationReadingRequest.observed_at:type_name -> google.protobuf.Timestamp
+	5,  // 25: stillhouse.v1.AddDistillationReadingResponse.reading:type_name -> stillhouse.v1.DistillationReading
+	1,  // 26: stillhouse.v1.AddDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
+	34, // 27: stillhouse.v1.AddDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
+	6,  // 28: stillhouse.v1.AddDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
+	1,  // 29: stillhouse.v1.UpdateDistillationCutRequest.kind:type_name -> stillhouse.v1.DistillationCutKind
+	34, // 30: stillhouse.v1.UpdateDistillationCutRequest.observed_at:type_name -> google.protobuf.Timestamp
+	6,  // 31: stillhouse.v1.UpdateDistillationCutResponse.cut:type_name -> stillhouse.v1.DistillationCut
+	34, // 32: stillhouse.v1.RecordProductionGaugeRequest.gauge_date:type_name -> google.protobuf.Timestamp
+	37, // 33: stillhouse.v1.RecordProductionGaugeRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	9,  // 34: stillhouse.v1.RecordProductionGaugeResponse.gauge:type_name -> stillhouse.v1.ProductionGauge
+	38, // 35: stillhouse.v1.RecordProductionGaugeResponse.destination_container:type_name -> stillhouse.v1.BulkContainer
+	3,  // 36: stillhouse.v1.VoidDistillationRunResponse.run:type_name -> stillhouse.v1.DistillationRun
+	10, // 37: stillhouse.v1.DistillationService.CreateDistillationRun:input_type -> stillhouse.v1.CreateDistillationRunRequest
+	12, // 38: stillhouse.v1.DistillationService.GetDistillationRun:input_type -> stillhouse.v1.GetDistillationRunRequest
+	14, // 39: stillhouse.v1.DistillationService.ListDistillationRuns:input_type -> stillhouse.v1.ListDistillationRunsRequest
+	16, // 40: stillhouse.v1.DistillationService.UpdateDistillationStatus:input_type -> stillhouse.v1.UpdateDistillationStatusRequest
+	18, // 41: stillhouse.v1.DistillationService.AddDistillationCharge:input_type -> stillhouse.v1.AddDistillationChargeRequest
+	24, // 42: stillhouse.v1.DistillationService.AddDistillationCut:input_type -> stillhouse.v1.AddDistillationCutRequest
+	30, // 43: stillhouse.v1.DistillationService.RecordProductionGauge:input_type -> stillhouse.v1.RecordProductionGaugeRequest
+	32, // 44: stillhouse.v1.DistillationService.VoidDistillationRun:input_type -> stillhouse.v1.VoidDistillationRunRequest
+	26, // 45: stillhouse.v1.DistillationService.UpdateDistillationCut:input_type -> stillhouse.v1.UpdateDistillationCutRequest
+	28, // 46: stillhouse.v1.DistillationService.DeleteDistillationCut:input_type -> stillhouse.v1.DeleteDistillationCutRequest
+	20, // 47: stillhouse.v1.DistillationService.AddDistillationReading:input_type -> stillhouse.v1.AddDistillationReadingRequest
+	22, // 48: stillhouse.v1.DistillationService.DeleteDistillationReading:input_type -> stillhouse.v1.DeleteDistillationReadingRequest
+	11, // 49: stillhouse.v1.DistillationService.CreateDistillationRun:output_type -> stillhouse.v1.CreateDistillationRunResponse
+	13, // 50: stillhouse.v1.DistillationService.GetDistillationRun:output_type -> stillhouse.v1.GetDistillationRunResponse
+	15, // 51: stillhouse.v1.DistillationService.ListDistillationRuns:output_type -> stillhouse.v1.ListDistillationRunsResponse
+	17, // 52: stillhouse.v1.DistillationService.UpdateDistillationStatus:output_type -> stillhouse.v1.UpdateDistillationStatusResponse
+	19, // 53: stillhouse.v1.DistillationService.AddDistillationCharge:output_type -> stillhouse.v1.AddDistillationChargeResponse
+	25, // 54: stillhouse.v1.DistillationService.AddDistillationCut:output_type -> stillhouse.v1.AddDistillationCutResponse
+	31, // 55: stillhouse.v1.DistillationService.RecordProductionGauge:output_type -> stillhouse.v1.RecordProductionGaugeResponse
+	33, // 56: stillhouse.v1.DistillationService.VoidDistillationRun:output_type -> stillhouse.v1.VoidDistillationRunResponse
+	27, // 57: stillhouse.v1.DistillationService.UpdateDistillationCut:output_type -> stillhouse.v1.UpdateDistillationCutResponse
+	29, // 58: stillhouse.v1.DistillationService.DeleteDistillationCut:output_type -> stillhouse.v1.DeleteDistillationCutResponse
+	21, // 59: stillhouse.v1.DistillationService.AddDistillationReading:output_type -> stillhouse.v1.AddDistillationReadingResponse
+	23, // 60: stillhouse.v1.DistillationService.DeleteDistillationReading:output_type -> stillhouse.v1.DeleteDistillationReadingResponse
+	49, // [49:61] is the sub-list for method output_type
+	37, // [37:49] is the sub-list for method input_type
+	37, // [37:37] is the sub-list for extension type_name
+	37, // [37:37] is the sub-list for extension extendee
+	0,  // [0:37] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_distillation_proto_init() }
@@ -2448,7 +2931,7 @@ func file_stillhouse_v1_distillation_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_distillation_proto_rawDesc), len(file_stillhouse_v1_distillation_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   26,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

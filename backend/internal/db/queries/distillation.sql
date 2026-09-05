@@ -90,3 +90,23 @@ SET voided_at = NOW(),
     voided_reason = $3
 WHERE id = $1 AND voided_at IS NULL
 RETURNING *;
+
+-- name: AddDistillationReading :one
+INSERT INTO distillation_readings (
+    tenant_id, distillation_run_id, observed_at,
+    distillate_abv_pct, distillate_temperature_c, heat_setting_pct,
+    pot_temperature_c, vapour_temperature_c, notes
+) VALUES (
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
+) RETURNING *;
+
+-- name: ListDistillationReadings :many
+SELECT * FROM distillation_readings
+WHERE distillation_run_id = $1
+ORDER BY observed_at;
+
+-- name: GetDistillationReading :one
+SELECT * FROM distillation_readings WHERE id = $1;
+
+-- name: DeleteDistillationReading :exec
+DELETE FROM distillation_readings WHERE id = $1;
