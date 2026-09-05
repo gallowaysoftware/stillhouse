@@ -3,6 +3,7 @@ package mcp
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"connectrpc.com/connect"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
@@ -29,6 +30,7 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addGetMash(s, d, user)
 	addPlanStrike(s, d, user)
 	addPlanReduction(s, d, user)
+	addPlanRun(s, d, user)
 	addPlanBlend(s, d, user)
 	addReviewFiling(s, d, user)
 	addListWorkOrders(s, d, user)
@@ -670,5 +672,65 @@ func addListWorkOrders(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 			return errResult(err), nil, nil
 		}
 		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addPlanRun(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+	type in struct {
+		Still              string    `json:"still" jsonschema:"which still, by preset name: '200 L electric, pot', '200 L electric, four plates and dephlegmator', or '30 L electric, pot'"`
+		VolumeL            float64   `json:"volume_l" jsonschema:"charge volume in litres"`
+		AbvPct             float64   `json:"abv_pct" jsonschema:"charge strength, percent at 20 °C"`
+		FiringPct          float64   `json:"firing_pct" jsonschema:"element setting from the first drop on, percent of full (heat-up is at full)"`
+		RefluxRatio        float64   `json:"reflux_ratio,omitempty" jsonschema:"dephlegmator reflux ratio, for the column preset; e.g. 3"`
+		CutStrengthsPct    []float64 `json:"cut_strengths_pct,omitempty" jsonschema:"strengths to give the envelope for, descending, e.g. [75, 65, 48]"`
+		StopDistillateAbv  float64   `json:"stop_distillate_abv_pct,omitempty" jsonschema:"distillate strength the run stops at; 0 = 8"`
+		ChargeTemperatureC float64   `json:"charge_temperature_c,omitempty" jsonschema:"charge temperature at the start, °C; 0 = 20"`
+	}
+	mcpsdk.AddTool(s, &mcpsdk.Tool{
+		Name:        "plan_run",
+		Description: "Plan a still run before it happens on one of the stills on site: the strength-versus-time curve, the time and alcohol collected by the time the distillate passes each named strength, the run's length and its electricity. The plan says on its face whether it comes from the still's specification or a calibration. It predicts strength and time, not flavour: the cut by nose is yours.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.EngineeringService/PlanRun")
+		if err != nil {
+			return nil, nil, err
+		}
+		presets, err := d.Engineering.ListStillPresets(ctx, connect.NewRequest(&pb.ListStillPresetsRequest{}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		var still *pb.StillSpec
+		for _, p := range presets.Msg.GetPresets() {
+			if strings.EqualFold(p.GetName(), strings.TrimSpace(args.Still)) {
+				still = p
+			}
+		}
+		if still == nil {
+			names := make([]string, 0, len(presets.Msg.GetPresets()))
+			for _, p := range presets.Msg.GetPresets() {
+				names = append(names, p.GetName())
+			}
+			return errResult(fmt.Errorf("no still called %q — the presets are: %s", args.Still, strings.Join(names, "; "))), nil, nil
+		}
+		cuts := args.CutStrengthsPct
+		if len(cuts) == 0 {
+			cuts = []float64{75, 65, 48}
+		}
+		resp, err := d.Engineering.PlanRun(ctx, connect.NewRequest(&pb.PlanRunRequest{
+			Still:  still,
+			Charge: &pb.RunCharge{VolumeL: args.VolumeL, AbvPct: args.AbvPct, TemperatureC: args.ChargeTemperatureC},
+			Settings: &pb.RunSettings{
+				FiringPct:            args.FiringPct,
+				RefluxRatio:          args.RefluxRatio,
+				CutStrengthsPct:      cuts,
+				StopDistillateAbvPct: args.StopDistillateAbv,
+			},
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		// The curve is a thousand points; the envelope is what a phone wants.
+		plan := resp.Msg.GetPlan()
+		plan.Points = nil
+		return jsonResult(plan), nil, nil
 	})
 }

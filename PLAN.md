@@ -476,13 +476,6 @@ The flow chart of the distillery, with a model behind each node. Design:
 of planning a distillery I think of it as a flow chart of inputs and outputs
 with connections to the various points in the process."
 
-### L3 · The run planner — P2
-
-`PlanRun` on a still: charge from a fermentation or typed, a heat setting,
-pot or column, the strengths to cut at; the curves and the envelope on the
-still's page and on the distillation page as planned against actual.
-Uncalibrated says so on the curve.
-
 ### L4 · Calibration — P2
 
 `CalibrateStill` fits effective stages, losses and condenser adequacy from

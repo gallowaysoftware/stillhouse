@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package stillhouse.v1;
+
+// Engineering: the flow chart of the distillery and the models behind its
+// nodes (docs/engineering.md). This file carries the still model's surface:
+// what a still is to the planner, what a run is driven with, and the plan
+// that comes back. Nothing here writes; a plan is a calculation.
+
+enum StillHeatingKind {
+  STILL_HEATING_KIND_UNSPECIFIED = 0;
+  STILL_HEATING_KIND_ELECTRIC = 1;   // elements in the pot; heat in is the rating times the setting
+  STILL_HEATING_KIND_STEAM = 2;      // a jacket or coil; heat in is its duty times the valve setting
+}
+
+enum StillGeometry {
+  STILL_GEOMETRY_UNSPECIFIED = 0;
+  STILL_GEOMETRY_STANDARD = 1;
+  STILL_GEOMETRY_SQUAT = 2;
+  STILL_GEOMETRY_TALL = 3;
+}
+
+// A still as the planner needs it. Figures the operator does not know are
+// left unset and the model uses its cited defaults, saying so in the basis.
+message StillSpec {
+  string name = 1;
+  double pot_volume_l = 2;
+  StillHeatingKind heating_kind = 3;
+  double rated_w = 4;                 // the elements' total rating, or the jacket's duty at working pressure
+  double heating_efficiency = 5;      // share of rated_w reaching the charge; 0 = the default (1.0)
+  StillGeometry geometry = 6;
+  bool   boil_ball = 7;
+  int32  plates = 8;
+  bool   dephlegmator = 9;
+  double heat_loss_w = 10;            // loss to the room at the boil; 0 = the default for the pot's size
+  bool   heat_loss_w_set = 11;
+}
+
+message RunCharge {
+  double volume_l = 1;
+  double abv_pct = 2;                 // at 20 °C
+  double temperature_c = 3;           // 0 = 20 °C
+}
+
+message RunSettings {
+  double firing_pct = 1;              // the element dial or jacket valve from the first drop on, 0–100
+  double heat_up_firing_pct = 2;      // until the first drop; 0 = full
+  double reflux_ratio = 3;            // for a dephlegmator; ignored without one
+  repeated double cut_strengths_pct = 4;  // the strengths to give the envelope for, descending
+  double stop_distillate_abv_pct = 5; // 0 = 8 %, the curriculum's feints stop
+  double ambient_c = 6;               // 0 = 20 °C
+}
+
+message PlanPoint {
+  int64  at_s = 1;
+  double distillate_abv_pct = 2;      // what a cold, corrected parrot would read now
+  double pot_abv_pct = 3;
+  double pot_temperature_c = 4;
+  double collected_laa = 5;
+  double collected_volume_l = 6;
+  double energy_kwh = 7;
+}
+
+message PlanCut {
+  double abv_pct = 1;
+  int64  at_s = 2;
+  double collected_laa = 3;
+  double share_of_charge = 4;         // in [0,1]
+}
+
+message RunPlan {
+  string still = 1;
+  double charge_laa = 2;
+  double stages = 3;                  // effective equilibrium stages the plan used
+  string basis = 4;                   // where the still's numbers came from: its specification or a calibration
+  int64  time_to_first_drop_s = 5;
+  int64  run_time_s = 6;
+  repeated PlanPoint points = 7;
+  repeated PlanCut cuts = 8;
+  double collected_laa = 9;
+  double share_of_charge = 10;
+  double energy_kwh = 11;
+  repeated string directions = 12;    // what the curriculum says without a figure, stated as such
+}
+
+message PlanRunRequest {
+  StillSpec still = 1;
+  RunCharge charge = 2;
+  RunSettings settings = 3;
+}
+message PlanRunResponse { RunPlan plan = 1; }
+
+message ListStillPresetsRequest {}
+message ListStillPresetsResponse { repeated StillSpec presets = 1; }
+
+service EngineeringService {
+  rpc ListStillPresets(ListStillPresetsRequest) returns (ListStillPresetsResponse);
+  rpc PlanRun(PlanRunRequest) returns (PlanRunResponse);
+}

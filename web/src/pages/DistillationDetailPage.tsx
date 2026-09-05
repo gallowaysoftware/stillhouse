@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 import { useConfirm } from "@/components/ConfirmDialog";
 import { CutProfile } from "@/components/CutProfile";
 import { RunCurve } from "@/components/RunCurve";
+import { PlanCurve } from "@/components/PlanCurve";
 import {
   emptyReading,
   readingToRequest,
@@ -17,7 +18,7 @@ import {
 } from "@/components/StrengthReading";
 import { Shell } from "@/components/Shell";
 import { useToast } from "@/components/Toast";
-import { bulkClient, distillationClient, fermentationClient } from "@/lib/clients";
+import { bulkClient, distillationClient, engineeringClient, fermentationClient } from "@/lib/clients";
 import {
   AddDistillationChargeRequestSchema,
   AddDistillationCutRequestSchema,
@@ -35,6 +36,7 @@ import {
   formatQty,
 } from "@/lib/format";
 import type { DistillationReading } from "@/gen/stillhouse/v1/distillation_pb";
+import { PlanRunRequestSchema, type StillSpec } from "@/gen/stillhouse/v1/engineering_pb";
 
 const cutKindOptions = [
   { v: DistillationCutKind.FORESHOTS, label: "Foreshots" },
@@ -161,6 +163,13 @@ export function DistillationDetailPage() {
       {r.cutAnalysis && <CutProfile analysis={r.cutAnalysis} cuts={r.cuts} />}
 
       <RunCurve readings={r.readings} />
+      {totalChargeLAA > 0 && (
+        <PlanThisRun
+          chargeVolumeL={r.charges.reduce((s, c) => s + c.volumeChargedL, 0)}
+          chargeAbvPct={(totalChargeLAA / Math.max(1e-9, r.charges.reduce((s, c) => s + c.volumeChargedL, 0))) * 100}
+          readings={r.readings}
+        />
+      )}
       <ReadingsPanel
         runId={r.id}
         readings={r.readings}
@@ -788,5 +797,100 @@ function ReadingField({
       <input type="number" step={step} value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)}
              className="w-full rounded border border-border-strong px-2 py-1.5 text-sm" />
     </div>
+  );
+}
+
+/**
+ * PlanThisRun — the planner's curve for this run's charge, with what the
+ * parrot actually read laid over it once there are readings. The plan's
+ * clock starts at the charge; the readings start whenever the first one was
+ * taken, so the two are lined up at the first drop — the moment both know.
+ */
+function PlanThisRun({
+  chargeVolumeL,
+  chargeAbvPct,
+  readings,
+}: {
+  chargeVolumeL: number;
+  chargeAbvPct: number;
+  readings: DistillationReading[];
+}) {
+  const presets = useQuery({
+    queryKey: ["listStillPresets"],
+    queryFn: () => engineeringClient.listStillPresets({}),
+  });
+  const [still, setStill] = useState<StillSpec | null>(null);
+  const [firing, setFiring] = useState("60");
+  const chosen = still ?? presets.data?.presets[0] ?? null;
+
+  const plan = useMutation({
+    mutationFn: (req: ReturnType<typeof create<typeof PlanRunRequestSchema>>) => engineeringClient.planRun(req),
+  });
+
+  const run = () => {
+    if (!chosen) return;
+    plan.mutate(
+      create(PlanRunRequestSchema, {
+        still: chosen,
+        charge: { volumeL: chargeVolumeL, abvPct: chargeAbvPct },
+        settings: { firingPct: Number(firing), refluxRatio: chosen.dephlegmator ? 3 : 0, cutStrengthsPct: [75, 65, 48], stopDistillateAbvPct: 10 },
+      }),
+    );
+  };
+
+  const p = plan.data?.plan;
+  let actual: { h: number; v: number }[] | undefined;
+  let planned: { h: number; v: number }[] = [];
+  let collected: { h: number; v: number }[] = [];
+  let cuts: { abv: number; h: number; share: number }[] = [];
+  let totalHours = 0;
+  if (p) {
+    const firstDropH = Number(p.timeToFirstDropS) / 3600;
+    const strengthReadings = [...readings]
+      .filter((rd) => rd.observedAt && rd.distillateAbvPctSet)
+      .sort((a, b) => Number(a.observedAt!.seconds) - Number(b.observedAt!.seconds));
+    // Lined up at the first drop: the plan's first drop sits where the first strength was read.
+    const t0 = strengthReadings.length ? Number(strengthReadings[0].observedAt!.seconds) : 0;
+    const shift = strengthReadings.length ? firstDropH : 0;
+    planned = p.points.map((pt) => ({ h: Number(pt.atS) / 3600 - shift, v: pt.distillateAbvPct })).filter((pt) => pt.h >= 0);
+    collected = p.points.map((pt) => ({ h: Number(pt.atS) / 3600 - shift, v: pt.collectedLaa })).filter((pt) => pt.h >= 0);
+    cuts = p.cuts.map((c) => ({ abv: c.abvPct, h: Number(c.atS) / 3600 - shift, share: c.shareOfCharge }));
+    totalHours = Number(p.runTimeS) / 3600 - shift;
+    if (strengthReadings.length >= 2) {
+      actual = strengthReadings.map((rd) => ({ h: (Number(rd.observedAt!.seconds) - t0) / 3600, v: rd.distillateAbvPct }));
+      totalHours = Math.max(totalHours, actual[actual.length - 1].h);
+    }
+  }
+
+  return (
+    <>
+      <section className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface-2 px-4 py-3 shadow-sm">
+        <div>
+          <label className="mb-1 block text-xs text-fg-muted">Plan this run on</label>
+          <select
+            value={chosen?.name ?? ""}
+            onChange={(e) => setStill(presets.data?.presets.find((s) => s.name === e.target.value) ?? null)}
+            className="rounded border border-border-strong px-2 py-1.5 text-sm"
+          >
+            {presets.data?.presets.map((s) => (
+              <option key={s.name} value={s.name}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+        <ReadingField label="Run heat %" value={firing} onChange={setFiring} step="1" />
+        <span className="pb-2 text-xs text-fg-subtle">
+          {chargeVolumeL.toFixed(0)} L at {chargeAbvPct.toFixed(1)} %
+        </span>
+        <Button type="button" onClick={run} disabled={plan.isPending || !chosen}>{plan.isPending ? "Planning…" : "Plan"}</Button>
+        {plan.error ? (
+          <span className="text-sm text-danger-fg">
+            {plan.error instanceof ConnectError ? plan.error.rawMessage : String(plan.error)}
+          </span>
+        ) : null}
+      </section>
+      {p && (
+        <PlanCurve planned={planned} collected={collected} actual={actual} cuts={cuts} totalHours={totalHours} basis={p.basis} />
+      )}
+    </>
   );
 }

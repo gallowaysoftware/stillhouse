@@ -118,6 +118,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	invoicingSvc := rpc.NewInvoicingService(tdb, logger)
 	markedSvc := rpc.NewMarkedContainerService(tdb, logger)
 	equipmentSvc := rpc.NewEquipmentService(tdb, logger)
+	engineeringSvc := rpc.NewEngineeringService(logger)
 	schedulingSvc := rpc.NewSchedulingService(tdb, logger)
 	stockCountSvc := rpc.NewStockCountService(tdb, logger)
 	certificateSvc := rpc.NewCertificateService(tdb, logger)
@@ -191,6 +192,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	mux.Handle(stillhousev1connect.NewInvoicingServiceHandler(invoicingSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewMarkedContainerServiceHandler(markedSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewEquipmentServiceHandler(equipmentSvc, interceptors))
+	mux.Handle(stillhousev1connect.NewEngineeringServiceHandler(engineeringSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewSchedulingServiceHandler(schedulingSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewStockCountServiceHandler(stockCountSvc, interceptors))
 	mux.Handle(stillhousev1connect.NewCertificateServiceHandler(certificateSvc, interceptors))
@@ -231,6 +233,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		Product:       productSvc,
 		Fermentation:  fermentationSvc,
 		Distillation:  distillationSvc,
+		Engineering:   engineeringSvc,
 		Mash:          mashSvc,
 		B266:          b266Svc,
 		WorkOrder:     workOrderSvc,
