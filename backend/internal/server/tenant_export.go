@@ -82,6 +82,7 @@ var exportTables = []string{
 	"distillation_runs",
 	"distillation_charges",
 	"distillation_cuts",
+	"distillation_readings",
 	"redistillations",
 	// The determinations themselves. Without these the export could show
 	// what the quantities were and not how any of them was arrived at,

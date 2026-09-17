@@ -201,7 +201,7 @@ func (s *StockCountService) RecordCount(
 		}
 		variance := in.GetCountedQuantity() - line.BookQuantity
 		// A variance nobody explained is a number.
-		if math.Abs(variance) > countEpsilon && reason.Valid == false {
+		if math.Abs(variance) > countEpsilon && !reason.Valid {
 			return connect.NewError(connect.CodeInvalidArgument,
 				errors.New("the count differs from the book — say why, so the "+
 					"adjustment carries a reason rather than appearing from nowhere"))

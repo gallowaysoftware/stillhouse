@@ -1478,26 +1478,26 @@ func (x *GenerateB266Response) GetReport() *B266Report {
 // from one place. The client sends back the text it displayed, and the
 // server refuses if it does not match — a confirmation to text the person
 // never saw is not a confirmation.
-type FilingAcknowledgementRequest struct {
+type GetFilingAcknowledgementRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *FilingAcknowledgementRequest) Reset() {
-	*x = FilingAcknowledgementRequest{}
+func (x *GetFilingAcknowledgementRequest) Reset() {
+	*x = GetFilingAcknowledgementRequest{}
 	mi := &file_stillhouse_v1_b266_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FilingAcknowledgementRequest) String() string {
+func (x *GetFilingAcknowledgementRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FilingAcknowledgementRequest) ProtoMessage() {}
+func (*GetFilingAcknowledgementRequest) ProtoMessage() {}
 
-func (x *FilingAcknowledgementRequest) ProtoReflect() protoreflect.Message {
+func (x *GetFilingAcknowledgementRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_stillhouse_v1_b266_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1509,12 +1509,12 @@ func (x *FilingAcknowledgementRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FilingAcknowledgementRequest.ProtoReflect.Descriptor instead.
-func (*FilingAcknowledgementRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetFilingAcknowledgementRequest.ProtoReflect.Descriptor instead.
+func (*GetFilingAcknowledgementRequest) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{8}
 }
 
-type FilingAcknowledgementResponse struct {
+type GetFilingAcknowledgementResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Each statement the person is confirming, shown as its own line.
 	Statements []string `protobuf:"bytes,1,rep,name=statements,proto3" json:"statements,omitempty"`
@@ -1524,20 +1524,20 @@ type FilingAcknowledgementResponse struct {
 	sizeCache           protoimpl.SizeCache
 }
 
-func (x *FilingAcknowledgementResponse) Reset() {
-	*x = FilingAcknowledgementResponse{}
+func (x *GetFilingAcknowledgementResponse) Reset() {
+	*x = GetFilingAcknowledgementResponse{}
 	mi := &file_stillhouse_v1_b266_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *FilingAcknowledgementResponse) String() string {
+func (x *GetFilingAcknowledgementResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*FilingAcknowledgementResponse) ProtoMessage() {}
+func (*GetFilingAcknowledgementResponse) ProtoMessage() {}
 
-func (x *FilingAcknowledgementResponse) ProtoReflect() protoreflect.Message {
+func (x *GetFilingAcknowledgementResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_stillhouse_v1_b266_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -1549,19 +1549,19 @@ func (x *FilingAcknowledgementResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use FilingAcknowledgementResponse.ProtoReflect.Descriptor instead.
-func (*FilingAcknowledgementResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetFilingAcknowledgementResponse.ProtoReflect.Descriptor instead.
+func (*GetFilingAcknowledgementResponse) Descriptor() ([]byte, []int) {
 	return file_stillhouse_v1_b266_proto_rawDescGZIP(), []int{9}
 }
 
-func (x *FilingAcknowledgementResponse) GetStatements() []string {
+func (x *GetFilingAcknowledgementResponse) GetStatements() []string {
 	if x != nil {
 		return x.Statements
 	}
 	return nil
 }
 
-func (x *FilingAcknowledgementResponse) GetAcknowledgementText() string {
+func (x *GetFilingAcknowledgementResponse) GetAcknowledgementText() string {
 	if x != nil {
 		return x.AcknowledgementText
 	}
@@ -2104,9 +2104,9 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"period_end\x18\x02 \x01(\tR\tperiodEnd\"|\n" +
 	"\x14GenerateB266Response\x121\n" +
 	"\x06period\x18\x01 \x01(\v2\x19.stillhouse.v1.B266PeriodR\x06period\x121\n" +
-	"\x06report\x18\x02 \x01(\v2\x19.stillhouse.v1.B266ReportR\x06report\"\x1e\n" +
-	"\x1cFilingAcknowledgementRequest\"r\n" +
-	"\x1dFilingAcknowledgementResponse\x12\x1e\n" +
+	"\x06report\x18\x02 \x01(\v2\x19.stillhouse.v1.B266ReportR\x06report\"!\n" +
+	"\x1fGetFilingAcknowledgementRequest\"u\n" +
+	" GetFilingAcknowledgementResponse\x12\x1e\n" +
 	"\n" +
 	"statements\x18\x01 \x03(\tR\n" +
 	"statements\x121\n" +
@@ -2134,9 +2134,9 @@ const file_stillhouse_v1_b266_proto_rawDesc = "" +
 	"B266Status\x12\x1b\n" +
 	"\x17B266_STATUS_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11B266_STATUS_DRAFT\x10\x01\x12\x19\n" +
-	"\x15B266_STATUS_SUBMITTED\x10\x022\xbb\x05\n" +
-	"\vB266Service\x12u\n" +
-	"\x18GetFilingAcknowledgement\x12+.stillhouse.v1.FilingAcknowledgementRequest\x1a,.stillhouse.v1.FilingAcknowledgementResponse\x12f\n" +
+	"\x15B266_STATUS_SUBMITTED\x10\x022\xc1\x05\n" +
+	"\vB266Service\x12{\n" +
+	"\x18GetFilingAcknowledgement\x12..stillhouse.v1.GetFilingAcknowledgementRequest\x1a/.stillhouse.v1.GetFilingAcknowledgementResponse\x12f\n" +
 	"\x11SuggestB266Period\x12'.stillhouse.v1.SuggestB266PeriodRequest\x1a(.stillhouse.v1.SuggestB266PeriodResponse\x12W\n" +
 	"\fGenerateB266\x12\".stillhouse.v1.GenerateB266Request\x1a#.stillhouse.v1.GenerateB266Response\x12Q\n" +
 	"\n" +
@@ -2161,27 +2161,27 @@ func file_stillhouse_v1_b266_proto_rawDescGZIP() []byte {
 var file_stillhouse_v1_b266_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_stillhouse_v1_b266_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_stillhouse_v1_b266_proto_goTypes = []any{
-	(B266Status)(0),                       // 0: stillhouse.v1.B266Status
-	(*SuggestB266PeriodRequest)(nil),      // 1: stillhouse.v1.SuggestB266PeriodRequest
-	(*SuggestB266PeriodResponse)(nil),     // 2: stillhouse.v1.SuggestB266PeriodResponse
-	(*B266Period)(nil),                    // 3: stillhouse.v1.B266Period
-	(*B266Report)(nil),                    // 4: stillhouse.v1.B266Report
-	(*B266BackdatedEntry)(nil),            // 5: stillhouse.v1.B266BackdatedEntry
-	(*B266Continuity)(nil),                // 6: stillhouse.v1.B266Continuity
-	(*GenerateB266Request)(nil),           // 7: stillhouse.v1.GenerateB266Request
-	(*GenerateB266Response)(nil),          // 8: stillhouse.v1.GenerateB266Response
-	(*FilingAcknowledgementRequest)(nil),  // 9: stillhouse.v1.FilingAcknowledgementRequest
-	(*FilingAcknowledgementResponse)(nil), // 10: stillhouse.v1.FilingAcknowledgementResponse
-	(*SubmitB266Request)(nil),             // 11: stillhouse.v1.SubmitB266Request
-	(*SubmitB266Response)(nil),            // 12: stillhouse.v1.SubmitB266Response
-	(*ListB266PeriodsRequest)(nil),        // 13: stillhouse.v1.ListB266PeriodsRequest
-	(*ListB266PeriodsResponse)(nil),       // 14: stillhouse.v1.ListB266PeriodsResponse
-	(*GetB266PeriodRequest)(nil),          // 15: stillhouse.v1.GetB266PeriodRequest
-	(*GetB266PeriodResponse)(nil),         // 16: stillhouse.v1.GetB266PeriodResponse
-	(*ReopenB266PeriodRequest)(nil),       // 17: stillhouse.v1.ReopenB266PeriodRequest
-	(*ReopenB266PeriodResponse)(nil),      // 18: stillhouse.v1.ReopenB266PeriodResponse
-	(*timestamppb.Timestamp)(nil),         // 19: google.protobuf.Timestamp
-	(DutyPoint)(0),                        // 20: stillhouse.v1.DutyPoint
+	(B266Status)(0),                          // 0: stillhouse.v1.B266Status
+	(*SuggestB266PeriodRequest)(nil),         // 1: stillhouse.v1.SuggestB266PeriodRequest
+	(*SuggestB266PeriodResponse)(nil),        // 2: stillhouse.v1.SuggestB266PeriodResponse
+	(*B266Period)(nil),                       // 3: stillhouse.v1.B266Period
+	(*B266Report)(nil),                       // 4: stillhouse.v1.B266Report
+	(*B266BackdatedEntry)(nil),               // 5: stillhouse.v1.B266BackdatedEntry
+	(*B266Continuity)(nil),                   // 6: stillhouse.v1.B266Continuity
+	(*GenerateB266Request)(nil),              // 7: stillhouse.v1.GenerateB266Request
+	(*GenerateB266Response)(nil),             // 8: stillhouse.v1.GenerateB266Response
+	(*GetFilingAcknowledgementRequest)(nil),  // 9: stillhouse.v1.GetFilingAcknowledgementRequest
+	(*GetFilingAcknowledgementResponse)(nil), // 10: stillhouse.v1.GetFilingAcknowledgementResponse
+	(*SubmitB266Request)(nil),                // 11: stillhouse.v1.SubmitB266Request
+	(*SubmitB266Response)(nil),               // 12: stillhouse.v1.SubmitB266Response
+	(*ListB266PeriodsRequest)(nil),           // 13: stillhouse.v1.ListB266PeriodsRequest
+	(*ListB266PeriodsResponse)(nil),          // 14: stillhouse.v1.ListB266PeriodsResponse
+	(*GetB266PeriodRequest)(nil),             // 15: stillhouse.v1.GetB266PeriodRequest
+	(*GetB266PeriodResponse)(nil),            // 16: stillhouse.v1.GetB266PeriodResponse
+	(*ReopenB266PeriodRequest)(nil),          // 17: stillhouse.v1.ReopenB266PeriodRequest
+	(*ReopenB266PeriodResponse)(nil),         // 18: stillhouse.v1.ReopenB266PeriodResponse
+	(*timestamppb.Timestamp)(nil),            // 19: google.protobuf.Timestamp
+	(DutyPoint)(0),                           // 20: stillhouse.v1.DutyPoint
 }
 var file_stillhouse_v1_b266_proto_depIdxs = []int32{
 	0,  // 0: stillhouse.v1.B266Period.status:type_name -> stillhouse.v1.B266Status
@@ -2201,14 +2201,14 @@ var file_stillhouse_v1_b266_proto_depIdxs = []int32{
 	3,  // 14: stillhouse.v1.GetB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
 	4,  // 15: stillhouse.v1.GetB266PeriodResponse.snapshot:type_name -> stillhouse.v1.B266Report
 	3,  // 16: stillhouse.v1.ReopenB266PeriodResponse.period:type_name -> stillhouse.v1.B266Period
-	9,  // 17: stillhouse.v1.B266Service.GetFilingAcknowledgement:input_type -> stillhouse.v1.FilingAcknowledgementRequest
+	9,  // 17: stillhouse.v1.B266Service.GetFilingAcknowledgement:input_type -> stillhouse.v1.GetFilingAcknowledgementRequest
 	1,  // 18: stillhouse.v1.B266Service.SuggestB266Period:input_type -> stillhouse.v1.SuggestB266PeriodRequest
 	7,  // 19: stillhouse.v1.B266Service.GenerateB266:input_type -> stillhouse.v1.GenerateB266Request
 	11, // 20: stillhouse.v1.B266Service.SubmitB266:input_type -> stillhouse.v1.SubmitB266Request
 	13, // 21: stillhouse.v1.B266Service.ListB266Periods:input_type -> stillhouse.v1.ListB266PeriodsRequest
 	15, // 22: stillhouse.v1.B266Service.GetB266Period:input_type -> stillhouse.v1.GetB266PeriodRequest
 	17, // 23: stillhouse.v1.B266Service.ReopenB266Period:input_type -> stillhouse.v1.ReopenB266PeriodRequest
-	10, // 24: stillhouse.v1.B266Service.GetFilingAcknowledgement:output_type -> stillhouse.v1.FilingAcknowledgementResponse
+	10, // 24: stillhouse.v1.B266Service.GetFilingAcknowledgement:output_type -> stillhouse.v1.GetFilingAcknowledgementResponse
 	2,  // 25: stillhouse.v1.B266Service.SuggestB266Period:output_type -> stillhouse.v1.SuggestB266PeriodResponse
 	8,  // 26: stillhouse.v1.B266Service.GenerateB266:output_type -> stillhouse.v1.GenerateB266Response
 	12, // 27: stillhouse.v1.B266Service.SubmitB266:output_type -> stillhouse.v1.SubmitB266Response

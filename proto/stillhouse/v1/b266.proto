@@ -307,8 +307,8 @@ message GenerateB266Response {
 // from one place. The client sends back the text it displayed, and the
 // server refuses if it does not match — a confirmation to text the person
 // never saw is not a confirmation.
-message FilingAcknowledgementRequest {}
-message FilingAcknowledgementResponse {
+message GetFilingAcknowledgementRequest {}
+message GetFilingAcknowledgementResponse {
   // Each statement the person is confirming, shown as its own line.
   repeated string statements = 1;
   // The exact text recorded against the period, frozen with it.
@@ -350,7 +350,7 @@ message ReopenB266PeriodResponse { B266Period period = 1; }
 
 service B266Service {
   // The statements shown before a period is marked submitted.
-  rpc GetFilingAcknowledgement(FilingAcknowledgementRequest) returns (FilingAcknowledgementResponse);
+  rpc GetFilingAcknowledgement(GetFilingAcknowledgementRequest) returns (GetFilingAcknowledgementResponse);
   // The period the licensee should be filing, on their own fiscal calendar.
   rpc SuggestB266Period(SuggestB266PeriodRequest) returns (SuggestB266PeriodResponse);
   rpc GenerateB266(GenerateB266Request) returns (GenerateB266Response);

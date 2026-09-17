@@ -84,7 +84,7 @@ func Deliver(ctx context.Context, c *http.Client, url string, secret, body []byt
 	if err != nil {
 		return Result{Err: err.Error()}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	// Read and discard a bounded amount so the connection can be reused.
 	// Bounded because the body is the receiver's, and an unbounded read
 	// of somebody else's response is a memory exhaustion they control.

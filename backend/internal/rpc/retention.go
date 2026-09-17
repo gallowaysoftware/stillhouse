@@ -36,7 +36,7 @@ func assertNoLegalHold(ctx context.Context, q *sqlcgen.Queries, what string) err
 	return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
 		"a legal hold is open, so %s cannot be deleted. Release the hold first, "+
 			"under Settings → Retention, and the release is recorded with its "+
-			"reason.", what))
+			"reason", what))
 }
 
 type RetentionService struct {

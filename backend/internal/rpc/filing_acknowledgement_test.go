@@ -84,7 +84,7 @@ func TestTheAcknowledgementIsRecordedWithItsWordingAndItsAuthor(t *testing.T) {
 	id := generatePeriod(t, f, b266)
 
 	statements, err := b266.GetFilingAcknowledgement(f.ctx,
-		connect.NewRequest(&stillhousev1.FilingAcknowledgementRequest{}))
+		connect.NewRequest(&stillhousev1.GetFilingAcknowledgementRequest{}))
 	if err != nil {
 		t.Fatalf("GetFilingAcknowledgement: %v", err)
 	}

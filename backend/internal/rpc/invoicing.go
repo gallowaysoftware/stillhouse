@@ -978,7 +978,7 @@ func assertInvoiceEditable(inv sqlcgen.Invoice) error {
 	}
 	return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
 		"invoice %d has been issued — a document already sent does not change. "+
-			"Raise a credit note instead.", inv.InvoiceNo))
+			"Raise a credit note instead", inv.InvoiceNo))
 }
 
 func (s *InvoicingService) hydrate(

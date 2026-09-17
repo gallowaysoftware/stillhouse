@@ -615,9 +615,7 @@ func filingNextSteps(o *filingReviewOutput) (steps []string, note string) {
 			"Generate the return for %s to %s. Nothing has been generated for this period yet, so there are no figures to check.",
 			o.SuggestedPeriodStart, o.SuggestedPeriodEnd))
 	}
-	for _, b := range o.FilingBlockers {
-		steps = append(steps, b)
-	}
+	steps = append(steps, o.FilingBlockers...)
 	if o.Overdue {
 		steps = append(steps, fmt.Sprintf("This return was due %s and has not been submitted.", o.DueOn))
 	}

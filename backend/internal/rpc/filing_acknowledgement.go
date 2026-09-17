@@ -43,12 +43,12 @@ func filingAcknowledgementText() string {
 
 func (s *B266Service) GetFilingAcknowledgement(
 	ctx context.Context,
-	_ *connect.Request[stillhousev1.FilingAcknowledgementRequest],
-) (*connect.Response[stillhousev1.FilingAcknowledgementResponse], error) {
+	_ *connect.Request[stillhousev1.GetFilingAcknowledgementRequest],
+) (*connect.Response[stillhousev1.GetFilingAcknowledgementResponse], error) {
 	if _, ok := CurrentUser(ctx); !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
-	return connect.NewResponse(&stillhousev1.FilingAcknowledgementResponse{
+	return connect.NewResponse(&stillhousev1.GetFilingAcknowledgementResponse{
 		Statements:          filingAcknowledgementStatements,
 		AcknowledgementText: filingAcknowledgementText(),
 	}), nil
