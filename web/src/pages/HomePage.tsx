@@ -12,10 +12,14 @@ import {
   bottlingClient,
   bulkClient,
   exciseStampClient,
+  instrumentClient,
   materialClient,
+  productClient,
   recipeClient,
+  tenantClient,
 } from "@/lib/clients";
 import { AuditAction } from "@/gen/stillhouse/v1/audit_pb";
+import { FilingFrequency } from "@/gen/stillhouse/v1/tenant_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
 
 function monthBounds(): { start: string; end: string } {
@@ -48,18 +52,36 @@ export function HomePage() {
     queryFn: () => b266Client.generateB266({ periodStart: start, periodEnd: end }),
   });
   const audit = useQuery({ queryKey: ["listAuditEvents", "home"], queryFn: () => auditClient.listAuditEvents({ limit: 8 }) });
+  const tenant = useQuery({ queryKey: ["getTenant"], queryFn: () => tenantClient.getTenant({}) });
+  const licences = useQuery({ queryKey: ["listExciseLicences"], queryFn: () => tenantClient.listExciseLicences({}) });
+  const instruments = useQuery({
+    queryKey: ["listInstruments", false],
+    queryFn: () => instrumentClient.listInstruments({ includeRetired: false }),
+  });
+  const products = useQuery({ queryKey: ["listProducts"], queryFn: () => productClient.listProducts({}) });
 
   const allLoaded = !materials.isLoading && !recipes.isLoading && !bulk.isLoading
-    && !packaged.isLoading && !stamps.isLoading;
+    && !packaged.isLoading && !stamps.isLoading && !tenant.isLoading && !licences.isLoading
+    && !instruments.isLoading && !products.isLoading;
+  const totalBulk = bulk.data?.summary?.totalLaa ?? 0;
+  const liveLicences = licences.data?.licences.filter((l) => !l.ceasedOn) ?? [];
+  const hasLicenceRegister = liveLicences.length > 0
+    && liveLicences.every((l) => l.expiresOn !== "" && l.securityAmountCad !== "");
+  const hasFilingCalendar = (tenant.data?.tenant?.filingFrequency ?? FilingFrequency.UNSPECIFIED)
+    !== FilingFrequency.UNSPECIFIED;
+  const hasInstrument = instruments.data?.instruments.some((i) => i.usable) ?? false;
+  const hasBulkContainers = (bulk.data?.containers.length ?? 0) > 0;
+  const hasStock = totalBulk > 0;
   const hasMaterials = (materials.data?.materials.length ?? 0) > 0;
   const hasRecipes = (recipes.data?.recipes.filter((r) => r.currentVersionId).length ?? 0) > 0;
-  const hasBulkContainers = (bulk.data?.containers.length ?? 0) > 0;
+  const hasProducts = (products.data?.products.length ?? 0) > 0;
   const hasStamps = (stamps.data?.summaries.reduce((s, j) => s + j.totalReceived, 0) ?? 0) > 0;
   const hasBottling = (packaged.data?.rows.length ?? 0) > 0;
-  const completedAll = hasMaterials && hasRecipes && hasBulkContainers && hasStamps && hasBottling;
-  const isFreshInstall = allLoaded && !hasMaterials && !hasRecipes && !hasBulkContainers && !hasStamps && !hasBottling;
+  const completedAll = hasLicenceRegister && hasFilingCalendar && hasInstrument && hasBulkContainers
+    && hasStock && hasMaterials && hasRecipes && hasProducts && hasStamps && hasBottling;
+  const isFreshInstall = allLoaded && !hasInstrument && !hasBulkContainers && !hasMaterials && !hasRecipes
+    && !hasProducts && !hasStamps && !hasBottling;
 
-  const totalBulk = bulk.data?.summary?.totalLaa ?? 0;
   const barrelLAA = barrels.data?.barrels.reduce((s, b) => s + b.currentLaa, 0) ?? 0;
   const nonBarrelBulk = totalBulk - barrelLAA;
   const packagedLAA = packaged.data?.rows.reduce((s, r) => s + (r.bottlesOnHand * r.bottleSizeMl * r.targetAbvPct) / 100000, 0) ?? 0;
@@ -88,15 +110,21 @@ export function HomePage() {
         <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
           <h2 className="mb-3 text-sm font-semibold text-fg-muted">Getting started</h2>
           <ol className="space-y-2 text-sm">
-            <Step n={1} done={hasMaterials} to="/materials" label="Add your raw materials (grain, malt, water)." />
-            <Step n={2} done={hasRecipes} to="/recipes" label="Save at least one recipe with a saved version." />
-            <Step n={3} done={hasBulkContainers} to="/bulk" label="Define your bulk containers (spirit receivers, tanks)." />
-            <Step n={4} done={hasStamps} to="/stamps" label="Order CRA excise stamps for the provinces you'll sell in." />
-            <Step n={5} done={hasBottling} to="/bottling" label="Run a bottling to produce packaged inventory." />
+            <Step n={1} done={hasLicenceRegister} to="/settings" label="Complete the licence register: the expiry date and the security posted on each licence." />
+            <Step n={2} done={hasFilingCalendar} to="/settings" label="Set the reporting calendar CRA authorised for you." />
+            <Step n={3} done={hasInstrument} to="/instruments" label="Register the instruments you gauge with, and their CRA approval. No gauge can be recorded without one." />
+            <Step n={4} done={hasBulkContainers} to="/bulk" label="Define your bulk containers (spirit receivers, tanks) and barrels." />
+            <Step n={5} done={hasStock} to="/bulk" label="Adopt the spirits already on hand: open each tank or barrel and book what is in it as of your cutover date." />
+            <Step n={6} done={hasMaterials} to="/materials" label="Add your raw materials (grain, malt, water)." />
+            <Step n={7} done={hasRecipes} to="/recipes" label="Save at least one recipe with a saved version." />
+            <Step n={8} done={hasProducts} to="/products" label="Define the products you bottle." />
+            <Step n={9} done={hasStamps} to="/stamps" label="Order CRA excise stamps for the provinces you'll sell in." />
+            <Step n={10} done={hasBottling} to="/bottling" label="Run a bottling to produce packaged inventory." />
           </ol>
           <p className="mt-3 text-xs text-fg-muted">
-            You can also use the full nav at left to skip ahead. Mash, fermentation, distillation, and barrel pages are ready
-            whenever you start tracking production.
+            Steps 1 to 5 are what a return needs before anything is gauged; the rest is production. You can use the full
+            nav at left to skip ahead. Mash, fermentation, distillation, and barrel pages are ready whenever you start
+            tracking production.
           </p>
         </section>
       )}
