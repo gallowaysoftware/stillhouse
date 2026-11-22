@@ -231,6 +231,12 @@ func (s *DistillationService) AddDistillationCharge(
 	if req.Msg.GetVolumeChargedL() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("volume_charged_l must be > 0"))
 	}
+	if err := checkVolumeL("volume_charged_l", req.Msg.GetVolumeChargedL()); err != nil {
+		return nil, err
+	}
+	if err := checkStrength("abv_pct", req.Msg.GetAbvPct()); err != nil {
+		return nil, err
+	}
 	order := req.Msg.GetChargeOrder()
 	if order == 0 {
 		order = 1
@@ -280,6 +286,9 @@ func (s *DistillationService) AddDistillationCut(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	if err := checkCut(req.Msg.GetVolumeL(), req.Msg.GetAbvPct(), req.Msg.GetObservedAt()); err != nil {
+		return nil, err
+	}
 	observed := timestampOrNow(req.Msg.GetObservedAt())
 	order := req.Msg.GetCutOrder()
 	if order == 0 {
@@ -301,6 +310,9 @@ func (s *DistillationService) AddDistillationCut(
 		return e
 	})
 	if err != nil {
+		if ce := classifyWriteErr(err, "distillation run not found"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("AddDistillationCut", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -322,6 +334,9 @@ func (s *DistillationService) UpdateDistillationCut(
 	kind, err := distillationCutKindToDB(req.Msg.GetKind())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := checkCut(req.Msg.GetVolumeL(), req.Msg.GetAbvPct(), req.Msg.GetObservedAt()); err != nil {
+		return nil, err
 	}
 	observed := timestampOrNow(req.Msg.GetObservedAt())
 	order := req.Msg.GetCutOrder()
@@ -355,6 +370,9 @@ func (s *DistillationService) UpdateDistillationCut(
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("cut not found"))
+		}
+		if ce := classifyWriteErr(err, "cut not found"); ce != nil {
+			return nil, ce
 		}
 		s.logger.Error("UpdateDistillationCut", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
@@ -982,11 +1000,30 @@ func (s *DistillationService) AddDistillationReading(
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("a reading records something: a strength, a temperature, a heat setting, or a note"))
 	}
-	if in.GetDistillateAbvPctSet() && (in.GetDistillateAbvPct() < 0 || in.GetDistillateAbvPct() > 100) {
+	if in.GetDistillateAbvPctSet() && checkStrength("", in.GetDistillateAbvPct()) != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("distillate strength is a percentage, 0 to 100"))
 	}
-	if in.GetHeatSettingPctSet() && (in.GetHeatSettingPct() < 0 || in.GetHeatSettingPct() > 100) {
+	if in.GetHeatSettingPctSet() && checkStrength("", in.GetHeatSettingPct()) != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("the heat setting is a percentage of full, 0 to 100"))
+	}
+	for _, r := range []struct {
+		name  string
+		set   bool
+		value float64
+	}{
+		{"distillate temperature", in.GetDistillateTemperatureCSet(), in.GetDistillateTemperatureC()},
+		{"pot temperature", in.GetPotTemperatureCSet(), in.GetPotTemperatureC()},
+		{"vapour temperature", in.GetVapourTemperatureCSet(), in.GetVapourTemperatureC()},
+	} {
+		if !r.set {
+			continue
+		}
+		if err := checkTemperatureC(r.name, r.value); err != nil {
+			return nil, err
+		}
+	}
+	if err := checkObservedAt("observed_at", in.GetObservedAt()); err != nil {
+		return nil, err
 	}
 	observed := timestampOrNow(in.GetObservedAt())
 
