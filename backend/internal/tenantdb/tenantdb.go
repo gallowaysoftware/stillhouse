@@ -61,13 +61,18 @@ func EnterTenant(ctx context.Context, tx pgx.Tx, tenantID uuid.UUID) (*time.Loca
 	return loc, nil
 }
 
-// Today is the tenant's calendar day, for a date nobody gave.
-func (d *DB) Today(ctx context.Context, tenantID uuid.UUID) time.Time {
+// Location is the tenant's zone, outside a transaction.
+func (d *DB) Location(ctx context.Context, tenantID uuid.UUID) *time.Location {
 	var jurisdiction string
-	// A failure here falls back to UTC; the write that follows reaches the
+	// A failure here falls back to UTC; the query that follows reaches the
 	// same database and reports it.
 	_ = d.Pool.QueryRow(ctx, "SELECT default_jurisdiction FROM tenants WHERE id = $1", tenantID).Scan(&jurisdiction)
-	return zone.Day(zone.For(jurisdiction), time.Now())
+	return zone.For(jurisdiction)
+}
+
+// Today is the tenant's calendar day, for a date nobody gave.
+func (d *DB) Today(ctx context.Context, tenantID uuid.UUID) time.Time {
+	return zone.Day(d.Location(ctx, tenantID), time.Now())
 }
 
 // SetTenantContext sets app.current_tenant_id inside an already-open

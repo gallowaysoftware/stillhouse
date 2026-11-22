@@ -162,3 +162,43 @@ func TestARecipeRefusesWhatItCannotProject(t *testing.T) {
 		Name: "Q", SpiritKind: stillhousev1.SpiritKind_SPIRIT_KIND_WHISKY}))
 	refusedWith(t, "a second recipe of that name", err, connect.CodeAlreadyExists)
 }
+
+// Zero is how a strength nobody knew is stored.
+func TestAMashWithAnUnknownStrengthIsStillSharedIn(t *testing.T) {
+	b := newFloorBatch(t)
+	tank := b.tank(t, "T", 0, 0)
+	var version string
+	must(t, b.pool.QueryRow(b.ctx, "SELECT recipe_version_id FROM mash_runs WHERE id = $1", b.mashID).Scan(&version))
+	other, err := b.mash.CreateMashRun(b.ctx, connect.NewRequest(&stillhousev1.CreateMashRunRequest{RecipeVersionId: version}))
+	must(t, err)
+	ferm, err := b.ferm.CreateFermentationRun(b.ctx, connect.NewRequest(&stillhousev1.CreateFermentationRunRequest{
+		MashRunId: other.Msg.GetMashRun().GetId(), FermenterLabel: "FV9"}))
+	must(t, err)
+	run, err := b.dist.CreateDistillationRun(b.ctx, connect.NewRequest(&stillhousev1.CreateDistillationRunRequest{StillLabel: "S"}))
+	must(t, err)
+	for ferment, c := range map[string][2]float64{b.fermID: {300, 0}, ferm.Msg.GetRun().GetId(): {100, 8}} {
+		_, err = b.dist.AddDistillationCharge(b.ctx, connect.NewRequest(&stillhousev1.AddDistillationChargeRequest{
+			DistillationRunId: run.Msg.GetRun().GetId(), FermentationRunId: ferment, VolumeChargedL: c[0], AbvPct: c[1]}))
+		must(t, err)
+	}
+	_, err = b.dist.RecordProductionGauge(b.ctx, connect.NewRequest(&stillhousev1.RecordProductionGaugeRequest{
+		DistillationRunId: run.Msg.GetRun().GetId(), DestinationContainerId: tank.ID.String(), VolumeL: 20, AbvPct: 60}))
+	must(t, err)
+	m, err := b.mash.GetMashRun(b.ctx, connect.NewRequest(&stillhousev1.GetMashRunRequest{Id: b.mashID}))
+	must(t, err)
+	if got := m.Msg.GetMashRun().GetActualCapturedLaa(); !near(got, 9, 1e-9) {
+		t.Errorf("300 of 400 L is %v LAA of 12, want 9", got)
+	}
+}
+
+func TestACancelledFermentationIsNotCharged(t *testing.T) {
+	b := newFloorBatch(t)
+	_, err := b.ferm.UpdateFermentationStatus(b.ctx, connect.NewRequest(&stillhousev1.UpdateFermentationStatusRequest{
+		Id: b.fermID, Status: stillhousev1.FermentationStatus_FERMENTATION_STATUS_CANCELLED}))
+	must(t, err)
+	run, err := b.dist.CreateDistillationRun(b.ctx, connect.NewRequest(&stillhousev1.CreateDistillationRunRequest{StillLabel: "S"}))
+	must(t, err)
+	_, err = b.dist.AddDistillationCharge(b.ctx, connect.NewRequest(&stillhousev1.AddDistillationChargeRequest{
+		DistillationRunId: run.Msg.GetRun().GetId(), FermentationRunId: b.fermID, VolumeChargedL: 5, AbvPct: 8}))
+	refusedWith(t, "charging it", err, connect.CodeFailedPrecondition)
+}

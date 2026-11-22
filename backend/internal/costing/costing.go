@@ -18,13 +18,12 @@ package costing
 import (
 	"context"
 	"errors"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Line is one priced ingredient behind a run.
@@ -75,10 +74,10 @@ func BottlingRunMaterialCost(
 	// A day's grace on the cutoff: a gauge recorded the same evening as
 	// the bottling it fed is part of that chain, and a strict comparison
 	// against the bottling date would drop it.
-	feedCutoff := run.BottlingDate.Time.Add(24 * time.Hour)
+	feedCutoff := zone.Start(ctx, run.BottlingDate.Time.AddDate(0, 0, 1))
 	feeds, err := q.BottlingRunChainFeeds(ctx, sqlcgen.BottlingRunChainFeedsParams{
 		DestinationContainerID: uuid.NullUUID{UUID: run.SourceContainerID, Valid: true},
-		OccurredAt:             pgtype.Timestamptz{Time: feedCutoff, Valid: true},
+		OccurredAt:             feedCutoff,
 	})
 	if err != nil {
 		return out, err

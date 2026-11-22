@@ -13,6 +13,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // statementBasis is printed on the document. A statement a customer keeps
@@ -100,7 +101,7 @@ func (s *BarrelService) CaskStatement(
 				continue
 			}
 			g := &stillhousev1.CaskStatementGauge{
-				Date:  ev.EventDate.Time.Format("2006-01-02"),
+				Date:  ev.EventDate.Time.In(zone.From(ctx)).Format("2006-01-02"),
 				Kind:  string(ev.Kind),
 				Notes: ev.Notes,
 			}

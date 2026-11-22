@@ -224,13 +224,13 @@ func evaluateRedistillations(ctx context.Context, q *sqlcgen.Queries, now time.T
 // alert is worth, because the same channel carries the return deadline.
 // A missed due date is a commitment broken and is worth one line.
 func evaluateWorkOrders(ctx context.Context, q *sqlcgen.Queries, now time.Time) ([]Alert, error) {
-	rows, err := q.AlertOverdueWorkOrders(ctx, pgtype.Date{Valid: true, Time: now})
+	rows, err := q.AlertOverdueWorkOrders(ctx, pgtype.Date{Valid: true, Time: zone.Day(now.Location(), now)})
 	if err != nil {
 		return nil, err
 	}
 	out := make([]Alert, 0, len(rows))
 	for _, r := range rows {
-		days := int(now.Sub(r.DueOn.Time).Hours() / 24)
+		days := int(zone.Day(now.Location(), now).Sub(r.DueOn.Time).Hours() / 24)
 		who := "nobody is assigned"
 		if r.AssignedToName != "" {
 			who = r.AssignedToName
@@ -265,7 +265,7 @@ func evaluateLicences(ctx context.Context, q *sqlcgen.Queries, now time.Time) ([
 	if err != nil {
 		return nil, err
 	}
-	today := now.Truncate(24 * time.Hour)
+	today := zone.Day(now.Location(), now)
 	var out []Alert
 	for _, l := range rows {
 		label := licenceKindLabel(l.Kind) + " licence " + l.LicenceNumber

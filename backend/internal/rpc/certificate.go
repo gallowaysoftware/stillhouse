@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -15,6 +14,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // formatTimestamp renders a nullable timestamp as an ISO date, empty
@@ -106,10 +106,10 @@ func (s *CertificateService) AgeCertificate(
 		// A day's grace on the cutoff, the same as the costing walk: a
 		// dump recorded the same evening as the bottling it fed is part
 		// of that chain.
-		cutoff := run.BottlingDate.Time.Add(24 * time.Hour)
+		cutoff := zone.Start(ctx, run.BottlingDate.Time.AddDate(0, 0, 1))
 		casks, e := q.AgeEvidenceForBottlingRun(ctx, sqlcgen.AgeEvidenceForBottlingRunParams{
 			SourceContainerID: run.SourceContainerID,
-			Before:            pgtype.Timestamptz{Valid: true, Time: cutoff},
+			Before:            cutoff,
 		})
 		if e != nil {
 			return e

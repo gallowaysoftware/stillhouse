@@ -29,9 +29,10 @@ const kindOptions: { value: MaterialKind; label: string }[] = [
 
 export function MaterialsPage() {
   const qc = useQueryClient();
+  const [showArchived, setShowArchived] = useState(false);
   const { data, isLoading } = useQuery({
-    queryKey: ["listMaterials"],
-    queryFn: () => materialClient.listMaterials({}),
+    queryKey: ["listMaterials", "withArchived", showArchived],
+    queryFn: () => materialClient.listMaterials({ includeArchived: showArchived }),
   });
 
   const [showForm, setShowForm] = useState(false);
@@ -196,6 +197,7 @@ export function MaterialsPage() {
               <tr key={m.id}>
                 <td className="px-4 py-3 font-medium text-fg">
                   <Link to={`/materials/${m.id}`} className="hover:underline">{m.name}</Link>
+                  {m.archived && <span className="ml-2 text-xs font-normal text-fg-subtle">archived</span>}
                 </td>
                 <td className="px-4 py-3 text-fg-muted">{materialKindLabel(m.kind)}</td>
                 <td className="px-4 py-3 text-fg-muted">{m.uom}</td>
@@ -215,6 +217,9 @@ export function MaterialsPage() {
           </tbody>
         </table>
       </div>
+      <button type="button" className="mt-3 text-sm text-fg-muted underline" onClick={() => setShowArchived((v) => !v)}>
+        {showArchived ? "Hide archived materials" : "Show archived materials"}
+      </button>
 
       <MaterialCoverPanel />
     </Shell>

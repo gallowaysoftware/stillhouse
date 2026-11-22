@@ -36,7 +36,7 @@ const pgCheckViolation = "23514"
 // A constraint that isn't listed still gets a better answer than "internal
 // error": it comes back as a conflict rather than a fault.
 var uniqueViolationMessages = map[string]string{
-	"distillation_charges_distillation_run_id_fermentation_run_i_key": "that fermentation run is already charged into this distillation — edit the existing charge rather than adding a second",
+	"distillation_charges_distillation_run_id_fermentation_run_i_key": "that fermentation is already charged into this run: remove that charge and record the whole quantity",
 	"distillation_runs_tenant_id_run_no_key":                          "a distillation run with that number already exists",
 	"materials_tenant_id_name_key":                                    "a material with that name already exists",
 	"bulk_containers_tenant_id_name_key":                              "a container with that name already exists",

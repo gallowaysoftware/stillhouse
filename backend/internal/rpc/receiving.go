@@ -323,6 +323,7 @@ func (s *PurchasingService) ListGRNI(
 		s.logger.Error("ListGRNI", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	local := s.db.Location(ctx, u.TenantID)
 	out := &stillhousev1.ListGRNIResponse{}
 	for _, r := range rows {
 		landed := r.UnitCostCad.Float64
@@ -340,7 +341,7 @@ func (s *PurchasingService) ListGRNI(
 			UnitCostCad:       r.UnitCostCad.Float64,
 			LandedUnitCostCad: landed,
 			ValueCad:          value,
-			ReceivedOn:        r.ReceivedAt.Time.Format("2006-01-02"),
+			ReceivedOn:        r.ReceivedAt.Time.In(local).Format("2006-01-02"),
 		})
 	}
 	return connect.NewResponse(out), nil

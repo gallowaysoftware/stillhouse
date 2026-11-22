@@ -15,6 +15,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // auditExportHandler streams the tenant's audit log as CSV. Session-gated
@@ -42,18 +43,19 @@ func auditExportHandler(sm *scs.SessionManager, tdb *tenantdb.DB, logger *slog.L
 		if t := r.URL.Query().Get("entity_type"); t != "" {
 			entityType = pgtype.Text{String: t, Valid: true}
 		}
+		local := zone.With(ctx, tdb.Location(ctx, tenantID))
 		var fromTS, toTS pgtype.Timestamptz
 		fromStr := r.URL.Query().Get("from")
 		toStr := r.URL.Query().Get("to")
 		if fromStr != "" {
 			if d, err := time.Parse("2006-01-02", fromStr); err == nil {
-				fromTS = pgtype.Timestamptz{Time: d, Valid: true}
+				fromTS = zone.Start(local, d)
 			}
 		}
 		if toStr != "" {
 			if d, err := time.Parse("2006-01-02", toStr); err == nil {
 				// to is inclusive; bump to next-day exclusive bound.
-				toTS = pgtype.Timestamptz{Time: d.AddDate(0, 0, 1), Valid: true}
+				toTS = zone.Start(local, d.AddDate(0, 0, 1))
 			}
 		}
 

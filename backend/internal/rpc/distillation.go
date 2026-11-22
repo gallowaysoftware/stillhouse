@@ -270,8 +270,12 @@ func (s *DistillationService) AddDistillationCharge(
 		if e := assertRunUngauged(run); e != nil {
 			return e
 		}
-		if _, e := q.GetFermentationRun(ctx, fermID); e != nil {
+		ferm, e := q.GetFermentationRun(ctx, fermID)
+		if e != nil {
 			return e
+		}
+		if ferm.Status == sqlcgen.FermentationStatusCancelled {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("%s was cancelled", ferm.FermenterLabel))
 		}
 		c, e = q.AddDistillationCharge(ctx, sqlcgen.AddDistillationChargeParams{
 			TenantID:          u.TenantID,
@@ -386,7 +390,13 @@ func (s *DistillationService) UpdateDistillationCut(
 	}
 	var c sqlcgen.DistillationCut
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		before, e := q.GetDistillationCut(ctx, id)
+		if e != nil {
+			return e
+		}
+		if e := assertRunNotVoided(ctx, q, before.DistillationRunID); e != nil {
+			return e
+		}
 		c, e = q.UpdateDistillationCut(ctx, sqlcgen.UpdateDistillationCutParams{
 			ID:         id,
 			Kind:       kind,
@@ -409,6 +419,10 @@ func (s *DistillationService) UpdateDistillationCut(
 			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("cut not found"))
 		}
@@ -439,6 +453,9 @@ func (s *DistillationService) DeleteDistillationCut(
 		if e != nil {
 			return e
 		}
+		if e := assertRunNotVoided(ctx, q, c.DistillationRunID); e != nil {
+			return e
+		}
 		if e := q.DeleteDistillationCut(ctx, id); e != nil {
 			return e
 		}
@@ -452,6 +469,10 @@ func (s *DistillationService) DeleteDistillationCut(
 			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("cut not found"))
 		}
@@ -769,6 +790,18 @@ func assertRunLive(run sqlcgen.DistillationRun) error {
 	}
 	if run.Status == sqlcgen.DistillationStatusCancelled {
 		return connect.NewError(connect.CodeFailedPrecondition, errors.New("that run was cancelled"))
+	}
+	return nil
+}
+
+// assertRunNotVoided keeps a voided run as it was when it was voided.
+func assertRunNotVoided(ctx context.Context, q *sqlcgen.Queries, runID uuid.UUID) error {
+	run, err := q.GetDistillationRun(ctx, runID)
+	if err != nil {
+		return err
+	}
+	if run.VoidedAt.Valid {
+		return errRunVoided
 	}
 	return nil
 }
@@ -1141,6 +1174,9 @@ func (s *DistillationService) DeleteDistillationReading(
 		if e != nil {
 			return e
 		}
+		if e := assertRunNotVoided(ctx, q, rd.DistillationRunID); e != nil {
+			return e
+		}
 		if e := q.DeleteDistillationReading(ctx, id); e != nil {
 			return e
 		}
@@ -1153,6 +1189,10 @@ func (s *DistillationService) DeleteDistillationReading(
 			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("reading not found"))
 		}

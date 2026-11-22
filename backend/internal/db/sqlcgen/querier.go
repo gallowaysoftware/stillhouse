@@ -1324,7 +1324,8 @@ type Querier interface {
 	SumDestructionsByTreatmentInPeriod(ctx context.Context, arg SumDestructionsByTreatmentInPeriodParams) (SumDestructionsByTreatmentInPeriodRow, error)
 	// Alcohol gauged out of the still runs this mash went into. A run charged
 	// from several mashes is shared between them by the alcohol each put in, or
-	// by volume where no strength was recorded. Each gauge counts once however
+	// by volume unless every charge has a strength: zero is how an unknown one
+	// is stored, and reading it as none would give that mash nothing. Each gauge counts once however
 	// many charges fed it, and a voided run counts not at all.
 	SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error)
 	// Line D. Both directions are reported, not just the net: a period that

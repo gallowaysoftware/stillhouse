@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Result is what an import did, or would have done.
@@ -160,7 +161,7 @@ func loadMaterialLots(
 		if _, err := q.CreateMaterialLot(ctx, sqlcgen.CreateMaterialLotParams{
 			TenantID: tenantID, MaterialID: mat, SupplierLot: r.Get("supplier lot"),
 			QuantityReceived: qty,
-			ReceivedAt:       pgtype.Timestamptz{Valid: true, Time: received},
+			ReceivedAt:       zone.DuringDay(received),
 			Notes:            r.Get("notes"), UnitCostCad: cost,
 		}); err != nil {
 			res.Problems = append(res.Problems, Problem{Row: r.Line,
