@@ -150,7 +150,14 @@ func (s *BulkService) SetBulkContainerArchived(
 	}
 	var c sqlcgen.BulkContainer
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		held, e := q.GetBulkContainerForUpdate(ctx, id)
+		if e != nil {
+			return e
+		}
+		if req.Msg.GetArchived() && (held.CurrentVolumeL > balanceEps || held.CurrentLaa > balanceEps) {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"%s still holds %.4f LAA; empty it before archiving it", held.Name, held.CurrentLaa))
+		}
 		c, e = q.SetBulkContainerArchived(ctx, sqlcgen.SetBulkContainerArchivedParams{ID: id, Archived: req.Msg.GetArchived()})
 		if e != nil {
 			return e
@@ -162,6 +169,10 @@ func (s *BulkService) SetBulkContainerArchived(
 			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("container not found"))
 		}
@@ -350,6 +361,11 @@ func (s *BulkService) CreateBlend(
 		if sid == destID {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("source and destination must differ"))
 		}
+		for _, ps := range parsed {
+			if ps.id == sid {
+				return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("list each source once, with its whole volume"))
+			}
+		}
 		parsed = append(parsed, parsedSource{id: sid, vol: s.GetVolumeL()})
 	}
 	occurred := timestampOrNow(req.Msg.GetOccurredAt())
@@ -378,9 +394,14 @@ func (s *BulkService) CreateBlend(
 			return e
 		}
 		d := locked[destID]
-		curVol := d.CurrentVolumeL
-		curABV := d.CurrentAbvPct
-		curLAA := d.CurrentLaa
+		total := 0.0
+		for _, ps := range parsed {
+			total += ps.vol
+		}
+		if e := assertTakesSpirit(d, total); e != nil {
+			return e
+		}
+		blended := balanceOf(d)
 
 		for _, ps := range parsed {
 			src := locked[ps.id]
@@ -388,12 +409,12 @@ func (s *BulkService) CreateBlend(
 				return connect.NewError(connect.CodeFailedPrecondition,
 					fmt.Errorf("source %s is empty", src.Name))
 			}
-			if src.CurrentVolumeL+1e-6 < ps.vol {
-				return connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("source %s has %.4f L; blend asks for %.4f L", src.Name, src.CurrentVolumeL, ps.vol))
-			}
 			abv := src.CurrentAbvPct.Float64
-			laa := ps.vol * abv / 100
+			laa := drawnLAA(src, ps.vol, abv)
+			rest, _, e := balanceOf(src).take(src.Name, ps.vol, laa)
+			if e != nil {
+				return e
+			}
 
 			mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 				TenantID:               u.TenantID,
@@ -412,31 +433,13 @@ func (s *BulkService) CreateBlend(
 			}
 			movements = append(movements, mv)
 
-			// Decrement source. ABV unchanged on the source (we draw at its
-			// current proof). Volume and LAA drop proportionally.
-			srcNewVol := src.CurrentVolumeL - ps.vol
-			srcNewLAA := src.CurrentLaa - laa
-			if srcNewLAA < 0 {
-				srcNewLAA = 0
-			}
-			srcNewABV := src.CurrentAbvPct
-			if srcNewVol <= 0 {
-				srcNewABV = pgtype.Float8{} // emptied
-			}
-			if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-				ID: src.ID, CurrentVolumeL: srcNewVol, CurrentAbvPct: srcNewABV, CurrentLaa: srcNewLAA,
-			}); e != nil {
+			if _, e := saveBalance(ctx, q, src.ID, rest); e != nil {
 				return e
 			}
-
-			// Compound onto destination via applyDeposit so the blended ABV
-			// stays the LAA-weighted average across sources.
-			curVol, curABV, curLAA = applyDeposit(curVol, curABV, ps.vol, abv)
+			blended = blended.add(ps.vol, laa)
 		}
 
-		d, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID: destID, CurrentVolumeL: curVol, CurrentAbvPct: curABV, CurrentLaa: curLAA,
-		})
+		d, e = saveBalance(ctx, q, destID, blended)
 		if e != nil {
 			return e
 		}
@@ -711,31 +714,6 @@ func bulkMovementReasonToProto(r sqlcgen.BulkMovementReason) stillhousev1.BulkMo
 	return bulkMovementReasonProto[r]
 }
 
-// applyDeposit returns the new (volume, abv, laa) after depositing
-// (volume, abv) into a container that currently holds (curVol, curABV).
-// curABV is ignored when curVol == 0.
-// applyWithdrawal removes volume and its alcohol from a balance, returning
-// the new volume, strength and LAA.
-//
-// The invariant is conservation: what the destination gains, the source
-// loses, to the litre of absolute alcohol. The remaining strength follows
-// from what is left rather than being carried over unchanged — carrying it
-// over is what let a gauged fill differ from the tank's recorded strength
-// and quietly mint alcohol.
-func applyWithdrawal(curVol, curLAA, takeVol, takeLAA float64) (newVol float64, newABV pgtype.Float8, newLAA float64) {
-	newVol = curVol - takeVol
-	newLAA = curLAA - takeLAA
-	// Float noise around a full withdrawal shouldn't leave a vessel
-	// holding -1e-15 L of spirit.
-	if newVol <= 1e-9 {
-		return 0, pgtype.Float8{Valid: false}, 0
-	}
-	if newLAA < 0 {
-		newLAA = 0
-	}
-	return newVol, pgtype.Float8{Float64: newLAA / newVol * 100, Valid: true}, newLAA
-}
-
 // fillStrengthToleranceABV is how far a gauged fill may sit from the
 // source's recorded strength before Stillhouse refuses it.
 //
@@ -761,25 +739,6 @@ func assertFillStrengthMatchesSource(source sqlcgen.BulkContainer, abv float64) 
 			abv, source.Name, srcABV, fillStrengthToleranceABV))
 	}
 	return nil
-}
-
-func applyDeposit(curVol float64, curABV pgtype.Float8, addVol, addABV float64) (newVol float64, newABV pgtype.Float8, newLAA float64) {
-	if curVol <= 0 {
-		newVol = addVol
-		newABV = pgtype.Float8{Float64: addABV, Valid: true}
-	} else {
-		newVol = curVol + addVol
-		mass := curVol*curABV.Float64 + addVol*addABV
-		if newVol == 0 {
-			newABV = pgtype.Float8{Valid: false}
-		} else {
-			newABV = pgtype.Float8{Float64: mass / newVol, Valid: true}
-		}
-	}
-	if newABV.Valid {
-		newLAA = newVol * newABV.Float64 / 100
-	}
-	return
 }
 
 // reference to keep linter quiet in v1; will be used by Stage 5/6 helpers.

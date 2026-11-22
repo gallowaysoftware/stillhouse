@@ -129,22 +129,26 @@ func (s *BulkService) RecordInventoryAdjustment(
 		if math.Abs(deltaLAA) > 1e-9 || math.Abs(deltaVol) > 1e-9 {
 			mvReason := sqlcgen.BulkMovementReasonAdjustmentIncrease
 			src, dst := uuid.NullUUID{}, uuid.NullUUID{UUID: containerID, Valid: true}
-			vol, laa := deltaVol, deltaLAA
-			if deltaLAA < 0 || deltaVol < 0 {
+			// The direction is the alcohol's. A count can find fewer litres
+			// and more alcohol, and it is the alcohol the return carries.
+			down := deltaLAA < 0
+			if math.Abs(deltaLAA) <= 1e-9 {
+				down = deltaVol < 0
+			}
+			if down {
 				mvReason = sqlcgen.BulkMovementReasonAdjustmentDecrease
 				src, dst = uuid.NullUUID{UUID: containerID, Valid: true}, uuid.NullUUID{}
-				vol, laa = -deltaVol, -deltaLAA
 			}
-			// volume_l CHECK is > 0 and laa CHECK is >= 0, so a
-			// strength-only adjustment (same litres, different ABV) needs
-			// a positive volume to sit on. The litres involved in the
-			// change of strength are the container's own.
-			if vol <= 0 {
+			vol, laa := math.Abs(deltaVol), math.Abs(deltaLAA)
+			// volume_l CHECK is > 0, so a change of strength with little or
+			// no change of litres needs a volume to sit on. The litres
+			// involved are the container's own.
+			if vol < laa {
 				vol = math.Max(counted.VolumeL20C, book.CurrentVolumeL)
 			}
 			mvABV := 0.0
 			if vol > 0 {
-				mvABV = math.Max(0, math.Min(100, math.Abs(laa)/vol*100))
+				mvABV = math.Max(0, math.Min(100, laa/vol*100))
 			}
 			mv, me := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 				TenantID:               u.TenantID,
@@ -152,7 +156,7 @@ func (s *BulkService) RecordInventoryAdjustment(
 				DestinationContainerID: dst,
 				VolumeL:                vol,
 				AbvPct:                 mvABV,
-				Laa:                    math.Abs(laa),
+				Laa:                    laa,
 				Reason:                 mvReason,
 				ReferenceType:          "inventory_adjustment",
 				Notes:                  explanation,
@@ -195,15 +199,7 @@ func (s *BulkService) RecordInventoryAdjustment(
 			return e
 		}
 
-		// An emptied container loses its strength, matching what every
-		// other path does when a vessel goes to zero.
-		newABV := pgtype.Float8{Float64: counted.StrengthPct20C, Valid: counted.VolumeL20C > 0}
-		container, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             containerID,
-			CurrentVolumeL: counted.VolumeL20C,
-			CurrentAbvPct:  newABV,
-			CurrentLaa:     counted.LAA(),
-		})
+		container, e = saveBalance(ctx, q, containerID, balance{volumeL: counted.VolumeL20C, laa: counted.LAA()})
 		if e != nil {
 			return e
 		}

@@ -286,9 +286,9 @@ type StartRedistillationRequest struct {
 	SourceContainerId string                 `protobuf:"bytes,1,opt,name=source_container_id,json=sourceContainerId,proto3" json:"source_container_id,omitempty"`
 	Reason            RedistillationReason   `protobuf:"varint,2,opt,name=reason,proto3,enum=stillhouse.v1.RedistillationReason" json:"reason,omitempty"`
 	VolumeL           float64                `protobuf:"fixed64,3,opt,name=volume_l,json=volumeL,proto3" json:"volume_l,omitempty"`
-	// Strength of what is being taken. Where the container's own strength
-	// is right, pass it; a partial draw at a different strength is a
-	// different figure and has to be stated.
+	// Strength of what is being taken, as gauged. A tank yields its own
+	// strength, so one outside gauging tolerance of the container's is
+	// refused: regauge the container first.
 	AbvPct        float64 `protobuf:"fixed64,4,opt,name=abv_pct,json=abvPct,proto3" json:"abv_pct,omitempty"`
 	TakenOn       string  `protobuf:"bytes,5,opt,name=taken_on,json=takenOn,proto3" json:"taken_on,omitempty"` // ISO date; empty = today
 	Notes         string  `protobuf:"bytes,6,opt,name=notes,proto3" json:"notes,omitempty"`

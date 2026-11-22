@@ -144,8 +144,11 @@ func (s *MarkedContainerService) MarkContainer(
 		if volume <= 0 {
 			volume = in.GetVolumeL()
 		}
-		laa := volume * abv / 100
-		if laa > source.CurrentLaa+1e-9 {
+		if e := assertFillStrengthMatchesSource(source, abv); e != nil {
+			return e
+		}
+		laa := drawnLAA(source, volume, abv)
+		if laa > source.CurrentLaa+balanceEps {
 			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
 				"%s holds %.4f LAA; this fill asks for %.4f",
 				source.Name, source.CurrentLaa, laa))
@@ -188,12 +191,14 @@ func (s *MarkedContainerService) MarkContainer(
 		if e != nil {
 			return e
 		}
-		if _, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             sourceID,
-			CurrentVolumeL: source.CurrentVolumeL - volume,
-			CurrentAbvPct:  source.CurrentAbvPct,
-			CurrentLaa:     source.CurrentLaa - laa,
-		}); e != nil {
+		rest, stranded, e := balanceOf(source).take(source.Name, volume, laa)
+		if e != nil {
+			return e
+		}
+		if _, e = saveBalance(ctx, q, sourceID, rest); e != nil {
+			return e
+		}
+		if e := bookStranded(ctx, q, u, source, stranded, volume, abv, mv.OccurredAt, "a marked container fill"); e != nil {
 			return e
 		}
 
@@ -391,21 +396,7 @@ func (s *MarkedContainerService) UnmarkContainer(
 		if e != nil {
 			return e
 		}
-		// Blending back into a vessel that already holds spirit: the
-		// strength is the volume-weighted result, the same arithmetic
-		// every other receipt into a container uses.
-		newVolume := dest.CurrentVolumeL + c.VolumeL
-		newLAA := dest.CurrentLaa + c.Laa
-		newABV := dest.CurrentAbvPct.Float64
-		if newVolume > 0 {
-			newABV = newLAA / newVolume * 100
-		}
-		if _, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             destID,
-			CurrentVolumeL: newVolume,
-			CurrentAbvPct:  pgtype.Float8{Float64: newABV, Valid: true},
-			CurrentLaa:     newLAA,
-		}); e != nil {
+		if _, e = saveBalance(ctx, q, destID, balanceOf(dest).add(c.VolumeL, c.Laa)); e != nil {
 			return e
 		}
 		out, e = q.UnmarkMarkedContainer(ctx, sqlcgen.UnmarkMarkedContainerParams{

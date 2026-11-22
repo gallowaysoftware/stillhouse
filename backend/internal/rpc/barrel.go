@@ -262,6 +262,9 @@ func (s *BarrelService) FillBarrel(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid source_container_id"))
 	}
+	if sourceID == barrelID {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("a barrel cannot be filled from itself"))
+	}
 	if in.GetVolumeL() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("volume_l must be > 0"))
 	}
@@ -308,29 +311,18 @@ func (s *BarrelService) FillBarrel(
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
-		// Reject overfills. Recorded capacity is in litres; the small
-		// tolerance covers float rounding when filling to exactly the
-		// brim. If no capacity is recorded on the barrel we skip the
-		// check — operator opted out of capacity hygiene for that vessel.
-		if barrel.CapacityL.Valid {
-			if barrel.CurrentVolumeL+volume > barrel.CapacityL.Float64+1e-6 {
-				return connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("fill would overflow barrel: %.4f L on hand + %.4f L fill > %.4f L capacity",
-						barrel.CurrentVolumeL, volume, barrel.CapacityL.Float64))
-			}
+		if e := assertTakesSpirit(barrel, volume); e != nil {
+			return e
 		}
 		source := locked[sourceID]
-		if source.CurrentVolumeL < volume {
-			return connect.NewError(connect.CodeFailedPrecondition, errors.New("source container has insufficient volume"))
-		}
 		if e := assertFillStrengthMatchesSource(source, abv); e != nil {
 			return e
 		}
 
-		laa := volume * abv / 100
-		if source.CurrentLaa+1e-6 < laa {
-			return connect.NewError(connect.CodeFailedPrecondition,
-				fmt.Errorf("source holds %.4f LAA; this fill would remove %.4f", source.CurrentLaa, laa))
+		laa := drawnLAA(source, volume, abv)
+		rest, stranded, e := balanceOf(source).take(source.Name, volume, laa)
+		if e != nil {
+			return e
 		}
 
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
@@ -356,28 +348,13 @@ func (s *BarrelService) FillBarrel(
 		// 60% tank used to put 80 LAA in the cask and take 60 out. What is
 		// left over is arithmetic — the remaining alcohol over the
 		// remaining volume — not a second measurement.
-		newSrcVol, newSrcAbv, newSrcLAA := applyWithdrawal(
-			source.CurrentVolumeL, source.CurrentLaa, volume, laa)
-		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             sourceID,
-			CurrentVolumeL: newSrcVol,
-			CurrentAbvPct:  newSrcAbv,
-			CurrentLaa:     newSrcLAA,
-		}); e != nil {
+		if _, e := saveBalance(ctx, q, sourceID, rest); e != nil {
 			return e
 		}
-
-		// Update barrel (deposit at fill ABV).
-		newBarrelVol, newBarrelAbv, newBarrelLAA := applyDeposit(
-			barrel.CurrentVolumeL, barrel.CurrentAbvPct,
-			volume, abv,
-		)
-		barrelContainer, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             barrelID,
-			CurrentVolumeL: newBarrelVol,
-			CurrentAbvPct:  newBarrelAbv,
-			CurrentLaa:     newBarrelLAA,
-		})
+		if e := bookStranded(ctx, q, u, source, stranded, volume, abv, eventTime, "a barrel fill"); e != nil {
+			return e
+		}
+		barrelContainer, e = saveBalance(ctx, q, barrelID, balanceOf(barrel).add(volume, laa))
 		if e != nil {
 			return e
 		}
@@ -478,6 +455,9 @@ func (s *BarrelService) DumpBarrel(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid destination_container_id"))
 	}
+	if destID == barrelID {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("a barrel cannot be dumped into itself"))
+	}
 	if in.GetVolumeL() <= 0 || in.GetAbvPct() < 0 || in.GetAbvPct() > 100 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid volume_l / abv_pct"))
 	}
@@ -525,9 +505,12 @@ func (s *BarrelService) DumpBarrel(
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("barrel is already empty"))
 		}
 		dest := locked[destID]
+		if e := assertTakesSpirit(dest, volume); e != nil {
+			return e
+		}
 
-		laa := volume * abv / 100
-		if barrel.CurrentLaa+1e-6 < laa {
+		laa := drawnLAA(barrel, volume, abv)
+		if barrel.CurrentLaa+balanceEps < laa {
 			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
 				"%s holds %.4f LAA; this dump would remove %.4f", barrel.Name, barrel.CurrentLaa, laa))
 		}
@@ -556,18 +539,12 @@ func (s *BarrelService) DumpBarrel(
 		residualLAA := barrel.CurrentLaa - laa
 		residualVol := barrel.CurrentVolumeL - volume
 		if residualLAA > 1e-9 {
-			if residualVol < 0 {
-				residualVol = 0
-			}
-			residualABV := 0.0
-			if residualVol > 0 {
-				residualABV = residualLAA / residualVol * 100
-			}
+			lossVol, lossABV := lossRow(residualVol, barrel.CurrentVolumeL, residualLAA)
 			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 				TenantID:          u.TenantID,
 				SourceContainerID: uuid.NullUUID{UUID: barrelID, Valid: true},
-				VolumeL:           residualVol,
-				AbvPct:            residualABV,
+				VolumeL:           lossVol,
+				AbvPct:            lossABV,
 				Laa:               residualLAA,
 				Reason:            sqlcgen.BulkMovementReasonLossEvaporation,
 				ReferenceType:     "barrel_dump_residual",
@@ -580,27 +557,11 @@ func (s *BarrelService) DumpBarrel(
 		}
 
 		// Empty the barrel.
-		barrelContainer, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             barrelID,
-			CurrentVolumeL: 0,
-			CurrentAbvPct:  pgtype.Float8{Valid: false},
-			CurrentLaa:     0,
-		})
+		barrelContainer, e = saveBalance(ctx, q, barrelID, balance{})
 		if e != nil {
 			return e
 		}
-
-		// Deposit into destination.
-		newDestVol, newDestAbv, newDestLAA := applyDeposit(
-			dest.CurrentVolumeL, dest.CurrentAbvPct,
-			volume, abv,
-		)
-		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             destID,
-			CurrentVolumeL: newDestVol,
-			CurrentAbvPct:  newDestAbv,
-			CurrentLaa:     newDestLAA,
-		}); e != nil {
+		if _, e := saveBalance(ctx, q, destID, balanceOf(dest).add(volume, laa)); e != nil {
 			return e
 		}
 
@@ -751,8 +712,8 @@ func (s *BarrelService) RegaugeBarrel(
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
-		newLAA := volume * abv / 100
-		if newLAA > barrel.CurrentLaa+1e-6 {
+		newLAA := drawnLAA(barrel, volume, abv)
+		if newLAA > barrel.CurrentLaa+balanceEps {
 			return connect.NewError(connect.CodeInvalidArgument,
 				errors.New("new LAA cannot exceed current LAA — regauges record losses only"))
 		}
@@ -763,23 +724,25 @@ func (s *BarrelService) RegaugeBarrel(
 		// which preserves the audit trail (destination, days_aged) and
 		// keeps the bulk ledger reconcilable. Empty→empty regauges (no-op
 		// snapshots) are still allowed.
-		if volume == 0 && barrel.CurrentVolumeL > 0 {
+		if newLAA <= balanceEps && barrel.CurrentLaa > balanceEps {
 			return connect.NewError(connect.CodeFailedPrecondition,
-				errors.New("regauge cannot fully drain a non-empty barrel — use dump_barrel to record a transfer"))
+				errors.New("a regauge cannot take all the alcohol out of a barrel: check the strength, or dump it to record a transfer"))
 		}
 		lossVol := barrel.CurrentVolumeL - volume
 		lossLAA := barrel.CurrentLaa - newLAA
 		lostLAA = lossLAA
 
 		var mvID uuid.NullUUID
-		if lossVol > 0 && lossLAA > 0 {
-			lossABV := lossLAA / lossVol * 100
+		if lossLAA > balanceEps {
+			// A weaker cask has lost alcohol whether or not it lost litres:
+			// in a humid warehouse it can gain them.
+			rowVol, rowABV := lossRow(lossVol, barrel.CurrentVolumeL, lossLAA)
 			mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
 				TenantID:               u.TenantID,
 				SourceContainerID:      uuid.NullUUID{UUID: barrelID, Valid: true},
 				DestinationContainerID: uuid.NullUUID{Valid: false},
-				VolumeL:                lossVol,
-				AbvPct:                 math.Max(0, math.Min(100, lossABV)),
+				VolumeL:                rowVol,
+				AbvPct:                 rowABV,
 				Laa:                    lossLAA,
 				Reason:                 sqlcgen.BulkMovementReasonLossEvaporation,
 				ReferenceType:          "barrel_regauge",
@@ -793,17 +756,7 @@ func (s *BarrelService) RegaugeBarrel(
 			mvID = uuid.NullUUID{UUID: mv.ID, Valid: true}
 		}
 
-		// Update barrel to new measurements.
-		var newAbv pgtype.Float8
-		if volume > 0 {
-			newAbv = pgtype.Float8{Float64: abv, Valid: true}
-		}
-		barrelContainer, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             barrelID,
-			CurrentVolumeL: volume,
-			CurrentAbvPct:  newAbv,
-			CurrentLaa:     newLAA,
-		})
+		barrelContainer, e = saveBalance(ctx, q, barrelID, balance{volumeL: volume, laa: newLAA})
 		if e != nil {
 			return e
 		}
@@ -875,6 +828,17 @@ func (s *BarrelService) RegaugeBarrel(
 	}), nil
 }
 
+// lossRow is the litres and strength a loss is written with. The ledger
+// wants positive litres and a strength, and a cask that lost alcohol
+// without losing that many litres has neither, so the row rests on what
+// the cask held. The LAA is the figure; these two only carry it.
+func lossRow(lostVolumeL, heldVolumeL, lostLAA float64) (volumeL, abvPct float64) {
+	if lostVolumeL > balanceEps && lostLAA <= lostVolumeL {
+		return lostVolumeL, lostLAA / lostVolumeL * 100
+	}
+	return heldVolumeL, math.Min(100, lostLAA/heldVolumeL*100)
+}
+
 // VoidBarrelEvent unwinds a fill or dump event by inverting its linked
 // bulk_movement and updating both container balances. Regauge events are
 // rejected — they store a "snapshot" without preserving the previous
@@ -918,43 +882,29 @@ func (s *BarrelService) VoidBarrelEvent(
 			if me != nil {
 				return me
 			}
-			// Destination loses (we're undoing a deposit there)…
+			var ids []uuid.UUID
+			for _, side := range []uuid.NullUUID{mv.DestinationContainerID, mv.SourceContainerID} {
+				if side.Valid {
+					ids = append(ids, side.UUID)
+				}
+			}
+			locked, le := lockContainers(ctx, q, ids...)
+			if le != nil {
+				return le
+			}
 			if mv.DestinationContainerID.Valid {
-				dst, ge := lockContainerForWrite(ctx, q, mv.DestinationContainerID.UUID)
-				if ge != nil {
-					return ge
+				dst := locked[mv.DestinationContainerID.UUID]
+				rest, te := balanceOf(dst).takeBack(dst.Name, mv.VolumeL, mv.Laa)
+				if te != nil {
+					return te
 				}
-				newVol := dst.CurrentVolumeL - mv.VolumeL
-				if newVol < 0 {
-					return connect.NewError(connect.CodeFailedPrecondition,
-						errors.New("destination has been drained below the event volume — void downstream movements first"))
-				}
-				newLAA := dst.CurrentLaa - mv.Laa
-				if newLAA < 0 {
-					newLAA = 0
-				}
-				var newABV pgtype.Float8
-				if newVol > 0 && dst.CurrentAbvPct.Valid {
-					newABV = dst.CurrentAbvPct
-				}
-				if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-					ID: dst.ID, CurrentVolumeL: newVol, CurrentAbvPct: newABV, CurrentLaa: newLAA,
-				}); e != nil {
+				if _, e := saveBalance(ctx, q, dst.ID, rest); e != nil {
 					return e
 				}
 			}
-			// …and source regains (we're undoing a withdrawal there).
 			if mv.SourceContainerID.Valid {
-				src, ge := lockContainerForWrite(ctx, q, mv.SourceContainerID.UUID)
-				if ge != nil {
-					return ge
-				}
-				newVol, newABV, newLAA := applyDeposit(
-					src.CurrentVolumeL, src.CurrentAbvPct, mv.VolumeL, mv.AbvPct,
-				)
-				if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-					ID: src.ID, CurrentVolumeL: newVol, CurrentAbvPct: newABV, CurrentLaa: newLAA,
-				}); e != nil {
+				src := locked[mv.SourceContainerID.UUID]
+				if _, e := saveBalance(ctx, q, src.ID, balanceOf(src).add(mv.VolumeL, mv.Laa)); e != nil {
 					return e
 				}
 			}

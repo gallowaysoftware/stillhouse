@@ -89,9 +89,13 @@ func (s *RedistillationService) StartRedistillation(
 		if e != nil {
 			return e
 		}
-		if vessel.CurrentLaa+1e-9 < laa {
-			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-				"%s holds %.2f LAA; this would take %.2f", vessel.Name, vessel.CurrentLaa, laa))
+		if e := assertFillStrengthMatchesSource(vessel, in.GetAbvPct()); e != nil {
+			return e
+		}
+		laa = drawnLAA(vessel, in.GetVolumeL(), in.GetAbvPct())
+		rest, stranded, e := balanceOf(vessel).take(vessel.Name, in.GetVolumeL(), laa)
+		if e != nil {
+			return e
 		}
 
 		movement, e := q.InsertExternalBulkMovement(ctx, sqlcgen.InsertExternalBulkMovementParams{
@@ -120,18 +124,12 @@ func (s *RedistillationService) StartRedistillation(
 			return e
 		}
 
-		newVol := vessel.CurrentVolumeL - in.GetVolumeL()
-		newLAA := vessel.CurrentLaa - laa
-		newABV := pgtype.Float8{}
-		if newVol > 1e-9 {
-			newABV = pgtype.Float8{Float64: newLAA / newVol * 100, Valid: true}
-		} else {
-			newVol, newLAA = 0, 0
-		}
-		container, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID: containerID, CurrentVolumeL: newVol, CurrentAbvPct: newABV, CurrentLaa: newLAA,
-		})
+		container, e = saveBalance(ctx, q, containerID, rest)
 		if e != nil {
+			return e
+		}
+		if e := bookStranded(ctx, q, u, vessel, stranded, in.GetVolumeL(), in.GetAbvPct(),
+			movement.OccurredAt, "a return to the still"); e != nil {
 			return e
 		}
 

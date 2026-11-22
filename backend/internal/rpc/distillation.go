@@ -500,6 +500,9 @@ func (s *DistillationService) RecordProductionGauge(
 		volume := corrected.VolumeL20C
 		abv := corrected.StrengthPct20C
 		laa := corrected.LAA()
+		if e := assertTakesSpirit(container, volume); e != nil {
+			return e
+		}
 
 		// 1. Insert the BulkMovement.
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
@@ -555,13 +558,7 @@ func (s *DistillationService) RecordProductionGauge(
 		}
 
 		// 3. Update container balance.
-		newVol, newABV, newLAA := applyDeposit(container.CurrentVolumeL, container.CurrentAbvPct, volume, abv)
-		updated, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             destID,
-			CurrentVolumeL: newVol,
-			CurrentAbvPct:  newABV,
-			CurrentLaa:     newLAA,
-		})
+		updated, e = saveBalance(ctx, q, destID, balanceOf(container).add(volume, laa))
 		if e != nil {
 			return e
 		}
@@ -657,28 +654,12 @@ func (s *DistillationService) VoidDistillationRun(
 			if ce != nil {
 				return ce
 			}
-			newVol := container.CurrentVolumeL - gauge.VolumeL
-			if newVol < 0 {
-				return connect.NewError(connect.CodeFailedPrecondition,
-					errors.New("destination container balance has dropped below the gauged volume — void downstream movements first"))
-			}
 			laa := gauge.VolumeL * gauge.AbvPct / 100
-			newLAA := container.CurrentLaa - laa
-			if newLAA < 0 {
-				newLAA = 0
+			rest, te := balanceOf(container).takeBack(container.Name, gauge.VolumeL, laa)
+			if te != nil {
+				return te
 			}
-			// ABV stays at whatever blended in afterward; if container empties,
-			// drop ABV to NULL (matches CreateBulkContainer initial state).
-			var newABV pgtype.Float8
-			if newVol > 0 && container.CurrentAbvPct.Valid {
-				newABV = container.CurrentAbvPct
-			}
-			if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-				ID:             container.ID,
-				CurrentVolumeL: newVol,
-				CurrentAbvPct:  newABV,
-				CurrentLaa:     newLAA,
-			}); e != nil {
+			if _, e := saveBalance(ctx, q, container.ID, rest); e != nil {
 				return e
 			}
 			// Offsetting ledger row so the audit trail is reconstructable.
