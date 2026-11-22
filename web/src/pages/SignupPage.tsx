@@ -26,7 +26,7 @@ export function SignupPage() {
         tenantName, craSpiritsLicenceNumber: licence, defaultJurisdiction: jurisdiction,
       }),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ["getMe"] });
+      qc.clear();
       navigate("/", { replace: true });
     },
   });

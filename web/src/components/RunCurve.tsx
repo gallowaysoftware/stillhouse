@@ -51,8 +51,8 @@ export function RunCurve({ readings, title = "Run log" }: { readings: Distillati
         {strength.length >= 2 && (
           <Plot
             title="Strength at the parrot, as read"
-            series={[{ label: "distillate", points: strength, color: "rgb(var(--color-series-1))" }]}
-            steps={heat.length >= 2 ? { label: "heat", points: heat, color: "rgb(var(--color-fg-subtle) / 0.5)" } : undefined}
+            series={[{ label: "distillate", points: strength, color: "rgb(var(--sh-series-1))" }]}
+            steps={heat.length >= 2 ? { label: "heat", points: heat, color: "rgb(var(--sh-fg-subtle) / 0.5)" } : undefined}
             totalHours={totalHours}
             format={(v) => `${v.toFixed(1)} %`}
             min={0}
@@ -63,9 +63,9 @@ export function RunCurve({ readings, title = "Run log" }: { readings: Distillati
           <Plot
             title="Temperatures"
             series={[
-              { label: "pot", points: pot, color: "rgb(var(--color-series-1))" },
-              { label: "vapour", points: vapour, color: "rgb(var(--color-fg-muted))" },
-              { label: "spirit", points: spirit, color: "rgb(var(--color-fg-subtle))" },
+              { label: "pot", points: pot, color: "rgb(var(--sh-series-1))" },
+              { label: "vapour", points: vapour, color: "rgb(var(--sh-fg-muted))" },
+              { label: "spirit", points: spirit, color: "rgb(var(--sh-fg-subtle))" },
             ].filter((s) => s.points.length >= 2)}
             totalHours={totalHours}
             format={(v) => `${v.toFixed(0)} °C`}
@@ -149,14 +149,14 @@ function Plot({
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`${title} over time`}>
         {Array.from({ length: ticks + 1 }, (_, i) => y0 + ((y1 - y0) * i) / ticks).map((v) => (
           <g key={v}>
-            <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} stroke="rgb(var(--color-border))" strokeWidth={1} />
-            <text x={padL - 6} y={y(v) + 3} textAnchor="end" fontSize={10} fill="rgb(var(--color-fg-subtle))">
+            <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} stroke="rgb(var(--sh-border))" strokeWidth={1} />
+            <text x={padL - 6} y={y(v) + 3} textAnchor="end" fontSize={10} fill="rgb(var(--sh-fg-subtle))">
               {format(v)}
             </text>
           </g>
         ))}
         {hourTicks.map((h) => (
-          <text key={h} x={x(h)} y={H - 6} textAnchor="middle" fontSize={10} fill="rgb(var(--color-fg-subtle))">
+          <text key={h} x={x(h)} y={H - 6} textAnchor="middle" fontSize={10} fill="rgb(var(--sh-fg-subtle))">
             {h.toFixed(1)} h
           </text>
         ))}

@@ -6,6 +6,7 @@ import { create } from "@bufbuild/protobuf";
 
 import { useConfirm } from "@/components/ConfirmDialog";
 import { EmptyRow } from "@/components/EmptyState";
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
 import { distillationClient } from "@/lib/clients";
 import { CreateDistillationRunRequestSchema, VoidDistillationRunRequestSchema } from "@/gen/stillhouse/v1/distillation_pb";
@@ -122,7 +123,8 @@ export function DistillationsPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      {list.error && <div className="mb-4"><LoadError error={list.error} onRetry={() => void list.refetch()} /></div>}
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>

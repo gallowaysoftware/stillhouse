@@ -1,12 +1,14 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { MashBench } from "@/components/MashBench";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { DeleteButton } from "@/components/DeleteButton";
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
+import { useToast } from "@/components/Toast";
 import { fermentationClient, mashClient, materialClient } from "@/lib/clients";
 import type { Material, MaterialLot } from "@/gen/stillhouse/v1/material_pb";
 import {
@@ -16,6 +18,7 @@ import {
   MashStatus,
   UpdateMashStatusRequestSchema,
 } from "@/gen/stillhouse/v1/mash_pb";
+import { writeErrorText } from "@/lib/errors";
 import { CreateFermentationRunRequestSchema } from "@/gen/stillhouse/v1/fermentation_pb";
 import {
   fermentationStatusLabel,
@@ -46,6 +49,8 @@ const statusOptions = [
 export function MashDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const mash = useQuery({
     queryKey: ["getMashRun", id],
@@ -62,10 +67,8 @@ export function MashDetailPage() {
     queryFn: () => materialClient.listMaterials({}),
   });
 
-  const refresh = () => {
-    qc.invalidateQueries({ queryKey: ["getMashRun", id] });
-    qc.invalidateQueries({ queryKey: ["listFermentationRuns", "mash", id] });
-  };
+  // Everything: lots, lists and pickers elsewhere move with a mash.
+  const refresh = () => void qc.invalidateQueries();
 
   const addIngredient = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof AddMashIngredientRequestSchema>>) =>
@@ -81,6 +84,7 @@ export function MashDetailPage() {
     mutationFn: (msg: ReturnType<typeof create<typeof UpdateMashStatusRequestSchema>>) =>
       mashClient.updateMashStatus(msg),
     onSuccess: refresh,
+    onError: (e) => toast("danger", writeErrorText(e)),
   });
   const createFerment = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof CreateFermentationRunRequestSchema>>) =>
@@ -88,15 +92,29 @@ export function MashDetailPage() {
     onSuccess: refresh,
   });
 
+  async function setStatus(runId: string, status: MashStatus) {
+    if (status === MashStatus.CANCELLED) {
+      const ok = await confirm({
+        title: "Cancel this mash?",
+        body: "It leaves the open runs. What was used stays off its lots; remove an ingredient first to put it back.",
+        confirmLabel: "Cancel it",
+        tone: "danger",
+      });
+      if (!ok) return;
+    }
+    updateStatus.mutate(create(UpdateMashStatusRequestSchema, { id: runId, status }));
+  }
+
   if (!id) return <Shell><p>Missing mash id.</p></Shell>;
   if (mash.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
+  if (mash.error && !mash.data) return <Shell><LoadError error={mash.error} onRetry={() => void mash.refetch()} /></Shell>;
   if (!mash.data?.mashRun) return <Shell><p>Mash not found.</p></Shell>;
 
   const m = mash.data.mashRun;
 
   return (
     <Shell>
-      <header className="mb-6 flex items-start justify-between">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mash #{m.mashNo}</h1>
           <p className="text-sm text-fg-muted">
@@ -107,14 +125,7 @@ export function MashDetailPage() {
           <label className="text-xs text-fg-muted">Status</label>
           <select
             value={m.status}
-            onChange={(e) =>
-              updateStatus.mutate(
-                create(UpdateMashStatusRequestSchema, {
-                  id: m.id,
-                  status: Number(e.target.value) as MashStatus,
-                }),
-              )
-            }
+            onChange={(e) => void setStatus(m.id, Number(e.target.value) as MashStatus)}
             className="rounded border border-border-strong px-2 py-1 text-sm"
           >
             {statusOptions.map((s) => (
@@ -160,7 +171,7 @@ export function MashDetailPage() {
               submitting={addIngredient.isPending}
               error={addIngredient.error}
               onSubmit={(values) =>
-                addIngredient.mutate(
+                addIngredient.mutateAsync(
                   create(AddMashIngredientRequestSchema, {
                     mashRunId: m.id,
                     materialId: values.materialId,
@@ -221,33 +232,10 @@ export function MashDetailPage() {
         <Panel
           title="Metrics"
           right={
-            <InlineForm
-              fields={[
-                {
-                  name: "kind",
-                  label: "Kind",
-                  type: "select",
-                  options: metricKindOptions.map((k) => ({
-                    value: String(k.value),
-                    label: k.label,
-                  })),
-                  required: true,
-                },
-                { name: "value", label: "Value", type: "number", step: "0.001", required: true },
-                { name: "unit", label: "Unit", type: "text" },
-              ]}
+            <MetricForm
               submitting={addMetric.isPending}
               error={addMetric.error}
-              onSubmit={(values) =>
-                addMetric.mutate(
-                  create(AddMashMetricRequestSchema, {
-                    mashRunId: m.id,
-                    kind: Number(values.kind) as MashMetricKind,
-                    value: Number(values.value),
-                    unit: values.unit ?? "",
-                  }),
-                )
-              }
+              onSubmit={(v) => addMetric.mutateAsync(create(AddMashMetricRequestSchema, { mashRunId: m.id, ...v }))}
             />
           }
         >
@@ -302,7 +290,7 @@ export function MashDetailPage() {
               submitting={createFerment.isPending}
               error={createFerment.error}
               onSubmit={(v) =>
-                createFerment.mutate(
+                createFerment.mutateAsync(
                   create(CreateFermentationRunRequestSchema, {
                     mashRunId: m.id,
                     fermenterLabel: v.fermenterLabel,
@@ -359,17 +347,6 @@ export function MashDetailPage() {
   );
 }
 
-type Field = {
-  name: string;
-  label: string;
-  type: "text" | "number" | "select";
-  required?: boolean;
-  defaultValue?: string;
-  step?: string;
-  placeholder?: string;
-  options?: { value: string; label: string }[];
-};
-
 function FermentForm({
   materials,
   submitting,
@@ -379,7 +356,7 @@ function FermentForm({
   materials: Material[];
   submitting: boolean;
   error: Error | null;
-  onSubmit: (v: { fermenterLabel: string; initialVolumeL: number; yeastMaterialId: string; yeastLotId: string }) => void;
+  onSubmit: (v: { fermenterLabel: string; initialVolumeL: number; yeastMaterialId: string; yeastLotId: string }) => Promise<unknown>;
 }) {
   const [fermenter, setFermenter] = useState("");
   const [vol, setVol] = useState("");
@@ -406,10 +383,14 @@ function FermentForm({
       initialVolumeL: Number(vol || 0),
       yeastMaterialId: yeastMatId,
       yeastLotId: yeastLotId,
-    });
-    setFermenter("");
-    setVol("");
-    setYeastLotId("");
+    }).then(
+      () => {
+        setFermenter("");
+        setVol("");
+        setYeastLotId("");
+      },
+      () => undefined,
+    );
   }
 
   return (
@@ -470,11 +451,7 @@ function FermentForm({
       >
         {submitting ? "…" : "Pitch"}
       </button>
-      {error && (
-        <span className="text-xs text-danger-fg">
-          {error instanceof ConnectError ? error.rawMessage : String(error)}
-        </span>
-      )}
+      <FormError error={error} />
     </form>
   );
 }
@@ -488,12 +465,14 @@ function IngredientForm({
   materials: Material[];
   submitting: boolean;
   error: Error | null;
-  onSubmit: (v: { materialId: string; materialLotId: string; quantityUsed: number; uom: string }) => void;
+  onSubmit: (v: { materialId: string; materialLotId: string; quantityUsed: number; uom: string }) => Promise<unknown>;
 }) {
   const [materialId, setMaterialId] = useState("");
   const [materialLotId, setMaterialLotId] = useState("");
   const [qty, setQty] = useState("");
-  const [uom, setUom] = useState("kg");
+  // The lot is debited by the number as given, so it has to be in the unit
+  // the material is counted in.
+  const uom = materials.find((m) => m.id === materialId)?.uom ?? "";
 
   // Pull lots on-hand for the selected material. Disabled until a material
   // is picked so we don't fire a stray no-filter request.
@@ -506,20 +485,24 @@ function IngredientForm({
 
   function submit(e: FormEvent) {
     e.preventDefault();
-    onSubmit({ materialId, materialLotId, quantityUsed: Number(qty), uom });
-    setQty("");
-    setMaterialLotId("");
+    onSubmit({ materialId, materialLotId, quantityUsed: Number(qty), uom }).then(
+      () => {
+        setQty("");
+        setMaterialLotId("");
+      },
+      () => undefined,
+    );
   }
 
   return (
-    <form onSubmit={submit} className="flex items-end gap-2">
+    <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
       <div>
         <label className="mb-1 block text-xs text-fg-muted">Material</label>
         <select
           required
           value={materialId}
           onChange={(e) => { setMaterialId(e.target.value); setMaterialLotId(""); }}
-          className="rounded border border-border-strong px-2 py-1 text-sm"
+          className="max-w-full rounded border border-border-strong px-2 py-1 text-sm"
         >
           <option value="">—</option>
           {materials.map((mat) => (
@@ -544,24 +527,14 @@ function IngredientForm({
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-fg-muted">Qty</label>
+        <label className="mb-1 block text-xs text-fg-muted">Qty{uom && ` (${uom})`}</label>
         <input
           required
           type="number"
-          step="0.01"
+          step="any"
           value={qty}
           onChange={(e) => setQty(e.target.value)}
           className="w-24 rounded border border-border-strong px-2 py-1 text-sm"
-        />
-      </div>
-      <div>
-        <label className="mb-1 block text-xs text-fg-muted">UoM</label>
-        <input
-          required
-          type="text"
-          value={uom}
-          onChange={(e) => setUom(e.target.value)}
-          className="w-16 rounded border border-border-strong px-2 py-1 text-sm"
         />
       </div>
       <button
@@ -571,11 +544,7 @@ function IngredientForm({
       >
         {submitting ? "…" : "Add"}
       </button>
-      {error && (
-        <span className="text-xs text-danger-fg">
-          {error instanceof ConnectError ? error.rawMessage : String(error)}
-        </span>
-      )}
+      <FormError error={error} />
     </form>
   );
 }
@@ -592,64 +561,71 @@ function ProjStat({
   );
 }
 
-function InlineForm({
-  fields,
+function MetricForm({
   submitting,
   error,
   onSubmit,
 }: {
-  fields: Field[];
   submitting: boolean;
   error: Error | null;
-  onSubmit: (values: Record<string, string>) => void;
+  onSubmit: (v: { kind: MashMetricKind; value: number; unit: string }) => Promise<unknown>;
 }) {
-  const [values, setValues] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    for (const f of fields) init[f.name] = f.defaultValue ?? "";
-    return init;
-  });
+  const [kind, setKind] = useState("");
+  const [value, setValue] = useState("");
+  const [unit, setUnit] = useState("");
+  const option = metricKindOptions.find((k) => String(k.value) === kind);
+  const other = option?.value === MashMetricKind.OTHER;
+
   function submit(e: FormEvent) {
     e.preventDefault();
-    onSubmit(values);
-    // Reset numeric/text fields, keep selects as-is.
-    setValues((vs) => {
-      const next = { ...vs };
-      for (const f of fields) if (f.type !== "select") next[f.name] = f.defaultValue ?? "";
-      return next;
-    });
+    if (!option) return;
+    onSubmit({ kind: option.value, value: Number(value), unit: other ? unit : option.unit }).then(
+      () => {
+        setValue("");
+        setUnit("");
+      },
+      () => undefined,
+    );
   }
+
   return (
-    <form onSubmit={submit} className="flex items-end gap-2">
-      {fields.map((f) => (
-        <div key={f.name}>
-          <label className="mb-1 block text-xs text-fg-muted">{f.label}</label>
-          {f.type === "select" ? (
-            <select
-              required={f.required}
-              value={values[f.name]}
-              onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-              className="rounded border border-border-strong px-2 py-1 text-sm"
-            >
-              <option value="">—</option>
-              {f.options?.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <input
-              required={f.required}
-              type={f.type}
-              step={f.step}
-              placeholder={f.placeholder}
-              value={values[f.name]}
-              onChange={(e) => setValues({ ...values, [f.name]: e.target.value })}
-              className="w-28 rounded border border-border-strong px-2 py-1 text-sm"
-            />
-          )}
+    <form onSubmit={submit} className="flex flex-wrap items-end gap-2">
+      <div>
+        <label className="mb-1 block text-xs text-fg-muted">Kind</label>
+        <select
+          required
+          value={kind}
+          onChange={(e) => setKind(e.target.value)}
+          className="rounded border border-border-strong px-2 py-1 text-sm"
+        >
+          <option value="">—</option>
+          {metricKindOptions.map((k) => (
+            <option key={k.value} value={k.value}>{k.label}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="mb-1 block text-xs text-fg-muted">Value</label>
+        <input
+          required
+          type="number"
+          step="any"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          className="w-28 rounded border border-border-strong px-2 py-1 text-sm"
+        />
+      </div>
+      {other && (
+        <div>
+          <label className="mb-1 block text-xs text-fg-muted">Unit</label>
+          <input
+            type="text"
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            className="w-20 rounded border border-border-strong px-2 py-1 text-sm"
+          />
         </div>
-      ))}
+      )}
       <button
         type="submit"
         disabled={submitting}
@@ -657,13 +633,14 @@ function InlineForm({
       >
         {submitting ? "…" : "Add"}
       </button>
-      {error && (
-        <span className="text-sm text-danger-fg">
-          {error instanceof ConnectError ? error.rawMessage : String(error)}
-        </span>
-      )}
+      <FormError error={error} />
     </form>
   );
+}
+
+function FormError({ error }: { error: Error | null }) {
+  if (!error) return null;
+  return <p className="w-full text-xs text-danger-fg">{writeErrorText(error)}</p>;
 }
 
 function Panel({
@@ -677,7 +654,7 @@ function Panel({
 }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
-      <header className="flex items-center justify-between border-b border-border bg-surface-3 px-4 py-3">
+      <header className="flex flex-col gap-3 border-b border-border bg-surface-3 px-4 py-3">
         <h2 className="text-sm font-semibold text-fg-muted">{title}</h2>
         {right}
       </header>

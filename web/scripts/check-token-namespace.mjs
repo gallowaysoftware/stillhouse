@@ -13,7 +13,7 @@
 // It does not, if the collision simply never exists. This check is what
 // keeps it from coming back the next time somebody adds a token by
 // copying the line above it.
-import { readFileSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 
 const files = ["src/index.css", "tailwind.config.js"];
 const reserved = /--color-[a-z0-9-]+/g;
@@ -42,6 +42,18 @@ const css = readFileSync("src/index.css", "utf8");
 const cfg = readFileSync("tailwind.config.js", "utf8");
 const defined = new Set([...css.matchAll(/(--sh-[a-z0-9-]+)\s*:/g)].map((m) => m[1]));
 const used = new Set([...cfg.matchAll(/var\((--sh-[a-z0-9-]+)\)/g)].map((m) => m[1]));
+
+// Charts name tokens inline, where an undefined one draws nothing.
+const inline = [];
+for (const f of globSync("src/**/*.{ts,tsx}", { exclude: (p) => String(p).includes("gen") })) {
+  for (const m of readFileSync(f, "utf8").matchAll(/var\((--[a-z0-9-]+)/g)) {
+    if (!defined.has(m[1])) inline.push(`${f}: ${m[1]}`);
+  }
+}
+if (inline.length) {
+  console.error("Tokens used in components but never defined:\n  " + inline.join("\n  "));
+  process.exit(1);
+}
 
 const undef = [...used].filter((v) => !defined.has(v));
 if (undef.length) {

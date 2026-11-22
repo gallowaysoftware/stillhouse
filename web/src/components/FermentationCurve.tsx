@@ -59,7 +59,7 @@ export function FermentationCurve({
             title="Specific gravity"
             points={gravity}
             totalHours={totalHours}
-            color="rgb(var(--color-series-1))"
+            color="rgb(var(--sh-series-1))"
             format={(v) => v.toFixed(3)}
             reference={targetFG}
             referenceLabel="target"
@@ -73,7 +73,7 @@ export function FermentationCurve({
             title="Temperature"
             points={temps}
             totalHours={totalHours}
-            color="rgb(var(--color-series-2))"
+            color="rgb(var(--sh-series-2))"
             format={(v) => `${v.toFixed(1)} °C`}
             padFraction={0.25}
           />

@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
 import { fermentationClient } from "@/lib/clients";
 import { fermentationStatusLabel, formatQty } from "@/lib/format";
 
 export function FermentationsPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["listFermentationRuns", "all"],
     queryFn: () => fermentationClient.listFermentationRuns({}),
   });
@@ -18,7 +19,8 @@ export function FermentationsPage() {
         <p className="text-sm text-fg-muted">All fermentation runs. Create new ones from a mash detail page.</p>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      {error && <div className="mb-4"><LoadError error={error} onRetry={() => void refetch()} /></div>}
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>

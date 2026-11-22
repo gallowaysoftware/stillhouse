@@ -195,7 +195,7 @@ export function B266Page() {
       )}
 
       <h2 data-print-hide className="mb-3 mt-10 text-sm font-semibold text-fg-muted">Past returns</h2>
-      <div data-print-hide className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <div data-print-hide className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
