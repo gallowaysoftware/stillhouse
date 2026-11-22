@@ -157,8 +157,8 @@ func (q *Queries) CreditMaterialLot(ctx context.Context, arg CreditMaterialLotPa
 
 const debitMaterialLot = `-- name: DebitMaterialLot :one
 UPDATE material_lots
-SET quantity_on_hand = quantity_on_hand - $2
-WHERE id = $1 AND quantity_on_hand >= $2
+SET quantity_on_hand = CASE WHEN quantity_on_hand - $2 < 1e-6 THEN 0 ELSE quantity_on_hand - $2 END
+WHERE id = $1 AND quantity_on_hand >= $2 - 1e-6
 RETURNING id, tenant_id, material_id, supplier_lot, quantity_received, quantity_on_hand, received_at, notes, created_at, updated_at, unit_cost_cad, purchase_order_line_id, supplier_id, freight_cad, import_duty_cad, handling_cad, invoice_reference, invoiced_at, landed_unit_cost_cad
 `
 
@@ -169,6 +169,8 @@ type DebitMaterialLotParams struct {
 
 // Debit the on-hand quantity of a lot when a mash consumes from it. Returns
 // the updated row so the caller can warn if the lot is now exhausted.
+// A millionth either way is float residue from earlier draws, not stock: it
+// neither refuses the last one nor stays on hand after it.
 func (q *Queries) DebitMaterialLot(ctx context.Context, arg DebitMaterialLotParams) (MaterialLot, error) {
 	row := q.db.QueryRow(ctx, debitMaterialLot, arg.ID, arg.QuantityOnHand)
 	var i MaterialLot

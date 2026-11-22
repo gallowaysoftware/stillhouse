@@ -495,6 +495,11 @@ func addSaveRecipe(s *registrar, d Deps, user sqlcgen.User) {
 			if err != nil {
 				return errResult(err), nil, nil
 			}
+			for _, listed := range req.Ingredients {
+				if listed.GetMaterialId() == id {
+					return errResult(fmt.Errorf("list %s once, with its whole quantity", ing.Material)), nil, nil
+				}
+			}
 			if ing.Quantity <= 0 || ing.Uom == "" {
 				return errResult(fmt.Errorf("%s needs a quantity above 0 and a unit", ing.Material)), nil, nil
 			}

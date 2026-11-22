@@ -58,6 +58,9 @@ func (s *RecipeService) CreateRecipe(
 		return dbErr
 	})
 	if err != nil {
+		if dup := uniqueViolation(err, "recipe"); dup != nil {
+			return nil, dup
+		}
 		s.logger.Error("CreateRecipe", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -266,17 +269,37 @@ func (s *RecipeService) SaveRecipeVersion(
 			return e
 		}
 
+		seen := map[uuid.UUID]bool{}
 		for _, ing := range in.GetIngredients() {
 			matID, parseErr := uuid.Parse(ing.GetMaterialId())
 			if parseErr != nil {
-				return fmt.Errorf("ingredient: invalid material_id %q", ing.GetMaterialId())
+				return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("invalid material_id %q", ing.GetMaterialId()))
 			}
-			if ing.GetQuantity() <= 0 {
-				return fmt.Errorf("ingredient: quantity must be > 0")
+			material, e := q.GetMaterial(ctx, matID)
+			if errors.Is(e, pgx.ErrNoRows) {
+				return connect.NewError(connect.CodeNotFound, errors.New("material not found"))
+			}
+			if e != nil {
+				return e
+			}
+			if e := validateFinite("quantity", ing.GetQuantity()); e != nil || ing.GetQuantity() <= 0 {
+				return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s needs a quantity above 0", material.Name))
 			}
 			if ing.GetUom() == "" {
-				return fmt.Errorf("ingredient: uom is required")
+				return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("%s needs a unit", material.Name))
 			}
+			// Yield is projected from mass, so a grain in litres would
+			// project nothing and say so nowhere.
+			if material.Kind == sqlcgen.MaterialKindGrain || material.Kind == sqlcgen.MaterialKindMalt {
+				if _, ok := units.Kg(ing.GetQuantity(), ing.GetUom()); !ok {
+					return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+						"%s is projected by mass; give it in kg, g, t or lb, not %s", material.Name, ing.GetUom()))
+				}
+			}
+			if seen[matID] {
+				return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("list %s once, with its whole quantity", material.Name))
+			}
+			seen[matID] = true
 			if _, e := q.CreateRecipeIngredient(ctx, sqlcgen.CreateRecipeIngredientParams{
 				TenantID:        u.TenantID,
 				RecipeVersionID: v.ID,
@@ -1021,14 +1044,13 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 		if !ing.MaterialExtractFraction.Valid {
 			continue
 		}
-		// Only count grain/malt masses. uom 'kg' is assumed for fermentables.
-		// (Future: convert lb→kg here when we add imperial uoms.)
-		if ing.Uom != "kg" {
+		kg, ok := units.Kg(ing.Quantity, ing.Uom)
+		if !ok {
 			continue
 		}
 		inputs = append(inputs, distilling.Ingredient{
 			Name:   ing.MaterialName,
-			MassKg: ing.Quantity,
+			MassKg: kg,
 			// The database column is still called *_pct for now; the
 			// value in it has always been a fraction, which is the
 			// ambiguity K3 is about. Converting at the boundary makes
@@ -1054,7 +1076,8 @@ func projectRecipeVersion(spiritKind sqlcgen.SpiritKind, v sqlcgen.RecipeVersion
 			Quantity:     ing.Quantity,
 			Uom:          ing.Uom,
 		}
-		if ing.MaterialExtractFraction.Valid && ing.Uom == "kg" && idx < len(batch.PerIngredient) {
+		_, isMass := units.Kg(ing.Quantity, ing.Uom)
+		if ing.MaterialExtractFraction.Valid && isMass && idx < len(batch.PerIngredient) {
 			r := batch.PerIngredient[idx]
 			line.FermentableKg = r.FermentableKg
 			line.ExtractFreedKg = r.ExtractFreedKg

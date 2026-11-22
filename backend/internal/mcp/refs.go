@@ -217,24 +217,6 @@ func resolveLot(ctx context.Context, d Deps, user sqlcgen.User, materialID, ref 
 	return pick("lot of that material", ref, all, open)
 }
 
-// requireOwnUnit refuses a quantity in any unit but the material's: the
-// lot is debited by the number as given, so 500 g would take 500 kg.
-func requireOwnUnit(ctx context.Context, d Deps, user sqlcgen.User, materialID, uom string) error {
-	ctx, err := guard(ctx, user, "/stillhouse.v1.MaterialService/GetMaterial")
-	if err != nil {
-		return err
-	}
-	resp, err := d.Material.GetMaterial(ctx, connect.NewRequest(&pb.GetMaterialRequest{Id: materialID}))
-	if err != nil {
-		return err
-	}
-	m := resp.Msg.GetMaterial()
-	if !strings.EqualFold(strings.TrimSpace(uom), m.GetUom()) {
-		return fmt.Errorf("%s is counted in %s; give the quantity in %s", m.GetName(), m.GetUom(), m.GetUom())
-	}
-	return nil
-}
-
 func resolveRecipeVersion(ctx context.Context, d Deps, user sqlcgen.User, ref string) (string, error) {
 	if normalizeRef(ref) == "" {
 		return "", errors.New("say which recipe")

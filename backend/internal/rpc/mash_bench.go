@@ -29,10 +29,14 @@ func buildMashBench(
 			kind != stillhousev1.MaterialKind_MATERIAL_KIND_MALT {
 			continue
 		}
+		kg, ok := units.Kg(ing.QuantityUsed, ing.Uom)
+		if !ok {
+			continue
+		}
 		item := mashing.GrainBillItem{
 			Name:   ing.MaterialName,
 			Cereal: cerealToMashing(cerealToProto(ing.MaterialCereal)),
-			MassKg: ing.QuantityUsed,
+			MassKg: kg,
 			Malted: kind == stillhousev1.MaterialKind_MATERIAL_KIND_MALT,
 		}
 		if ing.MaterialExtractFraction.Valid {

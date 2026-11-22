@@ -12,19 +12,27 @@ import (
 )
 
 const sumGaugeLAAForMash = `-- name: SumGaugeLAAForMash :one
-SELECT COALESCE(SUM(DISTINCT pg.laa), 0)::double precision AS total_gauge_laa
+SELECT COALESCE(SUM(pg.laa * CASE
+           WHEN c.total_laa > 0 THEN c.mash_laa / c.total_laa
+           WHEN c.total_l   > 0 THEN c.mash_l   / c.total_l
+           ELSE 0 END), 0)::double precision AS total_gauge_laa
 FROM production_gauges pg
-JOIN distillation_runs dr ON dr.id = pg.distillation_run_id
-JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
-JOIN fermentation_runs fr ON fr.id = dc.fermentation_run_id
-WHERE fr.mash_run_id = $1
+JOIN distillation_runs dr ON dr.id = pg.distillation_run_id AND dr.voided_at IS NULL
+JOIN LATERAL (
+    SELECT COALESCE(SUM(dc.volume_charged_l * dc.abv_pct), 0)                                        AS total_laa,
+           COALESCE(SUM(dc.volume_charged_l * dc.abv_pct) FILTER (WHERE fr.mash_run_id = $1), 0)     AS mash_laa,
+           COALESCE(SUM(dc.volume_charged_l), 0)                                                     AS total_l,
+           COALESCE(SUM(dc.volume_charged_l) FILTER (WHERE fr.mash_run_id = $1), 0)                  AS mash_l
+    FROM distillation_charges dc
+    JOIN fermentation_runs fr ON fr.id = dc.fermentation_run_id
+    WHERE dc.distillation_run_id = dr.id
+) c ON TRUE
 `
 
-// Sums production_gauges.laa across every distillation that charged from
-// any fermentation_run belonging to this mash. Note: if a distillation
-// mixed charges from multiple mashes, that gauge LAA is over-attributed
-// here. Acceptable for v1 single-mash-per-distillation operations;
-// proportional attribution is a future refinement.
+// Alcohol gauged out of the still runs this mash went into. A run charged
+// from several mashes is shared between them by the alcohol each put in, or
+// by volume where no strength was recorded. Each gauge counts once however
+// many charges fed it, and a voided run counts not at all.
 func (q *Queries) SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error) {
 	row := q.db.QueryRow(ctx, sumGaugeLAAForMash, mashRunID)
 	var total_gauge_laa float64

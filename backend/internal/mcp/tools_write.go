@@ -602,11 +602,6 @@ func addAddMashIngredient(s *registrar, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return errResult(err), nil, nil
 		}
-		if lotID != "" {
-			if err := requireOwnUnit(ctx, d, user, materialID, args.Uom); err != nil {
-				return errResult(err), nil, nil
-			}
-		}
 		resp, err := d.Mash.AddMashIngredient(ctx, connect.NewRequest(&pb.AddMashIngredientRequest{
 			MashRunId:     mashID,
 			MaterialId:    materialID,
