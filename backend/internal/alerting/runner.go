@@ -7,6 +7,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Notifier is the slice of the mailer this package needs. Narrow, so the
@@ -61,7 +62,7 @@ func (r *Runner) RunOnce(ctx context.Context) {
 		return
 	}
 	for _, t := range tenants {
-		if err := r.RunTenant(ctx, t, time.Now().UTC()); err != nil {
+		if err := r.RunTenant(ctx, t, time.Now().In(zone.For(t.DefaultJurisdiction))); err != nil {
 			r.logger.Error("alerting: evaluate tenant", "err", err, "tenant_id", t.ID)
 		}
 	}

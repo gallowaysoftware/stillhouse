@@ -3,7 +3,6 @@ package rpc
 import (
 	"context"
 	"errors"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -131,7 +130,7 @@ func fillGroupFilingStatus(
 		return
 	}
 
-	on := time.Now().UTC()
+	on := s.db.Today(ctx, tenantID)
 	current := basis.PeriodContaining(on)
 	p := current
 	if !dayOf(on).After(current.End) {

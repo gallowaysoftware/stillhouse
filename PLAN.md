@@ -509,16 +509,10 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–229 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–230 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
-
-### M3 · The return's calendar is UTC — P0
-
-Periods, the period lock and every blank date cut at UTC midnight, so work
-after 20:00 AST on the last day of a month lands on the next return and
-slips past the lock. There is no tenant time zone. Three agents, separately.
 
 ### M4 · A quantity in any unit — P0
 

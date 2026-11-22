@@ -204,7 +204,7 @@ func (s *RetentionService) PlaceLegalHold(
 			errors.New("say what the hold is about — one with no reason is one "+
 				"nobody can lift with confidence"))
 	}
-	placedOn, err := parseDateOrToday(req.Msg.GetPlacedOn())
+	placedOn, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetPlacedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -253,7 +253,7 @@ func (s *RetentionService) ReleaseLegalHold(
 			errors.New("say why the hold is being lifted — it is the record that "+
 				"deletion became permissible again, and when"))
 	}
-	releasedOn, err := parseDateOrToday(req.Msg.GetReleasedOn())
+	releasedOn, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetReleasedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

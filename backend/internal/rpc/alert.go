@@ -15,6 +15,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // AlertService reads what the evaluator found and records that a human
@@ -105,7 +106,7 @@ func (s *AlertService) EvaluateAlerts(
 		s.logger.Error("EvaluateAlerts: tenant", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	if err := s.runner.RunTenant(ctx, tenant, time.Now().UTC()); err != nil {
+	if err := s.runner.RunTenant(ctx, tenant, time.Now().In(zone.For(tenant.DefaultJurisdiction))); err != nil {
 		s.logger.Error("EvaluateAlerts", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}

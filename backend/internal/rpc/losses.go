@@ -10,13 +10,13 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Losses and their duty treatment.
@@ -188,7 +188,7 @@ func (s *BulkService) ClassifyLosses(
 // inside a submitted period. Same guard the mutation paths use, reached
 // from a timestamp rather than a date.
 func assertMovementDateNotLocked(ctx context.Context, q *sqlcgen.Queries, at time.Time) error {
-	return assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: at})
+	return assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, at))
 }
 
 func classifiableLossToProto(r sqlcgen.ListLossesRow) *stillhousev1.ClassifiableLoss {

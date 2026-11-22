@@ -409,13 +409,13 @@ func (s *InstrumentService) RecordCalibration(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid instrument_id"))
 	}
-	on, err := parseDateOrToday(req.Msg.GetCalibratedOn())
+	on, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetCalibratedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	// A calibration dated in the future would push the next due date out
 	// on the strength of a check that has not happened.
-	if on.Time.After(dayOf(time.Now())) {
+	if on.Time.After(s.db.Today(ctx, u.TenantID)) {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("calibrated_on cannot be in the future"))
 	}

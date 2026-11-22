@@ -42,7 +42,7 @@ func (s *BarrelService) CaskStatement(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid container_id"))
 	}
 
-	now := time.Now().UTC()
+	now := s.db.Today(ctx, u.TenantID)
 	out := &stillhousev1.CaskStatementResponse{
 		ContainerId: id.String(),
 		Basis:       statementBasis,

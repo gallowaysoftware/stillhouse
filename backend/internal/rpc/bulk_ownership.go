@@ -9,11 +9,11 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // SetBulkContainerOwner records who owns what is in a container. An empty
@@ -129,7 +129,7 @@ func (s *BulkService) SetBulkContainerPossession(
 			errors.New("name who is holding the spirits — a return that omits stock "+
 				"has to be able to say where it went"))
 	}
-	occurredOn, err := parseDateOrToday(in.GetOccurredOn())
+	occurredOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetOccurredOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -213,7 +213,7 @@ func (s *BulkService) SetBulkContainerPossession(
 		params.Reason = reason
 		params.DocumentReference = in.GetDocumentReference()
 		params.Notes = in.GetNotes()
-		params.OccurredAt = pgtype.Timestamptz{Time: dayStart(occurredOn.Time), Valid: true}
+		params.OccurredAt = zone.DuringDay(occurredOn.Time)
 
 		movement, e = q.InsertExternalBulkMovement(ctx, params)
 		if e != nil {

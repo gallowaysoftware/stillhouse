@@ -15,6 +15,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // RedistillationService keeps the account of spirit that went back into
@@ -67,7 +68,7 @@ func (s *RedistillationService) StartRedistillation(
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("abv_pct must be in (0, 100]"))
 	}
-	takenOn, err := parseDateOrToday(in.GetTakenOn())
+	takenOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetTakenOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("taken_on must be YYYY-MM-DD"))
@@ -109,7 +110,7 @@ func (s *RedistillationService) StartRedistillation(
 			Reason:          sqlcgen.BulkMovementReasonReturnedToProduction,
 			ReferenceType:   "redistillation",
 			Notes:           in.GetNotes(),
-			OccurredAt:      pgtype.Timestamptz{Valid: true, Time: takenOn.Time},
+			OccurredAt:      zone.DuringDay(takenOn.Time),
 			ObservedVolumeL: pgtype.Float8{Float64: in.GetVolumeL(), Valid: true},
 			VolumeFactorC:   1,
 			StrengthSource:  sqlcgen.StrengthSourceUncorrected,
@@ -202,7 +203,7 @@ func (s *RedistillationService) RecordRedistillationOutput(
 		}
 		runID = uuid.NullUUID{UUID: rid, Valid: true}
 	}
-	producedOn, err := parseDateOrToday(in.GetProducedOn())
+	producedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetProducedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("produced_on must be YYYY-MM-DD"))

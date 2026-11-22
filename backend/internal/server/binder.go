@@ -22,6 +22,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
 // The audit binder.
@@ -137,9 +138,8 @@ func buildB266Binder(
 		counts    = map[string]int{}
 	)
 	err = pgx.BeginFunc(ctx, pool, func(tx pgx.Tx) error {
-		if _, err := tx.Exec(ctx,
-			"SELECT set_config('app.current_tenant_id', $1, true)", tenantID.String()); err != nil {
-			return fmt.Errorf("set tenant context: %w", err)
+		if _, err := tenantdb.EnterTenant(ctx, tx, tenantID); err != nil {
+			return err
 		}
 		row := tx.QueryRow(ctx, `
 			SELECT id, tenant_id, period_start, period_end, status, snapshot,
@@ -157,8 +157,11 @@ func buildB266Binder(
 		// The period bounds every schedule. End is exclusive — the day
 		// after the period's last day — so a movement dated on the final
 		// day is inside it.
-		start := period.PeriodStart.Time
-		end := period.PeriodEnd.Time.AddDate(0, 0, 1)
+		//
+		// As text: against a timestamp, Postgres reads the day in the
+		// session's zone, so a schedule covers what the return covered.
+		start := period.PeriodStart.Time.Format("2006-01-02")
+		end := period.PeriodEnd.Time.AddDate(0, 0, 1).Format("2006-01-02")
 
 		for _, t := range binderTables {
 			args := []any{start, end}

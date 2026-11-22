@@ -18,6 +18,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type KegService struct {
@@ -200,7 +201,7 @@ func (s *KegService) CreateKeg(
 		row = r
 		if _, e := q.RecordKegEvent(ctx, sqlcgen.RecordKegEventParams{
 			TenantID: u.TenantID, KegID: r.ID, Kind: sqlcgen.KegEventKindAcquired,
-			OccurredOn: firstValidDate(purchased), UserID: uuid.NullUUID{UUID: u.ID, Valid: true},
+			OccurredOn: firstValidDate(ctx, purchased), UserID: uuid.NullUUID{UUID: u.ID, Valid: true},
 		}); e != nil {
 			return e
 		}
@@ -426,15 +427,11 @@ func kegStatusList(ss []sqlcgen.KegStatus) string {
 	return strings.Join(out, ", ")
 }
 
-func firstValidDate(d pgtype.Date) pgtype.Date {
+func firstValidDate(ctx context.Context, d pgtype.Date) pgtype.Date {
 	if d.Valid {
 		return d
 	}
-	return pgtype.Date{Valid: true, Time: nowUTCDate()}
-}
-
-func nowUTCDate() time.Time {
-	return time.Now().UTC()
+	return zone.Date(ctx, time.Now())
 }
 
 func kegRowToProto(r sqlcgen.ListKegsRow) *stillhousev1.Keg {

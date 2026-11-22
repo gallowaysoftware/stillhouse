@@ -5,9 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgtype"
-
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // WIPGauge is one production gauge and what it carried into work in
@@ -78,8 +77,8 @@ func ProductionGaugeWIP(
 
 	rows, err := q.ProductionGaugeWIPCost(ctx, sqlcgen.ProductionGaugeWIPCostParams{
 		Basis:       basis,
-		PeriodStart: pgtype.Timestamptz{Valid: true, Time: periodStart},
-		PeriodEnd:   pgtype.Timestamptz{Valid: true, Time: periodEnd},
+		PeriodStart: zone.Start(ctx, periodStart),
+		PeriodEnd:   zone.Start(ctx, periodEnd),
 	})
 	if err != nil {
 		return out, err

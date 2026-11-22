@@ -17,6 +17,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Inventory adjustments reconcile a container's book balance to what was
@@ -93,7 +94,7 @@ func (s *BulkService) RecordInventoryAdjustment(
 		warnings   []string
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurredAt.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, occurredAt.Time)); e != nil {
 			return e
 		}
 		// Read the book balance under a lock: the whole point of the

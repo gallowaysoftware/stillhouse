@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Callout } from "@/components/Callout";
+import { isoDay } from "@/lib/dates";
 import { provincialClient } from "@/lib/clients";
 import { formatCAD } from "@/lib/format";
 
@@ -31,10 +32,10 @@ import { formatCAD } from "@/lib/format";
 export function DepositReportPanel() {
   const now = new Date();
   const [from, setFrom] = useState(
-    new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10),
+    isoDay(new Date(now.getFullYear(), now.getMonth(), 1)),
   );
   const [to, setTo] = useState(
-    new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().slice(0, 10),
+    isoDay(new Date(now.getFullYear(), now.getMonth() + 1, 0)),
   );
   const r = useQuery({
     queryKey: ["containerDeposits", from, to],

@@ -10,12 +10,14 @@ package tenantdb
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type DB struct {
@@ -34,14 +36,38 @@ func (d *DB) WithTenantTx(
 	fn func(ctx context.Context, q *sqlcgen.Queries) error,
 ) error {
 	return pgx.BeginFunc(ctx, d.Pool, func(tx pgx.Tx) error {
-		if _, err := tx.Exec(ctx,
-			"SELECT set_config('app.current_tenant_id', $1, true)",
-			tenantID.String(),
-		); err != nil {
-			return fmt.Errorf("set tenant context: %w", err)
+		loc, err := EnterTenant(ctx, tx, tenantID)
+		if err != nil {
+			return err
 		}
-		return fn(ctx, sqlcgen.New(tx))
+		return fn(zone.With(ctx, loc), sqlcgen.New(tx))
 	})
+}
+
+// EnterTenant scopes an open transaction to a tenant: its rows, and its
+// clock. With the session's time zone set, a ::date in a query is the
+// distillery's day rather than Greenwich's.
+func EnterTenant(ctx context.Context, tx pgx.Tx, tenantID uuid.UUID) (*time.Location, error) {
+	var jurisdiction string
+	if err := tx.QueryRow(ctx, `
+		SELECT COALESCE((SELECT default_jurisdiction FROM tenants WHERE id = $1::uuid), '')
+		FROM set_config('app.current_tenant_id', $1, true)`, tenantID.String()).Scan(&jurisdiction); err != nil {
+		return nil, fmt.Errorf("set tenant context: %w", err)
+	}
+	loc := zone.For(jurisdiction)
+	if _, err := tx.Exec(ctx, "SELECT set_config('TimeZone', $1, true)", loc.String()); err != nil {
+		return nil, fmt.Errorf("set tenant time zone: %w", err)
+	}
+	return loc, nil
+}
+
+// Today is the tenant's calendar day, for a date nobody gave.
+func (d *DB) Today(ctx context.Context, tenantID uuid.UUID) time.Time {
+	var jurisdiction string
+	// A failure here falls back to UTC; the write that follows reaches the
+	// same database and reports it.
+	_ = d.Pool.QueryRow(ctx, "SELECT default_jurisdiction FROM tenants WHERE id = $1", tenantID).Scan(&jurisdiction)
+	return zone.Day(zone.For(jurisdiction), time.Now())
 }
 
 // SetTenantContext sets app.current_tenant_id inside an already-open

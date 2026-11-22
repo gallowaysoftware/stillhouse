@@ -252,7 +252,7 @@ func (s *TenantService) SecuritySufficiency(
 	// Duty on returns already submitted is counted back two years, which
 	// is the outer edge of what an unremitted balance plausibly reaches
 	// and matches the licence term the register tracks.
-	since := pgtype.Date{Valid: true, Time: time.Now().UTC().AddDate(-2, 0, 0)}
+	since := pgtype.Date{Valid: true, Time: s.db.Today(ctx, u.TenantID).AddDate(-2, 0, 0)}
 	if err := s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		var e error
 		if licences, e = q.ListExciseLicences(ctx); e != nil {
@@ -271,7 +271,7 @@ func (s *TenantService) SecuritySufficiency(
 	var contingentDuty float64
 	contingentPriced := false
 	if exposure.ContingentLaa > 0 {
-		if band, err := excise.RateOn(time.Now().UTC()); err == nil {
+		if band, err := excise.RateOn(s.db.Today(ctx, u.TenantID)); err == nil {
 			// Priced at the over-7 % band, which is every spirit a
 			// distillery packages. A licensee bottling something at or
 			// below 7 % would be charged per litre of product instead,

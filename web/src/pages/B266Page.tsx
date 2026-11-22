@@ -7,6 +7,7 @@ import { Callout } from "@/components/Callout";
 import { ContinuityPanel } from "@/components/ContinuityPanel";
 import { LossClassificationCard } from "@/components/LossClassificationCard";
 import { Shell } from "@/components/Shell";
+import { isoDay, monthBounds } from "@/lib/dates";
 import { b266Client } from "@/lib/clients";
 import {
   B266Report,
@@ -18,20 +19,6 @@ import { DutyPoint } from "@/gen/stillhouse/v1/tenant_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
 import { canFile, canWrite, FilingOnly, useCurrentRole, useCurrentUser } from "@/lib/role";
 
-
-function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function firstOfThisMonth(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1)).toISOString().slice(0, 10);
-}
-
-function lastOfThisMonth(): string {
-  const d = new Date();
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).toISOString().slice(0, 10);
-}
 
 // Generating a return is reached from two directions: the operator who
 // keeps the ledger and the accountant engaged to file it. Neither is a
@@ -59,8 +46,8 @@ export function B266Page() {
     queryFn: () => b266Client.suggestB266Period({}),
   });
 
-  const [periodStart, setPeriodStart] = useState(firstOfThisMonth());
-  const [periodEnd, setPeriodEnd] = useState(lastOfThisMonth());
+  const [periodStart, setPeriodStart] = useState(monthBounds().start);
+  const [periodEnd, setPeriodEnd] = useState(monthBounds().end);
   const [touched, setTouched] = useState(false);
   const [openPeriodId, setOpenPeriodId] = useState<string>("");
 
@@ -110,7 +97,7 @@ export function B266Page() {
         <p className="text-sm text-fg-muted">
           Monthly Excise Duty Return — Spirits Licensee. Pick a period, generate the
           values, copy them into the My Business Account return.
-          Generated today {todayISO()}; rates effective April 1, 2026.
+          Generated today {isoDay()}; rates effective April 1, 2026.
         </p>
       </div>
 

@@ -28,6 +28,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/costing"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Line is one side-pair of a journal entry: a single event, its amount,
@@ -183,11 +184,11 @@ func (j *Journal) addMaterialReceipts(
 	start, end time.Time,
 ) error {
 	rows, err := q.JournalMaterialReceipts(ctx, sqlcgen.JournalMaterialReceiptsParams{
-		PeriodStart: pgtype.Timestamptz{Valid: true, Time: start},
+		PeriodStart: zone.Start(ctx, start),
 		// Exclusive upper bound on a timestamp column, so a receipt at
 		// 14:00 on the last day is inside the period rather than lost to
 		// a date-versus-timestamp comparison.
-		PeriodEnd: pgtype.Timestamptz{Valid: true, Time: end.AddDate(0, 0, 1)},
+		PeriodEnd: zone.Start(ctx, end.AddDate(0, 0, 1)),
 	})
 	if err != nil {
 		return fmt.Errorf("material receipts: %w", err)

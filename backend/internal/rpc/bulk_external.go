@@ -15,6 +15,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // External bulk movements — the rest of B266 page 3 against EDM10-1-7.
@@ -181,7 +182,7 @@ func (s *BulkService) RecordBulkExternalMovement(
 		warnings  []string
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurredAt.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, occurredAt.Time)); e != nil {
 			return e
 		}
 		locked, e := lockContainers(ctx, q, containerID)

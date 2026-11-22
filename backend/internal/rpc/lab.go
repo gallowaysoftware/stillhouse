@@ -92,7 +92,7 @@ func (s *LabService) RecordLabResult(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	reportedOn, err := parseDateOrToday(in.GetReportedOn())
+	reportedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetReportedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("reported_on must be YYYY-MM-DD"))

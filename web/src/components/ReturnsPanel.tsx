@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
+import { isoDay } from "@/lib/dates";
 import { bottlingClient, customerClient, removalClient } from "@/lib/clients";
 import { PackagedReturnCondition } from "@/gen/stillhouse/v1/removal_pb";
 import { formatCAD } from "@/lib/format";
@@ -47,7 +48,7 @@ export function ReturnsPanel() {
   const [condition, setCondition] = useState<PackagedReturnCondition>(
     PackagedReturnCondition.SALEABLE,
   );
-  const [returnedOn, setReturnedOn] = useState(new Date().toISOString().slice(0, 10));
+  const [returnedOn, setReturnedOn] = useState(isoDay());
   const [reason, setReason] = useState("");
   const [credit, setCredit] = useState("");
   const [creditNo, setCreditNo] = useState("");

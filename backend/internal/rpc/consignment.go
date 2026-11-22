@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -159,7 +158,7 @@ func (s *RemovalService) SettleConsignment(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
 	}
-	on := time.Now().UTC()
+	on := s.db.Today(ctx, u.TenantID)
 	if v := req.Msg.GetOn(); v != "" {
 		d, e := parseDate(v, "on")
 		if e != nil {

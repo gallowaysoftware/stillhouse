@@ -18,6 +18,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Canadian Whisky maturation thresholds (FDR B.02.020):
@@ -300,7 +301,7 @@ func (s *BarrelService) FillBarrel(
 	// should see — an instrument past due for calibration.
 	var eventWarnings []string
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, eventTime.Time)); e != nil {
 			return e
 		}
 		locked, e := lockContainers(ctx, q, barrelID, sourceID)
@@ -400,7 +401,7 @@ func (s *BarrelService) FillBarrel(
 			return e
 		}
 		if !attrs.FillDate.Valid {
-			fillDate := pgtype.Date{Valid: true, Time: eventTime.Time.UTC()}
+			fillDate := zone.Date(ctx, eventTime.Time)
 			if e := q.SetBarrelFillDate(ctx, sqlcgen.SetBarrelFillDateParams{
 				ContainerID: barrelID,
 				FillDate:    fillDate,
@@ -490,7 +491,7 @@ func (s *BarrelService) DumpBarrel(
 	// should see — an instrument past due for calibration.
 	var eventWarnings []string
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, eventTime.Time)); e != nil {
 			return e
 		}
 		locked, e := lockContainers(ctx, q, barrelID, destID)
@@ -606,7 +607,7 @@ func (s *BarrelService) DumpBarrel(
 		}
 		daysAged := int32(0)
 		if attrs.FillDate.Valid {
-			daysAged = int32(eventTime.Time.UTC().Sub(attrs.FillDate.Time).Hours() / 24)
+			daysAged = int32(zone.Day(zone.From(ctx), eventTime.Time).Sub(attrs.FillDate.Time).Hours() / 24)
 		}
 		if e := q.SetBarrelDumpedClock(ctx, sqlcgen.SetBarrelDumpedClockParams{
 			ContainerID:    barrelID,
@@ -701,7 +702,7 @@ func (s *BarrelService) RegaugeBarrel(
 	// should see — an instrument past due for calibration.
 	var eventWarnings []string
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: eventTime.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, eventTime.Time)); e != nil {
 			return e
 		}
 		lockedRegauge, e := lockContainers(ctx, q, barrelID)
@@ -885,7 +886,7 @@ func (s *BarrelService) VoidBarrelEvent(
 			// A move between our own vessels is on no return. An adoption
 			// is: it has one end.
 			if !mv.SourceContainerID.Valid || !mv.DestinationContainerID.Valid {
-				if le := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: mv.OccurredAt.Time}); le != nil {
+				if le := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, mv.OccurredAt.Time)); le != nil {
 					return le
 				}
 			}

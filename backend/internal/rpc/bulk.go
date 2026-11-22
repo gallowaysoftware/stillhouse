@@ -16,6 +16,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type BulkService struct {
@@ -381,7 +382,7 @@ func (s *BulkService) CreateBlend(
 		// a blend is the widest such transaction in the system.
 		// lockContainers orders the acquisition so two blends sharing
 		// tanks queue rather than deadlock.
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurred.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, occurred.Time)); e != nil {
 			return e
 		}
 		ids := make([]uuid.UUID, 0, len(parsed)+1)

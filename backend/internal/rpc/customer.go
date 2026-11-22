@@ -292,7 +292,7 @@ func (s *CustomerService) CreatePriceList(
 	if name == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name is required"))
 	}
-	from, err := parseDateOrToday(in.GetEffectiveFrom())
+	from, err := dateOrToday(ctx, s.db, u.TenantID, in.GetEffectiveFrom())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("effective_from must be YYYY-MM-DD"))

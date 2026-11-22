@@ -14,6 +14,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // ReceiveAgainstPO turns a delivery into a material lot.
@@ -61,7 +62,7 @@ func (s *PurchasingService) ReceiveAgainstPO(
 				fmt.Errorf("%s cannot be negative", name))
 		}
 	}
-	receivedOn, err := parseDateOrToday(in.GetReceivedOn())
+	receivedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetReceivedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("received_on must be YYYY-MM-DD"))
@@ -120,7 +121,7 @@ func (s *PurchasingService) ReceiveAgainstPO(
 			TenantID: u.TenantID, MaterialID: line.MaterialID,
 			SupplierLot:         in.GetSupplierLot(),
 			QuantityReceived:    in.GetQuantityReceived(),
-			ReceivedAt:          pgtype.Timestamptz{Valid: true, Time: receivedOn.Time},
+			ReceivedAt:          zone.DuringDay(receivedOn.Time),
 			Notes:               in.GetNotes(),
 			UnitCostCad:         unitCost,
 			PurchaseOrderLineID: uuid.NullUUID{UUID: lineID, Valid: true},
