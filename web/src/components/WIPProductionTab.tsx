@@ -4,6 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
 import { EmptyRow } from "@/components/EmptyState";
+import { isoDay } from "@/lib/dates";
 import { costingClient } from "@/lib/clients";
 import { WIPChargeBasis } from "@/gen/stillhouse/v1/costing_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
@@ -23,8 +24,8 @@ import { OwnerOnly } from "@/lib/role";
 export function WIPProductionTab() {
   const today = new Date();
   const first = new Date(today.getFullYear(), today.getMonth(), 1);
-  const [start, setStart] = useState(iso(first));
-  const [end, setEnd] = useState(iso(today));
+  const [start, setStart] = useState(isoDay(first));
+  const [end, setEnd] = useState(isoDay(today));
 
   const basis = useQuery({
     queryKey: ["wipChargeBasis"],
@@ -175,10 +176,6 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="mt-1 text-lg font-semibold tabular-nums">{value}</div>
     </div>
   );
-}
-
-function iso(d: Date): string {
-  return d.toISOString().slice(0, 10);
 }
 
 function errText(e: unknown): string {

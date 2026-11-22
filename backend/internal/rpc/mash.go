@@ -3,6 +3,7 @@ package rpc
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"time"
 
@@ -40,7 +41,7 @@ func (s *MashService) CreateMashRun(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid recipe_version_id"))
 	}
 
-	mashDate, err := parseDateOrToday(req.Msg.GetMashDate())
+	mashDate, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetMashDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -555,13 +556,14 @@ func (s *MashService) DeleteMashMetric(
 
 // --- helpers ---
 
-func parseDateOrToday(s string) (pgtype.Date, error) {
+// dateOrToday reads a date, and takes a blank one as the distillery's today.
+func dateOrToday(ctx context.Context, db *tenantdb.DB, tenantID uuid.UUID, s string) (pgtype.Date, error) {
 	if s == "" {
-		return pgtype.Date{Valid: true, Time: time.Now().UTC()}, nil
+		return pgtype.Date{Valid: true, Time: db.Today(ctx, tenantID)}, nil
 	}
 	t, err := time.Parse("2006-01-02", s)
 	if err != nil {
-		return pgtype.Date{}, errors.New("mash_date must be YYYY-MM-DD")
+		return pgtype.Date{}, fmt.Errorf("%q is not a date: use YYYY-MM-DD", s)
 	}
 	return pgtype.Date{Valid: true, Time: t}, nil
 }

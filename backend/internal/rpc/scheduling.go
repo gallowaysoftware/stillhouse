@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -45,7 +44,7 @@ func (s *SchedulingService) ProductionPlan(
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
-	today := time.Now().UTC().Truncate(24 * time.Hour)
+	today := s.db.Today(ctx, u.TenantID)
 	from, to := today, today.AddDate(0, 0, 28)
 	if v := req.Msg.GetFrom(); v != "" {
 		t, err := parseDate(v, "from")

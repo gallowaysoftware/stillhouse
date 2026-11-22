@@ -15,6 +15,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // AdoptOpeningInventory books stock that was already in the warehouse when
@@ -55,7 +56,7 @@ func (s *BulkService) AdoptOpeningInventory(
 			return nil, connect.NewError(connect.CodeInvalidArgument,
 				errors.New("fill_date must be an ISO date (YYYY-MM-DD)"))
 		}
-		if t.After(time.Now()) {
+		if t.After(s.db.Today(ctx, u.TenantID)) {
 			return nil, connect.NewError(connect.CodeInvalidArgument,
 				errors.New("fill_date cannot be in the future"))
 		}
@@ -68,7 +69,7 @@ func (s *BulkService) AdoptOpeningInventory(
 		movement  sqlcgen.BulkMovement
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: occurredAt.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, occurredAt.Time)); e != nil {
 			return e
 		}
 		lockedAdopt, e := lockContainers(ctx, q, containerID)
@@ -131,7 +132,7 @@ func (s *BulkService) AdoptOpeningInventory(
 				TenantID:            u.TenantID,
 				ContainerID:         containerID,
 				Kind:                sqlcgen.BarrelEventKindFill,
-				EventDate:           pgtype.Timestamptz{Valid: true, Time: fillDate.Time},
+				EventDate:           zone.DuringDay(fillDate.Time),
 				VolumeL:             pgtype.Float8{Float64: measured.VolumeL20C, Valid: true},
 				AbvPct:              pgtype.Float8{Float64: measured.StrengthPct20C, Valid: true},
 				Laa:                 pgtype.Float8{Float64: measured.LAA(), Valid: true},

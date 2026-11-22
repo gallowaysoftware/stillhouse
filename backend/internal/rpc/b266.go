@@ -20,6 +20,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type B266Service struct {
@@ -365,7 +366,7 @@ func computeB266Report(
 	if err != nil {
 		return nil, err
 	}
-	report := projectB266(totals, periodStart, periodEnd, time.Now())
+	report := projectB266(totals, periodStart, periodEnd, time.Now().In(zone.From(ctx)))
 
 	// Validate the snapshot is JSON-serializable as a sanity check.
 	if _, err := json.Marshal(report); err != nil {
@@ -418,8 +419,8 @@ func gatherB266Totals(
 	t.rateChangeNote = rateChangeNoteFor(startBand, endBand)
 
 	reasonSums, err := q.SumBulkMovementsByReason(ctx, sqlcgen.SumBulkMovementsByReasonParams{
-		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
-		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+		OccurredAt:   zone.Start(ctx, periodStart),
+		OccurredAt_2: zone.Start(ctx, queryEnd),
 	})
 	if err != nil {
 		return t, err
@@ -433,7 +434,7 @@ func gatherB266Totals(
 	// exclusive bound — the day after the last day of the period — so a
 	// movement dated on the period's final day is inside it.
 	if t.bulkClosingLAA, err = q.SumBulkOnHandAsOf(ctx,
-		pgtype.Timestamptz{Valid: true, Time: queryEnd}); err != nil {
+		zone.Start(ctx, queryEnd)); err != nil {
 		return t, err
 	}
 	// What that balance is made of. Current facts, deliberately not walked
@@ -542,8 +543,8 @@ func gatherB266Totals(
 	// signed delta, the reason code and the author — the movement is only
 	// its effect on the ledger.
 	adj, err := q.SumInventoryAdjustmentsInPeriod(ctx, sqlcgen.SumInventoryAdjustmentsInPeriodParams{
-		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
-		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+		OccurredAt:   zone.Start(ctx, periodStart),
+		OccurredAt_2: zone.Start(ctx, queryEnd),
 	})
 	if err != nil {
 		return t, err
@@ -556,8 +557,8 @@ func gatherB266Totals(
 	// Losses by duty treatment (EDM3-4-1), and the duty the dutiable ones
 	// attract at the period's rate.
 	losses, err := q.SumLossesByTreatmentInPeriod(ctx, sqlcgen.SumLossesByTreatmentInPeriodParams{
-		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
-		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+		OccurredAt:   zone.Start(ctx, periodStart),
+		OccurredAt_2: zone.Start(ctx, queryEnd),
 	})
 	if err != nil {
 		return t, err
@@ -568,8 +569,8 @@ func gatherB266Totals(
 	t.lossesUnclassifiedCount = losses.UnclassifiedCount
 
 	destroyed, err := q.SumDestructionsByTreatmentInPeriod(ctx, sqlcgen.SumDestructionsByTreatmentInPeriodParams{
-		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
-		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+		OccurredAt:   zone.Start(ctx, periodStart),
+		OccurredAt_2: zone.Start(ctx, queryEnd),
 	})
 	if err != nil {
 		return t, err
@@ -582,14 +583,14 @@ func gatherB266Totals(
 	// semi-annual period always spans — a period rate would charge half
 	// the losses at the wrong one.
 	dutiable, err := q.ListDutiableLossesInPeriod(ctx, sqlcgen.ListDutiableLossesInPeriodParams{
-		OccurredAt:   pgtype.Timestamptz{Valid: true, Time: periodStart},
-		OccurredAt_2: pgtype.Timestamptz{Valid: true, Time: queryEnd},
+		OccurredAt:   zone.Start(ctx, periodStart),
+		OccurredAt_2: zone.Start(ctx, queryEnd),
 	})
 	if err != nil {
 		return t, err
 	}
 	for _, l := range dutiable {
-		_, duty, e := excise.DutyOnLAA(l.OccurredAt.Time, l.Laa)
+		_, duty, e := excise.DutyOnLAA(zone.Day(zone.From(ctx), l.OccurredAt.Time), l.Laa)
 		if e != nil {
 			// Unreachable while the period itself resolved a rate at both
 			// ends, but a loss dated outside the table would otherwise be

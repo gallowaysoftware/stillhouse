@@ -11,7 +11,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
@@ -19,6 +18,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/distilling"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type DistillationService struct {
@@ -38,7 +38,7 @@ func (s *DistillationService) CreateDistillationRun(
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
-	runDate, err := parseDateOrToday(req.Msg.GetRunDate())
+	runDate, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetRunDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -519,7 +519,7 @@ func (s *DistillationService) RecordProductionGauge(
 		gaugeWarnings []string
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: gaugeTS.Time}); e != nil {
+		if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, gaugeTS.Time)); e != nil {
 			return e
 		}
 		// 0. Sanity check: run exists, not already gauged.
@@ -692,7 +692,7 @@ func (s *DistillationService) VoidDistillationRun(
 		}
 		if ge == nil {
 			// The gauge is what the return counts, on the day it was taken.
-			if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: gauge.GaugeDate.Time}); e != nil {
+			if e := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, gauge.GaugeDate.Time)); e != nil {
 				return e
 			}
 			container, ce := lockContainerForWrite(ctx, q, gauge.DestinationContainerID)

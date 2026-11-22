@@ -42,7 +42,7 @@ func (s *RemovalService) CreateRemoval(
 	if in.GetBottlesRemoved() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("bottles_removed must be > 0"))
 	}
-	removalDate, err := parseDateOrToday(in.GetRemovalDate())
+	removalDate, err := dateOrToday(ctx, s.db, u.TenantID, in.GetRemovalDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -186,15 +186,15 @@ func (s *RemovalService) ListRemovals(
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
 	var pStart, pEnd pgtype.Date
-	if s := req.Msg.GetPeriodStart(); s != "" {
-		d, err := parseDateOrToday(s)
+	if v := req.Msg.GetPeriodStart(); v != "" {
+		d, err := dateOrToday(ctx, s.db, u.TenantID, v)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_start"))
 		}
 		pStart = d
 	}
-	if s := req.Msg.GetPeriodEnd(); s != "" {
-		d, err := parseDateOrToday(s)
+	if v := req.Msg.GetPeriodEnd(); v != "" {
+		d, err := dateOrToday(ctx, s.db, u.TenantID, v)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_end"))
 		}

@@ -42,7 +42,7 @@ func (s *SalesService) CreateSalesOrder(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("choose a customer"))
 	}
-	orderedOn, err := parseDateOrToday(in.GetOrderedOn())
+	orderedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetOrderedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -714,7 +714,7 @@ func (s *SalesService) ShipShipment(
 			shipDate = sh.ShipDate
 		}
 		if !shipDate.Valid {
-			shipDate, e = parseDateOrToday("")
+			shipDate, e = dateOrToday(ctx, s.db, u.TenantID, "")
 			if e != nil {
 				return e
 			}

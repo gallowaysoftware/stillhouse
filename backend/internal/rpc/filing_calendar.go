@@ -121,7 +121,7 @@ func (s *B266Service) SuggestB266Period(
 	if !ok {
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
-	on := time.Now().UTC()
+	on := s.db.Today(ctx, u.TenantID)
 	if v := req.Msg.GetOn(); v != "" {
 		t, err := time.Parse("2006-01-02", v)
 		if err != nil {

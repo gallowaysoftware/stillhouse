@@ -303,7 +303,7 @@ func (s *EquipmentService) RecordService(
 			errors.New("say what was done — a service record with no description "+
 				"records that somebody was there, not what they did"))
 	}
-	performedOn, err := parseDateOrToday(in.GetPerformedOn())
+	performedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetPerformedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

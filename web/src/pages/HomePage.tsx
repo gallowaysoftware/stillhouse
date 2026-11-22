@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Callout } from "@/components/Callout";
 import { Shell } from "@/components/Shell";
 import { ServerAlerts, useOpenAlertCount } from "@/components/AlertsPanel";
+import { monthBounds } from "@/lib/dates";
 import {
   auditClient,
   b266Client,
@@ -21,13 +22,6 @@ import {
 import { AuditAction } from "@/gen/stillhouse/v1/audit_pb";
 import { FilingFrequency } from "@/gen/stillhouse/v1/tenant_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
-
-function monthBounds(): { start: string; end: string } {
-  const d = new Date();
-  const start = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1));
-  const end = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0));
-  return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
-}
 
 const actionLabels: Record<AuditAction, string> = {
   [AuditAction.UNSPECIFIED]: "—",

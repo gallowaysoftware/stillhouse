@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -59,7 +58,7 @@ func (s *PricingService) ComputeProvincialPricing(
 	// Pricing is forward-looking, so the band that applies is today's.
 	// If today falls outside the rate table there is no honest number to
 	// build a price list on, and saying so beats quoting a stale rate.
-	band, err := excise.RateOn(time.Now())
+	band, err := excise.RateOn(s.db.Today(ctx, u.TenantID))
 	if err != nil {
 		return nil, connect.NewError(connect.CodeFailedPrecondition, err)
 	}

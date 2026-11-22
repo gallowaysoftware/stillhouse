@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
+import { isoDay } from "@/lib/dates";
 import { tenantClient } from "@/lib/clients";
 import { ExciseLicence, ExciseLicenceKind } from "@/gen/stillhouse/v1/tenant_pb";
 import { OwnerOnly } from "@/lib/role";
@@ -192,7 +193,7 @@ function LicenceForm({
       </div>
       <F label="Number" name="licence_number" defaultValue={licence?.licenceNumber} required />
       <F label="Effective from" name="effective_from" type="date"
-         defaultValue={licence?.effectiveFrom || new Date().toISOString().slice(0, 10)} required />
+         defaultValue={licence?.effectiveFrom || isoDay()} required />
       <F label="Expires on" name="expires_on" type="date" defaultValue={licence?.expiresOn} />
       <F label="Premises" name="premises" defaultValue={licence?.premises} />
       <F label="Security posted (CAD)" name="security_amount" defaultValue={licence?.securityAmountCad} />

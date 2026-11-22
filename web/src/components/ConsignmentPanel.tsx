@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
+import { isoDay } from "@/lib/dates";
 import { bottlingClient, customerClient, removalClient } from "@/lib/clients";
 import { ConsignmentStatus } from "@/gen/stillhouse/v1/removal_pb";
 import { WriteOnly } from "@/lib/role";
@@ -56,7 +57,7 @@ export function ConsignmentPanel() {
         packagedInventoryId: lot,
         customerId: customer,
         bottles: Number(bottles),
-        sentOn: new Date().toISOString().slice(0, 10),
+        sentOn: isoDay(),
       }),
     onSuccess: () => {
       setErr(null);
@@ -69,7 +70,7 @@ export function ConsignmentPanel() {
 
   const settle = useMutation({
     mutationFn: (v: { id: string; bottlesSold: number; bottlesRecalled: number }) =>
-      removalClient.settleConsignment({ ...v, on: new Date().toISOString().slice(0, 10) }),
+      removalClient.settleConsignment({ ...v, on: isoDay() }),
     onSuccess: () => {
       setErr(null);
       void qc.invalidateQueries({ queryKey: ["consignments"] });

@@ -43,7 +43,7 @@ func (s *SchedulingService) DemandForecast(
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
 
-	month := time.Now().UTC().AddDate(0, 1, 0)
+	month := s.db.Today(ctx, u.TenantID).AddDate(0, 1, 0)
 	if v := strings.TrimSpace(req.Msg.GetMonth()); v != "" {
 		d, err := parseDate(v, "month")
 		if err != nil {

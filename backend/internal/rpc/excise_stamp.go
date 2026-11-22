@@ -17,6 +17,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type ExciseStampService struct {
@@ -172,7 +173,7 @@ func (s *ExciseStampService) VoidStamps(
 		if _, e := q.CreateStampDisposition(ctx, sqlcgen.CreateStampDispositionParams{
 			TenantID: u.TenantID, StampOrderID: id,
 			Kind: sqlcgen.StampDispositionKindSpoiled, Quantity: in.GetQuantity(),
-			OccurredOn:  pgtype.Date{Valid: true, Time: time.Now().UTC()},
+			OccurredOn:  zone.Date(ctx, time.Now()),
 			Explanation: in.GetReason(),
 			RecordedBy:  u.ID,
 		}); e != nil {

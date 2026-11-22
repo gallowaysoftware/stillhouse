@@ -18,6 +18,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/excise"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // EDM3-8-1's range. A vessel outside it is not a marked special
@@ -98,7 +99,7 @@ func (s *MarkedContainerService) MarkContainer(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	filledOn, err := parseDateOrToday(in.GetFilledOn())
+	filledOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetFilledOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -186,7 +187,7 @@ func (s *MarkedContainerService) MarkContainer(
 			Reason:            sqlcgen.BulkMovementReasonTransferToPackaging,
 			ReferenceType:     "marked_special_container",
 			Notes:             "marked special container fill",
-			OccurredAt:        pgtype.Timestamptz{Valid: true, Time: dayStart(filledOn.Time)},
+			OccurredAt:        zone.DuringDay(filledOn.Time),
 		})
 		if e != nil {
 			return e
@@ -353,7 +354,7 @@ func (s *MarkedContainerService) UnmarkContainer(
 			errors.New("say why the container was unmarked — it moves alcohol back "+
 				"out of the packaging figures and the return has to explain it"))
 	}
-	unmarkedOn, err := parseDateOrToday(in.GetUnmarkedOn())
+	unmarkedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetUnmarkedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -391,7 +392,7 @@ func (s *MarkedContainerService) UnmarkContainer(
 			ReferenceType:          "marked_special_container_unmark",
 			ReferenceID:            uuid.NullUUID{UUID: id, Valid: true},
 			Notes:                  reason,
-			OccurredAt:             pgtype.Timestamptz{Valid: true, Time: dayStart(unmarkedOn.Time)},
+			OccurredAt:             zone.DuringDay(unmarkedOn.Time),
 		})
 		if e != nil {
 			return e
@@ -441,7 +442,7 @@ func (s *MarkedContainerService) DeliverMarkedContainer(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
-	deliveryDate, err := parseDateOrToday(in.GetDeliveryDate())
+	deliveryDate, err := dateOrToday(ctx, s.db, u.TenantID, in.GetDeliveryDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

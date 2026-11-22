@@ -251,7 +251,7 @@ func (s *StockCountService) PostStockCount(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
 	}
-	occurredOn, err := parseDateOrToday(req.Msg.GetOccurredOn())
+	occurredOn, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetOccurredOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

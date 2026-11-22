@@ -90,7 +90,7 @@ func (s *InvoicingService) SaveTaxRate(
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("a sourced rate has to cite its source"))
 	}
-	effective, err := parseDateOrToday(in.GetEffectiveFrom())
+	effective, err := dateOrToday(ctx, s.db, u.TenantID, in.GetEffectiveFrom())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -441,7 +441,7 @@ func (s *InvoicingService) IssueInvoice(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
 	}
-	issueDate, err := parseDateOrToday(req.Msg.GetIssueDate())
+	issueDate, err := dateOrToday(ctx, s.db, u.TenantID, req.Msg.GetIssueDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -738,7 +738,7 @@ func (s *InvoicingService) CreateCreditNote(
 		// A credit note is issued the moment it is raised: there is no
 		// draft state worth having for a document whose only purpose is to
 		// correct one already sent.
-		today, _ := parseDateOrToday("")
+		today, _ := dateOrToday(ctx, s.db, u.TenantID, "")
 		if _, ie := q.IssueInvoice(ctx, sqlcgen.IssueInvoiceParams{
 			ID: note.ID, IssueDate: today, DueDate: today,
 			IssuedBy:      uuid.NullUUID{UUID: u.ID, Valid: true},
@@ -786,7 +786,7 @@ func (s *InvoicingService) RecordPayment(
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("a payment is a positive amount — to reverse one, raise a credit note"))
 	}
-	receivedOn, err := parseDateOrToday(in.GetReceivedOn())
+	receivedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetReceivedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

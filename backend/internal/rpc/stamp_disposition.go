@@ -51,7 +51,7 @@ func (s *ExciseStampService) RecordStampDisposition(
 			errors.New("an explanation is required — a reason code alone does not answer "+
 				"an auditor asking what happened"))
 	}
-	occurredOn, err := parseDateOrToday(in.GetOccurredOn())
+	occurredOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetOccurredOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument,
 			errors.New("occurred_on must be YYYY-MM-DD"))

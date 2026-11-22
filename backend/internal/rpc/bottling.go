@@ -16,6 +16,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type BottlingService struct {
@@ -66,7 +67,7 @@ func (s *BottlingService) CreateBottlingRun(
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("lot_code is required"))
 	}
 
-	bottlingDate, err := parseDateOrToday(in.GetBottlingDate())
+	bottlingDate, err := dateOrToday(ctx, s.db, u.TenantID, in.GetBottlingDate())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -173,7 +174,7 @@ func (s *BottlingService) CreateBottlingRun(
 			ReferenceType:          "bottling_run",
 			ReferenceID:            uuid.NullUUID{Valid: false}, // run id assigned below
 			Notes:                  in.GetNotes(),
-			OccurredAt:             pgtype.Timestamptz{Valid: true, Time: bottlingDate.Time},
+			OccurredAt:             zone.DuringDay(bottlingDate.Time),
 		})
 		if e != nil {
 			return e
@@ -412,15 +413,15 @@ func (s *BottlingService) ListBottlingRuns(
 		offset = 0
 	}
 	var pStart, pEnd pgtype.Date
-	if s := req.Msg.GetPeriodStart(); s != "" {
-		d, err := parseDateOrToday(s)
+	if v := req.Msg.GetPeriodStart(); v != "" {
+		d, err := dateOrToday(ctx, s.db, u.TenantID, v)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_start"))
 		}
 		pStart = d
 	}
-	if s := req.Msg.GetPeriodEnd(); s != "" {
-		d, err := parseDateOrToday(s)
+	if v := req.Msg.GetPeriodEnd(); v != "" {
+		d, err := dateOrToday(ctx, s.db, u.TenantID, v)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid period_end"))
 		}
@@ -579,7 +580,7 @@ func (s *BottlingService) VoidBottlingRun(
 			ReferenceID:            uuid.NullUUID{UUID: existing.ID, Valid: true},
 			Notes:                  "void of bottling run " + fmt.Sprintf("#%d", existing.RunNo) + ": " + reason,
 			// Dated with the run: as of any moment the two cancel.
-			OccurredAt: pgtype.Timestamptz{Valid: true, Time: existing.BottlingDate.Time},
+			OccurredAt: zone.DuringDay(existing.BottlingDate.Time),
 		}); e != nil {
 			return e
 		}

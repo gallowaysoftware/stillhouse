@@ -4,6 +4,7 @@ import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
 import { Shell } from "@/components/Shell";
+import { isoDay } from "@/lib/dates";
 import { customerClient, kegClient } from "@/lib/clients";
 import { KegEventKind, KegStatus, ReturnableKind } from "@/gen/stillhouse/v1/keg_pb";
 import { formatCAD, formatLAA } from "@/lib/format";
@@ -90,7 +91,7 @@ export function KegsPage() {
     }) =>
       kegClient.moveKeg({
         ...v,
-        occurredOn: new Date().toISOString().slice(0, 10),
+        occurredOn: isoDay(),
       }),
     onSuccess: () => {
       setErr(null);

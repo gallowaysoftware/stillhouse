@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
 import { Shell } from "@/components/Shell";
+import { isoDay } from "@/lib/dates";
 import { journalClient } from "@/lib/clients";
 import { JournalEventKind } from "@/gen/stillhouse/v1/journal_pb";
 import { formatCAD } from "@/lib/format";
@@ -36,8 +37,7 @@ const kindLabel = (k: JournalEventKind) => kinds.find((x) => x.v === k)?.label ?
 function monthToDate() {
   const now = new Date();
   const first = new Date(now.getFullYear(), now.getMonth(), 1);
-  const iso = (d: Date) => d.toISOString().slice(0, 10);
-  return { from: iso(first), to: iso(now) };
+  return { from: isoDay(first), to: isoDay(now) };
 }
 
 export function JournalPage() {

@@ -5,6 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 
 import { EmptyRow } from "@/components/EmptyState";
 import { Shell } from "@/components/Shell";
+import { isoDay } from "@/lib/dates";
 import { provincialClient } from "@/lib/clients";
 import {
   ReportingCadence,
@@ -169,7 +170,7 @@ function DueTab() {
 }
 
 function FiguresTab() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = isoDay();
   const [jurisdiction, setJurisdiction] = useState("");
   const [from, setFrom] = useState(today.slice(0, 8) + "01");
   const [to, setTo] = useState(today);

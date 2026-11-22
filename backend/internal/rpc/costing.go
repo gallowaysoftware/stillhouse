@@ -50,7 +50,7 @@ func (s *CostingService) SaveCostRates(
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
 	in := req.Msg
-	effective, err := parseDateOrToday(in.GetEffectiveFrom())
+	effective, err := dateOrToday(ctx, s.db, u.TenantID, in.GetEffectiveFrom())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
@@ -174,7 +174,7 @@ func (s *CostingService) RecordLabour(
 			errors.New("hours must be more than zero and no more than 24 — "+
 				"split a longer stretch across the days it actually covered"))
 	}
-	workedOn, err := parseDateOrToday(in.GetWorkedOn())
+	workedOn, err := dateOrToday(ctx, s.db, u.TenantID, in.GetWorkedOn())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}

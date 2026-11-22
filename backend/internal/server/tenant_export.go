@@ -16,6 +16,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
 )
 
 // exportTables is the ordered list of tables included in /export/tenant.zip.
@@ -216,11 +217,8 @@ func tenantExportHandler(sm *scs.SessionManager, pool *pgxpool.Pool, queries *sq
 		}()
 
 		err = pgx.BeginFunc(ctx, pool, func(tx pgx.Tx) error {
-			if _, err := tx.Exec(ctx,
-				"SELECT set_config('app.current_tenant_id', $1, true)",
-				tenantID.String(),
-			); err != nil {
-				return fmt.Errorf("set tenant context: %w", err)
+			if _, err := tenantdb.EnterTenant(ctx, tx, tenantID); err != nil {
+				return err
 			}
 			// The two non-RLS tables, scoped by parameter rather than by
 			// tenant context.
