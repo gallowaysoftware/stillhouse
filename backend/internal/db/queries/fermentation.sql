@@ -40,3 +40,9 @@ INSERT INTO fermentation_logs (
 SELECT * FROM fermentation_logs
 WHERE fermentation_run_id = $1
 ORDER BY observed_at;
+
+-- name: GetFermentationLog :one
+SELECT * FROM fermentation_logs WHERE id = $1;
+
+-- name: DeleteFermentationLog :exec
+DELETE FROM fermentation_logs WHERE id = $1;

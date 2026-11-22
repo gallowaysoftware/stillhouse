@@ -2,7 +2,9 @@ package mcp
 
 import (
 	"os"
+	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -23,10 +25,19 @@ import (
 
 var procedureRE = regexp.MustCompile(`guard\(ctx, user, "([^"]+)"\)`)
 
+func sourceFiles(t *testing.T) []string {
+	t.Helper()
+	all, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return slices.DeleteFunc(all, func(f string) bool { return strings.HasSuffix(f, "_test.go") })
+}
+
 func toolProcedures(t *testing.T) []string {
 	t.Helper()
 	var out []string
-	for _, f := range []string{"tools_read.go", "tools_write.go"} {
+	for _, f := range sourceFiles(t) {
 		b, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatalf("read %s: %v", f, err)
@@ -42,7 +53,7 @@ func toolProcedures(t *testing.T) []string {
 // going through guard() is an ungated write. Counting withUser against
 // guard catches a new tool copy-pasted from an old one.
 func TestEveryToolIsGuarded(t *testing.T) {
-	for _, f := range []string{"tools_read.go", "tools_write.go"} {
+	for _, f := range sourceFiles(t) {
 		b, err := os.ReadFile(f)
 		if err != nil {
 			t.Fatalf("read %s: %v", f, err)
@@ -78,6 +89,17 @@ func TestViewerCannotWriteThroughMCP(t *testing.T) {
 		"/stillhouse.v1.BarrelService/DumpBarrel",
 		"/stillhouse.v1.BarrelService/RegaugeBarrel",
 		"/stillhouse.v1.MashService/AddMashMetric",
+		"/stillhouse.v1.MashService/CreateMashRun",
+		"/stillhouse.v1.MashService/AddMashIngredient",
+		"/stillhouse.v1.MashService/UpdateMashStatus",
+		"/stillhouse.v1.MashService/DeleteMashIngredient",
+		"/stillhouse.v1.MashService/DeleteMashMetric",
+		"/stillhouse.v1.FermentationService/DeleteFermentationLog",
+		"/stillhouse.v1.DistillationService/DeleteDistillationCharge",
+		"/stillhouse.v1.MaterialService/RecordMaterialReceipt",
+		"/stillhouse.v1.RecipeService/SaveRecipeVersion",
+		"/stillhouse.v1.FermentationService/CreateFermentationRun",
+		"/stillhouse.v1.FermentationService/UpdateFermentationStatus",
 		"/stillhouse.v1.FermentationService/AddFermentationLog",
 		"/stillhouse.v1.RecipeService/SaveRecipeVersionSensory",
 		"/stillhouse.v1.RecipeService/SaveRecipeVersionWhiskySensory",

@@ -96,6 +96,9 @@ func (s *FermentationService) CreateFermentationRun(
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("mash run not found"))
 		}
+		if ce := classifyWriteErr(err, "yeast material or lot not found"); ce != nil {
+			return nil, ce
+		}
 		s.logger.Error("CreateFermentationRun", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -526,4 +529,48 @@ func round2(x float64) float64 {
 	// the int(x+0.5) idiom, which rounds negatives the wrong way. Now it
 	// really does match. See round4 in b266.go.
 	return math.Round(x*100) / 100
+}
+
+func (s *FermentationService) DeleteFermentationLog(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteFermentationLogRequest],
+) (*connect.Response[stillhousev1.DeleteFermentationLogResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		l, e := q.GetFermentationLog(ctx, id)
+		if e != nil {
+			return e
+		}
+		if e := q.DeleteFermentationLog(ctx, id); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "fermentation_log", id.String(),
+			sqlcgen.AuditActionDelete, map[string]any{
+				"fermentation_run_id": l.FermentationRunID.String(),
+				"observed_at":         l.ObservedAt.Time,
+				"specific_gravity":    l.SpecificGravity.Float64,
+				"ph":                  l.Ph.Float64,
+				"temperature_c":       l.TemperatureC.Float64,
+				"notes":               l.Notes,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("reading not found"))
+		}
+		s.logger.Error("DeleteFermentationLog", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DeleteFermentationLogResponse{}), nil
 }

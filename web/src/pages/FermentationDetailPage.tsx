@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { DeleteButton } from "@/components/DeleteButton";
 import { FermentationCurve } from "@/components/FermentationCurve";
 import { Shell } from "@/components/Shell";
 import { fermentationClient } from "@/lib/clients";
@@ -163,12 +164,13 @@ export function FermentationDetailPage() {
               <th className="px-4 py-3 text-right">pH</th>
               <th className="px-4 py-3 text-right">Temp (°C)</th>
               <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {r.logs.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-3 text-fg-muted">
+                <td colSpan={6} className="px-4 py-3 text-fg-muted">
                   No readings yet.
                 </td>
               </tr>
@@ -188,6 +190,13 @@ export function FermentationDetailPage() {
                   {l.temperatureCSet ? l.temperatureC.toFixed(1) : "—"}
                 </td>
                 <td className="px-4 py-3 text-fg-muted">{l.notes}</td>
+                <td className="px-4 py-3 text-right">
+                  <DeleteButton
+                    title="Delete this reading?"
+                    body="The audit trail keeps what it said."
+                    onDelete={() => fermentationClient.deleteFermentationLog({ id: l.id }).then(refresh)}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>

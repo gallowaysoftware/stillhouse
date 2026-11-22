@@ -65,6 +65,10 @@ services:
       # Where the Canadian Alcoholometric Tables are mounted. Optional —
       # without them the app runs but can't correct readings to 20 °C.
       STILLHOUSE_ALCOHOLOMETRIC_TABLES: /data/alcoholometric-tables
+      # The brewing assistant's model. Unset, the assistant is off.
+      STILLHOUSE_ASSISTANT_URL: ${STILLHOUSE_ASSISTANT_URL:-}
+      STILLHOUSE_ASSISTANT_MODEL: ${STILLHOUSE_ASSISTANT_MODEL:-}
+      STILLHOUSE_ASSISTANT_API_KEY: ${STILLHOUSE_ASSISTANT_API_KEY:-}
     volumes:
       # The operator's own copy of the tables, downloaded from CRA (see
       # deploy/README.md). Read-only; the app only ever reads it.

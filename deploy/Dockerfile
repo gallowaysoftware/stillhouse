@@ -21,7 +21,7 @@ RUN npx -y -p @bufbuild/buf@1.72.0 -- buf generate /src/proto --template /src/pr
 RUN npm run build
 
 # ----- Stage 2: build the Go backend -----------------------------------------
-FROM docker.io/library/golang:1.27.0-alpine AS go-builder
+FROM docker.io/library/golang:1.27.4-alpine AS go-builder
 RUN apk add --no-cache git ca-certificates
 WORKDIR /src
 

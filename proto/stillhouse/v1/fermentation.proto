@@ -118,7 +118,7 @@ message CreateFermentationRunRequest {
   double initial_volume_l = 8;
   bool   initial_volume_l_set = 9;
   string notes = 10;
-  string yeast_lot_id = 11;                  // optional; debits the lot on insert
+  string yeast_lot_id = 11;                  // optional; recorded for traceability, the lot is not debited
 }
 message CreateFermentationRunResponse { FermentationRun run = 1; }
 
@@ -147,10 +147,14 @@ message AddFermentationLogRequest {
 }
 message AddFermentationLogResponse { FermentationLog log = 1; }
 
+message DeleteFermentationLogRequest { string id = 1; }
+message DeleteFermentationLogResponse {}
+
 service FermentationService {
   rpc CreateFermentationRun(CreateFermentationRunRequest) returns (CreateFermentationRunResponse);
   rpc GetFermentationRun(GetFermentationRunRequest) returns (GetFermentationRunResponse);
   rpc ListFermentationRuns(ListFermentationRunsRequest) returns (ListFermentationRunsResponse);
   rpc UpdateFermentationStatus(UpdateFermentationStatusRequest) returns (UpdateFermentationStatusResponse);
   rpc AddFermentationLog(AddFermentationLogRequest) returns (AddFermentationLogResponse);
+  rpc DeleteFermentationLog(DeleteFermentationLogRequest) returns (DeleteFermentationLogResponse);
 }

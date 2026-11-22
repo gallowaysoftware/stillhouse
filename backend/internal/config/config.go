@@ -57,6 +57,14 @@ type Config struct {
 	// then are those headers safe to rate-limit on; otherwise any caller
 	// can pick a fresh identity per request and never be throttled.
 	TrustProxyHeaders bool
+
+	// The brewing assistant's model: an OpenAI-compatible base URL
+	// (including /v1), the model id to ask for, and a key if it wants one.
+	// What the operator types and photographs is sent there. Off unless
+	// the URL and the model are both set.
+	AssistantURL    string
+	AssistantModel  string
+	AssistantAPIKey string
 }
 
 // defaultAlcoholometricTablesPath is where the compose stack mounts the
@@ -79,6 +87,9 @@ func Load() (*Config, error) {
 			defaultAlcoholometricTablesPath),
 		TrustProxyHeaders: os.Getenv("STILLHOUSE_TRUST_PROXY_HEADERS") == "1",
 		SelfServeSignup:   os.Getenv("STILLHOUSE_SELF_SERVE_SIGNUP") == "1",
+		AssistantURL:      os.Getenv("STILLHOUSE_ASSISTANT_URL"),
+		AssistantModel:    os.Getenv("STILLHOUSE_ASSISTANT_MODEL"),
+		AssistantAPIKey:   os.Getenv("STILLHOUSE_ASSISTANT_API_KEY"),
 	}
 	if c.DatabaseURL == "" {
 		return nil, errors.New("DATABASE_URL is required")

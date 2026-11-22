@@ -48,6 +48,9 @@ const (
 	// FermentationServiceAddFermentationLogProcedure is the fully-qualified name of the
 	// FermentationService's AddFermentationLog RPC.
 	FermentationServiceAddFermentationLogProcedure = "/stillhouse.v1.FermentationService/AddFermentationLog"
+	// FermentationServiceDeleteFermentationLogProcedure is the fully-qualified name of the
+	// FermentationService's DeleteFermentationLog RPC.
+	FermentationServiceDeleteFermentationLogProcedure = "/stillhouse.v1.FermentationService/DeleteFermentationLog"
 )
 
 // FermentationServiceClient is a client for the stillhouse.v1.FermentationService service.
@@ -57,6 +60,7 @@ type FermentationServiceClient interface {
 	ListFermentationRuns(context.Context, *connect.Request[v1.ListFermentationRunsRequest]) (*connect.Response[v1.ListFermentationRunsResponse], error)
 	UpdateFermentationStatus(context.Context, *connect.Request[v1.UpdateFermentationStatusRequest]) (*connect.Response[v1.UpdateFermentationStatusResponse], error)
 	AddFermentationLog(context.Context, *connect.Request[v1.AddFermentationLogRequest]) (*connect.Response[v1.AddFermentationLogResponse], error)
+	DeleteFermentationLog(context.Context, *connect.Request[v1.DeleteFermentationLogRequest]) (*connect.Response[v1.DeleteFermentationLogResponse], error)
 }
 
 // NewFermentationServiceClient constructs a client for the stillhouse.v1.FermentationService
@@ -100,6 +104,12 @@ func NewFermentationServiceClient(httpClient connect.HTTPClient, baseURL string,
 			connect.WithSchema(fermentationServiceMethods.ByName("AddFermentationLog")),
 			connect.WithClientOptions(opts...),
 		),
+		deleteFermentationLog: connect.NewClient[v1.DeleteFermentationLogRequest, v1.DeleteFermentationLogResponse](
+			httpClient,
+			baseURL+FermentationServiceDeleteFermentationLogProcedure,
+			connect.WithSchema(fermentationServiceMethods.ByName("DeleteFermentationLog")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -110,6 +120,7 @@ type fermentationServiceClient struct {
 	listFermentationRuns     *connect.Client[v1.ListFermentationRunsRequest, v1.ListFermentationRunsResponse]
 	updateFermentationStatus *connect.Client[v1.UpdateFermentationStatusRequest, v1.UpdateFermentationStatusResponse]
 	addFermentationLog       *connect.Client[v1.AddFermentationLogRequest, v1.AddFermentationLogResponse]
+	deleteFermentationLog    *connect.Client[v1.DeleteFermentationLogRequest, v1.DeleteFermentationLogResponse]
 }
 
 // CreateFermentationRun calls stillhouse.v1.FermentationService.CreateFermentationRun.
@@ -137,6 +148,11 @@ func (c *fermentationServiceClient) AddFermentationLog(ctx context.Context, req 
 	return c.addFermentationLog.CallUnary(ctx, req)
 }
 
+// DeleteFermentationLog calls stillhouse.v1.FermentationService.DeleteFermentationLog.
+func (c *fermentationServiceClient) DeleteFermentationLog(ctx context.Context, req *connect.Request[v1.DeleteFermentationLogRequest]) (*connect.Response[v1.DeleteFermentationLogResponse], error) {
+	return c.deleteFermentationLog.CallUnary(ctx, req)
+}
+
 // FermentationServiceHandler is an implementation of the stillhouse.v1.FermentationService service.
 type FermentationServiceHandler interface {
 	CreateFermentationRun(context.Context, *connect.Request[v1.CreateFermentationRunRequest]) (*connect.Response[v1.CreateFermentationRunResponse], error)
@@ -144,6 +160,7 @@ type FermentationServiceHandler interface {
 	ListFermentationRuns(context.Context, *connect.Request[v1.ListFermentationRunsRequest]) (*connect.Response[v1.ListFermentationRunsResponse], error)
 	UpdateFermentationStatus(context.Context, *connect.Request[v1.UpdateFermentationStatusRequest]) (*connect.Response[v1.UpdateFermentationStatusResponse], error)
 	AddFermentationLog(context.Context, *connect.Request[v1.AddFermentationLogRequest]) (*connect.Response[v1.AddFermentationLogResponse], error)
+	DeleteFermentationLog(context.Context, *connect.Request[v1.DeleteFermentationLogRequest]) (*connect.Response[v1.DeleteFermentationLogResponse], error)
 }
 
 // NewFermentationServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -183,6 +200,12 @@ func NewFermentationServiceHandler(svc FermentationServiceHandler, opts ...conne
 		connect.WithSchema(fermentationServiceMethods.ByName("AddFermentationLog")),
 		connect.WithHandlerOptions(opts...),
 	)
+	fermentationServiceDeleteFermentationLogHandler := connect.NewUnaryHandler(
+		FermentationServiceDeleteFermentationLogProcedure,
+		svc.DeleteFermentationLog,
+		connect.WithSchema(fermentationServiceMethods.ByName("DeleteFermentationLog")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/stillhouse.v1.FermentationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case FermentationServiceCreateFermentationRunProcedure:
@@ -195,6 +218,8 @@ func NewFermentationServiceHandler(svc FermentationServiceHandler, opts ...conne
 			fermentationServiceUpdateFermentationStatusHandler.ServeHTTP(w, r)
 		case FermentationServiceAddFermentationLogProcedure:
 			fermentationServiceAddFermentationLogHandler.ServeHTTP(w, r)
+		case FermentationServiceDeleteFermentationLogProcedure:
+			fermentationServiceDeleteFermentationLogHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -222,4 +247,8 @@ func (UnimplementedFermentationServiceHandler) UpdateFermentationStatus(context.
 
 func (UnimplementedFermentationServiceHandler) AddFermentationLog(context.Context, *connect.Request[v1.AddFermentationLogRequest]) (*connect.Response[v1.AddFermentationLogResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.FermentationService.AddFermentationLog is not implemented"))
+}
+
+func (UnimplementedFermentationServiceHandler) DeleteFermentationLog(context.Context, *connect.Request[v1.DeleteFermentationLogRequest]) (*connect.Response[v1.DeleteFermentationLogResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.FermentationService.DeleteFermentationLog is not implemented"))
 }

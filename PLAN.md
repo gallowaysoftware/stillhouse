@@ -465,7 +465,18 @@ not the same shape as each other:
   anywhere it is as a read — "what is on the still on Thursday" — which
   `list_work_orders` already answers.
 
-J4 is done.
+J4 is done, and the surface was widened past it in stage 224: grain to
+cuts, with corrections, and a chat page over the same tools.
+
+Found on the way and not fixed there:
+
+- **Pitching a yeast lot does not debit it — P2.** The run records which
+  lot, but there is no quantity on the request to debit, so yeast on hand
+  only ever goes up.
+- **A gauge can be recorded naming no instrument — P1.** The dashboard's
+  getting-started list says it cannot. Either `checkInstruments` should
+  require the volume and strength instruments once the register is in use,
+  or the list should stop saying so.
 
 ---
 

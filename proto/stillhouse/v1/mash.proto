@@ -209,6 +209,15 @@ message PlanStrikeResponse {
   repeated MashFinding findings = 3;
 }
 
+// Corrections. An entry that was misheard or mistyped is removed and
+// re-entered; the audit log keeps the values that were removed. Removing an
+// ingredient puts its quantity back on the lot it came from, and is refused
+// once spirit from the mash has been gauged.
+message DeleteMashIngredientRequest { string id = 1; }
+message DeleteMashIngredientResponse {}
+message DeleteMashMetricRequest { string id = 1; }
+message DeleteMashMetricResponse {}
+
 service MashService {
   rpc CreateMashRun(CreateMashRunRequest) returns (CreateMashRunResponse);
   rpc GetMashRun(GetMashRunRequest) returns (GetMashRunResponse);
@@ -216,5 +225,7 @@ service MashService {
   rpc UpdateMashStatus(UpdateMashStatusRequest) returns (UpdateMashStatusResponse);
   rpc AddMashIngredient(AddMashIngredientRequest) returns (AddMashIngredientResponse);
   rpc AddMashMetric(AddMashMetricRequest) returns (AddMashMetricResponse);
+  rpc DeleteMashIngredient(DeleteMashIngredientRequest) returns (DeleteMashIngredientResponse);
+  rpc DeleteMashMetric(DeleteMashMetricRequest) returns (DeleteMashMetricResponse);
   rpc PlanStrike(PlanStrikeRequest) returns (PlanStrikeResponse);
 }

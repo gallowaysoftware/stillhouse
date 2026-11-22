@@ -204,6 +204,11 @@ message AddDistillationChargeRequest {
 }
 message AddDistillationChargeResponse { DistillationCharge charge = 1; }
 
+// Refused once the run is gauged: the charge is what the gauge is costed
+// and traced by.
+message DeleteDistillationChargeRequest { string id = 1; }
+message DeleteDistillationChargeResponse {}
+
 message AddDistillationReadingRequest {
   string distillation_run_id = 1;
   google.protobuf.Timestamp observed_at = 2;   // unset = now
@@ -292,6 +297,7 @@ service DistillationService {
   rpc ListDistillationRuns(ListDistillationRunsRequest) returns (ListDistillationRunsResponse);
   rpc UpdateDistillationStatus(UpdateDistillationStatusRequest) returns (UpdateDistillationStatusResponse);
   rpc AddDistillationCharge(AddDistillationChargeRequest) returns (AddDistillationChargeResponse);
+  rpc DeleteDistillationCharge(DeleteDistillationChargeRequest) returns (DeleteDistillationChargeResponse);
   rpc AddDistillationCut(AddDistillationCutRequest) returns (AddDistillationCutResponse);
   rpc RecordProductionGauge(RecordProductionGaugeRequest) returns (RecordProductionGaugeResponse);
   rpc VoidDistillationRun(VoidDistillationRunRequest) returns (VoidDistillationRunResponse);

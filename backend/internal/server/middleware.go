@@ -68,3 +68,7 @@ func (s *statusRecorder) Flush() {
 		f.Flush()
 	}
 }
+
+// Unwrap lets http.ResponseController reach the connection, for handlers
+// that stream.
+func (s *statusRecorder) Unwrap() http.ResponseWriter { return s.ResponseWriter }

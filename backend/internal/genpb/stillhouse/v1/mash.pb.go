@@ -1734,6 +1734,170 @@ func (x *PlanStrikeResponse) GetFindings() []*MashFinding {
 	return nil
 }
 
+// Corrections. An entry that was misheard or mistyped is removed and
+// re-entered; the audit log keeps the values that were removed. Removing an
+// ingredient puts its quantity back on the lot it came from, and is refused
+// once spirit from the mash has been gauged.
+type DeleteMashIngredientRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteMashIngredientRequest) Reset() {
+	*x = DeleteMashIngredientRequest{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteMashIngredientRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMashIngredientRequest) ProtoMessage() {}
+
+func (x *DeleteMashIngredientRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMashIngredientRequest.ProtoReflect.Descriptor instead.
+func (*DeleteMashIngredientRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *DeleteMashIngredientRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteMashIngredientResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteMashIngredientResponse) Reset() {
+	*x = DeleteMashIngredientResponse{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteMashIngredientResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMashIngredientResponse) ProtoMessage() {}
+
+func (x *DeleteMashIngredientResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMashIngredientResponse.ProtoReflect.Descriptor instead.
+func (*DeleteMashIngredientResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{22}
+}
+
+type DeleteMashMetricRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteMashMetricRequest) Reset() {
+	*x = DeleteMashMetricRequest{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteMashMetricRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMashMetricRequest) ProtoMessage() {}
+
+func (x *DeleteMashMetricRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMashMetricRequest.ProtoReflect.Descriptor instead.
+func (*DeleteMashMetricRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *DeleteMashMetricRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteMashMetricResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteMashMetricResponse) Reset() {
+	*x = DeleteMashMetricResponse{}
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteMashMetricResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteMashMetricResponse) ProtoMessage() {}
+
+func (x *DeleteMashMetricResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_mash_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteMashMetricResponse.ProtoReflect.Descriptor instead.
+func (*DeleteMashMetricResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_mash_proto_rawDescGZIP(), []int{24}
+}
+
 var File_stillhouse_v1_mash_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_mash_proto_rawDesc = "" +
@@ -1867,7 +2031,13 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\x12PlanStrikeResponse\x12\"\n" +
 	"\rstrike_temp_c\x18\x01 \x01(\x01R\vstrikeTempC\x12$\n" +
 	"\x0ewater_volume_l\x18\x02 \x01(\x01R\fwaterVolumeL\x126\n" +
-	"\bfindings\x18\x03 \x03(\v2\x1a.stillhouse.v1.MashFindingR\bfindings*\xb1\x01\n" +
+	"\bfindings\x18\x03 \x03(\v2\x1a.stillhouse.v1.MashFindingR\bfindings\"-\n" +
+	"\x1bDeleteMashIngredientRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1e\n" +
+	"\x1cDeleteMashIngredientResponse\")\n" +
+	"\x17DeleteMashMetricRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1a\n" +
+	"\x18DeleteMashMetricResponse*\xb1\x01\n" +
 	"\n" +
 	"MashStatus\x12\x1b\n" +
 	"\x17MASH_STATUS_UNSPECIFIED\x10\x00\x12\x17\n" +
@@ -1889,7 +2059,7 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"!MASH_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aMASH_FINDING_SEVERITY_INFO\x10\x01\x12!\n" +
 	"\x1dMASH_FINDING_SEVERITY_WARNING\x10\x02\x12!\n" +
-	"\x1dMASH_FINDING_SEVERITY_PROBLEM\x10\x032\x91\x05\n" +
+	"\x1dMASH_FINDING_SEVERITY_PROBLEM\x10\x032\xe7\x06\n" +
 	"\vMashService\x12Z\n" +
 	"\rCreateMashRun\x12#.stillhouse.v1.CreateMashRunRequest\x1a$.stillhouse.v1.CreateMashRunResponse\x12Q\n" +
 	"\n" +
@@ -1897,7 +2067,9 @@ const file_stillhouse_v1_mash_proto_rawDesc = "" +
 	"\fListMashRuns\x12\".stillhouse.v1.ListMashRunsRequest\x1a#.stillhouse.v1.ListMashRunsResponse\x12c\n" +
 	"\x10UpdateMashStatus\x12&.stillhouse.v1.UpdateMashStatusRequest\x1a'.stillhouse.v1.UpdateMashStatusResponse\x12f\n" +
 	"\x11AddMashIngredient\x12'.stillhouse.v1.AddMashIngredientRequest\x1a(.stillhouse.v1.AddMashIngredientResponse\x12Z\n" +
-	"\rAddMashMetric\x12#.stillhouse.v1.AddMashMetricRequest\x1a$.stillhouse.v1.AddMashMetricResponse\x12Q\n" +
+	"\rAddMashMetric\x12#.stillhouse.v1.AddMashMetricRequest\x1a$.stillhouse.v1.AddMashMetricResponse\x12o\n" +
+	"\x14DeleteMashIngredient\x12*.stillhouse.v1.DeleteMashIngredientRequest\x1a+.stillhouse.v1.DeleteMashIngredientResponse\x12c\n" +
+	"\x10DeleteMashMetric\x12&.stillhouse.v1.DeleteMashMetricRequest\x1a'.stillhouse.v1.DeleteMashMetricResponse\x12Q\n" +
 	"\n" +
 	"PlanStrike\x12 .stillhouse.v1.PlanStrikeRequest\x1a!.stillhouse.v1.PlanStrikeResponseB\xcd\x01\n" +
 	"\x11com.stillhouse.v1B\tMashProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
@@ -1915,34 +2087,38 @@ func file_stillhouse_v1_mash_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_mash_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_stillhouse_v1_mash_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
+var file_stillhouse_v1_mash_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
 var file_stillhouse_v1_mash_proto_goTypes = []any{
-	(MashStatus)(0),                   // 0: stillhouse.v1.MashStatus
-	(MashMetricKind)(0),               // 1: stillhouse.v1.MashMetricKind
-	(MashFindingSeverity)(0),          // 2: stillhouse.v1.MashFindingSeverity
-	(*MashFinding)(nil),               // 3: stillhouse.v1.MashFinding
-	(*TemperatureRange)(nil),          // 4: stillhouse.v1.TemperatureRange
-	(*MashEfficiency)(nil),            // 5: stillhouse.v1.MashEfficiency
-	(*MashBench)(nil),                 // 6: stillhouse.v1.MashBench
-	(*MashRun)(nil),                   // 7: stillhouse.v1.MashRun
-	(*MashIngredientUsage)(nil),       // 8: stillhouse.v1.MashIngredientUsage
-	(*MashMetric)(nil),                // 9: stillhouse.v1.MashMetric
-	(*CreateMashRunRequest)(nil),      // 10: stillhouse.v1.CreateMashRunRequest
-	(*CreateMashRunResponse)(nil),     // 11: stillhouse.v1.CreateMashRunResponse
-	(*GetMashRunRequest)(nil),         // 12: stillhouse.v1.GetMashRunRequest
-	(*GetMashRunResponse)(nil),        // 13: stillhouse.v1.GetMashRunResponse
-	(*ListMashRunsRequest)(nil),       // 14: stillhouse.v1.ListMashRunsRequest
-	(*ListMashRunsResponse)(nil),      // 15: stillhouse.v1.ListMashRunsResponse
-	(*UpdateMashStatusRequest)(nil),   // 16: stillhouse.v1.UpdateMashStatusRequest
-	(*UpdateMashStatusResponse)(nil),  // 17: stillhouse.v1.UpdateMashStatusResponse
-	(*AddMashIngredientRequest)(nil),  // 18: stillhouse.v1.AddMashIngredientRequest
-	(*AddMashIngredientResponse)(nil), // 19: stillhouse.v1.AddMashIngredientResponse
-	(*AddMashMetricRequest)(nil),      // 20: stillhouse.v1.AddMashMetricRequest
-	(*AddMashMetricResponse)(nil),     // 21: stillhouse.v1.AddMashMetricResponse
-	(*PlanStrikeRequest)(nil),         // 22: stillhouse.v1.PlanStrikeRequest
-	(*PlanStrikeResponse)(nil),        // 23: stillhouse.v1.PlanStrikeResponse
-	(*timestamppb.Timestamp)(nil),     // 24: google.protobuf.Timestamp
-	(MaterialKind)(0),                 // 25: stillhouse.v1.MaterialKind
+	(MashStatus)(0),                      // 0: stillhouse.v1.MashStatus
+	(MashMetricKind)(0),                  // 1: stillhouse.v1.MashMetricKind
+	(MashFindingSeverity)(0),             // 2: stillhouse.v1.MashFindingSeverity
+	(*MashFinding)(nil),                  // 3: stillhouse.v1.MashFinding
+	(*TemperatureRange)(nil),             // 4: stillhouse.v1.TemperatureRange
+	(*MashEfficiency)(nil),               // 5: stillhouse.v1.MashEfficiency
+	(*MashBench)(nil),                    // 6: stillhouse.v1.MashBench
+	(*MashRun)(nil),                      // 7: stillhouse.v1.MashRun
+	(*MashIngredientUsage)(nil),          // 8: stillhouse.v1.MashIngredientUsage
+	(*MashMetric)(nil),                   // 9: stillhouse.v1.MashMetric
+	(*CreateMashRunRequest)(nil),         // 10: stillhouse.v1.CreateMashRunRequest
+	(*CreateMashRunResponse)(nil),        // 11: stillhouse.v1.CreateMashRunResponse
+	(*GetMashRunRequest)(nil),            // 12: stillhouse.v1.GetMashRunRequest
+	(*GetMashRunResponse)(nil),           // 13: stillhouse.v1.GetMashRunResponse
+	(*ListMashRunsRequest)(nil),          // 14: stillhouse.v1.ListMashRunsRequest
+	(*ListMashRunsResponse)(nil),         // 15: stillhouse.v1.ListMashRunsResponse
+	(*UpdateMashStatusRequest)(nil),      // 16: stillhouse.v1.UpdateMashStatusRequest
+	(*UpdateMashStatusResponse)(nil),     // 17: stillhouse.v1.UpdateMashStatusResponse
+	(*AddMashIngredientRequest)(nil),     // 18: stillhouse.v1.AddMashIngredientRequest
+	(*AddMashIngredientResponse)(nil),    // 19: stillhouse.v1.AddMashIngredientResponse
+	(*AddMashMetricRequest)(nil),         // 20: stillhouse.v1.AddMashMetricRequest
+	(*AddMashMetricResponse)(nil),        // 21: stillhouse.v1.AddMashMetricResponse
+	(*PlanStrikeRequest)(nil),            // 22: stillhouse.v1.PlanStrikeRequest
+	(*PlanStrikeResponse)(nil),           // 23: stillhouse.v1.PlanStrikeResponse
+	(*DeleteMashIngredientRequest)(nil),  // 24: stillhouse.v1.DeleteMashIngredientRequest
+	(*DeleteMashIngredientResponse)(nil), // 25: stillhouse.v1.DeleteMashIngredientResponse
+	(*DeleteMashMetricRequest)(nil),      // 26: stillhouse.v1.DeleteMashMetricRequest
+	(*DeleteMashMetricResponse)(nil),     // 27: stillhouse.v1.DeleteMashMetricResponse
+	(*timestamppb.Timestamp)(nil),        // 28: google.protobuf.Timestamp
+	(MaterialKind)(0),                    // 29: stillhouse.v1.MaterialKind
 }
 var file_stillhouse_v1_mash_proto_depIdxs = []int32{
 	2,  // 0: stillhouse.v1.MashFinding.severity:type_name -> stillhouse.v1.MashFindingSeverity
@@ -1951,16 +2127,16 @@ var file_stillhouse_v1_mash_proto_depIdxs = []int32{
 	5,  // 3: stillhouse.v1.MashBench.efficiency:type_name -> stillhouse.v1.MashEfficiency
 	3,  // 4: stillhouse.v1.MashBench.findings:type_name -> stillhouse.v1.MashFinding
 	0,  // 5: stillhouse.v1.MashRun.status:type_name -> stillhouse.v1.MashStatus
-	24, // 6: stillhouse.v1.MashRun.created_at:type_name -> google.protobuf.Timestamp
-	24, // 7: stillhouse.v1.MashRun.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 6: stillhouse.v1.MashRun.created_at:type_name -> google.protobuf.Timestamp
+	28, // 7: stillhouse.v1.MashRun.updated_at:type_name -> google.protobuf.Timestamp
 	8,  // 8: stillhouse.v1.MashRun.ingredients:type_name -> stillhouse.v1.MashIngredientUsage
 	9,  // 9: stillhouse.v1.MashRun.metrics:type_name -> stillhouse.v1.MashMetric
 	6,  // 10: stillhouse.v1.MashRun.bench:type_name -> stillhouse.v1.MashBench
-	25, // 11: stillhouse.v1.MashIngredientUsage.material_kind:type_name -> stillhouse.v1.MaterialKind
-	24, // 12: stillhouse.v1.MashIngredientUsage.created_at:type_name -> google.protobuf.Timestamp
-	24, // 13: stillhouse.v1.MashIngredientUsage.lot_received_at:type_name -> google.protobuf.Timestamp
+	29, // 11: stillhouse.v1.MashIngredientUsage.material_kind:type_name -> stillhouse.v1.MaterialKind
+	28, // 12: stillhouse.v1.MashIngredientUsage.created_at:type_name -> google.protobuf.Timestamp
+	28, // 13: stillhouse.v1.MashIngredientUsage.lot_received_at:type_name -> google.protobuf.Timestamp
 	1,  // 14: stillhouse.v1.MashMetric.kind:type_name -> stillhouse.v1.MashMetricKind
-	24, // 15: stillhouse.v1.MashMetric.observed_at:type_name -> google.protobuf.Timestamp
+	28, // 15: stillhouse.v1.MashMetric.observed_at:type_name -> google.protobuf.Timestamp
 	7,  // 16: stillhouse.v1.CreateMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
 	7,  // 17: stillhouse.v1.GetMashRunResponse.mash_run:type_name -> stillhouse.v1.MashRun
 	0,  // 18: stillhouse.v1.ListMashRunsRequest.status:type_name -> stillhouse.v1.MashStatus
@@ -1969,7 +2145,7 @@ var file_stillhouse_v1_mash_proto_depIdxs = []int32{
 	7,  // 21: stillhouse.v1.UpdateMashStatusResponse.mash_run:type_name -> stillhouse.v1.MashRun
 	8,  // 22: stillhouse.v1.AddMashIngredientResponse.usage:type_name -> stillhouse.v1.MashIngredientUsage
 	1,  // 23: stillhouse.v1.AddMashMetricRequest.kind:type_name -> stillhouse.v1.MashMetricKind
-	24, // 24: stillhouse.v1.AddMashMetricRequest.observed_at:type_name -> google.protobuf.Timestamp
+	28, // 24: stillhouse.v1.AddMashMetricRequest.observed_at:type_name -> google.protobuf.Timestamp
 	9,  // 25: stillhouse.v1.AddMashMetricResponse.metric:type_name -> stillhouse.v1.MashMetric
 	3,  // 26: stillhouse.v1.PlanStrikeResponse.findings:type_name -> stillhouse.v1.MashFinding
 	10, // 27: stillhouse.v1.MashService.CreateMashRun:input_type -> stillhouse.v1.CreateMashRunRequest
@@ -1978,16 +2154,20 @@ var file_stillhouse_v1_mash_proto_depIdxs = []int32{
 	16, // 30: stillhouse.v1.MashService.UpdateMashStatus:input_type -> stillhouse.v1.UpdateMashStatusRequest
 	18, // 31: stillhouse.v1.MashService.AddMashIngredient:input_type -> stillhouse.v1.AddMashIngredientRequest
 	20, // 32: stillhouse.v1.MashService.AddMashMetric:input_type -> stillhouse.v1.AddMashMetricRequest
-	22, // 33: stillhouse.v1.MashService.PlanStrike:input_type -> stillhouse.v1.PlanStrikeRequest
-	11, // 34: stillhouse.v1.MashService.CreateMashRun:output_type -> stillhouse.v1.CreateMashRunResponse
-	13, // 35: stillhouse.v1.MashService.GetMashRun:output_type -> stillhouse.v1.GetMashRunResponse
-	15, // 36: stillhouse.v1.MashService.ListMashRuns:output_type -> stillhouse.v1.ListMashRunsResponse
-	17, // 37: stillhouse.v1.MashService.UpdateMashStatus:output_type -> stillhouse.v1.UpdateMashStatusResponse
-	19, // 38: stillhouse.v1.MashService.AddMashIngredient:output_type -> stillhouse.v1.AddMashIngredientResponse
-	21, // 39: stillhouse.v1.MashService.AddMashMetric:output_type -> stillhouse.v1.AddMashMetricResponse
-	23, // 40: stillhouse.v1.MashService.PlanStrike:output_type -> stillhouse.v1.PlanStrikeResponse
-	34, // [34:41] is the sub-list for method output_type
-	27, // [27:34] is the sub-list for method input_type
+	24, // 33: stillhouse.v1.MashService.DeleteMashIngredient:input_type -> stillhouse.v1.DeleteMashIngredientRequest
+	26, // 34: stillhouse.v1.MashService.DeleteMashMetric:input_type -> stillhouse.v1.DeleteMashMetricRequest
+	22, // 35: stillhouse.v1.MashService.PlanStrike:input_type -> stillhouse.v1.PlanStrikeRequest
+	11, // 36: stillhouse.v1.MashService.CreateMashRun:output_type -> stillhouse.v1.CreateMashRunResponse
+	13, // 37: stillhouse.v1.MashService.GetMashRun:output_type -> stillhouse.v1.GetMashRunResponse
+	15, // 38: stillhouse.v1.MashService.ListMashRuns:output_type -> stillhouse.v1.ListMashRunsResponse
+	17, // 39: stillhouse.v1.MashService.UpdateMashStatus:output_type -> stillhouse.v1.UpdateMashStatusResponse
+	19, // 40: stillhouse.v1.MashService.AddMashIngredient:output_type -> stillhouse.v1.AddMashIngredientResponse
+	21, // 41: stillhouse.v1.MashService.AddMashMetric:output_type -> stillhouse.v1.AddMashMetricResponse
+	25, // 42: stillhouse.v1.MashService.DeleteMashIngredient:output_type -> stillhouse.v1.DeleteMashIngredientResponse
+	27, // 43: stillhouse.v1.MashService.DeleteMashMetric:output_type -> stillhouse.v1.DeleteMashMetricResponse
+	23, // 44: stillhouse.v1.MashService.PlanStrike:output_type -> stillhouse.v1.PlanStrikeResponse
+	36, // [36:45] is the sub-list for method output_type
+	27, // [27:36] is the sub-list for method input_type
 	27, // [27:27] is the sub-list for extension type_name
 	27, // [27:27] is the sub-list for extension extendee
 	0,  // [0:27] is the sub-list for field type_name
@@ -2005,7 +2185,7 @@ func file_stillhouse_v1_mash_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_mash_proto_rawDesc), len(file_stillhouse_v1_mash_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   21,
+			NumMessages:   25,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
