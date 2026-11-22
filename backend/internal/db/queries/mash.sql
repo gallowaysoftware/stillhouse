@@ -50,8 +50,10 @@ ORDER BY m.name;
 -- Debit the on-hand quantity of a lot when a mash consumes from it. Returns
 -- the updated row so the caller can warn if the lot is now exhausted.
 UPDATE material_lots
-SET quantity_on_hand = quantity_on_hand - $2
-WHERE id = $1 AND quantity_on_hand >= $2
+-- A millionth either way is float residue from earlier draws, not stock: it
+-- neither refuses the last one nor stays on hand after it.
+SET quantity_on_hand = CASE WHEN quantity_on_hand - $2 < 1e-6 THEN 0 ELSE quantity_on_hand - $2 END
+WHERE id = $1 AND quantity_on_hand >= $2 - 1e-6
 RETURNING *;
 
 -- name: AddMashMetric :one

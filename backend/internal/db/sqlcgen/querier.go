@@ -276,6 +276,8 @@ type Querier interface {
 	CustomerRemovalTotals(ctx context.Context, customerID uuid.NullUUID) (CustomerRemovalTotalsRow, error)
 	// Debit the on-hand quantity of a lot when a mash consumes from it. Returns
 	// the updated row so the caller can warn if the lot is now exhausted.
+	// A millionth either way is float residue from earlier draws, not stock: it
+	// neither refuses the last one nor stays on hand after it.
 	DebitMaterialLot(ctx context.Context, arg DebitMaterialLotParams) (MaterialLot, error)
 	// Reverse the upsert that bottling did. We don't delete the row even if it
 	// zeroes out — keeping the row preserves the (product, lot_code, jurisdiction)
@@ -1308,11 +1310,10 @@ type Querier interface {
 	// relieved — but they are reported on their own line, so they are summed
 	// separately from the losses total.
 	SumDestructionsByTreatmentInPeriod(ctx context.Context, arg SumDestructionsByTreatmentInPeriodParams) (SumDestructionsByTreatmentInPeriodRow, error)
-	// Sums production_gauges.laa across every distillation that charged from
-	// any fermentation_run belonging to this mash. Note: if a distillation
-	// mixed charges from multiple mashes, that gauge LAA is over-attributed
-	// here. Acceptable for v1 single-mash-per-distillation operations;
-	// proportional attribution is a future refinement.
+	// Alcohol gauged out of the still runs this mash went into. A run charged
+	// from several mashes is shared between them by the alcohol each put in, or
+	// by volume where no strength was recorded. Each gauge counts once however
+	// many charges fed it, and a voided run counts not at all.
 	SumGaugeLAAForMash(ctx context.Context, mashRunID uuid.UUID) (float64, error)
 	// Line D. Both directions are reported, not just the net: a period that
 	// found 3 LAA in one tank and lost 3 in another nets to zero, and a line

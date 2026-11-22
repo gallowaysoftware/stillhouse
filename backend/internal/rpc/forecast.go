@@ -478,12 +478,13 @@ func recipeBatchFor(
 		// Only what has an extract fraction can produce alcohol. A
 		// botanical has none and contributes nothing to the projection,
 		// while still being on the shopping list.
-		if !r.ExtractFraction.Valid || r.Uom != "kg" {
+		kg, ok := units.Kg(r.Quantity, r.Uom)
+		if !r.ExtractFraction.Valid || !ok {
 			continue
 		}
 		ings = append(ings, distilling.Ingredient{
 			Name:    r.MaterialName,
-			MassKg:  r.Quantity,
+			MassKg:  kg,
 			Extract: units.Fraction(r.ExtractFraction.Float64),
 		})
 	}

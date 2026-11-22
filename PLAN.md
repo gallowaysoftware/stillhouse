@@ -509,23 +509,10 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–230 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–231 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
-
-### M4 · A quantity in any unit — P0
-
-`AddMashIngredient` and `SaveRecipeVersion` accept any unit. The lot is
-debited by the number, the bench reads it as kg, and the projection counts
-only the exact string `kg`. The mash page now sends the material's own unit
-and MCP checks it when a lot is named; the RPC checks neither the unit nor
-that the lot belongs to the material.
-
-### M5 · Captured LAA — P0
-
-`SumGaugeLAAForMash` sums DISTINCT values, so two equal gauges count once,
-and includes voided gauges.
 
 ### M6 · Packaging and the return — P0
 
@@ -575,7 +562,6 @@ Whisky eligibility is wrong both ways. A top-up keeps the first date.
   pitch or gauge has a date.
 - A fermentation's target gravity, label, volume and pitch time are set by
   API only. A still run has no status control.
-- Splitting a lot over several draws is refused by float residue.
 
 ### M11 · The audit trail — P1
 
@@ -601,8 +587,6 @@ barrels, for `UpdateTenant`, `UpdateMaterial`, `UpdateProduct` or
 - A still run's `get_floor` ref is refused by every tool; `get_recipe` takes
   only a UUID.
 - Duplicate receipts cannot be told apart or undone.
-- Ordinary mistakes (a material listed twice, a duplicate name, a negative
-  cost) answer "internal error", and `save_recipe` can leave an empty recipe.
 
 ---
 

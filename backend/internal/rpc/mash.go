@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -17,6 +18,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
 )
 
 type MashService struct {
@@ -155,15 +157,16 @@ func (s *MashService) GetMashRun(
 
 // projectMashLAA runs distilling.ProjectBatch over the mash's actual
 // ingredient usage using the recipe version's efficiency parameters.
-// Only ingredients with a set extract_fraction AND uom "kg" contribute (matches
+// Only ingredients with a set extract_fraction and a unit of mass contribute (matches
 // the projectRecipeVersion convention).
 func projectMashLAA(ingredients []sqlcgen.ListMashIngredientsRow, rv sqlcgen.RecipeVersion) float64 {
 	inputs := make([]distillingInput, 0, len(ingredients))
 	for _, ing := range ingredients {
-		if !ing.MaterialExtractFraction.Valid || ing.Uom != "kg" {
+		kg, ok := units.Kg(ing.QuantityUsed, ing.Uom)
+		if !ing.MaterialExtractFraction.Valid || !ok {
 			continue
 		}
-		inputs = append(inputs, distillingInput{MassKg: ing.QuantityUsed, ExtractFraction: ing.MaterialExtractFraction.Float64})
+		inputs = append(inputs, distillingInput{MassKg: kg, ExtractFraction: ing.MaterialExtractFraction.Float64})
 	}
 	if len(inputs) == 0 {
 		return 0
@@ -295,6 +298,9 @@ func (s *MashService) AddMashIngredient(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid material_id"))
 	}
+	if err := validateFinite("quantity_used", req.Msg.GetQuantityUsed()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
 	if req.Msg.GetQuantityUsed() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("quantity_used must be > 0"))
 	}
@@ -326,13 +332,30 @@ func (s *MashService) AddMashIngredient(
 		if gauged {
 			return errMashGauged
 		}
+		material, e := q.GetMaterial(ctx, matID)
+		if e != nil {
+			return e
+		}
+		uom, e := ownUnit(material, req.Msg.GetUom())
+		if e != nil {
+			return e
+		}
+		if lotID.Valid {
+			lot, e := q.GetMaterialLot(ctx, lotID.UUID)
+			if e != nil {
+				return e
+			}
+			if lot.MaterialID != matID {
+				return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("that lot is not %s", material.Name))
+			}
+		}
 		inserted, e = q.AddMashIngredient(ctx, sqlcgen.AddMashIngredientParams{
 			TenantID:      u.TenantID,
 			MashRunID:     mashID,
 			MaterialID:    matID,
 			MaterialLotID: lotID,
 			QuantityUsed:  req.Msg.GetQuantityUsed(),
-			Uom:           req.Msg.GetUom(),
+			Uom:           uom,
 			Notes:         req.Msg.GetNotes(),
 		})
 		if e != nil {
@@ -358,7 +381,7 @@ func (s *MashService) AddMashIngredient(
 				"material_id":   matID.String(),
 				"material_lot":  nullUUIDString(lotID),
 				"quantity_used": req.Msg.GetQuantityUsed(),
-				"uom":           req.Msg.GetUom(),
+				"uom":           uom,
 			})
 	})
 	if err != nil {
@@ -374,6 +397,17 @@ func (s *MashService) AddMashIngredient(
 	return connect.NewResponse(&stillhousev1.AddMashIngredientResponse{
 		Usage: mashIngredientUsageToProto(inserted, "", sqlcgen.MaterialKindOther, pgtype.Float8{}),
 	}), nil
+}
+
+// ownUnit is the material's own spelling of its unit. The lot is debited by
+// the number as given and the bench reads it as a mass, so 500 g against a
+// material counted in kg would take, and mash, 500 kg.
+func ownUnit(m sqlcgen.Material, uom string) (string, error) {
+	if !strings.EqualFold(strings.TrimSpace(uom), strings.TrimSpace(m.Uom)) {
+		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+			"%s is counted in %s; give the quantity in %s", m.Name, m.Uom, m.Uom))
+	}
+	return m.Uom, nil
 }
 
 var errMashGauged = connect.NewError(connect.CodeFailedPrecondition,
