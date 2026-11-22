@@ -507,6 +507,145 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ---
 
+## Track M — QA, 2026-11-22
+
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–227 took
+what touches a batch in progress; this is the rest. Each was reproduced
+unless it says otherwise. Findings about access between tenants and to
+accounts are kept off this public list until they are fixed.
+
+### M1 · Alcohol that moves without a movement — P0
+
+A container stores volume, strength and LAA separately, and these paths
+change the LAA without a ledger row of the same size, so the B266 opening
+and closing move by the difference.
+
+- Voiding a gauge or a barrel fill takes volume and LAA off the tank and
+  leaves the blended strength. The next deposit recomputes LAA from
+  volume × strength (`VoidDistillationRun`, `VoidBarrelEvent`,
+  `applyDeposit`).
+- A regauge at the same or higher volume and lower strength books no loss
+  (`RegaugeBarrel`); the form posts a blank strength as 0 %.
+- `CreateBlend` with one source listed twice draws it twice.
+- A full draw below book strength zeroes the tank (`applyWithdrawal`), and
+  outbound external movements have no strength check.
+- `StartRedistillation` checks LAA and not volume, then zeroes what is left.
+- A count with volume down and LAA up is written as a decrease
+  (`adjustment.go`).
+- `SetBulkContainerArchived` accepts a full container; a cask can be filled
+  from, or dumped into, itself.
+
+### M2 · Voided and gauged runs are still open — P0
+
+- `RecordProductionGauge` accepts a voided or cancelled run. The spirit
+  enters stock, never reaches production, and cannot be voided again. The
+  run page never says VOIDED.
+- Charges and cuts are accepted after a gauge and on a voided run, as is an
+  ingredient on a gauged, cancelled or distilled mash (with its debit).
+- `UpdateDistillationStatus` moves a run into and out of GAUGED.
+- The void's period lock reads the run date, not the gauge date.
+- A run voided in a later month leaves the earlier month's figures wrong.
+
+### M3 · The return's calendar is UTC — P0
+
+Periods, the period lock and every blank date cut at UTC midnight, so work
+after 20:00 AST on the last day of a month lands on the next return and
+slips past the lock. There is no tenant time zone. Three agents, separately.
+
+### M4 · A quantity in any unit — P0
+
+`AddMashIngredient` and `SaveRecipeVersion` accept any unit. The lot is
+debited by the number, the bench reads it as kg, and the projection counts
+only the exact string `kg`. The mash page now sends the material's own unit
+and MCP checks it when a lot is named; the RPC checks neither the unit nor
+that the lot belongs to the material.
+
+### M5 · Captured LAA — P0
+
+`SumGaugeLAAForMash` sums DISTINCT values, so two equal gauges count once,
+and includes voided gauges.
+
+### M6 · Packaging and the return — P0
+
+- A voided bottling run stays on the return as transferred to packaging.
+- The packaged section has no term for counts, customer returns or
+  unpackaging; packaged returns have no period lock.
+- Posting a count uses the live balance, not the one captured at opening,
+  and undoes shipments made since.
+- Duty on marked special containers is not in duty payable.
+- Bottled quantities are computed from the live product, so editing its
+  strength or size restates filed returns.
+- At-removal licences are charged duty on every removal kind.
+
+### M7 · Cask age after a void — P0
+
+Voiding a fill keeps its date and voiding a dump loses it, so Canadian
+Whisky eligibility is wrong both ways. A top-up keeps the first date.
+
+### M8 · Filing guards — P1
+
+- Opening the dashboard writes a draft period that can block the real one;
+  nothing deletes a draft.
+- An unfinished period can be submitted; a negative packaged closing files
+  with no blocker.
+- Resubmitting overwrites the filed snapshot. `review_filing` reports
+  nothing outstanding on a blocked draft.
+- Stamp serials restart from a counter that ignores voids and spoilage.
+- A voided bottling run's lot code cannot be used again.
+- A stale adopted balance trips the continuity blocker without saying so.
+- A dump slightly under book strength answers "internal error".
+
+### M9 · Floor figures that disagree — P1
+
+- The fermentation analysis takes its first gravity as OG and first reading
+  as pitch, ignoring both records; the page shows two ABVs.
+- `water_volume_l` is latest-wins but serves thickness (conversion liquor)
+  and the wash estimate (total water), so logging each addition gives a
+  false thickness. The estimated wash volume overstates extract.
+- Partial extract data gives an inflated efficiency with no finding.
+- `benchmarks` conversion efficiency is not the bench's arithmetic.
+- Cut order is a count, so a re-entered cut sorts last and warns falsely.
+- Low wines and feints cannot be charged to a run.
+
+### M10 · What the pages cannot do — P1
+
+- No material can be corrected or archived, so a mistyped extract, cereal or
+  unit is permanent.
+- "Received at" on a receipt is not sent. No floor reading, cut, charge,
+  pitch or gauge has a date.
+- A fermentation's target gravity, label, volume and pitch time are set by
+  API only. A still run has no status control.
+- Splitting a lot over several draws is refused by float residue.
+
+### M11 · The audit trail — P1
+
+No row for starting, charging or cutting a run, for creating recipes and
+barrels, for `UpdateTenant`, `UpdateMaterial`, `UpdateProduct` or
+`GenerateB266`, and nothing is recorded for account changes.
+
+### M12 · Backup and export — P1
+
+- `restore.sh` over a database with newer tables fails, so the upgrade
+  runbook's rollback does not work; restoring into a fresh one does.
+- An encrypted backup does not restore with `restore.sh`, and the drill
+  passes it. The drill compares 8 of 86 tables. Success exits 1.
+- `--no-owner` leaves the keyhole functions owned by the superuser.
+- The tenant export writes UUIDs, money and JSON as Go values.
+- `openssl rand -base64` passwords break the DSN and are printed in the log;
+  use hex.
+- Deletes added since stage 190, and the tenant delete, ignore a legal hold.
+
+### M13 · MCP results — P2
+
+- Write tools answer with blank or zero fields the read fills in.
+- A still run's `get_floor` ref is refused by every tool; `get_recipe` takes
+  only a UUID.
+- Duplicate receipts cannot be told apart or undone.
+- Ordinary mistakes (a material listed twice, a duplicate name, a negative
+  cost) answer "internal error", and `save_recipe` can leave an empty recipe.
+
+---
+
 ## Track K — confidence
 
 Not features. The reasons to believe the numbers above are right.
