@@ -4,9 +4,9 @@
 // standing at the still.
 //
 // The handler is mounted at /mcp by the parent http server. Each
-// request authenticates via Authorization: Bearer sh_... (issued by
-// cmd/mcp-token); the resolved user is bound into a per-session SDK
-// Server so every tool call runs under that user's RLS tenant scope.
+// request authenticates via Authorization: Bearer sh_... (issued in the web
+// UI); the resolved user is bound into a per-session SDK Server so every
+// tool call runs under that user's RLS tenant scope.
 //
 // Tools cover what an operator does on the floor, grain to cuts. The
 // figures an operator signs for — production gauges, bottling, removals,
@@ -19,8 +19,10 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"connectrpc.com/connect"
+	"github.com/modelcontextprotocol/go-sdk/auth"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
@@ -53,17 +55,22 @@ type Deps struct {
 	Logger        *slog.Logger
 }
 
-// NewHandler returns an http.Handler that speaks MCP over Streamable
-// HTTP. The handler authenticates each session via bearer token; nil
-// is returned to the caller (→ HTTP 400) on a missing / bad token.
+// sessionIdle bounds how long an abandoned session is kept. It outlasts a
+// brew day's gaps; access is decided per request, not by this.
+const sessionIdle = 24 * time.Hour
+
+// NewHandler returns an http.Handler that speaks MCP over Streamable HTTP.
+// The bearer token is checked on every request, not only the one that opens
+// the session: otherwise the session id alone is a credential, and revoking
+// the token leaves it working.
 func NewHandler(d Deps) http.Handler {
-	return mcpsdk.NewStreamableHTTPHandler(func(r *http.Request) *mcpsdk.Server {
-		tok, err := rpc.ExtractBearer(r.Header)
-		if err != nil {
+	h := mcpsdk.NewStreamableHTTPHandler(func(r *http.Request) *mcpsdk.Server {
+		info := auth.TokenInfoFromContext(r.Context())
+		if info == nil {
 			return nil
 		}
-		user, err := rpc.LookupBearer(r.Context(), d.Queries, tok)
-		if err != nil {
+		user, ok := info.Extra[userExtra].(sqlcgen.User)
+		if !ok {
 			return nil
 		}
 		only, ok := toolset(r.URL.Query().Get("toolset"))
@@ -71,7 +78,33 @@ func NewHandler(d Deps) http.Handler {
 			return nil
 		}
 		return newSessionServer(d, user, only)
-	}, nil)
+	}, &mcpsdk.StreamableHTTPOptions{SessionTimeout: sessionIdle})
+	return auth.RequireBearerToken(d.verifyToken, &auth.RequireBearerTokenOptions{
+		// LookupBearer enforces expiry, and some tokens never expire.
+		AllowMissingExpiration: true,
+	})(h)
+}
+
+const userExtra = "user"
+
+// verifyToken resolves a bearer token. The id it returns binds a session to
+// the person and the role the session's tools were built for, so a changed
+// role ends the session rather than leaving the old one in force.
+func (d Deps) verifyToken(ctx context.Context, token string, _ *http.Request) (*auth.TokenInfo, error) {
+	user, err := rpc.LookupBearer(ctx, d.Queries, token)
+	if errors.Is(err, rpc.ErrBadBearer) {
+		return nil, auth.ErrInvalidToken
+	}
+	if err != nil {
+		if d.Logger != nil {
+			d.Logger.Error("mcp: token lookup", "err", err)
+		}
+		return nil, errors.New("internal error")
+	}
+	return &auth.TokenInfo{
+		UserID: user.ID.String() + ":" + string(user.Role),
+		Extra:  map[string]any{userExtra: user},
+	}, nil
 }
 
 // newSessionServer constructs an SDK Server with every tool closed over
