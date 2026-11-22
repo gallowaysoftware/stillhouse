@@ -410,6 +410,66 @@ func addAddMaterial(s *registrar, d Deps, user sqlcgen.User) {
 	})
 }
 
+func addUpdateMaterial(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		Material        string   `json:"material" jsonschema:"the material, by name or UUID"`
+		Name            string   `json:"name,omitempty" jsonschema:"a new name; omit to keep it"`
+		Cereal          string   `json:"cereal,omitempty" jsonschema:"barley, wheat, rye, maize, rice, oat or other; omit to keep it"`
+		ExtractFraction *float64 `json:"extract_fraction,omitempty" jsonschema:"extract as a fraction, 0 to 1, from the malt analysis: 80.5 percent is 0.805. Omit to keep it; never guess it"`
+		Supplier        string   `json:"supplier,omitempty" jsonschema:"who it comes from; omit to keep it"`
+		Notes           string   `json:"notes,omitempty" jsonschema:"replaces the notes; omit to keep them"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "update_material",
+		Description: "Correct a material's name, cereal, extract, supplier or notes. What is left out is kept. Recipes and mashes that use it are projected with the new figure.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.MaterialService/UpdateMaterial")
+		if err != nil {
+			return nil, nil, err
+		}
+		id, err := resolveMaterial(ctx, d, user, args.Material)
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		getCtx, err := guard(ctx, user, "/stillhouse.v1.MaterialService/GetMaterial")
+		if err != nil {
+			return nil, nil, err
+		}
+		got, err := d.Material.GetMaterial(getCtx, connect.NewRequest(&pb.GetMaterialRequest{Id: id}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		m := got.Msg.GetMaterial()
+		req := &pb.UpdateMaterialRequest{
+			Id: id, Name: m.GetName(), Uom: m.GetUom(), Supplier: m.GetSupplier(), Notes: m.GetNotes(), Cereal: m.GetCereal(),
+			ExtractFraction: m.GetExtractFraction(), ExtractFractionSet: m.GetExtractFractionSet(),
+			MoistureFraction: m.GetMoistureFraction(), MoistureFractionSet: m.GetMoistureFractionSet(),
+		}
+		if args.Name != "" {
+			req.Name = args.Name
+		}
+		if args.Supplier != "" {
+			req.Supplier = args.Supplier
+		}
+		if args.Notes != "" {
+			req.Notes = args.Notes
+		}
+		if args.Cereal != "" {
+			if req.Cereal, err = enumFromName[pb.Cereal](args.Cereal); err != nil {
+				return errResult(err), nil, nil
+			}
+		}
+		if args.ExtractFraction != nil {
+			req.ExtractFraction, req.ExtractFractionSet = *args.ExtractFraction, true
+		}
+		resp, err := d.Material.UpdateMaterial(ctx, connect.NewRequest(req))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
 func addReceiveMaterial(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		Material    string   `json:"material" jsonschema:"the material, by name or UUID"`

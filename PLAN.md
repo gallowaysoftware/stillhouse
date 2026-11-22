@@ -509,7 +509,7 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–231 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–232 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
@@ -556,17 +556,14 @@ Whisky eligibility is wrong both ways. A top-up keeps the first date.
 
 ### M10 · What the pages cannot do — P1
 
-- No material can be corrected or archived, so a mistyped extract, cereal or
-  unit is permanent.
-- "Received at" on a receipt is not sent. No floor reading, cut, charge,
-  pitch or gauge has a date.
+- No floor reading, cut, charge, pitch or gauge has a date.
 - A fermentation's target gravity, label, volume and pitch time are set by
   API only. A still run has no status control.
 
 ### M11 · The audit trail — P1
 
 No row for starting, charging or cutting a run, for creating recipes and
-barrels, for `UpdateTenant`, `UpdateMaterial`, `UpdateProduct` or
+barrels, for `UpdateTenant`, `UpdateProduct` or
 `GenerateB266`, and nothing is recorded for account changes.
 
 ### M12 · Backup and export — P1

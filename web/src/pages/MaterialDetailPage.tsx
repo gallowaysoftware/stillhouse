@@ -2,13 +2,22 @@ import { FormEvent, useState } from "react";
 import { RecallPanel } from "@/components/RecallPanel";
 import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
+import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
 import { materialClient } from "@/lib/clients";
-import { RecordMaterialReceiptRequestSchema } from "@/gen/stillhouse/v1/material_pb";
-import { formatQty, materialKindLabel } from "@/lib/format";
+import { writeErrorText } from "@/lib/errors";
+import {
+  Cereal,
+  type Material,
+  MaterialKind,
+  RecordMaterialReceiptRequestSchema,
+  UpdateMaterialRequestSchema,
+} from "@/gen/stillhouse/v1/material_pb";
+import { CEREAL_OPTIONS, formatQty, materialKindLabel } from "@/lib/format";
+import { WriteOnly } from "@/lib/role";
 
 export function MaterialDetailPage() {
   const { id } = useParams();
@@ -30,13 +39,30 @@ export function MaterialDetailPage() {
   const [receivedAt, setReceivedAt] = useState("");
   const [notes, setNotes] = useState("");
 
+  const [editing, setEditing] = useState(false);
+
+  // Everything: recipes and mashes are projected from a material's figures.
+  const refresh = () => void qc.invalidateQueries();
+  const update = useMutation({
+    mutationFn: (msg: ReturnType<typeof create<typeof UpdateMaterialRequestSchema>>) => materialClient.updateMaterial(msg),
+    onSuccess: () => {
+      refresh();
+      setEditing(false);
+    },
+  });
+  const archive = useMutation({
+    mutationFn: (archived: boolean) => materialClient.archiveMaterial({ id: id!, archived }),
+    onSuccess: refresh,
+  });
+
   const recordReceipt = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof RecordMaterialReceiptRequestSchema>>) =>
       materialClient.recordMaterialReceipt(msg),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["listMaterialLots", id] });
+      refresh();
       setSupplierLot("");
       setQuantity("");
+      setReceivedAt("");
       setUnitCost("");
       setNotes("");
     },
@@ -53,13 +79,15 @@ export function MaterialDetailPage() {
         notes,
         unitCostCad: unitCost ? Number(unitCost) : 0,
         unitCostCadSet: !!unitCost,
-        // receivedAt left unset = server uses time.Now() (Stage 5 fix).
+        // A date alone is taken as noon that day; blank is now.
+        receivedAt: receivedAt ? timestampFromDate(new Date(`${receivedAt}T12:00`)) : undefined,
       }),
     );
   }
 
   if (!id) return <Shell><p>Missing material id.</p></Shell>;
   if (material.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
+  if (material.error && !material.data) return <Shell><LoadError error={material.error} onRetry={() => void material.refetch()} /></Shell>;
   if (!material.data?.material) return <Shell><p>Material not found.</p></Shell>;
 
   const m = material.data.material;
@@ -69,7 +97,23 @@ export function MaterialDetailPage() {
   return (
     <Shell>
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">{m.name}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-3xl font-bold tracking-tight">
+            {m.name}
+            {m.archived && <span className="ml-3 rounded bg-surface-3 px-2 py-1 align-middle text-sm font-normal text-fg-muted">Archived</span>}
+          </h1>
+          <WriteOnly>
+            <div className="flex gap-2">
+              <button type="button" onClick={() => setEditing((v) => !v)} className="rounded border border-border-strong px-3 py-2 text-sm text-fg-muted hover:bg-surface-3">
+                {editing ? "Cancel" : "Edit"}
+              </button>
+              <button type="button" disabled={archive.isPending} onClick={() => archive.mutate(!m.archived)} className="rounded border border-border-strong px-3 py-2 text-sm text-fg-muted hover:bg-surface-3">
+                {m.archived ? "Restore" : "Archive"}
+              </button>
+            </div>
+          </WriteOnly>
+        </div>
+        {archive.error && <p className="text-sm text-danger-fg">{writeErrorText(archive.error)}</p>}
         <p className="text-sm text-fg-muted">
           {materialKindLabel(m.kind)} · {m.uom}
           {m.supplier && <> · {m.supplier}</>}
@@ -77,6 +121,10 @@ export function MaterialDetailPage() {
         </p>
         {m.notes && <p className="mt-2 text-sm text-fg">{m.notes}</p>}
       </header>
+
+      {editing && (
+        <EditMaterial key={m.id} material={m} saving={update.isPending} error={update.error} onSave={(v) => update.mutate(v)} />
+      )}
 
       <section className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <Stat label={`On hand (${m.uom})`} value={formatQty(totalOnHand)} highlight />
@@ -146,7 +194,7 @@ export function MaterialDetailPage() {
             </button>
             {recordReceipt.error && (
               <span className="text-sm text-danger-fg">
-                {recordReceipt.error instanceof ConnectError ? recordReceipt.error.rawMessage : String(recordReceipt.error)}
+                {writeErrorText(recordReceipt.error)}
               </span>
             )}
           </div>
@@ -196,6 +244,84 @@ export function MaterialDetailPage() {
         </table>
       </div>
     </Shell>
+  );
+}
+
+function EditMaterial({
+  material: m,
+  saving,
+  error,
+  onSave,
+}: {
+  material: Material;
+  saving: boolean;
+  error: Error | null;
+  onSave: (v: ReturnType<typeof create<typeof UpdateMaterialRequestSchema>>) => void;
+}) {
+  const fermentable = m.kind === MaterialKind.GRAIN || m.kind === MaterialKind.MALT;
+  // Typed as a percentage, as a spec sheet quotes it, and stored as a fraction.
+  const pct = (set: boolean, fraction: number) => (set ? String(Number((fraction * 100).toFixed(4))) : "");
+
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const text = (k: string) => fd.get(k)?.toString().trim() ?? "";
+    const extract = fermentable ? text("extract") : pct(m.extractFractionSet, m.extractFraction);
+    const moisture = fermentable ? text("moisture") : pct(m.moistureFractionSet, m.moistureFraction);
+    onSave(
+      create(UpdateMaterialRequestSchema, {
+        id: m.id,
+        name: text("name"),
+        uom: text("uom"),
+        supplier: text("supplier"),
+        notes: text("notes"),
+        extractFraction: extract ? Number(extract) / 100 : 0,
+        extractFractionSet: extract !== "",
+        moistureFraction: moisture ? Number(moisture) / 100 : 0,
+        moistureFractionSet: moisture !== "",
+        cereal: fermentable ? (Number(text("cereal")) as Cereal) : m.cereal,
+      }),
+    );
+  }
+
+  const input = "w-full rounded border border-border-strong px-3 py-2 text-sm";
+  const label = "mb-2 block text-sm font-medium text-fg-muted";
+  return (
+    <form onSubmit={submit} className="mb-6 grid grid-cols-1 gap-4 rounded-lg border border-border bg-surface-2 p-5 shadow-sm sm:grid-cols-2">
+      <div><label className={label}>Name</label><input name="name" required defaultValue={m.name} className={input} /></div>
+      <div>
+        <label className={label}>UoM</label>
+        <input name="uom" required defaultValue={m.uom} className={input} />
+        <p className="mt-1 text-xs text-fg-subtle">Fixed once there is a lot or a mash in it.</p>
+      </div>
+      <div><label className={label}>Supplier</label><input name="supplier" defaultValue={m.supplier} className={input} /></div>
+      {fermentable && (
+        <>
+          <div>
+            <label className={label}>Cereal</label>
+            <select name="cereal" defaultValue={String(m.cereal)} className={input}>
+              {CEREAL_OPTIONS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={label}>Extract (%)</label>
+            <input name="extract" type="number" step="any" min="0" max="100" placeholder="78" defaultValue={pct(m.extractFractionSet, m.extractFraction)} className={input} />
+            <p className="mt-1 text-xs text-fg-subtle">From the malt analysis. Recipes and mashes using it are projected again.</p>
+          </div>
+          <div>
+            <label className={label}>Moisture (%)</label>
+            <input name="moisture" type="number" step="any" min="0" max="100" defaultValue={pct(m.moistureFractionSet, m.moistureFraction)} className={input} />
+          </div>
+        </>
+      )}
+      <div className="sm:col-span-2"><label className={label}>Notes</label><input name="notes" defaultValue={m.notes} className={input} /></div>
+      <div className="flex items-center gap-3 sm:col-span-2">
+        <button type="submit" disabled={saving} className="rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-hover disabled:bg-accent/50">
+          {saving ? "Saving…" : "Save"}
+        </button>
+        {error && <span className="text-sm text-danger-fg">{writeErrorText(error)}</span>}
+      </div>
+    </form>
   );
 }
 

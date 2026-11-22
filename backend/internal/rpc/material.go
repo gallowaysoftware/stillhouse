@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -39,6 +40,7 @@ func (s *MaterialService) CreateMaterial(
 		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
 	}
 	in := req.Msg
+	in.Name, in.Uom = strings.TrimSpace(in.GetName()), strings.TrimSpace(in.GetUom())
 	if in.GetName() == "" || in.GetUom() == "" || in.GetKind() == stillhousev1.MaterialKind_MATERIAL_KIND_UNSPECIFIED {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name, kind, and uom are required"))
 	}
@@ -85,6 +87,9 @@ func (s *MaterialService) CreateMaterial(
 			})
 	})
 	if err != nil {
+		if dup := uniqueViolation(err, "material"); dup != nil {
+			return nil, dup
+		}
 		s.logger.Error("CreateMaterial", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
@@ -104,6 +109,7 @@ func (s *MaterialService) UpdateMaterial(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
 	}
+	in.Name, in.Uom = strings.TrimSpace(in.GetName()), strings.TrimSpace(in.GetUom())
 	if in.GetName() == "" || in.GetUom() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("name and uom are required"))
 	}
@@ -124,7 +130,20 @@ func (s *MaterialService) UpdateMaterial(
 
 	var updated sqlcgen.Material
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var dbErr error
+		before, dbErr := q.GetMaterial(ctx, id)
+		if dbErr != nil {
+			return dbErr
+		}
+		if before.Uom != in.GetUom() {
+			used, dbErr := q.MaterialUnitInUse(ctx, id)
+			if dbErr != nil {
+				return dbErr
+			}
+			if used {
+				return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+					"%s already has quantities recorded in %s; its unit can no longer change", before.Name, before.Uom))
+			}
+		}
 		updated, dbErr = q.UpdateMaterial(ctx, sqlcgen.UpdateMaterialParams{
 			ID:               id,
 			Name:             in.GetName(),
@@ -135,9 +154,22 @@ func (s *MaterialService) UpdateMaterial(
 			MoistureFraction: optionalFloat(in.GetMoistureFractionSet(), in.GetMoistureFraction()),
 			Cereal:           cerealToDB(in.GetCereal()),
 		})
-		return dbErr
+		if dbErr != nil {
+			return dbErr
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "material", id.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{
+				"before": materialFacts(before), "after": materialFacts(updated),
+			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if dup := uniqueViolation(err, "material"); dup != nil {
+			return nil, dup
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("material not found"))
 		}
@@ -145,6 +177,21 @@ func (s *MaterialService) UpdateMaterial(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.UpdateMaterialResponse{Material: materialToProto(updated)}), nil
+}
+
+func materialFacts(m sqlcgen.Material) map[string]any {
+	return map[string]any{
+		"name": m.Name, "uom": m.Uom, "supplier": m.Supplier, "cereal": string(m.Cereal.Cereal),
+		"extract_fraction": floatOrNil(m.ExtractFraction), "moisture_fraction": floatOrNil(m.MoistureFraction),
+		"notes": m.Notes,
+	}
+}
+
+func floatOrNil(v pgtype.Float8) any {
+	if !v.Valid {
+		return nil
+	}
+	return v.Float64
 }
 
 func (s *MaterialService) GetMaterial(
@@ -234,7 +281,11 @@ func (s *MaterialService) ArchiveMaterial(
 		} else {
 			m, dbErr = q.UnarchiveMaterial(ctx, id)
 		}
-		return dbErr
+		if dbErr != nil {
+			return dbErr
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "material", id.String(),
+			sqlcgen.AuditActionUpdate, map[string]any{"event": "archived_changed", "name": m.Name, "archived": m.Archived})
 	})
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -258,6 +309,15 @@ func (s *MaterialService) RecordMaterialReceipt(
 	matID, err := uuid.Parse(in.GetMaterialId())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid material_id"))
+	}
+	if err := validateFinite("quantity_received", in.GetQuantityReceived()); err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if in.GetUnitCostCadSet() && !(in.GetUnitCostCad() >= 0) {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("unit_cost_cad cannot be negative"))
+	}
+	if err := checkObservedAt("received_at", in.GetReceivedAt()); err != nil {
+		return nil, err
 	}
 	if in.GetQuantityReceived() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("quantity_received must be > 0"))

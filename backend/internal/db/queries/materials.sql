@@ -17,6 +17,11 @@ SET name         = $2,
 WHERE id = $1
 RETURNING *;
 
+-- name: MaterialUnitInUse :one
+-- Whether any quantity is recorded against this material in its unit.
+SELECT (EXISTS (SELECT 1 FROM material_lots ml WHERE ml.material_id = $1)
+    OR EXISTS (SELECT 1 FROM mash_ingredient_usage mu WHERE mu.material_id = $1))::boolean AS in_use;
+
 -- name: GetMaterial :one
 SELECT * FROM materials WHERE id = $1;
 
