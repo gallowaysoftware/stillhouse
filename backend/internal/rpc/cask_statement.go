@@ -128,7 +128,7 @@ func (s *BarrelService) CaskStatement(
 			}
 		}
 
-		fillAngelsShare(out, fill, now)
+		fillAngelsShare(out, fill, now.In(zone.From(ctx)))
 		return nil
 	})
 	if err != nil {
@@ -200,6 +200,6 @@ func fillAngelsShare(out *stillhousev1.CaskStatementResponse, fill *sqlcgen.Barr
 		out.AngelsShareKnown = false
 		out.AngelsShareMissing = fmt.Sprintf(
 			"this cask was filled on %s, which is too recent for an annual rate to mean anything.",
-			fill.EventDate.Time.Format("2006-01-02"))
+			fill.EventDate.Time.In(now.Location()).Format("2006-01-02"))
 	}
 }
