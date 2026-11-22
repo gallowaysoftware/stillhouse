@@ -5,9 +5,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { create } from "@bufbuild/protobuf";
 import { timestampFromDate } from "@bufbuild/protobuf/wkt";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
 import { materialClient } from "@/lib/clients";
+import { isoDay } from "@/lib/dates";
 import { writeErrorText } from "@/lib/errors";
 import {
   Cereal,
@@ -22,6 +24,7 @@ import { WriteOnly } from "@/lib/role";
 export function MaterialDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
+  const confirm = useConfirm();
 
   const material = useQuery({
     queryKey: ["getMaterial", id],
@@ -79,8 +82,8 @@ export function MaterialDetailPage() {
         notes,
         unitCostCad: unitCost ? Number(unitCost) : 0,
         unitCostCadSet: !!unitCost,
-        // A date alone is taken as noon that day; blank is now.
-        receivedAt: receivedAt ? timestampFromDate(new Date(`${receivedAt}T12:00`)) : undefined,
+        // A date alone is taken as noon that day; today or blank is now.
+        receivedAt: receivedAt && receivedAt !== isoDay() ? timestampFromDate(new Date(`${receivedAt}T12:00`)) : undefined,
       }),
     );
   }
@@ -91,8 +94,24 @@ export function MaterialDetailPage() {
   if (!material.data?.material) return <Shell><p>Material not found.</p></Shell>;
 
   const m = material.data.material;
+
   const totalOnHand = (lots.data?.lots ?? []).reduce((s, l) => s + l.quantityOnHand, 0);
   const totalReceived = (lots.data?.lots ?? []).reduce((s, l) => s + l.quantityReceived, 0);
+
+  async function toggleArchived() {
+    if (!m.archived) {
+      const ok = await confirm({
+        title: `Archive ${m.name}?`,
+        body: totalOnHand > 0
+          ? `${formatQty(totalOnHand)} ${m.uom} is still on hand. It stays recorded, but the material leaves the lists used to mash and write recipes.`
+          : "It leaves the lists used to mash and write recipes. Its history stays.",
+        confirmLabel: "Archive",
+        tone: "danger",
+      });
+      if (!ok) return;
+    }
+    archive.mutate(!m.archived);
+  }
 
   return (
     <Shell>
@@ -107,7 +126,7 @@ export function MaterialDetailPage() {
               <button type="button" onClick={() => setEditing((v) => !v)} className="rounded border border-border-strong px-3 py-2 text-sm text-fg-muted hover:bg-surface-3">
                 {editing ? "Cancel" : "Edit"}
               </button>
-              <button type="button" disabled={archive.isPending} onClick={() => archive.mutate(!m.archived)} className="rounded border border-border-strong px-3 py-2 text-sm text-fg-muted hover:bg-surface-3">
+              <button type="button" disabled={archive.isPending} onClick={() => void toggleArchived()} className="rounded border border-border-strong px-3 py-2 text-sm text-fg-muted hover:bg-surface-3">
                 {m.archived ? "Restore" : "Archive"}
               </button>
             </div>
@@ -148,7 +167,7 @@ export function MaterialDetailPage() {
             <label className="mb-2 block text-sm font-medium text-fg-muted">Quantity received ({m.uom})</label>
             <input
               type="number"
-              step="0.01"
+              step="any"
               min="0"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}

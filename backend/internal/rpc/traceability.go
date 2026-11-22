@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -17,6 +16,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type TraceabilityService struct {
@@ -74,13 +74,12 @@ func (s *TraceabilityService) TraceBottlingRun(
 			OccurredAt: timestamppb.New(run.BottlingDate.Time),
 		})
 
-		// Walk recent feeds into the source container. bottling_date is
-		// a pgtype.Date (midnight UTC); bump by 24h so same-day production
-		// gauges are included.
-		feedCutoff := run.BottlingDate.Time.Add(24 * time.Hour)
+		// Walk recent feeds into the source container, to the end of the
+		// bottling day: that evening's gauge fed it.
+		feedCutoff := zone.Start(ctx, run.BottlingDate.Time.AddDate(0, 0, 1))
 		feeds, e := q.BottlingRunChainFeeds(ctx, sqlcgen.BottlingRunChainFeedsParams{
 			DestinationContainerID: uuid.NullUUID{UUID: run.SourceContainerID, Valid: true},
-			OccurredAt:             pgtype.Timestamptz{Time: feedCutoff, Valid: true},
+			OccurredAt:             feedCutoff,
 		})
 		if e != nil {
 			return e

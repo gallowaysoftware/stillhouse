@@ -33,6 +33,7 @@ import {
   RecordProductionGaugeRequestSchema,
   UpdateDistillationCutRequestSchema,
 } from "@/gen/stillhouse/v1/distillation_pb";
+import { FermentationStatus } from "@/gen/stillhouse/v1/fermentation_pb";
 import { writeErrorText } from "@/lib/errors";
 import {
   cutKindLabel,
@@ -197,7 +198,7 @@ export function DistillationDetailPage() {
       <section className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
         <ChargesPanel
           run={r}
-          ferments={ferments.data?.runs ?? []}
+          ferments={(ferments.data?.runs ?? []).filter((f) => f.status !== FermentationStatus.CANCELLED)}
           onSubmit={(m) => addCharge.mutateAsync(m)}
           submitting={addCharge.isPending}
           error={addCharge.error}
@@ -298,7 +299,7 @@ function ChargesPanel({
   }
   return (
     <Panel title="Charges">
-      {!run.gauge && !run.voidedAt && <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
+      {!run.gauge && !run.voidedAt && run.status !== DistillationStatus.CANCELLED && <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
         <Field label="Ferment" as="select" value={fermID} onChange={setFermID} required>
           <option value="">—</option>
           {ferments.map((f) => (
@@ -517,6 +518,7 @@ function CutsPanel({
                 <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{c.abvPct.toFixed(2)}%</td>
                 <td className="px-3 py-2 text-right tabular-nums font-semibold text-fg">{formatLAA(c.laa)}</td>
                 <td className="px-3 py-2 text-right space-x-3">
+                  {!run.voidedAt && <>
                   <button
                     onClick={() => startEdit(c)}
                     className="px-2 py-2 text-xs text-fg-muted hover:text-fg"
@@ -538,6 +540,7 @@ function CutsPanel({
                   >
                     Delete
                   </button>
+                  </>}
                 </td>
               </tr>
             );

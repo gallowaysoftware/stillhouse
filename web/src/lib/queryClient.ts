@@ -18,6 +18,8 @@ export const queryClient: QueryClient = new QueryClient({
     },
     // Never retried: no write is idempotent, and an error from between here
     // and the server does not say whether it committed.
-    mutations: { retry: false },
+    // "always": offline, a write would otherwise wait unseen, be stamped when
+    // the signal came back, and be lost with the page.
+    mutations: { retry: false, networkMode: "always" },
   },
 });

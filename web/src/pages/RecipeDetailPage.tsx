@@ -90,8 +90,10 @@ export function RecipeDetailPage() {
     enabled: !!id,
   });
   const materials = useQuery({
-    queryKey: ["listMaterials"],
-    queryFn: () => materialClient.listMaterials({}),
+    // With the archived ones: a version may already use one, and dropping it
+    // from the picker would show its line as having no material.
+    queryKey: ["listMaterials", "withArchived", true],
+    queryFn: () => materialClient.listMaterials({ includeArchived: true }),
   });
 
   const isGin = recipe.data?.recipe?.spiritKind === SpiritKind.GIN;
@@ -309,7 +311,7 @@ export function RecipeDetailPage() {
                           className="flex-1 min-w-[12rem] rounded border border-border-strong px-3 py-2 text-sm"
                         >
                           <option value="">Select material…</option>
-                          {materials.data?.materials.map((m) => (
+                          {materials.data?.materials.filter((m) => !m.archived || m.id === r.materialId).map((m) => (
                             <option key={m.id} value={m.id}>
                               {m.name}
                               {isGin

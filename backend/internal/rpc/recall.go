@@ -13,6 +13,7 @@ import (
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // exactnessNote is on every response rather than in the documentation,
@@ -106,7 +107,7 @@ func (s *TraceabilityService) SimulateRecall(
 			voided := r.DistillationVoidedAt.Valid
 			out.Gauges = append(out.Gauges, &stillhousev1.RecallGaugeLink{
 				ProductionGaugeId: gid.String(),
-				GaugeDate:         r.GaugeDate.Time.Format("2006-01-02"),
+				GaugeDate:         r.GaugeDate.Time.In(zone.From(ctx)).Format("2006-01-02"),
 				Laa:               r.GaugeLaa.Float64,
 				ContainerId:       r.DestinationContainerID.UUID.String(),
 				ContainerName:     r.ContainerName.String,

@@ -509,7 +509,7 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–233 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–234 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
@@ -539,6 +539,8 @@ Whisky eligibility can be claimed for spirit that is not old enough.
   nothing outstanding on a blocked draft.
 - Stamp serials restart from a counter that ignores voids and spoilage.
 - A voided bottling run's lot code cannot be used again.
+- A return filed before stage 230 may have counted the last evening of its
+  month in the next; the continuity blocker does not name the movements.
 - A stale adopted balance trips the continuity blocker without saying so.
 
 ### M9 · Floor figures that disagree — P1
@@ -583,6 +585,9 @@ barrels, for `UpdateTenant`, `UpdateProduct` or
 - A still run's `get_floor` ref is refused by every tool; `get_recipe` takes
   only a UUID.
 - Duplicate receipts cannot be told apart or undone.
+- A charge has no way to say its strength is not known; zero stands for it.
+- A role change mid-session answers 403 to every later call; the client has to
+  reconnect and is not told so.
 
 ---
 

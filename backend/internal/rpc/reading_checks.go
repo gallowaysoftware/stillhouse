@@ -20,9 +20,16 @@ import (
 const (
 	minSpecificGravity = 0.9
 	maxSpecificGravity = 1.2
+	minPH              = 1
 	maxPH              = 14
 	minReadingTempC    = -50
 	maxReadingTempC    = 200
+	// An open tun cannot pass boiling, and a fermenter that has cooled
+	// enough to log cannot either: a figure over these was read in °F.
+	// A pressure cook is recorded as "other".
+	minWortTempC = 0
+	maxMashTempC = 105
+	maxFermentC  = 80
 )
 
 // futureSkew forgives a phone whose clock runs ahead. Past it, a reading
@@ -57,8 +64,8 @@ func checkPH(name string, v float64) error {
 	if err := validateFinite(name, v); err != nil {
 		return invalidReading(err)
 	}
-	if v < 0 || v > maxPH {
-		return invalidReading(fmt.Errorf("%s must be between 0 and 14, got %g", name, v))
+	if v < minPH || v > maxPH {
+		return invalidReading(fmt.Errorf("%s must be between %d and %d, got %g", name, minPH, maxPH, v))
 	}
 	return nil
 }
@@ -71,6 +78,25 @@ func checkTemperatureC(name string, v float64) error {
 		return invalidReading(fmt.Errorf("%s must be in °C, between %d and %d, got %g", name, minReadingTempC, maxReadingTempC, v))
 	}
 	return nil
+}
+
+// checkWortTemperatureC is checkTemperatureC for something that is mostly
+// water at atmospheric pressure, where °F is out of range and can be said so.
+func checkWortTemperatureC(name string, v, hottest float64) error {
+	if err := checkTemperatureC(name, v); err != nil {
+		return err
+	}
+	if v >= minWortTempC && v <= hottest {
+		return nil
+	}
+	if c := (v - 32) * 5 / 9; v > hottest && c <= hottest {
+		return invalidReading(fmt.Errorf("%s of %g is too hot to be °C; if it was °F that is %.1f °C", name, v, c))
+	}
+	return invalidReading(fmt.Errorf("%s must be in °C, between %d and %g, got %g", name, minWortTempC, hottest, v))
+}
+
+func checkMashTemperature(name string, v float64) error {
+	return checkWortTemperatureC(name, v, maxMashTempC)
 }
 
 func checkVolumeL(name string, v float64) error {
@@ -105,9 +131,9 @@ func checkMashMetric(kind stillhousev1.MashMetricKind, value float64, unit strin
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_MASH_PH:
 		check, name, own, accepted = checkPH, "mash pH", "pH", []string{"ph"}
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_MASH_TEMP_C:
-		check, name, own, accepted = checkTemperatureC, "mash temperature", "°C", celsius
+		check, name, own, accepted = checkMashTemperature, "mash temperature", "°C", celsius
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C:
-		check, name, own, accepted = checkTemperatureC, "strike temperature", "°C", celsius
+		check, name, own, accepted = checkMashTemperature, "strike temperature", "°C", celsius
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_WATER_VOLUME_L:
 		check, name, own, accepted = checkVolumeL, "water volume", "L", litres
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_WASH_VOLUME_L:
@@ -154,7 +180,7 @@ func checkFermentationLog(in *stillhousev1.AddFermentationLogRequest) error {
 		}
 	}
 	if in.GetTemperatureCSet() {
-		if err := checkTemperatureC("temperature", in.GetTemperatureC()); err != nil {
+		if err := checkWortTemperatureC("temperature", in.GetTemperatureC(), maxFermentC); err != nil {
 			return err
 		}
 	}

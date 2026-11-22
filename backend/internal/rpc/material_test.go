@@ -43,3 +43,36 @@ func TestAMaterialCanBeCorrected(t *testing.T) {
 		MaterialId: unused, QuantityReceived: 25, UnitCostCad: -3, UnitCostCadSet: true}))
 	refusedWith(t, "a negative cost", err, connect.CodeInvalidArgument)
 }
+
+func TestGrainIsCountedByMass(t *testing.T) {
+	const invalid = connect.CodeInvalidArgument
+	b := newFloorBatch(t)
+	create := func(name, uom string, kind stillhousev1.MaterialKind) error {
+		_, err := b.mat.CreateMaterial(b.ctx, connect.NewRequest(&stillhousev1.CreateMaterialRequest{Name: name, Kind: kind, Uom: uom}))
+		return err
+	}
+	refusedWith(t, "malt by the bag", create("Bags", "bag", stillhousev1.MaterialKind_MATERIAL_KIND_MALT), invalid)
+	must(t, create("Corks", "each", stillhousev1.MaterialKind_MATERIAL_KIND_PACKAGING))
+	must(t, create("Enzyme", "mL", stillhousev1.MaterialKind_MATERIAL_KIND_OTHER))
+
+	kgs := b.material(t, "Wheat", "kgs")
+	must(t, b.add(kgs, "", 2, "kg"))
+	_, err := b.mat.UpdateMaterial(b.ctx, connect.NewRequest(&stillhousev1.UpdateMaterialRequest{Id: kgs, Name: "Wheat", Uom: "kg"}))
+	must(t, err)
+	_, err = b.mat.UpdateMaterial(b.ctx, connect.NewRequest(&stillhousev1.UpdateMaterialRequest{Id: kgs, Name: "Wheat", Uom: "lb"}))
+	refusedWith(t, "a different unit once used", err, connect.CodeFailedPrecondition)
+}
+
+// A delivery is dated by the day, and this morning's is today's.
+func TestAReceiptDatedTodayIsNotInTheFuture(t *testing.T) {
+	b := newFloorBatch(t)
+	receive := func(at time.Time) error {
+		_, err := b.mat.RecordMaterialReceipt(b.ctx, connect.NewRequest(&stillhousev1.RecordMaterialReceiptRequest{
+			MaterialId: b.material(t, "M "+at.String(), "kg"), QuantityReceived: 1, ReceivedAt: timestamppb.New(at)}))
+		return err
+	}
+	loc := b.db.Location(b.ctx, b.tenant.ID)
+	y, m, d := time.Now().In(loc).Date()
+	must(t, receive(time.Date(y, m, d, 23, 59, 0, 0, loc)))
+	refusedWith(t, "tomorrow", receive(time.Date(y, m, d+1, 0, 1, 0, 0, loc)), connect.CodeInvalidArgument)
+}

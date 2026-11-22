@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -340,6 +339,7 @@ func (s *MashService) AddMashIngredient(
 		if e != nil {
 			return e
 		}
+		var lotOnHand float64
 		if lotID.Valid {
 			lot, e := q.GetMaterialLot(ctx, lotID.UUID)
 			if e != nil {
@@ -348,6 +348,7 @@ func (s *MashService) AddMashIngredient(
 			if lot.MaterialID != matID {
 				return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf("that lot is not %s", material.Name))
 			}
+			lotOnHand = lot.QuantityOnHand
 		}
 		inserted, e = q.AddMashIngredient(ctx, sqlcgen.AddMashIngredientParams{
 			TenantID:      u.TenantID,
@@ -370,7 +371,7 @@ func (s *MashService) AddMashIngredient(
 			}); e != nil {
 				if errors.Is(e, pgx.ErrNoRows) {
 					return connect.NewError(connect.CodeFailedPrecondition,
-						errors.New("not enough on-hand stock in that lot"))
+						fmt.Errorf("that lot has %g %s on hand; this takes %g", lotOnHand, uom, req.Msg.GetQuantityUsed()))
 				}
 				return e
 			}
@@ -403,7 +404,7 @@ func (s *MashService) AddMashIngredient(
 // the number as given and the bench reads it as a mass, so 500 g against a
 // material counted in kg would take, and mash, 500 kg.
 func ownUnit(m sqlcgen.Material, uom string) (string, error) {
-	if !strings.EqualFold(strings.TrimSpace(uom), strings.TrimSpace(m.Uom)) {
+	if !sameUnit(uom, m.Uom) {
 		return "", connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
 			"%s is counted in %s; give the quantity in %s", m.Name, m.Uom, m.Uom))
 	}

@@ -20,6 +20,8 @@ import (
 	stillhousev1 "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/mashing"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/tenantdb"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 type MaterialService struct {
@@ -47,6 +49,9 @@ func (s *MaterialService) CreateMaterial(
 	kind, err := materialKindToDB(in.GetKind())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
+	}
+	if err := checkMaterialUnit(kind, in.GetUom()); err != nil {
+		return nil, err
 	}
 	// extract and moisture are fractions in [0,1] despite the _pct names.
 	// Unvalidated, 78 typed for 0.78 multiplied a recipe's projected yield
@@ -135,6 +140,11 @@ func (s *MaterialService) UpdateMaterial(
 			return dbErr
 		}
 		if before.Uom != in.GetUom() {
+			if e := checkMaterialUnit(before.Kind, in.GetUom()); e != nil {
+				return e
+			}
+		}
+		if !sameUnit(before.Uom, in.GetUom()) {
 			used, dbErr := q.MaterialUnitInUse(ctx, id)
 			if dbErr != nil {
 				return dbErr
@@ -177,6 +187,30 @@ func (s *MaterialService) UpdateMaterial(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.UpdateMaterialResponse{Material: materialToProto(updated)}), nil
+}
+
+// checkMaterialUnit refuses a grain counted in something that has no mass:
+// the bench and the projection read kilograms, and a bag of it would count
+// for nothing and say so nowhere.
+func checkMaterialUnit(kind sqlcgen.MaterialKind, uom string) error {
+	if kind != sqlcgen.MaterialKindGrain && kind != sqlcgen.MaterialKindMalt {
+		return nil
+	}
+	if _, ok := units.Kg(1, uom); !ok {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+			"grain and malt are counted by mass: kg, g, t or lb, not %q", uom))
+	}
+	return nil
+}
+
+// sameUnit is whether quantities recorded in one mean the same in the other.
+func sameUnit(a, b string) bool {
+	if strings.EqualFold(strings.TrimSpace(a), strings.TrimSpace(b)) {
+		return true
+	}
+	x, okA := units.Kg(1, a)
+	y, okB := units.Kg(1, b)
+	return okA && okB && x == y
 }
 
 func materialFacts(m sqlcgen.Material) map[string]any {
@@ -316,8 +350,13 @@ func (s *MaterialService) RecordMaterialReceipt(
 	if in.GetUnitCostCadSet() && !(in.GetUnitCostCad() >= 0) {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("unit_cost_cad cannot be negative"))
 	}
-	if err := checkObservedAt("received_at", in.GetReceivedAt()); err != nil {
-		return nil, err
+	// By day: a delivery is dated, and today's date is sent as noon.
+	if ts := in.GetReceivedAt(); ts != nil {
+		loc := s.db.Location(ctx, u.TenantID)
+		if day := zone.Day(loc, ts.AsTime()); day.After(zone.Day(loc, time.Now())) {
+			return nil, connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+				"%s has not happened yet", day.Format("2006-01-02")))
+		}
 	}
 	if in.GetQuantityReceived() <= 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("quantity_received must be > 0"))
@@ -516,10 +555,10 @@ func computeRunMaterialCost(
 	sourceContainerID uuid.UUID,
 	bottlingDate pgtype.Date,
 ) (float64, bool, error) {
-	feedCutoff := bottlingDate.Time.Add(24 * time.Hour)
+	feedCutoff := zone.Start(ctx, bottlingDate.Time.AddDate(0, 0, 1))
 	feeds, e := q.BottlingRunChainFeeds(ctx, sqlcgen.BottlingRunChainFeedsParams{
 		DestinationContainerID: uuid.NullUUID{UUID: sourceContainerID, Valid: true},
-		OccurredAt:             pgtype.Timestamptz{Time: feedCutoff, Valid: true},
+		OccurredAt:             feedCutoff,
 	})
 	if e != nil {
 		return 0, false, e

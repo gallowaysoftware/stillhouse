@@ -219,7 +219,7 @@ func (j *Journal) addMaterialReceipts(
 			}
 		}
 		j.add(Line{
-			Date:        r.ReceivedAt.Time,
+			Date:        zone.Day(zone.From(ctx), r.ReceivedAt.Time),
 			Kind:        sqlcgen.JournalEventKindMaterialReceipt,
 			Description: r.MaterialName,
 			Reference:   r.SupplierLot,

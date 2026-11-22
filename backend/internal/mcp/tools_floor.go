@@ -213,6 +213,9 @@ func requireUngauged(ctx context.Context, d Deps, user sqlcgen.User, id string) 
 	if err != nil {
 		return err
 	}
+	if run.GetVoidedAt() != nil {
+		return errors.New("that run has been voided; start a new one")
+	}
 	if run.GetGauge() != nil || run.GetStatus() == pb.DistillationStatus_DISTILLATION_STATUS_GAUGED {
 		return errors.New("that run has been gauged; change it in the web UI")
 	}
