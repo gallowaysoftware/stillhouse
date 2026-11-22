@@ -112,12 +112,7 @@ func (s *BulkService) AdoptOpeningInventory(
 		}
 		movement = mv
 
-		container, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             containerID,
-			CurrentVolumeL: measured.VolumeL20C,
-			CurrentAbvPct:  pgtype.Float8{Float64: measured.StrengthPct20C, Valid: true},
-			CurrentLaa:     measured.LAA(),
-		})
+		container, e = saveBalance(ctx, q, containerID, balance{volumeL: measured.VolumeL20C, laa: measured.LAA()})
 		if e != nil {
 			return e
 		}

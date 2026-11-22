@@ -77,7 +77,7 @@ func TestRedistillationAccountsForWhatDidNotComeBack(t *testing.T) {
 			&stillhousev1.StartRedistillationRequest{
 				SourceContainerId: tank.ID.String(),
 				Reason:            stillhousev1.RedistillationReason_REDISTILLATION_REASON_FEINTS_RECOVERY,
-				VolumeL:           50, AbvPct: 60, // 30 LAA
+				VolumeL:           50, AbvPct: 70, // 35 LAA
 			}))
 		if err != nil {
 			t.Fatalf("StartRedistillation: %v", err)
@@ -89,7 +89,7 @@ func TestRedistillationAccountsForWhatDidNotComeBack(t *testing.T) {
 				Id: start.Msg.GetRedistillation().GetId(), LaaProduced: 50,
 			}))
 		if err == nil {
-			t.Fatal("50 LAA out of a 30 LAA charge was accepted")
+			t.Fatal("50 LAA out of a 35 LAA charge was accepted")
 		}
 		if connect.CodeOf(err) != connect.CodeInvalidArgument {
 			t.Errorf("got %v, want InvalidArgument", connect.CodeOf(err))

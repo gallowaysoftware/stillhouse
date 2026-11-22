@@ -181,20 +181,14 @@ func (s *BottlingService) CreateBottlingRun(
 		}
 
 		// 5. Update source balance.
-		newSrcVol := source.CurrentVolumeL - requiredVolume
-		newSrcAbv := source.CurrentAbvPct
-		newSrcLAA := 0.0
-		if newSrcVol > 0 {
-			newSrcLAA = newSrcVol * newSrcAbv.Float64 / 100
-		} else {
-			newSrcAbv = pgtype.Float8{Valid: false}
+		rest, stranded, e := balanceOf(source).take(source.Name, requiredVolume, laa)
+		if e != nil {
+			return e
 		}
-		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             sourceID,
-			CurrentVolumeL: newSrcVol,
-			CurrentAbvPct:  newSrcAbv,
-			CurrentLaa:     newSrcLAA,
-		}); e != nil {
+		if _, e := saveBalance(ctx, q, sourceID, rest); e != nil {
+			return e
+		}
+		if e := bookStranded(ctx, q, u, source, stranded, requiredVolume, abv, mv.OccurredAt, "a bottling run"); e != nil {
 			return e
 		}
 
@@ -564,22 +558,14 @@ func (s *BottlingService) VoidBottlingRun(
 		}
 
 		// 3) Refund the source bulk container. Reverses tank_gauge_volume/abv/laa
-		// via the same applyDeposit math used at filling time, and writes a
+		// and writes a
 		// regauge_correction movement so the journal records the inverse.
 		container, e := lockContainerForWrite(ctx, q, existing.SourceContainerID)
 		if e != nil {
 			return e
 		}
-		newVol, newABV, newLAA := applyDeposit(
-			container.CurrentVolumeL, container.CurrentAbvPct,
-			existing.TankGaugeVolumeL, existing.TankGaugeAbvPct,
-		)
-		if _, e := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID:             container.ID,
-			CurrentVolumeL: newVol,
-			CurrentAbvPct:  newABV,
-			CurrentLaa:     newLAA,
-		}); e != nil {
+		if _, e := saveBalance(ctx, q, container.ID,
+			balanceOf(container).add(existing.TankGaugeVolumeL, existing.TankGaugeLaa)); e != nil {
 			return e
 		}
 		if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{

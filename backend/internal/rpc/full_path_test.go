@@ -484,11 +484,8 @@ func TestCreateBlendChain(t *testing.T) {
 		}
 	}
 	// Compound deposit math (mirrors what the handler does).
-	v1, a1, _ := applyDeposit(0, pgtype.Float8{}, 50, 70)
-	v2, a2, l2 := applyDeposit(v1, a1, 50, 60)
-	if _, err := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-		ID: dest.ID, CurrentVolumeL: v2, CurrentAbvPct: a2, CurrentLaa: l2,
-	}); err != nil {
+	blended := balance{}.add(50, 35).add(50, 30)
+	if _, err := saveBalance(ctx, q, dest.ID, blended); err != nil {
 		t.Fatalf("blend balance: %v", err)
 	}
 	got, err := q.GetBulkContainer(ctx, dest.ID)
@@ -504,7 +501,7 @@ func TestCreateBlendChain(t *testing.T) {
 	if !got.CurrentAbvPct.Valid || got.CurrentAbvPct.Float64 < 64.9 || got.CurrentAbvPct.Float64 > 65.1 {
 		t.Errorf("dest ABV: got %v want ~65", got.CurrentAbvPct.Float64)
 	}
-	if l2 < 64.9 || l2 > 65.1 {
-		t.Errorf("computed l2: got %v want ~65", l2)
+	if blended.laa < 64.9 || blended.laa > 65.1 {
+		t.Errorf("computed LAA: got %v want ~65", blended.laa)
 	}
 }

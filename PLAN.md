@@ -509,31 +509,10 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–227 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–228 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
-
-### M1 · Alcohol that moves without a movement — P0
-
-A container stores volume, strength and LAA separately, and these paths
-change the LAA without a ledger row of the same size, so the B266 opening
-and closing move by the difference.
-
-- Voiding a gauge or a barrel fill takes volume and LAA off the tank and
-  leaves the blended strength. The next deposit recomputes LAA from
-  volume × strength (`VoidDistillationRun`, `VoidBarrelEvent`,
-  `applyDeposit`).
-- A regauge at the same or higher volume and lower strength books no loss
-  (`RegaugeBarrel`); the form posts a blank strength as 0 %.
-- `CreateBlend` with one source listed twice draws it twice.
-- A full draw below book strength zeroes the tank (`applyWithdrawal`), and
-  outbound external movements have no strength check.
-- `StartRedistillation` checks LAA and not volume, then zeroes what is left.
-- A count with volume down and LAA up is written as a decrease
-  (`adjustment.go`).
-- `SetBulkContainerArchived` accepts a full container; a cask can be filled
-  from, or dumped into, itself.
 
 ### M2 · Voided and gauged runs are still open — P0
 
@@ -593,7 +572,6 @@ Whisky eligibility is wrong both ways. A top-up keeps the first date.
 - Stamp serials restart from a counter that ignores voids and spoilage.
 - A voided bottling run's lot code cannot be used again.
 - A stale adopted balance trips the continuity blocker without saying so.
-- A dump slightly under book strength answers "internal error".
 
 ### M9 · Floor figures that disagree — P1
 

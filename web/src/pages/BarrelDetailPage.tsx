@@ -389,8 +389,10 @@ function RegaugeCard({
     emptyReading({ volumeL: String(barrel.currentVolumeL), abv: String(barrel.currentAbvPct) }),
   );
   const [notes, setNotes] = useState("");
+  const hasStrength = reading.mode === "density" ? reading.density.trim() !== "" : reading.abv.trim() !== "";
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (!reading.volumeL || !hasStrength) return;
     onSubmit(
       create(RegaugeBarrelRequestSchema, {
         barrelId: barrel.id,

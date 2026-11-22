@@ -29,6 +29,9 @@ func TestEveryMCPRequestIsAuthenticated(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _, _ = admin.Exec(ctx, "DELETE FROM tenants WHERE id = $1", tenant.ID) })
+	if _, err := q.CreateDefaultLocation(ctx, sqlcgen.CreateDefaultLocationParams{TenantID: tenant.ID, Name: tenant.Name}); err != nil {
+		t.Fatal(err)
+	}
 
 	token := func(role sqlcgen.UserRole) (string, uuid.UUID) {
 		t.Helper()

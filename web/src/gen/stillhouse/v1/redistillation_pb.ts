@@ -166,9 +166,9 @@ export type StartRedistillationRequest = Message<"stillhouse.v1.StartRedistillat
   volumeL: number;
 
   /**
-   * Strength of what is being taken. Where the container's own strength
-   * is right, pass it; a partial draw at a different strength is a
-   * different figure and has to be stated.
+   * Strength of what is being taken, as gauged. A tank yields its own
+   * strength, so one outside gauging tolerance of the container's is
+   * refused: regauge the container first.
    *
    * @generated from field: double abv_pct = 4;
    */

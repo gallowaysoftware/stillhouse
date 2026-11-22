@@ -213,25 +213,21 @@ func (s *BulkService) RecordBulkExternalMovement(
 			}
 		}
 
+		after, stranded := balanceOf(vessel).add(volume, laa), 0.0
 		if spec.inbound {
-			if vessel.CapacityL.Valid && vessel.CurrentVolumeL+volume > vessel.CapacityL.Float64+1e-6 {
-				return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-					"%.4f L would overfill %s (%.4f L on hand, %.4f L capacity)",
-					volume, vessel.Name, vessel.CurrentVolumeL, vessel.CapacityL.Float64))
+			if e := assertTakesSpirit(vessel, volume); e != nil {
+				return e
 			}
 		} else {
-			// You cannot ship, denature or destroy alcohol that is not
-			// there. The CHECK would catch the negative; the operator
-			// deserves the sentence.
-			if vessel.CurrentLaa+1e-6 < laa {
-				return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-					"%s holds %.4f LAA but this movement takes %.4f",
-					vessel.Name, vessel.CurrentLaa, laa))
+			if e := assertFillStrengthMatchesSource(vessel, abv); e != nil {
+				return e
 			}
-			if vessel.CurrentVolumeL+1e-6 < volume {
-				return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-					"%s holds %.4f L but this movement takes %.4f",
-					vessel.Name, vessel.CurrentVolumeL, volume))
+			// You cannot ship, denature or destroy alcohol that is not
+			// there.
+			laa = drawnLAA(vessel, volume, abv)
+			after, stranded, e = balanceOf(vessel).take(vessel.Name, volume, laa)
+			if e != nil {
+				return e
 			}
 		}
 
@@ -271,20 +267,11 @@ func (s *BulkService) RecordBulkExternalMovement(
 			return e
 		}
 
-		newVol, newLAA := vessel.CurrentVolumeL+volume, vessel.CurrentLaa+laa
-		if !spec.inbound {
-			newVol, newLAA = vessel.CurrentVolumeL-volume, vessel.CurrentLaa-laa
-		}
-		newABV := pgtype.Float8{}
-		if newVol > 1e-9 {
-			newABV = pgtype.Float8{Float64: newLAA / newVol * 100, Valid: true}
-		} else {
-			newVol, newLAA = 0, 0
-		}
-		container, e = q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
-			ID: containerID, CurrentVolumeL: newVol, CurrentAbvPct: newABV, CurrentLaa: newLAA,
-		})
+		container, e = saveBalance(ctx, q, containerID, after)
 		if e != nil {
+			return e
+		}
+		if e := bookStranded(ctx, q, u, vessel, stranded, volume, abv, occurredAt, "a movement "+spec.label); e != nil {
 			return e
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_movement", movement.ID.String(),
