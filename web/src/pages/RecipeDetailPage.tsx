@@ -322,7 +322,7 @@ export function RecipeDetailPage() {
                         </select>
                         <input
                           type="number"
-                          step="0.01"
+                          step="any"
                           min="0"
                           placeholder="qty"
                           value={r.quantity}

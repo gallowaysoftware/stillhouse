@@ -558,6 +558,7 @@ Whisky eligibility can be claimed for spirit that is not old enough.
 ### M10 · What the pages cannot do — P1
 
 - No floor reading, cut, charge, pitch or gauge has a date.
+- A mash can be dated ahead, by any amount.
 - A fermentation's target gravity, label, volume and pitch time are set by
   API only. A still run has no status control.
 

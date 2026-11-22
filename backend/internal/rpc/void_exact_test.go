@@ -132,6 +132,28 @@ func TestVoidingACaskEventPutsBackEverything(t *testing.T) {
 		must1(c.regauge(198, 60))
 		refusedWith(t, "the earlier regauge", c.voidEvent(first), connect.CodeFailedPrecondition)
 	})
+	t.Run("a regauge with a count after it", func(t *testing.T) {
+		c := newCaskFixture(t, 400, 60)
+		must1(c.fill(200, 60))
+		gauge := must1(c.regauge(198, 59.5))
+		_, err := NewBulkService(c.db, testLogger()).RecordInventoryAdjustment(c.ctx, connect.NewRequest(&stillhousev1.RecordInventoryAdjustmentRequest{
+			ContainerId: c.cask.ID.String(), CountedVolumeL: 190, AbvPct: 59.5, Explanation: "count", OccurredAt: c.when,
+			Reason: stillhousev1.InventoryAdjustmentReason_INVENTORY_ADJUSTMENT_REASON_PHYSICAL_COUNT}))
+		must(t, err)
+		refusedWith(t, "the regauge under a count", c.voidEvent(gauge), connect.CodeFailedPrecondition)
+		c.holds(t, "counted", 190, 113.05, 200, 120, 2.19, -4.76)
+	})
+	t.Run("a dump of a cask filled since", func(t *testing.T) {
+		c := newCaskFixture(t, 400, 60)
+		dest := c.ledgerFixture.tank(t, "Dest", 0, 0)
+		must1(c.fill(200, 60))
+		dump := must1(c.dump(dest, 200, 60))
+		again := must1(c.fill(200, 60))
+		refusedWith(t, "the dump under a fill", c.voidEvent(dump), connect.CodeFailedPrecondition)
+		must(t, c.voidEvent(again))
+		must(t, c.voidEvent(dump))
+		c.holds(t, "both voided", 200, 120, 200, 120, 0, 0)
+	})
 	t.Run("the clock", func(t *testing.T) {
 		c := newCaskFixture(t, 400, 60)
 		dest := c.ledgerFixture.tank(t, "Dest", 0, 0)

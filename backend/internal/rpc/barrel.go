@@ -975,10 +975,24 @@ func unwindBarrelEvent(ctx context.Context, q *sqlcgen.Queries, u sqlcgen.User, 
 			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
 				"%s has been filled, dumped or regauged since; void the later event first", cask.Name))
 		}
+		// A count, a bottling or a shipment moves a cask without a cask event;
+		// putting the prior balance back over one would undo it in the book
+		// and leave its movement standing.
+		if math.Abs(cask.CurrentVolumeL-ev.VolumeL.Float64) > balanceEps || math.Abs(cask.CurrentLaa-ev.Laa.Float64) > balanceEps {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"%s has been counted or drawn on since this regauge; record a corrective regauge instead", cask.Name))
+		}
 		if _, err := saveBalance(ctx, q, cask.ID, prior); err != nil {
 			return err
 		}
 	case sqlcgen.BarrelEventKindDump:
+		if len(moved) == 0 {
+			break
+		}
+		if cask.CurrentVolumeL > balanceEps {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"%s holds spirit again; void what went into it since this dump first", cask.Name))
+		}
 		// Into the cask goes what it held, whatever the dump said it kept.
 		mv := moved[0]
 		if !recorded {
