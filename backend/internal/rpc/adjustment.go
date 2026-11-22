@@ -106,6 +106,9 @@ func (s *BulkService) RecordInventoryAdjustment(
 			return e
 		}
 		book := locked[containerID]
+		if book.Archived {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("%s is archived", book.Name))
+		}
 
 		instr, e := checkInstruments(ctx, q, in.GetInstruments(), occurredAt.Time)
 		if e != nil {

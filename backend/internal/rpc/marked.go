@@ -145,15 +145,12 @@ func (s *MarkedContainerService) MarkContainer(
 		if volume <= 0 {
 			volume = in.GetVolumeL()
 		}
-		if e := assertFillStrengthMatchesSource(source, abv); e != nil {
+		d, e := drawFrom(source, volume, abv)
+		if e != nil {
 			return e
 		}
-		laa := drawnLAA(source, volume, abv)
-		if laa > source.CurrentLaa+balanceEps {
-			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-				"%s holds %.4f LAA; this fill asks for %.4f",
-				source.Name, source.CurrentLaa, laa))
-		}
+		volume = d.volumeL
+		laa := d.laa
 
 		// Duty at the licensee's own duty point, decided by the same code
 		// a bottling run uses — the two must never disagree about when
@@ -192,14 +189,10 @@ func (s *MarkedContainerService) MarkContainer(
 		if e != nil {
 			return e
 		}
-		rest, stranded, e := balanceOf(source).take(source.Name, volume, laa)
-		if e != nil {
+		if _, e = saveBalance(ctx, q, sourceID, d.rest); e != nil {
 			return e
 		}
-		if _, e = saveBalance(ctx, q, sourceID, rest); e != nil {
-			return e
-		}
-		if e := bookStranded(ctx, q, u, source, stranded, volume, abv, mv.OccurredAt, "a marked container fill"); e != nil {
+		if e := bookCorrection(ctx, q, u, source, d.correction, abv, mv.OccurredAt, uuid.NullUUID{}, "a marked container fill"); e != nil {
 			return e
 		}
 
@@ -378,6 +371,9 @@ func (s *MarkedContainerService) UnmarkContainer(
 		}
 		dest, e := lockContainerForWrite(ctx, q, destID)
 		if e != nil {
+			return e
+		}
+		if e := assertTakesSpirit(dest, c.VolumeL); e != nil {
 			return e
 		}
 		returned = c.Laa

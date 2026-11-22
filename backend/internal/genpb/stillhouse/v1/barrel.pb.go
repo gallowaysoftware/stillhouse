@@ -721,7 +721,10 @@ type BarrelEvent struct {
 	// the approved instrument that made it (EDM3-1-1 ¶24, EDM1-1-5). Unset
 	// on rows recorded before the register existed, which is honest — they
 	// name no instrument because none was named.
-	Instruments   *DeterminationInstruments `protobuf:"bytes,23,opt,name=instruments,proto3" json:"instruments,omitempty"`
+	Instruments *DeterminationInstruments `protobuf:"bytes,23,opt,name=instruments,proto3" json:"instruments,omitempty"`
+	// Set when the event was voided. The row stays; what it did does not.
+	VoidedAt      *timestamppb.Timestamp `protobuf:"bytes,24,opt,name=voided_at,json=voidedAt,proto3" json:"voided_at,omitempty"`
+	VoidedReason  string                 `protobuf:"bytes,25,opt,name=voided_reason,json=voidedReason,proto3" json:"voided_reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -915,6 +918,20 @@ func (x *BarrelEvent) GetInstruments() *DeterminationInstruments {
 		return x.Instruments
 	}
 	return nil
+}
+
+func (x *BarrelEvent) GetVoidedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.VoidedAt
+	}
+	return nil
+}
+
+func (x *BarrelEvent) GetVoidedReason() string {
+	if x != nil {
+		return x.VoidedReason
+	}
+	return ""
 }
 
 type CreateBarrelRequest struct {
@@ -2559,7 +2576,7 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x12climate_from_level\x18\t \x01(\bR\x10climateFromLevel\x12\x17\n" +
 	"\ahot_dry\x18\n" +
 	" \x01(\bR\x06hotDry\x12<\n" +
-	"\bfindings\x18\v \x03(\v2 .stillhouse.v1.MaturationFindingR\bfindings\"\xb4\a\n" +
+	"\bfindings\x18\v \x03(\v2 .stillhouse.v1.MaturationFindingR\bfindings\"\x92\b\n" +
 	"\vBarrelEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12!\n" +
 	"\fcontainer_id\x18\x02 \x01(\tR\vcontainerId\x122\n" +
@@ -2587,7 +2604,9 @@ const file_stillhouse_v1_barrel_proto_rawDesc = "" +
 	"\x1aobserved_density_kg_m3_set\x18\x14 \x01(\bR\x16observedDensityKgM3Set\x12&\n" +
 	"\x0fvolume_factor_c\x18\x15 \x01(\x01R\rvolumeFactorC\x12F\n" +
 	"\x0fstrength_source\x18\x16 \x01(\x0e2\x1d.stillhouse.v1.StrengthSourceR\x0estrengthSource\x12I\n" +
-	"\vinstruments\x18\x17 \x01(\v2'.stillhouse.v1.DeterminationInstrumentsR\vinstruments\"\x8a\x04\n" +
+	"\vinstruments\x18\x17 \x01(\v2'.stillhouse.v1.DeterminationInstrumentsR\vinstruments\x127\n" +
+	"\tvoided_at\x18\x18 \x01(\v2\x1a.google.protobuf.TimestampR\bvoidedAt\x12#\n" +
+	"\rvoided_reason\x18\x19 \x01(\tR\fvoidedReason\"\x8a\x04\n" +
 	"\x13CreateBarrelRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1d\n" +
 	"\n" +
@@ -2824,45 +2843,46 @@ var file_stillhouse_v1_barrel_proto_depIdxs = []int32{
 	23, // 8: stillhouse.v1.BarrelEvent.created_at:type_name -> google.protobuf.Timestamp
 	25, // 9: stillhouse.v1.BarrelEvent.strength_source:type_name -> stillhouse.v1.StrengthSource
 	26, // 10: stillhouse.v1.BarrelEvent.instruments:type_name -> stillhouse.v1.DeterminationInstruments
-	2,  // 11: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	2,  // 12: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
-	2,  // 13: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	5,  // 14: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
-	4,  // 15: stillhouse.v1.GetBarrelResponse.maturation:type_name -> stillhouse.v1.MaturationAssessment
-	23, // 16: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	27, // 17: stillhouse.v1.FillBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	5,  // 18: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	2,  // 19: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	23, // 20: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	27, // 21: stillhouse.v1.DumpBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	5,  // 22: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	2,  // 23: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	23, // 24: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
-	27, // 25: stillhouse.v1.RegaugeBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
-	5,  // 26: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
-	2,  // 27: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
-	20, // 28: stillhouse.v1.CaskStatementResponse.gauges:type_name -> stillhouse.v1.CaskStatementGauge
-	6,  // 29: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
-	8,  // 30: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
-	10, // 31: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
-	12, // 32: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
-	14, // 33: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
-	16, // 34: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
-	18, // 35: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
-	21, // 36: stillhouse.v1.BarrelService.CaskStatement:input_type -> stillhouse.v1.CaskStatementRequest
-	7,  // 37: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
-	9,  // 38: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
-	11, // 39: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
-	13, // 40: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
-	15, // 41: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
-	17, // 42: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
-	19, // 43: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
-	22, // 44: stillhouse.v1.BarrelService.CaskStatement:output_type -> stillhouse.v1.CaskStatementResponse
-	37, // [37:45] is the sub-list for method output_type
-	29, // [29:37] is the sub-list for method input_type
-	29, // [29:29] is the sub-list for extension type_name
-	29, // [29:29] is the sub-list for extension extendee
-	0,  // [0:29] is the sub-list for field type_name
+	23, // 11: stillhouse.v1.BarrelEvent.voided_at:type_name -> google.protobuf.Timestamp
+	2,  // 12: stillhouse.v1.CreateBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	2,  // 13: stillhouse.v1.ListBarrelsResponse.barrels:type_name -> stillhouse.v1.Barrel
+	2,  // 14: stillhouse.v1.GetBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	5,  // 15: stillhouse.v1.GetBarrelResponse.events:type_name -> stillhouse.v1.BarrelEvent
+	4,  // 16: stillhouse.v1.GetBarrelResponse.maturation:type_name -> stillhouse.v1.MaturationAssessment
+	23, // 17: stillhouse.v1.FillBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	27, // 18: stillhouse.v1.FillBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	5,  // 19: stillhouse.v1.FillBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 20: stillhouse.v1.FillBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	23, // 21: stillhouse.v1.DumpBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	27, // 22: stillhouse.v1.DumpBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	5,  // 23: stillhouse.v1.DumpBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 24: stillhouse.v1.DumpBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	23, // 25: stillhouse.v1.RegaugeBarrelRequest.event_date:type_name -> google.protobuf.Timestamp
+	27, // 26: stillhouse.v1.RegaugeBarrelRequest.instruments:type_name -> stillhouse.v1.InstrumentRefs
+	5,  // 27: stillhouse.v1.RegaugeBarrelResponse.event:type_name -> stillhouse.v1.BarrelEvent
+	2,  // 28: stillhouse.v1.RegaugeBarrelResponse.barrel:type_name -> stillhouse.v1.Barrel
+	20, // 29: stillhouse.v1.CaskStatementResponse.gauges:type_name -> stillhouse.v1.CaskStatementGauge
+	6,  // 30: stillhouse.v1.BarrelService.CreateBarrel:input_type -> stillhouse.v1.CreateBarrelRequest
+	8,  // 31: stillhouse.v1.BarrelService.ListBarrels:input_type -> stillhouse.v1.ListBarrelsRequest
+	10, // 32: stillhouse.v1.BarrelService.GetBarrel:input_type -> stillhouse.v1.GetBarrelRequest
+	12, // 33: stillhouse.v1.BarrelService.FillBarrel:input_type -> stillhouse.v1.FillBarrelRequest
+	14, // 34: stillhouse.v1.BarrelService.DumpBarrel:input_type -> stillhouse.v1.DumpBarrelRequest
+	16, // 35: stillhouse.v1.BarrelService.RegaugeBarrel:input_type -> stillhouse.v1.RegaugeBarrelRequest
+	18, // 36: stillhouse.v1.BarrelService.VoidBarrelEvent:input_type -> stillhouse.v1.VoidBarrelEventRequest
+	21, // 37: stillhouse.v1.BarrelService.CaskStatement:input_type -> stillhouse.v1.CaskStatementRequest
+	7,  // 38: stillhouse.v1.BarrelService.CreateBarrel:output_type -> stillhouse.v1.CreateBarrelResponse
+	9,  // 39: stillhouse.v1.BarrelService.ListBarrels:output_type -> stillhouse.v1.ListBarrelsResponse
+	11, // 40: stillhouse.v1.BarrelService.GetBarrel:output_type -> stillhouse.v1.GetBarrelResponse
+	13, // 41: stillhouse.v1.BarrelService.FillBarrel:output_type -> stillhouse.v1.FillBarrelResponse
+	15, // 42: stillhouse.v1.BarrelService.DumpBarrel:output_type -> stillhouse.v1.DumpBarrelResponse
+	17, // 43: stillhouse.v1.BarrelService.RegaugeBarrel:output_type -> stillhouse.v1.RegaugeBarrelResponse
+	19, // 44: stillhouse.v1.BarrelService.VoidBarrelEvent:output_type -> stillhouse.v1.VoidBarrelEventResponse
+	22, // 45: stillhouse.v1.BarrelService.CaskStatement:output_type -> stillhouse.v1.CaskStatementResponse
+	38, // [38:46] is the sub-list for method output_type
+	30, // [30:38] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_stillhouse_v1_barrel_proto_init() }

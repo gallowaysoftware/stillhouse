@@ -146,6 +146,9 @@ func (s *B266Service) SubmitB266(
 		report *stillhousev1.B266Report
 	)
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if e := q.LockFilingExclusive(ctx); e != nil {
+			return e
+		}
 		existing, e := q.GetB266Period(ctx, id)
 		if e != nil {
 			return e
@@ -697,8 +700,8 @@ func gatherContinuity(
 			Kind:       "bulk movement",
 			Reason:     string(r.Reason),
 			Laa:        round4(r.NetLaa),
-			OccurredAt: r.OccurredAt.Time.Format("2006-01-02"),
-			CreatedAt:  r.CreatedAt.Time.Format("2006-01-02"),
+			OccurredAt: r.OccurredAt.Time.In(zone.From(ctx)).Format("2006-01-02"),
+			CreatedAt:  r.CreatedAt.Time.In(zone.From(ctx)).Format("2006-01-02"),
 			Container:  r.ContainerName,
 			Notes:      r.Notes,
 		})

@@ -406,13 +406,8 @@ func (s *BulkService) CreateBlend(
 
 		for _, ps := range parsed {
 			src := locked[ps.id]
-			if !src.CurrentAbvPct.Valid {
-				return connect.NewError(connect.CodeFailedPrecondition,
-					fmt.Errorf("source %s is empty", src.Name))
-			}
 			abv := src.CurrentAbvPct.Float64
-			laa := drawnLAA(src, ps.vol, abv)
-			rest, _, e := balanceOf(src).take(src.Name, ps.vol, laa)
+			drawn, e := drawFrom(src, ps.vol, abv)
 			if e != nil {
 				return e
 			}
@@ -421,9 +416,9 @@ func (s *BulkService) CreateBlend(
 				TenantID:               u.TenantID,
 				SourceContainerID:      uuid.NullUUID{UUID: src.ID, Valid: true},
 				DestinationContainerID: uuid.NullUUID{UUID: destID, Valid: true},
-				VolumeL:                ps.vol,
+				VolumeL:                drawn.volumeL,
 				AbvPct:                 abv,
-				Laa:                    laa,
+				Laa:                    drawn.laa,
 				Reason:                 sqlcgen.BulkMovementReasonBlend,
 				ReferenceType:          "blend",
 				Notes:                  req.Msg.GetNotes(),
@@ -434,10 +429,10 @@ func (s *BulkService) CreateBlend(
 			}
 			movements = append(movements, mv)
 
-			if _, e := saveBalance(ctx, q, src.ID, rest); e != nil {
+			if _, e := saveBalance(ctx, q, src.ID, drawn.rest); e != nil {
 				return e
 			}
-			blended = blended.add(ps.vol, laa)
+			blended = blended.add(drawn.volumeL, drawn.laa)
 		}
 
 		d, e = saveBalance(ctx, q, destID, blended)

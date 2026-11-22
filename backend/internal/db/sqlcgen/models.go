@@ -2735,6 +2735,10 @@ type BarrelEvent struct {
 	VolumeInstrumentID      uuid.NullUUID      `json:"volume_instrument_id"`
 	StrengthInstrumentID    uuid.NullUUID      `json:"strength_instrument_id"`
 	TemperatureInstrumentID uuid.NullUUID      `json:"temperature_instrument_id"`
+	// Litres in the cask before this event. NULL on events recorded before migration 75, which cannot be put back exactly.
+	PriorVolumeL  pgtype.Float8 `json:"prior_volume_l"`
+	PriorLaa      pgtype.Float8 `json:"prior_laa"`
+	PriorFillDate pgtype.Date   `json:"prior_fill_date"`
 }
 
 type BottlingRun struct {
@@ -3124,6 +3128,7 @@ type InventoryAdjustment struct {
 	Notes                   string                    `json:"notes"`
 	OccurredAt              pgtype.Timestamptz        `json:"occurred_at"`
 	CreatedAt               pgtype.Timestamptz        `json:"created_at"`
+	VoidedAt                pgtype.Timestamptz        `json:"voided_at"`
 }
 
 type InviteCode struct {
@@ -3298,6 +3303,10 @@ type LegalHold struct {
 	ReleasedBy    uuid.NullUUID      `json:"released_by"`
 	ReleaseReason string             `json:"release_reason"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type LiveBulkMovement struct {
+	ID uuid.UUID `json:"id"`
 }
 
 type Location struct {

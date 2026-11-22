@@ -1052,26 +1052,30 @@ func (q *Queries) UpdateBulkContainer(ctx context.Context, arg UpdateBulkContain
 
 const updateBulkContainerBalance = `-- name: UpdateBulkContainerBalance :one
 UPDATE bulk_containers
-SET current_volume_l = $2,
-    current_abv_pct  = $3,
-    current_laa      = $4
-WHERE id = $1
+SET current_volume_l = $1::double precision,
+    current_abv_pct  = $2::double precision,
+    current_laa      = $3::double precision,
+    -- A vessel with spirit in it is not archived. Every return skips
+    -- archived vessels, so a void that refilled one took its alcohol off
+    -- all of them, the filed ones included.
+    archived         = archived AND $1::double precision <= 1e-6
+WHERE id = $4
 RETURNING id, tenant_id, name, kind, capacity_l, location, notes, archived, current_volume_l, current_abv_pct, current_laa, created_at, updated_at, location_id, owner_customer_id, possession, held_by_name, held_by_licence_no, possession_changed_at
 `
 
 type UpdateBulkContainerBalanceParams struct {
-	ID             uuid.UUID     `json:"id"`
 	CurrentVolumeL float64       `json:"current_volume_l"`
 	CurrentAbvPct  pgtype.Float8 `json:"current_abv_pct"`
 	CurrentLaa     float64       `json:"current_laa"`
+	ID             uuid.UUID     `json:"id"`
 }
 
 func (q *Queries) UpdateBulkContainerBalance(ctx context.Context, arg UpdateBulkContainerBalanceParams) (BulkContainer, error) {
 	row := q.db.QueryRow(ctx, updateBulkContainerBalance,
-		arg.ID,
 		arg.CurrentVolumeL,
 		arg.CurrentAbvPct,
 		arg.CurrentLaa,
+		arg.ID,
 	)
 	var i BulkContainer
 	err := row.Scan(

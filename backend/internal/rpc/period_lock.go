@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"connectrpc.com/connect"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // assertDateNotInLockedPeriod returns a FailedPrecondition error if d falls
@@ -23,6 +25,14 @@ import (
 func assertDateNotInLockedPeriod(ctx context.Context, q *sqlcgen.Queries, d pgtype.Date) error {
 	if !d.Valid {
 		return nil
+	}
+	// A movement dated ahead is on hand now and on no return until then.
+	if today := zone.Day(zone.From(ctx), time.Now()); zone.Day(time.UTC, d.Time).After(today) {
+		return connect.NewError(connect.CodeInvalidArgument, fmt.Errorf(
+			"%s has not happened yet; today is %s", d.Time.Format("2006-01-02"), today.Format("2006-01-02")))
+	}
+	if err := q.LockFilingShared(ctx); err != nil {
+		return err
 	}
 	period, err := q.B266PeriodCoveringDate(ctx, d)
 	if err != nil {

@@ -96,9 +96,9 @@ export function BarrelDetailPage() {
       title: `Void ${eventKindLabels[kind]} event?`,
       body: <>This reverses the linked bulk movement and recomputes both containers' balances. The original event row stays for audit.</>,
       consequences: [
-        "Source / destination tank balances adjust by the inverse of this event",
-        "An offsetting regauge_correction movement gets written to the ledger",
-        "Regauge events can't be voided — record a corrective regauge instead",
+        "The cask and the other vessel go back to what they held",
+        "A loss or correction booked with it goes too, and so does the maturation clock",
+        "A regauge can be voided while it is the last thing that happened to the cask",
       ],
       requireReason: { label: "Reason", placeholder: "recorded in error" },
       confirmLabel: "Void event",
@@ -235,12 +235,13 @@ export function BarrelDetailPage() {
               <tr><td colSpan={7} className="px-4 py-3 text-fg-muted">No events yet.</td></tr>
             )}
             {detail.data.events.map((e) => (
-              <tr key={e.id}>
+              <tr key={e.id} className={e.voidedAt ? "bg-surface-3 text-fg-subtle" : ""}>
                 <td className="px-4 py-3 text-fg-muted">
                   {e.eventDate ? new Date(Number(e.eventDate.seconds) * 1000).toLocaleString() : ""}
                 </td>
                 <td className="px-4 py-3">
-                  <div className="font-medium text-fg">{eventKindLabels[e.kind] ?? "—"}</div>
+                  <div className={`font-medium ${e.voidedAt ? "line-through" : "text-fg"}`}>{eventKindLabels[e.kind] ?? "—"}</div>
+                  {e.voidedAt && <div className="text-xs text-danger-fg">VOIDED{e.voidedReason && `: ${e.voidedReason}`}</div>}
                   {/* Only worth the ink when a determination was actually
                       made — an unbadged row is an uncorrected legacy one. */}
                   {e.strengthSource !== StrengthSource.UNCORRECTED && (
@@ -285,7 +286,7 @@ export function BarrelDetailPage() {
                 <td className="px-4 py-3 text-right text-fg-muted tabular-nums">{e.laaSet ? formatLAA(e.laa) : "—"}</td>
                 <td className="px-4 py-3 text-fg-muted">{e.notes}</td>
                 <td className="px-4 py-3 text-right">
-                  {e.kind !== BarrelEventKind.REGAUGE && (
+                  {!e.voidedAt && (
                     <button
                       onClick={() => onVoidEvent(e.id, e.kind)}
                       disabled={voidEvent.isPending}

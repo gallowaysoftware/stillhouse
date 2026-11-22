@@ -164,6 +164,10 @@ message BarrelEvent {
   // on rows recorded before the register existed, which is honest — they
   // name no instrument because none was named.
   DeterminationInstruments instruments = 23;
+
+  // Set when the event was voided. The row stays; what it did does not.
+  google.protobuf.Timestamp voided_at = 24;
+  string voided_reason = 25;
 }
 
 // --- requests ---

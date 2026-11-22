@@ -77,7 +77,9 @@ func (b balance) takeBack(name string, volumeL, laa float64) (balance, error) {
 	}
 	if err != nil {
 		return b, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-			"what went into %s has been drawn on since: void the later movements first (%s)", name, connectMessage(err)))
+			"%s has been drawn on or regauged since, so this cannot be taken back out (%s). "+
+				"Void what came after it, or leave it and correct %s with a physical count",
+			name, connectMessage(err), name))
 	}
 	return rest, nil
 }
@@ -97,45 +99,114 @@ func saveBalance(ctx context.Context, q *sqlcgen.Queries, id uuid.UUID, b balanc
 	})
 }
 
-// roundedStrengthABV is how far a typed strength sits from a stored one
-// that was displayed to two places.
-const roundedStrengthABV = 0.005
+// The screen shows a volume to 0.01 L and a strength to 0.01 %, and a form
+// is filled in with them. A figure within half of that is the stored one.
+const (
+	shownVolumeL   = 0.005
+	shownStrength  = 0.005
+	shownTolerance = 1e-9
+)
 
-// drawnLAA is the alcohol in a draw gauged at abv. A draw that empties the
-// vessel at the strength shown for it takes everything: the screen shows
-// 60.67 for 60.6667, and refusing that, or stranding the difference, is an
-// argument with a rounded figure.
-func drawnLAA(c sqlcgen.BulkContainer, volumeL, abv float64) float64 {
-	b := balanceOf(c)
-	if math.Abs(volumeL-b.volumeL) <= balanceEps && math.Abs(abv-b.abv().Float64) <= roundedStrengthABV+1e-9 {
-		return b.laa
-	}
-	return volumeL * abv / 100
+// draw is what a gauged withdrawal takes, and what it leaves.
+type draw struct {
+	volumeL float64
+	laa     float64
+	rest    balance
+	// correction is what the book was wrong by, where the gauge shows it was:
+	// positive is alcohol it had not known about. It goes on line D.
+	correction float64
 }
 
-// bookStranded writes the line D entry for alcohol the book still showed
-// when a draw gauged within tolerance emptied the vessel: the gauge is the
-// measurement, so the book was wrong by the difference.
-func bookStranded(
+// drawFrom is a withdrawal gauged at abv. Within tolerance the gauge is the
+// measurement and the book is arithmetic, so the gauge wins: the difference
+// stays in the vessel, where the next draw averages it out. When too little
+// is left to absorb it, a litre of heel would be booked at 160 % or at
+// nothing, so the heel is taken to be what was just gauged, and the book's
+// error is written down.
+func drawFrom(c sqlcgen.BulkContainer, volumeL, abv float64) (draw, error) {
+	have := balanceOf(c)
+	book := have.abv()
+	if !book.Valid {
+		return draw{}, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf("%s is empty", c.Name))
+	}
+	if err := assertFillStrengthMatchesSource(c, abv); err != nil {
+		return draw{}, err
+	}
+	if volumeL > have.volumeL+shownVolumeL {
+		return draw{}, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+			"%s holds %.4f L; this takes %.4f", c.Name, have.volumeL, volumeL))
+	}
+	d := draw{volumeL: volumeL, laa: volumeL * abv / 100}
+	if math.Abs(volumeL-have.volumeL) <= shownVolumeL+shownTolerance {
+		d.volumeL = have.volumeL
+		d.laa = have.volumeL * abv / 100
+	}
+	if math.Abs(abv-book.Float64) <= shownStrength+shownTolerance {
+		d.laa = have.laa * d.volumeL / have.volumeL
+	}
+	d.rest = balance{volumeL: have.volumeL - d.volumeL, laa: have.laa - d.laa}
+	if d.rest.volumeL <= balanceEps {
+		d.correction = -d.rest.laa
+		d.rest = balance{}
+	} else if left := d.rest.laa / d.rest.volumeL * 100; math.Abs(left-book.Float64) > fillStrengthToleranceABV {
+		want := d.rest.volumeL * abv / 100
+		d.correction = want - d.rest.laa
+		d.rest.laa = want
+	}
+	if math.Abs(d.correction) <= balanceEps {
+		d.correction = 0
+	}
+	return d, nil
+}
+
+// gaugedLAA is the alcohol in a vessel gauged in place. Alcohol cannot have
+// appeared, but two gauges within tolerance can read that way; gain is how
+// much, and goes on line D.
+func gaugedLAA(c sqlcgen.BulkContainer, volumeL, abv float64) (laa, gain float64, err error) {
+	have := balanceOf(c)
+	laa = volumeL * abv / 100
+	if math.Abs(volumeL-have.volumeL) <= shownVolumeL+shownTolerance &&
+		math.Abs(abv-have.abv().Float64) <= shownStrength+shownTolerance {
+		return have.laa, 0, nil
+	}
+	if gain = laa - have.laa; gain <= balanceEps {
+		return laa, 0, nil
+	}
+	if gain > have.volumeL*fillStrengthToleranceABV/100 {
+		return 0, 0, connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+			"%s is booked at %.4f LAA and this gauge finds %.4f, more than two gauges differ by; "+
+				"check the reading, or record a physical count if the book is wrong", c.Name, have.laa, laa))
+	}
+	return laa, gain, nil
+}
+
+// bookCorrection writes the line D entry for what a gauge showed the book
+// had wrong. cause is the event it goes with, if one can be voided.
+func bookCorrection(
 	ctx context.Context, q *sqlcgen.Queries, u sqlcgen.User, c sqlcgen.BulkContainer,
-	stranded, volumeL, abv float64, at pgtype.Timestamptz, what string,
+	laa, abv float64, at pgtype.Timestamptz, cause uuid.NullUUID, what string,
 ) error {
-	if stranded <= 0 {
+	if laa == 0 {
 		return nil
 	}
-	why := fmt.Sprintf("%s emptied %s at a gauged %.2f%%; the book had it at %.2f%%",
-		what, c.Name, abv, c.CurrentAbvPct.Float64)
-	mv, err := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
-		TenantID:          u.TenantID,
-		SourceContainerID: uuid.NullUUID{UUID: c.ID, Valid: true},
-		VolumeL:           volumeL,
-		AbvPct:            math.Min(100, stranded/volumeL*100),
-		Laa:               stranded,
-		Reason:            sqlcgen.BulkMovementReasonAdjustmentDecrease,
-		ReferenceType:     "inventory_adjustment",
-		Notes:             why,
-		OccurredAt:        at,
-	})
+	why := fmt.Sprintf("%s gauged %s at %.2f%%; the book had it at %.2f%%", what, c.Name, abv, c.CurrentAbvPct.Float64)
+	params := sqlcgen.InsertBulkMovementParams{
+		TenantID:               u.TenantID,
+		DestinationContainerID: uuid.NullUUID{UUID: c.ID, Valid: true},
+		VolumeL:                c.CurrentVolumeL,
+		AbvPct:                 math.Min(100, math.Abs(laa)/c.CurrentVolumeL*100),
+		Laa:                    math.Abs(laa),
+		Reason:                 sqlcgen.BulkMovementReasonAdjustmentIncrease,
+		ReferenceType:          "inventory_adjustment",
+		ReferenceID:            cause,
+		Notes:                  why,
+		OccurredAt:             at,
+	}
+	if laa < 0 {
+		params.SourceContainerID, params.DestinationContainerID = params.DestinationContainerID, uuid.NullUUID{}
+		params.Reason = sqlcgen.BulkMovementReasonAdjustmentDecrease
+	}
+	mv, err := q.InsertBulkMovement(ctx, params)
 	if err != nil {
 		return err
 	}
@@ -150,8 +221,8 @@ func bookStranded(
 		BookLaa:        c.CurrentLaa,
 		CountedVolumeL: c.CurrentVolumeL,
 		CountedAbvPct:  pgtype.Float8{Float64: abv, Valid: true},
-		CountedLaa:     c.CurrentLaa - stranded,
-		DeltaLaa:       -stranded,
+		CountedLaa:     c.CurrentLaa + laa,
+		DeltaLaa:       laa,
 		VolumeFactorC:  1,
 		StrengthSource: sqlcgen.StrengthSourceUncorrected,
 		AdjustedBy:     u.ID,

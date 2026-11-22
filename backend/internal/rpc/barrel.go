@@ -98,7 +98,7 @@ func (s *BarrelService) CreateBarrel(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.CreateBarrelResponse{
-		Barrel: barrelToProto(container, attrs),
+		Barrel: barrelToProto(container, attrs, s.db.Today(ctx, u.TenantID)),
 	}), nil
 }
 
@@ -120,11 +120,12 @@ func (s *BarrelService) ListBarrels(
 		s.logger.Error("ListBarrels", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
+	today := s.db.Today(ctx, u.TenantID)
 	out := &stillhousev1.ListBarrelsResponse{
 		Barrels: make([]*stillhousev1.Barrel, 0, len(rows)),
 	}
 	for _, r := range rows {
-		b := barrelRowToProto(r)
+		b := barrelRowToProto(r, today)
 		b.OwnerCustomerId = nullUUIDString(r.OwnerCustomerID)
 		b.OwnerName = r.OwnerName
 		b.Possession = bulkPossessionToProto(r.Possession)
@@ -209,7 +210,7 @@ func (s *BarrelService) GetBarrel(
 		s.logger.Error("GetBarrel", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	barrel := barrelToProto(container, attrs)
+	barrel := barrelToProto(container, attrs, s.db.Today(ctx, u.TenantID))
 	// The events are already loaded, so the fill this cask is living off
 	// comes free — no need for the lateral join ListBarrels uses.
 	if fillVol, fillAbv, fillLAA, ok := latestFill(events); ok {
@@ -316,12 +317,13 @@ func (s *BarrelService) FillBarrel(
 			return e
 		}
 		source := locked[sourceID]
-		if e := assertFillStrengthMatchesSource(source, abv); e != nil {
+		d, e := drawFrom(source, volume, abv)
+		if e != nil {
 			return e
 		}
-
-		laa := drawnLAA(source, volume, abv)
-		rest, stranded, e := balanceOf(source).take(source.Name, volume, laa)
+		volume := d.volumeL
+		laa := d.laa
+		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
 		if e != nil {
 			return e
 		}
@@ -349,10 +351,7 @@ func (s *BarrelService) FillBarrel(
 		// 60% tank used to put 80 LAA in the cask and take 60 out. What is
 		// left over is arithmetic — the remaining alcohol over the
 		// remaining volume — not a second measurement.
-		if _, e := saveBalance(ctx, q, sourceID, rest); e != nil {
-			return e
-		}
-		if e := bookStranded(ctx, q, u, source, stranded, volume, abv, eventTime, "a barrel fill"); e != nil {
+		if _, e := saveBalance(ctx, q, sourceID, d.rest); e != nil {
 			return e
 		}
 		barrelContainer, e = saveBalance(ctx, q, barrelID, balanceOf(barrel).add(volume, laa))
@@ -390,16 +389,20 @@ func (s *BarrelService) FillBarrel(
 			LocationAfter:           "",
 			Notes:                   in.GetNotes(),
 			UserID:                  uuid.NullUUID{UUID: u.ID, Valid: true},
+			PriorVolumeL:            pgtype.Float8{Float64: barrel.CurrentVolumeL, Valid: true},
+			PriorLaa:                pgtype.Float8{Float64: barrel.CurrentLaa, Valid: true},
+			PriorFillDate:           attrs.FillDate,
 		})
 		if e != nil {
 			return e
 		}
 
-		// First fill sets fill_date.
-		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
-		if e != nil {
+		if e := bookCorrection(ctx, q, u, source, d.correction, abv, eventTime,
+			uuid.NullUUID{UUID: event.ID, Valid: true}, "a barrel fill"); e != nil {
 			return e
 		}
+
+		// First fill sets fill_date.
 		if !attrs.FillDate.Valid {
 			fillDate := zone.Date(ctx, eventTime.Time)
 			if e := q.SetBarrelFillDate(ctx, sqlcgen.SetBarrelFillDateParams{
@@ -434,7 +437,7 @@ func (s *BarrelService) FillBarrel(
 	}
 	return connect.NewResponse(&stillhousev1.FillBarrelResponse{
 		Event:    barrelEventToProto(event),
-		Barrel:   barrelToProto(barrelContainer, attrs),
+		Barrel:   barrelToProto(barrelContainer, attrs, s.db.Today(ctx, u.TenantID)),
 		Warnings: eventWarnings,
 	}), nil
 }
@@ -510,10 +513,13 @@ func (s *BarrelService) DumpBarrel(
 			return e
 		}
 
-		laa := drawnLAA(barrel, volume, abv)
-		if barrel.CurrentLaa+balanceEps < laa {
-			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-				"%s holds %.4f LAA; this dump would remove %.4f", barrel.Name, barrel.CurrentLaa, laa))
+		laa, gain, e := gaugedLAA(barrel, volume, abv)
+		if e != nil {
+			return e
+		}
+		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
+		if e != nil {
+			return e
 		}
 
 		mv, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
@@ -531,30 +537,6 @@ func (s *BarrelService) DumpBarrel(
 		})
 		if e != nil {
 			return e
-		}
-
-		// A dump empties the cask, so whatever the gauge didn't account for
-		// stayed in the wood. That is a real loss and a reportable B266
-		// line — zeroing the balance without recording it just deletes
-		// alcohol from the ledger and understates losses for the period.
-		residualLAA := barrel.CurrentLaa - laa
-		residualVol := barrel.CurrentVolumeL - volume
-		if residualLAA > 1e-9 {
-			lossVol, lossABV := lossRow(residualVol, barrel.CurrentVolumeL, residualLAA)
-			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
-				TenantID:          u.TenantID,
-				SourceContainerID: uuid.NullUUID{UUID: barrelID, Valid: true},
-				VolumeL:           lossVol,
-				AbvPct:            lossABV,
-				Laa:               residualLAA,
-				Reason:            sqlcgen.BulkMovementReasonLossEvaporation,
-				ReferenceType:     "barrel_dump_residual",
-				ReferenceID:       uuid.NullUUID{UUID: barrelID, Valid: true},
-				Notes:             "retained by the cask at dump",
-				OccurredAt:        eventTime,
-			}); e != nil {
-				return e
-			}
 		}
 
 		// Empty the barrel.
@@ -595,16 +577,44 @@ func (s *BarrelService) DumpBarrel(
 			BulkMovementID:          uuid.NullUUID{UUID: mv.ID, Valid: true},
 			Notes:                   in.GetNotes(),
 			UserID:                  uuid.NullUUID{UUID: u.ID, Valid: true},
+			PriorVolumeL:            pgtype.Float8{Float64: barrel.CurrentVolumeL, Valid: true},
+			PriorLaa:                pgtype.Float8{Float64: barrel.CurrentLaa, Valid: true},
+			PriorFillDate:           attrs.FillDate,
 		})
 		if e != nil {
 			return e
 		}
 
-		// Clear fill_date, capture days-aged.
-		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
-		if e != nil {
+		// A dump empties the cask, so whatever the gauge didn't account for
+		// stayed in the wood. That is a real loss and a reportable B266
+		// line — zeroing the balance without recording it just deletes
+		// alcohol from the ledger and understates losses for the period.
+		residualLAA := barrel.CurrentLaa + gain - laa
+		residualVol := barrel.CurrentVolumeL - volume
+		if residualLAA > balanceEps {
+			lossVol, lossABV := lossRow(residualVol, barrel.CurrentVolumeL, residualLAA)
+			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+				TenantID:          u.TenantID,
+				SourceContainerID: uuid.NullUUID{UUID: barrelID, Valid: true},
+				VolumeL:           lossVol,
+				AbvPct:            lossABV,
+				Laa:               residualLAA,
+				Reason:            sqlcgen.BulkMovementReasonLossEvaporation,
+				ReferenceType:     "barrel_dump_residual",
+				ReferenceID:       uuid.NullUUID{UUID: event.ID, Valid: true},
+				Notes:             "retained by the cask at dump",
+				OccurredAt:        eventTime,
+			}); e != nil {
+				return e
+			}
+		}
+
+		if e := bookCorrection(ctx, q, u, barrel, gain, abv, eventTime,
+			uuid.NullUUID{UUID: event.ID, Valid: true}, "a dump"); e != nil {
 			return e
 		}
+
+		// Clear fill_date, capture days-aged.
 		daysAged := int32(0)
 		if attrs.FillDate.Valid {
 			daysAged = int32(zone.Day(zone.From(ctx), eventTime.Time).Sub(attrs.FillDate.Time).Hours() / 24)
@@ -641,7 +651,7 @@ func (s *BarrelService) DumpBarrel(
 	}
 	return connect.NewResponse(&stillhousev1.DumpBarrelResponse{
 		Event:    barrelEventToProto(event),
-		Barrel:   barrelToProto(barrelContainer, attrs),
+		Barrel:   barrelToProto(barrelContainer, attrs, s.db.Today(ctx, u.TenantID)),
 		Warnings: eventWarnings,
 	}), nil
 }
@@ -713,10 +723,13 @@ func (s *BarrelService) RegaugeBarrel(
 		if barrel.Kind != sqlcgen.BulkContainerKindBarrel {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("target is not a barrel"))
 		}
-		newLAA := drawnLAA(barrel, volume, abv)
-		if newLAA > barrel.CurrentLaa+balanceEps {
-			return connect.NewError(connect.CodeInvalidArgument,
-				errors.New("new LAA cannot exceed current LAA — regauges record losses only"))
+		newLAA, gain, e := gaugedLAA(barrel, volume, abv)
+		if e != nil {
+			return e
+		}
+		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
+		if e != nil {
+			return e
 		}
 		// A regauge that drains a non-empty barrel to zero is almost
 		// always a misclassified dump — the entire contents would be
@@ -730,7 +743,7 @@ func (s *BarrelService) RegaugeBarrel(
 				errors.New("a regauge cannot take all the alcohol out of a barrel: check the strength, or dump it to record a transfer"))
 		}
 		lossVol := barrel.CurrentVolumeL - volume
-		lossLAA := barrel.CurrentLaa - newLAA
+		lossLAA := barrel.CurrentLaa + gain - newLAA
 		lostLAA = lossLAA
 
 		var mvID uuid.NullUUID
@@ -791,13 +804,16 @@ func (s *BarrelService) RegaugeBarrel(
 			BulkMovementID:          mvID,
 			Notes:                   in.GetNotes(),
 			UserID:                  uuid.NullUUID{UUID: u.ID, Valid: true},
+			PriorVolumeL:            pgtype.Float8{Float64: barrel.CurrentVolumeL, Valid: true},
+			PriorLaa:                pgtype.Float8{Float64: barrel.CurrentLaa, Valid: true},
+			PriorFillDate:           attrs.FillDate,
 		})
 		if e != nil {
 			return e
 		}
 
-		attrs, e = q.GetBarrelAttributes(ctx, barrelID)
-		if e != nil {
+		if e := bookCorrection(ctx, q, u, barrel, gain, abv, eventTime,
+			uuid.NullUUID{UUID: event.ID, Valid: true}, "a regauge"); e != nil {
 			return e
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "barrel", barrelID.String(),
@@ -823,7 +839,7 @@ func (s *BarrelService) RegaugeBarrel(
 	}
 	return connect.NewResponse(&stillhousev1.RegaugeBarrelResponse{
 		Event:    barrelEventToProto(event),
-		Barrel:   barrelToProto(barrelContainer, attrs),
+		Barrel:   barrelToProto(barrelContainer, attrs, s.db.Today(ctx, u.TenantID)),
 		LostLaa:  round4(lostLAA),
 		Warnings: eventWarnings,
 	}), nil
@@ -840,12 +856,10 @@ func lossRow(lostVolumeL, heldVolumeL, lostLAA float64) (volumeL, abvPct float64
 	return heldVolumeL, math.Min(100, lostLAA/heldVolumeL*100)
 }
 
-// VoidBarrelEvent unwinds a fill or dump event by inverting its linked
-// bulk_movement and updating both container balances. Regauge events are
-// rejected — they store a "snapshot" without preserving the previous
-// state, so a clean undo isn't possible; the operator should record a
-// new corrective regauge instead. Events with no linked bulk_movement
-// (e.g. legacy or 'move' kind) just get marked voided.
+// VoidBarrelEvent puts back what a fill, dump or regauge changed: both
+// vessels, what the wood was said to keep, any correction booked with it,
+// and the maturation clock. The reversals are dated with the event, so as of
+// any moment the two cancel and no return carries a trace.
 func (s *BarrelService) VoidBarrelEvent(
 	ctx context.Context,
 	req *connect.Request[stillhousev1.VoidBarrelEventRequest],
@@ -871,80 +885,8 @@ func (s *BarrelService) VoidBarrelEvent(
 		if ev.VoidedAt.Valid {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("event is already voided"))
 		}
-		if ev.Kind == sqlcgen.BarrelEventKindRegauge {
-			return connect.NewError(connect.CodeFailedPrecondition,
-				errors.New("regauge events cannot be voided; record a new corrective regauge instead"))
-		}
-
-		// Reverse the linked bulk_movement, if any. The pattern: swap src/dst,
-		// reapply balances on both sides via applyDeposit / direct subtraction.
-		if ev.BulkMovementID.Valid {
-			mv, me := q.GetBulkMovementForBarrelEvent(ctx, ev.BulkMovementID.UUID)
-			if me != nil {
-				return me
-			}
-			// A move between our own vessels is on no return. An adoption
-			// is: it has one end.
-			if !mv.SourceContainerID.Valid || !mv.DestinationContainerID.Valid {
-				if le := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, mv.OccurredAt.Time)); le != nil {
-					return le
-				}
-			}
-			var ids []uuid.UUID
-			for _, side := range []uuid.NullUUID{mv.DestinationContainerID, mv.SourceContainerID} {
-				if side.Valid {
-					ids = append(ids, side.UUID)
-				}
-			}
-			locked, le := lockContainers(ctx, q, ids...)
-			if le != nil {
-				return le
-			}
-			if mv.DestinationContainerID.Valid {
-				dst := locked[mv.DestinationContainerID.UUID]
-				rest, te := balanceOf(dst).takeBack(dst.Name, mv.VolumeL, mv.Laa)
-				if te != nil {
-					return te
-				}
-				if _, e := saveBalance(ctx, q, dst.ID, rest); e != nil {
-					return e
-				}
-			}
-			if mv.SourceContainerID.Valid {
-				src := locked[mv.SourceContainerID.UUID]
-				if _, e := saveBalance(ctx, q, src.ID, balanceOf(src).add(mv.VolumeL, mv.Laa)); e != nil {
-					return e
-				}
-			}
-			// Note on voiding a DUMP: this reverses the transfer only. The
-			// residual the cask kept (booked as loss_evaporation by
-			// DumpBarrel) stays on the books, and the barrel comes back
-			// holding what was transferred rather than what it held before
-			// the dump. That is deliberate and it conserves — 70.2 back in
-			// the cask plus 9.8 still booked as loss is the same 80 LAA
-			// that went in. The wood absorbed what it absorbed; voiding a
-			// paperwork entry doesn't give it back.
-			//
-			// Audit-friendly offsetting ledger row so the journal stays
-			// reconstructable. Reason regauge_correction matches the pattern
-			// used by other void handlers.
-			swappedSrc := mv.DestinationContainerID
-			swappedDst := mv.SourceContainerID
-			if _, e := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
-				TenantID:               u.TenantID,
-				SourceContainerID:      swappedSrc,
-				DestinationContainerID: swappedDst,
-				VolumeL:                mv.VolumeL,
-				AbvPct:                 mv.AbvPct,
-				Laa:                    mv.Laa,
-				Reason:                 sqlcgen.BulkMovementReasonRegaugeCorrection,
-				ReferenceType:          "barrel_event_void",
-				ReferenceID:            uuid.NullUUID{UUID: id, Valid: true},
-				Notes:                  "void of barrel event " + string(ev.Kind) + ": " + reason,
-				OccurredAt:             mv.OccurredAt,
-			}); e != nil {
-				return e
-			}
+		if e := unwindBarrelEvent(ctx, q, u, ev, reason); e != nil {
+			return e
 		}
 
 		if _, e := q.VoidBarrelEvent(ctx, sqlcgen.VoidBarrelEventParams{
@@ -978,7 +920,157 @@ func (s *BarrelService) VoidBarrelEvent(
 
 // --- converters ---
 
-func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute) *stillhousev1.Barrel {
+// unwindBarrelEvent reverses everything an event did to the ledger.
+func unwindBarrelEvent(ctx context.Context, q *sqlcgen.Queries, u sqlcgen.User, ev sqlcgen.BarrelEvent, reason string) error {
+	caused, err := q.ListBarrelEventConsequences(ctx, uuid.NullUUID{UUID: ev.ID, Valid: true})
+	if err != nil {
+		return err
+	}
+	ids := []uuid.UUID{ev.ContainerID}
+	var moved []sqlcgen.BulkMovement
+	if ev.BulkMovementID.Valid {
+		mv, err := q.GetBulkMovementForBarrelEvent(ctx, ev.BulkMovementID.UUID)
+		if err != nil {
+			return err
+		}
+		moved = append(moved, mv)
+	}
+	moved = append(moved, caused...)
+	for _, mv := range moved {
+		// A move between our own vessels is on no return. A loss, a
+		// correction and an adoption are: they have one end.
+		if !mv.SourceContainerID.Valid || !mv.DestinationContainerID.Valid {
+			if err := assertDateNotInLockedPeriod(ctx, q, zone.Date(ctx, mv.OccurredAt.Time)); err != nil {
+				return err
+			}
+		}
+		for _, side := range []uuid.NullUUID{mv.DestinationContainerID, mv.SourceContainerID} {
+			if side.Valid {
+				ids = append(ids, side.UUID)
+			}
+		}
+	}
+	locked, err := lockContainers(ctx, q, ids...)
+	if err != nil {
+		return err
+	}
+	cask := locked[ev.ContainerID]
+	recorded := ev.PriorVolumeL.Valid && ev.PriorLaa.Valid
+	prior := balance{volumeL: ev.PriorVolumeL.Float64, laa: ev.PriorLaa.Float64}
+
+	later, err := q.LaterBarrelEventExists(ctx, sqlcgen.LaterBarrelEventExistsParams{
+		ContainerID: ev.ContainerID, EventID: ev.ID, CreatedAt: ev.CreatedAt,
+	})
+	if err != nil {
+		return err
+	}
+
+	switch ev.Kind {
+	case sqlcgen.BarrelEventKindRegauge:
+		if !recorded {
+			return connect.NewError(connect.CodeFailedPrecondition, errors.New(
+				"this regauge was recorded before Stillhouse kept what the cask held; record a corrective regauge instead"))
+		}
+		if later {
+			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+				"%s has been filled, dumped or regauged since; void the later event first", cask.Name))
+		}
+		if _, err := saveBalance(ctx, q, cask.ID, prior); err != nil {
+			return err
+		}
+	case sqlcgen.BarrelEventKindDump:
+		// Into the cask goes what it held, whatever the dump said it kept.
+		mv := moved[0]
+		if !recorded {
+			prior = balance{volumeL: mv.VolumeL, laa: mv.Laa}
+		}
+		dst := locked[mv.DestinationContainerID.UUID]
+		rest, err := balanceOf(dst).takeBack(dst.Name, mv.VolumeL, mv.Laa)
+		if err != nil {
+			return err
+		}
+		if _, err := saveBalance(ctx, q, dst.ID, rest); err != nil {
+			return err
+		}
+		if _, err := saveBalance(ctx, q, cask.ID, balanceOf(cask).add(prior.volumeL, prior.laa)); err != nil {
+			return err
+		}
+	case sqlcgen.BarrelEventKindFill:
+		if len(moved) == 0 {
+			break
+		}
+		mv := moved[0]
+		rest, err := balanceOf(cask).takeBack(cask.Name, mv.VolumeL, mv.Laa)
+		if err != nil {
+			return err
+		}
+		if _, err := saveBalance(ctx, q, cask.ID, rest); err != nil {
+			return err
+		}
+		if mv.SourceContainerID.Valid {
+			src := locked[mv.SourceContainerID.UUID]
+			back := balanceOf(src).add(mv.VolumeL, mv.Laa)
+			for _, c := range caused {
+				if c.DestinationContainerID.Valid {
+					back.laa -= c.Laa
+				} else {
+					back.laa += c.Laa
+				}
+			}
+			if _, err := saveBalance(ctx, q, src.ID, back); err != nil {
+				return err
+			}
+		}
+	}
+
+	for _, mv := range moved {
+		if _, err := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+			TenantID:               u.TenantID,
+			SourceContainerID:      mv.DestinationContainerID,
+			DestinationContainerID: mv.SourceContainerID,
+			VolumeL:                mv.VolumeL,
+			AbvPct:                 mv.AbvPct,
+			Laa:                    mv.Laa,
+			Reason:                 sqlcgen.BulkMovementReasonRegaugeCorrection,
+			ReferenceType:          "barrel_event_void",
+			ReferenceID:            uuid.NullUUID{UUID: ev.ID, Valid: true},
+			Notes:                  "void of barrel event " + string(ev.Kind) + ": " + reason,
+			OccurredAt:             mv.OccurredAt,
+		}); err != nil {
+			return err
+		}
+		if mv.ReferenceType == "inventory_adjustment" {
+			if err := q.VoidAdjustmentByMovement(ctx, uuid.NullUUID{UUID: mv.ID, Valid: true}); err != nil {
+				return err
+			}
+		}
+	}
+	if ev.Kind == sqlcgen.BarrelEventKindRegauge || later {
+		return nil
+	}
+
+	// The clock goes back with the last thing that set it.
+	clock := ev.PriorFillDate
+	if !recorded && ev.Kind == sqlcgen.BarrelEventKindDump {
+		attrs, err := q.GetBarrelAttributes(ctx, ev.ContainerID)
+		if err != nil {
+			return err
+		}
+		if attrs.DaysAgedAtDump.Valid {
+			day := zone.Day(zone.From(ctx), ev.EventDate.Time).AddDate(0, 0, -int(attrs.DaysAgedAtDump.Int32))
+			clock = pgtype.Date{Valid: true, Time: day}
+		}
+	}
+	if !recorded && ev.Kind == sqlcgen.BarrelEventKindFill {
+		now, err := q.GetBulkContainer(ctx, ev.ContainerID)
+		if err != nil || now.CurrentVolumeL > balanceEps {
+			return err
+		}
+	}
+	return q.RestoreBarrelClock(ctx, sqlcgen.RestoreBarrelClockParams{ContainerID: ev.ContainerID, FillDate: clock})
+}
+
+func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute, today time.Time) *stillhousev1.Barrel {
 	b := &stillhousev1.Barrel{
 		Id:                a.ContainerID.String(),
 		Name:              c.Name,
@@ -1013,7 +1105,7 @@ func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute) *stillhou
 	}
 	if a.FillDate.Valid {
 		b.FillDate = a.FillDate.Time.Format("2006-01-02")
-		days := int32(time.Since(a.FillDate.Time).Hours() / 24)
+		days := int32(today.Sub(a.FillDate.Time).Hours() / 24)
 		if days < 0 {
 			days = 0
 		}
@@ -1033,7 +1125,7 @@ func barrelToProto(c sqlcgen.BulkContainer, a sqlcgen.BarrelAttribute) *stillhou
 	return b
 }
 
-func barrelRowToProto(r sqlcgen.ListBarrelsRow) *stillhousev1.Barrel {
+func barrelRowToProto(r sqlcgen.ListBarrelsRow, today time.Time) *stillhousev1.Barrel {
 	container := sqlcgen.BulkContainer{
 		ID:             r.ID,
 		Name:           r.Name,
@@ -1062,7 +1154,7 @@ func barrelRowToProto(r sqlcgen.ListBarrelsRow) *stillhousev1.Barrel {
 		FillDate:          r.FillDate,
 		DaysAgedAtDump:    r.DaysAgedAtDump,
 	}
-	out := barrelToProto(container, attrs)
+	out := barrelToProto(container, attrs, today)
 	out.Maturation = buildMaturation(
 		r.FillVolumeL, r.FillAbvPct, r.FillLaa,
 		r.CurrentVolumeL, out.CurrentAbvPct, r.CurrentLaa,
@@ -1082,6 +1174,10 @@ func barrelEventToProto(e sqlcgen.BarrelEvent) *stillhousev1.BarrelEvent {
 		Notes:          e.Notes,
 		UserId:         nullUUIDString(e.UserID),
 		CreatedAt:      timestamppb.New(e.CreatedAt.Time),
+	}
+	if e.VoidedAt.Valid {
+		out.VoidedAt = timestamppb.New(e.VoidedAt.Time)
+		out.VoidedReason = e.VoidedReason
 	}
 	if e.VolumeL.Valid {
 		out.VolumeL = round4(e.VolumeL.Float64)

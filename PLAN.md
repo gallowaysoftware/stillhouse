@@ -509,7 +509,7 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–232 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–233 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
@@ -525,17 +525,16 @@ accounts are kept off this public list until they are fixed.
   strength or size restates filed returns.
 - At-removal licences are charged duty on every removal kind.
 
-### M7 · Cask age after a void — P0
+### M7 · Cask age after a top-up — P0
 
-Voiding a fill keeps its date and voiding a dump loses it, so Canadian
-Whisky eligibility is wrong both ways. A top-up keeps the first date.
+Topping up a cask keeps the first fill's date for all of it, so Canadian
+Whisky eligibility can be claimed for spirit that is not old enough.
 
 ### M8 · Filing guards — P1
 
 - Opening the dashboard writes a draft period that can block the real one;
   nothing deletes a draft.
-- An unfinished period can be submitted; a negative packaged closing files
-  with no blocker.
+- An unfinished period can be submitted.
 - Resubmitting overwrites the filed snapshot. `review_filing` reports
   nothing outstanding on a blocked draft.
 - Stamp serials restart from a counter that ignores voids and spoilage.

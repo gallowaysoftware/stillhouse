@@ -62,9 +62,11 @@ INSERT INTO barrel_events (
     temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source,
     -- The instruments the determination was made with. NULL means none was
     -- named, which is what every row predating the register says.
-    volume_instrument_id, strength_instrument_id, temperature_instrument_id
+    volume_instrument_id, strength_instrument_id, temperature_instrument_id,
+    -- What voiding it puts back.
+    prior_volume_l, prior_laa, prior_fill_date
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22
 ) RETURNING *;
 
 -- name: ListBarrelEvents :many
@@ -77,6 +79,29 @@ SELECT * FROM barrel_events WHERE id = $1;
 
 -- name: GetBulkMovementForBarrelEvent :one
 SELECT * FROM bulk_movements WHERE id = $1;
+
+-- name: ListBarrelEventConsequences :many
+-- The rows an event caused beyond its own movement: what the wood kept, and
+-- corrections booked because its gauge disagreed with the book.
+SELECT * FROM bulk_movements
+WHERE reference_id = $1
+  AND reference_type IN ('barrel_dump_residual', 'barrel_regauge', 'inventory_adjustment')
+ORDER BY created_at;
+
+-- name: LaterBarrelEventExists :one
+SELECT EXISTS (
+    SELECT 1 FROM barrel_events later
+    WHERE later.container_id = sqlc.arg(container_id)
+      AND later.voided_at IS NULL
+      AND later.kind IN ('fill', 'dump', 'regauge')
+      AND later.id <> sqlc.arg(event_id)
+      AND later.created_at > sqlc.arg(created_at)
+)::boolean;
+
+-- name: RestoreBarrelClock :exec
+UPDATE barrel_attributes
+SET fill_date = $2, days_aged_at_dump = NULL
+WHERE container_id = $1;
 
 -- name: VoidBarrelEvent :one
 UPDATE barrel_events

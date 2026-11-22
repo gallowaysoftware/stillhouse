@@ -22,7 +22,8 @@ SELECT ia.*,
 FROM inventory_adjustments ia
 JOIN bulk_containers bc ON bc.id = ia.container_id
 JOIN users u            ON u.id  = ia.adjusted_by
-WHERE (sqlc.narg('container_id')::uuid IS NULL OR ia.container_id = sqlc.narg('container_id')::uuid)
+WHERE ia.voided_at IS NULL
+  AND (sqlc.narg('container_id')::uuid IS NULL OR ia.container_id = sqlc.narg('container_id')::uuid)
   AND (sqlc.narg('period_start')::date IS NULL OR ia.occurred_at >= sqlc.narg('period_start')::date)
   AND (sqlc.narg('period_end')::date   IS NULL OR ia.occurred_at <  sqlc.narg('period_end')::date + 1)
 ORDER BY ia.occurred_at DESC, ia.created_at DESC
@@ -37,4 +38,8 @@ SELECT COALESCE(SUM(delta_laa), 0)::double precision AS net_laa,
        COALESCE(-SUM(delta_laa) FILTER (WHERE delta_laa < 0), 0)::double precision AS decrease_laa,
        COUNT(*)::int AS adjustment_count
 FROM inventory_adjustments
-WHERE occurred_at >= $1 AND occurred_at < $2;
+WHERE occurred_at >= $1 AND occurred_at < $2
+  AND voided_at IS NULL;
+
+-- name: VoidAdjustmentByMovement :exec
+UPDATE inventory_adjustments SET voided_at = NOW() WHERE bulk_movement_id = $1;

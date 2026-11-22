@@ -77,14 +77,11 @@ func (s *BulkService) AdoptOpeningInventory(
 			return e
 		}
 		existing := lockedAdopt[containerID]
-		// Same overflow guard FillBarrel has. This is the day-one path, so
-		// a decimal point in the wrong place (1524 kg for 152.4) lands in
-		// opening inventory and therefore on the first return — 1658 L
-		// booked into a 200 L cask, and nothing said a word.
-		if existing.CapacityL.Valid && measured.VolumeL20C > existing.CapacityL.Float64+1e-6 {
-			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-				"%.4f L would not fit in %s (%.4f L capacity) — check the measurement",
-				measured.VolumeL20C, existing.Name, existing.CapacityL.Float64))
+		// This is the day-one path, so a decimal point in the wrong place
+		// (1524 kg for 152.4) lands in opening inventory and therefore on
+		// the first return.
+		if e := assertTakesSpirit(existing, measured.VolumeL20C); e != nil {
+			return e
 		}
 		// Adoption establishes a balance; it does not top one up. A vessel
 		// that already holds alcohol has a history in the ledger, and
