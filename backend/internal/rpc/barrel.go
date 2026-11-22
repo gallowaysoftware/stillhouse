@@ -882,6 +882,13 @@ func (s *BarrelService) VoidBarrelEvent(
 			if me != nil {
 				return me
 			}
+			// A move between our own vessels is on no return. An adoption
+			// is: it has one end.
+			if !mv.SourceContainerID.Valid || !mv.DestinationContainerID.Valid {
+				if le := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: mv.OccurredAt.Time}); le != nil {
+					return le
+				}
+			}
 			var ids []uuid.UUID
 			for _, side := range []uuid.NullUUID{mv.DestinationContainerID, mv.SourceContainerID} {
 				if side.Valid {
@@ -933,7 +940,7 @@ func (s *BarrelService) VoidBarrelEvent(
 				ReferenceType:          "barrel_event_void",
 				ReferenceID:            uuid.NullUUID{UUID: id, Valid: true},
 				Notes:                  "void of barrel event " + string(ev.Kind) + ": " + reason,
-				OccurredAt:             pgtype.Timestamptz{Valid: true, Time: time.Now()},
+				OccurredAt:             mv.OccurredAt,
 			}); e != nil {
 				return e
 			}

@@ -195,12 +195,29 @@ func (s *DistillationService) UpdateDistillationStatus(
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
 	var r sqlcgen.DistillationRun
+	if st == sqlcgen.DistillationStatusGauged {
+		return nil, connect.NewError(connect.CodeFailedPrecondition,
+			errors.New("a run becomes gauged by recording its production gauge"))
+	}
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		run, e := q.GetDistillationRun(ctx, id)
+		if e != nil {
+			return e
+		}
+		if e := assertRunUngauged(run); e != nil {
+			return e
+		}
+		if run.VoidedAt.Valid {
+			return errRunVoided
+		}
 		r, e = q.UpdateDistillationStatus(ctx, sqlcgen.UpdateDistillationStatusParams{ID: id, Status: st})
 		return e
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("distillation run not found"))
 		}
@@ -243,7 +260,19 @@ func (s *DistillationService) AddDistillationCharge(
 	}
 	var c sqlcgen.DistillationCharge
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		run, e := q.GetDistillationRun(ctx, runID)
+		if e != nil {
+			return e
+		}
+		if e := assertRunLive(run); e != nil {
+			return e
+		}
+		if e := assertRunUngauged(run); e != nil {
+			return e
+		}
+		if _, e := q.GetFermentationRun(ctx, fermID); e != nil {
+			return e
+		}
 		c, e = q.AddDistillationCharge(ctx, sqlcgen.AddDistillationChargeParams{
 			TenantID:          u.TenantID,
 			DistillationRunID: runID,
@@ -259,6 +288,9 @@ func (s *DistillationService) AddDistillationCharge(
 		// A repeated fermenter, or a run/fermentation id that doesn't
 		// exist, is the caller's mistake and has a useful answer. Only a
 		// genuinely unrecognised failure becomes a 500.
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("distillation run or fermentation run not found"))
+		}
 		if ce := classifyWriteErr(err, "distillation run or fermentation run not found"); ce != nil {
 			return nil, ce
 		}
@@ -296,7 +328,13 @@ func (s *DistillationService) AddDistillationCut(
 	}
 	var c sqlcgen.DistillationCut
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		run, e := q.GetDistillationRun(ctx, runID)
+		if e != nil {
+			return e
+		}
+		if run.VoidedAt.Valid {
+			return errRunVoided
+		}
 		c, e = q.AddDistillationCut(ctx, sqlcgen.AddDistillationCutParams{
 			TenantID:          u.TenantID,
 			DistillationRunID: runID,
@@ -310,6 +348,9 @@ func (s *DistillationService) AddDistillationCut(
 		return e
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("distillation run not found"))
+		}
 		if ce := classifyWriteErr(err, "distillation run not found"); ce != nil {
 			return nil, ce
 		}
@@ -486,6 +527,9 @@ func (s *DistillationService) RecordProductionGauge(
 		if e != nil {
 			return e
 		}
+		if e := assertRunLive(run); e != nil {
+			return e
+		}
 		if run.Status == sqlcgen.DistillationStatusGauged {
 			return connect.NewError(connect.CodeFailedPrecondition,
 				errors.New("distillation run already has a production gauge"))
@@ -640,9 +684,6 @@ func (s *DistillationService) VoidDistillationRun(
 		if existing.VoidedAt.Valid {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New("distillation run is already voided"))
 		}
-		if e := assertDateNotInLockedPeriod(ctx, q, existing.RunDate); e != nil {
-			return e
-		}
 
 		// If a production gauge exists, reverse its container deposit.
 		gauge, ge := q.GetProductionGaugeByRun(ctx, id)
@@ -650,6 +691,10 @@ func (s *DistillationService) VoidDistillationRun(
 			return ge
 		}
 		if ge == nil {
+			// The gauge is what the return counts, on the day it was taken.
+			if e := assertDateNotInLockedPeriod(ctx, q, pgtype.Date{Valid: true, Time: gauge.GaugeDate.Time}); e != nil {
+				return e
+			}
 			container, ce := lockContainerForWrite(ctx, q, gauge.DestinationContainerID)
 			if ce != nil {
 				return ce
@@ -674,7 +719,8 @@ func (s *DistillationService) VoidDistillationRun(
 				ReferenceType:          "distillation_run_void",
 				ReferenceID:            uuid.NullUUID{UUID: id, Valid: true},
 				Notes:                  "void of distillation run #" + fmt.Sprintf("%d", existing.RunNo) + ": " + reason,
-				OccurredAt:             pgtype.Timestamptz{Valid: true, Time: time.Now()},
+				// Dated with the gauge: as of any moment the two cancel.
+				OccurredAt: gauge.GaugeDate,
 			}); e != nil {
 				return e
 			}
@@ -710,6 +756,29 @@ func (s *DistillationService) VoidDistillationRun(
 	return connect.NewResponse(&stillhousev1.VoidDistillationRunResponse{
 		Run: distillationRunToProto(voided, nil, nil, nil),
 	}), nil
+}
+
+var errRunVoided = connect.NewError(connect.CodeFailedPrecondition, errors.New("that run has been voided"))
+
+// assertRunLive refuses to put spirit or wash through a run that did not
+// happen. A gauge on a voided run enters stock, is left out of production,
+// and cannot be voided a second time.
+func assertRunLive(run sqlcgen.DistillationRun) error {
+	if run.VoidedAt.Valid {
+		return errRunVoided
+	}
+	if run.Status == sqlcgen.DistillationStatusCancelled {
+		return connect.NewError(connect.CodeFailedPrecondition, errors.New("that run was cancelled"))
+	}
+	return nil
+}
+
+func assertRunUngauged(run sqlcgen.DistillationRun) error {
+	if run.Status == sqlcgen.DistillationStatusGauged {
+		return connect.NewError(connect.CodeFailedPrecondition,
+			errors.New("that run has been gauged: void it to change what it was made from"))
+	}
+	return nil
 }
 
 // --- converters ---
@@ -1010,7 +1079,13 @@ func (s *DistillationService) AddDistillationReading(
 
 	var inserted sqlcgen.DistillationReading
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		run, e := q.GetDistillationRun(ctx, runID)
+		if e != nil {
+			return e
+		}
+		if run.VoidedAt.Valid {
+			return errRunVoided
+		}
 		inserted, e = q.AddDistillationReading(ctx, sqlcgen.AddDistillationReadingParams{
 			TenantID:               u.TenantID,
 			DistillationRunID:      runID,
@@ -1036,6 +1111,9 @@ func (s *DistillationService) AddDistillationReading(
 			})
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("distillation run not found"))
+		}
 		if ce := classifyWriteErr(err, "distillation run not found"); ce != nil {
 			return nil, ce
 		}

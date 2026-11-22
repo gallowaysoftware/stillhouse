@@ -509,21 +509,10 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–228 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–229 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
-
-### M2 · Voided and gauged runs are still open — P0
-
-- `RecordProductionGauge` accepts a voided or cancelled run. The spirit
-  enters stock, never reaches production, and cannot be voided again. The
-  run page never says VOIDED.
-- Charges and cuts are accepted after a gauge and on a voided run, as is an
-  ingredient on a gauged, cancelled or distilled mash (with its debit).
-- `UpdateDistillationStatus` moves a run into and out of GAUGED.
-- The void's period lock reads the run date, not the gauge date.
-- A run voided in a later month leaves the earlier month's figures wrong.
 
 ### M3 · The return's calendar is UTC — P0
 
@@ -546,7 +535,6 @@ and includes voided gauges.
 
 ### M6 · Packaging and the return — P0
 
-- A voided bottling run stays on the return as transferred to packaging.
 - The packaged section has no term for counts, customer returns or
   unpackaging; packaged returns have no period lock.
 - Posting a count uses the live balance, not the one captured at opening,
