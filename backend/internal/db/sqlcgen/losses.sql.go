@@ -81,7 +81,7 @@ const listDutiableLossesInPeriod = `-- name: ListDutiableLossesInPeriod :many
 SELECT occurred_at, laa
 FROM bulk_movements
 WHERE reason IN ('loss_evaporation', 'loss_unaccounted', 'destruction')
-  AND reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+  AND id IN (SELECT id FROM live_bulk_movements)
   AND loss_duty_treatment = 'dutiable'
   AND occurred_at >= $1 AND occurred_at < $2
 `
@@ -130,7 +130,7 @@ LEFT JOIN bulk_containers src ON src.id = bm.source_container_id
 LEFT JOIN bulk_containers dst ON dst.id = bm.destination_container_id
 LEFT JOIN users u             ON u.id  = bm.loss_classified_by
 WHERE bm.reason IN ('loss_evaporation', 'loss_unaccounted', 'destruction')
-  AND bm.reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+  AND bm.id IN (SELECT id FROM live_bulk_movements)
   AND (NOT $1::boolean OR bm.loss_duty_treatment = 'unclassified')
   AND ($2::date IS NULL OR bm.occurred_at >= $2::date)
   AND ($3::date   IS NULL OR bm.occurred_at <  $3::date + 1)
@@ -293,7 +293,7 @@ SELECT COALESCE(SUM(laa) FILTER (WHERE loss_duty_treatment = 'relieved'), 0)::do
            AS unclassified_count
 FROM bulk_movements
 WHERE reason IN ('loss_evaporation', 'loss_unaccounted')
-  AND reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+  AND id IN (SELECT id FROM live_bulk_movements)
   AND occurred_at >= $1 AND occurred_at < $2
 `
 

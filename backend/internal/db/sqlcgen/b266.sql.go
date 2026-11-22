@@ -380,6 +380,27 @@ func (q *Queries) ListBackdatedBulkMovements(ctx context.Context, arg ListBackda
 	return items, nil
 }
 
+const lockFilingExclusive = `-- name: LockFilingExclusive :exec
+SELECT pg_advisory_xact_lock(hashtextextended('b266:' || current_setting('app.current_tenant_id', true), 0))
+`
+
+func (q *Queries) LockFilingExclusive(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, lockFilingExclusive)
+	return err
+}
+
+const lockFilingShared = `-- name: LockFilingShared :exec
+SELECT pg_advisory_xact_lock_shared(hashtextextended('b266:' || current_setting('app.current_tenant_id', true), 0))
+`
+
+// Taken by every write a return counts, and held to its commit. Submitting
+// takes the same lock alone, so an entry is either in the snapshot or
+// refused, and never accepted into a month as it is being filed.
+func (q *Queries) LockFilingShared(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, lockFilingShared)
+	return err
+}
+
 const priorFiledB266Period = `-- name: PriorFiledB266Period :one
 SELECT id, tenant_id, period_start, period_end, status, snapshot, submitted_at, submitted_by, notes, created_at, updated_at, due_on, filing_acknowledged_at, filing_acknowledged_by, filing_acknowledgement FROM b266_periods
 WHERE status = 'submitted'
@@ -668,15 +689,8 @@ SELECT bm.reason::text AS reason,
        SUM(bm.laa)::double precision AS total_laa,
        COUNT(*)::int AS count
 FROM bulk_movements bm
-LEFT JOIN distillation_runs dr
-       ON bm.reason = 'production_gauge'
-      AND bm.reference_type = 'distillation_run'
-      AND dr.id = bm.reference_id
-LEFT JOIN bottling_runs br ON br.bulk_movement_id = bm.id
+JOIN live_bulk_movements live ON live.id = bm.id
 WHERE bm.occurred_at >= $1 AND bm.occurred_at < $2
-  AND (dr.id IS NULL OR dr.voided_at IS NULL)
-  AND (br.id IS NULL OR br.voided_at IS NULL)
-  AND bm.reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
 GROUP BY bm.reason
 ORDER BY bm.reason
 `
@@ -693,10 +707,10 @@ type SumBulkMovementsByReasonRow struct {
 }
 
 // Aggregation queries for generating B266 sections.
-// A voided gauge or bottling run never happened, so neither its movement
-// nor the one that reverses it is a line. The reversal is dated with the
-// event, so both also fall on the same side of any as-of walk and the
-// return carries no trace in either month.
+// Over live_bulk_movements: what was voided never happened, so neither its
+// movement nor the one that reverses it is a line. A reversal is dated with
+// what it reverses, so both also fall on the same side of any as-of walk and
+// the return carries no trace in either month.
 func (q *Queries) SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error) {
 	rows, err := q.db.Query(ctx, sumBulkMovementsByReason, arg.OccurredAt, arg.OccurredAt_2)
 	if err != nil {

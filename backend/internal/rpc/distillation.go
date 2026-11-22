@@ -200,7 +200,7 @@ func (s *DistillationService) UpdateDistillationStatus(
 			errors.New("a run becomes gauged by recording its production gauge"))
 	}
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		run, e := q.GetDistillationRun(ctx, id)
+		run, e := q.LockDistillationRun(ctx, id)
 		if e != nil {
 			return e
 		}
@@ -523,7 +523,7 @@ func (s *DistillationService) RecordProductionGauge(
 			return e
 		}
 		// 0. Sanity check: run exists, not already gauged.
-		run, e := q.GetDistillationRun(ctx, runID)
+		run, e := q.LockDistillationRun(ctx, runID)
 		if e != nil {
 			return e
 		}
@@ -677,7 +677,7 @@ func (s *DistillationService) VoidDistillationRun(
 
 	var voided sqlcgen.DistillationRun
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		existing, e := q.GetDistillationRun(ctx, id)
+		existing, e := q.LockDistillationRun(ctx, id)
 		if e != nil {
 			return e
 		}

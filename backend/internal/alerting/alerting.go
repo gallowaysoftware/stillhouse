@@ -29,6 +29,7 @@ import (
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/filing"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/money"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/zone"
 )
 
 // Thresholds. Each is an operational judgement rather than a figure from
@@ -391,9 +392,12 @@ func evaluateFiling(
 
 	label := period.Start.Format("2006-01-02") + " → " + period.End.Format("2006-01-02")
 	subject := period.End.Format("2006-01-02")
+	// Whole days on the licensee's calendar: due is a date, and on the day
+	// itself a return is not yet late.
+	today := zone.Day(now.Location(), now)
 	switch {
-	case now.After(due):
-		overdueBy := int(now.Sub(due).Hours() / 24)
+	case today.After(due):
+		overdueBy := int(today.Sub(due).Hours() / 24)
 		return []Alert{{
 			Kind:       sqlcgen.AlertKindFilingOverdue,
 			Severity:   sqlcgen.AlertSeverityCritical,
@@ -404,8 +408,8 @@ func evaluateFiling(
 				due.Format("2006-01-02"), overdueBy, plural(overdueBy)),
 			EntityType: "b266_period",
 		}}, nil
-	case due.Sub(now) <= FilingDueWithin:
-		daysLeft := int(due.Sub(now).Hours() / 24)
+	case due.Sub(today) <= FilingDueWithin:
+		daysLeft := int(due.Sub(today).Hours() / 24)
 		return []Alert{{
 			Kind:       sqlcgen.AlertKindFilingDue,
 			Severity:   sqlcgen.AlertSeverityWarning,

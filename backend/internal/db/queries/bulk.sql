@@ -50,10 +50,14 @@ ORDER BY bc.archived, bc.name;
 
 -- name: UpdateBulkContainerBalance :one
 UPDATE bulk_containers
-SET current_volume_l = $2,
-    current_abv_pct  = $3,
-    current_laa      = $4
-WHERE id = $1
+SET current_volume_l = sqlc.arg(current_volume_l)::double precision,
+    current_abv_pct  = sqlc.narg(current_abv_pct)::double precision,
+    current_laa      = sqlc.arg(current_laa)::double precision,
+    -- A vessel with spirit in it is not archived. Every return skips
+    -- archived vessels, so a void that refilled one took its alcohol off
+    -- all of them, the filed ones included.
+    archived         = archived AND sqlc.arg(current_volume_l)::double precision <= 1e-6
+WHERE id = sqlc.arg(id)
 RETURNING *;
 
 -- name: InsertExternalBulkMovement :one

@@ -214,22 +214,17 @@ func (s *BulkService) RecordBulkExternalMovement(
 			}
 		}
 
-		after, stranded := balanceOf(vessel).add(volume, laa), 0.0
+		after, correction := balanceOf(vessel).add(volume, laa), 0.0
 		if spec.inbound {
 			if e := assertTakesSpirit(vessel, volume); e != nil {
 				return e
 			}
 		} else {
-			if e := assertFillStrengthMatchesSource(vessel, abv); e != nil {
-				return e
-			}
-			// You cannot ship, denature or destroy alcohol that is not
-			// there.
-			laa = drawnLAA(vessel, volume, abv)
-			after, stranded, e = balanceOf(vessel).take(vessel.Name, volume, laa)
+			d, e := drawFrom(vessel, volume, abv)
 			if e != nil {
 				return e
 			}
+			volume, laa, after, correction = d.volumeL, d.laa, d.rest, d.correction
 		}
 
 		src, dst := uuid.NullUUID{UUID: containerID, Valid: true}, uuid.NullUUID{}
@@ -272,7 +267,7 @@ func (s *BulkService) RecordBulkExternalMovement(
 		if e != nil {
 			return e
 		}
-		if e := bookStranded(ctx, q, u, vessel, stranded, volume, abv, occurredAt, "a movement "+spec.label); e != nil {
+		if e := bookCorrection(ctx, q, u, vessel, correction, abv, occurredAt, uuid.NullUUID{}, "spirits "+spec.label); e != nil {
 			return e
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "bulk_movement", movement.ID.String(),

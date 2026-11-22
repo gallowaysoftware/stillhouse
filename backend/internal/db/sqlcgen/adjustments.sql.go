@@ -25,7 +25,7 @@ INSERT INTO inventory_adjustments (
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
     $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24
-) RETURNING id, tenant_id, container_id, bulk_movement_id, reason, explanation, book_volume_l, book_abv_pct, book_laa, counted_volume_l, counted_abv_pct, counted_laa, delta_laa, delta_volume_l, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id, adjusted_by, notes, occurred_at, created_at
+) RETURNING id, tenant_id, container_id, bulk_movement_id, reason, explanation, book_volume_l, book_abv_pct, book_laa, counted_volume_l, counted_abv_pct, counted_laa, delta_laa, delta_volume_l, temperature_c, observed_volume_l, observed_density_kg_m3, volume_factor_c, strength_source, volume_instrument_id, strength_instrument_id, temperature_instrument_id, adjusted_by, notes, occurred_at, created_at, voided_at
 `
 
 type CreateInventoryAdjustmentParams struct {
@@ -110,18 +110,20 @@ func (q *Queries) CreateInventoryAdjustment(ctx context.Context, arg CreateInven
 		&i.Notes,
 		&i.OccurredAt,
 		&i.CreatedAt,
+		&i.VoidedAt,
 	)
 	return i, err
 }
 
 const listInventoryAdjustments = `-- name: ListInventoryAdjustments :many
-SELECT ia.id, ia.tenant_id, ia.container_id, ia.bulk_movement_id, ia.reason, ia.explanation, ia.book_volume_l, ia.book_abv_pct, ia.book_laa, ia.counted_volume_l, ia.counted_abv_pct, ia.counted_laa, ia.delta_laa, ia.delta_volume_l, ia.temperature_c, ia.observed_volume_l, ia.observed_density_kg_m3, ia.volume_factor_c, ia.strength_source, ia.volume_instrument_id, ia.strength_instrument_id, ia.temperature_instrument_id, ia.adjusted_by, ia.notes, ia.occurred_at, ia.created_at,
+SELECT ia.id, ia.tenant_id, ia.container_id, ia.bulk_movement_id, ia.reason, ia.explanation, ia.book_volume_l, ia.book_abv_pct, ia.book_laa, ia.counted_volume_l, ia.counted_abv_pct, ia.counted_laa, ia.delta_laa, ia.delta_volume_l, ia.temperature_c, ia.observed_volume_l, ia.observed_density_kg_m3, ia.volume_factor_c, ia.strength_source, ia.volume_instrument_id, ia.strength_instrument_id, ia.temperature_instrument_id, ia.adjusted_by, ia.notes, ia.occurred_at, ia.created_at, ia.voided_at,
        bc.name AS container_name,
        u.display_name AS adjusted_by_name
 FROM inventory_adjustments ia
 JOIN bulk_containers bc ON bc.id = ia.container_id
 JOIN users u            ON u.id  = ia.adjusted_by
-WHERE ($1::uuid IS NULL OR ia.container_id = $1::uuid)
+WHERE ia.voided_at IS NULL
+  AND ($1::uuid IS NULL OR ia.container_id = $1::uuid)
   AND ($2::date IS NULL OR ia.occurred_at >= $2::date)
   AND ($3::date   IS NULL OR ia.occurred_at <  $3::date + 1)
 ORDER BY ia.occurred_at DESC, ia.created_at DESC
@@ -161,6 +163,7 @@ type ListInventoryAdjustmentsRow struct {
 	Notes                   string                    `json:"notes"`
 	OccurredAt              pgtype.Timestamptz        `json:"occurred_at"`
 	CreatedAt               pgtype.Timestamptz        `json:"created_at"`
+	VoidedAt                pgtype.Timestamptz        `json:"voided_at"`
 	ContainerName           string                    `json:"container_name"`
 	AdjustedByName          string                    `json:"adjusted_by_name"`
 }
@@ -203,6 +206,7 @@ func (q *Queries) ListInventoryAdjustments(ctx context.Context, arg ListInventor
 			&i.Notes,
 			&i.OccurredAt,
 			&i.CreatedAt,
+			&i.VoidedAt,
 			&i.ContainerName,
 			&i.AdjustedByName,
 		); err != nil {
@@ -223,6 +227,7 @@ SELECT COALESCE(SUM(delta_laa), 0)::double precision AS net_laa,
        COUNT(*)::int AS adjustment_count
 FROM inventory_adjustments
 WHERE occurred_at >= $1 AND occurred_at < $2
+  AND voided_at IS NULL
 `
 
 type SumInventoryAdjustmentsInPeriodParams struct {
@@ -250,4 +255,13 @@ func (q *Queries) SumInventoryAdjustmentsInPeriod(ctx context.Context, arg SumIn
 		&i.AdjustmentCount,
 	)
 	return i, err
+}
+
+const voidAdjustmentByMovement = `-- name: VoidAdjustmentByMovement :exec
+UPDATE inventory_adjustments SET voided_at = NOW() WHERE bulk_movement_id = $1
+`
+
+func (q *Queries) VoidAdjustmentByMovement(ctx context.Context, bulkMovementID uuid.NullUUID) error {
+	_, err := q.db.Exec(ctx, voidAdjustmentByMovement, bulkMovementID)
+	return err
 }

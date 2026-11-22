@@ -560,6 +560,7 @@ type Querier interface {
 	KegDepositLiability(ctx context.Context) ([]KegDepositLiabilityRow, error)
 	KegRegisterSummary(ctx context.Context) (KegRegisterSummaryRow, error)
 	LabourHoursInPeriod(ctx context.Context, arg LabourHoursInPeriodParams) (LabourHoursInPeriodRow, error)
+	LaterBarrelEventExists(ctx context.Context, arg LaterBarrelEventExistsParams) (bool, error)
 	// The most recent PASSED calibration. A failed check is history worth
 	// keeping, but it is not the date the next one is counted from — an
 	// instrument that failed its check has not been calibrated.
@@ -608,6 +609,9 @@ type Querier interface {
 	// Ordered by the size of that effect, largest first, so the biggest
 	// contributor to a break is named first. Capped by the caller.
 	ListBackdatedBulkMovements(ctx context.Context, arg ListBackdatedBulkMovementsParams) ([]ListBackdatedBulkMovementsRow, error)
+	// The rows an event caused beyond its own movement: what the wood kept, and
+	// corrections booked because its gauge disagreed with the book.
+	ListBarrelEventConsequences(ctx context.Context, referenceID uuid.NullUUID) ([]BulkMovement, error)
 	ListBarrelEvents(ctx context.Context, containerID uuid.UUID) ([]BarrelEvent, error)
 	// The fill this cask is currently living off, so the angel's share can be
 	// measured against it without a round trip per barrel.
@@ -811,6 +815,11 @@ type Querier interface {
 	// and recipe versions take no row lock at all). Reversing that in one
 	// caller and not another is how two of these deadlock.
 	LockDocumentSequence(ctx context.Context, counter string) error
+	LockFilingExclusive(ctx context.Context) error
+	// Taken by every write a return counts, and held to its commit. Submitting
+	// takes the same lock alone, so an entry is either in the snapshot or
+	// refused, and never accepted into a month as it is being filed.
+	LockFilingShared(ctx context.Context) error
 	// The longest lead time across a recipe's materials, and which one it is.
 	//
 	// The longest rather than the average, because an order arrives when its
@@ -1074,6 +1083,7 @@ type Querier interface {
 	// arithmetic — packaged, removed, on hand — still ties out. Without that
 	// a returned bottle would show as both removed and on hand.
 	RestockFromReturn(ctx context.Context, arg RestockFromReturnParams) (PackagedInventory, error)
+	RestoreBarrelClock(ctx context.Context, arg RestoreBarrelClockParams) error
 	// The 30% single-retail-store supply rule (EDM8-1-1 ¶20): a licensee may
 	// not supply more than 30% of a retail store's stock from its own
 	// production. What Stillhouse can compute is its own side of that —
@@ -1254,10 +1264,10 @@ type Querier interface {
 	// separately and summing both double-counts.
 	SumBulkLAAByOwnership(ctx context.Context) (SumBulkLAAByOwnershipRow, error)
 	// Aggregation queries for generating B266 sections.
-	// A voided gauge or bottling run never happened, so neither its movement
-	// nor the one that reverses it is a line. The reversal is dated with the
-	// event, so both also fall on the same side of any as-of walk and the
-	// return carries no trace in either month.
+	// Over live_bulk_movements: what was voided never happened, so neither its
+	// movement nor the one that reverses it is a line. A reversal is dated with
+	// what it reverses, so both also fall on the same side of any as-of walk and
+	// the return carries no trace in either month.
 	SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error)
 	// Bulk LAA on hand as at a moment, not right now.
 	//
@@ -1472,6 +1482,7 @@ type Querier interface {
 	// comes back with a NULL run and is reported as unvalued rather than
 	// valued at zero.
 	ValuePackagedForFinishedGoods(ctx context.Context) ([]ValuePackagedForFinishedGoodsRow, error)
+	VoidAdjustmentByMovement(ctx context.Context, bulkMovementID uuid.NullUUID) error
 	VoidBarrelEvent(ctx context.Context, arg VoidBarrelEventParams) (BarrelEvent, error)
 	VoidBottlingRun(ctx context.Context, arg VoidBottlingRunParams) (BottlingRun, error)
 	VoidDistillationRun(ctx context.Context, arg VoidDistillationRunParams) (DistillationRun, error)

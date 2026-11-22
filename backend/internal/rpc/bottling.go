@@ -181,14 +181,11 @@ func (s *BottlingService) CreateBottlingRun(
 		}
 
 		// 5. Update source balance.
-		rest, stranded, e := balanceOf(source).take(source.Name, requiredVolume, laa)
+		rest, _, e := balanceOf(source).take(source.Name, requiredVolume, laa)
 		if e != nil {
 			return e
 		}
 		if _, e := saveBalance(ctx, q, sourceID, rest); e != nil {
-			return e
-		}
-		if e := bookStranded(ctx, q, u, source, stranded, requiredVolume, abv, mv.OccurredAt, "a bottling run"); e != nil {
 			return e
 		}
 

@@ -331,7 +331,7 @@ func projectB266(t b266Totals, periodStart, periodEnd, generatedAt time.Time) *s
 		report.DaysUntilDue = int32(t.dueOn.Sub(dayStart(generatedAt)).Hours() / 24)
 	}
 	report.Continuity = continuity(t, report)
-	report.FilingBlockers = filingBlockers(t, report.Continuity)
+	report.FilingBlockers = filingBlockers(t, report)
 	return report
 }
 
@@ -431,9 +431,22 @@ func round4(x float64) float64 {
 // An empty list is not a promise the figures are right — only that nothing
 // is outstanding. The distinction matters: Stillhouse never files, and a
 // green light it cannot honestly give would be worse than no light at all.
-func filingBlockers(t b266Totals, c *stillhousev1.B266Continuity) []string {
+func filingBlockers(t b266Totals, report *stillhousev1.B266Report) []string {
 	var out []string
-	out = append(out, continuityBlockers(c)...)
+	out = append(out, continuityBlockers(report.Continuity)...)
+	for _, b := range []struct {
+		what string
+		laa  float64
+	}{
+		{"bulk opening", report.BulkOpeningLaa}, {"bulk closing", report.BulkClosingLaa},
+		{"packaged opening", report.PackagedOpeningLaa}, {"packaged closing", report.PackagedClosingLaa},
+	} {
+		if b.laa < -continuityToleranceLAA {
+			out = append(out, fmt.Sprintf(
+				"The %s balance is %.4f LAA. A distillery cannot hold less than nothing: something in or before this period is dated before the spirit it moved.",
+				b.what, b.laa))
+		}
+	}
 	if t.electionMismatch != "" {
 		out = append(out, t.electionMismatch)
 	}

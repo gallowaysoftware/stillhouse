@@ -406,6 +406,20 @@ func loadBarrels(
 			}
 		}
 		if volume > 0 {
+			// The same row adoption writes. Without one the cask reads as
+			// having been on hand for ever, in periods already filed too.
+			if _, err := q.InsertBulkMovement(ctx, sqlcgen.InsertBulkMovementParams{
+				TenantID:               tenantID,
+				DestinationContainerID: uuid.NullUUID{UUID: container.ID, Valid: true},
+				VolumeL:                volume, AbvPct: abv, Laa: volume * abv / 100,
+				Reason:        sqlcgen.BulkMovementReasonOpeningInventory,
+				ReferenceType: "opening_inventory", Notes: "imported cask",
+				OccurredAt: pgtype.Timestamptz{Valid: true, Time: time.Now()},
+			}); err != nil {
+				res.Problems = append(res.Problems, Problem{Row: r.Line,
+					Detail: friendlyWriteErr(err, "opening balance")})
+				continue
+			}
 			if _, err := q.UpdateBulkContainerBalance(ctx, sqlcgen.UpdateBulkContainerBalanceParams{
 				ID: container.ID, CurrentVolumeL: volume,
 				CurrentAbvPct: pgtype.Float8{Float64: abv, Valid: true},

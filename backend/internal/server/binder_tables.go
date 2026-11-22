@@ -199,7 +199,7 @@ FROM bulk_movements bm
 LEFT JOIN bulk_containers src ON src.id = bm.source_container_id
 LEFT JOIN users cu            ON cu.id  = bm.loss_classified_by
 WHERE bm.reason IN ('loss_evaporation', 'loss_unaccounted', 'destruction')
-  AND bm.reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
+  AND bm.id IN (SELECT id FROM live_bulk_movements)
   AND bm.occurred_at >= $1 AND bm.occurred_at < $2
 ORDER BY bm.occurred_at`,
 	},

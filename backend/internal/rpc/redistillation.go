@@ -90,19 +90,16 @@ func (s *RedistillationService) StartRedistillation(
 		if e != nil {
 			return e
 		}
-		if e := assertFillStrengthMatchesSource(vessel, in.GetAbvPct()); e != nil {
-			return e
-		}
-		laa = drawnLAA(vessel, in.GetVolumeL(), in.GetAbvPct())
-		rest, stranded, e := balanceOf(vessel).take(vessel.Name, in.GetVolumeL(), laa)
+		d, e := drawFrom(vessel, in.GetVolumeL(), in.GetAbvPct())
 		if e != nil {
 			return e
 		}
+		laa = d.laa
 
 		movement, e := q.InsertExternalBulkMovement(ctx, sqlcgen.InsertExternalBulkMovementParams{
 			TenantID:          u.TenantID,
 			SourceContainerID: uuid.NullUUID{UUID: containerID, Valid: true},
-			VolumeL:           in.GetVolumeL(),
+			VolumeL:           d.volumeL,
 			AbvPct:            in.GetAbvPct(),
 			Laa:               laa,
 			// The page 3 vocabulary stage 146 added. This is the
@@ -125,12 +122,12 @@ func (s *RedistillationService) StartRedistillation(
 			return e
 		}
 
-		container, e = saveBalance(ctx, q, containerID, rest)
+		container, e = saveBalance(ctx, q, containerID, d.rest)
 		if e != nil {
 			return e
 		}
-		if e := bookStranded(ctx, q, u, vessel, stranded, in.GetVolumeL(), in.GetAbvPct(),
-			movement.OccurredAt, "a return to the still"); e != nil {
+		if e := bookCorrection(ctx, q, u, vessel, d.correction, in.GetAbvPct(),
+			movement.OccurredAt, uuid.NullUUID{}, "a return to the still"); e != nil {
 			return e
 		}
 
@@ -140,7 +137,7 @@ func (s *RedistillationService) StartRedistillation(
 			BulkMovementID:    uuid.NullUUID{UUID: movement.ID, Valid: true},
 			Reason:            reason,
 			TakenOn:           takenOn,
-			VolumeTakenL:      in.GetVolumeL(),
+			VolumeTakenL:      d.volumeL,
 			AbvTakenPct:       in.GetAbvPct(),
 			LaaTaken:          laa,
 			Notes:             in.GetNotes(),
