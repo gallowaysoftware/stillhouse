@@ -42,6 +42,7 @@ func registerWriteTools(s *registrar, d Deps, user sqlcgen.User) {
 	addAddDistillationCut(s, d, user)
 	addRemoveEntry(s, d, user)
 	addAddMaterial(s, d, user)
+	addUpdateMaterial(s, d, user)
 	addReceiveMaterial(s, d, user)
 	addSaveRecipe(s, d, user)
 }

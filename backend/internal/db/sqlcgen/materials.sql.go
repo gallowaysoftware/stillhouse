@@ -402,6 +402,19 @@ func (q *Queries) MaterialCover(ctx context.Context, windowDays int32) ([]Materi
 	return items, nil
 }
 
+const materialUnitInUse = `-- name: MaterialUnitInUse :one
+SELECT (EXISTS (SELECT 1 FROM material_lots ml WHERE ml.material_id = $1)
+    OR EXISTS (SELECT 1 FROM mash_ingredient_usage mu WHERE mu.material_id = $1))::boolean AS in_use
+`
+
+// Whether any quantity is recorded against this material in its unit.
+func (q *Queries) MaterialUnitInUse(ctx context.Context, materialID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, materialUnitInUse, materialID)
+	var in_use bool
+	err := row.Scan(&in_use)
+	return in_use, err
+}
+
 const materialsBelowReorderPoint = `-- name: MaterialsBelowReorderPoint :many
 SELECT m.id, m.name, m.uom, m.reorder_point, m.lead_time_days,
        COALESCE(oh.qty, 0)::double precision AS on_hand,

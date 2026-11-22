@@ -30,7 +30,7 @@ var floorTools = map[string]bool{
 	"get_floor": true, "get_mash": true, "get_fermentation": true, "get_distillation": true,
 	"list_material_lots": true, "get_recipe": true,
 	"plan_strike": true, "plan_run": true, "plan_reduction": true,
-	"add_material": true, "receive_material": true, "save_recipe": true,
+	"add_material": true, "update_material": true, "receive_material": true, "save_recipe": true,
 	"start_mash": true, "set_mash_status": true, "add_mash_ingredient": true, "add_mash_reading": true,
 	"start_fermentation": true, "set_fermentation_status": true, "add_fermentation_reading": true,
 	"start_distillation": true, "set_distillation_status": true, "add_distillation_charge": true,

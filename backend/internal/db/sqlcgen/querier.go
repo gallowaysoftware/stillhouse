@@ -841,6 +841,8 @@ type Querier interface {
 	// stamps: bottles a day over the last thirty, divided into what is left.
 	MaterialCover(ctx context.Context, windowDays int32) ([]MaterialCoverRow, error)
 	MaterialNamesInUse(ctx context.Context) ([]string, error)
+	// Whether any quantity is recorded against this material in its unit.
+	MaterialUnitInUse(ctx context.Context, materialID uuid.UUID) (bool, error)
 	// For the alert evaluator. Only materials with a reorder point recorded:
 	// one Stillhouse guessed would fire at a level nobody chose, and an alert
 	// people did not choose is an alert they learn to dismiss.

@@ -154,6 +154,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 229 | A run that did not happen stays closed. A **voided** run could still be gauged: the spirit entered stock, never reached production, and could not be voided again. Voided and cancelled runs now take no gauge or charge, a voided one no cut, a run becomes gauged only by its gauge, and a gauged mash takes no more grain. A void is checked against the period its **gauge** is counted in and dated with it, so neither month of a late correction carries a trace, and a voided bottling run is off the return instead of reading as transferred to packaging. The run page says VOIDED |
 | 230 | Months end at midnight. Periods, the period lock and every blank date were cut at midnight **UTC**, which in Atlantic Canada is eight or nine in the evening, so the last evening's gauge was filed a month late and slipped past the lock on a filed one. Days are now the licensee's, by province: the return, the lock, the binder's schedules, blank dates, alerts and the web's defaults. Something known only by its date is recorded at 16:00 UTC, the same day everywhere in Canada; migration 74 moves the rows already stored at midnight. Three QA agents found it separately |
 | 231 | A quantity is in the unit it is counted in. A lot was debited by the number typed, whatever the unit: 20 g took 20 kg, and the bench mashed it. An ingredient goes in the unit its material is counted in, a lot must be of that material, recipes refuse grain that has no mass, and pounds are converted rather than ignored. The last draw on a lot is no longer refused over float residue. **Captured LAA** counts each gauge once, leaves out voided ones, and shares a mixed charge by the alcohol each mash put in |
+| 232 | Materials can be corrected. The bench said to set the extract on the material and nothing could: no page or tool edited one, so a blank or mistyped figure was permanent. The material page edits and archives, `update_material` does it from the floor, and a unit is fixed once quantities are recorded in it. Corrections are audited with what they replaced, the receipt form's date is kept, and a taken name is refused by name |
 
 **What's next:** [`PLAN.md`](PLAN.md) is the open backlog — the excise
 correctness work, the returns beyond B266, and the operational surface
@@ -299,7 +300,7 @@ Configure a remote MCP server pointing at your Stillhouse install:
   blockers, and whether the return continues the last one filed. Reads
   only; it does not generate or submit anything, and ordering the work is
   the point of it.
-- **Capture, grain to cuts** — `add_material`, `receive_material`,
+- **Capture, grain to cuts** — `add_material`, `update_material`, `receive_material`,
   `save_recipe`, `start_mash`, `add_mash_ingredient`, `add_mash_reading`,
   `set_mash_status`, `start_fermentation`, `add_fermentation_reading`,
   `set_fermentation_status`, `start_distillation`,
