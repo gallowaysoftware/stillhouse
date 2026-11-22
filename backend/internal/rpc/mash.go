@@ -311,7 +311,20 @@ func (s *MashService) AddMashIngredient(
 
 	var inserted sqlcgen.MashIngredientUsage
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		var e error
+		mash, e := q.GetMashRun(ctx, mashID)
+		if e != nil {
+			return e
+		}
+		if e := assertMashLive(mash); e != nil {
+			return e
+		}
+		gauged, e := q.MashHasGauge(ctx, mashID)
+		if e != nil {
+			return e
+		}
+		if gauged {
+			return errMashGauged
+		}
 		inserted, e = q.AddMashIngredient(ctx, sqlcgen.AddMashIngredientParams{
 			TenantID:      u.TenantID,
 			MashRunID:     mashID,
@@ -348,6 +361,9 @@ func (s *MashService) AddMashIngredient(
 			})
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("mash run, material or lot not found"))
+		}
 		if ce := classifyWriteErr(err, "mash run, material or lot not found"); ce != nil {
 			return nil, ce
 		}
@@ -357,6 +373,16 @@ func (s *MashService) AddMashIngredient(
 	return connect.NewResponse(&stillhousev1.AddMashIngredientResponse{
 		Usage: mashIngredientUsageToProto(inserted, "", sqlcgen.MaterialKindOther, pgtype.Float8{}),
 	}), nil
+}
+
+var errMashGauged = connect.NewError(connect.CodeFailedPrecondition,
+	errors.New("spirit from this mash has been gauged; its bill can no longer be changed"))
+
+func assertMashLive(m sqlcgen.MashRun) error {
+	if m.Status == sqlcgen.MashStatusCancelled {
+		return connect.NewError(connect.CodeFailedPrecondition, errors.New("that mash was cancelled"))
+	}
+	return nil
 }
 
 func (s *MashService) AddMashMetric(
@@ -385,6 +411,9 @@ func (s *MashService) AddMashMetric(
 
 	var inserted sqlcgen.MashMetric
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if _, e := q.GetMashRun(ctx, mashID); e != nil {
+			return e
+		}
 		var e error
 		inserted, e = q.AddMashMetric(ctx, sqlcgen.AddMashMetricParams{
 			TenantID:   u.TenantID,
@@ -407,6 +436,9 @@ func (s *MashService) AddMashMetric(
 			})
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("mash run not found"))
+		}
 		if ce := classifyWriteErr(err, "mash run not found"); ce != nil {
 			return nil, ce
 		}
@@ -438,8 +470,7 @@ func (s *MashService) DeleteMashIngredient(
 			return e
 		}
 		if gauged {
-			return connect.NewError(connect.CodeFailedPrecondition,
-				errors.New("spirit from this mash has been gauged; its bill can no longer be changed"))
+			return errMashGauged
 		}
 		n, e := q.DeleteMashIngredient(ctx, id)
 		if e != nil {

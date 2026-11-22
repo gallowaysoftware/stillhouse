@@ -1250,10 +1250,10 @@ type Querier interface {
 	// separately and summing both double-counts.
 	SumBulkLAAByOwnership(ctx context.Context) (SumBulkLAAByOwnershipRow, error)
 	// Aggregation queries for generating B266 sections.
-	// Excludes production_gauge movements whose underlying distillation_run is
-	// voided (so voiding a run removes its production LAA from B266). Also
-	// excludes regauge_correction movements that reference a void event — those
-	// exist purely to balance the ledger and shouldn't show up as their own line.
+	// A voided gauge or bottling run never happened, so neither its movement
+	// nor the one that reverses it is a line. The reversal is dated with the
+	// event, so both also fall on the same side of any as-of walk and the
+	// return carries no trace in either month.
 	SumBulkMovementsByReason(ctx context.Context, arg SumBulkMovementsByReasonParams) ([]SumBulkMovementsByReasonRow, error)
 	// Bulk LAA on hand as at a moment, not right now.
 	//

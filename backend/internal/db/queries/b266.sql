@@ -69,10 +69,10 @@ LIMIT 1;
 -- Aggregation queries for generating B266 sections.
 
 -- name: SumBulkMovementsByReason :many
--- Excludes production_gauge movements whose underlying distillation_run is
--- voided (so voiding a run removes its production LAA from B266). Also
--- excludes regauge_correction movements that reference a void event — those
--- exist purely to balance the ledger and shouldn't show up as their own line.
+-- A voided gauge or bottling run never happened, so neither its movement
+-- nor the one that reverses it is a line. The reversal is dated with the
+-- event, so both also fall on the same side of any as-of walk and the
+-- return carries no trace in either month.
 SELECT bm.reason::text AS reason,
        SUM(bm.laa)::double precision AS total_laa,
        COUNT(*)::int AS count
@@ -81,8 +81,10 @@ LEFT JOIN distillation_runs dr
        ON bm.reason = 'production_gauge'
       AND bm.reference_type = 'distillation_run'
       AND dr.id = bm.reference_id
+LEFT JOIN bottling_runs br ON br.bulk_movement_id = bm.id
 WHERE bm.occurred_at >= $1 AND bm.occurred_at < $2
   AND (dr.id IS NULL OR dr.voided_at IS NULL)
+  AND (br.id IS NULL OR br.voided_at IS NULL)
   AND bm.reference_type NOT IN ('distillation_run_void', 'bottling_run_void')
 GROUP BY bm.reason
 ORDER BY bm.reason;

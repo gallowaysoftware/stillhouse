@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
@@ -579,7 +578,8 @@ func (s *BottlingService) VoidBottlingRun(
 			ReferenceType:          "bottling_run_void",
 			ReferenceID:            uuid.NullUUID{UUID: existing.ID, Valid: true},
 			Notes:                  "void of bottling run " + fmt.Sprintf("#%d", existing.RunNo) + ": " + reason,
-			OccurredAt:             pgtype.Timestamptz{Valid: true, Time: time.Now()},
+			// Dated with the run: as of any moment the two cancel.
+			OccurredAt: pgtype.Timestamptz{Valid: true, Time: existing.BottlingDate.Time},
 		}); e != nil {
 			return e
 		}

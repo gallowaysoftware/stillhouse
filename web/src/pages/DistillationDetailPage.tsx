@@ -29,6 +29,7 @@ import {
   DeleteDistillationCutRequestSchema,
   DeleteDistillationReadingRequestSchema,
   DistillationCutKind,
+  DistillationStatus,
   RecordProductionGaugeRequestSchema,
   UpdateDistillationCutRequestSchema,
 } from "@/gen/stillhouse/v1/distillation_pb";
@@ -126,6 +127,9 @@ export function DistillationDetailPage() {
 
   const r = run.data.run;
 
+  const voided = !!r.voidedAt;
+  const closed = voided || r.status === DistillationStatus.CANCELLED;
+
   const totalChargeLAA = r.charges.reduce((s, c) => s + c.laa, 0);
   const totalCutLAA = r.cuts.reduce((s, c) => s + c.laa, 0);
   const gaugeLAA = r.gauge?.laa ?? 0;
@@ -136,12 +140,15 @@ export function DistillationDetailPage() {
     <Shell>
       <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Distillation #{r.runNo}</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Distillation #{r.runNo}
+            {voided && <span className="ml-3 rounded bg-danger/15 px-2 py-1 align-middle text-sm font-medium text-danger-fg">VOIDED</span>}
+          </h1>
           <p className="text-sm text-fg-muted">
             {r.runDate} · {r.stillLabel || "no still labelled"} · {distillationStatusLabel(r.status)}
           </p>
         </div>
-        {r.gauge && (
+        {r.gauge && !voided && (
           <div className="text-right">
             <p className="text-xs text-fg-muted">Gauged into</p>
             <p className="font-medium text-fg">{r.gauge.destinationContainerName}</p>
@@ -165,6 +172,8 @@ export function DistillationDetailPage() {
           hint={totalChargeLAA > 0 ? "all cuts ÷ charge" : "no charge yet"}
         />
       </section>
+
+      {voided && r.voidedReason && <p className="mb-6 rounded bg-surface-2 p-4 text-sm text-fg shadow-sm">{r.voidedReason}</p>}
 
       {r.cutAnalysis && <CutProfile analysis={r.cutAnalysis} cuts={r.cuts} />}
 
@@ -233,6 +242,8 @@ export function DistillationDetailPage() {
             )}
             <Row k="Determination"><SourceBadge source={r.gauge.strengthSource} /></Row>
           </dl>
+        ) : closed ? (
+          <p className="text-sm text-fg-muted">This run is closed and cannot be gauged.</p>
         ) : (
           <GaugeForm
             distillationRunId={r.id}
@@ -287,7 +298,7 @@ function ChargesPanel({
   }
   return (
     <Panel title="Charges">
-      <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
+      {!run.gauge && !run.voidedAt && <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
         <Field label="Ferment" as="select" value={fermID} onChange={setFermID} required>
           <option value="">—</option>
           {ferments.map((f) => (
@@ -306,7 +317,7 @@ function ChargesPanel({
           Add
         </button>
         {error && <span className="text-xs text-danger-fg">{writeErrorText(error)}</span>}
-      </form>
+      </form>}
       <table className="min-w-full divide-y divide-border text-sm">
         <thead className="text-left text-xs text-fg-muted">
           <tr>
@@ -330,7 +341,7 @@ function ChargesPanel({
               <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{c.abvPct.toFixed(2)}%</td>
               <td className="px-3 py-2 text-right tabular-nums font-semibold text-fg">{formatLAA(c.laa)}</td>
               <td className="px-3 py-2 text-right">
-                {!run.gauge && (
+                {!run.gauge && !run.voidedAt && (
                   <DeleteButton
                     title="Remove this charge?"
                     body="The audit trail keeps what was removed."
@@ -414,7 +425,7 @@ function CutsPanel({
 
   return (
     <Panel title="Cuts">
-      <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
+      {!run.voidedAt && <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
         <Field label="Kind" as="select" value={kind} onChange={setKind}>
           {cutKindOptions.map((k) => (
             <option key={k.v} value={k.v}>{k.label}</option>
@@ -430,7 +441,7 @@ function CutsPanel({
           Add
         </button>
         {error && <span className="text-xs text-danger-fg">{writeErrorText(error)}</span>}
-      </form>
+      </form>}
       <table className="min-w-full divide-y divide-border text-sm">
         <thead className="text-left text-xs text-fg-muted">
           <tr>

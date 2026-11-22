@@ -77,10 +77,13 @@ func (s *FermentationService) CreateFermentationRun(
 
 	var run sqlcgen.FermentationRun
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
-		if _, e := q.GetMashRun(ctx, mashID); e != nil {
+		mash, e := q.GetMashRun(ctx, mashID)
+		if e != nil {
 			return e
 		}
-		var e error
+		if e := assertMashLive(mash); e != nil {
+			return e
+		}
 		run, e = q.CreateFermentationRun(ctx, sqlcgen.CreateFermentationRunParams{
 			TenantID:           u.TenantID,
 			MashRunID:          mashID,
@@ -381,6 +384,9 @@ func (s *FermentationService) AddFermentationLog(
 
 	var inserted sqlcgen.FermentationLog
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if _, e := q.GetFermentationRun(ctx, runID); e != nil {
+			return e
+		}
 		var e error
 		inserted, e = q.AddFermentationLog(ctx, sqlcgen.AddFermentationLogParams{
 			TenantID:          u.TenantID,
@@ -403,6 +409,9 @@ func (s *FermentationService) AddFermentationLog(
 			})
 	})
 	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("fermentation run not found"))
+		}
 		if ce := classifyWriteErr(err, "fermentation run not found"); ce != nil {
 			return nil, ce
 		}
