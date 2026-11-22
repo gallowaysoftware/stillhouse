@@ -187,7 +187,7 @@ export function HomePage() {
       {(audit.data?.events.length ?? 0) > 0 && (
         <section>
           <h2 className="mb-3 text-xs font-semibold text-fg-muted">Recent activity</h2>
-          <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+          <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
             <table className="min-w-full divide-y divide-border text-sm">
               <thead className="bg-surface-3 text-left text-xs text-fg-muted">
                 <tr>

@@ -76,7 +76,7 @@ export function AuditPage() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>

@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
+import type { Timestamp } from "@bufbuild/protobuf/wkt";
 
 import { Button } from "@/components/Button";
 import { useConfirm } from "@/components/ConfirmDialog";
@@ -17,6 +18,7 @@ import {
   StrengthReadingValue,
 } from "@/components/StrengthReading";
 import { DeleteButton } from "@/components/DeleteButton";
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
 import { useToast } from "@/components/Toast";
 import { bulkClient, distillationClient, engineeringClient, fermentationClient } from "@/lib/clients";
@@ -30,6 +32,7 @@ import {
   RecordProductionGaugeRequestSchema,
   UpdateDistillationCutRequestSchema,
 } from "@/gen/stillhouse/v1/distillation_pb";
+import { writeErrorText } from "@/lib/errors";
 import {
   cutKindLabel,
   distillationStatusLabel,
@@ -67,11 +70,9 @@ export function DistillationDetailPage() {
 
   const toast = useToast();
 
-  const refresh = () => {
-    qc.invalidateQueries({ queryKey: ["getDistillationRun", id] });
-    qc.invalidateQueries({ queryKey: ["listBulkContainers"] });
-    qc.invalidateQueries({ queryKey: ["listRecentBulkMovements"] });
-  };
+  // Everything: containers, lists and pickers elsewhere move with a run.
+  const refresh = () => void qc.invalidateQueries();
+  const failed = (e: unknown) => toast("danger", writeErrorText(e));
 
   const addCharge = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof AddDistillationChargeRequestSchema>>) =>
@@ -92,16 +93,19 @@ export function DistillationDetailPage() {
     mutationFn: (msg: ReturnType<typeof create<typeof DeleteDistillationReadingRequestSchema>>) =>
       distillationClient.deleteDistillationReading(msg),
     onSuccess: refresh,
+    onError: failed,
   });
   const deleteCut = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof DeleteDistillationCutRequestSchema>>) =>
       distillationClient.deleteDistillationCut(msg),
     onSuccess: refresh,
+    onError: failed,
   });
   const updateCut = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof UpdateDistillationCutRequestSchema>>) =>
       distillationClient.updateDistillationCut(msg),
     onSuccess: refresh,
+    onError: failed,
   });
   const recordGauge = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof RecordProductionGaugeRequestSchema>>) =>
@@ -117,6 +121,7 @@ export function DistillationDetailPage() {
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
   if (run.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
+  if (run.error && !run.data) return <Shell><LoadError error={run.error} onRetry={() => void run.refetch()} /></Shell>;
   if (!run.data?.run) return <Shell><p>Not found.</p></Shell>;
 
   const r = run.data.run;
@@ -129,7 +134,7 @@ export function DistillationDetailPage() {
 
   return (
     <Shell>
-      <header className="mb-6 flex items-start justify-between">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Distillation #{r.runNo}</h1>
           <p className="text-sm text-fg-muted">
@@ -174,7 +179,7 @@ export function DistillationDetailPage() {
       <ReadingsPanel
         runId={r.id}
         readings={r.readings}
-        onAdd={(m) => addReading.mutate(m)}
+        onAdd={(m) => addReading.mutateAsync(m)}
         adding={addReading.isPending}
         addError={addReading.error}
         onDelete={(readingId) => deleteReading.mutate(create(DeleteDistillationReadingRequestSchema, { id: readingId }))}
@@ -184,19 +189,19 @@ export function DistillationDetailPage() {
         <ChargesPanel
           run={r}
           ferments={ferments.data?.runs ?? []}
-          onSubmit={(m) => addCharge.mutate(m)}
+          onSubmit={(m) => addCharge.mutateAsync(m)}
           submitting={addCharge.isPending}
           error={addCharge.error}
           onDelete={(chargeId) => distillationClient.deleteDistillationCharge({ id: chargeId }).then(refresh)}
         />
         <CutsPanel
           run={r}
-          onSubmit={(m) => addCut.mutate(m)}
+          onSubmit={(m) => addCut.mutateAsync(m)}
           submitting={addCut.isPending}
           error={addCut.error}
           onDelete={(id) => deleteCut.mutate(create(DeleteDistillationCutRequestSchema, { id }))}
           deleting={deleteCut.isPending}
-          onUpdate={(m) => updateCut.mutate(m)}
+          onUpdate={(m) => updateCut.mutateAsync(m)}
           updating={updateCut.isPending}
         />
       </section>
@@ -252,7 +257,7 @@ function ChargesPanel({
 }: {
   run: ReturnType<typeof useDistillationRun>;
   ferments: { id: string; fermenterLabel: string; mashNo: number; recipeName: string }[];
-  onSubmit: (m: ReturnType<typeof create<typeof AddDistillationChargeRequestSchema>>) => void;
+  onSubmit: (m: ReturnType<typeof create<typeof AddDistillationChargeRequestSchema>>) => Promise<unknown>;
   submitting: boolean;
   error: Error | null;
   onDelete: (id: string) => Promise<unknown>;
@@ -262,24 +267,28 @@ function ChargesPanel({
   const [abv, setAbv] = useState("");
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (!fermID || !vol) return;
+    if (!fermID || !vol || !abv) return;
     onSubmit(
       create(AddDistillationChargeRequestSchema, {
         distillationRunId: run.id,
         fermentationRunId: fermID,
         volumeChargedL: Number(vol),
-        abvPct: abv ? Number(abv) : 0,
-        chargeOrder: run.charges.length + 1,
+        abvPct: Number(abv),
+        chargeOrder: Math.max(0, ...run.charges.map((c) => c.chargeOrder)) + 1,
       }),
+    ).then(
+      () => {
+        setFermID("");
+        setVol("");
+        setAbv("");
+      },
+      () => undefined,
     );
-    setFermID("");
-    setVol("");
-    setAbv("");
   }
   return (
     <Panel title="Charges">
       <form onSubmit={submit} className="flex flex-wrap items-end gap-2 border-b border-border px-4 py-3">
-        <Field label="Ferment" as="select" value={fermID} onChange={setFermID}>
+        <Field label="Ferment" as="select" value={fermID} onChange={setFermID} required>
           <option value="">—</option>
           {ferments.map((f) => (
             <option key={f.id} value={f.id}>
@@ -287,8 +296,8 @@ function ChargesPanel({
             </option>
           ))}
         </Field>
-        <Field label="Vol (L liquid)" value={vol} onChange={setVol} type="number" step="0.1" width="w-24" />
-        <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="0.01" width="w-20" />
+        <Field label="Vol (L liquid)" value={vol} onChange={setVol} type="number" step="any" width="w-24" required />
+        <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="any" width="w-20" required />
         <button
           type="submit"
           disabled={submitting}
@@ -296,7 +305,7 @@ function ChargesPanel({
         >
           Add
         </button>
-        {error && <span className="text-xs text-danger-fg">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
+        {error && <span className="text-xs text-danger-fg">{writeErrorText(error)}</span>}
       </form>
       <table className="min-w-full divide-y divide-border text-sm">
         <thead className="text-left text-xs text-fg-muted">
@@ -348,12 +357,12 @@ function CutsPanel({
   updating,
 }: {
   run: ReturnType<typeof useDistillationRun>;
-  onSubmit: (m: ReturnType<typeof create<typeof AddDistillationCutRequestSchema>>) => void;
+  onSubmit: (m: ReturnType<typeof create<typeof AddDistillationCutRequestSchema>>) => Promise<unknown>;
   submitting: boolean;
   error: Error | null;
   onDelete: (id: string) => void;
   deleting: boolean;
-  onUpdate: (m: ReturnType<typeof create<typeof UpdateDistillationCutRequestSchema>>) => void;
+  onUpdate: (m: ReturnType<typeof create<typeof UpdateDistillationCutRequestSchema>>) => Promise<unknown>;
   updating: boolean;
 }) {
   const confirm = useConfirm();
@@ -368,15 +377,16 @@ function CutsPanel({
     setEditVol(String(c.volumeL));
     setEditAbv(String(c.abvPct));
   }
-  function commitEdit(cutOrder: number) {
+  function commitEdit(cut: { cutOrder: number; observedAt?: Timestamp }) {
+    if (!editVol.trim() || !editAbv.trim()) return;
     onUpdate(create(UpdateDistillationCutRequestSchema, {
       id: editingId,
       kind: Number(editKind) as DistillationCutKind,
       volumeL: Number(editVol),
       abvPct: Number(editAbv),
-      cutOrder,
-    }));
-    setEditingId("");
+      cutOrder: cut.cutOrder,
+      observedAt: cut.observedAt,
+    })).then(() => setEditingId(""), () => undefined);
   }
   const [kind, setKind] = useState(String(DistillationCutKind.HEARTS));
   const [vol, setVol] = useState("");
@@ -391,11 +401,15 @@ function CutsPanel({
         kind: Number(kind) as DistillationCutKind,
         volumeL: Number(vol),
         abvPct: Number(abv),
-        cutOrder: run.cuts.length + 1,
+        cutOrder: Math.max(0, ...run.cuts.map((c) => c.cutOrder)) + 1,
       }),
+    ).then(
+      () => {
+        setVol("");
+        setAbv("");
+      },
+      () => undefined,
     );
-    setVol("");
-    setAbv("");
   }
 
   return (
@@ -406,8 +420,8 @@ function CutsPanel({
             <option key={k.v} value={k.v}>{k.label}</option>
           ))}
         </Field>
-        <Field label="Vol (L liquid)" value={vol} onChange={setVol} type="number" step="0.01" width="w-24" />
-        <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="0.01" width="w-20" />
+        <Field label="Vol (L liquid)" value={vol} onChange={setVol} type="number" step="any" width="w-24" required />
+        <Field label="ABV %" value={abv} onChange={setAbv} type="number" step="any" width="w-20" required />
         <button
           type="submit"
           disabled={submitting}
@@ -415,7 +429,7 @@ function CutsPanel({
         >
           Add
         </button>
-        {error && <span className="text-xs text-danger-fg">{error instanceof ConnectError ? error.rawMessage : String(error)}</span>}
+        {error && <span className="text-xs text-danger-fg">{writeErrorText(error)}</span>}
       </form>
       <table className="min-w-full divide-y divide-border text-sm">
         <thead className="text-left text-xs text-fg-muted">
@@ -468,8 +482,8 @@ function CutsPanel({
                   <td className="px-3 py-2 text-right text-fg-subtle">—</td>
                   <td className="px-3 py-2 text-right space-x-2">
                     <button
-                      onClick={() => commitEdit(c.cutOrder)}
-                      disabled={updating}
+                      onClick={() => commitEdit(c)}
+                      disabled={updating || !editVol.trim() || !editAbv.trim()}
                       className="text-xs text-accent-hover hover:text-accent disabled:opacity-50"
                     >
                       Save
@@ -494,7 +508,7 @@ function CutsPanel({
                 <td className="px-3 py-2 text-right space-x-3">
                   <button
                     onClick={() => startEdit(c)}
-                    className="text-xs text-fg-muted hover:text-fg"
+                    className="px-2 py-2 text-xs text-fg-muted hover:text-fg"
                   >
                     Edit
                   </button>
@@ -509,7 +523,7 @@ function CutsPanel({
                       if (ok) onDelete(c.id);
                     }}
                     disabled={deleting}
-                    className="text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
+                    className="px-2 py-2 text-xs text-fg-muted hover:text-danger-fg disabled:opacity-50"
                   >
                     Delete
                   </button>
@@ -587,7 +601,7 @@ function GaugeForm({
         </Button>
         {error && (
           <span className="text-sm text-danger-fg">
-            {error instanceof ConnectError ? error.rawMessage : String(error)}
+            {writeErrorText(error)}
           </span>
         )}
       </div>
@@ -636,17 +650,19 @@ type FieldProps = {
   as?: "input" | "select";
   children?: React.ReactNode;
   width?: string;
+  required?: boolean;
 };
 
-function Field({ label, value, onChange, type = "text", step, as = "input", children, width }: FieldProps) {
+function Field({ label, value, onChange, type = "text", step, as = "input", children, width, required }: FieldProps) {
   return (
     <div>
       <label className="mb-1 block text-xs text-fg-muted">{label}</label>
       {as === "select" ? (
         <select
+          required={required}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`${width ?? ""} rounded border border-border-strong px-2 py-1 text-sm`}
+          className={`max-w-full ${width ?? ""} rounded border border-border-strong px-2 py-1 text-sm`}
         >
           {children}
         </select>
@@ -654,6 +670,7 @@ function Field({ label, value, onChange, type = "text", step, as = "input", chil
         <input
           type={type}
           step={step}
+          required={required}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={`${width ?? "w-full"} rounded border border-border-strong px-3 py-2 text-sm`}
@@ -690,7 +707,7 @@ function ReadingsPanel({
 }: {
   runId: string;
   readings: DistillationReading[];
-  onAdd: (m: ReturnType<typeof create<typeof AddDistillationReadingRequestSchema>>) => void;
+  onAdd: (m: ReturnType<typeof create<typeof AddDistillationReadingRequestSchema>>) => Promise<unknown>;
   adding: boolean;
   addError: unknown;
   onDelete: (id: string) => void;
@@ -717,8 +734,12 @@ function ReadingsPanel({
         vapourTemperatureC: vt ?? 0, vapourTemperatureCSet: vt !== undefined,
         notes,
       }),
+    ).then(
+      () => {
+        setAbv(""); setSpiritTemp(""); setHeat(""); setPotTemp(""); setVapourTemp(""); setNotes("");
+      },
+      () => undefined,
     );
-    setAbv(""); setSpiritTemp(""); setHeat(""); setPotTemp(""); setVapourTemp(""); setNotes("");
   };
 
   const ordered = [...readings].sort((a, b) => Number(a.observedAt?.seconds ?? 0) - Number(b.observedAt?.seconds ?? 0));
@@ -745,7 +766,7 @@ function ReadingsPanel({
         <Button type="submit" disabled={adding}>{adding ? "Saving…" : "Add reading"}</Button>
         {addError ? (
           <span className="text-sm text-danger-fg">
-            {addError instanceof ConnectError ? addError.rawMessage : String(addError)}
+            {writeErrorText(addError)}
           </span>
         ) : null}
       </form>

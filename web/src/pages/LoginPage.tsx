@@ -47,7 +47,9 @@ export function LoginPage() {
       }
       setChoices([]);
       setNeedsCode(false);
-      await queryClient.invalidateQueries({ queryKey: ["getMe"] });
+      // Everything cached belongs to whoever was signed in before,
+      // including the refusal that would send this sign-in back here.
+      queryClient.clear();
       navigate("/", { replace: true });
     },
   });

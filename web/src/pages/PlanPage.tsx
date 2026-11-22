@@ -70,7 +70,7 @@ export function PlanPage() {
 
           <section className="mb-8">
             <h2 className="mb-2 text-sm font-semibold text-fg">What is owed</h2>
-            <div className="overflow-hidden rounded-lg border border-border bg-surface-2">
+            <div className="overflow-x-auto rounded-lg border border-border bg-surface-2">
               <table className="min-w-full divide-y divide-border text-sm">
                 <thead className="bg-surface-3 text-left text-xs text-fg-muted">
                   <tr>

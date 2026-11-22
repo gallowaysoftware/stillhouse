@@ -1,13 +1,15 @@
-import { ChangeEvent, FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FormEvent, KeyboardEvent, useEffect, useRef, useSyncExternalStore } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ConnectError } from "@connectrpc/connect";
 
 import { Callout } from "@/components/Callout";
+import { useConfirm } from "@/components/ConfirmDialog";
 import { Shell } from "@/components/Shell";
 import { distillationClient, fermentationClient, mashClient, userClient } from "@/lib/clients";
 import { useT } from "@/lib/i18n";
+import { conversationFor } from "@/lib/assistantStore";
 import {
-  callSummary, isRead, loadConversation, photoDataURL, recordedEntry, removedEntries, saveConversation, takeLines,
+  callSummary, isRead, photoDataURL, recordedEntry, removedEntries,
   type ChatMessage, type ContentPart, type EntryKind, type ToolCall,
 } from "@/lib/assistant";
 
@@ -19,8 +21,6 @@ const remove: Record<EntryKind, (id: string) => Promise<unknown>> = {
   distillation_reading: (id) => distillationClient.deleteDistillationReading({ id }),
   distillation_cut: (id) => distillationClient.deleteDistillationCut({ id }),
 };
-
-type Event = { message?: ChatMessage; error?: string; done?: boolean };
 
 export function AssistantPage() {
   const me = useQuery({ queryKey: ["getMe"], queryFn: () => userClient.getMe({}) });
@@ -51,14 +51,11 @@ export function AssistantPage() {
 
 function Conversation({ userId, model }: { userId: string; model: string }) {
   const qc = useQueryClient();
-  const [messages, setMessages] = useState<ChatMessage[]>(() => loadConversation(userId));
-  const [draft, setDraft] = useState("");
-  const [photos, setPhotos] = useState<string[]>([]);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const conversation = conversationFor(userId);
+  const { messages, draft, photos, busy, error } = useSyncExternalStore(conversation.subscribe, conversation.getState);
+  const confirm = useConfirm();
   const end = useRef<HTMLDivElement>(null);
 
-  useEffect(() => saveConversation(userId, messages), [userId, messages]);
   // Braced: newer browsers return a promise from scrollIntoView, and React
   // would call it as the effect's cleanup.
   useEffect(() => { end.current?.scrollIntoView({ block: "start" }); }, [messages, busy]);
@@ -67,76 +64,31 @@ function Conversation({ userId, model }: { userId: string; model: string }) {
   const undone = removedEntries(messages);
   const calls = new Map(messages.flatMap((m) => m.tool_calls ?? []).map((c) => [c.id, c]));
 
-  async function send(e?: FormEvent) {
+  function send(e?: FormEvent) {
     e?.preventDefault();
-    const words = draft.trim();
-    if (busy || (!words && photos.length === 0)) return;
-    const content: string | ContentPart[] = photos.length
-      ? [{ type: "text", text: words || "(photo)" }, ...photos.map((url): ContentPart => ({ type: "image_url", image_url: { url } }))]
-      : words;
-    const next: ChatMessage[] = [...messages, { role: "user", content }];
-    setMessages(next);
-    setDraft("");
-    setPhotos([]);
-    setError("");
-    setBusy(true);
-    let finished = false;
-    try {
-      const resp = await fetch("/api/assistant/chat", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: next.slice(-60).map(({ role, content, tool_calls, tool_call_id }) => ({ role, content, tool_calls, tool_call_id })),
-          time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        }),
-      });
-      if (!resp.ok || !resp.body) {
-        // Refused before the turn began, so nothing was recorded and the
-        // words go back where they can be sent again.
-        setMessages(messages);
-        setDraft(words);
-        setPhotos(photos);
-        finished = true;
-        throw new Error(await resp.text());
-      }
-      const reader = resp.body.pipeThrough(new TextDecoderStream()).getReader();
-      let buffer = "";
-      for (;;) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        const { lines, rest } = takeLines(buffer + value);
-        buffer = rest;
-        for (const line of lines) {
-          const ev = JSON.parse(line) as Event;
-          if (ev.message) setMessages((ms) => [...ms, ev.message!]);
-          if (ev.error) setError(ev.error);
-          if (ev.done || ev.error) finished = true;
-        }
-      }
-      if (!finished) throw new Error();
-    } catch (err) {
-      setError(
-        finished && err instanceof Error
-          ? err.message
-          : "The connection dropped. Some of that may have been recorded; ask me what is on the run before repeating it.",
-      );
-    } finally {
-      setBusy(false);
-      // Anything on another page may have moved.
-      void qc.invalidateQueries();
-    }
+    // Anything on another page may have moved.
+    void conversation.send(() => void qc.invalidateQueries());
+  }
+
+  async function clear() {
+    const ok = await confirm({
+      title: "Clear this conversation?",
+      body: "What was recorded stays recorded, but its undo here is gone.",
+      confirmLabel: "Clear",
+      tone: "danger",
+    });
+    if (ok) conversation.set({ messages: [] });
   }
 
   async function undo(kind: EntryKind, id: string, tool: string) {
-    setError("");
+    conversation.set({ error: "" });
     try {
       await remove[kind](id);
     } catch (err) {
-      setError(err instanceof ConnectError ? err.rawMessage : String(err));
+      conversation.set({ error: err instanceof ConnectError ? err.rawMessage : String(err) });
       return;
     }
-    setMessages((ms) => [...ms, { role: "user", hidden: true, removed: id, content: `(I removed the ${tool} entry ${id} myself. It is gone; do not record it again unless I say so.)` }]);
+    conversation.append({ role: "user", hidden: true, removed: id, content: `(I removed the ${tool} entry ${id} myself. It is gone; do not record it again unless I say so.)` });
     void qc.invalidateQueries();
   }
 
@@ -145,16 +97,16 @@ function Conversation({ userId, model }: { userId: string; model: string }) {
     e.target.value = "";
     try {
       const urls = await Promise.all(files.map(photoDataURL));
-      setPhotos((p) => [...p, ...urls].slice(0, 4));
+      conversation.set({ photos: [...conversation.getState().photos, ...urls].slice(0, 4) });
     } catch {
-      setError("That photo could not be read.");
+      conversation.set({ error: "That photo could not be read." });
     }
   }
 
   function onKey(e: KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
       e.preventDefault();
-      void send();
+      send();
     }
   }
 
@@ -179,7 +131,7 @@ function Conversation({ userId, model }: { userId: string; model: string }) {
         {photos.length > 0 && (
           <div className="mb-2 flex gap-2">
             {photos.map((url, i) => (
-              <button key={i} type="button" aria-label="Remove photo" onClick={() => setPhotos((p) => p.filter((_, j) => j !== i))}>
+              <button key={i} type="button" aria-label="Remove photo" onClick={() => conversation.set({ photos: photos.filter((_, j) => j !== i) })}>
                 <img src={url} alt="" className="h-16 w-16 rounded border border-border object-cover" />
               </button>
             ))}
@@ -192,7 +144,7 @@ function Conversation({ userId, model }: { userId: string; model: string }) {
           </label>
           <textarea
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => conversation.set({ draft: e.target.value })}
             onKeyDown={onKey}
             rows={2}
             aria-label="Message"
@@ -210,7 +162,7 @@ function Conversation({ userId, model }: { userId: string; model: string }) {
         <p className="mt-2 flex justify-between text-xs text-fg-subtle">
           <span>{model}</span>
           {messages.length > 0 && !busy && (
-            <button type="button" className="underline" onClick={() => setMessages([])}>
+            <button type="button" className="underline" onClick={() => void clear()}>
               Clear conversation
             </button>
           )}

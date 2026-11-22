@@ -263,7 +263,7 @@ export function BottlingPage() {
       )}
 
       <h2 className="mb-3 text-sm font-semibold text-fg-muted">Recent bottling runs</h2>
-      <div className="mb-8 overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <div className="mb-8 overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
@@ -329,7 +329,7 @@ export function BottlingPage() {
       />
 
       <h2 className="mb-3 text-sm font-semibold text-fg-muted">Packaged inventory</h2>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>

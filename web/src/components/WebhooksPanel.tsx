@@ -164,7 +164,7 @@ export function WebhooksPanel() {
         </form>
       </OwnerOnly>
 
-      <div className="mb-6 overflow-hidden rounded-lg border border-border bg-surface-2">
+      <div className="mb-6 overflow-x-auto rounded-lg border border-border bg-surface-2">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
@@ -208,7 +208,7 @@ export function WebhooksPanel() {
       </div>
 
       <h3 className="mb-2 text-xs font-semibold uppercase text-fg-muted">Recent deliveries</h3>
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2">
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>

@@ -1,18 +1,21 @@
 import { FormEvent, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
+import { useConfirm } from "@/components/ConfirmDialog";
 import { DeleteButton } from "@/components/DeleteButton";
 import { FermentationCurve } from "@/components/FermentationCurve";
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
+import { useToast } from "@/components/Toast";
 import { fermentationClient } from "@/lib/clients";
 import {
   AddFermentationLogRequestSchema,
   FermentationStatus,
   UpdateFermentationStatusRequestSchema,
 } from "@/gen/stillhouse/v1/fermentation_pb";
+import { writeErrorText } from "@/lib/errors";
 import { fermentationStatusLabel, formatQty } from "@/lib/format";
 
 const statusOptions = [
@@ -26,13 +29,16 @@ const statusOptions = [
 export function FermentationDetailPage() {
   const { id } = useParams();
   const qc = useQueryClient();
+  const toast = useToast();
+  const confirm = useConfirm();
 
   const run = useQuery({
     queryKey: ["getFermentationRun", id],
     queryFn: () => fermentationClient.getFermentationRun({ id: id! }),
     enabled: !!id,
   });
-  const refresh = () => qc.invalidateQueries({ queryKey: ["getFermentationRun", id] });
+  // Everything: the lists and pickers elsewhere show this run too.
+  const refresh = () => void qc.invalidateQueries();
 
   const addLog = useMutation({
     mutationFn: (msg: ReturnType<typeof create<typeof AddFermentationLogRequestSchema>>) =>
@@ -43,6 +49,7 @@ export function FermentationDetailPage() {
     mutationFn: (msg: ReturnType<typeof create<typeof UpdateFermentationStatusRequestSchema>>) =>
       fermentationClient.updateFermentationStatus(msg),
     onSuccess: refresh,
+    onError: (e) => toast("danger", writeErrorText(e)),
   });
 
   const [sg, setSG] = useState("");
@@ -67,22 +74,40 @@ export function FermentationDetailPage() {
         temperatureCSet: !!tempN,
         notes,
       }),
+      {
+        onSuccess: () => {
+          setSG("");
+          setPH("");
+          setTemp("");
+          setNotes("");
+        },
+      },
     );
-    setSG("");
-    setPH("");
-    setTemp("");
-    setNotes("");
+  }
+
+  async function setStatus(runId: string, status: FermentationStatus) {
+    if (status === FermentationStatus.CANCELLED) {
+      const ok = await confirm({
+        title: "Cancel this fermentation?",
+        body: "It leaves the open runs. Its readings are kept.",
+        confirmLabel: "Cancel it",
+        tone: "danger",
+      });
+      if (!ok) return;
+    }
+    updateStatus.mutate(create(UpdateFermentationStatusRequestSchema, { id: runId, status }));
   }
 
   if (!id) return <Shell><p>Missing id.</p></Shell>;
   if (run.isLoading) return <Shell><p className="text-fg-muted">Loading…</p></Shell>;
+  if (run.error && !run.data) return <Shell><LoadError error={run.error} onRetry={() => void run.refetch()} /></Shell>;
   if (!run.data?.run) return <Shell><p>Not found.</p></Shell>;
 
   const r = run.data.run;
 
   return (
     <Shell>
-      <header className="mb-6 flex items-start justify-between">
+      <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{r.fermenterLabel}</h1>
           <p className="text-sm text-fg-muted">
@@ -97,14 +122,7 @@ export function FermentationDetailPage() {
           <label className="text-xs text-fg-muted">Status</label>
           <select
             value={r.status}
-            onChange={(e) =>
-              updateStatus.mutate(
-                create(UpdateFermentationStatusRequestSchema, {
-                  id: r.id,
-                  status: Number(e.target.value) as FermentationStatus,
-                }),
-              )
-            }
+            onChange={(e) => void setStatus(r.id, Number(e.target.value) as FermentationStatus)}
             className="rounded border border-border-strong px-2 py-1 text-sm"
           >
             {statusOptions.map((s) => (
@@ -136,8 +154,8 @@ export function FermentationDetailPage() {
       <section className="mb-8 rounded-lg border border-border bg-surface-2 p-5 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-fg-muted">Add reading</h2>
         <form onSubmit={submitLog} className="flex flex-wrap items-end gap-3">
-          <NumField label="Specific gravity" value={sg} onChange={setSG} step="0.001" placeholder="1.020" />
-          <NumField label="pH" value={ph} onChange={setPH} step="0.1" />
+          <NumField label="Specific gravity" value={sg} onChange={setSG} step="0.0001" placeholder="1.020" />
+          <NumField label="pH" value={ph} onChange={setPH} step="0.01" />
           <NumField label="Temperature °C" value={temp} onChange={setTemp} step="0.1" />
           <TextField label="Notes" value={notes} onChange={setNotes} className="flex-1 min-w-[180px]" />
           <button
@@ -149,13 +167,13 @@ export function FermentationDetailPage() {
           </button>
           {addLog.error && (
             <span className="text-sm text-danger-fg">
-              {addLog.error instanceof ConnectError ? addLog.error.rawMessage : String(addLog.error)}
+              {writeErrorText(addLog.error)}
             </span>
           )}
         </form>
       </section>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>
