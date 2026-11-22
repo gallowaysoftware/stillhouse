@@ -146,6 +146,7 @@ Each stage below has its own commit with a verified end-to-end smoke test.
 | 221 | The run planner. `EngineeringService.PlanRun` puts stage 219's model on the wire: a still, a charge and a heat setting in; the strength-versus-time curve, the alcohol collected by the time the distillate passes each named strength, the run's length and its electricity out — and on its face where the still's numbers came from. A plan reads nothing and writes nothing, so anyone who can read a run can ask what the still would do, and the same call is `plan_run` over MCP for a phone at the still, with the curve left off and the envelope kept. The **Engineering** page is the flow chart's first node: pick a still on site or type one — pot volume, elements or steam and their watts, shape, boil ball, plates and dephlegmator — a charge and the settings, and read the plan as two plots on one hours axis with the cuts as verticals. On a distillation run with a charge, *plan this run* draws the same curve under what the parrot actually read, **lined up at the first drop**, since the plan's clock starts at the charge and the readings start when somebody first wrote one down: that overlay is the calibration `L4` fits, seen before it is fitted. Closes `L3` |
 | 222 | CI green again. Every push to `main` since about stage 178 failed on the same five golangci-lint findings and one buf naming rule, and the failure had stopped being read; the DB-backed suite also found that stage 220's `distillation_readings` table was in neither list the tenant export keeps, so an operator's own export silently omitted the run log. Five one-line fixes, the acknowledgement messages renamed to buf's standard (the RPC path is unchanged, so nothing on the wire moves), and the readings exported with the run they belong to. |
 | 223 | Getting started, for a licensee. The dashboard's first-run list began at raw materials, which is where a hobbyist begins and not where a return does: a licensee arriving with a licence, instruments and spirits on hand met a list that mentioned none of them and would have hit "no instrument" on the first gauge. The list now runs licence register → reporting calendar → approved instruments → containers → adopting the stock already on hand, and only then materials, recipes, products, stamps and bottling — each step read off the tenant rather than ticked by hand. |
+| 224 | The brewing assistant. A first real batch was rehearsed from grain to gauge and one step failed: **wash volume** was on the mash page, in the API and in the database, and missing from the mapping between them in both directions, so recording one was refused and conversion efficiency always ran on an estimate. The rest was what a phone needs. Over MCP an operator could log a reading but not find the run to log it on, start a mash, or take a figure back. The surface now runs from receiving grain to recording cuts; runs go by the names said aloud, and **a name that fits two things is refused with the candidates, never chosen**; readings take the time they happened. A misheard number was permanent, because no ingredient, reading or charge could be removed: each now can be, from the page as well, with the audit log keeping what it said, an ingredient going back on its lot, and both refusing once the spirit has been **gauged**. On top sits the Assistant page: a model the licensee hosts, given the floor tools and nothing else, run as the signed-in user through the same role gate and RLS, with photos, and an undo under everything it records. What stays off the surface is what an operator signs for: gauges, bottling, removals, B266. `/mcp?toolset=floor` is the same set for a local model. Built on Go 1.27.4, which clears the fourteen standard-library advisories published since stage 223, with golangci-lint 2.15.0 to read it |
 
 **What's next:** [`PLAN.md`](PLAN.md) is the open backlog — the excise
 correctness work, the returns beyond B266, and the operational surface
@@ -275,18 +276,34 @@ Configure a remote MCP server pointing at your Stillhouse install:
 
 ### Tools
 
-- **Read** — `get_dashboard`, `list_bulk_containers`, `get_bulk_container`,
+- **Read** — `get_floor` (what is open and what it is called; the first
+  call), `get_dashboard`, `list_bulk_containers`, `get_bulk_container`,
   `list_barrels`, `get_barrel`, `list_recent_bulk_movements`,
-  `list_recipes`, `list_products`, `list_b266_periods`
+  `list_recipes`, `get_recipe`, `list_recipe_versions`, `list_products`,
+  `list_b266_periods`, `list_work_orders`
+- **Setup, read only** — `get_setup` (reporting calendar, duty point,
+  licence register, whether the alcoholometric tables are loaded),
+  `list_instruments`, `list_equipment`, `list_alerts`, `list_materials`,
+  `list_material_lots`
+- **Runs** — `list_mashes`, `list_fermentations`, `get_fermentation`,
+  `list_distillations`, `get_distillation`
 - **Filing** — `review_filing`: whether the current return is ready, and
   what to resolve first — losses awaiting a duty treatment, outstanding
   blockers, and whether the return continues the last one filed. Reads
   only; it does not generate or submit anything, and ordering the work is
   the point of it.
-- **Capture** — `fill_barrel`, `regauge_barrel`, `dump_barrel`,
-  `add_fermentation_reading`, `add_mash_reading`,
-  `add_distillation_reading` (strength at the parrot as read, heat
-  setting, temperatures, a note — the run's log)
+- **Capture, grain to cuts** — `add_material`, `receive_material`,
+  `save_recipe`, `start_mash`, `add_mash_ingredient`, `add_mash_reading`,
+  `set_mash_status`, `start_fermentation`, `add_fermentation_reading`,
+  `set_fermentation_status`, `start_distillation`,
+  `add_distillation_charge`, `add_distillation_reading`,
+  `add_distillation_cut`, `set_distillation_status`
+- **Capture, cellar** — `fill_barrel`, `regauge_barrel`, `dump_barrel`
+- **Correct** — `remove_entry` takes back one ingredient, reading, charge
+  or cut recorded wrongly; the audit log keeps what was removed, and an
+  ingredient goes back on its lot
+- **Also** — `set_work_order_status`, `save_recipe_version_sensory`,
+  `save_recipe_version_whisky_sensory`
 - **Bench** — `get_mash` (grain bill + readings + mash guidance),
   `plan_strike` (strike temperature for a target rest),
   `plan_reduction` (proofing down, by volume or by weight),
@@ -299,9 +316,37 @@ indication (`density_kg_m3`) plus `temperature_c`; supply both and the
 strength and volume are resolved to 20 °C through the published CRA tables
 rather than taken as typed.
 
-Back-office work (distillation runs with cuts, bottling, removals,
-B266 generation) stays in the web UI — those flows have multi-row
-inputs that don't translate cleanly to a chat interface.
+Runs are named the way they are said aloud — `mash 3`, `FV1` — and left
+out when only one is open. A name that fits two things is refused with the
+candidates rather than resolved. Readings, cuts and pitches take
+`minutes_ago` or `at`.
+
+`/mcp?toolset=floor` serves only what capturing a batch needs, which is
+what a small local model should be given.
+
+The figures an operator signs for (production gauges, bottling, removals,
+B266 generation) stay in the web UI.
+
+## Brewing assistant
+
+**Assistant** in the web UI is a chat page for a phone: type or dictate
+what just happened, or send a photo of a label or a meter, and it is
+recorded through the floor tools as the signed-in user. Each entry is shown
+as it lands, with an undo.
+
+It runs on a model you host. Point it at any server that speaks the OpenAI
+chat-completions protocol and supports tool calls (and image input, for
+photos):
+
+```sh
+STILLHOUSE_ASSISTANT_URL=http://llm.example.lan:9000/v1
+STILLHOUSE_ASSISTANT_MODEL=your-model-id
+STILLHOUSE_ASSISTANT_API_KEY=            # only if it wants one
+```
+
+What is typed, photographed and read back from Stillhouse goes to that
+server. Conversations are kept in the browser, without the photos, and not
+in the database.
 
 ## Contributing
 

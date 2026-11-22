@@ -278,6 +278,15 @@ func (q *Queries) CreateProductionGauge(ctx context.Context, arg CreateProductio
 	return i, err
 }
 
+const deleteDistillationCharge = `-- name: DeleteDistillationCharge :exec
+DELETE FROM distillation_charges WHERE id = $1
+`
+
+func (q *Queries) DeleteDistillationCharge(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteDistillationCharge, id)
+	return err
+}
+
 const deleteDistillationCut = `-- name: DeleteDistillationCut :exec
 DELETE FROM distillation_cuts WHERE id = $1
 `
@@ -294,6 +303,27 @@ DELETE FROM distillation_readings WHERE id = $1
 func (q *Queries) DeleteDistillationReading(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteDistillationReading, id)
 	return err
+}
+
+const getDistillationCharge = `-- name: GetDistillationCharge :one
+SELECT id, tenant_id, distillation_run_id, fermentation_run_id, volume_charged_l, abv_pct, charge_order, notes, created_at FROM distillation_charges WHERE id = $1
+`
+
+func (q *Queries) GetDistillationCharge(ctx context.Context, id uuid.UUID) (DistillationCharge, error) {
+	row := q.db.QueryRow(ctx, getDistillationCharge, id)
+	var i DistillationCharge
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.DistillationRunID,
+		&i.FermentationRunID,
+		&i.VolumeChargedL,
+		&i.AbvPct,
+		&i.ChargeOrder,
+		&i.Notes,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const getDistillationCut = `-- name: GetDistillationCut :one
@@ -566,6 +596,31 @@ func (q *Queries) ListDistillationRuns(ctx context.Context, status NullDistillat
 		return nil, err
 	}
 	return items, nil
+}
+
+const lockDistillationRun = `-- name: LockDistillationRun :one
+SELECT id, tenant_id, run_no, still_label, run_date, status, notes, created_at, updated_at, voided_at, voided_by, voided_reason, equipment_id FROM distillation_runs WHERE id = $1 FOR UPDATE
+`
+
+func (q *Queries) LockDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error) {
+	row := q.db.QueryRow(ctx, lockDistillationRun, id)
+	var i DistillationRun
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.RunNo,
+		&i.StillLabel,
+		&i.RunDate,
+		&i.Status,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.VoidedAt,
+		&i.VoidedBy,
+		&i.VoidedReason,
+		&i.EquipmentID,
+	)
+	return i, err
 }
 
 const nextDistillationRunNo = `-- name: NextDistillationRunNo :one

@@ -50,6 +50,12 @@ const (
 	// MashServiceAddMashMetricProcedure is the fully-qualified name of the MashService's AddMashMetric
 	// RPC.
 	MashServiceAddMashMetricProcedure = "/stillhouse.v1.MashService/AddMashMetric"
+	// MashServiceDeleteMashIngredientProcedure is the fully-qualified name of the MashService's
+	// DeleteMashIngredient RPC.
+	MashServiceDeleteMashIngredientProcedure = "/stillhouse.v1.MashService/DeleteMashIngredient"
+	// MashServiceDeleteMashMetricProcedure is the fully-qualified name of the MashService's
+	// DeleteMashMetric RPC.
+	MashServiceDeleteMashMetricProcedure = "/stillhouse.v1.MashService/DeleteMashMetric"
 	// MashServicePlanStrikeProcedure is the fully-qualified name of the MashService's PlanStrike RPC.
 	MashServicePlanStrikeProcedure = "/stillhouse.v1.MashService/PlanStrike"
 )
@@ -62,6 +68,8 @@ type MashServiceClient interface {
 	UpdateMashStatus(context.Context, *connect.Request[v1.UpdateMashStatusRequest]) (*connect.Response[v1.UpdateMashStatusResponse], error)
 	AddMashIngredient(context.Context, *connect.Request[v1.AddMashIngredientRequest]) (*connect.Response[v1.AddMashIngredientResponse], error)
 	AddMashMetric(context.Context, *connect.Request[v1.AddMashMetricRequest]) (*connect.Response[v1.AddMashMetricResponse], error)
+	DeleteMashIngredient(context.Context, *connect.Request[v1.DeleteMashIngredientRequest]) (*connect.Response[v1.DeleteMashIngredientResponse], error)
+	DeleteMashMetric(context.Context, *connect.Request[v1.DeleteMashMetricRequest]) (*connect.Response[v1.DeleteMashMetricResponse], error)
 	PlanStrike(context.Context, *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error)
 }
 
@@ -112,6 +120,18 @@ func NewMashServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(mashServiceMethods.ByName("AddMashMetric")),
 			connect.WithClientOptions(opts...),
 		),
+		deleteMashIngredient: connect.NewClient[v1.DeleteMashIngredientRequest, v1.DeleteMashIngredientResponse](
+			httpClient,
+			baseURL+MashServiceDeleteMashIngredientProcedure,
+			connect.WithSchema(mashServiceMethods.ByName("DeleteMashIngredient")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteMashMetric: connect.NewClient[v1.DeleteMashMetricRequest, v1.DeleteMashMetricResponse](
+			httpClient,
+			baseURL+MashServiceDeleteMashMetricProcedure,
+			connect.WithSchema(mashServiceMethods.ByName("DeleteMashMetric")),
+			connect.WithClientOptions(opts...),
+		),
 		planStrike: connect.NewClient[v1.PlanStrikeRequest, v1.PlanStrikeResponse](
 			httpClient,
 			baseURL+MashServicePlanStrikeProcedure,
@@ -123,13 +143,15 @@ func NewMashServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // mashServiceClient implements MashServiceClient.
 type mashServiceClient struct {
-	createMashRun     *connect.Client[v1.CreateMashRunRequest, v1.CreateMashRunResponse]
-	getMashRun        *connect.Client[v1.GetMashRunRequest, v1.GetMashRunResponse]
-	listMashRuns      *connect.Client[v1.ListMashRunsRequest, v1.ListMashRunsResponse]
-	updateMashStatus  *connect.Client[v1.UpdateMashStatusRequest, v1.UpdateMashStatusResponse]
-	addMashIngredient *connect.Client[v1.AddMashIngredientRequest, v1.AddMashIngredientResponse]
-	addMashMetric     *connect.Client[v1.AddMashMetricRequest, v1.AddMashMetricResponse]
-	planStrike        *connect.Client[v1.PlanStrikeRequest, v1.PlanStrikeResponse]
+	createMashRun        *connect.Client[v1.CreateMashRunRequest, v1.CreateMashRunResponse]
+	getMashRun           *connect.Client[v1.GetMashRunRequest, v1.GetMashRunResponse]
+	listMashRuns         *connect.Client[v1.ListMashRunsRequest, v1.ListMashRunsResponse]
+	updateMashStatus     *connect.Client[v1.UpdateMashStatusRequest, v1.UpdateMashStatusResponse]
+	addMashIngredient    *connect.Client[v1.AddMashIngredientRequest, v1.AddMashIngredientResponse]
+	addMashMetric        *connect.Client[v1.AddMashMetricRequest, v1.AddMashMetricResponse]
+	deleteMashIngredient *connect.Client[v1.DeleteMashIngredientRequest, v1.DeleteMashIngredientResponse]
+	deleteMashMetric     *connect.Client[v1.DeleteMashMetricRequest, v1.DeleteMashMetricResponse]
+	planStrike           *connect.Client[v1.PlanStrikeRequest, v1.PlanStrikeResponse]
 }
 
 // CreateMashRun calls stillhouse.v1.MashService.CreateMashRun.
@@ -162,6 +184,16 @@ func (c *mashServiceClient) AddMashMetric(ctx context.Context, req *connect.Requ
 	return c.addMashMetric.CallUnary(ctx, req)
 }
 
+// DeleteMashIngredient calls stillhouse.v1.MashService.DeleteMashIngredient.
+func (c *mashServiceClient) DeleteMashIngredient(ctx context.Context, req *connect.Request[v1.DeleteMashIngredientRequest]) (*connect.Response[v1.DeleteMashIngredientResponse], error) {
+	return c.deleteMashIngredient.CallUnary(ctx, req)
+}
+
+// DeleteMashMetric calls stillhouse.v1.MashService.DeleteMashMetric.
+func (c *mashServiceClient) DeleteMashMetric(ctx context.Context, req *connect.Request[v1.DeleteMashMetricRequest]) (*connect.Response[v1.DeleteMashMetricResponse], error) {
+	return c.deleteMashMetric.CallUnary(ctx, req)
+}
+
 // PlanStrike calls stillhouse.v1.MashService.PlanStrike.
 func (c *mashServiceClient) PlanStrike(ctx context.Context, req *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error) {
 	return c.planStrike.CallUnary(ctx, req)
@@ -175,6 +207,8 @@ type MashServiceHandler interface {
 	UpdateMashStatus(context.Context, *connect.Request[v1.UpdateMashStatusRequest]) (*connect.Response[v1.UpdateMashStatusResponse], error)
 	AddMashIngredient(context.Context, *connect.Request[v1.AddMashIngredientRequest]) (*connect.Response[v1.AddMashIngredientResponse], error)
 	AddMashMetric(context.Context, *connect.Request[v1.AddMashMetricRequest]) (*connect.Response[v1.AddMashMetricResponse], error)
+	DeleteMashIngredient(context.Context, *connect.Request[v1.DeleteMashIngredientRequest]) (*connect.Response[v1.DeleteMashIngredientResponse], error)
+	DeleteMashMetric(context.Context, *connect.Request[v1.DeleteMashMetricRequest]) (*connect.Response[v1.DeleteMashMetricResponse], error)
 	PlanStrike(context.Context, *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error)
 }
 
@@ -221,6 +255,18 @@ func NewMashServiceHandler(svc MashServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(mashServiceMethods.ByName("AddMashMetric")),
 		connect.WithHandlerOptions(opts...),
 	)
+	mashServiceDeleteMashIngredientHandler := connect.NewUnaryHandler(
+		MashServiceDeleteMashIngredientProcedure,
+		svc.DeleteMashIngredient,
+		connect.WithSchema(mashServiceMethods.ByName("DeleteMashIngredient")),
+		connect.WithHandlerOptions(opts...),
+	)
+	mashServiceDeleteMashMetricHandler := connect.NewUnaryHandler(
+		MashServiceDeleteMashMetricProcedure,
+		svc.DeleteMashMetric,
+		connect.WithSchema(mashServiceMethods.ByName("DeleteMashMetric")),
+		connect.WithHandlerOptions(opts...),
+	)
 	mashServicePlanStrikeHandler := connect.NewUnaryHandler(
 		MashServicePlanStrikeProcedure,
 		svc.PlanStrike,
@@ -241,6 +287,10 @@ func NewMashServiceHandler(svc MashServiceHandler, opts ...connect.HandlerOption
 			mashServiceAddMashIngredientHandler.ServeHTTP(w, r)
 		case MashServiceAddMashMetricProcedure:
 			mashServiceAddMashMetricHandler.ServeHTTP(w, r)
+		case MashServiceDeleteMashIngredientProcedure:
+			mashServiceDeleteMashIngredientHandler.ServeHTTP(w, r)
+		case MashServiceDeleteMashMetricProcedure:
+			mashServiceDeleteMashMetricHandler.ServeHTTP(w, r)
 		case MashServicePlanStrikeProcedure:
 			mashServicePlanStrikeHandler.ServeHTTP(w, r)
 		default:
@@ -274,6 +324,14 @@ func (UnimplementedMashServiceHandler) AddMashIngredient(context.Context, *conne
 
 func (UnimplementedMashServiceHandler) AddMashMetric(context.Context, *connect.Request[v1.AddMashMetricRequest]) (*connect.Response[v1.AddMashMetricResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MashService.AddMashMetric is not implemented"))
+}
+
+func (UnimplementedMashServiceHandler) DeleteMashIngredient(context.Context, *connect.Request[v1.DeleteMashIngredientRequest]) (*connect.Response[v1.DeleteMashIngredientResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MashService.DeleteMashIngredient is not implemented"))
+}
+
+func (UnimplementedMashServiceHandler) DeleteMashMetric(context.Context, *connect.Request[v1.DeleteMashMetricRequest]) (*connect.Response[v1.DeleteMashMetricResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("stillhouse.v1.MashService.DeleteMashMetric is not implemented"))
 }
 
 func (UnimplementedMashServiceHandler) PlanStrike(context.Context, *connect.Request[v1.PlanStrikeRequest]) (*connect.Response[v1.PlanStrikeResponse], error) {

@@ -750,7 +750,7 @@ type CreateFermentationRunRequest struct {
 	InitialVolumeL        float64                `protobuf:"fixed64,8,opt,name=initial_volume_l,json=initialVolumeL,proto3" json:"initial_volume_l,omitempty"`
 	InitialVolumeLSet     bool                   `protobuf:"varint,9,opt,name=initial_volume_l_set,json=initialVolumeLSet,proto3" json:"initial_volume_l_set,omitempty"`
 	Notes                 string                 `protobuf:"bytes,10,opt,name=notes,proto3" json:"notes,omitempty"`
-	YeastLotId            string                 `protobuf:"bytes,11,opt,name=yeast_lot_id,json=yeastLotId,proto3" json:"yeast_lot_id,omitempty"` // optional; debits the lot on insert
+	YeastLotId            string                 `protobuf:"bytes,11,opt,name=yeast_lot_id,json=yeastLotId,proto3" json:"yeast_lot_id,omitempty"` // optional; recorded for traceability, the lot is not debited
 	unknownFields         protoimpl.UnknownFields
 	sizeCache             protoimpl.SizeCache
 }
@@ -1338,6 +1338,86 @@ func (x *AddFermentationLogResponse) GetLog() *FermentationLog {
 	return nil
 }
 
+type DeleteFermentationLogRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteFermentationLogRequest) Reset() {
+	*x = DeleteFermentationLogRequest{}
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteFermentationLogRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteFermentationLogRequest) ProtoMessage() {}
+
+func (x *DeleteFermentationLogRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteFermentationLogRequest.ProtoReflect.Descriptor instead.
+func (*DeleteFermentationLogRequest) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *DeleteFermentationLogRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type DeleteFermentationLogResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteFermentationLogResponse) Reset() {
+	*x = DeleteFermentationLogResponse{}
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteFermentationLogResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteFermentationLogResponse) ProtoMessage() {}
+
+func (x *DeleteFermentationLogResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_stillhouse_v1_fermentation_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteFermentationLogResponse.ProtoReflect.Descriptor instead.
+func (*DeleteFermentationLogResponse) Descriptor() ([]byte, []int) {
+	return file_stillhouse_v1_fermentation_proto_rawDescGZIP(), []int{15}
+}
+
 var File_stillhouse_v1_fermentation_proto protoreflect.FileDescriptor
 
 const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
@@ -1451,7 +1531,10 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\x11temperature_c_set\x18\b \x01(\bR\x0ftemperatureCSet\x12\x14\n" +
 	"\x05notes\x18\t \x01(\tR\x05notes\"N\n" +
 	"\x1aAddFermentationLogResponse\x120\n" +
-	"\x03log\x18\x01 \x01(\v2\x1e.stillhouse.v1.FermentationLogR\x03log*\xe2\x01\n" +
+	"\x03log\x18\x01 \x01(\v2\x1e.stillhouse.v1.FermentationLogR\x03log\".\n" +
+	"\x1cDeleteFermentationLogRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\x1f\n" +
+	"\x1dDeleteFermentationLogResponse*\xe2\x01\n" +
 	"\x12FermentationStatus\x12#\n" +
 	"\x1fFERMENTATION_STATUS_UNSPECIFIED\x10\x00\x12\x1f\n" +
 	"\x1bFERMENTATION_STATUS_PITCHED\x10\x01\x12\x1e\n" +
@@ -1469,13 +1552,14 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"$FERMENT_FINDING_SEVERITY_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dFERMENT_FINDING_SEVERITY_INFO\x10\x01\x12$\n" +
 	" FERMENT_FINDING_SEVERITY_WARNING\x10\x02\x12$\n" +
-	" FERMENT_FINDING_SEVERITY_PROBLEM\x10\x032\xcd\x04\n" +
+	" FERMENT_FINDING_SEVERITY_PROBLEM\x10\x032\xc1\x05\n" +
 	"\x13FermentationService\x12r\n" +
 	"\x15CreateFermentationRun\x12+.stillhouse.v1.CreateFermentationRunRequest\x1a,.stillhouse.v1.CreateFermentationRunResponse\x12i\n" +
 	"\x12GetFermentationRun\x12(.stillhouse.v1.GetFermentationRunRequest\x1a).stillhouse.v1.GetFermentationRunResponse\x12o\n" +
 	"\x14ListFermentationRuns\x12*.stillhouse.v1.ListFermentationRunsRequest\x1a+.stillhouse.v1.ListFermentationRunsResponse\x12{\n" +
 	"\x18UpdateFermentationStatus\x12..stillhouse.v1.UpdateFermentationStatusRequest\x1a/.stillhouse.v1.UpdateFermentationStatusResponse\x12i\n" +
-	"\x12AddFermentationLog\x12(.stillhouse.v1.AddFermentationLogRequest\x1a).stillhouse.v1.AddFermentationLogResponseB\xd5\x01\n" +
+	"\x12AddFermentationLog\x12(.stillhouse.v1.AddFermentationLogRequest\x1a).stillhouse.v1.AddFermentationLogResponse\x12r\n" +
+	"\x15DeleteFermentationLog\x12+.stillhouse.v1.DeleteFermentationLogRequest\x1a,.stillhouse.v1.DeleteFermentationLogResponseB\xd5\x01\n" +
 	"\x11com.stillhouse.v1B\x11FermentationProtoP\x01ZXgithub.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1;stillhousev1\xa2\x02\x03SXX\xaa\x02\rStillhouse.V1\xca\x02\rStillhouse\\V1\xe2\x02\x19Stillhouse\\V1\\GPBMetadata\xea\x02\x0eStillhouse::V1b\x06proto3"
 
 var (
@@ -1491,7 +1575,7 @@ func file_stillhouse_v1_fermentation_proto_rawDescGZIP() []byte {
 }
 
 var file_stillhouse_v1_fermentation_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_stillhouse_v1_fermentation_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_stillhouse_v1_fermentation_proto_msgTypes = make([]protoimpl.MessageInfo, 16)
 var file_stillhouse_v1_fermentation_proto_goTypes = []any{
 	(FermentationStatus)(0),                  // 0: stillhouse.v1.FermentationStatus
 	(FermentationPhase)(0),                   // 1: stillhouse.v1.FermentationPhase
@@ -1510,40 +1594,44 @@ var file_stillhouse_v1_fermentation_proto_goTypes = []any{
 	(*UpdateFermentationStatusResponse)(nil), // 14: stillhouse.v1.UpdateFermentationStatusResponse
 	(*AddFermentationLogRequest)(nil),        // 15: stillhouse.v1.AddFermentationLogRequest
 	(*AddFermentationLogResponse)(nil),       // 16: stillhouse.v1.AddFermentationLogResponse
-	(*timestamppb.Timestamp)(nil),            // 17: google.protobuf.Timestamp
+	(*DeleteFermentationLogRequest)(nil),     // 17: stillhouse.v1.DeleteFermentationLogRequest
+	(*DeleteFermentationLogResponse)(nil),    // 18: stillhouse.v1.DeleteFermentationLogResponse
+	(*timestamppb.Timestamp)(nil),            // 19: google.protobuf.Timestamp
 }
 var file_stillhouse_v1_fermentation_proto_depIdxs = []int32{
-	17, // 0: stillhouse.v1.FermentationRun.pitch_at:type_name -> google.protobuf.Timestamp
+	19, // 0: stillhouse.v1.FermentationRun.pitch_at:type_name -> google.protobuf.Timestamp
 	0,  // 1: stillhouse.v1.FermentationRun.status:type_name -> stillhouse.v1.FermentationStatus
-	17, // 2: stillhouse.v1.FermentationRun.created_at:type_name -> google.protobuf.Timestamp
-	17, // 3: stillhouse.v1.FermentationRun.updated_at:type_name -> google.protobuf.Timestamp
+	19, // 2: stillhouse.v1.FermentationRun.created_at:type_name -> google.protobuf.Timestamp
+	19, // 3: stillhouse.v1.FermentationRun.updated_at:type_name -> google.protobuf.Timestamp
 	6,  // 4: stillhouse.v1.FermentationRun.logs:type_name -> stillhouse.v1.FermentationLog
 	5,  // 5: stillhouse.v1.FermentationRun.analysis:type_name -> stillhouse.v1.FermentationAnalysis
 	2,  // 6: stillhouse.v1.FermentFinding.severity:type_name -> stillhouse.v1.FermentFindingSeverity
 	1,  // 7: stillhouse.v1.FermentationAnalysis.phase:type_name -> stillhouse.v1.FermentationPhase
 	4,  // 8: stillhouse.v1.FermentationAnalysis.findings:type_name -> stillhouse.v1.FermentFinding
-	17, // 9: stillhouse.v1.FermentationLog.observed_at:type_name -> google.protobuf.Timestamp
-	17, // 10: stillhouse.v1.CreateFermentationRunRequest.pitch_at:type_name -> google.protobuf.Timestamp
+	19, // 9: stillhouse.v1.FermentationLog.observed_at:type_name -> google.protobuf.Timestamp
+	19, // 10: stillhouse.v1.CreateFermentationRunRequest.pitch_at:type_name -> google.protobuf.Timestamp
 	3,  // 11: stillhouse.v1.CreateFermentationRunResponse.run:type_name -> stillhouse.v1.FermentationRun
 	3,  // 12: stillhouse.v1.GetFermentationRunResponse.run:type_name -> stillhouse.v1.FermentationRun
 	0,  // 13: stillhouse.v1.ListFermentationRunsRequest.status:type_name -> stillhouse.v1.FermentationStatus
 	3,  // 14: stillhouse.v1.ListFermentationRunsResponse.runs:type_name -> stillhouse.v1.FermentationRun
 	0,  // 15: stillhouse.v1.UpdateFermentationStatusRequest.status:type_name -> stillhouse.v1.FermentationStatus
 	3,  // 16: stillhouse.v1.UpdateFermentationStatusResponse.run:type_name -> stillhouse.v1.FermentationRun
-	17, // 17: stillhouse.v1.AddFermentationLogRequest.observed_at:type_name -> google.protobuf.Timestamp
+	19, // 17: stillhouse.v1.AddFermentationLogRequest.observed_at:type_name -> google.protobuf.Timestamp
 	6,  // 18: stillhouse.v1.AddFermentationLogResponse.log:type_name -> stillhouse.v1.FermentationLog
 	7,  // 19: stillhouse.v1.FermentationService.CreateFermentationRun:input_type -> stillhouse.v1.CreateFermentationRunRequest
 	9,  // 20: stillhouse.v1.FermentationService.GetFermentationRun:input_type -> stillhouse.v1.GetFermentationRunRequest
 	11, // 21: stillhouse.v1.FermentationService.ListFermentationRuns:input_type -> stillhouse.v1.ListFermentationRunsRequest
 	13, // 22: stillhouse.v1.FermentationService.UpdateFermentationStatus:input_type -> stillhouse.v1.UpdateFermentationStatusRequest
 	15, // 23: stillhouse.v1.FermentationService.AddFermentationLog:input_type -> stillhouse.v1.AddFermentationLogRequest
-	8,  // 24: stillhouse.v1.FermentationService.CreateFermentationRun:output_type -> stillhouse.v1.CreateFermentationRunResponse
-	10, // 25: stillhouse.v1.FermentationService.GetFermentationRun:output_type -> stillhouse.v1.GetFermentationRunResponse
-	12, // 26: stillhouse.v1.FermentationService.ListFermentationRuns:output_type -> stillhouse.v1.ListFermentationRunsResponse
-	14, // 27: stillhouse.v1.FermentationService.UpdateFermentationStatus:output_type -> stillhouse.v1.UpdateFermentationStatusResponse
-	16, // 28: stillhouse.v1.FermentationService.AddFermentationLog:output_type -> stillhouse.v1.AddFermentationLogResponse
-	24, // [24:29] is the sub-list for method output_type
-	19, // [19:24] is the sub-list for method input_type
+	17, // 24: stillhouse.v1.FermentationService.DeleteFermentationLog:input_type -> stillhouse.v1.DeleteFermentationLogRequest
+	8,  // 25: stillhouse.v1.FermentationService.CreateFermentationRun:output_type -> stillhouse.v1.CreateFermentationRunResponse
+	10, // 26: stillhouse.v1.FermentationService.GetFermentationRun:output_type -> stillhouse.v1.GetFermentationRunResponse
+	12, // 27: stillhouse.v1.FermentationService.ListFermentationRuns:output_type -> stillhouse.v1.ListFermentationRunsResponse
+	14, // 28: stillhouse.v1.FermentationService.UpdateFermentationStatus:output_type -> stillhouse.v1.UpdateFermentationStatusResponse
+	16, // 29: stillhouse.v1.FermentationService.AddFermentationLog:output_type -> stillhouse.v1.AddFermentationLogResponse
+	18, // 30: stillhouse.v1.FermentationService.DeleteFermentationLog:output_type -> stillhouse.v1.DeleteFermentationLogResponse
+	25, // [25:31] is the sub-list for method output_type
+	19, // [19:25] is the sub-list for method input_type
 	19, // [19:19] is the sub-list for extension type_name
 	19, // [19:19] is the sub-list for extension extendee
 	0,  // [0:19] is the sub-list for field type_name
@@ -1560,7 +1648,7 @@ func file_stillhouse_v1_fermentation_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_stillhouse_v1_fermentation_proto_rawDesc), len(file_stillhouse_v1_fermentation_proto_rawDesc)),
 			NumEnums:      3,
-			NumMessages:   14,
+			NumMessages:   16,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

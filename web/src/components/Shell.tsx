@@ -40,6 +40,7 @@ const navGroups: NavGroup[] = [
     en: "Production",
     fr: "Production",
     items: [
+      { to: "/assistant", en: "Assistant", fr: "Assistant" },
       { to: "/plan", en: "Production plan", fr: "Plan de production" },
       { to: "/engineering", en: "Engineering", fr: "Ingénierie" },
       { to: "/work", en: "Work", fr: "Travaux" },

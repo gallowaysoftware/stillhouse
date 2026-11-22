@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 
+import { AssistantPage } from "./pages/AssistantPage";
 import { AuditPage } from "./pages/AuditPage";
 import { B266Page } from "./pages/B266Page";
 import { BarrelDetailPage } from "./pages/BarrelDetailPage";
@@ -60,6 +61,7 @@ export function App() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/" element={<Guarded><HomePage /></Guarded>} />
+      <Route path="/assistant" element={<Guarded><AssistantPage /></Guarded>} />
       <Route path="/materials" element={<Guarded><MaterialsPage /></Guarded>} />
       <Route path="/materials/:id" element={<Guarded><MaterialDetailPage /></Guarded>} />
       <Route path="/recipes" element={<Guarded><RecipesPage /></Guarded>} />

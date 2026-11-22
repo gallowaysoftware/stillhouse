@@ -111,6 +111,35 @@ func (q *Queries) CreateFermentationRun(ctx context.Context, arg CreateFermentat
 	return i, err
 }
 
+const deleteFermentationLog = `-- name: DeleteFermentationLog :exec
+DELETE FROM fermentation_logs WHERE id = $1
+`
+
+func (q *Queries) DeleteFermentationLog(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteFermentationLog, id)
+	return err
+}
+
+const getFermentationLog = `-- name: GetFermentationLog :one
+SELECT id, tenant_id, fermentation_run_id, observed_at, specific_gravity, ph, temperature_c, notes FROM fermentation_logs WHERE id = $1
+`
+
+func (q *Queries) GetFermentationLog(ctx context.Context, id uuid.UUID) (FermentationLog, error) {
+	row := q.db.QueryRow(ctx, getFermentationLog, id)
+	var i FermentationLog
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.FermentationRunID,
+		&i.ObservedAt,
+		&i.SpecificGravity,
+		&i.Ph,
+		&i.TemperatureC,
+		&i.Notes,
+	)
+	return i, err
+}
+
 const getFermentationRun = `-- name: GetFermentationRun :one
 SELECT id, tenant_id, mash_run_id, fermenter_label, yeast_material_id, yeast_notes, pitch_at, target_final_gravity, initial_volume_l, status, notes, created_at, updated_at, yeast_lot_id FROM fermentation_runs WHERE id = $1
 `

@@ -5,6 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { MashBench } from "@/components/MashBench";
+import { DeleteButton } from "@/components/DeleteButton";
 import { Shell } from "@/components/Shell";
 import { fermentationClient, mashClient, materialClient } from "@/lib/clients";
 import type { Material, MaterialLot } from "@/gen/stillhouse/v1/material_pb";
@@ -178,12 +179,13 @@ export function MashDetailPage() {
                 <th className="px-3 py-2">Material / Lot</th>
                 <th className="px-3 py-2 text-right">Qty</th>
                 <th className="px-3 py-2">UoM</th>
+                <th className="px-3 py-2" />
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {m.ingredients.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-3 py-2 text-fg-muted">
+                  <td colSpan={4} className="px-3 py-2 text-fg-muted">
                     None recorded.
                   </td>
                 </tr>
@@ -203,6 +205,13 @@ export function MashDetailPage() {
                   </td>
                   <td className="px-3 py-2 text-right text-fg-muted">{formatQty(ing.quantityUsed)}</td>
                   <td className="px-3 py-2 text-fg-muted">{ing.uom}</td>
+                  <td className="px-3 py-2 text-right">
+                    <DeleteButton
+                      title={`Remove ${ing.materialName}?`}
+                      body="It comes off the mash and goes back on its lot. The audit trail keeps what was removed."
+                      onDelete={() => mashClient.deleteMashIngredient({ id: ing.id }).then(refresh)}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -248,12 +257,13 @@ export function MashDetailPage() {
                 <th className="px-3 py-2">When</th>
                 <th className="px-3 py-2">Kind</th>
                 <th className="px-3 py-2 text-right">Value</th>
+                <th className="px-3 py-2" />
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {m.metrics.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-3 py-2 text-fg-muted">
+                  <td colSpan={4} className="px-3 py-2 text-fg-muted">
                     None recorded.
                   </td>
                 </tr>
@@ -268,6 +278,13 @@ export function MashDetailPage() {
                   <td className="px-3 py-2 text-fg">{mashMetricKindLabel(mc.kind)}</td>
                   <td className="px-3 py-2 text-right text-fg-muted">
                     {mc.value} {mc.unit}
+                  </td>
+                  <td className="px-3 py-2 text-right">
+                    <DeleteButton
+                      title="Delete this reading?"
+                      body="The audit trail keeps what it said."
+                      onDelete={() => mashClient.deleteMashMetric({ id: mc.id }).then(refresh)}
+                    />
                   </td>
                 </tr>
               ))}

@@ -1090,3 +1090,53 @@ func distillationReadingToProto(r sqlcgen.DistillationReading) *stillhousev1.Dis
 	}
 	return out
 }
+
+func (s *DistillationService) DeleteDistillationCharge(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteDistillationChargeRequest],
+) (*connect.Response[stillhousev1.DeleteDistillationChargeResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		c, e := q.GetDistillationCharge(ctx, id)
+		if e != nil {
+			return e
+		}
+		run, e := q.LockDistillationRun(ctx, c.DistillationRunID)
+		if e != nil {
+			return e
+		}
+		if run.Status == sqlcgen.DistillationStatusGauged {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("this run has been gauged; its charges can no longer be changed"))
+		}
+		if e := q.DeleteDistillationCharge(ctx, id); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "distillation_charge", id.String(),
+			sqlcgen.AuditActionDelete, map[string]any{
+				"distillation_run_id": c.DistillationRunID.String(),
+				"fermentation_run_id": c.FermentationRunID.String(),
+				"volume_charged_l":    c.VolumeChargedL,
+				"abv_pct":             c.AbvPct,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("charge not found"))
+		}
+		s.logger.Error("DeleteDistillationCharge", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DeleteDistillationChargeResponse{}), nil
+}

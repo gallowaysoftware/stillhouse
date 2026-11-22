@@ -12,6 +12,7 @@ backend/
   cmd/server/          binary entrypoint
   cmd/seed/            bootstrap tenant + admin
   cmd/mcp-token/       recovery-path API-token issuer (UI is preferred)
+  internal/assistant/  brewing assistant (operator-hosted model over the MCP floor tools)
   internal/audit/      audit-log writer
   internal/auth/       Argon2id password hashing
   internal/config/     env config
@@ -165,9 +166,14 @@ and role gating behave identically. See `backend/internal/mcp/` and
 README's MCP section.
 
 When `mcp__stillhouse__*` tools are loaded in a Claude Code session,
-prefer them for QA + reads + supported writes. Tools intentionally
-cover only the "operator with wet hands" surface; back-office writes
-(production gauge, bottling, removal, B266 gen) stay in the web UI.
+prefer them for QA + reads + supported writes. Tools cover what an
+operator does on the floor, grain to cuts; the figures an operator signs
+for (production gauge, bottling, removal, B266 gen) stay in the web UI.
+
+The Assistant page (`internal/assistant`, `web/src/pages/AssistantPage.tsx`)
+runs an operator-hosted model over the `floor` toolset in-process. A tool
+added to `floorTools` reaches a model acting on speech and photos, so
+nothing that moves alcohol in the ledger goes in it.
 
 ## QA pattern
 

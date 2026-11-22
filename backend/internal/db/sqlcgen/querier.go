@@ -270,6 +270,7 @@ type Querier interface {
 	// is refused by the cast rather than stored.
 	CreateWebhookEndpoint(ctx context.Context, arg CreateWebhookEndpointParams) (CreateWebhookEndpointRow, error)
 	CreateWorkOrder(ctx context.Context, arg CreateWorkOrderParams) (WorkOrder, error)
+	CreditMaterialLot(ctx context.Context, arg CreditMaterialLotParams) error
 	// What this buyer has actually taken. Voided removals are excluded —
 	// they were withdrawn, and counting them would overstate what left.
 	CustomerRemovalTotals(ctx context.Context, customerID uuid.NullUUID) (CustomerRemovalTotalsRow, error)
@@ -288,12 +289,16 @@ type Querier interface {
 	DecrementStampOrderApplied(ctx context.Context, arg DecrementStampOrderAppliedParams) (ExciseStampOrder, error)
 	DeleteCostRates(ctx context.Context, id uuid.UUID) error
 	DeleteDemandForecast(ctx context.Context, id uuid.UUID) error
+	DeleteDistillationCharge(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationCut(ctx context.Context, id uuid.UUID) error
 	DeleteDistillationReading(ctx context.Context, id uuid.UUID) error
 	DeleteEquipment(ctx context.Context, id uuid.UUID) error
+	DeleteFermentationLog(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLine(ctx context.Context, id uuid.UUID) error
 	DeleteInvoiceLines(ctx context.Context, invoiceID uuid.UUID) error
 	DeleteLabourEntry(ctx context.Context, id uuid.UUID) error
+	DeleteMashIngredient(ctx context.Context, id uuid.UUID) (int64, error)
+	DeleteMashMetric(ctx context.Context, id uuid.UUID) error
 	DeletePOSProductMap(ctx context.Context, id uuid.UUID) error
 	DeletePriceListEntry(ctx context.Context, arg DeletePriceListEntryParams) error
 	DeleteProvincialRegistration(ctx context.Context, id uuid.UUID) error
@@ -422,11 +427,13 @@ type Querier interface {
 	GetConsignmentForUpdate(ctx context.Context, id uuid.UUID) (Consignment, error)
 	GetCustomer(ctx context.Context, id uuid.UUID) (Customer, error)
 	GetDefaultLocation(ctx context.Context) (Location, error)
+	GetDistillationCharge(ctx context.Context, id uuid.UUID) (DistillationCharge, error)
 	GetDistillationCut(ctx context.Context, id uuid.UUID) (DistillationCut, error)
 	GetDistillationReading(ctx context.Context, id uuid.UUID) (DistillationReading, error)
 	GetDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	GetEquipment(ctx context.Context, id uuid.UUID) (GetEquipmentRow, error)
 	GetExciseLicence(ctx context.Context, id uuid.UUID) (ExciseLicence, error)
+	GetFermentationLog(ctx context.Context, id uuid.UUID) (FermentationLog, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
 	GetForecastSettings(ctx context.Context, id uuid.UUID) (GetForecastSettingsRow, error)
 	GetInstrument(ctx context.Context, id uuid.UUID) (Instrument, error)
@@ -441,6 +448,8 @@ type Querier interface {
 	GetLocation(ctx context.Context, id uuid.UUID) (Location, error)
 	GetMarkedContainer(ctx context.Context, id uuid.UUID) (GetMarkedContainerRow, error)
 	GetMarkedContainerForUpdate(ctx context.Context, id uuid.UUID) (MarkedSpecialContainer, error)
+	GetMashIngredient(ctx context.Context, id uuid.UUID) (MashIngredientUsage, error)
+	GetMashMetric(ctx context.Context, id uuid.UUID) (MashMetric, error)
 	GetMashRun(ctx context.Context, id uuid.UUID) (MashRun, error)
 	GetMaterial(ctx context.Context, id uuid.UUID) (Material, error)
 	GetMaterialLot(ctx context.Context, id uuid.UUID) (MaterialLot, error)
@@ -774,6 +783,7 @@ type Querier interface {
 	// doing its job in the column while the wire stays ordinary strings.
 	ListWebhookEndpoints(ctx context.Context) ([]ListWebhookEndpointsRow, error)
 	ListWorkOrders(ctx context.Context, arg ListWorkOrdersParams) ([]ListWorkOrdersRow, error)
+	LockDistillationRun(ctx context.Context, id uuid.UUID) (DistillationRun, error)
 	// Document-number allocation.
 	//
 	// Every `next_*_no` query below is `SELECT MAX(n) + 1` against a column
@@ -817,6 +827,7 @@ type Querier interface {
 	MarkShipmentShipped(ctx context.Context, arg MarkShipmentShippedParams) (Shipment, error)
 	MarkStockCountLinePosted(ctx context.Context, arg MarkStockCountLinePostedParams) error
 	MarkUserEmailVerified(ctx context.Context, id uuid.UUID) (User, error)
+	MashHasGauge(ctx context.Context, mashRunID uuid.UUID) (bool, error)
 	// On hand, what it is being used at, and how long that lasts.
 	//
 	// The consumption rate is what actually went into mashes over the window,

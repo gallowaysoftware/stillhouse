@@ -2,11 +2,13 @@ package mcp
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"connectrpc.com/connect"
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	pb "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1"
@@ -15,7 +17,7 @@ import (
 // registerReadTools attaches every read-only tool to s. Each tool runs
 // in a tenant-scoped tx via the underlying RPC service, so the user
 // closed over by the session sees only their own tenant's data.
-func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func registerReadTools(s *registrar, d Deps, user sqlcgen.User) {
 	addDashboard(s, d, user)
 	addListBulkContainers(s, d, user)
 	addGetBulkContainer(s, d, user)
@@ -34,6 +36,18 @@ func registerReadTools(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	addPlanBlend(s, d, user)
 	addReviewFiling(s, d, user)
 	addListWorkOrders(s, d, user)
+	addGetFloor(s, d, user)
+	addGetSetup(s, d, user)
+	addListInstruments(s, d, user)
+	addListMaterials(s, d, user)
+	addListMaterialLots(s, d, user)
+	addListEquipment(s, d, user)
+	addListAlerts(s, d, user)
+	addListMashes(s, d, user)
+	addListFermentations(s, d, user)
+	addGetFermentation(s, d, user)
+	addListDistillations(s, d, user)
+	addGetDistillation(s, d, user)
 }
 
 // dashboardOutput is a compact rollup useful as the "what's the state
@@ -47,9 +61,9 @@ type dashboardOutput struct {
 	CanadianWhiskyEligible int32   `json:"canadian_whisky_eligible_barrel_count"`
 }
 
-func addDashboard(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addDashboard(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct{}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "get_dashboard",
 		Description: "One-shot summary of current distillery state: total bulk LAA, total barrel LAA, barrel count, and Canadian Whisky eligible barrels. Use this first to orient.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ in) (*mcpsdk.CallToolResult, any, error) {
@@ -77,11 +91,11 @@ func addDashboard(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListBulkContainers(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListBulkContainers(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		IncludeArchived bool `json:"include_archived,omitempty" jsonschema:"include archived containers in the result"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_bulk_containers",
 		Description: "List every bulk container (spirit receiver, tank, IBC, tote, blend tank, bottling tank) with its current volume (L), ABV (%), and LAA. Barrels are listed separately via list_barrels.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -99,11 +113,11 @@ func addListBulkContainers(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addGetBulkContainer(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addGetBulkContainer(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		ID string `json:"id" jsonschema:"UUID of the bulk container"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "get_bulk_container",
 		Description: "Get one bulk container plus its full movement history (deposits, withdrawals, blends, losses).",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -119,11 +133,11 @@ func addGetBulkContainer(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListBarrels(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListBarrels(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		IncludeArchived bool `json:"include_archived,omitempty" jsonschema:"include archived barrels in the result"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_barrels",
 		Description: "List every barrel with current LAA, fill date, days aged, and Canadian Whisky (FDR B.02.020) eligibility — small wood (≤700 L) aged ≥1095 days in Canada.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -141,11 +155,11 @@ func addListBarrels(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addGetBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addGetBarrel(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		ID string `json:"id" jsonschema:"UUID of the barrel"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "get_barrel",
 		Description: "Get one barrel plus its full event history (fills, regauges, samples, dumps).",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -161,9 +175,9 @@ func addGetBarrel(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListRecentBulkMovements(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListRecentBulkMovements(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct{}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_recent_bulk_movements",
 		Description: "Recent bulk-alcohol journal entries: production gauges, inter-tank transfers, blends, losses, etc.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ in) (*mcpsdk.CallToolResult, any, error) {
@@ -179,11 +193,11 @@ func addListRecentBulkMovements(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListRecipes(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListRecipes(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		IncludeArchived bool `json:"include_archived,omitempty" jsonschema:"include archived recipes"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_recipes",
 		Description: "List recipes (mash bills) with projected LAA per batch.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -201,11 +215,11 @@ func addListRecipes(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addGetRecipe(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addGetRecipe(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		ID string `json:"id" jsonschema:"UUID of the recipe"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "get_recipe",
 		Description: "Drill into one recipe: the recipe row, its current version (mash bill for whisky or botanical bill + NGS/maceration/method for gin), the projected LAA, and the latest sensory scores if any. Use this to inspect a recipe before scoring it or before iterating to a new version.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -221,11 +235,11 @@ func addGetRecipe(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListRecipeVersions(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListRecipeVersions(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		RecipeID string `json:"recipe_id" jsonschema:"UUID of the recipe"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_recipe_versions",
 		Description: "List every saved version of a recipe (newest first) — the iteration history. Returns version metadata (no ingredient bill); call get_recipe for the current version's full ingredient + sensory drill-down.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -243,11 +257,11 @@ func addListRecipeVersions(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListProducts(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListProducts(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		IncludeArchived bool `json:"include_archived,omitempty" jsonschema:"include archived products"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_products",
 		Description: "List product SKUs (bottle size, target ABV, label info).",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -265,9 +279,9 @@ func addListProducts(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addListB266Periods(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListB266Periods(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct{}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "list_b266_periods",
 		Description: "List CRA Form B266 reporting periods — generated, signed, submitted, reopened — with the values that go on each return.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ in) (*mcpsdk.CallToolResult, any, error) {
@@ -290,11 +304,11 @@ func addListB266Periods(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 //
 // This is the read an operator wants mid-mash, and the one an LLM needs
 // before it can answer "is this mash going the way it should?".
-func addGetMash(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addGetMash(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
-		MashRunID string `json:"mash_run_id" jsonschema:"UUID of the mash run"`
+		MashRunID string `json:"mash_run_id,omitempty" jsonschema:"the mash, by number or UUID; empty when only one is open"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name: "get_mash",
 		Description: "Read a mash run: grain bill, recorded metrics, projected vs captured LAA, and the mash bench — " +
 			"gelatinisation range required by the bill's cereals, the 60–70 °C conversion window, whether a separate " +
@@ -305,8 +319,12 @@ func addGetMash(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		if err != nil {
 			return nil, nil, err
 		}
+		id, err := resolveMash(ctx, d, user, args.MashRunID)
+		if err != nil {
+			return errResult(err), nil, nil
+		}
 		resp, err := d.Mash.GetMashRun(ctx, connect.NewRequest(&pb.GetMashRunRequest{
-			Id: args.MashRunID,
+			Id: id,
 		}))
 		if err != nil {
 			return errResult(err), nil, nil
@@ -316,14 +334,14 @@ func addGetMash(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 }
 
 // addPlanStrike answers the question asked while the liquor is heating.
-func addPlanStrike(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addPlanStrike(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		TargetTempC     float64 `json:"target_temp_c" jsonschema:"the rest temperature you want the mash to land on, °C"`
 		GrainTempC      float64 `json:"grain_temp_c" jsonschema:"current temperature of the grain, °C (ambient store temperature is usually right)"`
 		ThicknessLPerKg float64 `json:"thickness_l_per_kg" jsonschema:"mash thickness in litres of liquor per kilogram of grain; 2.5-3.5 is the usual band"`
 		GrainKg         float64 `json:"grain_kg,omitempty" jsonschema:"optional grain mass; when supplied the response also gives the liquor volume needed"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name: "plan_strike",
 		Description: "Calculate the strike temperature: how hot to heat the mash liquor so the grain lands on the target " +
 			"rest temperature. Flags the case where the required liquor temperature would denature the amylases on contact.",
@@ -347,14 +365,14 @@ func addPlanStrike(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 
 // addPlanReduction exposes the proofing-down calculator. Read-only — it
 // computes a plan, it doesn't move any alcohol.
-func addPlanReduction(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addPlanReduction(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		FromVolumeL     float64  `json:"from_volume_l,omitempty" jsonschema:"volume of spirit you're starting with, in litres at 20 °C. Use from_mass_kg instead if the vessel is on a scale"`
 		FromMassKg      *float64 `json:"from_mass_kg,omitempty" jsonschema:"weight of the spirit you're starting with, in kilograms. More accurate than volume — a scale ignores temperature and mass doesn't contract on mixing. Wins over from_volume_l when both are given"`
 		FromStrengthPct float64  `json:"from_strength_pct" jsonschema:"current strength as a percentage (0-100) at 20 °C"`
 		ToStrengthPct   float64  `json:"to_strength_pct" jsonschema:"strength you want to land on, as a percentage at 20 °C. Must be lower than from_strength_pct — water only dilutes"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name: "plan_reduction",
 		Description: "Work out how to proof spirit down to a target strength: the final volume to fill to, and the water " +
 			"to add. The water figure accounts for the volume contraction that happens when ethanol and water mix " +
@@ -382,7 +400,7 @@ func addPlanReduction(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 
 // addPlanBlend exposes the vatting planner. Read-only — it computes a
 // plan; CreateBlend in the web UI is what actually moves the alcohol.
-func addPlanBlend(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addPlanBlend(s *registrar, d Deps, user sqlcgen.User) {
 	type source struct {
 		Label       string  `json:"label,omitempty" jsonschema:"optional name for the parcel, e.g. the cask number"`
 		VolumeL     float64 `json:"volume_l" jsonschema:"volume in litres at 20 °C"`
@@ -392,7 +410,7 @@ func addPlanBlend(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		Sources           []source `json:"sources" jsonschema:"the parcels being vatted together; at least two"`
 		TargetStrengthPct float64  `json:"target_strength_pct,omitempty" jsonschema:"optional bottling strength to bring the vatting down to; must be below the blend's own strength"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name: "plan_blend",
 		Description: "Vat parcels together and see what comes out: the blend's volume, its strength, and — if a target " +
 			"is given — the water needed to reduce it. The result is NOT the sum of the volumes or the weighted " +
@@ -487,11 +505,11 @@ type filingContinuity struct {
 // that belongs at the still rather than on the returns page: an operator
 // with wet hands asking whether the return is ready, and being told what
 // to do first rather than being handed a form.
-func addReviewFiling(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addReviewFiling(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		On string `json:"on,omitempty" jsonschema:"review the period containing this ISO date (YYYY-MM-DD); empty means the period that is next due"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name: "review_filing",
 		Description: "Whether the current CRA B266 return is ready to file, and what has to be resolved first: " +
 			"outstanding filing blockers, losses awaiting a duty treatment, and whether the return continues " +
@@ -647,12 +665,12 @@ func lossPlural(n int32) string {
 // back-office writes stay in the web UI; a board is multi-row to READ,
 // which chat handles perfectly well, and the one write it needs is a
 // single field — see addSetWorkOrderStatus in tools_write.go.
-func addListWorkOrders(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addListWorkOrders(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		OpenOnly bool `json:"open_only,omitempty" jsonschema:"only jobs that are still planned or in progress"`
 		Mine     bool `json:"mine,omitempty" jsonschema:"only jobs assigned to you"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name: "list_work_orders",
 		Description: "The job board: what is planned, what is in progress, who it is for and when it is scheduled. " +
 			"Use open_only to see what is outstanding, mine to see your own.",
@@ -673,7 +691,7 @@ func addListWorkOrders(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 	})
 }
 
-func addPlanRun(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
+func addPlanRun(s *registrar, d Deps, user sqlcgen.User) {
 	type in struct {
 		Still              string    `json:"still" jsonschema:"which still, by preset name: '200 L electric, pot', '200 L electric, four plates and dephlegmator', or '30 L electric, pot'"`
 		VolumeL            float64   `json:"volume_l" jsonschema:"charge volume in litres"`
@@ -684,7 +702,7 @@ func addPlanRun(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		StopDistillateAbv  float64   `json:"stop_distillate_abv_pct,omitempty" jsonschema:"distillate strength the run stops at; 0 = 8"`
 		ChargeTemperatureC float64   `json:"charge_temperature_c,omitempty" jsonschema:"charge temperature at the start, °C; 0 = 20"`
 	}
-	mcpsdk.AddTool(s, &mcpsdk.Tool{
+	addTool(s, &mcpsdk.Tool{
 		Name:        "plan_run",
 		Description: "Plan a still run before it happens on one of the stills on site: the strength-versus-time curve, the time and alcohol collected by the time the distillate passes each named strength, the run's length and its electricity. The plan says on its face whether it comes from the still's specification or a calibration. It predicts strength and time, not flavour: the cut by nose is yours.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
@@ -730,5 +748,296 @@ func addPlanRun(s *mcpsdk.Server, d Deps, user sqlcgen.User) {
 		plan := resp.Msg.GetPlan()
 		plan.Points = nil
 		return jsonResult(plan), nil, nil
+	})
+}
+
+type setupOutput struct {
+	Tenant   json.RawMessage `json:"tenant"`
+	Licences json.RawMessage `json:"licences"`
+	Tables   json.RawMessage `json:"alcoholometric_tables"`
+}
+
+func addGetSetup(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct{}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "get_setup",
+		Description: "What the distillery is set up as: the tenant record and its reporting calendar and duty point, the licence register, and whether the alcoholometric tables are loaded. Reads only.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, _ in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.TenantService/GetTenant")
+		if err != nil {
+			return nil, nil, err
+		}
+		tenant, err := d.Tenant.GetTenant(ctx, connect.NewRequest(&pb.GetTenantRequest{}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		ctx, err = guard(ctx, user, "/stillhouse.v1.TenantService/ListExciseLicences")
+		if err != nil {
+			return nil, nil, err
+		}
+		licences, err := d.Tenant.ListExciseLicences(ctx, connect.NewRequest(&pb.ListExciseLicencesRequest{}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		ctx, err = guard(ctx, user, "/stillhouse.v1.AlcoholometryService/TablesInfo")
+		if err != nil {
+			return nil, nil, err
+		}
+		tables, err := d.Alcoholometry.TablesInfo(ctx, connect.NewRequest(&pb.TablesInfoRequest{}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		var out setupOutput
+		for _, part := range []struct {
+			dst *json.RawMessage
+			msg proto.Message
+		}{
+			{&out.Tenant, tenant.Msg.GetTenant()},
+			{&out.Licences, licences.Msg},
+			{&out.Tables, tables.Msg},
+		} {
+			if *part.dst, err = marshalProto(part.msg); err != nil {
+				return errResult(err), nil, nil
+			}
+		}
+		return jsonResultRaw(out), nil, nil
+	})
+}
+
+func addListInstruments(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		IncludeRetired bool `json:"include_retired,omitempty" jsonschema:"include retired instruments"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_instruments",
+		Description: "The instrument register: each instrument, its CRA approval and calibration, and whether it is usable for a determination right now — with the reason when it is not.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.InstrumentService/ListInstruments")
+		if err != nil {
+			return nil, nil, err
+		}
+		resp, err := d.Instrument.ListInstruments(ctx, connect.NewRequest(&pb.ListInstrumentsRequest{
+			IncludeRetired: args.IncludeRetired,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListMaterials(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		IncludeArchived bool `json:"include_archived,omitempty" jsonschema:"include archived materials"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_materials",
+		Description: "List raw materials (grain, malt, yeast, water and the rest) with unit, extract, moisture and cereal. Extract and moisture are fractions, 0 to 1.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.MaterialService/ListMaterials")
+		if err != nil {
+			return nil, nil, err
+		}
+		resp, err := d.Material.ListMaterials(ctx, connect.NewRequest(&pb.ListMaterialsRequest{
+			IncludeArchived: args.IncludeArchived,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListMaterialLots(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		MaterialID string `json:"material_id,omitempty" jsonschema:"UUID of one material; omit for every material"`
+		OnHandOnly bool   `json:"on_hand_only,omitempty" jsonschema:"leave out lots that are used up"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_material_lots",
+		Description: "List received lots of raw material with the quantity still on hand. Use the lot id with add_mash_ingredient so the lot is debited and traceable.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.MaterialService/ListMaterialLots")
+		if err != nil {
+			return nil, nil, err
+		}
+		resp, err := d.Material.ListMaterialLots(ctx, connect.NewRequest(&pb.ListMaterialLotsRequest{
+			MaterialId: args.MaterialID,
+			OnHandOnly: args.OnHandOnly,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListEquipment(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		IncludeRetired bool `json:"include_retired,omitempty" jsonschema:"include retired equipment"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_equipment",
+		Description: "The equipment register: mash tuns, fermenters, stills and the rest, with capacity, state and service due.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.EquipmentService/ListEquipment")
+		if err != nil {
+			return nil, nil, err
+		}
+		resp, err := d.Equipment.ListEquipment(ctx, connect.NewRequest(&pb.ListEquipmentRequest{
+			IncludeRetired: args.IncludeRetired,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListAlerts(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		IncludeResolved bool `json:"include_resolved,omitempty" jsonschema:"include alerts that have already resolved"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_alerts",
+		Description: "Open alerts: returns due, stamps and materials running low, ferments gone quiet. Reads only; acknowledging stays in the web UI.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.AlertService/ListAlerts")
+		if err != nil {
+			return nil, nil, err
+		}
+		resp, err := d.Alert.ListAlerts(ctx, connect.NewRequest(&pb.ListAlertsRequest{
+			IncludeResolved: args.IncludeResolved,
+		}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListMashes(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		Status string `json:"status,omitempty" jsonschema:"one of: planned, in_progress, fermenting, distilled, cancelled; omit for any"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_mashes",
+		Description: "List mash runs with their id, number, recipe, date and status. Use it to find the id get_mash and add_mash_reading need.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.MashService/ListMashRuns")
+		if err != nil {
+			return nil, nil, err
+		}
+		var status pb.MashStatus
+		if args.Status != "" {
+			if status, err = enumFromName[pb.MashStatus](args.Status); err != nil {
+				return errResult(err), nil, nil
+			}
+		}
+		resp, err := d.Mash.ListMashRuns(ctx, connect.NewRequest(&pb.ListMashRunsRequest{Status: status}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListFermentations(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		Status string `json:"status,omitempty" jsonschema:"one of: pitched, active, finished, distilled, cancelled; omit for any"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_fermentations",
+		Description: "List fermentation runs with their id, fermenter, mash and status. Use it to find the id add_fermentation_reading needs.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.FermentationService/ListFermentationRuns")
+		if err != nil {
+			return nil, nil, err
+		}
+		var status pb.FermentationStatus
+		if args.Status != "" {
+			if status, err = enumFromName[pb.FermentationStatus](args.Status); err != nil {
+				return errResult(err), nil, nil
+			}
+		}
+		resp, err := d.Fermentation.ListFermentationRuns(ctx, connect.NewRequest(&pb.ListFermentationRunsRequest{Status: status}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addGetFermentation(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		FermentationRunID string `json:"fermentation_run_id,omitempty" jsonschema:"the fermentation, by fermenter name, by 'mash 3', or UUID; empty when only one is open"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "get_fermentation",
+		Description: "Read one fermentation: its readings, and what the gravity curve says — attenuation, estimated wash strength, phase, and any findings.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.FermentationService/GetFermentationRun")
+		if err != nil {
+			return nil, nil, err
+		}
+		id, err := resolveFermentation(ctx, d, user, args.FermentationRunID)
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		resp, err := d.Fermentation.GetFermentationRun(ctx, connect.NewRequest(&pb.GetFermentationRunRequest{Id: id}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addListDistillations(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		Status string `json:"status,omitempty" jsonschema:"one of: planned, charging, distilling, gauged, cancelled; omit for any"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "list_distillations",
+		Description: "List distillation runs with their id, still, date and status. Use it to find the id add_distillation_reading needs.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.DistillationService/ListDistillationRuns")
+		if err != nil {
+			return nil, nil, err
+		}
+		var status pb.DistillationStatus
+		if args.Status != "" {
+			if status, err = enumFromName[pb.DistillationStatus](args.Status); err != nil {
+				return errResult(err), nil, nil
+			}
+		}
+		resp, err := d.Distillation.ListDistillationRuns(ctx, connect.NewRequest(&pb.ListDistillationRunsRequest{Status: status}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
+	})
+}
+
+func addGetDistillation(s *registrar, d Deps, user sqlcgen.User) {
+	type in struct {
+		DistillationRunID string `json:"distillation_run_id,omitempty" jsonschema:"the still run, by number or UUID; empty when only one is open"`
+	}
+	addTool(s, &mcpsdk.Tool{
+		Name:        "get_distillation",
+		Description: "Read one distillation run: charges, readings, cuts and what they account for, and the production gauge.",
+	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
+		ctx, err := guard(ctx, user, "/stillhouse.v1.DistillationService/GetDistillationRun")
+		if err != nil {
+			return nil, nil, err
+		}
+		id, err := resolveDistillation(ctx, d, user, args.DistillationRunID)
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		resp, err := d.Distillation.GetDistillationRun(ctx, connect.NewRequest(&pb.GetDistillationRunRequest{Id: id}))
+		if err != nil {
+			return errResult(err), nil, nil
+		}
+		return jsonResult(resp.Msg), nil, nil
 	})
 }

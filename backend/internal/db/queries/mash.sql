@@ -65,3 +65,30 @@ INSERT INTO mash_metrics (
 SELECT * FROM mash_metrics
 WHERE mash_run_id = $1
 ORDER BY observed_at;
+
+-- name: GetMashIngredient :one
+SELECT * FROM mash_ingredient_usage WHERE id = $1 FOR UPDATE;
+
+-- name: DeleteMashIngredient :execrows
+DELETE FROM mash_ingredient_usage WHERE id = $1;
+
+-- name: CreditMaterialLot :exec
+UPDATE material_lots
+SET quantity_on_hand = quantity_on_hand + $2
+WHERE id = $1;
+
+-- name: MashHasGauge :one
+SELECT EXISTS (
+    SELECT 1
+    FROM production_gauges pg
+    JOIN distillation_runs dr    ON dr.id = pg.distillation_run_id AND dr.voided_at IS NULL
+    JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
+    JOIN fermentation_runs fr    ON fr.id = dc.fermentation_run_id
+    WHERE fr.mash_run_id = $1
+);
+
+-- name: GetMashMetric :one
+SELECT * FROM mash_metrics WHERE id = $1;
+
+-- name: DeleteMashMetric :exec
+DELETE FROM mash_metrics WHERE id = $1;

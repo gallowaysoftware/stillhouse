@@ -16,6 +16,7 @@ import {
   StrengthReading,
   StrengthReadingValue,
 } from "@/components/StrengthReading";
+import { DeleteButton } from "@/components/DeleteButton";
 import { Shell } from "@/components/Shell";
 import { useToast } from "@/components/Toast";
 import { bulkClient, distillationClient, engineeringClient, fermentationClient } from "@/lib/clients";
@@ -186,6 +187,7 @@ export function DistillationDetailPage() {
           onSubmit={(m) => addCharge.mutate(m)}
           submitting={addCharge.isPending}
           error={addCharge.error}
+          onDelete={(chargeId) => distillationClient.deleteDistillationCharge({ id: chargeId }).then(refresh)}
         />
         <CutsPanel
           run={r}
@@ -246,12 +248,14 @@ function ChargesPanel({
   onSubmit,
   submitting,
   error,
+  onDelete,
 }: {
   run: ReturnType<typeof useDistillationRun>;
   ferments: { id: string; fermenterLabel: string; mashNo: number; recipeName: string }[];
   onSubmit: (m: ReturnType<typeof create<typeof AddDistillationChargeRequestSchema>>) => void;
   submitting: boolean;
   error: Error | null;
+  onDelete: (id: string) => Promise<unknown>;
 }) {
   const [fermID, setFermID] = useState("");
   const [vol, setVol] = useState("");
@@ -302,11 +306,12 @@ function ChargesPanel({
             <th className="px-3 py-2 text-right">Vol (L)</th>
             <th className="px-3 py-2 text-right">ABV</th>
             <th className="px-3 py-2 text-right">LAA</th>
+            <th className="px-3 py-2" />
           </tr>
         </thead>
         <tbody className="divide-y divide-border">
           {run.charges.length === 0 && (
-            <tr><td colSpan={5} className="px-3 py-2 text-fg-muted">No charges yet.</td></tr>
+            <tr><td colSpan={6} className="px-3 py-2 text-fg-muted">No charges yet.</td></tr>
           )}
           {run.charges.map((c) => (
             <tr key={c.id}>
@@ -315,6 +320,15 @@ function ChargesPanel({
               <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{formatQty(c.volumeChargedL)}</td>
               <td className="px-3 py-2 text-right tabular-nums text-fg-muted">{c.abvPct.toFixed(2)}%</td>
               <td className="px-3 py-2 text-right tabular-nums font-semibold text-fg">{formatLAA(c.laa)}</td>
+              <td className="px-3 py-2 text-right">
+                {!run.gauge && (
+                  <DeleteButton
+                    title="Remove this charge?"
+                    body="The audit trail keeps what was removed."
+                    onDelete={() => onDelete(c.id)}
+                  />
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

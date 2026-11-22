@@ -8,9 +8,9 @@
 // cmd/mcp-token); the resolved user is bound into a per-session SDK
 // Server so every tool call runs under that user's RLS tenant scope.
 //
-// Tools are intentionally a narrow slice of the full ConnectRPC API —
-// the things an operator does with wet hands. Back-office work
-// (bottling, removals, B266 generation) still happens in the web UI.
+// Tools cover what an operator does on the floor, grain to cuts. The
+// figures an operator signs for — production gauges, bottling, removals,
+// B266 generation — still happen in the web UI.
 package mcp
 
 import (
@@ -45,6 +45,11 @@ type Deps struct {
 	B266          *rpc.B266Service
 	WorkOrder     *rpc.WorkOrderService
 	Alcoholometry *rpc.AlcoholometryService
+	Tenant        *rpc.TenantService
+	Instrument    *rpc.InstrumentService
+	Material      *rpc.MaterialService
+	Equipment     *rpc.EquipmentService
+	Alert         *rpc.AlertService
 	Logger        *slog.Logger
 }
 
@@ -61,28 +66,26 @@ func NewHandler(d Deps) http.Handler {
 		if err != nil {
 			return nil
 		}
-		return newSessionServer(d, user)
+		only, ok := toolset(r.URL.Query().Get("toolset"))
+		if !ok {
+			return nil
+		}
+		return newSessionServer(d, user, only)
 	}, nil)
 }
 
 // newSessionServer constructs an SDK Server with every tool closed over
 // the authenticated user. One Server per session; tools are stateless.
-func newSessionServer(d Deps, user sqlcgen.User) *mcpsdk.Server {
+func newSessionServer(d Deps, user sqlcgen.User, only map[string]bool) *mcpsdk.Server {
 	s := mcpsdk.NewServer(&mcpsdk.Implementation{
 		Name:    "stillhouse",
 		Version: "0.1.0",
 	}, &mcpsdk.ServerOptions{
-		Instructions: "Stillhouse — Canadian craft distillery management. " +
-			"Use the read tools (list_*, get_*) to inspect bulk inventory, " +
-			"barrels, recipes, products, and B266 status. Use the write " +
-			"tools to capture activity at the still: fill_barrel, " +
-			"dump_barrel, regauge_barrel, add_fermentation_reading, " +
-			"add_mash_reading. All volumes are litres, ABV is percent, " +
-			"LAA is litres of absolute alcohol.",
-		Logger: d.Logger,
+		Instructions: Instructions,
+		Logger:       d.Logger,
 	})
-	registerReadTools(s, d, user)
-	registerWriteTools(s, d, user)
+	registerReadTools(&registrar{server: s, only: only, readOnly: true}, d, user)
+	registerWriteTools(&registrar{server: s, only: only}, d, user)
 	return s
 }
 
@@ -116,22 +119,26 @@ func guard(ctx context.Context, user sqlcgen.User, procedure string) (context.Co
 // true` flags paired with elided zero values were the source of QA
 // finding F8 — both go away when we emit zero values directly.
 func jsonResult(m proto.Message) *mcpsdk.CallToolResult {
-	// The MCP tools call the service implementations directly, so they
-	// never pass through the ConnectRPC interceptors — including the one
-	// that strips floating-point residue. Without this line an assistant
-	// reading the tank reads 18.000000000000004 LAA. See internal/wire.
-	wire.Message(m)
-	b, err := protojson.MarshalOptions{
-		EmitUnpopulated: true,
-		UseProtoNames:   true,
-		Indent:          "  ",
-	}.Marshal(m)
+	b, err := marshalProto(m)
 	if err != nil {
 		return errResult(err)
 	}
 	return &mcpsdk.CallToolResult{
 		Content: []mcpsdk.Content{&mcpsdk.TextContent{Text: string(b)}},
 	}
+}
+
+func marshalProto(m proto.Message) ([]byte, error) {
+	// The MCP tools call the service implementations directly, so they
+	// never pass through the ConnectRPC interceptors — including the one
+	// that strips floating-point residue. Without this line an assistant
+	// reading the tank reads 18.000000000000004 LAA. See internal/wire.
+	wire.Message(m)
+	return protojson.MarshalOptions{
+		EmitUnpopulated: true,
+		UseProtoNames:   true,
+		Indent:          "  ",
+	}.Marshal(m)
 }
 
 // jsonResultRaw is for ad-hoc result shapes (e.g. dashboard rollup)

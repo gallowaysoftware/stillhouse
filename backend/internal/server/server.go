@@ -15,6 +15,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/alerting"
+	"github.com/gallowaysoftware/stillhouse/backend/internal/assistant"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/config"
 	"github.com/gallowaysoftware/stillhouse/backend/internal/db/sqlcgen"
 	stillhousev1connect "github.com/gallowaysoftware/stillhouse/backend/internal/genpb/stillhouse/v1/stillhousev1connect"
@@ -225,7 +226,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	// JSON-RPC over Streamable HTTP here. Auth is Authorization: Bearer
 	// sh_..., issued by cmd/mcp-token; the cookie-session middleware
 	// further down the chain is a no-op for these requests.
-	mux.Handle("/mcp", mcp.NewHandler(mcp.Deps{
+	mcpDeps := mcp.Deps{
 		Queries:       queries,
 		Bulk:          bulkSvc,
 		Barrel:        barrelSvc,
@@ -238,8 +239,19 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 		B266:          b266Svc,
 		WorkOrder:     workOrderSvc,
 		Alcoholometry: alcoholometrySvc,
+		Tenant:        tenantSvc,
+		Instrument:    instrumentSvc,
+		Material:      materialSvc,
+		Equipment:     equipmentSvc,
+		Alert:         alertSvc,
 		Logger:        logger,
-	}))
+	}
+	mux.Handle("/mcp", mcp.NewHandler(mcpDeps))
+	assistantHandler := assistant.New(assistant.Config{
+		URL: cfg.AssistantURL, Model: cfg.AssistantModel, APIKey: cfg.AssistantAPIKey,
+	}, mcpDeps, logger)
+	mux.HandleFunc("/api/assistant/status", assistantHandler.Status)
+	mux.HandleFunc("/api/assistant/chat", assistantHandler.Chat)
 	// What is running. Unauthenticated on purpose: it is the first thing
 	// an operator or a monitor asks after a restart, and it discloses
 	// nothing a container digest doesn't.

@@ -348,8 +348,7 @@ func (s *MashService) AddMashIngredient(
 			})
 	})
 	if err != nil {
-		var ce *connect.Error
-		if errors.As(err, &ce) {
+		if ce := classifyWriteErr(err, "mash run, material or lot not found"); ce != nil {
 			return nil, ce
 		}
 		s.logger.Error("AddMashIngredient", "err", err)
@@ -409,6 +408,112 @@ func (s *MashService) AddMashMetric(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.AddMashMetricResponse{Metric: mashMetricToProto(inserted)}), nil
+}
+
+func (s *MashService) DeleteMashIngredient(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteMashIngredientRequest],
+) (*connect.Response[stillhousev1.DeleteMashIngredientResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		ing, e := q.GetMashIngredient(ctx, id)
+		if e != nil {
+			return e
+		}
+		gauged, e := q.MashHasGauge(ctx, ing.MashRunID)
+		if e != nil {
+			return e
+		}
+		if gauged {
+			return connect.NewError(connect.CodeFailedPrecondition,
+				errors.New("spirit from this mash has been gauged; its bill can no longer be changed"))
+		}
+		n, e := q.DeleteMashIngredient(ctx, id)
+		if e != nil {
+			return e
+		}
+		if n == 0 {
+			return pgx.ErrNoRows
+		}
+		if ing.MaterialLotID.Valid {
+			if e := q.CreditMaterialLot(ctx, sqlcgen.CreditMaterialLotParams{
+				ID: ing.MaterialLotID.UUID, QuantityOnHand: ing.QuantityUsed,
+			}); e != nil {
+				return e
+			}
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "mash_ingredient_usage", id.String(),
+			sqlcgen.AuditActionDelete, map[string]any{
+				"mash_run_id":   ing.MashRunID.String(),
+				"material_id":   ing.MaterialID.String(),
+				"material_lot":  nullUUIDString(ing.MaterialLotID),
+				"quantity_used": ing.QuantityUsed,
+				"uom":           ing.Uom,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("ingredient not found"))
+		}
+		s.logger.Error("DeleteMashIngredient", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DeleteMashIngredientResponse{}), nil
+}
+
+func (s *MashService) DeleteMashMetric(
+	ctx context.Context,
+	req *connect.Request[stillhousev1.DeleteMashMetricRequest],
+) (*connect.Response[stillhousev1.DeleteMashMetricResponse], error) {
+	u, ok := CurrentUser(ctx)
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnauthenticated, errors.New("authentication required"))
+	}
+	id, err := uuid.Parse(req.Msg.GetId())
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid id"))
+	}
+	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		m, e := q.GetMashMetric(ctx, id)
+		if e != nil {
+			return e
+		}
+		if e := q.DeleteMashMetric(ctx, id); e != nil {
+			return e
+		}
+		return audit.Write(ctx, q, u.TenantID, u.ID, "mash_metric", id.String(),
+			sqlcgen.AuditActionDelete, map[string]any{
+				"mash_run_id": m.MashRunID.String(),
+				"kind":        string(m.Kind),
+				"value":       m.Value,
+				"unit":        m.Unit,
+				"observed_at": m.ObservedAt.Time,
+				"notes":       m.Notes,
+			})
+	})
+	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, connect.NewError(connect.CodeNotFound, errors.New("reading not found"))
+		}
+		s.logger.Error("DeleteMashMetric", "err", err)
+		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
+	}
+	return connect.NewResponse(&stillhousev1.DeleteMashMetricResponse{}), nil
 }
 
 // --- helpers ---
@@ -565,6 +670,8 @@ func mashMetricKindToDB(k stillhousev1.MashMetricKind) (sqlcgen.MashMetricKind, 
 		return sqlcgen.MashMetricKindWaterVolumeL, nil
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C:
 		return sqlcgen.MashMetricKindStrikeTempC, nil
+	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_WASH_VOLUME_L:
+		return sqlcgen.MashMetricKindWashVolumeL, nil
 	case stillhousev1.MashMetricKind_MASH_METRIC_KIND_OTHER:
 		return sqlcgen.MashMetricKindOther, nil
 	}
@@ -583,6 +690,8 @@ func mashMetricKindToProto(k sqlcgen.MashMetricKind) stillhousev1.MashMetricKind
 		return stillhousev1.MashMetricKind_MASH_METRIC_KIND_WATER_VOLUME_L
 	case sqlcgen.MashMetricKindStrikeTempC:
 		return stillhousev1.MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C
+	case sqlcgen.MashMetricKindWashVolumeL:
+		return stillhousev1.MashMetricKind_MASH_METRIC_KIND_WASH_VOLUME_L
 	case sqlcgen.MashMetricKindOther:
 		return stillhousev1.MashMetricKind_MASH_METRIC_KIND_OTHER
 	}

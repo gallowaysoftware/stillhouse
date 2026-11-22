@@ -221,6 +221,7 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.DistillationService/ListDistillationRuns":      roleViewer,
 	"/stillhouse.v1.DistillationService/UpdateDistillationStatus":  roleOperator,
 	"/stillhouse.v1.DistillationService/AddDistillationCharge":     roleOperator,
+	"/stillhouse.v1.DistillationService/DeleteDistillationCharge":  roleOperator,
 	"/stillhouse.v1.DistillationService/AddDistillationCut":        roleOperator,
 	"/stillhouse.v1.DistillationService/UpdateDistillationCut":     roleOperator,
 	"/stillhouse.v1.DistillationService/DeleteDistillationCut":     roleOperator,
@@ -261,14 +262,17 @@ var procedureMinRole = map[string]minRole{
 	"/stillhouse.v1.FermentationService/ListFermentationRuns":     roleViewer,
 	"/stillhouse.v1.FermentationService/UpdateFermentationStatus": roleOperator,
 	"/stillhouse.v1.FermentationService/AddFermentationLog":       roleOperator,
+	"/stillhouse.v1.FermentationService/DeleteFermentationLog":    roleOperator,
 
 	// MashService
-	"/stillhouse.v1.MashService/CreateMashRun":     roleOperator,
-	"/stillhouse.v1.MashService/GetMashRun":        roleViewer,
-	"/stillhouse.v1.MashService/ListMashRuns":      roleViewer,
-	"/stillhouse.v1.MashService/UpdateMashStatus":  roleOperator,
-	"/stillhouse.v1.MashService/AddMashIngredient": roleOperator,
-	"/stillhouse.v1.MashService/AddMashMetric":     roleOperator,
+	"/stillhouse.v1.MashService/CreateMashRun":        roleOperator,
+	"/stillhouse.v1.MashService/GetMashRun":           roleViewer,
+	"/stillhouse.v1.MashService/ListMashRuns":         roleViewer,
+	"/stillhouse.v1.MashService/UpdateMashStatus":     roleOperator,
+	"/stillhouse.v1.MashService/AddMashIngredient":    roleOperator,
+	"/stillhouse.v1.MashService/AddMashMetric":        roleOperator,
+	"/stillhouse.v1.MashService/DeleteMashIngredient": roleOperator,
+	"/stillhouse.v1.MashService/DeleteMashMetric":     roleOperator,
 	// Strike-water calculation; reads nothing and writes nothing.
 	"/stillhouse.v1.MashService/PlanStrike": roleViewer,
 

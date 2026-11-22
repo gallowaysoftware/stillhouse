@@ -110,3 +110,12 @@ SELECT * FROM distillation_readings WHERE id = $1;
 
 -- name: DeleteDistillationReading :exec
 DELETE FROM distillation_readings WHERE id = $1;
+
+-- name: GetDistillationCharge :one
+SELECT * FROM distillation_charges WHERE id = $1;
+
+-- name: LockDistillationRun :one
+SELECT * FROM distillation_runs WHERE id = $1 FOR UPDATE;
+
+-- name: DeleteDistillationCharge :exec
+DELETE FROM distillation_charges WHERE id = $1;

@@ -139,6 +139,22 @@ func (q *Queries) CreateMashRun(ctx context.Context, arg CreateMashRunParams) (M
 	return i, err
 }
 
+const creditMaterialLot = `-- name: CreditMaterialLot :exec
+UPDATE material_lots
+SET quantity_on_hand = quantity_on_hand + $2
+WHERE id = $1
+`
+
+type CreditMaterialLotParams struct {
+	ID             uuid.UUID `json:"id"`
+	QuantityOnHand float64   `json:"quantity_on_hand"`
+}
+
+func (q *Queries) CreditMaterialLot(ctx context.Context, arg CreditMaterialLotParams) error {
+	_, err := q.db.Exec(ctx, creditMaterialLot, arg.ID, arg.QuantityOnHand)
+	return err
+}
+
 const debitMaterialLot = `-- name: DebitMaterialLot :one
 UPDATE material_lots
 SET quantity_on_hand = quantity_on_hand - $2
@@ -176,6 +192,68 @@ func (q *Queries) DebitMaterialLot(ctx context.Context, arg DebitMaterialLotPara
 		&i.InvoiceReference,
 		&i.InvoicedAt,
 		&i.LandedUnitCostCad,
+	)
+	return i, err
+}
+
+const deleteMashIngredient = `-- name: DeleteMashIngredient :execrows
+DELETE FROM mash_ingredient_usage WHERE id = $1
+`
+
+func (q *Queries) DeleteMashIngredient(ctx context.Context, id uuid.UUID) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteMashIngredient, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteMashMetric = `-- name: DeleteMashMetric :exec
+DELETE FROM mash_metrics WHERE id = $1
+`
+
+func (q *Queries) DeleteMashMetric(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteMashMetric, id)
+	return err
+}
+
+const getMashIngredient = `-- name: GetMashIngredient :one
+SELECT id, tenant_id, mash_run_id, material_id, quantity_used, uom, notes, created_at, material_lot_id FROM mash_ingredient_usage WHERE id = $1 FOR UPDATE
+`
+
+func (q *Queries) GetMashIngredient(ctx context.Context, id uuid.UUID) (MashIngredientUsage, error) {
+	row := q.db.QueryRow(ctx, getMashIngredient, id)
+	var i MashIngredientUsage
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.MashRunID,
+		&i.MaterialID,
+		&i.QuantityUsed,
+		&i.Uom,
+		&i.Notes,
+		&i.CreatedAt,
+		&i.MaterialLotID,
+	)
+	return i, err
+}
+
+const getMashMetric = `-- name: GetMashMetric :one
+SELECT id, tenant_id, mash_run_id, kind, value, unit, observed_at, notes FROM mash_metrics WHERE id = $1
+`
+
+func (q *Queries) GetMashMetric(ctx context.Context, id uuid.UUID) (MashMetric, error) {
+	row := q.db.QueryRow(ctx, getMashMetric, id)
+	var i MashMetric
+	err := row.Scan(
+		&i.ID,
+		&i.TenantID,
+		&i.MashRunID,
+		&i.Kind,
+		&i.Value,
+		&i.Unit,
+		&i.ObservedAt,
+		&i.Notes,
 	)
 	return i, err
 }
@@ -369,6 +447,24 @@ func (q *Queries) ListMashRuns(ctx context.Context, arg ListMashRunsParams) ([]L
 		return nil, err
 	}
 	return items, nil
+}
+
+const mashHasGauge = `-- name: MashHasGauge :one
+SELECT EXISTS (
+    SELECT 1
+    FROM production_gauges pg
+    JOIN distillation_runs dr    ON dr.id = pg.distillation_run_id AND dr.voided_at IS NULL
+    JOIN distillation_charges dc ON dc.distillation_run_id = dr.id
+    JOIN fermentation_runs fr    ON fr.id = dc.fermentation_run_id
+    WHERE fr.mash_run_id = $1
+)
+`
+
+func (q *Queries) MashHasGauge(ctx context.Context, mashRunID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, mashHasGauge, mashRunID)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const nextMashNo = `-- name: NextMashNo :one

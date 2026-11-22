@@ -1,6 +1,6 @@
 module github.com/gallowaysoftware/stillhouse/backend
 
-go 1.27.0
+go 1.27.4
 
 require (
 	connectrpc.com/connect v1.20.0
