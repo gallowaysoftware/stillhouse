@@ -104,7 +104,7 @@ export function SensoryRadar({
         {drawn.map((s) => {
           const pts = axes.map((a, i) => pointAt(i, s.values[a.key] ?? 0));
           const d = pts.map(([x, y]) => `${x},${y}`).join(" ");
-          const color = s.slot === 1 ? "rgb(var(--color-series-1))" : "rgb(var(--color-series-2))";
+          const color = s.slot === 1 ? "rgb(var(--sh-series-1))" : "rgb(var(--sh-series-2))";
           return (
             <g key={s.name}>
               <polygon points={d} fill={color} fillOpacity={0.16} stroke={color} strokeWidth={2} />
@@ -117,7 +117,7 @@ export function SensoryRadar({
                   fill={color}
                   // Surface ring so two series' vertices stay separable
                   // where they land on top of each other.
-                  stroke="rgb(var(--color-surface-2))"
+                  stroke="rgb(var(--sh-surface-2))"
                   strokeWidth={2}
                 />
               ))}
@@ -184,7 +184,7 @@ export function SensoryRadar({
                 className="inline-block h-2.5 w-2.5 rounded-sm"
                 style={{
                   background:
-                    s.slot === 1 ? "rgb(var(--color-series-1))" : "rgb(var(--color-series-2))",
+                    s.slot === 1 ? "rgb(var(--sh-series-1))" : "rgb(var(--sh-series-2))",
                 }}
               />
               {s.name}

@@ -5,6 +5,7 @@ import { ConnectError } from "@connectrpc/connect";
 import { create } from "@bufbuild/protobuf";
 
 import { EmptyRow } from "@/components/EmptyState";
+import { LoadError } from "@/components/LoadError";
 import { Shell } from "@/components/Shell";
 import { mashClient, recipeClient } from "@/lib/clients";
 import { CreateMashRunRequestSchema } from "@/gen/stillhouse/v1/mash_pb";
@@ -124,7 +125,8 @@ export function MashesPage() {
         </form>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-border bg-surface-2 shadow-sm">
+      {mashes.error && <div className="mb-4"><LoadError error={mashes.error} onRetry={() => void mashes.refetch()} /></div>}
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface-2 shadow-sm">
         <table className="min-w-full divide-y divide-border text-sm">
           <thead className="bg-surface-3 text-left text-xs text-fg-muted">
             <tr>

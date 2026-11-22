@@ -21,17 +21,17 @@ import { cutKindLabel, formatLAA } from "@/lib/format";
 // Fractions in the order they come off the still. Anything not hearts is a
 // neutral; the ramp only exists so adjacent segments stay separable.
 const NEUTRALS: Partial<Record<DistillationCutKind, string>> = {
-  [DistillationCutKind.FORESHOTS]: "rgb(var(--color-fg-subtle) / 0.75)",
-  [DistillationCutKind.HEADS]: "rgb(var(--color-fg-subtle) / 0.5)",
-  [DistillationCutKind.TAILS]: "rgb(var(--color-fg-subtle) / 0.35)",
-  [DistillationCutKind.FEINTS_SAVED]: "rgb(var(--color-fg-subtle) / 0.22)",
+  [DistillationCutKind.FORESHOTS]: "rgb(var(--sh-fg-subtle) / 0.75)",
+  [DistillationCutKind.HEADS]: "rgb(var(--sh-fg-subtle) / 0.5)",
+  [DistillationCutKind.TAILS]: "rgb(var(--sh-fg-subtle) / 0.35)",
+  [DistillationCutKind.FEINTS_SAVED]: "rgb(var(--sh-fg-subtle) / 0.22)",
 };
-const HEARTS_COLOR = "rgb(var(--color-series-1))";
+const HEARTS_COLOR = "rgb(var(--sh-series-1))";
 
 function colorFor(kind: DistillationCutKind): string {
   return kind === DistillationCutKind.HEARTS
     ? HEARTS_COLOR
-    : NEUTRALS[kind] ?? "rgb(var(--color-fg-subtle) / 0.3)";
+    : NEUTRALS[kind] ?? "rgb(var(--sh-fg-subtle) / 0.3)";
 }
 
 export function CutProfile({
