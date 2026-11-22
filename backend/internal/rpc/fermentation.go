@@ -44,6 +44,19 @@ func (s *FermentationService) CreateFermentationRun(
 	if in.GetFermenterLabel() == "" {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("fermenter_label is required"))
 	}
+	if err := checkObservedAt("pitch_at", in.GetPitchAt()); err != nil {
+		return nil, err
+	}
+	if in.GetTargetFinalGravitySet() {
+		if err := checkSpecificGravity("target final gravity", in.GetTargetFinalGravity()); err != nil {
+			return nil, err
+		}
+	}
+	if in.GetInitialVolumeLSet() {
+		if err := checkVolumeL("initial volume", in.GetInitialVolumeL()); err != nil {
+			return nil, err
+		}
+	}
 	pitch := timestampOrNow(in.GetPitchAt())
 	var yeastID uuid.NullUUID
 	if s := in.GetYeastMaterialId(); s != "" {
@@ -360,6 +373,9 @@ func (s *FermentationService) AddFermentationLog(
 	runID, err := uuid.Parse(req.Msg.GetFermentationRunId())
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid fermentation_run_id"))
+	}
+	if err := checkFermentationLog(req.Msg); err != nil {
+		return nil, err
 	}
 	observed := timestampOrNow(req.Msg.GetObservedAt())
 

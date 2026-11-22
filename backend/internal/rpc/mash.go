@@ -375,6 +375,12 @@ func (s *MashService) AddMashMetric(
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInvalidArgument, err)
 	}
+	if err := checkMashMetric(req.Msg.GetKind(), req.Msg.GetValue(), req.Msg.GetUnit()); err != nil {
+		return nil, err
+	}
+	if err := checkObservedAt("observed_at", req.Msg.GetObservedAt()); err != nil {
+		return nil, err
+	}
 	observed := timestampOrNow(req.Msg.GetObservedAt())
 
 	var inserted sqlcgen.MashMetric
