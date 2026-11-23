@@ -16,3 +16,12 @@ func Kg(quantity float64, uom string) (kg float64, ok bool) {
 	f, ok := kilograms[strings.ToLower(strings.TrimSpace(uom))]
 	return quantity * f, ok
 }
+
+// MassUnits is the table Kg reads, for code that has to agree with it.
+func MassUnits() map[string]float64 {
+	out := make(map[string]float64, len(kilograms))
+	for k, v := range kilograms {
+		out[k] = v
+	}
+	return out
+}

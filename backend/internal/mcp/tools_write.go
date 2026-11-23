@@ -220,7 +220,7 @@ func addAddMashReading(s *registrar, d Deps, user sqlcgen.User) {
 	}
 	addTool(s, &mcpsdk.Tool{
 		Name:        "add_mash_reading",
-		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, wash volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, wash_volume_l, strike_temp_c, other. (value is required; 0 is a valid reading.) OG plus a water or wash volume unlocks the conversion-efficiency figure on get_mash.",
+		Description: "Log a metric on an active mash: OG, pH, temperature, water volume, wash volume, strike temp, or other. Set kind to one of: original_gravity, mash_ph, mash_temp_c, water_volume_l, wash_volume_l, strike_temp_c, other. (value is required; 0 is a valid reading.) water_volume_l is ALL the liquor in the tun so far (strike plus infusions, not sparge): after a 50 L strike and a 33 L infusion, record 83, not 33. wash_volume_l is what was collected. OG plus a wash volume unlocks the conversion-efficiency figure on get_mash.",
 	}, func(ctx context.Context, _ *mcpsdk.CallToolRequest, args in) (*mcpsdk.CallToolResult, any, error) {
 		ctx, err := guard(ctx, user, "/stillhouse.v1.MashService/AddMashMetric")
 		if err != nil {

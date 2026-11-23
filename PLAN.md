@@ -509,7 +509,7 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–234 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–236 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.
@@ -545,13 +545,8 @@ Whisky eligibility can be claimed for spirit that is not old enough.
 
 ### M9 · Floor figures that disagree — P1
 
-- The fermentation analysis takes its first gravity as OG and first reading
-  as pitch, ignoring both records; the page shows two ABVs.
-- `water_volume_l` is latest-wins but serves thickness (conversion liquor)
-  and the wash estimate (total water), so logging each addition gives a
-  false thickness. The estimated wash volume overstates extract.
-- Partial extract data gives an inflated efficiency with no finding.
-- `benchmarks` conversion efficiency is not the bench's arithmetic.
+- The projection estimates an unmeasured wash as water plus 0.6 L/kg of
+  grain, a figure with no source (`distilling/projection.go`).
 - Cut order is a count, so a re-entered cut sorts last and warns falsely.
 - Low wines and feints cannot be charged to a run.
 

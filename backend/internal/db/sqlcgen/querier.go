@@ -866,8 +866,8 @@ type Querier interface {
 	// The caller's own figure, computed the same way, so "you against the
 	// cohort" is a comparison rather than two different measurements.
 	MyAngelsShare(ctx context.Context) (MyAngelsShareRow, error)
-	// The caller's own, computed from the same columns so "you against the
-	// cohort" compares like with like.
+	// The caller's own, computed from the same columns as
+	// bench_conversion_inputs so "you against the cohort" compares like with like.
 	MyConversionInputs(ctx context.Context) ([]MyConversionInputsRow, error)
 	NextBottlingRunNo(ctx context.Context) (int32, error)
 	NextConsignmentNo(ctx context.Context) (int32, error)

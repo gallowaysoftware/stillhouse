@@ -87,9 +87,11 @@ const (
 	MashMetricKind_MASH_METRIC_KIND_ORIGINAL_GRAVITY MashMetricKind = 1
 	MashMetricKind_MASH_METRIC_KIND_MASH_PH          MashMetricKind = 2
 	MashMetricKind_MASH_METRIC_KIND_MASH_TEMP_C      MashMetricKind = 3
-	MashMetricKind_MASH_METRIC_KIND_WATER_VOLUME_L   MashMetricKind = 4
-	MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C    MashMetricKind = 5
-	MashMetricKind_MASH_METRIC_KIND_OTHER            MashMetricKind = 6
+	// All the liquor in the tun so far, strike plus infusions, not sparge:
+	// the latest reading is the mash's thickness.
+	MashMetricKind_MASH_METRIC_KIND_WATER_VOLUME_L MashMetricKind = 4
+	MashMetricKind_MASH_METRIC_KIND_STRIKE_TEMP_C  MashMetricKind = 5
+	MashMetricKind_MASH_METRIC_KIND_OTHER          MashMetricKind = 6
 	// Measured total volume of the mash/wash. A distilling wash isn't
 	// lautered and boiled, so it's close to water + grain displacement —
 	// but conversion efficiency is computed against it, so a measurement
@@ -333,8 +335,7 @@ type MashEfficiency struct {
 	OriginalGravity float64                `protobuf:"fixed64,1,opt,name=original_gravity,json=originalGravity,proto3" json:"original_gravity,omitempty"`
 	Plato           float64                `protobuf:"fixed64,2,opt,name=plato,proto3" json:"plato,omitempty"`
 	WashVolumeL     float64                `protobuf:"fixed64,3,opt,name=wash_volume_l,json=washVolumeL,proto3" json:"wash_volume_l,omitempty"`
-	// True when wash_volume_l was estimated from water + grain displacement
-	// rather than measured.
+	// Always false since stage 236: efficiency needs a measured wash volume.
 	WashVolumeEstimated bool    `protobuf:"varint,4,opt,name=wash_volume_estimated,json=washVolumeEstimated,proto3" json:"wash_volume_estimated,omitempty"`
 	ExtractMeasuredKg   float64 `protobuf:"fixed64,5,opt,name=extract_measured_kg,json=extractMeasuredKg,proto3" json:"extract_measured_kg,omitempty"`
 	ExtractAvailableKg  float64 `protobuf:"fixed64,6,opt,name=extract_available_kg,json=extractAvailableKg,proto3" json:"extract_available_kg,omitempty"`

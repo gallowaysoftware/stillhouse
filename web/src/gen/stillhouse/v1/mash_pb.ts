@@ -100,8 +100,7 @@ export type MashEfficiency = Message<"stillhouse.v1.MashEfficiency"> & {
   washVolumeL: number;
 
   /**
-   * True when wash_volume_l was estimated from water + grain displacement
-   * rather than measured.
+   * Always false since stage 236: efficiency needs a measured wash volume.
    *
    * @generated from field: bool wash_volume_estimated = 4;
    */
@@ -929,6 +928,9 @@ export enum MashMetricKind {
   MASH_TEMP_C = 3,
 
   /**
+   * All the liquor in the tun so far, strike plus infusions, not sparge:
+   * the latest reading is the mash's thickness.
+   *
    * @generated from enum value: MASH_METRIC_KIND_WATER_VOLUME_L = 4;
    */
   WATER_VOLUME_L = 4,
