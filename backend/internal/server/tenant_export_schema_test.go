@@ -20,6 +20,8 @@ var notExported = map[string]string{
 		"this distillery — same argument as api_tokens. The configuration " +
 		"is small, visible in Settings, and re-enterable; a signing key in " +
 		"a zip that gets emailed around is not worth saving the typing",
+	"idempotent_requests": "answers kept for 30 days so a phone that lost one " +
+		"can ask again; every answer is a copy of a row that IS exported",
 	"webhook_deliveries": "an operational log of what was sent, and every " +
 		"payload in it is derived from a table that IS exported. Retention " +
 		"under s.206 wants the records, not the notifications about them",
