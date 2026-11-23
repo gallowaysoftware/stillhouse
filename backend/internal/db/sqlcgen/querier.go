@@ -149,6 +149,8 @@ type Querier interface {
 	// of a set-returning function and produces []interface{} for one, which
 	// moves every type error from compile time to run time.
 	ClaimDueWebhookDeliveries(ctx context.Context, rowLimit int32) ([]ClaimDueWebhookDeliveriesRow, error)
+	// Returns a row only when this request is the first with the key.
+	ClaimIdempotencyKey(ctx context.Context, arg ClaimIdempotencyKeyParams) (pgtype.Timestamptz, error)
 	// Only a loss can be classified. The reason guard is here rather than only
 	// in Go so that a caller cannot quietly attach a duty treatment to a
 	// production gauge and have it counted.
@@ -389,6 +391,7 @@ type Querier interface {
 	FindProductByGTIN(ctx context.Context, gtin string) ([]Product, error)
 	FindProductsByIDPrefix(ctx context.Context, prefix string) ([]Product, error)
 	FindShipmentsByIDPrefix(ctx context.Context, prefix string) ([]FindShipmentsByIDPrefixRow, error)
+	ForgetOldIdempotentRequests(ctx context.Context) error
 	// The pre-tenant keyhole. Bearer auth has to resolve a token hash to its
 	// owner before any tenant context exists — that lookup is what
 	// establishes the tenant — so it cannot satisfy the RLS policy migration
@@ -440,6 +443,7 @@ type Querier interface {
 	GetFermentationLog(ctx context.Context, id uuid.UUID) (FermentationLog, error)
 	GetFermentationRun(ctx context.Context, id uuid.UUID) (FermentationRun, error)
 	GetForecastSettings(ctx context.Context, id uuid.UUID) (GetForecastSettingsRow, error)
+	GetIdempotentRequest(ctx context.Context, arg GetIdempotentRequestParams) (GetIdempotentRequestRow, error)
 	GetInstrument(ctx context.Context, id uuid.UUID) (Instrument, error)
 	// Public lookup at signup time. Caller must check redeemed_at / revoked_at /
 	// expires_at to decide if the code is actually usable.
@@ -1052,6 +1056,7 @@ type Querier interface {
 	// Anything put back through the still from this vessel. Age resets on
 	// redistillation, so a certificate has to say whether one happened.
 	RedistillationsTouchingContainer(ctx context.Context, sourceContainerID uuid.UUID) ([]RedistillationsTouchingContainerRow, error)
+	ReleaseIdempotencyKey(ctx context.Context, arg ReleaseIdempotencyKeyParams) error
 	ReleaseLegalHold(ctx context.Context, arg ReleaseLegalHoldParams) (LegalHold, error)
 	// Releasing clears any hold: a lot that has been looked at again and
 	// passed is released, not simultaneously held.
@@ -1217,6 +1222,7 @@ type Querier interface {
 	StockCountBulkSubjects(ctx context.Context, locationID uuid.NullUUID) ([]StockCountBulkSubjectsRow, error)
 	StockCountMaterialSubjects(ctx context.Context) ([]StockCountMaterialSubjectsRow, error)
 	StockCountPackagedSubjects(ctx context.Context, locationID uuid.NullUUID) ([]StockCountPackagedSubjectsRow, error)
+	StoreIdempotentResponse(ctx context.Context, arg StoreIdempotentResponseParams) error
 	// The acknowledgement is written in the same statement that sets the
 	// status, so a submitted period can never exist without one. The table's
 	// CHECK holds the other half of that guarantee for any path that is not
