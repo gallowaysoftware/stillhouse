@@ -85,13 +85,12 @@ func buildMashBench(
 	}
 	if b.Efficiency != nil {
 		out.Efficiency = &stillhousev1.MashEfficiency{
-			OriginalGravity:     b.Efficiency.OriginalGravity,
-			Plato:               round2(b.Efficiency.Plato),
-			WashVolumeL:         round2(b.Efficiency.WashVolumeL),
-			WashVolumeEstimated: b.Efficiency.WashVolumeEstimated,
-			ExtractMeasuredKg:   round2(b.Efficiency.ExtractMeasuredKg),
-			ExtractAvailableKg:  round2(b.Efficiency.ExtractAvailableKg),
-			Pct:                 round2(b.Efficiency.Percent.Float()),
+			OriginalGravity:    b.Efficiency.OriginalGravity,
+			Plato:              round2(b.Efficiency.Plato),
+			WashVolumeL:        round2(b.Efficiency.WashVolumeL),
+			ExtractMeasuredKg:  round2(b.Efficiency.ExtractMeasuredKg),
+			ExtractAvailableKg: round2(b.Efficiency.ExtractAvailableKg),
+			Pct:                round2(b.Efficiency.Percent.Float()),
 		}
 		out.EfficiencySet = true
 	}

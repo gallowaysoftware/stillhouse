@@ -47,9 +47,10 @@ type GrainBillItem struct {
 type Readings struct {
 	MashTempC    *float64
 	PH           *float64
+	// WaterVolumeL is all the liquor in the tun so far, strike plus
+	// infusions: what the grain is mashed in.
 	WaterVolumeL *float64
-	// WashVolumeL is the measured total volume of the mash/wash. When
-	// absent it is estimated from water plus grain displacement.
+	// WashVolumeL is the measured volume collected.
 	WashVolumeL     *float64
 	OriginalGravity *float64
 }

@@ -65,9 +65,7 @@ export function MashBench({ bench }: { bench: MashBenchMsg }) {
               <Tile
                 label="Original gravity"
                 value={bench.efficiency.originalGravity.toFixed(3)}
-                band={`${bench.efficiency.plato.toFixed(1)} °P in ${formatQty(bench.efficiency.washVolumeL)} L${
-                  bench.efficiency.washVolumeEstimated ? " (est.)" : ""
-                }`}
+                band={`${bench.efficiency.plato.toFixed(1)} °P in ${formatQty(bench.efficiency.washVolumeL)} L`}
               />
             </>
           )}

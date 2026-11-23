@@ -9,7 +9,6 @@ import (
 	"connectrpc.com/connect"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/audit"
@@ -119,7 +118,7 @@ func (s *FermentationService) CreateFermentationRun(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.CreateFermentationRunResponse{
-		Run: fermentationRunToProto(run, 0, "", "", nil, nil, nil),
+		Run: fermentationRunToProto(run, 0, "", "", nil),
 	}), nil
 }
 
@@ -176,9 +175,14 @@ func (s *FermentationService) GetFermentationRun(
 		s.logger.Error("GetFermentationRun", "err", err)
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
-	og := findLatestOG(mashMetrics)
-	out := fermentationRunToProto(run, mash.MashNo, formatDate(mash.MashDate), recipeName, logs, &og, nil)
-	out.Analysis = buildFermentationAnalysis(logs, run.TargetFinalGravity)
+	out := fermentationRunToProto(run, mash.MashNo, formatDate(mash.MashDate), recipeName, logs)
+	out.Analysis = buildFermentationAnalysis(logs, run, findLatestOG(mashMetrics))
+	// One OG for both figures: they used to differ whenever the first
+	// gravity logged was not the one the mash recorded.
+	if a := out.Analysis; a != nil && a.GetMeasurable() {
+		out.CalculatedAbvPct = a.GetEstimatedAbv()
+		out.CalculatedAbvPctSet = true
+	}
 	return connect.NewResponse(&stillhousev1.GetFermentationRunResponse{Run: out}), nil
 }
 
@@ -186,8 +190,10 @@ func (s *FermentationService) GetFermentationRun(
 // on every fetch, so it always reflects the latest reading.
 func buildFermentationAnalysis(
 	logs []sqlcgen.FermentationLog,
-	targetFG pgtype.Float8,
+	run sqlcgen.FermentationRun,
+	mashOG float64,
 ) *stillhousev1.FermentationAnalysis {
+	targetFG := run.TargetFinalGravity
 	if len(logs) == 0 {
 		return nil
 	}
@@ -205,18 +211,27 @@ func buildFermentationAnalysis(
 		}
 		readings = append(readings, r)
 	}
-	a := fermenting.Analyse(readings, targetFG.Float64, targetFG.Valid)
+	start := fermenting.Start{OG: mashOG, OGSet: mashOG > 0}
+	if run.PitchAt.Valid {
+		start.Pitch = run.PitchAt.Time
+	}
+	a := fermenting.AnalyseFrom(start, readings, targetFG.Float64, targetFG.Valid)
+	from := "the first gravity logged"
+	if a.OGFromRecord {
+		from = "the mash record"
+	}
 
 	out := &stillhousev1.FermentationAnalysis{
-		Measurable:      a.Measurable,
-		OriginalGravity: a.OriginalGravity,
-		CurrentGravity:  a.CurrentGravity,
-		AttenuationPct:  round2(a.AttenuationPct),
-		EstimatedAbv:    round2(a.EstimatedABV),
-		Phase:           fermentPhaseToProto(a.Phase),
-		HoursElapsed:    round2(a.HoursElapsed),
-		PeakTempC:       a.PeakTempC,
-		PeakTempCSet:    a.TempSet,
+		Measurable:          a.Measurable,
+		OriginalGravity:     a.OriginalGravity,
+		OriginalGravityFrom: from,
+		CurrentGravity:      a.CurrentGravity,
+		AttenuationPct:      round2(a.AttenuationPct),
+		EstimatedAbv:        round2(a.EstimatedABV),
+		Phase:               fermentPhaseToProto(a.Phase),
+		HoursElapsed:        round2(a.HoursElapsed),
+		PeakTempC:           a.PeakTempC,
+		PeakTempCSet:        a.TempSet,
 	}
 	for _, f := range a.Findings {
 		out.Findings = append(out.Findings, &stillhousev1.FermentFinding{
@@ -276,7 +291,7 @@ func (s *FermentationService) ListFermentationRuns(
 				return e
 			}
 			for _, r := range runs {
-				out.Runs = append(out.Runs, fermentationRunToProto(r, 0, "", "", nil, nil, nil))
+				out.Runs = append(out.Runs, fermentationRunToProto(r, 0, "", "", nil))
 			}
 			return nil
 		}
@@ -309,7 +324,7 @@ func (s *FermentationService) ListFermentationRuns(
 				CreatedAt:          r.CreatedAt,
 				UpdatedAt:          r.UpdatedAt,
 			}
-			out.Runs = append(out.Runs, fermentationRunToProto(run, r.MashNo, formatDate(r.MashDate), r.RecipeName, nil, nil, nil))
+			out.Runs = append(out.Runs, fermentationRunToProto(run, r.MashNo, formatDate(r.MashDate), r.RecipeName, nil))
 		}
 		return nil
 	})
@@ -361,7 +376,7 @@ func (s *FermentationService) UpdateFermentationStatus(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.UpdateFermentationStatusResponse{
-		Run: fermentationRunToProto(run, 0, "", "", nil, nil, nil),
+		Run: fermentationRunToProto(run, 0, "", "", nil),
 	}), nil
 }
 
@@ -429,8 +444,6 @@ func fermentationRunToProto(
 	mashDate string,
 	recipeName string,
 	logs []sqlcgen.FermentationLog,
-	og *float64,
-	_ any,
 ) *stillhousev1.FermentationRun {
 	out := &stillhousev1.FermentationRun{
 		Id:             r.ID.String(),
@@ -471,15 +484,6 @@ func fermentationRunToProto(
 			out.CurrentSpecificGravitySet = true
 			break
 		}
-	}
-	// ABV estimate: (OG − current SG) × 131.25.
-	if og != nil && *og > 0 && out.CurrentSpecificGravitySet {
-		abv := (*og - out.CurrentSpecificGravity) * 131.25
-		if abv < 0 {
-			abv = 0
-		}
-		out.CalculatedAbvPct = round2(abv)
-		out.CalculatedAbvPctSet = true
 	}
 	return out
 }

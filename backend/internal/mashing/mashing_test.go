@@ -128,28 +128,24 @@ func TestPlatoFromSG(t *testing.T) {
 }
 
 func TestEfficiencyFromGravity(t *testing.T) {
-	og, water := 1.055, 300.0
-	b := Assess([]GrainBillItem{
-		{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, Extract: 0.78},
-	}, Readings{OriginalGravity: &og, WaterVolumeL: &water})
-
+	og, water, wash := 1.055, 300.0, 280.0
+	barley := []GrainBillItem{{Name: "Malted barley", Cereal: CerealBarley, MassKg: 100, Extract: 0.78}}
+	if b := Assess(barley, Readings{OriginalGravity: &og, WaterVolumeL: &water}); b.Efficiency != nil || !hasCode(b.Findings, "no_wash_volume") {
+		t.Error("liquor in is not wash out; with no wash volume there is no efficiency")
+	}
+	b := Assess(barley, Readings{OriginalGravity: &og, WashVolumeL: &wash})
 	if b.Efficiency == nil {
 		t.Fatal("want an efficiency figure")
-	}
-	if !b.Efficiency.WashVolumeEstimated {
-		t.Error("with only a water volume, the wash volume is an estimate and must say so")
-	}
-	// 300 L water + 100 kg × 0.6 L/kg displacement = 360 L of wash.
-	if math.Abs(b.Efficiency.WashVolumeL-360) > 1e-9 {
-		t.Errorf("wash volume = %v, want 360", b.Efficiency.WashVolumeL)
 	}
 	if b.Efficiency.ExtractAvailableKg != 78 {
 		t.Errorf("available extract = %v, want 78", b.Efficiency.ExtractAvailableKg)
 	}
-	// Sanity: a 1.055 wash of 360 L holds roughly 50 kg of extract, so
-	// efficiency should land in a believable band rather than anywhere.
 	if b.Efficiency.Percent < 50 || b.Efficiency.Percent > 90 {
 		t.Errorf("efficiency %.1f %% is outside any believable range", b.Efficiency.Percent)
+	}
+	part := Assess(append(barley, GrainBillItem{Name: "Rye", Cereal: CerealRye, MassKg: 50}), Readings{OriginalGravity: &og, WashVolumeL: &wash})
+	if part.Efficiency != nil || !hasCode(part.Findings, "partial_extract_data") {
+		t.Error("a grain with no extract figure inflates the efficiency of the rest")
 	}
 }
 

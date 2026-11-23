@@ -2,15 +2,10 @@ package mashing
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gallowaysoftware/stillhouse/backend/internal/units"
 )
-
-// GrainDisplacementLPerKg is how much volume a kilogram of mashed grain
-// occupies. Used only to estimate wash volume when it wasn't measured;
-// mirrors the constant in internal/distilling so a projection and a bench
-// reading of the same mash don't disagree.
-const GrainDisplacementLPerKg = 0.6
 
 // Efficiency is conversion measured at the tun, from the original gravity,
 // rather than inferred weeks later from what the still gave back.
@@ -19,11 +14,8 @@ type Efficiency struct {
 	OriginalGravity float64
 	// Plato is the gravity expressed as extract mass percent.
 	Plato float64
-	// WashVolumeL is the volume the extract is dissolved in.
+	// WashVolumeL is the volume the extract is dissolved in, as measured.
 	WashVolumeL float64
-	// WashVolumeEstimated is true when WashVolumeL came from water plus
-	// grain displacement rather than a measurement.
-	WashVolumeEstimated bool
 	// ExtractMeasuredKg is the extract actually in solution.
 	ExtractMeasuredKg float64
 	// ExtractAvailableKg is what the grain bill could have given up:
@@ -59,10 +51,27 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 		return
 	}
 	available := 0.0
+	var unknown []string
 	for _, it := range bill {
-		if it.MassKg > 0 && it.Extract > 0 {
+		switch {
+		case it.MassKg <= 0:
+		case it.Extract > 0:
 			available += it.MassKg * it.Extract.Float()
+		default:
+			unknown = append(unknown, it.Name)
 		}
+	}
+	// The gravity holds every grain's extract, so dividing it by part of
+	// the bill's would credit the rest to the mash.
+	if available > 0 && len(unknown) > 0 {
+		b.Findings = append(b.Findings, Finding{
+			Severity: SeverityInfo,
+			Code:     "partial_extract_data",
+			Title:    "Can't compute conversion efficiency",
+			Detail: fmt.Sprintf("%s has no extract figure, and the gravity includes what it gave. "+
+				"Set it on the material to unlock this.", strings.Join(unknown, ", ")),
+		})
+		return
 	}
 	if available <= 0 {
 		b.Findings = append(b.Findings, Finding{
@@ -74,41 +83,32 @@ func (b *Bench) assessEfficiency(bill []GrainBillItem, r Readings) {
 		return
 	}
 
-	volume, estimated := 0.0, false
-	switch {
-	case r.WashVolumeL != nil && *r.WashVolumeL > 0:
-		volume = *r.WashVolumeL
-	case r.WaterVolumeL != nil && *r.WaterVolumeL > 0:
-		volume = *r.WaterVolumeL + b.TotalGrainKg*GrainDisplacementLPerKg
-		estimated = true
-	default:
+	// Liquor in is not wash out: the grain keeps some, and how much is not a
+	// figure Stillhouse has a source for. Efficiency waits for a measurement.
+	if r.WashVolumeL == nil || *r.WashVolumeL <= 0 {
+		b.Findings = append(b.Findings, Finding{
+			Severity: SeverityInfo,
+			Code:     "no_wash_volume",
+			Title:    "Record the wash volume to see conversion efficiency",
+			Detail:   "Efficiency is the extract in the wash against what the grain could give, so it needs the volume collected.",
+		})
 		return
 	}
+	volume := *r.WashVolumeL
 
 	sg := *r.OriginalGravity
 	plato := PlatoFromSG(sg)
 	measured := ExtractInSolutionKg(sg, volume)
 
 	eff := &Efficiency{
-		OriginalGravity:     sg,
-		Plato:               plato,
-		WashVolumeL:         volume,
-		WashVolumeEstimated: estimated,
-		ExtractMeasuredKg:   measured,
-		ExtractAvailableKg:  available,
-		Percent:             units.Percent(measured / available * 100),
+		OriginalGravity:    sg,
+		Plato:              plato,
+		WashVolumeL:        volume,
+		ExtractMeasuredKg:  measured,
+		ExtractAvailableKg: available,
+		Percent:            units.Percent(measured / available * 100),
 	}
 	b.Efficiency = eff
-
-	if estimated {
-		b.Findings = append(b.Findings, Finding{
-			Severity: SeverityInfo,
-			Code:     "wash_volume_estimated",
-			Title:    fmt.Sprintf("Wash volume estimated at %.0f L", volume),
-			Detail: fmt.Sprintf("Water volume plus %.1f L/kg grain displacement. Record a wash volume "+
-				"reading to base efficiency on a measurement instead.", GrainDisplacementLPerKg),
-		})
-	}
 
 	switch {
 	case eff.Percent > 100:

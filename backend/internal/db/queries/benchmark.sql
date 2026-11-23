@@ -63,15 +63,15 @@ SELECT b.tenant_id::uuid AS tenant_id,
 FROM bench_yield_per_tonne() b;
 
 -- name: MyConversionInputs :many
--- The caller's own, computed from the same columns so "you against the
--- cohort" compares like with like.
+-- The caller's own, computed from the same columns as
+-- bench_conversion_inputs so "you against the cohort" compares like with like.
 SELECT mr.id,
-       SUM(mu.quantity_used * m.extract_fraction) FILTER (WHERE m.extract_fraction IS NOT NULL)::double precision AS extract_available_kg,
+       SUM(kg_of(mu.quantity_used, mu.uom) * m.extract_fraction)::double precision AS extract_available_kg,
        MAX(og.value)::double precision AS original_gravity,
-       MAX(COALESCE(wash.value, water.value))::double precision AS wash_volume_l
+       MAX(wash.value)::double precision AS wash_volume_l
 FROM mash_runs mr
 JOIN mash_ingredient_usage mu ON mu.mash_run_id = mr.id
-JOIN materials m ON m.id = mu.material_id
+JOIN materials m ON m.id = mu.material_id AND m.kind IN ('grain', 'malt')
 LEFT JOIN LATERAL (
     SELECT mm.value FROM mash_metrics mm
     WHERE mm.mash_run_id = mr.id AND mm.kind = 'original_gravity'
@@ -82,12 +82,7 @@ LEFT JOIN LATERAL (
     WHERE mm.mash_run_id = mr.id AND mm.kind = 'wash_volume_l'
     ORDER BY mm.observed_at DESC LIMIT 1
 ) wash ON TRUE
-LEFT JOIN LATERAL (
-    SELECT mm.value FROM mash_metrics mm
-    WHERE mm.mash_run_id = mr.id AND mm.kind = 'water_volume_l'
-    ORDER BY mm.observed_at DESC LIMIT 1
-) water ON TRUE
 GROUP BY mr.id
-HAVING SUM(mu.quantity_used * m.extract_fraction) > 0
+HAVING bool_and(COALESCE(m.extract_fraction > 0 AND kg_of(mu.quantity_used, mu.uom) IS NOT NULL, FALSE))
    AND MAX(og.value) > 1.0
-   AND MAX(COALESCE(wash.value, water.value)) > 0;
+   AND MAX(wash.value) > 0;

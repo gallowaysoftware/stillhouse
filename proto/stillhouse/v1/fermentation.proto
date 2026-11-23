@@ -90,6 +90,9 @@ message FermentationAnalysis {
   double peak_temp_c = 8;
   bool   peak_temp_c_set = 9;
   repeated FermentFinding findings = 10;
+  // Where original_gravity came from: the mash record, or the first
+  // gravity logged when the mash has none.
+  string original_gravity_from = 11;
 }
 
 message FermentationLog {

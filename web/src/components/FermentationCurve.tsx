@@ -81,10 +81,10 @@ export function FermentationCurve({
 
         {analysis?.measurable && (
           <div className="grid grid-cols-3 gap-4">
-            <Figure label="Original gravity" value={analysis.originalGravity.toFixed(3)} />
+            <Figure label="Original gravity" value={analysis.originalGravity.toFixed(3)} hint={`from ${analysis.originalGravityFrom}`} />
             <Figure label="Now" value={analysis.currentGravity.toFixed(3)} />
             <Figure
-              label="Elapsed"
+              label="Since pitch"
               value={`${Math.round(analysis.hoursElapsed)} h`}
               hint={analysis.peakTempCSet ? `peak ${analysis.peakTempC.toFixed(1)} °C` : undefined}
             />

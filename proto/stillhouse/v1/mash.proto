@@ -19,6 +19,8 @@ enum MashMetricKind {
   MASH_METRIC_KIND_ORIGINAL_GRAVITY = 1;
   MASH_METRIC_KIND_MASH_PH = 2;
   MASH_METRIC_KIND_MASH_TEMP_C = 3;
+  // All the liquor in the tun so far, strike plus infusions, not sparge:
+  // the latest reading is the mash's thickness.
   MASH_METRIC_KIND_WATER_VOLUME_L = 4;
   MASH_METRIC_KIND_STRIKE_TEMP_C = 5;
   MASH_METRIC_KIND_OTHER = 6;
@@ -60,8 +62,7 @@ message MashEfficiency {
   double original_gravity = 1;
   double plato = 2;
   double wash_volume_l = 3;
-  // True when wash_volume_l was estimated from water + grain displacement
-  // rather than measured.
+  // Always false since stage 236: efficiency needs a measured wash volume.
   bool   wash_volume_estimated = 4;
   double extract_measured_kg = 5;
   double extract_available_kg = 6;

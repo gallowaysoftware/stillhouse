@@ -180,3 +180,24 @@ func has(fs []Finding, code string) bool {
 	}
 	return false
 }
+
+func TestAnalyseFromTheRunsOwnStart(t *testing.T) {
+	pitch := time.Date(2026, 11, 22, 21, 53, 0, 0, time.UTC)
+	at := func(h float64, sg float64) Reading {
+		return Reading{At: pitch.Add(time.Duration(h * float64(time.Hour))), Gravity: sg, GravitySet: true}
+	}
+	a := AnalyseFrom(Start{OG: 1.060, OGSet: true, Pitch: pitch}, []Reading{at(15, 1.030)}, 0, false)
+	if !a.OGFromRecord || a.OriginalGravity != 1.060 || math.Abs(a.HoursElapsed-15) > 1e-9 {
+		t.Errorf("got OG %v (recorded %v) over %v h; want 1.060 recorded over 15 h", a.OriginalGravity, a.OGFromRecord, a.HoursElapsed)
+	}
+	if a.Phase == PhaseLag {
+		t.Error("30 points down from the recorded OG reads as lag")
+	}
+	if math.Abs(a.EstimatedABV-0.030*ABVPerGravityPoint) > 1e-9 {
+		t.Errorf("ABV %v", a.EstimatedABV)
+	}
+	b := AnalyseFrom(Start{Pitch: pitch}, []Reading{at(2, 1.058), at(15, 1.030)}, 0, false)
+	if b.OGFromRecord || b.OriginalGravity != 1.058 || math.Abs(b.HoursElapsed-15) > 1e-9 {
+		t.Errorf("without a record: OG %v over %v h", b.OriginalGravity, b.HoursElapsed)
+	}
+}

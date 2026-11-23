@@ -32,7 +32,7 @@ const metricKindOptions = [
   { value: MashMetricKind.ORIGINAL_GRAVITY, label: "Original gravity", unit: "" },
   { value: MashMetricKind.MASH_PH, label: "Mash pH", unit: "" },
   { value: MashMetricKind.MASH_TEMP_C, label: "Mash temp (°C)", unit: "°C" },
-  { value: MashMetricKind.WATER_VOLUME_L, label: "Water volume (L)", unit: "L" },
+  { value: MashMetricKind.WATER_VOLUME_L, label: "Liquor in the tun so far (L)", unit: "L" },
   { value: MashMetricKind.WASH_VOLUME_L, label: "Wash volume (L)", unit: "L" },
   { value: MashMetricKind.STRIKE_TEMP_C, label: "Strike temp (°C)", unit: "°C" },
   { value: MashMetricKind.OTHER, label: "Other", unit: "" },

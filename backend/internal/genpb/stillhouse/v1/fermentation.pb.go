@@ -512,14 +512,17 @@ type FermentationAnalysis struct {
 	AttenuationPct  float64                `protobuf:"fixed64,4,opt,name=attenuation_pct,json=attenuationPct,proto3" json:"attenuation_pct,omitempty"`
 	// Wash strength implied by the gravity fall — the number that decides
 	// what to charge the still with.
-	EstimatedAbv  float64           `protobuf:"fixed64,5,opt,name=estimated_abv,json=estimatedAbv,proto3" json:"estimated_abv,omitempty"`
-	Phase         FermentationPhase `protobuf:"varint,6,opt,name=phase,proto3,enum=stillhouse.v1.FermentationPhase" json:"phase,omitempty"`
-	HoursElapsed  float64           `protobuf:"fixed64,7,opt,name=hours_elapsed,json=hoursElapsed,proto3" json:"hours_elapsed,omitempty"`
-	PeakTempC     float64           `protobuf:"fixed64,8,opt,name=peak_temp_c,json=peakTempC,proto3" json:"peak_temp_c,omitempty"`
-	PeakTempCSet  bool              `protobuf:"varint,9,opt,name=peak_temp_c_set,json=peakTempCSet,proto3" json:"peak_temp_c_set,omitempty"`
-	Findings      []*FermentFinding `protobuf:"bytes,10,rep,name=findings,proto3" json:"findings,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	EstimatedAbv float64           `protobuf:"fixed64,5,opt,name=estimated_abv,json=estimatedAbv,proto3" json:"estimated_abv,omitempty"`
+	Phase        FermentationPhase `protobuf:"varint,6,opt,name=phase,proto3,enum=stillhouse.v1.FermentationPhase" json:"phase,omitempty"`
+	HoursElapsed float64           `protobuf:"fixed64,7,opt,name=hours_elapsed,json=hoursElapsed,proto3" json:"hours_elapsed,omitempty"`
+	PeakTempC    float64           `protobuf:"fixed64,8,opt,name=peak_temp_c,json=peakTempC,proto3" json:"peak_temp_c,omitempty"`
+	PeakTempCSet bool              `protobuf:"varint,9,opt,name=peak_temp_c_set,json=peakTempCSet,proto3" json:"peak_temp_c_set,omitempty"`
+	Findings     []*FermentFinding `protobuf:"bytes,10,rep,name=findings,proto3" json:"findings,omitempty"`
+	// Where original_gravity came from: the mash record, or the first
+	// gravity logged when the mash has none.
+	OriginalGravityFrom string `protobuf:"bytes,11,opt,name=original_gravity_from,json=originalGravityFrom,proto3" json:"original_gravity_from,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
 func (x *FermentationAnalysis) Reset() {
@@ -620,6 +623,13 @@ func (x *FermentationAnalysis) GetFindings() []*FermentFinding {
 		return x.Findings
 	}
 	return nil
+}
+
+func (x *FermentationAnalysis) GetOriginalGravityFrom() string {
+	if x != nil {
+		return x.OriginalGravityFrom
+	}
+	return ""
 }
 
 type FermentationLog struct {
@@ -1460,7 +1470,7 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\bseverity\x18\x01 \x01(\x0e2%.stillhouse.v1.FermentFindingSeverityR\bseverity\x12\x12\n" +
 	"\x04code\x18\x02 \x01(\tR\x04code\x12\x14\n" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x16\n" +
-	"\x06detail\x18\x04 \x01(\tR\x06detail\"\xb7\x03\n" +
+	"\x06detail\x18\x04 \x01(\tR\x06detail\"\xeb\x03\n" +
 	"\x14FermentationAnalysis\x12\x1e\n" +
 	"\n" +
 	"measurable\x18\x01 \x01(\bR\n" +
@@ -1474,7 +1484,8 @@ const file_stillhouse_v1_fermentation_proto_rawDesc = "" +
 	"\vpeak_temp_c\x18\b \x01(\x01R\tpeakTempC\x12%\n" +
 	"\x0fpeak_temp_c_set\x18\t \x01(\bR\fpeakTempCSet\x129\n" +
 	"\bfindings\x18\n" +
-	" \x03(\v2\x1d.stillhouse.v1.FermentFindingR\bfindings\"\xf9\x02\n" +
+	" \x03(\v2\x1d.stillhouse.v1.FermentFindingR\bfindings\x122\n" +
+	"\x15original_gravity_from\x18\v \x01(\tR\x13originalGravityFrom\"\xf9\x02\n" +
 	"\x0fFermentationLog\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12.\n" +
 	"\x13fermentation_run_id\x18\x02 \x01(\tR\x11fermentationRunId\x12;\n" +

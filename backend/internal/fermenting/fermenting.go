@@ -100,12 +100,24 @@ type Reading struct {
 	TempSet    bool
 }
 
+// Start is what the run itself records about how it began. A recorded OG
+// is the gravity before the yeast went in; the first logged one may be hours
+// into the ferment.
+type Start struct {
+	OG    float64
+	OGSet bool
+	Pitch time.Time
+}
+
 // Analysis is what a fermentation's readings add up to.
 type Analysis struct {
 	Measurable bool
 
 	OriginalGravity float64
-	CurrentGravity  float64
+	// OGFromRecord is whether OriginalGravity is the recorded one rather
+	// than the first gravity logged.
+	OGFromRecord   bool
+	CurrentGravity float64
 	// AttenuationPct is how much of the original extract has gone, as a
 	// percentage — the apparent attenuation.
 	AttenuationPct float64
@@ -123,6 +135,12 @@ type Analysis struct {
 
 // Analyse walks a fermentation's readings in time order.
 func Analyse(readings []Reading, targetFG float64, targetFGSet bool) Analysis {
+	return AnalyseFrom(Start{}, readings, targetFG, targetFGSet)
+}
+
+// AnalyseFrom is Analyse measured from the run's own start: its recorded OG
+// and its pitch, where it has them.
+func AnalyseFrom(start Start, readings []Reading, targetFG float64, targetFGSet bool) Analysis {
 	a := Analysis{}
 	var gravities []Reading
 	for _, r := range readings {
@@ -139,10 +157,22 @@ func Analyse(readings []Reading, targetFG float64, targetFGSet bool) Analysis {
 	if len(gravities) == 0 {
 		return a
 	}
+	if start.OGSet && start.OG > 0 {
+		at := start.Pitch
+		if at.IsZero() || gravities[0].At.Before(at) {
+			at = gravities[0].At
+		}
+		gravities = append([]Reading{{At: at, Gravity: start.OG, GravitySet: true}}, gravities...)
+		a.OGFromRecord = true
+	}
+	from := gravities[0].At
+	if !start.Pitch.IsZero() && start.Pitch.Before(from) {
+		from = start.Pitch
+	}
 	a.Measurable = true
 	a.OriginalGravity = gravities[0].Gravity
 	a.CurrentGravity = gravities[len(gravities)-1].Gravity
-	a.HoursElapsed = gravities[len(gravities)-1].At.Sub(gravities[0].At).Hours()
+	a.HoursElapsed = gravities[len(gravities)-1].At.Sub(from).Hours()
 
 	ogPoints := (a.OriginalGravity - 1) * 1000
 	fgPoints := (a.CurrentGravity - 1) * 1000
