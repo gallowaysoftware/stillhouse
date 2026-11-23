@@ -120,6 +120,21 @@ func (q *Queries) DeleteFermentationLog(ctx context.Context, id uuid.UUID) error
 	return err
 }
 
+const fermentationChargedToLiveRun = `-- name: FermentationChargedToLiveRun :one
+SELECT EXISTS (
+    SELECT 1 FROM distillation_charges dc
+    JOIN distillation_runs dr ON dr.id = dc.distillation_run_id
+    WHERE dc.fermentation_run_id = $1 AND dr.voided_at IS NULL
+)::boolean
+`
+
+func (q *Queries) FermentationChargedToLiveRun(ctx context.Context, fermentationRunID uuid.UUID) (bool, error) {
+	row := q.db.QueryRow(ctx, fermentationChargedToLiveRun, fermentationRunID)
+	var column_1 bool
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
 const getFermentationLog = `-- name: GetFermentationLog :one
 SELECT id, tenant_id, fermentation_run_id, observed_at, specific_gravity, ph, temperature_c, notes FROM fermentation_logs WHERE id = $1
 `

@@ -1248,6 +1248,9 @@ func (s *DistillationService) DeleteDistillationCharge(
 		if e != nil {
 			return e
 		}
+		if run.VoidedAt.Valid {
+			return errRunVoided
+		}
 		if run.Status == sqlcgen.DistillationStatusGauged {
 			return connect.NewError(connect.CodeFailedPrecondition,
 				errors.New("this run has been gauged; its charges can no longer be changed"))

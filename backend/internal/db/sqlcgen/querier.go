@@ -109,7 +109,8 @@ type Querier interface {
 	// Daily bottling rate per jurisdiction over the past 30 days. Used by the
 	// dashboard to convert on-hand stamp counts into a "days of stock" estimate.
 	Bottling30DayRatePerJurisdiction(ctx context.Context) ([]Bottling30DayRatePerJurisdictionRow, error)
-	// Given a bottling run, return the bulk_movements that fed into its source
+	// Given a bottling run, return the live bulk_movements (nothing voided, no
+	// reversal) that fed into its source
 	// container in the 365 days leading up to the bottling date. Most useful
 	// when the source container is a blend tank or spirit receiver that
 	// collected from multiple barrels/distillations.
@@ -372,6 +373,7 @@ type Querier interface {
 	// a service schedule Stillhouse invented is a schedule nobody agreed to —
 	// and the register shows plainly that no interval is set.
 	EquipmentServiceDue(ctx context.Context) ([]EquipmentServiceDueRow, error)
+	FermentationChargedToLiveRun(ctx context.Context, fermentationRunID uuid.UUID) (bool, error)
 	// A label code carries the first 64 bits of a row's id, which is the
 	// first 16 characters of its hex form. Matching on a prefix rather than a
 	// whole id is why every one of these returns a set: two rows sharing a

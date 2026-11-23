@@ -316,6 +316,7 @@ func (s *MashService) AddMashIngredient(
 	}
 
 	var inserted sqlcgen.MashIngredientUsage
+	var material sqlcgen.Material
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
 		mash, e := q.GetMashRun(ctx, mashID)
 		if e != nil {
@@ -331,7 +332,7 @@ func (s *MashService) AddMashIngredient(
 		if gauged {
 			return errMashGauged
 		}
-		material, e := q.GetMaterial(ctx, matID)
+		material, e = q.GetMaterial(ctx, matID)
 		if e != nil {
 			return e
 		}
@@ -396,7 +397,7 @@ func (s *MashService) AddMashIngredient(
 		return nil, connect.NewError(connect.CodeInternal, errors.New("internal error"))
 	}
 	return connect.NewResponse(&stillhousev1.AddMashIngredientResponse{
-		Usage: mashIngredientUsageToProto(inserted, "", sqlcgen.MaterialKindOther, pgtype.Float8{}),
+		Usage: mashIngredientUsageToProto(inserted, material.Name, material.Kind, material.ExtractFraction),
 	}), nil
 }
 

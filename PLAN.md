@@ -509,7 +509,7 @@ regauge; reduction and bottling on `internal/alcoholometry`.
 
 ## Track M — QA, 2026-11-22
 
-Eight agents drove local copies of v0.224.0 end to end. Stages 225–236 took
+Eight agents drove local copies of v0.224.0 end to end. Stages 225–237 took
 what touches a batch in progress; this is the rest. Each was reproduced
 unless it says otherwise. Findings about access between tenants and to
 accounts are kept off this public list until they are fixed.

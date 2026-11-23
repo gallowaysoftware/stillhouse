@@ -29,7 +29,9 @@ const (
 	// A pressure cook is recorded as "other".
 	minWortTempC = 0
 	maxMashTempC = 105
-	maxFermentC  = 80
+	// Data entry, not guidance: past it is a ferment read in °F (64–80 °F
+	// is the ordinary band, 18–27 °C), not one with yeast alive in it.
+	maxFermentC = 50
 )
 
 // futureSkew forgives a phone whose clock runs ahead. Past it, a reading
@@ -83,13 +85,13 @@ func checkTemperatureC(name string, v float64) error {
 // checkWortTemperatureC is checkTemperatureC for something that is mostly
 // water at atmospheric pressure, where °F is out of range and can be said so.
 func checkWortTemperatureC(name string, v, hottest float64) error {
-	if err := checkTemperatureC(name, v); err != nil {
-		return err
+	if err := validateFinite(name, v); err != nil {
+		return invalidReading(err)
 	}
 	if v >= minWortTempC && v <= hottest {
 		return nil
 	}
-	if c := (v - 32) * 5 / 9; v > hottest && c <= hottest {
+	if c := (v - 32) * 5 / 9; v > hottest && c >= minWortTempC && c <= hottest {
 		return invalidReading(fmt.Errorf("%s of %g is too hot to be °C; if it was °F that is %.1f °C", name, v, c))
 	}
 	return invalidReading(fmt.Errorf("%s must be in °C, between %d and %g, got %g", name, minWortTempC, hottest, v))

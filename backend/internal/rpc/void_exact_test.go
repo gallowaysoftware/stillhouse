@@ -154,6 +154,29 @@ func TestVoidingACaskEventPutsBackEverything(t *testing.T) {
 		must(t, c.voidEvent(dump))
 		c.holds(t, "both voided", 200, 120, 200, 120, 0, 0)
 	})
+	t.Run("a fill or dump under a later cycle", func(t *testing.T) {
+		c := newCaskFixture(t, 600, 60)
+		dest := c.ledgerFixture.tank(t, "Dest", 0, 0)
+		first := must1(c.fill(200, 60))
+		dump := must1(c.dump(dest, 200, 60))
+		must1(c.fill(200, 60))
+		refusedWith(t, "the first fill", c.voidEvent(first), connect.CodeFailedPrecondition)
+		must1(c.dump(dest, 200, 60))
+		refusedWith(t, "the first dump", c.voidEvent(dump), connect.CodeFailedPrecondition)
+		refusedWith(t, "the first fill, emptied again", c.voidEvent(first), connect.CodeFailedPrecondition)
+	})
+	t.Run("a fill whose source has been filled since", func(t *testing.T) {
+		c := newCaskFixture(t, 100, 60)
+		_, err := c.pool.Exec(c.ctx, "UPDATE bulk_containers SET capacity_l = 100 WHERE id = $1", c.tank.ID)
+		must(t, err)
+		fill := must1(c.fill(100, 60))
+		_, err = NewBulkService(c.db, testLogger()).AdoptOpeningInventory(c.ctx, connect.NewRequest(&stillhousev1.AdoptOpeningInventoryRequest{
+			ContainerId: c.tank.ID.String(), VolumeL: 100, VolumeLSet: true, AbvPct: 60, AsOf: c.when}))
+		if err != nil {
+			t.Skipf("cannot refill the source here: %v", err)
+		}
+		refusedWith(t, "putting 100 L back into a full 100 L tank", c.voidEvent(fill), connect.CodeFailedPrecondition)
+	})
 	t.Run("the clock", func(t *testing.T) {
 		c := newCaskFixture(t, 400, 60)
 		dest := c.ledgerFixture.tank(t, "Dest", 0, 0)

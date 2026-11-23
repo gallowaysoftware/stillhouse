@@ -193,7 +193,9 @@ func TestAMashWithAnUnknownStrengthIsStillSharedIn(t *testing.T) {
 
 func TestACancelledFermentationIsNotCharged(t *testing.T) {
 	b := newFloorBatch(t)
-	_, err := b.ferm.UpdateFermentationStatus(b.ctx, connect.NewRequest(&stillhousev1.UpdateFermentationStatusRequest{
+	_, err := b.dist.VoidDistillationRun(b.ctx, connect.NewRequest(&stillhousev1.VoidDistillationRunRequest{Id: b.runID, Reason: "x"}))
+	must(t, err)
+	_, err = b.ferm.UpdateFermentationStatus(b.ctx, connect.NewRequest(&stillhousev1.UpdateFermentationStatusRequest{
 		Id: b.fermID, Status: stillhousev1.FermentationStatus_FERMENTATION_STATUS_CANCELLED}))
 	must(t, err)
 	run, err := b.dist.CreateDistillationRun(b.ctx, connect.NewRequest(&stillhousev1.CreateDistillationRunRequest{StillLabel: "S"}))
@@ -201,4 +203,18 @@ func TestACancelledFermentationIsNotCharged(t *testing.T) {
 	_, err = b.dist.AddDistillationCharge(b.ctx, connect.NewRequest(&stillhousev1.AddDistillationChargeRequest{
 		DistillationRunId: run.Msg.GetRun().GetId(), FermentationRunId: b.fermID, VolumeChargedL: 5, AbvPct: 8}))
 	refusedWith(t, "charging it", err, connect.CodeFailedPrecondition)
+}
+
+func TestAChargedFermentationIsNotCancelledUnderneathIt(t *testing.T) {
+	b := newFloorBatch(t)
+	_, err := b.ferm.UpdateFermentationStatus(b.ctx, connect.NewRequest(&stillhousev1.UpdateFermentationStatusRequest{
+		Id: b.fermID, Status: stillhousev1.FermentationStatus_FERMENTATION_STATUS_CANCELLED}))
+	refusedWith(t, "cancelling", err, connect.CodeFailedPrecondition)
+	_, err = b.dist.VoidDistillationRun(b.ctx, connect.NewRequest(&stillhousev1.VoidDistillationRunRequest{Id: b.runID, Reason: "x"}))
+	must(t, err)
+	_, err = b.dist.DeleteDistillationCharge(b.ctx, connect.NewRequest(&stillhousev1.DeleteDistillationChargeRequest{Id: b.chargeID}))
+	refusedWith(t, "deleting a voided run's charge", err, connect.CodeFailedPrecondition)
+	_, err = b.ferm.UpdateFermentationStatus(b.ctx, connect.NewRequest(&stillhousev1.UpdateFermentationStatusRequest{
+		Id: b.fermID, Status: stillhousev1.FermentationStatus_FERMENTATION_STATUS_CANCELLED}))
+	must(t, err)
 }
