@@ -46,3 +46,10 @@ SELECT * FROM fermentation_logs WHERE id = $1;
 
 -- name: DeleteFermentationLog :exec
 DELETE FROM fermentation_logs WHERE id = $1;
+
+-- name: FermentationChargedToLiveRun :one
+SELECT EXISTS (
+    SELECT 1 FROM distillation_charges dc
+    JOIN distillation_runs dr ON dr.id = dc.distillation_run_id
+    WHERE dc.fermentation_run_id = $1 AND dr.voided_at IS NULL
+)::boolean;

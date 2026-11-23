@@ -134,6 +134,7 @@ SELECT bc.id AS container_id,
        be.event_date AS dumped_on,
        be.laa AS dumped_laa
 FROM bulk_movements fed
+JOIN live_bulk_movements live ON live.id = fed.id
 JOIN bulk_containers bc ON bc.id = fed.source_container_id
 JOIN barrel_attributes ba ON ba.container_id = bc.id
 LEFT JOIN LATERAL (

@@ -357,6 +357,16 @@ func (s *FermentationService) UpdateFermentationStatus(
 	}
 	var run sqlcgen.FermentationRun
 	err = s.db.WithTenantTx(ctx, u.TenantID, func(ctx context.Context, q *sqlcgen.Queries) error {
+		if st == sqlcgen.FermentationStatusCancelled {
+			charged, e := q.FermentationChargedToLiveRun(ctx, id)
+			if e != nil {
+				return e
+			}
+			if charged {
+				return connect.NewError(connect.CodeFailedPrecondition, errors.New(
+					"this fermentation is charged to a still run; remove the charge or void the run first"))
+			}
+		}
 		var e error
 		run, e = q.UpdateFermentationStatus(ctx, sqlcgen.UpdateFermentationStatusParams{ID: id, Status: st})
 		if e != nil {
@@ -369,6 +379,10 @@ func (s *FermentationService) UpdateFermentationStatus(
 			})
 	})
 	if err != nil {
+		var ce *connect.Error
+		if errors.As(err, &ce) {
+			return nil, ce
+		}
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, connect.NewError(connect.CodeNotFound, errors.New("fermentation run not found"))
 		}

@@ -39,6 +39,7 @@ func TestCheckMashMetric(t *testing.T) {
 		{"temperature in °F", temp, 148, "°F", false},
 		{"temperature off the scale", temp, 6500, "", false},
 		{"a °F figure with no unit", temp, 148, "", false},
+		{"a °F mash past the generic bound", temp, 221, "", false},
 		{"a boiling mash", temp, 100.5, "", true},
 		{"below freezing", temp, -40, "", false},
 		{"no pH at all", ph, 0, "", false},

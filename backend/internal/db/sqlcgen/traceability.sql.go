@@ -70,6 +70,7 @@ SELECT bm.id, bm.tenant_id, bm.source_container_id, bm.destination_container_id,
 FROM bulk_movements bm
 LEFT JOIN bulk_containers src ON src.id = bm.source_container_id
 LEFT JOIN bulk_containers dst ON dst.id = bm.destination_container_id
+JOIN live_bulk_movements live ON live.id = bm.id
 WHERE bm.destination_container_id = $1
   AND bm.occurred_at <= $2
   AND bm.occurred_at >= $2 - INTERVAL '365 days'
@@ -117,7 +118,8 @@ type BottlingRunChainFeedsRow struct {
 	DestinationName         pgtype.Text        `json:"destination_name"`
 }
 
-// Given a bottling run, return the bulk_movements that fed into its source
+// Given a bottling run, return the live bulk_movements (nothing voided, no
+// reversal) that fed into its source
 // container in the 365 days leading up to the bottling date. Most useful
 // when the source container is a blend tank or spirit receiver that
 // collected from multiple barrels/distillations.
@@ -261,12 +263,14 @@ const recallContainersFedBy = `-- name: RecallContainersFedBy :many
 WITH RECURSIVE reached AS (
     SELECT m.destination_container_id AS container_id, 1 AS depth
     FROM bulk_movements m
+    JOIN live_bulk_movements live ON live.id = m.id
     WHERE m.source_container_id = $1
       AND m.destination_container_id IS NOT NULL
       AND m.occurred_at >= $2::timestamptz
     UNION
     SELECT m.destination_container_id, r.depth + 1
     FROM bulk_movements m
+    JOIN live_bulk_movements live ON live.id = m.id
     JOIN reached r ON r.container_id = m.source_container_id
     WHERE m.destination_container_id IS NOT NULL
       AND m.occurred_at >= $2::timestamptz

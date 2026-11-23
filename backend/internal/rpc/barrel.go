@@ -894,6 +894,9 @@ func (s *BarrelService) VoidBarrelEvent(
 			VoidedBy:     uuid.NullUUID{UUID: u.ID, Valid: true},
 			VoidedReason: reason,
 		}); e != nil {
+			if errors.Is(e, pgx.ErrNoRows) {
+				return connect.NewError(connect.CodeFailedPrecondition, errors.New("event is already voided"))
+			}
 			return e
 		}
 		return audit.Write(ctx, q, u.TenantID, u.ID, "barrel_event", id.String(),
@@ -965,15 +968,18 @@ func unwindBarrelEvent(ctx context.Context, q *sqlcgen.Queries, u sqlcgen.User, 
 		return err
 	}
 
+	// What came after was entered against what this event left. Undoing it
+	// underneath would leave a dump from an empty cask, or a fill into a full
+	// one, and a clock for spirit that is not there.
+	if later {
+		return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+			"%s has been filled, dumped or regauged since; void the later event first", cask.Name))
+	}
 	switch ev.Kind {
 	case sqlcgen.BarrelEventKindRegauge:
 		if !recorded {
 			return connect.NewError(connect.CodeFailedPrecondition, errors.New(
 				"this regauge was recorded before Stillhouse kept what the cask held; record a corrective regauge instead"))
-		}
-		if later {
-			return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
-				"%s has been filled, dumped or regauged since; void the later event first", cask.Name))
 		}
 		// A count, a bottling or a shipment moves a cask without a cask event;
 		// putting the prior balance back over one would undo it in the book
@@ -1023,6 +1029,10 @@ func unwindBarrelEvent(ctx context.Context, q *sqlcgen.Queries, u sqlcgen.User, 
 		}
 		if mv.SourceContainerID.Valid {
 			src := locked[mv.SourceContainerID.UUID]
+			if src.CapacityL.Valid && src.CurrentVolumeL+mv.VolumeL > src.CapacityL.Float64+balanceEps {
+				return connect.NewError(connect.CodeFailedPrecondition, fmt.Errorf(
+					"%s has been filled since and has no room for the %.4f L this would put back", src.Name, mv.VolumeL))
+			}
 			back := balanceOf(src).add(mv.VolumeL, mv.Laa)
 			for _, c := range caused {
 				if c.DestinationContainerID.Valid {
@@ -1059,7 +1069,7 @@ func unwindBarrelEvent(ctx context.Context, q *sqlcgen.Queries, u sqlcgen.User, 
 			}
 		}
 	}
-	if ev.Kind == sqlcgen.BarrelEventKindRegauge || later {
+	if ev.Kind == sqlcgen.BarrelEventKindRegauge {
 		return nil
 	}
 
