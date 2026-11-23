@@ -5,9 +5,9 @@
 Stillhouse is licensed under the AGPL-3.0 and always will be. Anyone can
 run it, read it, modify it and self-host it for free.
 
-Galloway Software may also offer Stillhouse under a separate commercial
-licence — for example to a distillery that wants to embed it in something
-proprietary, or as part of a paid hosted service. Offering the same code
+Galloway Software Solutions Inc. may also offer Stillhouse under a separate
+commercial licence — for example to a distillery that wants to embed it in
+something proprietary, or as part of a paid hosted service. Offering the same code
 under two licences is only possible if one party holds sufficient rights
 in **all** of it. If a contribution arrives under the AGPL alone, that
 contribution can never be included in a commercially licensed build
@@ -15,8 +15,9 @@ without going back to its author for permission.
 
 This agreement solves that, once, up front. It does **not** take your
 copyright away — you keep it, and you can do whatever you like with your
-own work. It grants Galloway Software a licence broad enough to keep
-offering the whole project under more than one set of terms.
+own work. It grants Galloway Software Solutions Inc. a licence broad
+enough to keep offering the whole project under more than one set of
+terms.
 
 If you'd rather not sign, that's completely reasonable. Open an issue and
 we'll find another way — a suggestion, a bug report, or a change small
@@ -26,7 +27,7 @@ enough not to be copyrightable are all still welcome.
 
 By signing this agreement, You accept and agree to the following terms
 for Your present and future Contributions submitted to Galloway Software
-("the Maintainer"). Except for the licences granted here, You reserve all
+Solutions Inc. ("the Maintainer"). Except for the licences granted here, You reserve all
 right, title and interest in and to Your Contributions.
 
 ### 1. Definitions

@@ -58,9 +58,9 @@ considered and rejected, which is often the most useful part later.
 Stillhouse is licensed under the **AGPL-3.0** and always will be. Anyone
 can run it, read it, modify it and self-host it for free.
 
-Galloway Software may also offer Stillhouse under a separate commercial
-licence — to a distillery embedding it in something proprietary, or as
-part of a paid hosted service. Offering the same code under two licences
+Galloway Software Solutions Inc. may also offer Stillhouse under a separate
+commercial licence — to a distillery embedding it in something
+proprietary, or as part of a paid hosted service. Offering the same code under two licences
 only works if one party holds sufficient rights in **all** of it, so
 contributions need a one-time signature on the
 [Contributor Licence Agreement](CLA.md).
