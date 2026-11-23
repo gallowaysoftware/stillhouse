@@ -152,6 +152,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	interceptors := connect.WithInterceptors(
 		rpc.NewAuthInterceptor(sm, queries),
 		rpc.NewRoleGateInterceptor(),
+		rpc.NewIdempotencyInterceptor(tdb),
 		// Outermost of the three on the way out, so it sees the finished
 		// response whatever produced it.
 		rpc.NewFloatRoundingInterceptor(),
@@ -250,8 +251,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*Server, error) {
 	assistantHandler := assistant.New(assistant.Config{
 		URL: cfg.AssistantURL, Model: cfg.AssistantModel, APIKey: cfg.AssistantAPIKey,
 	}, mcpDeps, logger)
-	mux.HandleFunc("/api/assistant/status", assistantHandler.Status)
-	mux.HandleFunc("/api/assistant/chat", assistantHandler.Chat)
+	// The phone app holds a token, not a cookie.
+	mux.Handle("/api/assistant/status", bearerUser(queries, http.HandlerFunc(assistantHandler.Status)))
+	mux.Handle("/api/assistant/chat", bearerUser(queries, http.HandlerFunc(assistantHandler.Chat)))
 	// What is running. Unauthenticated on purpose: it is the first thing
 	// an operator or a monitor asks after a restart, and it discloses
 	// nothing a container digest doesn't.
